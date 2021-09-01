@@ -47,14 +47,14 @@ This model was contributed by [beltagy](https://huggingface.co/beltagy). The Aut
 ## Longformer Self Attention
 
 Longformer self attention employs self attention on both a "local" context and a "global" context. Most tokens only
-attend "locally" to each other meaning that each token attends to its $\frac{1}{2} w$ previous tokens and
-$\frac{1}{2} w$ succeding tokens with $w$ being the window length as defined in
+attend "locally" to each other meaning that each token attends to its \\(\frac{1}{2} w\\) previous tokens and
+\\(\frac{1}{2} w\\) succeding tokens with \\(w\\) being the window length as defined in
 `config.attention_window`. Note that `config.attention_window` can be of type `List` to define a
-different $w$ for each layer. A selected few tokens attend "globally" to all other tokens, as it is
+different \\(w\\) for each layer. A selected few tokens attend "globally" to all other tokens, as it is
 conventionally done for all tokens in `BertSelfAttention`.
 
 Note that "locally" and "globally" attending tokens are projected by different query, key and value matrices. Also note
-that every "locally" attending token not only attends to tokens within its window $w$, but also to all "globally"
+that every "locally" attending token not only attends to tokens within its window \\(w\\), but also to all "globally"
 attending tokens so that global attention is *symmetric*.
 
 The user can define which tokens attend "locally" and which tokens attend "globally" by setting the tensor
@@ -67,8 +67,8 @@ The user can define which tokens attend "locally" and which tokens attend "globa
 For more information please also refer to [forward()](model_doc/longformer.html#transformers.LongformerModel.forward) method.
 
 Using Longformer self attention, the memory and time complexity of the query-key matmul operation, which usually
-represents the memory and time bottleneck, can be reduced from $\mathcal{O}(n_s \times n_s)$ to
-$\mathcal{O}(n_s \times w)$, with $n_s$ being the sequence length and $w$ being the average window
+represents the memory and time bottleneck, can be reduced from \\(\mathcal{O}(n_s \times n_s)\\) to
+\\(\mathcal{O}(n_s \times w)\\), with \\(n_s\\) being the sequence length and \\(w\\) being the average window
 size. It is assumed that the number of "globally" attending tokens is insignificant as compared to the number of
 "locally" attending tokens.
 
