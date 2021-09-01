@@ -24,7 +24,7 @@ def convert_rst_formatting(text):
     # (to not be caught by the italic conversion).
     text = _re_obj.sub(r"``\1``", text)
     # Remove :math: markers.
-    text = _re_math.sub(r"$\1$", text)
+    text = _re_math.sub(r"\\\\(\1\\\\)", text)
     # Convert content in single backquotes to italic.
     text = _re_single_backquotes.sub(r'\1_\2_\3', text)
     # Convert content in double backquotes to single backquotes.
@@ -148,6 +148,8 @@ def convert_rst_blocks(text):
             new_lines.append(f"> {example_name}:\n")
         elif lines[idx].strip() == "..":
             block_type = "comment"
+        elif lines[idx].strip() == "::":
+            block_type = "code-block"
         
         if block_type is not None:
             block_indent = find_indent(lines[idx])
@@ -364,10 +366,14 @@ def remove_indent(text):
                 while level >= 0 and current_indents[level] != indent:
                     level -= 1
                 current_indents = current_indents[:level+1]
-                new_indents = new_indents[:level]
-                new_indent = 0 if len(new_indents) == 0 else new_indents[-1]
-                lines[idx] = " " * new_indent + line[indent:]
-                new_indents.append(new_indent)
+                if level >= 0:
+                    new_indents = new_indents[:level]
+                    new_indent = 0 if len(new_indents) == 0 else new_indents[-1]
+                    lines[idx] = " " * new_indent + line[indent:]
+                    new_indents.append(new_indent)
+                else:
+                    new_indents = []
+                    lines[idx] = line[indent:]
             else:
                 lines[idx] = line[indent:]
                 
