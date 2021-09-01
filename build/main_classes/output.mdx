@@ -1,0 +1,1793 @@
+<script>
+import Tip from "../../Tip.svelte";
+import Youtube from "../../Youtube.svelte";	
+export let fw: "pt" | "tf"
+</script>
+
+<!--Copyright 2020 The HuggingFace Team. All rights reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
+the License. You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on
+an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
+specific language governing permissions and limitations under the License.
+-->
+
+# Model outputs
+
+All models have outputs that are instances of subclasses of [ModelOutput](main_classes/output.html#transformers.file_utils.ModelOutput). Those are
+data structures containing all the information returned by the model, but that can also be used as tuples or
+dictionaries.
+
+Let's see of this looks on an example:
+
+```
+from transformers import BertTokenizer, BertForSequenceClassification
+import torch
+
+tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
+model = BertForSequenceClassification.from_pretrained('bert-base-uncased')
+
+inputs = tokenizer("Hello, my dog is cute", return_tensors="pt")
+labels = torch.tensor([1]).unsqueeze(0)  # Batch size 1
+outputs = model(**inputs, labels=labels)
+```
+
+The `outputs` object is a [SequenceClassifierOutput](main_classes/output.html#transformers.modeling_outputs.SequenceClassifierOutput), as we can see in the
+documentation of that class below, it means it has an optional `loss`, a `logits` an optional `hidden_states` and
+an optional `attentions` attribute. Here we have the `loss` since we passed along `labels`, but we don't have
+`hidden_states` and `attentions` because we didn't pass `output_hidden_states=True` or
+`output_attentions=True`.
+
+You can access each attribute as you would usually do, and if that attribute has not been returned by the model, you
+will get `None`. Here for instance `outputs.loss` is the loss computed by the model, and `outputs.attentions` is
+`None`.
+
+When considering our `outputs` object as tuple, it only considers the attributes that don't have `None` values.
+Here for instance, it has two elements, `loss` then `logits`, so
+
+```
+outputs[:2]
+```
+
+will return the tuple `(outputs.loss, outputs.logits)` for instance.
+
+When considering our `outputs` object as dictionary, it only considers the attributes that don't have `None`
+values. Here for instance, it has two keys that are `loss` and `logits`.
+
+We document here the generic model outputs that are used by more than one model type. Specific output types are
+documented on their corresponding model page.
+
+## ModelOutput
+
+<a id='transformers.file_utils.ModelOutput'></a>
+> **class transformers.file\_utils.ModelOutput**()
+
+
+Base class for all model outputs as dataclass. Has a `__getitem__` that allows indexing by integer or slice (like
+a tuple) or strings (like a dictionary) that will ignore the `None` attributes. Otherwise behaves like a regular
+python dictionary.
+
+<Tip warning={true}>
+
+You can't unpack a `ModelOutput` directly. Use the [to_tuple()](main_classes/output.html#transformers.file_utils.ModelOutput.to_tuple)
+method to convert it to a tuple before.
+
+</Tip>
+
+
+<a id='transformers.file_utils.ModelOutput.to_tuple'></a>
+> **to\_tuple**(self)
+
+
+Convert self to a tuple containing all the attributes/keys that are not `None`.
+
+
+## BaseModelOutput
+
+<a id='transformers.modeling_outputs.BaseModelOutput'></a>
+> **class transformers.modeling\_outputs.BaseModelOutput**(last_hidden_state: FloatTensor = None, hidden_states: typing.Optional[typing.Tuple[torch.FloatTensor]] = None, attentions: typing.Optional[typing.Tuple[torch.FloatTensor]] = None)
+
+
+Base class for model's outputs, with potential hidden states and attentions.
+
+> Parameters
+
+- **last_hidden_state** (`torch.FloatTensor` of shape `(batch_size, sequence_length, hidden_size)`) --
+  Sequence of hidden-states at the output of the last layer of the model.
+- **hidden_states** (`tuple(torch.FloatTensor)`, _optional_, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) --
+  Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer)
+  of shape `(batch_size, sequence_length, hidden_size)`.
+
+  Hidden-states of the model at the output of each layer plus the initial embedding outputs.
+- **attentions** (`tuple(torch.FloatTensor)`, _optional_, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) --
+  Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+
+  Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
+  heads.
+
+
+## BaseModelOutputWithPooling
+
+<a id='transformers.modeling_outputs.BaseModelOutputWithPooling'></a>
+> **class transformers.modeling\_outputs.BaseModelOutputWithPooling**(last_hidden_state: FloatTensor = None, pooler_output: FloatTensor = None, hidden_states: typing.Optional[typing.Tuple[torch.FloatTensor]] = None, attentions: typing.Optional[typing.Tuple[torch.FloatTensor]] = None)
+
+
+Base class for model's outputs that also contains a pooling of the last hidden states.
+
+> Parameters
+
+- **last_hidden_state** (`torch.FloatTensor` of shape `(batch_size, sequence_length, hidden_size)`) --
+  Sequence of hidden-states at the output of the last layer of the model.
+- **pooler_output** (`torch.FloatTensor` of shape `(batch_size, hidden_size)`) --
+  Last layer hidden-state of the first token of the sequence (classification token) after further processing
+  through the layers used for the auxiliary pretraining task. E.g. for BERT-family of models, this returns
+  the classification token after processing through a linear layer and a tanh activation function. The linear
+  layer weights are trained from the next sentence prediction (classification) objective during pretraining.
+- **hidden_states** (`tuple(torch.FloatTensor)`, _optional_, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) --
+  Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer)
+  of shape `(batch_size, sequence_length, hidden_size)`.
+
+  Hidden-states of the model at the output of each layer plus the initial embedding outputs.
+- **attentions** (`tuple(torch.FloatTensor)`, _optional_, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) --
+  Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+
+  Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
+  heads.
+
+
+## BaseModelOutputWithCrossAttentions
+
+<a id='transformers.modeling_outputs.BaseModelOutputWithCrossAttentions'></a>
+> **class transformers.modeling\_outputs.BaseModelOutputWithCrossAttentions**(last_hidden_state: FloatTensor = None, hidden_states: typing.Optional[typing.Tuple[torch.FloatTensor]] = None, attentions: typing.Optional[typing.Tuple[torch.FloatTensor]] = None, cross_attentions: typing.Optional[typing.Tuple[torch.FloatTensor]] = None)
+
+
+Base class for model's outputs, with potential hidden states and attentions.
+
+> Parameters
+
+- **last_hidden_state** (`torch.FloatTensor` of shape `(batch_size, sequence_length, hidden_size)`) --
+  Sequence of hidden-states at the output of the last layer of the model.
+- **hidden_states** (`tuple(torch.FloatTensor)`, _optional_, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) --
+  Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer)
+  of shape `(batch_size, sequence_length, hidden_size)`.
+
+  Hidden-states of the model at the output of each layer plus the initial embedding outputs.
+- **attentions** (`tuple(torch.FloatTensor)`, _optional_, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) --
+  Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+
+  Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
+  heads.
+- **cross_attentions** (`tuple(torch.FloatTensor)`, _optional_, returned when `output_attentions=True` and `config.add_cross_attention=True` is passed or when `config.output_attentions=True`) --
+  Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+
+  Attentions weights of the decoder's cross-attention layer, after the attention softmax, used to compute the
+  weighted average in the cross-attention heads.
+
+
+## BaseModelOutputWithPoolingAndCrossAttentions
+
+<a id='transformers.modeling_outputs.BaseModelOutputWithPoolingAndCrossAttentions'></a>
+> **class transformers.modeling\_outputs.BaseModelOutputWithPoolingAndCrossAttentions**(last_hidden_state: FloatTensor = None, pooler_output: FloatTensor = None, hidden_states: typing.Optional[typing.Tuple[torch.FloatTensor]] = None, past_key_values: typing.Optional[typing.Tuple[typing.Tuple[torch.FloatTensor]]] = None, attentions: typing.Optional[typing.Tuple[torch.FloatTensor]] = None, cross_attentions: typing.Optional[typing.Tuple[torch.FloatTensor]] = None)
+
+
+Base class for model's outputs that also contains a pooling of the last hidden states.
+
+> Parameters
+
+- **last_hidden_state** (`torch.FloatTensor` of shape `(batch_size, sequence_length, hidden_size)`) --
+  Sequence of hidden-states at the output of the last layer of the model.
+- **pooler_output** (`torch.FloatTensor` of shape `(batch_size, hidden_size)`) --
+  Last layer hidden-state of the first token of the sequence (classification token) after further processing
+  through the layers used for the auxiliary pretraining task. E.g. for BERT-family of models, this returns
+  the classification token after processing through a linear layer and a tanh activation function. The linear
+  layer weights are trained from the next sentence prediction (classification) objective during pretraining.
+- **hidden_states** (`tuple(torch.FloatTensor)`, _optional_, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) --
+  Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer)
+  of shape `(batch_size, sequence_length, hidden_size)`.
+
+  Hidden-states of the model at the output of each layer plus the initial embedding outputs.
+- **attentions** (`tuple(torch.FloatTensor)`, _optional_, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) --
+  Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+
+  Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
+  heads.
+- **cross_attentions** (`tuple(torch.FloatTensor)`, _optional_, returned when `output_attentions=True` and `config.add_cross_attention=True` is passed or when `config.output_attentions=True`) --
+  Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+
+  Attentions weights of the decoder's cross-attention layer, after the attention softmax, used to compute the
+  weighted average in the cross-attention heads.
+- **past_key_values** (`tuple(tuple(torch.FloatTensor))`, _optional_, returned when `use_cache=True` is passed or when `config.use_cache=True`) --
+  Tuple of `tuple(torch.FloatTensor)` of length `config.n_layers`, with each tuple having 2 tensors
+  of shape `(batch_size, num_heads, sequence_length, embed_size_per_head)`) and optionally if
+  `config.is_encoder_decoder=True` 2 additional tensors of shape `(batch_size, num_heads, encoder_sequence_length, embed_size_per_head)`.
+
+  Contains pre-computed hidden-states (key and values in the self-attention blocks and optionally if
+  `config.is_encoder_decoder=True` in the cross-attention blocks) that can be used (see
+  `past_key_values` input) to speed up sequential decoding.
+
+
+## BaseModelOutputWithPast
+
+<a id='transformers.modeling_outputs.BaseModelOutputWithPast'></a>
+> **class transformers.modeling\_outputs.BaseModelOutputWithPast**(last_hidden_state: FloatTensor = None, past_key_values: typing.Optional[typing.Tuple[typing.Tuple[torch.FloatTensor]]] = None, hidden_states: typing.Optional[typing.Tuple[torch.FloatTensor]] = None, attentions: typing.Optional[typing.Tuple[torch.FloatTensor]] = None)
+
+
+Base class for model's outputs that may also contain a past key/values (to speed up sequential decoding).
+
+> Parameters
+
+- **last_hidden_state** (`torch.FloatTensor` of shape `(batch_size, sequence_length, hidden_size)`) --
+  Sequence of hidden-states at the output of the last layer of the model.
+
+  If `past_key_values` is used only the last hidden-state of the sequences of shape `(batch_size, 1, hidden_size)` is output.
+- **past_key_values** (`tuple(tuple(torch.FloatTensor))`, _optional_, returned when `use_cache=True` is passed or when `config.use_cache=True`) --
+  Tuple of `tuple(torch.FloatTensor)` of length `config.n_layers`, with each tuple having 2 tensors
+  of shape `(batch_size, num_heads, sequence_length, embed_size_per_head)`) and optionally if
+  `config.is_encoder_decoder=True` 2 additional tensors of shape `(batch_size, num_heads, encoder_sequence_length, embed_size_per_head)`.
+
+  Contains pre-computed hidden-states (key and values in the self-attention blocks and optionally if
+  `config.is_encoder_decoder=True` in the cross-attention blocks) that can be used (see
+  `past_key_values` input) to speed up sequential decoding.
+- **hidden_states** (`tuple(torch.FloatTensor)`, _optional_, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) --
+  Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer)
+  of shape `(batch_size, sequence_length, hidden_size)`.
+
+  Hidden-states of the model at the output of each layer plus the initial embedding outputs.
+- **attentions** (`tuple(torch.FloatTensor)`, _optional_, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) --
+  Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+
+  Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
+  heads.
+
+
+## BaseModelOutputWithPastAndCrossAttentions
+
+<a id='transformers.modeling_outputs.BaseModelOutputWithPastAndCrossAttentions'></a>
+> **class transformers.modeling\_outputs.BaseModelOutputWithPastAndCrossAttentions**(last_hidden_state: FloatTensor = None, past_key_values: typing.Optional[typing.Tuple[typing.Tuple[torch.FloatTensor]]] = None, hidden_states: typing.Optional[typing.Tuple[torch.FloatTensor]] = None, attentions: typing.Optional[typing.Tuple[torch.FloatTensor]] = None, cross_attentions: typing.Optional[typing.Tuple[torch.FloatTensor]] = None)
+
+
+Base class for model's outputs that may also contain a past key/values (to speed up sequential decoding).
+
+> Parameters
+
+- **last_hidden_state** (`torch.FloatTensor` of shape `(batch_size, sequence_length, hidden_size)`) --
+  Sequence of hidden-states at the output of the last layer of the model.
+
+  If `past_key_values` is used only the last hidden-state of the sequences of shape `(batch_size, 1, hidden_size)` is output.
+- **past_key_values** (`tuple(tuple(torch.FloatTensor))`, _optional_, returned when `use_cache=True` is passed or when `config.use_cache=True`) --
+  Tuple of `tuple(torch.FloatTensor)` of length `config.n_layers`, with each tuple having 2 tensors
+  of shape `(batch_size, num_heads, sequence_length, embed_size_per_head)`) and optionally if
+  `config.is_encoder_decoder=True` 2 additional tensors of shape `(batch_size, num_heads, encoder_sequence_length, embed_size_per_head)`.
+
+  Contains pre-computed hidden-states (key and values in the self-attention blocks and optionally if
+  `config.is_encoder_decoder=True` in the cross-attention blocks) that can be used (see
+  `past_key_values` input) to speed up sequential decoding.
+- **hidden_states** (`tuple(torch.FloatTensor)`, _optional_, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) --
+  Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer)
+  of shape `(batch_size, sequence_length, hidden_size)`.
+
+  Hidden-states of the model at the output of each layer plus the initial embedding outputs.
+- **attentions** (`tuple(torch.FloatTensor)`, _optional_, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) --
+  Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+
+  Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
+  heads.
+- **cross_attentions** (`tuple(torch.FloatTensor)`, _optional_, returned when `output_attentions=True` and `config.add_cross_attention=True` is passed or when `config.output_attentions=True`) --
+  Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+
+  Attentions weights of the decoder's cross-attention layer, after the attention softmax, used to compute the
+  weighted average in the cross-attention heads.
+
+
+## Seq2SeqModelOutput
+
+<a id='transformers.modeling_outputs.Seq2SeqModelOutput'></a>
+> **class transformers.modeling\_outputs.Seq2SeqModelOutput**(last_hidden_state: FloatTensor = None, past_key_values: typing.Optional[typing.Tuple[typing.Tuple[torch.FloatTensor]]] = None, decoder_hidden_states: typing.Optional[typing.Tuple[torch.FloatTensor]] = None, decoder_attentions: typing.Optional[typing.Tuple[torch.FloatTensor]] = None, cross_attentions: typing.Optional[typing.Tuple[torch.FloatTensor]] = None, encoder_last_hidden_state: typing.Optional[torch.FloatTensor] = None, encoder_hidden_states: typing.Optional[typing.Tuple[torch.FloatTensor]] = None, encoder_attentions: typing.Optional[typing.Tuple[torch.FloatTensor]] = None)
+
+
+Base class for model encoder's outputs that also contains : pre-computed hidden states that can speed up sequential
+decoding.
+
+> Parameters
+
+- **last_hidden_state** (`torch.FloatTensor` of shape `(batch_size, sequence_length, hidden_size)`) --
+  Sequence of hidden-states at the output of the last layer of the decoder of the model.
+
+  If `past_key_values` is used only the last hidden-state of the sequences of shape `(batch_size, 1, hidden_size)` is output.
+- **past_key_values** (`tuple(tuple(torch.FloatTensor))`, _optional_, returned when `use_cache=True` is passed or when `config.use_cache=True`) --
+  Tuple of `tuple(torch.FloatTensor)` of length `config.n_layers`, with each tuple having 2 tensors
+  of shape `(batch_size, num_heads, sequence_length, embed_size_per_head)`) and 2 additional tensors of
+  shape `(batch_size, num_heads, encoder_sequence_length, embed_size_per_head)`.
+
+  Contains pre-computed hidden-states (key and values in the self-attention blocks and in the cross-attention
+  blocks) that can be used (see `past_key_values` input) to speed up sequential decoding.
+- **decoder_hidden_states** (`tuple(torch.FloatTensor)`, _optional_, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) --
+  Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer)
+  of shape `(batch_size, sequence_length, hidden_size)`.
+
+  Hidden-states of the decoder at the output of each layer plus the initial embedding outputs.
+- **decoder_attentions** (`tuple(torch.FloatTensor)`, _optional_, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) --
+  Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+
+  Attentions weights of the decoder, after the attention softmax, used to compute the weighted average in the
+  self-attention heads.
+- **cross_attentions** (`tuple(torch.FloatTensor)`, _optional_, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) --
+  Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+
+  Attentions weights of the decoder's cross-attention layer, after the attention softmax, used to compute the
+  weighted average in the cross-attention heads.
+- **encoder_last_hidden_state** (`torch.FloatTensor` of shape `(batch_size, sequence_length, hidden_size)`, _optional_) --
+  Sequence of hidden-states at the output of the last layer of the encoder of the model.
+- **encoder_hidden_states** (`tuple(torch.FloatTensor)`, _optional_, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) --
+  Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer)
+  of shape `(batch_size, sequence_length, hidden_size)`.
+
+  Hidden-states of the encoder at the output of each layer plus the initial embedding outputs.
+- **encoder_attentions** (`tuple(torch.FloatTensor)`, _optional_, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) --
+  Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+
+  Attentions weights of the encoder, after the attention softmax, used to compute the weighted average in the
+  self-attention heads.
+
+
+## CausalLMOutput
+
+<a id='transformers.modeling_outputs.CausalLMOutput'></a>
+> **class transformers.modeling\_outputs.CausalLMOutput**(loss: typing.Optional[torch.FloatTensor] = None, logits: FloatTensor = None, hidden_states: typing.Optional[typing.Tuple[torch.FloatTensor]] = None, attentions: typing.Optional[typing.Tuple[torch.FloatTensor]] = None)
+
+
+Base class for causal language model (or autoregressive) outputs.
+
+> Parameters
+
+- **loss** (`torch.FloatTensor` of shape `(1,)`, _optional_, returned when `labels` is provided) --
+  Language modeling loss (for next-token prediction).
+- **logits** (`torch.FloatTensor` of shape `(batch_size, sequence_length, config.vocab_size)`) --
+  Prediction scores of the language modeling head (scores for each vocabulary token before SoftMax).
+- **hidden_states** (`tuple(torch.FloatTensor)`, _optional_, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) --
+  Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer)
+  of shape `(batch_size, sequence_length, hidden_size)`.
+
+  Hidden-states of the model at the output of each layer plus the initial embedding outputs.
+- **attentions** (`tuple(torch.FloatTensor)`, _optional_, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) --
+  Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+
+  Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
+  heads.
+
+
+## CausalLMOutputWithCrossAttentions
+
+<a id='transformers.modeling_outputs.CausalLMOutputWithCrossAttentions'></a>
+> **class transformers.modeling\_outputs.CausalLMOutputWithCrossAttentions**(loss: typing.Optional[torch.FloatTensor] = None, logits: FloatTensor = None, past_key_values: typing.Optional[typing.Tuple[typing.Tuple[torch.FloatTensor]]] = None, hidden_states: typing.Optional[typing.Tuple[torch.FloatTensor]] = None, attentions: typing.Optional[typing.Tuple[torch.FloatTensor]] = None, cross_attentions: typing.Optional[typing.Tuple[torch.FloatTensor]] = None)
+
+
+Base class for causal language model (or autoregressive) outputs.
+
+> Parameters
+
+- **loss** (`torch.FloatTensor` of shape `(1,)`, _optional_, returned when `labels` is provided) --
+  Language modeling loss (for next-token prediction).
+- **logits** (`torch.FloatTensor` of shape `(batch_size, sequence_length, config.vocab_size)`) --
+  Prediction scores of the language modeling head (scores for each vocabulary token before SoftMax).
+- **hidden_states** (`tuple(torch.FloatTensor)`, _optional_, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) --
+  Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer)
+  of shape `(batch_size, sequence_length, hidden_size)`.
+
+  Hidden-states of the model at the output of each layer plus the initial embedding outputs.
+- **attentions** (`tuple(torch.FloatTensor)`, _optional_, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) --
+  Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+
+  Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
+  heads.
+- **cross_attentions** (`tuple(torch.FloatTensor)`, _optional_, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) --
+  Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+
+  Cross attentions weights after the attention softmax, used to compute the weighted average in the
+  cross-attention heads.
+- **past_key_values** (`tuple(tuple(torch.FloatTensor))`, _optional_, returned when `use_cache=True` is passed or when `config.use_cache=True`) --
+  Tuple of `torch.FloatTensor` tuples of length `config.n_layers`, with each tuple containing the
+  cached key, value states of the self-attention and the cross-attention layers if model is used in
+  encoder-decoder setting. Only relevant if `config.is_decoder = True`.
+
+  Contains pre-computed hidden-states (key and values in the attention blocks) that can be used (see
+  `past_key_values` input) to speed up sequential decoding.
+
+
+## CausalLMOutputWithPast
+
+<a id='transformers.modeling_outputs.CausalLMOutputWithPast'></a>
+> **class transformers.modeling\_outputs.CausalLMOutputWithPast**(loss: typing.Optional[torch.FloatTensor] = None, logits: FloatTensor = None, past_key_values: typing.Optional[typing.Tuple[typing.Tuple[torch.FloatTensor]]] = None, hidden_states: typing.Optional[typing.Tuple[torch.FloatTensor]] = None, attentions: typing.Optional[typing.Tuple[torch.FloatTensor]] = None)
+
+
+Base class for causal language model (or autoregressive) outputs.
+
+> Parameters
+
+- **loss** (`torch.FloatTensor` of shape `(1,)`, _optional_, returned when `labels` is provided) --
+  Language modeling loss (for next-token prediction).
+- **logits** (`torch.FloatTensor` of shape `(batch_size, sequence_length, config.vocab_size)`) --
+  Prediction scores of the language modeling head (scores for each vocabulary token before SoftMax).
+- **past_key_values** (`tuple(tuple(torch.FloatTensor))`, _optional_, returned when `use_cache=True` is passed or when `config.use_cache=True`) --
+  Tuple of `tuple(torch.FloatTensor)` of length `config.n_layers`, with each tuple having 2 tensors
+  of shape `(batch_size, num_heads, sequence_length, embed_size_per_head)`)
+
+  Contains pre-computed hidden-states (key and values in the self-attention blocks) that can be used (see
+  `past_key_values` input) to speed up sequential decoding.
+- **hidden_states** (`tuple(torch.FloatTensor)`, _optional_, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) --
+  Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer)
+  of shape `(batch_size, sequence_length, hidden_size)`.
+
+  Hidden-states of the model at the output of each layer plus the initial embedding outputs.
+- **attentions** (`tuple(torch.FloatTensor)`, _optional_, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) --
+  Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+
+  Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
+  heads.
+
+
+## MaskedLMOutput
+
+<a id='transformers.modeling_outputs.MaskedLMOutput'></a>
+> **class transformers.modeling\_outputs.MaskedLMOutput**(loss: typing.Optional[torch.FloatTensor] = None, logits: FloatTensor = None, hidden_states: typing.Optional[typing.Tuple[torch.FloatTensor]] = None, attentions: typing.Optional[typing.Tuple[torch.FloatTensor]] = None)
+
+
+Base class for masked language models outputs.
+
+> Parameters
+
+- **loss** (`torch.FloatTensor` of shape `(1,)`, _optional_, returned when `labels` is provided) --
+  Masked language modeling (MLM) loss.
+- **logits** (`torch.FloatTensor` of shape `(batch_size, sequence_length, config.vocab_size)`) --
+  Prediction scores of the language modeling head (scores for each vocabulary token before SoftMax).
+- **hidden_states** (`tuple(torch.FloatTensor)`, _optional_, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) --
+  Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer)
+  of shape `(batch_size, sequence_length, hidden_size)`.
+
+  Hidden-states of the model at the output of each layer plus the initial embedding outputs.
+- **attentions** (`tuple(torch.FloatTensor)`, _optional_, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) --
+  Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+
+  Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
+  heads.
+
+
+## Seq2SeqLMOutput
+
+<a id='transformers.modeling_outputs.Seq2SeqLMOutput'></a>
+> **class transformers.modeling\_outputs.Seq2SeqLMOutput**(loss: typing.Optional[torch.FloatTensor] = None, logits: FloatTensor = None, past_key_values: typing.Optional[typing.Tuple[typing.Tuple[torch.FloatTensor]]] = None, decoder_hidden_states: typing.Optional[typing.Tuple[torch.FloatTensor]] = None, decoder_attentions: typing.Optional[typing.Tuple[torch.FloatTensor]] = None, cross_attentions: typing.Optional[typing.Tuple[torch.FloatTensor]] = None, encoder_last_hidden_state: typing.Optional[torch.FloatTensor] = None, encoder_hidden_states: typing.Optional[typing.Tuple[torch.FloatTensor]] = None, encoder_attentions: typing.Optional[typing.Tuple[torch.FloatTensor]] = None)
+
+
+Base class for sequence-to-sequence language models outputs.
+
+> Parameters
+
+- **loss** (`torch.FloatTensor` of shape `(1,)`, _optional_, returned when `labels` is provided) --
+  Language modeling loss.
+- **logits** (`torch.FloatTensor` of shape `(batch_size, sequence_length, config.vocab_size)`) --
+  Prediction scores of the language modeling head (scores for each vocabulary token before SoftMax).
+- **past_key_values** (`tuple(tuple(torch.FloatTensor))`, _optional_, returned when `use_cache=True` is passed or when `config.use_cache=True`) --
+  Tuple of `tuple(torch.FloatTensor)` of length `config.n_layers`, with each tuple having 2 tensors
+  of shape `(batch_size, num_heads, sequence_length, embed_size_per_head)`) and 2 additional tensors of
+  shape `(batch_size, num_heads, encoder_sequence_length, embed_size_per_head)`.
+
+  Contains pre-computed hidden-states (key and values in the self-attention blocks and in the cross-attention
+  blocks) that can be used (see `past_key_values` input) to speed up sequential decoding.
+- **decoder_hidden_states** (`tuple(torch.FloatTensor)`, _optional_, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) --
+  Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer)
+  of shape `(batch_size, sequence_length, hidden_size)`.
+
+  Hidden-states of the decoder at the output of each layer plus the initial embedding outputs.
+- **decoder_attentions** (`tuple(torch.FloatTensor)`, _optional_, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) --
+  Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+
+  Attentions weights of the decoder, after the attention softmax, used to compute the weighted average in the
+  self-attention heads.
+- **cross_attentions** (`tuple(torch.FloatTensor)`, _optional_, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) --
+  Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+
+  Attentions weights of the decoder's cross-attention layer, after the attention softmax, used to compute the
+  weighted average in the cross-attention heads.
+- **encoder_last_hidden_state** (`torch.FloatTensor` of shape `(batch_size, sequence_length, hidden_size)`, _optional_) --
+  Sequence of hidden-states at the output of the last layer of the encoder of the model.
+- **encoder_hidden_states** (`tuple(torch.FloatTensor)`, _optional_, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) --
+  Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer)
+  of shape `(batch_size, sequence_length, hidden_size)`.
+
+  Hidden-states of the encoder at the output of each layer plus the initial embedding outputs.
+- **encoder_attentions** (`tuple(torch.FloatTensor)`, _optional_, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) --
+  Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+
+  Attentions weights of the encoder, after the attention softmax, used to compute the weighted average in the
+  self-attention heads.
+
+
+## NextSentencePredictorOutput
+
+<a id='transformers.modeling_outputs.NextSentencePredictorOutput'></a>
+> **class transformers.modeling\_outputs.NextSentencePredictorOutput**(loss: typing.Optional[torch.FloatTensor] = None, logits: FloatTensor = None, hidden_states: typing.Optional[typing.Tuple[torch.FloatTensor]] = None, attentions: typing.Optional[typing.Tuple[torch.FloatTensor]] = None)
+
+
+Base class for outputs of models predicting if two sentences are consecutive or not.
+
+> Parameters
+
+- **loss** (`torch.FloatTensor` of shape `(1,)`, _optional_, returned when `next_sentence_label` is provided) --
+  Next sequence prediction (classification) loss.
+- **logits** (`torch.FloatTensor` of shape `(batch_size, 2)`) --
+  Prediction scores of the next sequence prediction (classification) head (scores of True/False continuation
+  before SoftMax).
+- **hidden_states** (`tuple(torch.FloatTensor)`, _optional_, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) --
+  Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer)
+  of shape `(batch_size, sequence_length, hidden_size)`.
+
+  Hidden-states of the model at the output of each layer plus the initial embedding outputs.
+- **attentions** (`tuple(torch.FloatTensor)`, _optional_, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) --
+  Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+
+  Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
+  heads.
+
+
+## SequenceClassifierOutput
+
+<a id='transformers.modeling_outputs.SequenceClassifierOutput'></a>
+> **class transformers.modeling\_outputs.SequenceClassifierOutput**(loss: typing.Optional[torch.FloatTensor] = None, logits: FloatTensor = None, hidden_states: typing.Optional[typing.Tuple[torch.FloatTensor]] = None, attentions: typing.Optional[typing.Tuple[torch.FloatTensor]] = None)
+
+
+Base class for outputs of sentence classification models.
+
+> Parameters
+
+- **loss** (`torch.FloatTensor` of shape `(1,)`, _optional_, returned when `labels` is provided) --
+  Classification (or regression if config.num_labels==1) loss.
+- **logits** (`torch.FloatTensor` of shape `(batch_size, config.num_labels)`) --
+  Classification (or regression if config.num_labels==1) scores (before SoftMax).
+- **hidden_states** (`tuple(torch.FloatTensor)`, _optional_, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) --
+  Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer)
+  of shape `(batch_size, sequence_length, hidden_size)`.
+
+  Hidden-states of the model at the output of each layer plus the initial embedding outputs.
+- **attentions** (`tuple(torch.FloatTensor)`, _optional_, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) --
+  Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+
+  Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
+  heads.
+
+
+## Seq2SeqSequenceClassifierOutput
+
+<a id='transformers.modeling_outputs.Seq2SeqSequenceClassifierOutput'></a>
+> **class transformers.modeling\_outputs.Seq2SeqSequenceClassifierOutput**(loss: typing.Optional[torch.FloatTensor] = None, logits: FloatTensor = None, past_key_values: typing.Optional[typing.Tuple[typing.Tuple[torch.FloatTensor]]] = None, decoder_hidden_states: typing.Optional[typing.Tuple[torch.FloatTensor]] = None, decoder_attentions: typing.Optional[typing.Tuple[torch.FloatTensor]] = None, cross_attentions: typing.Optional[typing.Tuple[torch.FloatTensor]] = None, encoder_last_hidden_state: typing.Optional[torch.FloatTensor] = None, encoder_hidden_states: typing.Optional[typing.Tuple[torch.FloatTensor]] = None, encoder_attentions: typing.Optional[typing.Tuple[torch.FloatTensor]] = None)
+
+
+Base class for outputs of sequence-to-sequence sentence classification models.
+
+> Parameters
+
+- **loss** (`torch.FloatTensor` of shape `(1,)`, _optional_, returned when `label` is provided) --
+  Classification (or regression if config.num_labels==1) loss.
+- **logits** (`torch.FloatTensor` of shape `(batch_size, config.num_labels)`) --
+  Classification (or regression if config.num_labels==1) scores (before SoftMax).
+- **past_key_values** (`tuple(tuple(torch.FloatTensor))`, _optional_, returned when `use_cache=True` is passed or when `config.use_cache=True`) --
+  Tuple of `tuple(torch.FloatTensor)` of length `config.n_layers`, with each tuple having 2 tensors
+  of shape `(batch_size, num_heads, sequence_length, embed_size_per_head)`) and 2 additional tensors of
+  shape `(batch_size, num_heads, encoder_sequence_length, embed_size_per_head)`.
+
+  Contains pre-computed hidden-states (key and values in the self-attention blocks and in the cross-attention
+  blocks) that can be used (see `past_key_values` input) to speed up sequential decoding.
+- **decoder_hidden_states** (`tuple(torch.FloatTensor)`, _optional_, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) --
+  Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer)
+  of shape `(batch_size, sequence_length, hidden_size)`.
+
+  Hidden-states of the decoder at the output of each layer plus the initial embedding outputs.
+- **decoder_attentions** (`tuple(torch.FloatTensor)`, _optional_, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) --
+  Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+
+  Attentions weights of the decoder, after the attention softmax, used to compute the weighted average in the
+  self-attention heads.
+- **cross_attentions** (`tuple(torch.FloatTensor)`, _optional_, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) --
+  Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+
+  Attentions weights of the decoder's cross-attention layer, after the attention softmax, used to compute the
+  weighted average in the cross-attention heads.
+- **encoder_last_hidden_state** (`torch.FloatTensor` of shape `(batch_size, sequence_length, hidden_size)`, _optional_) --
+  Sequence of hidden-states at the output of the last layer of the encoder of the model.
+- **encoder_hidden_states** (`tuple(torch.FloatTensor)`, _optional_, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) --
+  Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer)
+  of shape `(batch_size, sequence_length, hidden_size)`.
+
+  Hidden-states of the encoder at the output of each layer plus the initial embedding outputs.
+- **encoder_attentions** (`tuple(torch.FloatTensor)`, _optional_, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) --
+  Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+
+  Attentions weights of the encoder, after the attention softmax, used to compute the weighted average in the
+  self-attention heads.
+
+
+## MultipleChoiceModelOutput
+
+<a id='transformers.modeling_outputs.MultipleChoiceModelOutput'></a>
+> **class transformers.modeling\_outputs.MultipleChoiceModelOutput**(loss: typing.Optional[torch.FloatTensor] = None, logits: FloatTensor = None, hidden_states: typing.Optional[typing.Tuple[torch.FloatTensor]] = None, attentions: typing.Optional[typing.Tuple[torch.FloatTensor]] = None)
+
+
+Base class for outputs of multiple choice models.
+
+> Parameters
+
+- **loss** (`torch.FloatTensor` of shape _(1,)_, _optional_, returned when `labels` is provided) --
+  Classification loss.
+- **logits** (`torch.FloatTensor` of shape `(batch_size, num_choices)`) --
+  _num_choices_ is the second dimension of the input tensors. (see _input_ids_ above).
+
+  Classification scores (before SoftMax).
+- **hidden_states** (`tuple(torch.FloatTensor)`, _optional_, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) --
+  Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer)
+  of shape `(batch_size, sequence_length, hidden_size)`.
+
+  Hidden-states of the model at the output of each layer plus the initial embedding outputs.
+- **attentions** (`tuple(torch.FloatTensor)`, _optional_, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) --
+  Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+
+  Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
+  heads.
+
+
+## TokenClassifierOutput
+
+<a id='transformers.modeling_outputs.TokenClassifierOutput'></a>
+> **class transformers.modeling\_outputs.TokenClassifierOutput**(loss: typing.Optional[torch.FloatTensor] = None, logits: FloatTensor = None, hidden_states: typing.Optional[typing.Tuple[torch.FloatTensor]] = None, attentions: typing.Optional[typing.Tuple[torch.FloatTensor]] = None)
+
+
+Base class for outputs of token classification models.
+
+> Parameters
+
+- **loss** (`torch.FloatTensor` of shape `(1,)`, _optional_, returned when `labels` is provided)  --
+  Classification loss.
+- **logits** (`torch.FloatTensor` of shape `(batch_size, sequence_length, config.num_labels)`) --
+  Classification scores (before SoftMax).
+- **hidden_states** (`tuple(torch.FloatTensor)`, _optional_, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) --
+  Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer)
+  of shape `(batch_size, sequence_length, hidden_size)`.
+
+  Hidden-states of the model at the output of each layer plus the initial embedding outputs.
+- **attentions** (`tuple(torch.FloatTensor)`, _optional_, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) --
+  Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+
+  Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
+  heads.
+
+
+## QuestionAnsweringModelOutput
+
+<a id='transformers.modeling_outputs.QuestionAnsweringModelOutput'></a>
+> **class transformers.modeling\_outputs.QuestionAnsweringModelOutput**(loss: typing.Optional[torch.FloatTensor] = None, start_logits: FloatTensor = None, end_logits: FloatTensor = None, hidden_states: typing.Optional[typing.Tuple[torch.FloatTensor]] = None, attentions: typing.Optional[typing.Tuple[torch.FloatTensor]] = None)
+
+
+Base class for outputs of question answering models.
+
+> Parameters
+
+- **loss** (`torch.FloatTensor` of shape `(1,)`, _optional_, returned when `labels` is provided) --
+  Total span extraction loss is the sum of a Cross-Entropy for the start and end positions.
+- **start_logits** (`torch.FloatTensor` of shape `(batch_size, sequence_length)`) --
+  Span-start scores (before SoftMax).
+- **end_logits** (`torch.FloatTensor` of shape `(batch_size, sequence_length)`) --
+  Span-end scores (before SoftMax).
+- **hidden_states** (`tuple(torch.FloatTensor)`, _optional_, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) --
+  Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer)
+  of shape `(batch_size, sequence_length, hidden_size)`.
+
+  Hidden-states of the model at the output of each layer plus the initial embedding outputs.
+- **attentions** (`tuple(torch.FloatTensor)`, _optional_, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) --
+  Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+
+  Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
+  heads.
+
+
+## Seq2SeqQuestionAnsweringModelOutput
+
+<a id='transformers.modeling_outputs.Seq2SeqQuestionAnsweringModelOutput'></a>
+> **class transformers.modeling\_outputs.Seq2SeqQuestionAnsweringModelOutput**(loss: typing.Optional[torch.FloatTensor] = None, start_logits: FloatTensor = None, end_logits: FloatTensor = None, past_key_values: typing.Optional[typing.Tuple[typing.Tuple[torch.FloatTensor]]] = None, decoder_hidden_states: typing.Optional[typing.Tuple[torch.FloatTensor]] = None, decoder_attentions: typing.Optional[typing.Tuple[torch.FloatTensor]] = None, cross_attentions: typing.Optional[typing.Tuple[torch.FloatTensor]] = None, encoder_last_hidden_state: typing.Optional[torch.FloatTensor] = None, encoder_hidden_states: typing.Optional[typing.Tuple[torch.FloatTensor]] = None, encoder_attentions: typing.Optional[typing.Tuple[torch.FloatTensor]] = None)
+
+
+Base class for outputs of sequence-to-sequence question answering models.
+
+> Parameters
+
+- **loss** (`torch.FloatTensor` of shape `(1,)`, _optional_, returned when `labels` is provided) --
+  Total span extraction loss is the sum of a Cross-Entropy for the start and end positions.
+- **start_logits** (`torch.FloatTensor` of shape `(batch_size, sequence_length)`) --
+  Span-start scores (before SoftMax).
+- **end_logits** (`torch.FloatTensor` of shape `(batch_size, sequence_length)`) --
+  Span-end scores (before SoftMax).
+- **past_key_values** (`tuple(tuple(torch.FloatTensor))`, _optional_, returned when `use_cache=True` is passed or when `config.use_cache=True`) --
+  Tuple of `tuple(torch.FloatTensor)` of length `config.n_layers`, with each tuple having 2 tensors
+  of shape `(batch_size, num_heads, sequence_length, embed_size_per_head)`) and 2 additional tensors of
+  shape `(batch_size, num_heads, encoder_sequence_length, embed_size_per_head)`.
+
+  Contains pre-computed hidden-states (key and values in the self-attention blocks and in the cross-attention
+  blocks) that can be used (see `past_key_values` input) to speed up sequential decoding.
+- **decoder_hidden_states** (`tuple(torch.FloatTensor)`, _optional_, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) --
+  Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer)
+  of shape `(batch_size, sequence_length, hidden_size)`.
+
+  Hidden-states of the decoder at the output of each layer plus the initial embedding outputs.
+- **decoder_attentions** (`tuple(torch.FloatTensor)`, _optional_, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) --
+  Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+
+  Attentions weights of the decoder, after the attention softmax, used to compute the weighted average in the
+  self-attention heads.
+- **cross_attentions** (`tuple(torch.FloatTensor)`, _optional_, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) --
+  Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+
+  Attentions weights of the decoder's cross-attention layer, after the attention softmax, used to compute the
+  weighted average in the cross-attention heads.
+- **encoder_last_hidden_state** (`torch.FloatTensor` of shape `(batch_size, sequence_length, hidden_size)`, _optional_) --
+  Sequence of hidden-states at the output of the last layer of the encoder of the model.
+- **encoder_hidden_states** (`tuple(torch.FloatTensor)`, _optional_, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) --
+  Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer)
+  of shape `(batch_size, sequence_length, hidden_size)`.
+
+  Hidden-states of the encoder at the output of each layer plus the initial embedding outputs.
+- **encoder_attentions** (`tuple(torch.FloatTensor)`, _optional_, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) --
+  Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+
+  Attentions weights of the encoder, after the attention softmax, used to compute the weighted average in the
+  self-attention heads.
+
+
+## TFBaseModelOutput
+
+<a id='transformers.modeling_tf_outputs.TFBaseModelOutput'></a>
+> **class transformers.modeling\_tf\_outputs.TFBaseModelOutput**(last_hidden_state: Tensor = None, hidden_states: typing.Optional[typing.Tuple[tensorflow.python.framework.ops.Tensor]] = None, attentions: typing.Optional[typing.Tuple[tensorflow.python.framework.ops.Tensor]] = None)
+
+
+Base class for model's outputs, with potential hidden states and attentions.
+
+> Parameters
+
+- **last_hidden_state** (`tf.Tensor` of shape `(batch_size, sequence_length, hidden_size)`) --
+  Sequence of hidden-states at the output of the last layer of the model.
+- **hidden_states** (`tuple(tf.FloatTensor)`, _optional_, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) --
+  Tuple of `tf.Tensor` (one for the output of the embeddings + one for the output of each layer) of
+  shape `(batch_size, sequence_length, hidden_size)`.
+
+  Hidden-states of the model at the output of each layer plus the initial embedding outputs.
+- **attentions** (`tuple(tf.Tensor)`, _optional_, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) --
+  Tuple of `tf.Tensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+
+  Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
+  heads.
+
+
+## TFBaseModelOutputWithPooling
+
+<a id='transformers.modeling_tf_outputs.TFBaseModelOutputWithPooling'></a>
+> **class transformers.modeling\_tf\_outputs.TFBaseModelOutputWithPooling**(last_hidden_state: Tensor = None, pooler_output: Tensor = None, hidden_states: typing.Optional[typing.Tuple[tensorflow.python.framework.ops.Tensor]] = None, attentions: typing.Optional[typing.Tuple[tensorflow.python.framework.ops.Tensor]] = None)
+
+
+Base class for model's outputs that also contains a pooling of the last hidden states.
+
+> Parameters
+
+- **last_hidden_state** (`tf.Tensor` of shape `(batch_size, sequence_length, hidden_size)`) --
+  Sequence of hidden-states at the output of the last layer of the model.
+- **pooler_output** (`tf.Tensor` of shape `(batch_size, hidden_size)`) --
+  Last layer hidden-state of the first token of the sequence (classification token) further processed by a
+  Linear layer and a Tanh activation function. The Linear layer weights are trained from the next sentence
+  prediction (classification) objective during pretraining.
+
+  This output is usually *not* a good summary of the semantic content of the input, you're often better with
+  averaging or pooling the sequence of hidden-states for the whole input sequence.
+- **hidden_states** (`tuple(tf.Tensor)`, _optional_, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) --
+  Tuple of `tf.Tensor` (one for the output of the embeddings + one for the output of each layer) of
+  shape `(batch_size, sequence_length, hidden_size)`.
+
+  Hidden-states of the model at the output of each layer plus the initial embedding outputs.
+- **attentions** (`tuple(tf.Tensor)`, _optional_, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) --
+  Tuple of `tf.Tensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+
+  Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
+  heads.
+
+
+## TFBaseModelOutputWithPast
+
+<a id='transformers.modeling_tf_outputs.TFBaseModelOutputWithPast'></a>
+> **class transformers.modeling\_tf\_outputs.TFBaseModelOutputWithPast**(last_hidden_state: Tensor = None, past_key_values: typing.Optional[typing.List[tensorflow.python.framework.ops.Tensor]] = None, hidden_states: typing.Optional[typing.Tuple[tensorflow.python.framework.ops.Tensor]] = None, attentions: typing.Optional[typing.Tuple[tensorflow.python.framework.ops.Tensor]] = None)
+
+
+Base class for model's outputs that may also contain a past key/values (to speed up sequential decoding).
+
+> Parameters
+
+- **last_hidden_state** (`tf.Tensor` of shape `(batch_size, sequence_length, hidden_size)`) --
+  Sequence of hidden-states at the output of the last layer of the model.
+
+  If `past_key_values` is used only the last hidden-state of the sequences of shape `(batch_size, 1, hidden_size)` is output.
+- **past_key_values** (`List[tf.Tensor]`, _optional_, returned when `use_cache=True` is passed or when `config.use_cache=True`) --
+  List of `tf.Tensor` of length `config.n_layers`, with each tensor of shape `(2, batch_size, num_heads, sequence_length, embed_size_per_head)`).
+
+  Contains pre-computed hidden-states (key and values in the attention blocks) that can be used (see
+  `past_key_values` input) to speed up sequential decoding.
+- **hidden_states** (`tuple(tf.Tensor)`, _optional_, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) --
+  Tuple of `tf.Tensor` (one for the output of the embeddings + one for the output of each layer) of
+  shape `(batch_size, sequence_length, hidden_size)`.
+
+  Hidden-states of the model at the output of each layer plus the initial embedding outputs.
+- **attentions** (`tuple(tf.Tensor)`, _optional_, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) --
+  Tuple of `tf.Tensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+
+  Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
+  heads.
+
+
+## TFSeq2SeqModelOutput
+
+<a id='transformers.modeling_tf_outputs.TFSeq2SeqModelOutput'></a>
+> **class transformers.modeling\_tf\_outputs.TFSeq2SeqModelOutput**(last_hidden_state: Tensor = None, past_key_values: typing.Optional[typing.List[tensorflow.python.framework.ops.Tensor]] = None, decoder_hidden_states: typing.Optional[typing.Tuple[tensorflow.python.framework.ops.Tensor]] = None, decoder_attentions: typing.Optional[typing.Tuple[tensorflow.python.framework.ops.Tensor]] = None, cross_attentions: typing.Optional[typing.Tuple[tensorflow.python.framework.ops.Tensor]] = None, encoder_last_hidden_state: typing.Optional[tensorflow.python.framework.ops.Tensor] = None, encoder_hidden_states: typing.Optional[typing.Tuple[tensorflow.python.framework.ops.Tensor]] = None, encoder_attentions: typing.Optional[typing.Tuple[tensorflow.python.framework.ops.Tensor]] = None)
+
+
+Base class for model encoder's outputs that also contains : pre-computed hidden states that can speed up sequential
+decoding.
+
+> Parameters
+
+- **last_hidden_state** (`tf.Tensor` of shape `(batch_size, sequence_length, hidden_size)`) --
+  Sequence of hidden-states at the output of the last layer of the decoder of the model.
+
+  If `past_key_values` is used only the last hidden-state of the sequences of shape `(batch_size, 1, hidden_size)` is output.
+- **past_key_values** (`List[tf.Tensor]`, _optional_, returned when `use_cache=True` is passed or when `config.use_cache=True`) --
+  List of `tf.Tensor` of length `config.n_layers`, with each tensor of shape `(2, batch_size, num_heads, sequence_length, embed_size_per_head)`).
+
+  Contains pre-computed hidden-states (key and values in the attention blocks) of the decoder that can be
+  used (see `past_key_values` input) to speed up sequential decoding.
+- **decoder_hidden_states** (`tuple(tf.Tensor)`, _optional_, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) --
+  Tuple of `tf.Tensor` (one for the output of the embeddings + one for the output of each layer) of
+  shape `(batch_size, sequence_length, hidden_size)`.
+
+  Hidden-states of the decoder at the output of each layer plus the initial embedding outputs.
+- **decoder_attentions** (`tuple(tf.Tensor)`, _optional_, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) --
+  Tuple of `tf.Tensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+
+  Attentions weights of the decoder, after the attention softmax, used to compute the weighted average in the
+  self-attention heads.
+- **cross_attentions** (`tuple(tf.Tensor)`, _optional_, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) --
+  Tuple of `tf.Tensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+
+  Attentions weights of the decoder's cross-attention layer, after the attention softmax, used to compute the
+  weighted average in the cross-attention heads.
+- **encoder_last_hidden_state** (`tf.Tensor` of shape `(batch_size, sequence_length, hidden_size)`, _optional_) --
+  Sequence of hidden-states at the output of the last layer of the encoder of the model.
+- **encoder_hidden_states** (`tuple(tf.Tensor)`, _optional_, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) --
+  Tuple of `tf.Tensor` (one for the output of the embeddings + one for the output of each layer) of
+  shape `(batch_size, sequence_length, hidden_size)`.
+
+  Hidden-states of the encoder at the output of each layer plus the initial embedding outputs.
+- **encoder_attentions** (`tuple(tf.Tensor)`, _optional_, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) --
+  Tuple of `tf.Tensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+
+  Attentions weights of the encoder, after the attention softmax, used to compute the weighted average in the
+  self-attention heads.
+
+
+## TFCausalLMOutput
+
+<a id='transformers.modeling_tf_outputs.TFCausalLMOutput'></a>
+> **class transformers.modeling\_tf\_outputs.TFCausalLMOutput**(loss: typing.Optional[tensorflow.python.framework.ops.Tensor] = None, logits: Tensor = None, hidden_states: typing.Optional[typing.Tuple[tensorflow.python.framework.ops.Tensor]] = None, attentions: typing.Optional[typing.Tuple[tensorflow.python.framework.ops.Tensor]] = None)
+
+
+Base class for causal language model (or autoregressive) outputs.
+
+> Parameters
+
+- **loss** (`tf.Tensor` of shape `(n,)`, _optional_, where n is the number of non-masked labels, returned when `labels` is provided) --
+  Language modeling loss (for next-token prediction).
+- **logits** (`tf.Tensor` of shape `(batch_size, sequence_length, config.vocab_size)`) --
+  Prediction scores of the language modeling head (scores for each vocabulary token before SoftMax).
+- **hidden_states** (`tuple(tf.Tensor)`, _optional_, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) --
+  Tuple of `tf.Tensor` (one for the output of the embeddings + one for the output of each layer) of
+  shape `(batch_size, sequence_length, hidden_size)`.
+
+  Hidden-states of the model at the output of each layer plus the initial embedding outputs.
+- **attentions** (`tuple(tf.Tensor)`, _optional_, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) --
+  Tuple of `tf.Tensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+
+  Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
+  heads.
+
+
+## TFCausalLMOutputWithPast
+
+<a id='transformers.modeling_tf_outputs.TFCausalLMOutputWithPast'></a>
+> **class transformers.modeling\_tf\_outputs.TFCausalLMOutputWithPast**(loss: typing.Optional[tensorflow.python.framework.ops.Tensor] = None, logits: Tensor = None, past_key_values: typing.Optional[typing.List[tensorflow.python.framework.ops.Tensor]] = None, hidden_states: typing.Optional[typing.Tuple[tensorflow.python.framework.ops.Tensor]] = None, attentions: typing.Optional[typing.Tuple[tensorflow.python.framework.ops.Tensor]] = None)
+
+
+Base class for causal language model (or autoregressive) outputs.
+
+> Parameters
+
+- **loss** (`tf.Tensor` of shape `(n,)`, _optional_, where n is the number of non-masked labels, returned when `labels` is provided) --
+  Language modeling loss (for next-token prediction).
+- **logits** (`tf.Tensor` of shape `(batch_size, sequence_length, config.vocab_size)`) --
+  Prediction scores of the language modeling head (scores for each vocabulary token before SoftMax).
+- **past_key_values** (`List[tf.Tensor]`, _optional_, returned when `use_cache=True` is passed or when `config.use_cache=True`) --
+  List of `tf.Tensor` of length `config.n_layers`, with each tensor of shape `(2, batch_size, num_heads, sequence_length, embed_size_per_head)`).
+
+  Contains pre-computed hidden-states (key and values in the attention blocks) that can be used (see
+  `past_key_values` input) to speed up sequential decoding.
+- **hidden_states** (`tuple(tf.Tensor)`, _optional_, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) --
+  Tuple of `tf.Tensor` (one for the output of the embeddings + one for the output of each layer) of
+  shape `(batch_size, sequence_length, hidden_size)`.
+
+  Hidden-states of the model at the output of each layer plus the initial embedding outputs.
+- **attentions** (`tuple(tf.Tensor)`, _optional_, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) --
+  Tuple of `tf.Tensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+
+  Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
+  heads.
+
+
+## TFMaskedLMOutput
+
+<a id='transformers.modeling_tf_outputs.TFMaskedLMOutput'></a>
+> **class transformers.modeling\_tf\_outputs.TFMaskedLMOutput**(loss: typing.Optional[tensorflow.python.framework.ops.Tensor] = None, logits: Tensor = None, hidden_states: typing.Optional[typing.Tuple[tensorflow.python.framework.ops.Tensor]] = None, attentions: typing.Optional[typing.Tuple[tensorflow.python.framework.ops.Tensor]] = None)
+
+
+Base class for masked language models outputs.
+
+> Parameters
+
+- **loss** (`tf.Tensor` of shape `(n,)`, _optional_, where n is the number of non-masked labels, returned when `labels` is provided) --
+  Masked language modeling (MLM) loss.
+- **logits** (`tf.Tensor` of shape `(batch_size, sequence_length, config.vocab_size)`) --
+  Prediction scores of the language modeling head (scores for each vocabulary token before SoftMax).
+- **hidden_states** (`tuple(tf.Tensor)`, _optional_, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) --
+  Tuple of `tf.Tensor` (one for the output of the embeddings + one for the output of each layer) of
+  shape `(batch_size, sequence_length, hidden_size)`.
+
+  Hidden-states of the model at the output of each layer plus the initial embedding outputs.
+- **attentions** (`tuple(tf.Tensor)`, _optional_, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) --
+  Tuple of `tf.Tensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+
+  Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
+  heads.
+
+
+## TFSeq2SeqLMOutput
+
+<a id='transformers.modeling_tf_outputs.TFSeq2SeqLMOutput'></a>
+> **class transformers.modeling\_tf\_outputs.TFSeq2SeqLMOutput**(loss: typing.Optional[tensorflow.python.framework.ops.Tensor] = None, logits: Tensor = None, past_key_values: typing.Optional[typing.List[tensorflow.python.framework.ops.Tensor]] = None, decoder_hidden_states: typing.Optional[typing.Tuple[tensorflow.python.framework.ops.Tensor]] = None, decoder_attentions: typing.Optional[typing.Tuple[tensorflow.python.framework.ops.Tensor]] = None, cross_attentions: typing.Optional[typing.Tuple[tensorflow.python.framework.ops.Tensor]] = None, encoder_last_hidden_state: typing.Optional[tensorflow.python.framework.ops.Tensor] = None, encoder_hidden_states: typing.Optional[typing.Tuple[tensorflow.python.framework.ops.Tensor]] = None, encoder_attentions: typing.Optional[typing.Tuple[tensorflow.python.framework.ops.Tensor]] = None)
+
+
+Base class for sequence-to-sequence language models outputs.
+
+> Parameters
+
+- **loss** (`tf.Tensor` of shape `(n,)`, _optional_, where n is the number of non-masked labels, returned when `labels` is provided) --
+  Language modeling loss.
+- **logits** (`tf.Tensor` of shape `(batch_size, sequence_length, config.vocab_size)`) --
+  Prediction scores of the language modeling head (scores for each vocabulary token before SoftMax).
+- **past_key_values** (`List[tf.Tensor]`, _optional_, returned when `use_cache=True` is passed or when `config.use_cache=True`) --
+  List of `tf.Tensor` of length `config.n_layers`, with each tensor of shape `(2, batch_size, num_heads, sequence_length, embed_size_per_head)`).
+
+  Contains pre-computed hidden-states (key and values in the attention blocks) of the decoder that can be
+  used (see `past_key_values` input) to speed up sequential decoding.
+- **decoder_hidden_states** (`tuple(tf.Tensor)`, _optional_, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) --
+  Tuple of `tf.Tensor` (one for the output of the embeddings + one for the output of each layer) of
+  shape `(batch_size, sequence_length, hidden_size)`.
+
+  Hidden-states of the decoder at the output of each layer plus the initial embedding outputs.
+- **decoder_attentions** (`tuple(tf.Tensor)`, _optional_, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) --
+  Tuple of `tf.Tensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+
+  Attentions weights of the decoder, after the attention softmax, used to compute the weighted average in the
+  self-attention heads.
+- **cross_attentions** (`tuple(tf.Tensor)`, _optional_, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) --
+  Tuple of `tf.Tensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+
+  Attentions weights of the decoder's cross-attention layer, after the attention softmax, used to compute the
+  weighted average in the cross-attention heads.
+- **encoder_last_hidden_state** (`tf.Tensor` of shape `(batch_size, sequence_length, hidden_size)`, _optional_) --
+  Sequence of hidden-states at the output of the last layer of the encoder of the model.
+- **encoder_hidden_states** (`tuple(tf.Tensor)`, _optional_, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) --
+  Tuple of `tf.Tensor` (one for the output of the embeddings + one for the output of each layer) of
+  shape `(batch_size, sequence_length, hidden_size)`.
+
+  Hidden-states of the encoder at the output of each layer plus the initial embedding outputs.
+- **encoder_attentions** (`tuple(tf.Tensor)`, _optional_, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) --
+  Tuple of `tf.Tensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+
+  Attentions weights of the encoder, after the attention softmax, used to compute the weighted average in the
+  self-attention heads.
+
+
+## TFNextSentencePredictorOutput
+
+<a id='transformers.modeling_tf_outputs.TFNextSentencePredictorOutput'></a>
+> **class transformers.modeling\_tf\_outputs.TFNextSentencePredictorOutput**(loss: typing.Optional[tensorflow.python.framework.ops.Tensor] = None, logits: Tensor = None, hidden_states: typing.Optional[typing.Tuple[tensorflow.python.framework.ops.Tensor]] = None, attentions: typing.Optional[typing.Tuple[tensorflow.python.framework.ops.Tensor]] = None)
+
+
+Base class for outputs of models predicting if two sentences are consecutive or not.
+
+> Parameters
+
+- **loss** (`tf.Tensor` of shape `(n,)`, _optional_, where n is the number of non-masked labels, returned when `next_sentence_label` is provided) --
+  Next sentence prediction loss.
+- **logits** (`tf.Tensor` of shape `(batch_size, 2)`) --
+  Prediction scores of the next sequence prediction (classification) head (scores of True/False continuation
+  before SoftMax).
+- **hidden_states** (`tuple(tf.Tensor)`, _optional_, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) --
+  Tuple of `tf.Tensor` (one for the output of the embeddings + one for the output of each layer) of
+  shape `(batch_size, sequence_length, hidden_size)`.
+
+  Hidden-states of the model at the output of each layer plus the initial embedding outputs.
+- **attentions** (`tuple(tf.Tensor)`, _optional_, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) --
+  Tuple of `tf.Tensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+
+  Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
+  heads.
+
+
+## TFSequenceClassifierOutput
+
+<a id='transformers.modeling_tf_outputs.TFSequenceClassifierOutput'></a>
+> **class transformers.modeling\_tf\_outputs.TFSequenceClassifierOutput**(loss: typing.Optional[tensorflow.python.framework.ops.Tensor] = None, logits: Tensor = None, hidden_states: typing.Optional[typing.Tuple[tensorflow.python.framework.ops.Tensor]] = None, attentions: typing.Optional[typing.Tuple[tensorflow.python.framework.ops.Tensor]] = None)
+
+
+Base class for outputs of sentence classification models.
+
+> Parameters
+
+- **loss** (`tf.Tensor` of shape `(batch_size, )`, _optional_, returned when `labels` is provided) --
+  Classification (or regression if config.num_labels==1) loss.
+- **logits** (`tf.Tensor` of shape `(batch_size, config.num_labels)`) --
+  Classification (or regression if config.num_labels==1) scores (before SoftMax).
+- **hidden_states** (`tuple(tf.Tensor)`, _optional_, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) --
+  Tuple of `tf.Tensor` (one for the output of the embeddings + one for the output of each layer) of
+  shape `(batch_size, sequence_length, hidden_size)`.
+
+  Hidden-states of the model at the output of each layer plus the initial embedding outputs.
+- **attentions** (`tuple(tf.Tensor)`, _optional_, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) --
+  Tuple of `tf.Tensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+
+  Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
+  heads.
+
+
+## TFSeq2SeqSequenceClassifierOutput
+
+<a id='transformers.modeling_tf_outputs.TFSeq2SeqSequenceClassifierOutput'></a>
+> **class transformers.modeling\_tf\_outputs.TFSeq2SeqSequenceClassifierOutput**(loss: typing.Optional[tensorflow.python.framework.ops.Tensor] = None, logits: Tensor = None, past_key_values: typing.Optional[typing.List[tensorflow.python.framework.ops.Tensor]] = None, decoder_hidden_states: typing.Optional[typing.Tuple[tensorflow.python.framework.ops.Tensor]] = None, decoder_attentions: typing.Optional[typing.Tuple[tensorflow.python.framework.ops.Tensor]] = None, encoder_last_hidden_state: typing.Optional[tensorflow.python.framework.ops.Tensor] = None, encoder_hidden_states: typing.Optional[typing.Tuple[tensorflow.python.framework.ops.Tensor]] = None, encoder_attentions: typing.Optional[typing.Tuple[tensorflow.python.framework.ops.Tensor]] = None)
+
+
+Base class for outputs of sequence-to-sequence sentence classification models.
+
+> Parameters
+
+- **loss** (`tf.Tensor` of shape `(1,)`, _optional_, returned when `label` is provided) --
+  Classification (or regression if config.num_labels==1) loss.
+- **logits** (`tf.Tensor` of shape `(batch_size, config.num_labels)`) --
+  Classification (or regression if config.num_labels==1) scores (before SoftMax).
+- **past_key_values** (`List[tf.Tensor]`, _optional_, returned when `use_cache=True` is passed or when `config.use_cache=True`) --
+  List of `tf.Tensor` of length `config.n_layers`, with each tensor of shape `(2, batch_size, num_heads, sequence_length, embed_size_per_head)`).
+
+  Contains pre-computed hidden-states (key and values in the attention blocks) of the decoder that can be
+  used (see `past_key_values` input) to speed up sequential decoding.
+- **decoder_hidden_states** (`tuple(tf.Tensor)`, _optional_, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) --
+  Tuple of `tf.Tensor` (one for the output of the embeddings + one for the output of each layer) of
+  shape `(batch_size, sequence_length, hidden_size)`.
+
+  Hidden-states of the decoder at the output of each layer plus the initial embedding outputs.
+- **decoder_attentions** (`tuple(tf.Tensor)`, _optional_, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) --
+  Tuple of `tf.Tensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+
+  Attentions weights of the decoder, after the attention softmax, used to compute the weighted average in the
+  self-attention heads.
+- **encoder_last_hidden_state** (`tf.Tensor` of shape `(batch_size, sequence_length, hidden_size)`, _optional_) --
+  Sequence of hidden-states at the output of the last layer of the encoder of the model.
+- **encoder_hidden_states** (`tuple(tf.Tensor)`, _optional_, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) --
+  Tuple of `tf.Tensor` (one for the output of the embeddings + one for the output of each layer) of
+  shape `(batch_size, sequence_length, hidden_size)`.
+
+  Hidden-states of the encoder at the output of each layer plus the initial embedding outputs.
+- **encoder_attentions** (`tuple(tf.Tensor)`, _optional_, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) --
+  Tuple of `tf.Tensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+
+  Attentions weights of the encoder, after the attention softmax, used to compute the weighted average in the
+  self-attention heads.
+
+
+## TFMultipleChoiceModelOutput
+
+<a id='transformers.modeling_tf_outputs.TFMultipleChoiceModelOutput'></a>
+> **class transformers.modeling\_tf\_outputs.TFMultipleChoiceModelOutput**(loss: typing.Optional[tensorflow.python.framework.ops.Tensor] = None, logits: Tensor = None, hidden_states: typing.Optional[typing.Tuple[tensorflow.python.framework.ops.Tensor]] = None, attentions: typing.Optional[typing.Tuple[tensorflow.python.framework.ops.Tensor]] = None)
+
+
+Base class for outputs of multiple choice models.
+
+> Parameters
+
+- **loss** (`tf.Tensor` of shape _(batch_size, )_, _optional_, returned when `labels` is provided) --
+  Classification loss.
+- **logits** (`tf.Tensor` of shape `(batch_size, num_choices)`) --
+  _num_choices_ is the second dimension of the input tensors. (see _input_ids_ above).
+
+  Classification scores (before SoftMax).
+- **hidden_states** (`tuple(tf.Tensor)`, _optional_, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) --
+  Tuple of `tf.Tensor` (one for the output of the embeddings + one for the output of each layer) of
+  shape `(batch_size, sequence_length, hidden_size)`.
+
+  Hidden-states of the model at the output of each layer plus the initial embedding outputs.
+- **attentions** (`tuple(tf.Tensor)`, _optional_, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) --
+  Tuple of `tf.Tensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+
+  Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
+  heads.
+
+
+## TFTokenClassifierOutput
+
+<a id='transformers.modeling_tf_outputs.TFTokenClassifierOutput'></a>
+> **class transformers.modeling\_tf\_outputs.TFTokenClassifierOutput**(loss: typing.Optional[tensorflow.python.framework.ops.Tensor] = None, logits: Tensor = None, hidden_states: typing.Optional[typing.Tuple[tensorflow.python.framework.ops.Tensor]] = None, attentions: typing.Optional[typing.Tuple[tensorflow.python.framework.ops.Tensor]] = None)
+
+
+Base class for outputs of token classification models.
+
+> Parameters
+
+- **loss** (`tf.Tensor` of shape `(n,)`, _optional_, where n is the number of unmasked labels, returned when `labels` is provided)  --
+  Classification loss.
+- **logits** (`tf.Tensor` of shape `(batch_size, sequence_length, config.num_labels)`) --
+  Classification scores (before SoftMax).
+- **hidden_states** (`tuple(tf.Tensor)`, _optional_, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) --
+  Tuple of `tf.Tensor` (one for the output of the embeddings + one for the output of each layer) of
+  shape `(batch_size, sequence_length, hidden_size)`.
+
+  Hidden-states of the model at the output of each layer plus the initial embedding outputs.
+- **attentions** (`tuple(tf.Tensor)`, _optional_, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) --
+  Tuple of `tf.Tensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+
+  Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
+  heads.
+
+
+## TFQuestionAnsweringModelOutput
+
+<a id='transformers.modeling_tf_outputs.TFQuestionAnsweringModelOutput'></a>
+> **class transformers.modeling\_tf\_outputs.TFQuestionAnsweringModelOutput**(loss: typing.Optional[tensorflow.python.framework.ops.Tensor] = None, start_logits: Tensor = None, end_logits: Tensor = None, hidden_states: typing.Optional[typing.Tuple[tensorflow.python.framework.ops.Tensor]] = None, attentions: typing.Optional[typing.Tuple[tensorflow.python.framework.ops.Tensor]] = None)
+
+
+Base class for outputs of question answering models.
+
+> Parameters
+
+- **loss** (`tf.Tensor` of shape `(batch_size, )`, _optional_, returned when `start_positions` and `end_positions` are provided) --
+  Total span extraction loss is the sum of a Cross-Entropy for the start and end positions.
+- **start_logits** (`tf.Tensor` of shape `(batch_size, sequence_length)`) --
+  Span-start scores (before SoftMax).
+- **end_logits** (`tf.Tensor` of shape `(batch_size, sequence_length)`) --
+  Span-end scores (before SoftMax).
+- **hidden_states** (`tuple(tf.Tensor)`, _optional_, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) --
+  Tuple of `tf.Tensor` (one for the output of the embeddings + one for the output of each layer) of
+  shape `(batch_size, sequence_length, hidden_size)`.
+
+  Hidden-states of the model at the output of each layer plus the initial embedding outputs.
+- **attentions** (`tuple(tf.Tensor)`, _optional_, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) --
+  Tuple of `tf.Tensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+
+  Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
+  heads.
+
+
+## TFSeq2SeqQuestionAnsweringModelOutput
+
+<a id='transformers.modeling_tf_outputs.TFSeq2SeqQuestionAnsweringModelOutput'></a>
+> **class transformers.modeling\_tf\_outputs.TFSeq2SeqQuestionAnsweringModelOutput**(loss: typing.Optional[tensorflow.python.framework.ops.Tensor] = None, start_logits: Tensor = None, end_logits: Tensor = None, past_key_values: typing.Optional[typing.List[tensorflow.python.framework.ops.Tensor]] = None, decoder_hidden_states: typing.Optional[typing.Tuple[tensorflow.python.framework.ops.Tensor]] = None, decoder_attentions: typing.Optional[typing.Tuple[tensorflow.python.framework.ops.Tensor]] = None, encoder_last_hidden_state: typing.Optional[tensorflow.python.framework.ops.Tensor] = None, encoder_hidden_states: typing.Optional[typing.Tuple[tensorflow.python.framework.ops.Tensor]] = None, encoder_attentions: typing.Optional[typing.Tuple[tensorflow.python.framework.ops.Tensor]] = None)
+
+
+Base class for outputs of sequence-to-sequence question answering models.
+
+> Parameters
+
+- **loss** (`tf.Tensor` of shape `(1,)`, _optional_, returned when `labels` is provided) --
+  Total span extraction loss is the sum of a Cross-Entropy for the start and end positions.
+- **start_logits** (`tf.Tensor` of shape `(batch_size, sequence_length)`) --
+  Span-start scores (before SoftMax).
+- **end_logits** (`tf.Tensor` of shape `(batch_size, sequence_length)`) --
+  Span-end scores (before SoftMax).
+- **past_key_values** (`List[tf.Tensor]`, _optional_, returned when `use_cache=True` is passed or when `config.use_cache=True`) --
+  List of `tf.Tensor` of length `config.n_layers`, with each tensor of shape `(2, batch_size, num_heads, sequence_length, embed_size_per_head)`).
+
+  Contains pre-computed hidden-states (key and values in the attention blocks) of the decoder that can be
+  used (see `past_key_values` input) to speed up sequential decoding.
+- **decoder_hidden_states** (`tuple(tf.Tensor)`, _optional_, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) --
+  Tuple of `tf.Tensor` (one for the output of the embeddings + one for the output of each layer) of
+  shape `(batch_size, sequence_length, hidden_size)`.
+
+  Hidden-states of the decoder at the output of each layer plus the initial embedding outputs.
+- **decoder_attentions** (`tuple(tf.Tensor)`, _optional_, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) --
+  Tuple of `tf.Tensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+
+  Attentions weights of the decoder, after the attention softmax, used to compute the weighted average in the
+  self-attention heads.
+- **encoder_last_hidden_state** (`tf.Tensor` of shape `(batch_size, sequence_length, hidden_size)`, _optional_) --
+  Sequence of hidden-states at the output of the last layer of the encoder of the model.
+- **encoder_hidden_states** (`tuple(tf.Tensor)`, _optional_, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) --
+  Tuple of `tf.Tensor` (one for the output of the embeddings + one for the output of each layer) of
+  shape `(batch_size, sequence_length, hidden_size)`.
+
+  Hidden-states of the encoder at the output of each layer plus the initial embedding outputs.
+- **encoder_attentions** (`tuple(tf.Tensor)`, _optional_, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) --
+  Tuple of `tf.Tensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+
+  Attentions weights of the encoder, after the attention softmax, used to compute the weighted average in the
+  self-attention heads.
+
+
+## FlaxBaseModelOutput
+
+<a id='transformers.modeling_flax_outputs.FlaxBaseModelOutput'></a>
+> **class transformers.modeling\_flax\_outputs.FlaxBaseModelOutput**(last_hidden_state: ndarray = None, hidden_states: typing.Optional[typing.Tuple[jax._src.numpy.lax_numpy.ndarray]] = None, attentions: typing.Optional[typing.Tuple[jax._src.numpy.lax_numpy.ndarray]] = None)
+
+
+Base class for model's outputs, with potential hidden states and attentions.
+
+> Parameters
+
+- **last_hidden_state** (`jnp.ndarray` of shape `(batch_size, sequence_length, hidden_size)`) --
+  Sequence of hidden-states at the output of the last layer of the model.
+- **hidden_states** (`tuple(jnp.ndarray)`, _optional_, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) --
+  Tuple of `jnp.ndarray` (one for the output of the embeddings + one for the output of each layer) of
+  shape `(batch_size, sequence_length, hidden_size)`.
+
+  Hidden-states of the model at the output of each layer plus the initial embedding outputs.
+- **attentions** (`tuple(jnp.ndarray)`, _optional_, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) --
+  Tuple of `jnp.ndarray` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+
+  Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
+  heads.
+
+
+> **replace**(self, **updates)
+
+"Returns a new object replacing the specified fields with new values.
+
+## FlaxBaseModelOutputWithPast
+
+<a id='transformers.modeling_flax_outputs.FlaxBaseModelOutputWithPast'></a>
+> **class transformers.modeling\_flax\_outputs.FlaxBaseModelOutputWithPast**(last_hidden_state: ndarray = None, past_key_values: typing.Union[typing.Dict[str, jax._src.numpy.lax_numpy.ndarray], NoneType] = None, hidden_states: typing.Optional[typing.Tuple[jax._src.numpy.lax_numpy.ndarray]] = None, attentions: typing.Optional[typing.Tuple[jax._src.numpy.lax_numpy.ndarray]] = None)
+
+
+Base class for model's outputs, with potential hidden states and attentions.
+
+> Parameters
+
+- **last_hidden_state** (`jnp.ndarray` of shape `(batch_size, sequence_length, hidden_size)`) --
+  Sequence of hidden-states at the output of the last layer of the model.
+- **past_key_values** (`Dict[str, jnp.ndarray]`) --
+  Dictionary of pre-computed hidden-states (key and values in the attention blocks) that can be used for fast
+  auto-regressive decoding. Pre-computed key and value hidden-states are of shape _[batch_size, max_length]_.
+- **hidden_states** (`tuple(jnp.ndarray)`, _optional_, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) --
+  Tuple of `jnp.ndarray` (one for the output of the embeddings + one for the output of each layer) of
+  shape `(batch_size, sequence_length, hidden_size)`.
+
+  Hidden-states of the model at the output of each layer plus the initial embedding outputs.
+- **attentions** (`tuple(jnp.ndarray)`, _optional_, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) --
+  Tuple of `jnp.ndarray` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+
+  Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
+  heads.
+
+
+> **replace**(self, **updates)
+
+"Returns a new object replacing the specified fields with new values.
+
+## FlaxBaseModelOutputWithPooling
+
+<a id='transformers.modeling_flax_outputs.FlaxBaseModelOutputWithPooling'></a>
+> **class transformers.modeling\_flax\_outputs.FlaxBaseModelOutputWithPooling**(last_hidden_state: ndarray = None, pooler_output: ndarray = None, hidden_states: typing.Optional[typing.Tuple[jax._src.numpy.lax_numpy.ndarray]] = None, attentions: typing.Optional[typing.Tuple[jax._src.numpy.lax_numpy.ndarray]] = None)
+
+
+Base class for model's outputs that also contains a pooling of the last hidden states.
+
+> Parameters
+
+- **last_hidden_state** (`jnp.ndarray` of shape `(batch_size, sequence_length, hidden_size)`) --
+  Sequence of hidden-states at the output of the last layer of the model.
+- **pooler_output** (`jnp.ndarray` of shape `(batch_size, hidden_size)`) --
+  Last layer hidden-state of the first token of the sequence (classification token) further processed by a
+  Linear layer and a Tanh activation function. The Linear layer weights are trained from the next sentence
+  prediction (classification) objective during pretraining.
+- **hidden_states** (`tuple(jnp.ndarray)`, _optional_, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) --
+  Tuple of `jnp.ndarray` (one for the output of the embeddings + one for the output of each layer) of
+  shape `(batch_size, sequence_length, hidden_size)`.
+
+  Hidden-states of the model at the output of each layer plus the initial embedding outputs.
+- **attentions** (`tuple(jnp.ndarray)`, _optional_, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) --
+  Tuple of `jnp.ndarray` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+
+  Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
+  heads.
+
+
+> **replace**(self, **updates)
+
+"Returns a new object replacing the specified fields with new values.
+
+## FlaxBaseModelOutputWithPastAndCrossAttentions
+
+<a id='transformers.modeling_flax_outputs.FlaxBaseModelOutputWithPastAndCrossAttentions'></a>
+> **class transformers.modeling\_flax\_outputs.FlaxBaseModelOutputWithPastAndCrossAttentions**(last_hidden_state: ndarray = None, past_key_values: typing.Optional[typing.Tuple[typing.Tuple[jax._src.numpy.lax_numpy.ndarray]]] = None, hidden_states: typing.Optional[typing.Tuple[jax._src.numpy.lax_numpy.ndarray]] = None, attentions: typing.Optional[typing.Tuple[jax._src.numpy.lax_numpy.ndarray]] = None, cross_attentions: typing.Optional[typing.Tuple[jax._src.numpy.lax_numpy.ndarray]] = None)
+
+
+Base class for model's outputs that may also contain a past key/values (to speed up sequential decoding).
+
+> Parameters
+
+- **last_hidden_state** (`jnp.ndarray` of shape `(batch_size, sequence_length, hidden_size)`) --
+  Sequence of hidden-states at the output of the last layer of the model.
+
+  If `past_key_values` is used only the last hidden-state of the sequences of shape `(batch_size, 1, hidden_size)` is output.
+- **past_key_values** (`tuple(tuple(jnp.ndarray))`, _optional_, returned when `use_cache=True` is passed or when `config.use_cache=True`) --
+  Tuple of `tuple(jnp.ndarray)` of length `config.n_layers`, with each tuple having 2 tensors of
+  shape `(batch_size, num_heads, sequence_length, embed_size_per_head)`) and optionally if
+  `config.is_encoder_decoder=True` 2 additional tensors of shape `(batch_size, num_heads, encoder_sequence_length, embed_size_per_head)`.
+
+  Contains pre-computed hidden-states (key and values in the self-attention blocks and optionally if
+  `config.is_encoder_decoder=True` in the cross-attention blocks) that can be used (see
+  `past_key_values` input) to speed up sequential decoding.
+- **hidden_states** (`tuple(jnp.ndarray)`, _optional_, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) --
+  Tuple of `jnp.ndarray` (one for the output of the embeddings + one for the output of each layer) of
+  shape `(batch_size, sequence_length, hidden_size)`.
+
+  Hidden-states of the model at the output of each layer plus the initial embedding outputs.
+- **attentions** (`tuple(jnp.ndarray)`, _optional_, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) --
+  Tuple of `jnp.ndarray` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+
+  Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
+  heads.
+- **cross_attentions** (`tuple(jnp.ndarray)`, _optional_, returned when `output_attentions=True` and `config.add_cross_attention=True` is passed or when `config.output_attentions=True`) --
+  Tuple of `jnp.ndarray` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+
+  Attentions weights of the decoder's cross-attention layer, after the attention softmax, used to compute the
+  weighted average in the cross-attention heads.
+
+
+> **replace**(self, **updates)
+
+"Returns a new object replacing the specified fields with new values.
+
+## FlaxSeq2SeqModelOutput
+
+<a id='transformers.modeling_flax_outputs.FlaxSeq2SeqModelOutput'></a>
+> **class transformers.modeling\_flax\_outputs.FlaxSeq2SeqModelOutput**(last_hidden_state: ndarray = None, past_key_values: typing.Optional[typing.Tuple[typing.Tuple[jax._src.numpy.lax_numpy.ndarray]]] = None, decoder_hidden_states: typing.Optional[typing.Tuple[jax._src.numpy.lax_numpy.ndarray]] = None, decoder_attentions: typing.Optional[typing.Tuple[jax._src.numpy.lax_numpy.ndarray]] = None, cross_attentions: typing.Optional[typing.Tuple[jax._src.numpy.lax_numpy.ndarray]] = None, encoder_last_hidden_state: typing.Optional[jax._src.numpy.lax_numpy.ndarray] = None, encoder_hidden_states: typing.Optional[typing.Tuple[jax._src.numpy.lax_numpy.ndarray]] = None, encoder_attentions: typing.Optional[typing.Tuple[jax._src.numpy.lax_numpy.ndarray]] = None)
+
+
+Base class for model encoder's outputs that also contains : pre-computed hidden states that can speed up sequential
+decoding.
+
+> Parameters
+
+- **last_hidden_state** (`jnp.ndarray` of shape `(batch_size, sequence_length, hidden_size)`) --
+  Sequence of hidden-states at the output of the last layer of the decoder of the model.
+
+  If `past_key_values` is used only the last hidden-state of the sequences of shape `(batch_size, 1, hidden_size)` is output.
+- **past_key_values** (`tuple(tuple(jnp.ndarray))`, _optional_, returned when `use_cache=True` is passed or when `config.use_cache=True`) --
+  Tuple of `tuple(jnp.ndarray)` of length `config.n_layers`, with each tuple having 2 tensors of
+  shape `(batch_size, num_heads, sequence_length, embed_size_per_head)`) and 2 additional tensors of
+  shape `(batch_size, num_heads, encoder_sequence_length, embed_size_per_head)`.
+
+  Contains pre-computed hidden-states (key and values in the self-attention blocks and in the cross-attention
+  blocks) that can be used (see `past_key_values` input) to speed up sequential decoding.
+- **decoder_hidden_states** (`tuple(jnp.ndarray)`, _optional_, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) --
+  Tuple of `jnp.ndarray` (one for the output of the embeddings + one for the output of each layer) of
+  shape `(batch_size, sequence_length, hidden_size)`.
+
+  Hidden-states of the decoder at the output of each layer plus the initial embedding outputs.
+- **decoder_attentions** (`tuple(jnp.ndarray)`, _optional_, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) --
+  Tuple of `jnp.ndarray` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+
+  Attentions weights of the decoder, after the attention softmax, used to compute the weighted average in the
+  self-attention heads.
+- **cross_attentions** (`tuple(jnp.ndarray)`, _optional_, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) --
+  Tuple of `jnp.ndarray` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+
+  Attentions weights of the decoder's cross-attention layer, after the attention softmax, used to compute the
+  weighted average in the cross-attention heads.
+- **encoder_last_hidden_state** (`jnp.ndarray` of shape `(batch_size, sequence_length, hidden_size)`, _optional_) --
+  Sequence of hidden-states at the output of the last layer of the encoder of the model.
+- **encoder_hidden_states** (`tuple(jnp.ndarray)`, _optional_, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) --
+  Tuple of `jnp.ndarray` (one for the output of the embeddings + one for the output of each layer) of
+  shape `(batch_size, sequence_length, hidden_size)`.
+
+  Hidden-states of the encoder at the output of each layer plus the initial embedding outputs.
+- **encoder_attentions** (`tuple(jnp.ndarray)`, _optional_, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) --
+  Tuple of `jnp.ndarray` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+
+  Attentions weights of the encoder, after the attention softmax, used to compute the weighted average in the
+  self-attention heads.
+
+
+> **replace**(self, **updates)
+
+"Returns a new object replacing the specified fields with new values.
+
+## FlaxCausalLMOutputWithCrossAttentions
+
+<a id='transformers.modeling_flax_outputs.FlaxCausalLMOutputWithCrossAttentions'></a>
+> **class transformers.modeling\_flax\_outputs.FlaxCausalLMOutputWithCrossAttentions**(logits: ndarray = None, past_key_values: typing.Optional[typing.Tuple[typing.Tuple[jax._src.numpy.lax_numpy.ndarray]]] = None, hidden_states: typing.Optional[typing.Tuple[jax._src.numpy.lax_numpy.ndarray]] = None, attentions: typing.Optional[typing.Tuple[jax._src.numpy.lax_numpy.ndarray]] = None, cross_attentions: typing.Optional[typing.Tuple[jax._src.numpy.lax_numpy.ndarray]] = None)
+
+
+Base class for causal language model (or autoregressive) outputs.
+
+> Parameters
+
+- **logits** (`jnp.ndarray` of shape `(batch_size, sequence_length, config.vocab_size)`) --
+  Prediction scores of the language modeling head (scores for each vocabulary token before SoftMax).
+- **hidden_states** (`tuple(jnp.ndarray)`, _optional_, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) --
+  Tuple of `jnp.ndarray` (one for the output of the embeddings + one for the output of each layer) of
+  shape `(batch_size, sequence_length, hidden_size)`.
+
+  Hidden-states of the model at the output of each layer plus the initial embedding outputs.
+- **attentions** (`tuple(jnp.ndarray)`, _optional_, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) --
+  Tuple of `jnp.ndarray` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+
+  Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
+  heads.
+- **cross_attentions** (`tuple(jnp.ndarray)`, _optional_, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) --
+  Tuple of `jnp.ndarray` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+
+  Cross attentions weights after the attention softmax, used to compute the weighted average in the
+  cross-attention heads.
+- **past_key_values** (`tuple(tuple(jnp.ndarray))`, _optional_, returned when `use_cache=True` is passed or when `config.use_cache=True`) --
+  Tuple of `jnp.ndarray` tuples of length `config.n_layers`, with each tuple containing the cached
+  key, value states of the self-attention and the cross-attention layers if model is used in encoder-decoder
+  setting. Only relevant if `config.is_decoder = True`.
+
+  Contains pre-computed hidden-states (key and values in the attention blocks) that can be used (see
+  `past_key_values` input) to speed up sequential decoding.
+
+
+> **replace**(self, **updates)
+
+"Returns a new object replacing the specified fields with new values.
+
+## FlaxMaskedLMOutput
+
+<a id='transformers.modeling_flax_outputs.FlaxMaskedLMOutput'></a>
+> **class transformers.modeling\_flax\_outputs.FlaxMaskedLMOutput**(logits: ndarray = None, hidden_states: typing.Optional[typing.Tuple[jax._src.numpy.lax_numpy.ndarray]] = None, attentions: typing.Optional[typing.Tuple[jax._src.numpy.lax_numpy.ndarray]] = None)
+
+
+Base class for masked language models outputs.
+
+> Parameters
+
+- **logits** (`jnp.ndarray` of shape `(batch_size, sequence_length, config.vocab_size)`) --
+  Prediction scores of the language modeling head (scores for each vocabulary token before SoftMax).
+- **hidden_states** (`tuple(jnp.ndarray)`, _optional_, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) --
+  Tuple of `jnp.ndarray` (one for the output of the embeddings + one for the output of each layer) of
+  shape `(batch_size, sequence_length, hidden_size)`.
+
+  Hidden-states of the model at the output of each layer plus the initial embedding outputs.
+- **attentions** (`tuple(jnp.ndarray)`, _optional_, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) --
+  Tuple of `jnp.ndarray` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+
+  Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
+  heads.
+
+
+> **replace**(self, **updates)
+
+"Returns a new object replacing the specified fields with new values.
+
+## FlaxSeq2SeqLMOutput
+
+<a id='transformers.modeling_flax_outputs.FlaxSeq2SeqLMOutput'></a>
+> **class transformers.modeling\_flax\_outputs.FlaxSeq2SeqLMOutput**(logits: ndarray = None, past_key_values: typing.Optional[typing.Tuple[typing.Tuple[jax._src.numpy.lax_numpy.ndarray]]] = None, decoder_hidden_states: typing.Optional[typing.Tuple[jax._src.numpy.lax_numpy.ndarray]] = None, decoder_attentions: typing.Optional[typing.Tuple[jax._src.numpy.lax_numpy.ndarray]] = None, cross_attentions: typing.Optional[typing.Tuple[jax._src.numpy.lax_numpy.ndarray]] = None, encoder_last_hidden_state: typing.Optional[jax._src.numpy.lax_numpy.ndarray] = None, encoder_hidden_states: typing.Optional[typing.Tuple[jax._src.numpy.lax_numpy.ndarray]] = None, encoder_attentions: typing.Optional[typing.Tuple[jax._src.numpy.lax_numpy.ndarray]] = None)
+
+
+Base class for sequence-to-sequence language models outputs.
+
+> Parameters
+
+- **logits** (`jnp.ndarray` of shape `(batch_size, sequence_length, config.vocab_size)`) --
+  Prediction scores of the language modeling head (scores for each vocabulary token before SoftMax).
+- **past_key_values** (`tuple(tuple(jnp.ndarray))`, _optional_, returned when `use_cache=True` is passed or when `config.use_cache=True`) --
+  Tuple of `tuple(jnp.ndarray)` of length `config.n_layers`, with each tuple having 2 tensors of
+  shape `(batch_size, num_heads, sequence_length, embed_size_per_head)`) and 2 additional tensors of
+  shape `(batch_size, num_heads, encoder_sequence_length, embed_size_per_head)`.
+
+  Contains pre-computed hidden-states (key and values in the self-attention blocks and in the cross-attention
+  blocks) that can be used (see `past_key_values` input) to speed up sequential decoding.
+- **decoder_hidden_states** (`tuple(jnp.ndarray)`, _optional_, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) --
+  Tuple of `jnp.ndarray` (one for the output of the embeddings + one for the output of each layer) of
+  shape `(batch_size, sequence_length, hidden_size)`.
+
+  Hidden-states of the decoder at the output of each layer plus the initial embedding outputs.
+- **decoder_attentions** (`tuple(jnp.ndarray)`, _optional_, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) --
+  Tuple of `jnp.ndarray` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+
+  Attentions weights of the decoder, after the attention softmax, used to compute the weighted average in the
+  self-attention heads.
+- **cross_attentions** (`tuple(jnp.ndarray)`, _optional_, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) --
+  Tuple of `jnp.ndarray` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+
+  Attentions weights of the decoder's cross-attention layer, after the attention softmax, used to compute the
+  weighted average in the cross-attention heads.
+- **encoder_last_hidden_state** (`jnp.ndarray` of shape `(batch_size, sequence_length, hidden_size)`, _optional_) --
+  Sequence of hidden-states at the output of the last layer of the encoder of the model.
+- **encoder_hidden_states** (`tuple(jnp.ndarray)`, _optional_, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) --
+  Tuple of `jnp.ndarray` (one for the output of the embeddings + one for the output of each layer) of
+  shape `(batch_size, sequence_length, hidden_size)`.
+
+  Hidden-states of the encoder at the output of each layer plus the initial embedding outputs.
+- **encoder_attentions** (`tuple(jnp.ndarray)`, _optional_, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) --
+  Tuple of `jnp.ndarray` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+
+  Attentions weights of the encoder, after the attention softmax, used to compute the weighted average in the
+  self-attention heads.
+
+
+> **replace**(self, **updates)
+
+"Returns a new object replacing the specified fields with new values.
+
+## FlaxNextSentencePredictorOutput
+
+<a id='transformers.modeling_flax_outputs.FlaxNextSentencePredictorOutput'></a>
+> **class transformers.modeling\_flax\_outputs.FlaxNextSentencePredictorOutput**(logits: ndarray = None, hidden_states: typing.Optional[typing.Tuple[jax._src.numpy.lax_numpy.ndarray]] = None, attentions: typing.Optional[typing.Tuple[jax._src.numpy.lax_numpy.ndarray]] = None)
+
+
+Base class for outputs of models predicting if two sentences are consecutive or not.
+
+> Parameters
+
+- **logits** (`jnp.ndarray` of shape `(batch_size, 2)`) --
+  Prediction scores of the next sequence prediction (classification) head (scores of True/False continuation
+  before SoftMax).
+- **hidden_states** (`tuple(jnp.ndarray)`, _optional_, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) --
+  Tuple of `jnp.ndarray` (one for the output of the embeddings + one for the output of each layer) of
+  shape `(batch_size, sequence_length, hidden_size)`.
+
+  Hidden-states of the model at the output of each layer plus the initial embedding outputs.
+- **attentions** (`tuple(jnp.ndarray)`, _optional_, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) --
+  Tuple of `jnp.ndarray` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+
+  Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
+  heads.
+
+
+> **replace**(self, **updates)
+
+"Returns a new object replacing the specified fields with new values.
+
+## FlaxSequenceClassifierOutput
+
+<a id='transformers.modeling_flax_outputs.FlaxSequenceClassifierOutput'></a>
+> **class transformers.modeling\_flax\_outputs.FlaxSequenceClassifierOutput**(logits: ndarray = None, hidden_states: typing.Optional[typing.Tuple[jax._src.numpy.lax_numpy.ndarray]] = None, attentions: typing.Optional[typing.Tuple[jax._src.numpy.lax_numpy.ndarray]] = None)
+
+
+Base class for outputs of sentence classification models.
+
+> Parameters
+
+- **logits** (`jnp.ndarray` of shape `(batch_size, config.num_labels)`) --
+  Classification (or regression if config.num_labels==1) scores (before SoftMax).
+- **hidden_states** (`tuple(jnp.ndarray)`, _optional_, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) --
+  Tuple of `jnp.ndarray` (one for the output of the embeddings + one for the output of each layer) of
+  shape `(batch_size, sequence_length, hidden_size)`.
+
+  Hidden-states of the model at the output of each layer plus the initial embedding outputs.
+- **attentions** (`tuple(jnp.ndarray)`, _optional_, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) --
+  Tuple of `jnp.ndarray` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+
+  Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
+  heads.
+
+
+> **replace**(self, **updates)
+
+"Returns a new object replacing the specified fields with new values.
+
+## FlaxSeq2SeqSequenceClassifierOutput
+
+<a id='transformers.modeling_flax_outputs.FlaxSeq2SeqSequenceClassifierOutput'></a>
+> **class transformers.modeling\_flax\_outputs.FlaxSeq2SeqSequenceClassifierOutput**(logits: ndarray = None, past_key_values: typing.Optional[typing.Tuple[typing.Tuple[jax._src.numpy.lax_numpy.ndarray]]] = None, decoder_hidden_states: typing.Optional[typing.Tuple[jax._src.numpy.lax_numpy.ndarray]] = None, decoder_attentions: typing.Optional[typing.Tuple[jax._src.numpy.lax_numpy.ndarray]] = None, cross_attentions: typing.Optional[typing.Tuple[jax._src.numpy.lax_numpy.ndarray]] = None, encoder_last_hidden_state: typing.Optional[jax._src.numpy.lax_numpy.ndarray] = None, encoder_hidden_states: typing.Optional[typing.Tuple[jax._src.numpy.lax_numpy.ndarray]] = None, encoder_attentions: typing.Optional[typing.Tuple[jax._src.numpy.lax_numpy.ndarray]] = None)
+
+
+Base class for outputs of sequence-to-sequence sentence classification models.
+
+> Parameters
+
+- **logits** (`jnp.ndarray` of shape `(batch_size, config.num_labels)`) --
+  Classification (or regression if config.num_labels==1) scores (before SoftMax).
+- **past_key_values** (`tuple(tuple(jnp.ndarray))`, _optional_, returned when `use_cache=True` is passed or when `config.use_cache=True`) --
+  Tuple of `tuple(jnp.ndarray)` of length `config.n_layers`, with each tuple having 2 tensors of
+  shape `(batch_size, num_heads, sequence_length, embed_size_per_head)`) and 2 additional tensors of
+  shape `(batch_size, num_heads, encoder_sequence_length, embed_size_per_head)`.
+
+  Contains pre-computed hidden-states (key and values in the self-attention blocks and in the cross-attention
+  blocks) that can be used (see `past_key_values` input) to speed up sequential decoding.
+- **decoder_hidden_states** (`tuple(jnp.ndarray)`, _optional_, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) --
+  Tuple of `jnp.ndarray` (one for the output of the embeddings + one for the output of each layer) of
+  shape `(batch_size, sequence_length, hidden_size)`.
+
+  Hidden-states of the decoder at the output of each layer plus the initial embedding outputs.
+- **decoder_attentions** (`tuple(jnp.ndarray)`, _optional_, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) --
+  Tuple of `jnp.ndarray` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+
+  Attentions weights of the decoder, after the attention softmax, used to compute the weighted average in the
+  self-attention heads.
+- **cross_attentions** (`tuple(jnp.ndarray)`, _optional_, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) --
+  Tuple of `jnp.ndarray` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+
+  Attentions weights of the decoder's cross-attention layer, after the attention softmax, used to compute the
+  weighted average in the cross-attention heads.
+- **encoder_last_hidden_state** (`jnp.ndarray` of shape `(batch_size, sequence_length, hidden_size)`, _optional_) --
+  Sequence of hidden-states at the output of the last layer of the encoder of the model.
+- **encoder_hidden_states** (`tuple(jnp.ndarray)`, _optional_, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) --
+  Tuple of `jnp.ndarray` (one for the output of the embeddings + one for the output of each layer) of
+  shape `(batch_size, sequence_length, hidden_size)`.
+
+  Hidden-states of the encoder at the output of each layer plus the initial embedding outputs.
+- **encoder_attentions** (`tuple(jnp.ndarray)`, _optional_, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) --
+  Tuple of `jnp.ndarray` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+
+  Attentions weights of the encoder, after the attention softmax, used to compute the weighted average in the
+  self-attention heads.
+
+
+> **replace**(self, **updates)
+
+"Returns a new object replacing the specified fields with new values.
+
+## FlaxMultipleChoiceModelOutput
+
+<a id='transformers.modeling_flax_outputs.FlaxMultipleChoiceModelOutput'></a>
+> **class transformers.modeling\_flax\_outputs.FlaxMultipleChoiceModelOutput**(logits: ndarray = None, hidden_states: typing.Optional[typing.Tuple[jax._src.numpy.lax_numpy.ndarray]] = None, attentions: typing.Optional[typing.Tuple[jax._src.numpy.lax_numpy.ndarray]] = None)
+
+
+Base class for outputs of multiple choice models.
+
+> Parameters
+
+- **logits** (`jnp.ndarray` of shape `(batch_size, num_choices)`) --
+  _num_choices_ is the second dimension of the input tensors. (see _input_ids_ above).
+
+  Classification scores (before SoftMax).
+- **hidden_states** (`tuple(jnp.ndarray)`, _optional_, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) --
+  Tuple of `jnp.ndarray` (one for the output of the embeddings + one for the output of each layer) of
+  shape `(batch_size, sequence_length, hidden_size)`.
+
+  Hidden-states of the model at the output of each layer plus the initial embedding outputs.
+- **attentions** (`tuple(jnp.ndarray)`, _optional_, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) --
+  Tuple of `jnp.ndarray` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+
+  Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
+  heads.
+
+
+> **replace**(self, **updates)
+
+"Returns a new object replacing the specified fields with new values.
+
+## FlaxTokenClassifierOutput
+
+<a id='transformers.modeling_flax_outputs.FlaxTokenClassifierOutput'></a>
+> **class transformers.modeling\_flax\_outputs.FlaxTokenClassifierOutput**(logits: ndarray = None, hidden_states: typing.Optional[typing.Tuple[jax._src.numpy.lax_numpy.ndarray]] = None, attentions: typing.Optional[typing.Tuple[jax._src.numpy.lax_numpy.ndarray]] = None)
+
+
+Base class for outputs of token classification models.
+
+> Parameters
+
+- **logits** (`jnp.ndarray` of shape `(batch_size, sequence_length, config.num_labels)`) --
+  Classification scores (before SoftMax).
+- **hidden_states** (`tuple(jnp.ndarray)`, _optional_, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) --
+  Tuple of `jnp.ndarray` (one for the output of the embeddings + one for the output of each layer) of
+  shape `(batch_size, sequence_length, hidden_size)`.
+
+  Hidden-states of the model at the output of each layer plus the initial embedding outputs.
+- **attentions** (`tuple(jnp.ndarray)`, _optional_, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) --
+  Tuple of `jnp.ndarray` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+
+  Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
+  heads.
+
+
+> **replace**(self, **updates)
+
+"Returns a new object replacing the specified fields with new values.
+
+## FlaxQuestionAnsweringModelOutput
+
+<a id='transformers.modeling_flax_outputs.FlaxQuestionAnsweringModelOutput'></a>
+> **class transformers.modeling\_flax\_outputs.FlaxQuestionAnsweringModelOutput**(start_logits: ndarray = None, end_logits: ndarray = None, hidden_states: typing.Optional[typing.Tuple[jax._src.numpy.lax_numpy.ndarray]] = None, attentions: typing.Optional[typing.Tuple[jax._src.numpy.lax_numpy.ndarray]] = None)
+
+
+Base class for outputs of question answering models.
+
+> Parameters
+
+- **start_logits** (`jnp.ndarray` of shape `(batch_size, sequence_length)`) --
+  Span-start scores (before SoftMax).
+- **end_logits** (`jnp.ndarray` of shape `(batch_size, sequence_length)`) --
+  Span-end scores (before SoftMax).
+- **hidden_states** (`tuple(jnp.ndarray)`, _optional_, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) --
+  Tuple of `jnp.ndarray` (one for the output of the embeddings + one for the output of each layer) of
+  shape `(batch_size, sequence_length, hidden_size)`.
+
+  Hidden-states of the model at the output of each layer plus the initial embedding outputs.
+- **attentions** (`tuple(jnp.ndarray)`, _optional_, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) --
+  Tuple of `jnp.ndarray` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+
+  Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
+  heads.
+
+
+> **replace**(self, **updates)
+
+"Returns a new object replacing the specified fields with new values.
+
+## FlaxSeq2SeqQuestionAnsweringModelOutput
+
+<a id='transformers.modeling_flax_outputs.FlaxSeq2SeqQuestionAnsweringModelOutput'></a>
+> **class transformers.modeling\_flax\_outputs.FlaxSeq2SeqQuestionAnsweringModelOutput**(start_logits: ndarray = None, end_logits: ndarray = None, past_key_values: typing.Optional[typing.Tuple[typing.Tuple[jax._src.numpy.lax_numpy.ndarray]]] = None, decoder_hidden_states: typing.Optional[typing.Tuple[jax._src.numpy.lax_numpy.ndarray]] = None, decoder_attentions: typing.Optional[typing.Tuple[jax._src.numpy.lax_numpy.ndarray]] = None, cross_attentions: typing.Optional[typing.Tuple[jax._src.numpy.lax_numpy.ndarray]] = None, encoder_last_hidden_state: typing.Optional[jax._src.numpy.lax_numpy.ndarray] = None, encoder_hidden_states: typing.Optional[typing.Tuple[jax._src.numpy.lax_numpy.ndarray]] = None, encoder_attentions: typing.Optional[typing.Tuple[jax._src.numpy.lax_numpy.ndarray]] = None)
+
+
+Base class for outputs of sequence-to-sequence question answering models.
+
+> Parameters
+
+- **start_logits** (`jnp.ndarray` of shape `(batch_size, sequence_length)`) --
+  Span-start scores (before SoftMax).
+- **end_logits** (`jnp.ndarray` of shape `(batch_size, sequence_length)`) --
+  Span-end scores (before SoftMax).
+- **past_key_values** (`tuple(tuple(jnp.ndarray))`, _optional_, returned when `use_cache=True` is passed or when `config.use_cache=True`) --
+  Tuple of `tuple(jnp.ndarray)` of length `config.n_layers`, with each tuple having 2 tensors of
+  shape `(batch_size, num_heads, sequence_length, embed_size_per_head)`) and 2 additional tensors of
+  shape `(batch_size, num_heads, encoder_sequence_length, embed_size_per_head)`.
+
+  Contains pre-computed hidden-states (key and values in the self-attention blocks and in the cross-attention
+  blocks) that can be used (see `past_key_values` input) to speed up sequential decoding.
+- **decoder_hidden_states** (`tuple(jnp.ndarray)`, _optional_, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) --
+  Tuple of `jnp.ndarray` (one for the output of the embeddings + one for the output of each layer) of
+  shape `(batch_size, sequence_length, hidden_size)`.
+
+  Hidden-states of the decoder at the output of each layer plus the initial embedding outputs.
+- **decoder_attentions** (`tuple(jnp.ndarray)`, _optional_, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) --
+  Tuple of `jnp.ndarray` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+
+  Attentions weights of the decoder, after the attention softmax, used to compute the weighted average in the
+  self-attention heads.
+- **cross_attentions** (`tuple(jnp.ndarray)`, _optional_, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) --
+  Tuple of `jnp.ndarray` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+
+  Attentions weights of the decoder's cross-attention layer, after the attention softmax, used to compute the
+  weighted average in the cross-attention heads.
+- **encoder_last_hidden_state** (`jnp.ndarray` of shape `(batch_size, sequence_length, hidden_size)`, _optional_) --
+  Sequence of hidden-states at the output of the last layer of the encoder of the model.
+- **encoder_hidden_states** (`tuple(jnp.ndarray)`, _optional_, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) --
+  Tuple of `jnp.ndarray` (one for the output of the embeddings + one for the output of each layer) of
+  shape `(batch_size, sequence_length, hidden_size)`.
+
+  Hidden-states of the encoder at the output of each layer plus the initial embedding outputs.
+- **encoder_attentions** (`tuple(jnp.ndarray)`, _optional_, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) --
+  Tuple of `jnp.ndarray` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+
+  Attentions weights of the encoder, after the attention softmax, used to compute the weighted average in the
+  self-attention heads.
+
+
+> **replace**(self, **updates)
+
+"Returns a new object replacing the specified fields with new values.

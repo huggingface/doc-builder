@@ -1,0 +1,2222 @@
+<script>
+import Tip from "../../Tip.svelte";
+import Youtube from "../../Youtube.svelte";	
+export let fw: "pt" | "tf"
+</script>
+
+<!--Copyright 2021 The HuggingFace Team. All rights reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
+the License. You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on
+an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
+specific language governing permissions and limitations under the License.
+-->
+
+# RoFormer
+
+## Overview
+
+The RoFormer model was proposed in [RoFormer: Enhanced Transformer with Rotary Position Embedding](https://arxiv.org/pdf/2104.09864v1.pdf) by Jianlin Su and Yu Lu and Shengfeng Pan and Bo Wen and Yunfeng Liu.
+
+The abstract from the paper is the following:
+
+*Position encoding in transformer architecture provides supervision for dependency modeling between elements at
+different positions in the sequence. We investigate various methods to encode positional information in
+transformer-based language models and propose a novel implementation named Rotary Position Embedding(RoPE). The
+proposed RoPE encodes absolute positional information with rotation matrix and naturally incorporates explicit relative
+position dependency in self-attention formulation. Notably, RoPE comes with valuable properties such as flexibility of
+being expand to any sequence lengths, decaying inter-token dependency with increasing relative distances, and
+capability of equipping the linear self-attention with relative position encoding. As a result, the enhanced
+transformer with rotary position embedding, or RoFormer, achieves superior performance in tasks with long texts. We
+release the theoretical analysis along with some preliminary experiment results on Chinese data. The undergoing
+experiment for English benchmark will soon be updated.*
+
+Tips:
+
+- RoFormer is a BERT-like autoencoding model with rotary position embeddings. Rotary position embeddings have shown
+  improved performance on classification tasks with long texts.
+
+
+This model was contributed by [junnyu](https://huggingface.co/junnyu). The original code can be found [here](https://github.com/ZhuiyiTechnology/roformer).
+
+## RoFormerConfig
+
+<a id='transformers.RoFormerConfig'></a>
+> **class transformers.RoFormerConfig**(vocab_size = 50000, embedding_size = None, hidden_size = 768, num_hidden_layers = 12, num_attention_heads = 12, intermediate_size = 3072, hidden_act = gelu, hidden_dropout_prob = 0.1, attention_probs_dropout_prob = 0.1, max_position_embeddings = 1536, type_vocab_size = 2, initializer_range = 0.02, layer_norm_eps = 1e-12, pad_token_id = 0, gradient_checkpointing = False, rotary_value = False, use_cache = True, **kwargs)
+
+
+This is the configuration class to store the configuration of a [RoFormerModel](model_doc/roformer.html#transformers.RoFormerModel). It is used to
+instantiate an RoFormer model according to the specified arguments, defining the model architecture. Instantiating
+a configuration with the defaults will yield a similar configuration to that of the RoFormer
+[junnyu/roformer_chinese_base](https://huggingface.co/junnyu/roformer_chinese_base) architecture.
+
+Configuration objects inherit from [PretrainedConfig](main_classes/configuration.html#transformers.PretrainedConfig) and can be used to control the model
+outputs. Read the documentation from [PretrainedConfig](main_classes/configuration.html#transformers.PretrainedConfig) for more information.
+
+
+> Parameters
+
+- **vocab_size** (`int`, _optional_, defaults to 50000) --
+  Vocabulary size of the RoFormer model. Defines the number of different tokens that can be represented by
+  the `inputs_ids` passed when calling [RoFormerModel](model_doc/roformer.html#transformers.RoFormerModel) or
+  [TFRoFormerModel](model_doc/roformer.html#transformers.TFRoFormerModel).
+- **embedding_size** (`int`, _optional_, defaults to None) --
+  Dimensionality of the encoder layers and the pooler layer. Defaults to the `hidden_size` if not
+  provided.
+- **hidden_size** (`int`, _optional_, defaults to 768) --
+  Dimension of the encoder layers and the pooler layer.
+- **num_hidden_layers** (`int`, _optional_, defaults to 12) --
+  Number of hidden layers in the Transformer encoder.
+- **num_attention_heads** (`int`, _optional_, defaults to 12) --
+  Number of attention heads for each attention layer in the Transformer encoder.
+- **intermediate_size** (`int`, _optional_, defaults to 3072) --
+  Dimension of the "intermediate" (i.e., feed-forward) layer in the Transformer encoder.
+- **hidden_act** (`str` or `function`, _optional_, defaults to `"gelu"`) --
+  The non-linear activation function (function or string) in the encoder and pooler. If string,
+  `"gelu"`, `"relu"`, `"selu"` and `"gelu_new"` are supported.
+- **hidden_dropout_prob** (`float`, _optional_, defaults to 0.1) --
+  The dropout probabilitiy for all fully connected layers in the embeddings, encoder, and pooler.
+- **attention_probs_dropout_prob** (`float`, _optional_, defaults to 0.1) --
+  The dropout ratio for the attention probabilities.
+- **max_position_embeddings** (`int`, _optional_, defaults to 1536) --
+  The maximum sequence length that this model might ever be used with. Typically set this to something large
+  just in case (e.g., 512 or 1024 or 1536).
+- **type_vocab_size** (`int`, _optional_, defaults to 2) --
+  The vocabulary size of the `token_type_ids` passed when calling [RoFormerModel](model_doc/roformer.html#transformers.RoFormerModel)
+  or [TFRoFormerModel](model_doc/roformer.html#transformers.TFRoFormerModel).
+- **initializer_range** (`float`, _optional_, defaults to 0.02) --
+  The standard deviation of the truncated_normal_initializer for initializing all weight matrices.
+- **layer_norm_eps** (`float`, _optional_, defaults to 1e-12) --
+  The epsilon used by the layer normalization layers.
+- **use_cache** (`bool`, _optional_, defaults to `True`) --
+  Whether or not the model should return the last key/values attentions (not used by all models). Only
+  relevant if `config.is_decoder=True`.
+- **rotary_value** (`bool`, _optional_, defaults to `False`) --
+  Whether or not apply rotary position embeddings on value layer.
+- **gradient_checkpointing** (`bool`, _optional_, defaults to `False`) --
+  If `True`, use gradient checkpointing to save memory at the expense of slower backward pass.
+
+> Example:
+
+```python
+>>> from transformers import RoFormerModel, RoFormerConfig
+
+>>> # Initializing a RoFormer junnyu/roformer_chinese_base style configuration
+>>> configuration = RoFormerConfig()
+
+>>> # Initializing a model from the junnyu/roformer_chinese_base style configuration
+>>> model = RoFormerModel(configuration)
+
+>>> # Accessing the model configuration
+>>> configuration = model.config
+```
+
+
+## RoFormerTokenizer
+
+<a id='transformers.RoFormerTokenizer'></a>
+> **class transformers.RoFormerTokenizer**(vocab_file, do_lower_case = True, do_basic_tokenize = True, never_split = None, unk_token = [UNK], sep_token = [SEP], pad_token = [PAD], cls_token = [CLS], mask_token = [MASK], tokenize_chinese_chars = True, strip_accents = None, **kwargs)
+
+
+Construct a RoFormer tokenizer. Based on _Rust Jieba <https://pypi.org/project/rjieba/>_.
+
+This tokenizer inherits from [PreTrainedTokenizer](main_classes/tokenizer.html#transformers.PreTrainedTokenizer) which contains most of the main methods.
+Users should refer to this superclass for more information regarding those methods.
+
+> Parameters
+
+- **vocab_file** (`str`) --
+  File containing the vocabulary.
+- **do_lower_case** (`bool`, _optional_, defaults to `True`) --
+  Whether or not to lowercase the input when tokenizing.
+- **do_basic_tokenize** (`bool`, _optional_, defaults to `True`) --
+  Whether or not to do basic tokenization before WordPiece.
+- **never_split** (`Iterable`, _optional_) --
+  Collection of tokens which will never be split during tokenization. Only has an effect when
+  `do_basic_tokenize=True`
+- **unk_token** (`str`, _optional_, defaults to `"[UNK]"`) --
+  The unknown token. A token that is not in the vocabulary cannot be converted to an ID and is set to be this
+  token instead.
+- **sep_token** (`str`, _optional_, defaults to `"[SEP]"`) --
+  The separator token, which is used when building a sequence from multiple sequences, e.g. two sequences for
+  sequence classification or for a text and a question for question answering. It is also used as the last
+  token of a sequence built with special tokens.
+- **pad_token** (`str`, _optional_, defaults to `"[PAD]"`) --
+  The token used for padding, for example when batching sequences of different lengths.
+- **cls_token** (`str`, _optional_, defaults to `"[CLS]"`) --
+  The classifier token which is used when doing sequence classification (classification of the whole sequence
+  instead of per-token classification). It is the first token of the sequence when built with special tokens.
+- **mask_token** (`str`, _optional_, defaults to `"[MASK]"`) --
+  The token used for masking values. This is the token used when training this model with masked language
+  modeling. This is the token which the model will try to predict.
+- **tokenize_chinese_chars** (`bool`, _optional_, defaults to `True`) --
+  Whether or not to tokenize Chinese characters.
+
+  This should likely be deactivated for Japanese (see this [issue](https://github.com/huggingface/transformers/issues/328)).
+  strip_accents -- (`bool`, _optional_):
+  Whether or not to strip all accents. If this option is not specified, then it will be determined by the
+  value for `lowercase` (as in the original BERT).
+
+> Example:
+
+```python
+>>> from transformers import RoFormerTokenizer
+>>> tokenizer = RoFormerTokenizer.from_pretrained('junnyu/roformer_chinese_base')
+>>> tokenizer.tokenize("今天天气非常好。")
+# ['今', '天', '天', '气', '非常', '好', '。']
+```
+
+
+<a id='transformers.RoFormerTokenizer.build_inputs_with_special_tokens'></a>
+> **build\_inputs\_with\_special\_tokens**(self, token_ids_0: typing.List[int], token_ids_1: typing.Optional[typing.List[int]] = None)
+
+
+Build model inputs from a sequence or a pair of sequence for sequence classification tasks by concatenating and
+adding special tokens. A RoFormer sequence has the following format:
+
+- single sequence: `[CLS] X [SEP]`
+- pair of sequences: `[CLS] A [SEP] B [SEP]`
+
+> Parameters
+
+- **token_ids_0** (`List[int]`) --
+  List of IDs to which the special tokens will be added.
+- **token_ids_1** (`List[int]`, _optional_) --
+  Optional second list of IDs for sequence pairs.
+
+> Returns
+
+List of [input IDs](../glossary.html#input-ids) with the appropriate special tokens.
+
+> Return type
+
+`List[int]`
+
+
+<a id='transformers.RoFormerTokenizer.get_special_tokens_mask'></a>
+> **get\_special\_tokens\_mask**(self, token_ids_0: typing.List[int], token_ids_1: typing.Optional[typing.List[int]] = None, already_has_special_tokens: bool = False)
+
+
+Retrieve sequence ids from a token list that has no special tokens added. This method is called when adding
+special tokens using the tokenizer `prepare_for_model` method.
+
+> Parameters
+
+- **token_ids_0** (`List[int]`) --
+  List of IDs.
+- **token_ids_1** (`List[int]`, _optional_) --
+  Optional second list of IDs for sequence pairs.
+- **already_has_special_tokens** (`bool`, _optional_, defaults to `False`) --
+  Whether or not the token list is already formatted with special tokens for the model.
+
+> Returns
+
+A list of integers in the range [0, 1]: 1 for a special token, 0 for a sequence token.
+
+> Return type
+
+`List[int]`
+
+
+<a id='transformers.RoFormerTokenizer.create_token_type_ids_from_sequences'></a>
+> **create\_token\_type\_ids\_from\_sequences**(self, token_ids_0: typing.List[int], token_ids_1: typing.Optional[typing.List[int]] = None)
+
+
+Create a mask from the two sequences passed to be used in a sequence-pair classification task. A RoFormer
+sequence pair mask has the following format:
+
+
+0 0 0 0 0 0 0 0 0 0 0 1 1 1 1 1 1 1 1 1
+| first sequence    | second sequence |
+
+If `token_ids_1` is `None`, this method only returns the first portion of the mask (0s).
+
+> Parameters
+
+- **token_ids_0** (`List[int]`) --
+  List of IDs.
+- **token_ids_1** (`List[int]`, _optional_) --
+  Optional second list of IDs for sequence pairs.
+
+> Returns
+
+List of [token type IDs](../glossary.html#token-type-ids) according to the given
+sequence(s).
+
+> Return type
+
+`List[int]`
+
+
+<a id='transformers.RoFormerTokenizer.save_vocabulary'></a>
+> **save\_vocabulary**(self, save_directory: str, filename_prefix: typing.Optional[str] = None)
+
+## RoFormerTokenizerFast
+
+<a id='transformers.RoFormerTokenizerFast'></a>
+> **class transformers.RoFormerTokenizerFast**(vocab_file = None, tokenizer_file = None, do_lower_case = True, unk_token = [UNK], sep_token = [SEP], pad_token = [PAD], cls_token = [CLS], mask_token = [MASK], tokenize_chinese_chars = True, strip_accents = None, **kwargs)
+
+
+Construct a "fast" RoFormer tokenizer (backed by HuggingFace's _tokenizers_ library).
+
+[RoFormerTokenizerFast](model_doc/roformer.html#transformers.RoFormerTokenizerFast) is almost identical to [BertTokenizerFast](model_doc/bert.html#transformers.BertTokenizerFast) and
+runs end-to-end tokenization: punctuation splitting and wordpiece. There are some difference between them when
+tokenizing Chinese.
+
+This tokenizer inherits from [PreTrainedTokenizerFast](main_classes/tokenizer.html#transformers.PreTrainedTokenizerFast) which contains most of the main
+methods. Users should refer to this superclass for more information regarding those methods.
+
+> Example:
+
+```python
+>>> from transformers import RoFormerTokenizerFast
+>>> tokenizer = RoFormerTokenizerFast.from_pretrained('junnyu/roformer_chinese_base')
+>>> tokenizer.tokenize("今天天气非常好。")
+# ['今', '天', '天', '气', '非常', '好', '。']
+```
+
+
+<a id='transformers.RoFormerTokenizerFast.build_inputs_with_special_tokens'></a>
+> **build\_inputs\_with\_special\_tokens**(self, token_ids_0, token_ids_1 = None)
+
+
+Build model inputs from a sequence or a pair of sequence for sequence classification tasks by concatenating and
+adding special tokens. A RoFormer sequence has the following format:
+
+- single sequence: `[CLS] X [SEP]`
+- pair of sequences: `[CLS] A [SEP] B [SEP]`
+
+> Parameters
+
+- **token_ids_0** (`List[int]`) --
+  List of IDs to which the special tokens will be added.
+- **token_ids_1** (`List[int]`, _optional_) --
+  Optional second list of IDs for sequence pairs.
+
+> Returns
+
+List of [input IDs](../glossary.html#input-ids) with the appropriate special tokens.
+
+> Return type
+
+`List[int]`
+
+
+## RoFormerModel
+
+<a id='transformers.RoFormerModel'></a>
+> **class transformers.RoFormerModel**(config)
+
+The bare RoFormer Model transformer outputting raw hidden-states without any specific head on top.
+This model is a PyTorch [torch.nn.Module](https://pytorch.org/docs/stable/nn.html#torch.nn.Module) sub-class. Use
+it as a regular PyTorch Module and refer to the PyTorch documentation for all matter related to general usage and
+behavior.
+
+> Parameters
+
+- **config** ([RoFormerConfig](model_doc/roformer.html#transformers.RoFormerConfig)) -- Model configuration class with all the parameters of the model.
+  Initializing with a config file does not load the weights associated with the model, only the
+  configuration. Check out the [from_pretrained()](main_classes/model.html#transformers.PreTrainedModel.from_pretrained) method to load the model
+  weights.
+
+
+  The model can behave as an encoder (with only self-attention) as well as a decoder, in which case a layer of
+  cross-attention is added between the self-attention layers, following the architecture described in [Attention is
+  all you need](https://arxiv.org/abs/1706.03762) by Ashish Vaswani, Noam Shazeer, Niki Parmar, Jakob Uszkoreit,
+  Llion Jones, Aidan N. Gomez, Lukasz Kaiser and Illia Polosukhin.
+
+  To behave as an decoder the model needs to be initialized with the `is_decoder` argument of the configuration
+  set to `True`. To be used in a Seq2Seq model, the model needs to initialized with both `is_decoder`
+  argument and `add_cross_attention` set to `True`; an `encoder_hidden_states` is then expected as an
+  input to the forward pass.
+
+
+<a id='transformers.RoFormerModel.forward'></a>
+> **forward**(self, input_ids = None, attention_mask = None, token_type_ids = None, head_mask = None, inputs_embeds = None, encoder_hidden_states = None, encoder_attention_mask = None, past_key_values = None, use_cache = None, output_attentions = None, output_hidden_states = None, return_dict = None)
+
+The [RoFormerModel](model_doc/roformer.html#transformers.RoFormerModel) forward method, overrides the `__call__` special method.
+
+<Tip>
+
+Although the recipe for forward pass needs to be defined within this function, one should call the
+`Module` instance afterwards instead of this since the former takes care of running the pre and post
+processing steps while the latter silently ignores them.
+
+</Tip>
+
+> Parameters
+
+- **input_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`) --
+  Indices of input sequence tokens in the vocabulary.
+
+  Indices can be obtained using [transformers.RoFormerTokenizer](model_doc/roformer.html#transformers.RoFormerTokenizer). See
+  [transformers.PreTrainedTokenizer.encode()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
+  details.
+
+  [What are input IDs?](../glossary.html#input-ids)
+- **attention_mask** (`torch.FloatTensor` of shape `(batch_size, sequence_length)`, _optional_) --
+  Mask to avoid performing attention on padding token indices. Mask values selected in `[0, 1]`:
+
+  - 1 for tokens that are **not masked**,
+  - 0 for tokens that are **masked**.
+
+  [What are attention masks?](../glossary.html#attention-mask)
+- **token_type_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`, _optional_) --
+  Segment token indices to indicate first and second portions of the inputs. Indices are selected in `[0, 1]`:
+
+  - 0 corresponds to a _sentence A_ token,
+  - 1 corresponds to a _sentence B_ token.
+
+  [What are token type IDs?](../glossary.html#token-type-ids)
+- **head_mask** (`torch.FloatTensor` of shape `(num_heads,)` or `(num_layers, num_heads)`, _optional_) --
+  Mask to nullify selected heads of the self-attention modules. Mask values selected in `[0, 1]`:
+
+  - 1 indicates the head is **not masked**,
+  - 0 indicates the head is **masked**.
+
+- **inputs_embeds** (`torch.FloatTensor` of shape `(batch_size, sequence_length, hidden_size)`, _optional_) --
+  Optionally, instead of passing `input_ids` you can choose to directly pass an embedded representation.
+  This is useful if you want more control over how to convert _input_ids_ indices into associated vectors
+  than the model's internal embedding lookup matrix.
+- **output_attentions** (`bool`, _optional_) --
+  Whether or not to return the attentions tensors of all attention layers. See `attentions` under returned
+  tensors for more detail.
+- **output_hidden_states** (`bool`, _optional_) --
+  Whether or not to return the hidden states of all layers. See `hidden_states` under returned tensors for
+  more detail.
+- **return_dict** (`bool`, _optional_) --
+  Whether or not to return a [ModelOutput](main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple.
+
+- **encoder_hidden_states**  (`torch.FloatTensor` of shape `(batch_size, sequence_length, hidden_size)`, _optional_) --
+  Sequence of hidden-states at the output of the last layer of the encoder. Used in the cross-attention if
+  the model is configured as a decoder.
+- **encoder_attention_mask** (`torch.FloatTensor` of shape `(batch_size, sequence_length)`, _optional_) --
+  Mask to avoid performing attention on the padding token indices of the encoder input. This mask is used in
+  the cross-attention if the model is configured as a decoder. Mask values selected in `[0, 1]`:
+
+  - 1 for tokens that are **not masked**,
+  - 0 for tokens that are **masked**.
+- **past_key_values** (`tuple(tuple(torch.FloatTensor))` of length `config.n_layers` with each tuple having 4 tensors of shape `(batch_size, num_heads, sequence_length - 1, embed_size_per_head)`) --
+  Contains precomputed key and value hidden states of the attention blocks. Can be used to speed up decoding.
+  If `past_key_values` are used, the user can optionally input only the last `decoder_input_ids`
+  (those that don't have their past key value states given to this model) of shape `(batch_size, 1)`
+  instead of all `decoder_input_ids` of shape `(batch_size, sequence_length)`.
+- **use_cache** (`bool`, _optional_) --
+  If set to `True`, `past_key_values` key value states are returned and can be used to speed up
+  decoding (see `past_key_values`).
+
+> Returns
+
+A [BaseModelOutputWithPastAndCrossAttentions](main_classes/output.html#transformers.modeling_outputs.BaseModelOutputWithPastAndCrossAttentions) or a tuple of
+`torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising
+various elements depending on the configuration ([RoFormerConfig](model_doc/roformer.html#transformers.RoFormerConfig)) and inputs.
+
+- **last_hidden_state** (`torch.FloatTensor` of shape `(batch_size, sequence_length, hidden_size)`) -- Sequence of hidden-states at the output of the last layer of the model.
+
+  If `past_key_values` is used only the last hidden-state of the sequences of shape `(batch_size, 1, hidden_size)` is output.
+- **past_key_values** (`tuple(tuple(torch.FloatTensor))`, _optional_, returned when `use_cache=True` is passed or when `config.use_cache=True`) -- Tuple of `tuple(torch.FloatTensor)` of length `config.n_layers`, with each tuple having 2 tensors
+  of shape `(batch_size, num_heads, sequence_length, embed_size_per_head)`) and optionally if
+  `config.is_encoder_decoder=True` 2 additional tensors of shape `(batch_size, num_heads, encoder_sequence_length, embed_size_per_head)`.
+
+  Contains pre-computed hidden-states (key and values in the self-attention blocks and optionally if
+  `config.is_encoder_decoder=True` in the cross-attention blocks) that can be used (see
+  `past_key_values` input) to speed up sequential decoding.
+- **hidden_states** (`tuple(torch.FloatTensor)`, _optional_, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer)
+  of shape `(batch_size, sequence_length, hidden_size)`.
+
+  Hidden-states of the model at the output of each layer plus the initial embedding outputs.
+- **attentions** (`tuple(torch.FloatTensor)`, _optional_, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+
+  Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
+  heads.
+- **cross_attentions** (`tuple(torch.FloatTensor)`, _optional_, returned when `output_attentions=True` and `config.add_cross_attention=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+
+  Attentions weights of the decoder's cross-attention layer, after the attention softmax, used to compute the
+  weighted average in the cross-attention heads.
+
+> Return type
+
+[BaseModelOutputWithPastAndCrossAttentions](main_classes/output.html#transformers.modeling_outputs.BaseModelOutputWithPastAndCrossAttentions) or `tuple(torch.FloatTensor)`
+
+> Example:
+
+```python
+>>> from transformers import RoFormerTokenizer, RoFormerModel
+>>> import torch
+
+>>> tokenizer = RoFormerTokenizer.from_pretrained('junnyu/roformer_chinese_base')
+>>> model = RoFormerModel.from_pretrained('junnyu/roformer_chinese_base')
+
+>>> inputs = tokenizer("Hello, my dog is cute", return_tensors="pt")
+>>> outputs = model(**inputs)
+
+>>> last_hidden_states = outputs.last_hidden_state
+```
+
+
+## RoFormerForCausalLM
+
+<a id='transformers.RoFormerForCausalLM'></a>
+> **class transformers.RoFormerForCausalLM**(config)
+
+RoFormer Model with a _language modeling_ head on top for CLM fine-tuning. 
+This model is a PyTorch [torch.nn.Module](https://pytorch.org/docs/stable/nn.html#torch.nn.Module) sub-class. Use
+it as a regular PyTorch Module and refer to the PyTorch documentation for all matter related to general usage and
+behavior.
+
+> Parameters
+
+- **config** ([RoFormerConfig](model_doc/roformer.html#transformers.RoFormerConfig)) -- Model configuration class with all the parameters of the model.
+  Initializing with a config file does not load the weights associated with the model, only the
+  configuration. Check out the [from_pretrained()](main_classes/model.html#transformers.PreTrainedModel.from_pretrained) method to load the model
+  weights.
+
+
+<a id='transformers.RoFormerForCausalLM.forward'></a>
+> **forward**(self, input_ids = None, attention_mask = None, token_type_ids = None, inputs_embeds = None, encoder_hidden_states = None, encoder_attention_mask = None, head_mask = None, cross_attn_head_mask = None, past_key_values = None, labels = None, use_cache = None, output_attentions = None, output_hidden_states = None, return_dict = None)
+
+The [RoFormerForCausalLM](model_doc/roformer.html#transformers.RoFormerForCausalLM) forward method, overrides the `__call__` special method.
+
+<Tip>
+
+Although the recipe for forward pass needs to be defined within this function, one should call the
+`Module` instance afterwards instead of this since the former takes care of running the pre and post
+processing steps while the latter silently ignores them.
+
+</Tip>
+
+> Parameters
+
+- **input_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`) --
+  Indices of input sequence tokens in the vocabulary.
+
+  Indices can be obtained using [transformers.RoFormerTokenizer](model_doc/roformer.html#transformers.RoFormerTokenizer). See
+  [transformers.PreTrainedTokenizer.encode()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
+  details.
+
+  [What are input IDs?](../glossary.html#input-ids)
+- **attention_mask** (`torch.FloatTensor` of shape `(batch_size, sequence_length)`, _optional_) --
+  Mask to avoid performing attention on padding token indices. Mask values selected in `[0, 1]`:
+
+  - 1 for tokens that are **not masked**,
+  - 0 for tokens that are **masked**.
+
+  [What are attention masks?](../glossary.html#attention-mask)
+- **token_type_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`, _optional_) --
+  Segment token indices to indicate first and second portions of the inputs. Indices are selected in `[0, 1]`:
+
+  - 0 corresponds to a _sentence A_ token,
+  - 1 corresponds to a _sentence B_ token.
+
+  [What are token type IDs?](../glossary.html#token-type-ids)
+- **head_mask** (`torch.FloatTensor` of shape `(num_heads,)` or `(num_layers, num_heads)`, _optional_) --
+  Mask to nullify selected heads of the self-attention modules. Mask values selected in `[0, 1]`:
+
+  - 1 indicates the head is **not masked**,
+  - 0 indicates the head is **masked**.
+
+- **inputs_embeds** (`torch.FloatTensor` of shape `(batch_size, sequence_length, hidden_size)`, _optional_) --
+  Optionally, instead of passing `input_ids` you can choose to directly pass an embedded representation.
+  This is useful if you want more control over how to convert _input_ids_ indices into associated vectors
+  than the model's internal embedding lookup matrix.
+- **output_attentions** (`bool`, _optional_) --
+  Whether or not to return the attentions tensors of all attention layers. See `attentions` under returned
+  tensors for more detail.
+- **output_hidden_states** (`bool`, _optional_) --
+  Whether or not to return the hidden states of all layers. See `hidden_states` under returned tensors for
+  more detail.
+- **return_dict** (`bool`, _optional_) --
+  Whether or not to return a [ModelOutput](main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple.
+
+- **encoder_hidden_states**  (`torch.FloatTensor` of shape `(batch_size, sequence_length, hidden_size)`, _optional_) --
+  Sequence of hidden-states at the output of the last layer of the encoder. Used in the cross-attention if
+  the model is configured as a decoder.
+- **encoder_attention_mask** (`torch.FloatTensor` of shape `(batch_size, sequence_length)`, _optional_) --
+  Mask to avoid performing attention on the padding token indices of the encoder input. This mask is used in
+  the cross-attention if the model is configured as a decoder. Mask values selected in `[0, 1]`:
+
+  - 1 for tokens that are **not masked**,
+  - 0 for tokens that are **masked**.
+- **past_key_values** (`tuple(tuple(torch.FloatTensor))` of length `config.n_layers` with each tuple having 4 tensors of shape `(batch_size, num_heads, sequence_length - 1, embed_size_per_head)`) --
+  Contains precomputed key and value hidden states of the attention blocks. Can be used to speed up decoding.
+  If `past_key_values` are used, the user can optionally input only the last `decoder_input_ids`
+  (those that don't have their past key value states given to this model) of shape `(batch_size, 1)`
+  instead of all `decoder_input_ids` of shape `(batch_size, sequence_length)`.
+- **labels** (`torch.LongTensor` of shape `(batch_size, sequence_length)`, _optional_) --
+  Labels for computing the left-to-right language modeling loss (next word prediction). Indices should be in
+  `[-100, 0, ..., config.vocab_size]` (see `input_ids` docstring) Tokens with indices set to `-100` are
+  ignored (masked), the loss is only computed for the tokens with labels n `[0, ..., config.vocab_size]`.
+- **use_cache** (`bool`, _optional_) --
+  If set to `True`, `past_key_values` key value states are returned and can be used to speed up
+  decoding (see `past_key_values`).
+
+
+> Returns
+
+A [CausalLMOutputWithCrossAttentions](main_classes/output.html#transformers.modeling_outputs.CausalLMOutputWithCrossAttentions) or a tuple of
+`torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising
+various elements depending on the configuration ([RoFormerConfig](model_doc/roformer.html#transformers.RoFormerConfig)) and inputs.
+
+- **loss** (`torch.FloatTensor` of shape `(1,)`, _optional_, returned when `labels` is provided) -- Language modeling loss (for next-token prediction).
+- **logits** (`torch.FloatTensor` of shape `(batch_size, sequence_length, config.vocab_size)`) -- Prediction scores of the language modeling head (scores for each vocabulary token before SoftMax).
+- **hidden_states** (`tuple(torch.FloatTensor)`, _optional_, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer)
+  of shape `(batch_size, sequence_length, hidden_size)`.
+
+  Hidden-states of the model at the output of each layer plus the initial embedding outputs.
+- **attentions** (`tuple(torch.FloatTensor)`, _optional_, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+
+  Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
+  heads.
+- **cross_attentions** (`tuple(torch.FloatTensor)`, _optional_, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+
+  Cross attentions weights after the attention softmax, used to compute the weighted average in the
+  cross-attention heads.
+- **past_key_values** (`tuple(tuple(torch.FloatTensor))`, _optional_, returned when `use_cache=True` is passed or when `config.use_cache=True`) -- Tuple of `torch.FloatTensor` tuples of length `config.n_layers`, with each tuple containing the
+  cached key, value states of the self-attention and the cross-attention layers if model is used in
+  encoder-decoder setting. Only relevant if `config.is_decoder = True`.
+
+  Contains pre-computed hidden-states (key and values in the attention blocks) that can be used (see
+  `past_key_values` input) to speed up sequential decoding.
+
+
+> Example:
+
+```python
+>>> from transformers import RoFormerTokenizer, RoFormerForCausalLM, RoFormerConfig
+>>> import torch
+
+>>> tokenizer = RoFormerTokenizer.from_pretrained('junnyu/roformer_chinese_base')
+>>> config = RoFormerConfig.from_pretrained("junnyu/roformer_chinese_base")
+>>> config.is_decoder = True
+>>> model = RoFormerForCausalLM.from_pretrained('junnyu/roformer_chinese_base', config=config)
+
+>>> inputs = tokenizer("今天天气非常好。", return_tensors="pt")
+>>> outputs = model(**inputs)
+
+>>> prediction_logits = outputs.logits
+```
+
+> Return type
+
+[CausalLMOutputWithCrossAttentions](main_classes/output.html#transformers.modeling_outputs.CausalLMOutputWithCrossAttentions) or `tuple(torch.FloatTensor)`
+
+
+## RoFormerForMaskedLM
+
+<a id='transformers.RoFormerForMaskedLM'></a>
+> **class transformers.RoFormerForMaskedLM**(config)
+
+RoFormer Model with a _language modeling_ head on top. 
+This model is a PyTorch [torch.nn.Module](https://pytorch.org/docs/stable/nn.html#torch.nn.Module) sub-class. Use
+it as a regular PyTorch Module and refer to the PyTorch documentation for all matter related to general usage and
+behavior.
+
+> Parameters
+
+- **config** ([RoFormerConfig](model_doc/roformer.html#transformers.RoFormerConfig)) -- Model configuration class with all the parameters of the model.
+  Initializing with a config file does not load the weights associated with the model, only the
+  configuration. Check out the [from_pretrained()](main_classes/model.html#transformers.PreTrainedModel.from_pretrained) method to load the model
+  weights.
+
+
+<a id='transformers.RoFormerForMaskedLM.forward'></a>
+> **forward**(self, input_ids = None, attention_mask = None, token_type_ids = None, head_mask = None, inputs_embeds = None, encoder_hidden_states = None, encoder_attention_mask = None, labels = None, output_attentions = None, output_hidden_states = None, return_dict = None)
+
+The [RoFormerForMaskedLM](model_doc/roformer.html#transformers.RoFormerForMaskedLM) forward method, overrides the `__call__` special method.
+
+<Tip>
+
+Although the recipe for forward pass needs to be defined within this function, one should call the
+`Module` instance afterwards instead of this since the former takes care of running the pre and post
+processing steps while the latter silently ignores them.
+
+</Tip>
+
+> Parameters
+
+- **input_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`) --
+  Indices of input sequence tokens in the vocabulary.
+
+  Indices can be obtained using [transformers.RoFormerTokenizer](model_doc/roformer.html#transformers.RoFormerTokenizer). See
+  [transformers.PreTrainedTokenizer.encode()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
+  details.
+
+  [What are input IDs?](../glossary.html#input-ids)
+- **attention_mask** (`torch.FloatTensor` of shape `(batch_size, sequence_length)`, _optional_) --
+  Mask to avoid performing attention on padding token indices. Mask values selected in `[0, 1]`:
+
+  - 1 for tokens that are **not masked**,
+  - 0 for tokens that are **masked**.
+
+  [What are attention masks?](../glossary.html#attention-mask)
+- **token_type_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`, _optional_) --
+  Segment token indices to indicate first and second portions of the inputs. Indices are selected in `[0, 1]`:
+
+  - 0 corresponds to a _sentence A_ token,
+  - 1 corresponds to a _sentence B_ token.
+
+  [What are token type IDs?](../glossary.html#token-type-ids)
+- **head_mask** (`torch.FloatTensor` of shape `(num_heads,)` or `(num_layers, num_heads)`, _optional_) --
+  Mask to nullify selected heads of the self-attention modules. Mask values selected in `[0, 1]`:
+
+  - 1 indicates the head is **not masked**,
+  - 0 indicates the head is **masked**.
+
+- **inputs_embeds** (`torch.FloatTensor` of shape `(batch_size, sequence_length, hidden_size)`, _optional_) --
+  Optionally, instead of passing `input_ids` you can choose to directly pass an embedded representation.
+  This is useful if you want more control over how to convert _input_ids_ indices into associated vectors
+  than the model's internal embedding lookup matrix.
+- **output_attentions** (`bool`, _optional_) --
+  Whether or not to return the attentions tensors of all attention layers. See `attentions` under returned
+  tensors for more detail.
+- **output_hidden_states** (`bool`, _optional_) --
+  Whether or not to return the hidden states of all layers. See `hidden_states` under returned tensors for
+  more detail.
+- **return_dict** (`bool`, _optional_) --
+  Whether or not to return a [ModelOutput](main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple.
+
+- **labels** (`torch.LongTensor` of shape `(batch_size, sequence_length)`, _optional_) --
+  Labels for computing the masked language modeling loss. Indices should be in `[-100, 0, ..., config.vocab_size]` (see `input_ids` docstring) Tokens with indices set to `-100` are ignored
+  (masked), the loss is only computed for the tokens with labels in `[0, ..., config.vocab_size]`.
+
+> Returns
+
+A [MaskedLMOutput](main_classes/output.html#transformers.modeling_outputs.MaskedLMOutput) or a tuple of
+`torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising
+various elements depending on the configuration ([RoFormerConfig](model_doc/roformer.html#transformers.RoFormerConfig)) and inputs.
+
+- **loss** (`torch.FloatTensor` of shape `(1,)`, _optional_, returned when `labels` is provided) -- Masked language modeling (MLM) loss.
+- **logits** (`torch.FloatTensor` of shape `(batch_size, sequence_length, config.vocab_size)`) -- Prediction scores of the language modeling head (scores for each vocabulary token before SoftMax).
+- **hidden_states** (`tuple(torch.FloatTensor)`, _optional_, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer)
+  of shape `(batch_size, sequence_length, hidden_size)`.
+
+  Hidden-states of the model at the output of each layer plus the initial embedding outputs.
+- **attentions** (`tuple(torch.FloatTensor)`, _optional_, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+
+  Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
+  heads.
+
+> Return type
+
+[MaskedLMOutput](main_classes/output.html#transformers.modeling_outputs.MaskedLMOutput) or `tuple(torch.FloatTensor)`
+
+> Example:
+
+```python
+>>> from transformers import RoFormerTokenizer, RoFormerForMaskedLM
+>>> import torch
+
+>>> tokenizer = RoFormerTokenizer.from_pretrained('junnyu/roformer_chinese_base')
+>>> model = RoFormerForMaskedLM.from_pretrained('junnyu/roformer_chinese_base')
+
+>>> inputs = tokenizer("The capital of France is [MASK].", return_tensors="pt")
+>>> labels = tokenizer("The capital of France is Paris.", return_tensors="pt")["input_ids"]
+
+>>> outputs = model(**inputs, labels=labels)
+>>> loss = outputs.loss
+>>> logits = outputs.logits
+```
+
+
+## RoFormerForSequenceClassification
+
+<a id='transformers.RoFormerForSequenceClassification'></a>
+> **class transformers.RoFormerForSequenceClassification**(config)
+
+
+RoFormer Model transformer with a sequence classification/regression head on top (a linear layer on top of the
+pooled output) e.g. for GLUE tasks.
+
+This model is a PyTorch [torch.nn.Module](https://pytorch.org/docs/stable/nn.html#torch.nn.Module) sub-class. Use
+it as a regular PyTorch Module and refer to the PyTorch documentation for all matter related to general usage and
+behavior.
+
+> Parameters
+
+- **config** ([RoFormerConfig](model_doc/roformer.html#transformers.RoFormerConfig)) -- Model configuration class with all the parameters of the model.
+  Initializing with a config file does not load the weights associated with the model, only the
+  configuration. Check out the [from_pretrained()](main_classes/model.html#transformers.PreTrainedModel.from_pretrained) method to load the model
+  weights.
+
+
+<a id='transformers.RoFormerForSequenceClassification.forward'></a>
+> **forward**(self, input_ids = None, attention_mask = None, token_type_ids = None, head_mask = None, inputs_embeds = None, labels = None, output_attentions = None, output_hidden_states = None, return_dict = None)
+
+The [RoFormerForSequenceClassification](model_doc/roformer.html#transformers.RoFormerForSequenceClassification) forward method, overrides the `__call__` special method.
+
+<Tip>
+
+Although the recipe for forward pass needs to be defined within this function, one should call the
+`Module` instance afterwards instead of this since the former takes care of running the pre and post
+processing steps while the latter silently ignores them.
+
+</Tip>
+
+> Parameters
+
+- **input_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`) --
+  Indices of input sequence tokens in the vocabulary.
+
+  Indices can be obtained using [transformers.RoFormerTokenizer](model_doc/roformer.html#transformers.RoFormerTokenizer). See
+  [transformers.PreTrainedTokenizer.encode()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
+  details.
+
+  [What are input IDs?](../glossary.html#input-ids)
+- **attention_mask** (`torch.FloatTensor` of shape `(batch_size, sequence_length)`, _optional_) --
+  Mask to avoid performing attention on padding token indices. Mask values selected in `[0, 1]`:
+
+  - 1 for tokens that are **not masked**,
+  - 0 for tokens that are **masked**.
+
+  [What are attention masks?](../glossary.html#attention-mask)
+- **token_type_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`, _optional_) --
+  Segment token indices to indicate first and second portions of the inputs. Indices are selected in `[0, 1]`:
+
+  - 0 corresponds to a _sentence A_ token,
+  - 1 corresponds to a _sentence B_ token.
+
+  [What are token type IDs?](../glossary.html#token-type-ids)
+- **head_mask** (`torch.FloatTensor` of shape `(num_heads,)` or `(num_layers, num_heads)`, _optional_) --
+  Mask to nullify selected heads of the self-attention modules. Mask values selected in `[0, 1]`:
+
+  - 1 indicates the head is **not masked**,
+  - 0 indicates the head is **masked**.
+
+- **inputs_embeds** (`torch.FloatTensor` of shape `(batch_size, sequence_length, hidden_size)`, _optional_) --
+  Optionally, instead of passing `input_ids` you can choose to directly pass an embedded representation.
+  This is useful if you want more control over how to convert _input_ids_ indices into associated vectors
+  than the model's internal embedding lookup matrix.
+- **output_attentions** (`bool`, _optional_) --
+  Whether or not to return the attentions tensors of all attention layers. See `attentions` under returned
+  tensors for more detail.
+- **output_hidden_states** (`bool`, _optional_) --
+  Whether or not to return the hidden states of all layers. See `hidden_states` under returned tensors for
+  more detail.
+- **return_dict** (`bool`, _optional_) --
+  Whether or not to return a [ModelOutput](main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple.
+
+- **labels** (`torch.LongTensor` of shape `(batch_size,)`, _optional_) --
+  Labels for computing the sequence classification/regression loss. Indices should be in `[0, ..., config.num_labels - 1]`. If `config.num_labels == 1` a regression loss is computed (Mean-Square loss),
+  If `config.num_labels > 1` a classification loss is computed (Cross-Entropy).
+
+> Returns
+
+A [SequenceClassifierOutput](main_classes/output.html#transformers.modeling_outputs.SequenceClassifierOutput) or a tuple of
+`torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising
+various elements depending on the configuration ([RoFormerConfig](model_doc/roformer.html#transformers.RoFormerConfig)) and inputs.
+
+- **loss** (`torch.FloatTensor` of shape `(1,)`, _optional_, returned when `labels` is provided) -- Classification (or regression if config.num_labels==1) loss.
+- **logits** (`torch.FloatTensor` of shape `(batch_size, config.num_labels)`) -- Classification (or regression if config.num_labels==1) scores (before SoftMax).
+- **hidden_states** (`tuple(torch.FloatTensor)`, _optional_, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer)
+  of shape `(batch_size, sequence_length, hidden_size)`.
+
+  Hidden-states of the model at the output of each layer plus the initial embedding outputs.
+- **attentions** (`tuple(torch.FloatTensor)`, _optional_, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+
+  Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
+  heads.
+
+> Return type
+
+[SequenceClassifierOutput](main_classes/output.html#transformers.modeling_outputs.SequenceClassifierOutput) or `tuple(torch.FloatTensor)`
+
+> Example:
+
+```python
+>>> from transformers import RoFormerTokenizer, RoFormerForSequenceClassification
+>>> import torch
+
+>>> tokenizer = RoFormerTokenizer.from_pretrained('junnyu/roformer_chinese_base')
+>>> model = RoFormerForSequenceClassification.from_pretrained('junnyu/roformer_chinese_base')
+
+>>> inputs = tokenizer("Hello, my dog is cute", return_tensors="pt")
+>>> labels = torch.tensor([1]).unsqueeze(0)  # Batch size 1
+>>> outputs = model(**inputs, labels=labels)
+>>> loss = outputs.loss
+>>> logits = outputs.logits
+```
+
+
+## RoFormerForMultipleChoice
+
+<a id='transformers.RoFormerForMultipleChoice'></a>
+> **class transformers.RoFormerForMultipleChoice**(config)
+
+
+RoFormer Model with a multiple choice classification head on top (a linear layer on top of the pooled output and a
+softmax) e.g. for RocStories/SWAG tasks.
+
+This model is a PyTorch [torch.nn.Module](https://pytorch.org/docs/stable/nn.html#torch.nn.Module) sub-class. Use
+it as a regular PyTorch Module and refer to the PyTorch documentation for all matter related to general usage and
+behavior.
+
+> Parameters
+
+- **config** ([RoFormerConfig](model_doc/roformer.html#transformers.RoFormerConfig)) -- Model configuration class with all the parameters of the model.
+  Initializing with a config file does not load the weights associated with the model, only the
+  configuration. Check out the [from_pretrained()](main_classes/model.html#transformers.PreTrainedModel.from_pretrained) method to load the model
+  weights.
+
+
+<a id='transformers.RoFormerForMultipleChoice.forward'></a>
+> **forward**(self, input_ids = None, attention_mask = None, token_type_ids = None, head_mask = None, inputs_embeds = None, labels = None, output_attentions = None, output_hidden_states = None, return_dict = None)
+
+The [RoFormerForMultipleChoice](model_doc/roformer.html#transformers.RoFormerForMultipleChoice) forward method, overrides the `__call__` special method.
+
+<Tip>
+
+Although the recipe for forward pass needs to be defined within this function, one should call the
+`Module` instance afterwards instead of this since the former takes care of running the pre and post
+processing steps while the latter silently ignores them.
+
+</Tip>
+
+> Parameters
+
+- **input_ids** (`torch.LongTensor` of shape `(batch_size, num_choices, sequence_length)`) --
+  Indices of input sequence tokens in the vocabulary.
+
+  Indices can be obtained using [transformers.RoFormerTokenizer](model_doc/roformer.html#transformers.RoFormerTokenizer). See
+  [transformers.PreTrainedTokenizer.encode()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
+  details.
+
+  [What are input IDs?](../glossary.html#input-ids)
+- **attention_mask** (`torch.FloatTensor` of shape `(batch_size, num_choices, sequence_length)`, _optional_) --
+  Mask to avoid performing attention on padding token indices. Mask values selected in `[0, 1]`:
+
+  - 1 for tokens that are **not masked**,
+  - 0 for tokens that are **masked**.
+
+  [What are attention masks?](../glossary.html#attention-mask)
+- **token_type_ids** (`torch.LongTensor` of shape `(batch_size, num_choices, sequence_length)`, _optional_) --
+  Segment token indices to indicate first and second portions of the inputs. Indices are selected in `[0, 1]`:
+
+  - 0 corresponds to a _sentence A_ token,
+  - 1 corresponds to a _sentence B_ token.
+
+  [What are token type IDs?](../glossary.html#token-type-ids)
+- **head_mask** (`torch.FloatTensor` of shape `(num_heads,)` or `(num_layers, num_heads)`, _optional_) --
+  Mask to nullify selected heads of the self-attention modules. Mask values selected in `[0, 1]`:
+
+  - 1 indicates the head is **not masked**,
+  - 0 indicates the head is **masked**.
+
+- **inputs_embeds** (`torch.FloatTensor` of shape `(batch_size, num_choices, sequence_length, hidden_size)`, _optional_) --
+  Optionally, instead of passing `input_ids` you can choose to directly pass an embedded representation.
+  This is useful if you want more control over how to convert _input_ids_ indices into associated vectors
+  than the model's internal embedding lookup matrix.
+- **output_attentions** (`bool`, _optional_) --
+  Whether or not to return the attentions tensors of all attention layers. See `attentions` under returned
+  tensors for more detail.
+- **output_hidden_states** (`bool`, _optional_) --
+  Whether or not to return the hidden states of all layers. See `hidden_states` under returned tensors for
+  more detail.
+- **return_dict** (`bool`, _optional_) --
+  Whether or not to return a [ModelOutput](main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple.
+
+- **labels** (`torch.LongTensor` of shape `(batch_size,)`, _optional_) --
+  Labels for computing the multiple choice classification loss. Indices should be in `[0, ..., num_choices-1]` where `num_choices` is the size of the second dimension of the input tensors. (See
+  `input_ids` above)
+
+> Returns
+
+A [MultipleChoiceModelOutput](main_classes/output.html#transformers.modeling_outputs.MultipleChoiceModelOutput) or a tuple of
+`torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising
+various elements depending on the configuration ([RoFormerConfig](model_doc/roformer.html#transformers.RoFormerConfig)) and inputs.
+
+- **loss** (`torch.FloatTensor` of shape _(1,)_, _optional_, returned when `labels` is provided) -- Classification loss.
+- **logits** (`torch.FloatTensor` of shape `(batch_size, num_choices)`) -- _num_choices_ is the second dimension of the input tensors. (see _input_ids_ above).
+
+  Classification scores (before SoftMax).
+- **hidden_states** (`tuple(torch.FloatTensor)`, _optional_, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer)
+  of shape `(batch_size, sequence_length, hidden_size)`.
+
+  Hidden-states of the model at the output of each layer plus the initial embedding outputs.
+- **attentions** (`tuple(torch.FloatTensor)`, _optional_, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+
+  Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
+  heads.
+
+> Return type
+
+[MultipleChoiceModelOutput](main_classes/output.html#transformers.modeling_outputs.MultipleChoiceModelOutput) or `tuple(torch.FloatTensor)`
+
+> Example:
+
+```python
+>>> from transformers import RoFormerTokenizer, RoFormerForMultipleChoice
+>>> import torch
+
+>>> tokenizer = RoFormerTokenizer.from_pretrained('junnyu/roformer_chinese_base')
+>>> model = RoFormerForMultipleChoice.from_pretrained('junnyu/roformer_chinese_base')
+
+>>> prompt = "In Italy, pizza served in formal settings, such as at a restaurant, is presented unsliced."
+>>> choice0 = "It is eaten with a fork and a knife."
+>>> choice1 = "It is eaten while held in the hand."
+>>> labels = torch.tensor(0).unsqueeze(0)  # choice0 is correct (according to Wikipedia ;)), batch size 1
+
+>>> encoding = tokenizer([prompt, prompt], [choice0, choice1], return_tensors='pt', padding=True)
+>>> outputs = model(**{k: v.unsqueeze(0) for k,v in encoding.items()}, labels=labels)  # batch size is 1
+
+>>> # the linear classifier still needs to be trained
+>>> loss = outputs.loss
+>>> logits = outputs.logits
+```
+
+
+## RoFormerForTokenClassification
+
+<a id='transformers.RoFormerForTokenClassification'></a>
+> **class transformers.RoFormerForTokenClassification**(config)
+
+
+RoFormer Model with a token classification head on top (a linear layer on top of the hidden-states output) e.g. for
+Named-Entity-Recognition (NER) tasks.
+
+This model is a PyTorch [torch.nn.Module](https://pytorch.org/docs/stable/nn.html#torch.nn.Module) sub-class. Use
+it as a regular PyTorch Module and refer to the PyTorch documentation for all matter related to general usage and
+behavior.
+
+> Parameters
+
+- **config** ([RoFormerConfig](model_doc/roformer.html#transformers.RoFormerConfig)) -- Model configuration class with all the parameters of the model.
+  Initializing with a config file does not load the weights associated with the model, only the
+  configuration. Check out the [from_pretrained()](main_classes/model.html#transformers.PreTrainedModel.from_pretrained) method to load the model
+  weights.
+
+
+<a id='transformers.RoFormerForTokenClassification.forward'></a>
+> **forward**(self, input_ids = None, attention_mask = None, token_type_ids = None, head_mask = None, inputs_embeds = None, labels = None, output_attentions = None, output_hidden_states = None, return_dict = None)
+
+The [RoFormerForTokenClassification](model_doc/roformer.html#transformers.RoFormerForTokenClassification) forward method, overrides the `__call__` special method.
+
+<Tip>
+
+Although the recipe for forward pass needs to be defined within this function, one should call the
+`Module` instance afterwards instead of this since the former takes care of running the pre and post
+processing steps while the latter silently ignores them.
+
+</Tip>
+
+> Parameters
+
+- **input_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`) --
+  Indices of input sequence tokens in the vocabulary.
+
+  Indices can be obtained using [transformers.RoFormerTokenizer](model_doc/roformer.html#transformers.RoFormerTokenizer). See
+  [transformers.PreTrainedTokenizer.encode()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
+  details.
+
+  [What are input IDs?](../glossary.html#input-ids)
+- **attention_mask** (`torch.FloatTensor` of shape `(batch_size, sequence_length)`, _optional_) --
+  Mask to avoid performing attention on padding token indices. Mask values selected in `[0, 1]`:
+
+  - 1 for tokens that are **not masked**,
+  - 0 for tokens that are **masked**.
+
+  [What are attention masks?](../glossary.html#attention-mask)
+- **token_type_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`, _optional_) --
+  Segment token indices to indicate first and second portions of the inputs. Indices are selected in `[0, 1]`:
+
+  - 0 corresponds to a _sentence A_ token,
+  - 1 corresponds to a _sentence B_ token.
+
+  [What are token type IDs?](../glossary.html#token-type-ids)
+- **head_mask** (`torch.FloatTensor` of shape `(num_heads,)` or `(num_layers, num_heads)`, _optional_) --
+  Mask to nullify selected heads of the self-attention modules. Mask values selected in `[0, 1]`:
+
+  - 1 indicates the head is **not masked**,
+  - 0 indicates the head is **masked**.
+
+- **inputs_embeds** (`torch.FloatTensor` of shape `(batch_size, sequence_length, hidden_size)`, _optional_) --
+  Optionally, instead of passing `input_ids` you can choose to directly pass an embedded representation.
+  This is useful if you want more control over how to convert _input_ids_ indices into associated vectors
+  than the model's internal embedding lookup matrix.
+- **output_attentions** (`bool`, _optional_) --
+  Whether or not to return the attentions tensors of all attention layers. See `attentions` under returned
+  tensors for more detail.
+- **output_hidden_states** (`bool`, _optional_) --
+  Whether or not to return the hidden states of all layers. See `hidden_states` under returned tensors for
+  more detail.
+- **return_dict** (`bool`, _optional_) --
+  Whether or not to return a [ModelOutput](main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple.
+
+- **labels** (`torch.LongTensor` of shape `(batch_size, sequence_length)`, _optional_) --
+  Labels for computing the token classification loss. Indices should be in `[0, ..., config.num_labels - 1]`.
+
+> Returns
+
+A [TokenClassifierOutput](main_classes/output.html#transformers.modeling_outputs.TokenClassifierOutput) or a tuple of
+`torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising
+various elements depending on the configuration ([RoFormerConfig](model_doc/roformer.html#transformers.RoFormerConfig)) and inputs.
+
+- **loss** (`torch.FloatTensor` of shape `(1,)`, _optional_, returned when `labels` is provided)  -- Classification loss.
+- **logits** (`torch.FloatTensor` of shape `(batch_size, sequence_length, config.num_labels)`) -- Classification scores (before SoftMax).
+- **hidden_states** (`tuple(torch.FloatTensor)`, _optional_, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer)
+  of shape `(batch_size, sequence_length, hidden_size)`.
+
+  Hidden-states of the model at the output of each layer plus the initial embedding outputs.
+- **attentions** (`tuple(torch.FloatTensor)`, _optional_, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+
+  Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
+  heads.
+
+> Return type
+
+[TokenClassifierOutput](main_classes/output.html#transformers.modeling_outputs.TokenClassifierOutput) or `tuple(torch.FloatTensor)`
+
+> Example:
+
+```python
+>>> from transformers import RoFormerTokenizer, RoFormerForTokenClassification
+>>> import torch
+
+>>> tokenizer = RoFormerTokenizer.from_pretrained('junnyu/roformer_chinese_base')
+>>> model = RoFormerForTokenClassification.from_pretrained('junnyu/roformer_chinese_base')
+
+>>> inputs = tokenizer("Hello, my dog is cute", return_tensors="pt")
+>>> labels = torch.tensor([1] * inputs["input_ids"].size(1)).unsqueeze(0)  # Batch size 1
+
+>>> outputs = model(**inputs, labels=labels)
+>>> loss = outputs.loss
+>>> logits = outputs.logits
+```
+
+
+## RoFormerForQuestionAnswering
+
+<a id='transformers.RoFormerForQuestionAnswering'></a>
+> **class transformers.RoFormerForQuestionAnswering**(config)
+
+
+RoFormer Model with a span classification head on top for extractive question-answering tasks like SQuAD (a linear
+layers on top of the hidden-states output to compute _span start logits_ and _span end logits_).
+
+This model is a PyTorch [torch.nn.Module](https://pytorch.org/docs/stable/nn.html#torch.nn.Module) sub-class. Use
+it as a regular PyTorch Module and refer to the PyTorch documentation for all matter related to general usage and
+behavior.
+
+> Parameters
+
+- **config** ([RoFormerConfig](model_doc/roformer.html#transformers.RoFormerConfig)) -- Model configuration class with all the parameters of the model.
+  Initializing with a config file does not load the weights associated with the model, only the
+  configuration. Check out the [from_pretrained()](main_classes/model.html#transformers.PreTrainedModel.from_pretrained) method to load the model
+  weights.
+
+
+<a id='transformers.RoFormerForQuestionAnswering.forward'></a>
+> **forward**(self, input_ids = None, attention_mask = None, token_type_ids = None, head_mask = None, inputs_embeds = None, start_positions = None, end_positions = None, output_attentions = None, output_hidden_states = None, return_dict = None)
+
+The [RoFormerForQuestionAnswering](model_doc/roformer.html#transformers.RoFormerForQuestionAnswering) forward method, overrides the `__call__` special method.
+
+<Tip>
+
+Although the recipe for forward pass needs to be defined within this function, one should call the
+`Module` instance afterwards instead of this since the former takes care of running the pre and post
+processing steps while the latter silently ignores them.
+
+</Tip>
+
+> Parameters
+
+- **input_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`) --
+  Indices of input sequence tokens in the vocabulary.
+
+  Indices can be obtained using [transformers.RoFormerTokenizer](model_doc/roformer.html#transformers.RoFormerTokenizer). See
+  [transformers.PreTrainedTokenizer.encode()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
+  details.
+
+  [What are input IDs?](../glossary.html#input-ids)
+- **attention_mask** (`torch.FloatTensor` of shape `(batch_size, sequence_length)`, _optional_) --
+  Mask to avoid performing attention on padding token indices. Mask values selected in `[0, 1]`:
+
+  - 1 for tokens that are **not masked**,
+  - 0 for tokens that are **masked**.
+
+  [What are attention masks?](../glossary.html#attention-mask)
+- **token_type_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`, _optional_) --
+  Segment token indices to indicate first and second portions of the inputs. Indices are selected in `[0, 1]`:
+
+  - 0 corresponds to a _sentence A_ token,
+  - 1 corresponds to a _sentence B_ token.
+
+  [What are token type IDs?](../glossary.html#token-type-ids)
+- **head_mask** (`torch.FloatTensor` of shape `(num_heads,)` or `(num_layers, num_heads)`, _optional_) --
+  Mask to nullify selected heads of the self-attention modules. Mask values selected in `[0, 1]`:
+
+  - 1 indicates the head is **not masked**,
+  - 0 indicates the head is **masked**.
+
+- **inputs_embeds** (`torch.FloatTensor` of shape `(batch_size, sequence_length, hidden_size)`, _optional_) --
+  Optionally, instead of passing `input_ids` you can choose to directly pass an embedded representation.
+  This is useful if you want more control over how to convert _input_ids_ indices into associated vectors
+  than the model's internal embedding lookup matrix.
+- **output_attentions** (`bool`, _optional_) --
+  Whether or not to return the attentions tensors of all attention layers. See `attentions` under returned
+  tensors for more detail.
+- **output_hidden_states** (`bool`, _optional_) --
+  Whether or not to return the hidden states of all layers. See `hidden_states` under returned tensors for
+  more detail.
+- **return_dict** (`bool`, _optional_) --
+  Whether or not to return a [ModelOutput](main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple.
+
+- **start_positions** (`torch.LongTensor` of shape `(batch_size,)`, _optional_) --
+  Labels for position (index) of the start of the labelled span for computing the token classification loss.
+  Positions are clamped to the length of the sequence (`sequence_length`). Position outside of the
+  sequence are not taken into account for computing the loss.
+- **end_positions** (`torch.LongTensor` of shape `(batch_size,)`, _optional_) --
+  Labels for position (index) of the end of the labelled span for computing the token classification loss.
+  Positions are clamped to the length of the sequence (`sequence_length`). Position outside of the
+  sequence are not taken into account for computing the loss.
+
+> Returns
+
+A [QuestionAnsweringModelOutput](main_classes/output.html#transformers.modeling_outputs.QuestionAnsweringModelOutput) or a tuple of
+`torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising
+various elements depending on the configuration ([RoFormerConfig](model_doc/roformer.html#transformers.RoFormerConfig)) and inputs.
+
+- **loss** (`torch.FloatTensor` of shape `(1,)`, _optional_, returned when `labels` is provided) -- Total span extraction loss is the sum of a Cross-Entropy for the start and end positions.
+- **start_logits** (`torch.FloatTensor` of shape `(batch_size, sequence_length)`) -- Span-start scores (before SoftMax).
+- **end_logits** (`torch.FloatTensor` of shape `(batch_size, sequence_length)`) -- Span-end scores (before SoftMax).
+- **hidden_states** (`tuple(torch.FloatTensor)`, _optional_, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer)
+  of shape `(batch_size, sequence_length, hidden_size)`.
+
+  Hidden-states of the model at the output of each layer plus the initial embedding outputs.
+- **attentions** (`tuple(torch.FloatTensor)`, _optional_, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+
+  Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
+  heads.
+
+> Return type
+
+[QuestionAnsweringModelOutput](main_classes/output.html#transformers.modeling_outputs.QuestionAnsweringModelOutput) or `tuple(torch.FloatTensor)`
+
+> Example:
+
+```python
+>>> from transformers import RoFormerTokenizer, RoFormerForQuestionAnswering
+>>> import torch
+
+>>> tokenizer = RoFormerTokenizer.from_pretrained('junnyu/roformer_chinese_base')
+>>> model = RoFormerForQuestionAnswering.from_pretrained('junnyu/roformer_chinese_base')
+
+>>> question, text = "Who was Jim Henson?", "Jim Henson was a nice puppet"
+>>> inputs = tokenizer(question, text, return_tensors='pt')
+>>> start_positions = torch.tensor([1])
+>>> end_positions = torch.tensor([3])
+
+>>> outputs = model(**inputs, start_positions=start_positions, end_positions=end_positions)
+>>> loss = outputs.loss
+>>> start_scores = outputs.start_logits
+>>> end_scores = outputs.end_logits
+```
+
+
+## TFRoFormerModel
+
+<a id='transformers.TFRoFormerModel'></a>
+> **class transformers.TFRoFormerModel**(*args, **kwargs)
+
+The bare RoFormer Model transformer outputing raw hidden-states without any specific head on top.
+
+This model inherits from [TFPreTrainedModel](main_classes/model.html#transformers.TFPreTrainedModel). Check the superclass documentation for the
+generic methods the library implements for all its model (such as downloading or saving, resizing the input
+embeddings, pruning heads etc.)
+
+This model is also a [tf.keras.Model](https://www.tensorflow.org/api_docs/python/tf/keras/Model) subclass. Use
+it as a regular TF 2.0 Keras Model and refer to the TF 2.0 documentation for all matter related to general usage
+and behavior.
+
+<Tip>
+
+TF 2.0 models accepts two formats as inputs:
+
+- having all inputs as keyword arguments (like PyTorch models), or
+- having all inputs as a list, tuple or dict in the first positional arguments.
+
+This second option is useful when using `tf.keras.Model.fit` method which currently requires having all
+the tensors in the first argument of the model call function: `model(inputs)`.
+
+If you choose this second option, there are three possibilities you can use to gather all the input Tensors in
+the first positional argument :
+
+- a single Tensor with `input_ids` only and nothing else: `model(inputs_ids)`
+- a list of varying length with one or several input Tensors IN THE ORDER given in the docstring:
+  `model([input_ids, attention_mask])` or `model([input_ids, attention_mask, token_type_ids])`
+- a dictionary with one or several input Tensors associated to the input names given in the docstring:
+  `model({"input_ids": input_ids, "token_type_ids": token_type_ids})`
+
+</Tip>
+
+> Parameters
+
+- **config** ([RoFormerConfig](model_doc/roformer.html#transformers.RoFormerConfig)) -- Model configuration class with all the parameters of the model.
+  Initializing with a config file does not load the weights associated with the model, only the
+  configuration. Check out the [from_pretrained()](main_classes/model.html#transformers.PreTrainedModel.from_pretrained) method to load the model
+  weights.
+
+
+<a id='transformers.TFRoFormerModel.call'></a>
+> **call**(self, input_ids: typing.Union[typing.List[tensorflow.python.framework.ops.Tensor], typing.List[numpy.ndarray], typing.Dict[str, tensorflow.python.framework.ops.Tensor], typing.Dict[str, numpy.ndarray], numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None, attention_mask: typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None, token_type_ids: typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None, head_mask: typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None, inputs_embeds: typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None, output_attentions: typing.Optional[bool] = None, output_hidden_states: typing.Optional[bool] = None, return_dict: typing.Optional[bool] = None, training: typing.Optional[bool] = False, **kwargs)
+
+The [TFRoFormerModel](model_doc/roformer.html#transformers.TFRoFormerModel) forward method, overrides the `__call__` special method.
+
+<Tip>
+
+Although the recipe for forward pass needs to be defined within this function, one should call the
+`Module` instance afterwards instead of this since the former takes care of running the pre and post
+processing steps while the latter silently ignores them.
+
+</Tip>
+
+> Parameters
+
+- **input_ids** (`np.ndarray`, `tf.Tensor`, `List[tf.Tensor]` ``Dict[str, tf.Tensor]` or `Dict[str, np.ndarray]` and each example must have the shape `(batch_size, sequence_length)`) --
+  Indices of input sequence tokens in the vocabulary.
+
+  Indices can be obtained using [RoFormerTokenizer](model_doc/roformer.html#transformers.RoFormerTokenizer). See
+  [transformers.PreTrainedTokenizer.__call__()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) and [transformers.PreTrainedTokenizer.encode()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) for
+  details.
+
+  [What are input IDs?](../glossary.html#input-ids)
+- **attention_mask** (`np.ndarray` or `tf.Tensor` of shape `(batch_size, sequence_length)`, _optional_) --
+  Mask to avoid performing attention on padding token indices. Mask values selected in `[0, 1]`:
+
+  - 1 for tokens that are **not masked**,
+  - 0 for tokens that are **masked**.
+
+  [What are attention masks?](../glossary.html#attention-mask)
+- **token_type_ids** (`np.ndarray` or `tf.Tensor` of shape `(batch_size, sequence_length)`, _optional_) --
+  Segment token indices to indicate first and second portions of the inputs. Indices are selected in `[0, 1]`:
+
+  - 0 corresponds to a _sentence A_ token,
+  - 1 corresponds to a _sentence B_ token.
+
+  [What are token type IDs?](../glossary.html#token-type-ids)
+- **head_mask** (`np.ndarray` or `tf.Tensor` of shape `(num_heads,)` or `(num_layers, num_heads)`, _optional_) --
+  Mask to nullify selected heads of the self-attention modules. Mask values selected in `[0, 1]`:
+
+  - 1 indicates the head is **not masked**,
+  - 0 indicates the head is **masked**.
+
+- **inputs_embeds** (`np.ndarray` or `tf.Tensor` of shape `(batch_size, sequence_length, hidden_size)`, _optional_) --
+  Optionally, instead of passing `input_ids` you can choose to directly pass an embedded representation.
+  This is useful if you want more control over how to convert `input_ids` indices into associated
+  vectors than the model's internal embedding lookup matrix.
+- **output_attentions** (`bool`, _optional_) --
+  Whether or not to return the attentions tensors of all attention layers. See `attentions` under returned
+  tensors for more detail. This argument can be used only in eager mode, in graph mode the value in the
+  config will be used instead.
+- **output_hidden_states** (`bool`, _optional_) --
+  Whether or not to return the hidden states of all layers. See `hidden_states` under returned tensors for
+  more detail. This argument can be used only in eager mode, in graph mode the value in the config will be
+  used instead.
+- **return_dict** (`bool`, _optional_) --
+  Whether or not to return a [ModelOutput](main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple. This
+  argument can be used in eager mode, in graph mode the value will always be set to True.
+- **training** (`bool`, _optional_, defaults to `False`) --
+  Whether or not to use the model in training mode (some modules like dropout modules have different
+  behaviors between training and evaluation).
+
+> Returns
+
+A [TFBaseModelOutputWithPooling](main_classes/output.html#transformers.modeling_tf_outputs.TFBaseModelOutputWithPooling) or a tuple of
+`tf.Tensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising various
+elements depending on the configuration ([RoFormerConfig](model_doc/roformer.html#transformers.RoFormerConfig)) and inputs.
+
+- **last_hidden_state** (`tf.Tensor` of shape `(batch_size, sequence_length, hidden_size)`) -- Sequence of hidden-states at the output of the last layer of the model.
+- **pooler_output** (`tf.Tensor` of shape `(batch_size, hidden_size)`) -- Last layer hidden-state of the first token of the sequence (classification token) further processed by a
+  Linear layer and a Tanh activation function. The Linear layer weights are trained from the next sentence
+  prediction (classification) objective during pretraining.
+
+  This output is usually *not* a good summary of the semantic content of the input, you're often better with
+  averaging or pooling the sequence of hidden-states for the whole input sequence.
+- **hidden_states** (`tuple(tf.Tensor)`, _optional_, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `tf.Tensor` (one for the output of the embeddings + one for the output of each layer) of
+  shape `(batch_size, sequence_length, hidden_size)`.
+
+  Hidden-states of the model at the output of each layer plus the initial embedding outputs.
+- **attentions** (`tuple(tf.Tensor)`, _optional_, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `tf.Tensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+
+  Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
+  heads.
+
+> Return type
+
+[TFBaseModelOutputWithPooling](main_classes/output.html#transformers.modeling_tf_outputs.TFBaseModelOutputWithPooling) or `tuple(tf.Tensor)``
+
+> Example:
+
+```python
+>>> from transformers import RoFormerTokenizer, TFRoFormerModel
+>>> import tensorflow as tf
+
+>>> tokenizer = RoFormerTokenizer.from_pretrained('junnyu/roformer_chinese_base')
+>>> model = TFRoFormerModel.from_pretrained('junnyu/roformer_chinese_base')
+
+>>> inputs = tokenizer("Hello, my dog is cute", return_tensors="tf")
+>>> outputs = model(inputs)
+
+>>> last_hidden_states = outputs.last_hidden_state
+```
+
+
+## TFRoFormerForMaskedLM
+
+<a id='transformers.TFRoFormerForMaskedLM'></a>
+> **class transformers.TFRoFormerForMaskedLM**(*args, **kwargs)
+
+RoFormer Model with a _language modeling_ head on top. 
+
+This model inherits from [TFPreTrainedModel](main_classes/model.html#transformers.TFPreTrainedModel). Check the superclass documentation for the
+generic methods the library implements for all its model (such as downloading or saving, resizing the input
+embeddings, pruning heads etc.)
+
+This model is also a [tf.keras.Model](https://www.tensorflow.org/api_docs/python/tf/keras/Model) subclass. Use
+it as a regular TF 2.0 Keras Model and refer to the TF 2.0 documentation for all matter related to general usage
+and behavior.
+
+<Tip>
+
+TF 2.0 models accepts two formats as inputs:
+
+- having all inputs as keyword arguments (like PyTorch models), or
+- having all inputs as a list, tuple or dict in the first positional arguments.
+
+This second option is useful when using `tf.keras.Model.fit` method which currently requires having all
+the tensors in the first argument of the model call function: `model(inputs)`.
+
+If you choose this second option, there are three possibilities you can use to gather all the input Tensors in
+the first positional argument :
+
+- a single Tensor with `input_ids` only and nothing else: `model(inputs_ids)`
+- a list of varying length with one or several input Tensors IN THE ORDER given in the docstring:
+  `model([input_ids, attention_mask])` or `model([input_ids, attention_mask, token_type_ids])`
+- a dictionary with one or several input Tensors associated to the input names given in the docstring:
+  `model({"input_ids": input_ids, "token_type_ids": token_type_ids})`
+
+</Tip>
+
+> Parameters
+
+- **config** ([RoFormerConfig](model_doc/roformer.html#transformers.RoFormerConfig)) -- Model configuration class with all the parameters of the model.
+  Initializing with a config file does not load the weights associated with the model, only the
+  configuration. Check out the [from_pretrained()](main_classes/model.html#transformers.PreTrainedModel.from_pretrained) method to load the model
+  weights.
+
+
+<a id='transformers.TFRoFormerForMaskedLM.call'></a>
+> **call**(self, input_ids: typing.Union[typing.List[tensorflow.python.framework.ops.Tensor], typing.List[numpy.ndarray], typing.Dict[str, tensorflow.python.framework.ops.Tensor], typing.Dict[str, numpy.ndarray], numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None, attention_mask: typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None, token_type_ids: typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None, head_mask: typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None, inputs_embeds: typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None, output_attentions: typing.Optional[bool] = None, output_hidden_states: typing.Optional[bool] = None, return_dict: typing.Optional[bool] = None, labels: typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None, training: typing.Optional[bool] = False, **kwargs)
+
+The [TFRoFormerForMaskedLM](model_doc/roformer.html#transformers.TFRoFormerForMaskedLM) forward method, overrides the `__call__` special method.
+
+<Tip>
+
+Although the recipe for forward pass needs to be defined within this function, one should call the
+`Module` instance afterwards instead of this since the former takes care of running the pre and post
+processing steps while the latter silently ignores them.
+
+</Tip>
+
+> Parameters
+
+- **input_ids** (`np.ndarray`, `tf.Tensor`, `List[tf.Tensor]` ``Dict[str, tf.Tensor]` or `Dict[str, np.ndarray]` and each example must have the shape `(batch_size, sequence_length)`) --
+  Indices of input sequence tokens in the vocabulary.
+
+  Indices can be obtained using [RoFormerTokenizer](model_doc/roformer.html#transformers.RoFormerTokenizer). See
+  [transformers.PreTrainedTokenizer.__call__()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) and [transformers.PreTrainedTokenizer.encode()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) for
+  details.
+
+  [What are input IDs?](../glossary.html#input-ids)
+- **attention_mask** (`np.ndarray` or `tf.Tensor` of shape `(batch_size, sequence_length)`, _optional_) --
+  Mask to avoid performing attention on padding token indices. Mask values selected in `[0, 1]`:
+
+  - 1 for tokens that are **not masked**,
+  - 0 for tokens that are **masked**.
+
+  [What are attention masks?](../glossary.html#attention-mask)
+- **token_type_ids** (`np.ndarray` or `tf.Tensor` of shape `(batch_size, sequence_length)`, _optional_) --
+  Segment token indices to indicate first and second portions of the inputs. Indices are selected in `[0, 1]`:
+
+  - 0 corresponds to a _sentence A_ token,
+  - 1 corresponds to a _sentence B_ token.
+
+  [What are token type IDs?](../glossary.html#token-type-ids)
+- **head_mask** (`np.ndarray` or `tf.Tensor` of shape `(num_heads,)` or `(num_layers, num_heads)`, _optional_) --
+  Mask to nullify selected heads of the self-attention modules. Mask values selected in `[0, 1]`:
+
+  - 1 indicates the head is **not masked**,
+  - 0 indicates the head is **masked**.
+
+- **inputs_embeds** (`np.ndarray` or `tf.Tensor` of shape `(batch_size, sequence_length, hidden_size)`, _optional_) --
+  Optionally, instead of passing `input_ids` you can choose to directly pass an embedded representation.
+  This is useful if you want more control over how to convert `input_ids` indices into associated
+  vectors than the model's internal embedding lookup matrix.
+- **output_attentions** (`bool`, _optional_) --
+  Whether or not to return the attentions tensors of all attention layers. See `attentions` under returned
+  tensors for more detail. This argument can be used only in eager mode, in graph mode the value in the
+  config will be used instead.
+- **output_hidden_states** (`bool`, _optional_) --
+  Whether or not to return the hidden states of all layers. See `hidden_states` under returned tensors for
+  more detail. This argument can be used only in eager mode, in graph mode the value in the config will be
+  used instead.
+- **return_dict** (`bool`, _optional_) --
+  Whether or not to return a [ModelOutput](main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple. This
+  argument can be used in eager mode, in graph mode the value will always be set to True.
+- **training** (`bool`, _optional_, defaults to `False`) --
+  Whether or not to use the model in training mode (some modules like dropout modules have different
+  behaviors between training and evaluation).
+
+- **labels** (`tf.Tensor` or `np.ndarray` of shape `(batch_size, sequence_length)`, _optional_) --
+  Labels for computing the masked language modeling loss. Indices should be in `[-100, 0, ..., config.vocab_size]` (see `input_ids` docstring) Tokens with indices set to `-100` are ignored
+  (masked), the loss is only computed for the tokens with labels in `[0, ..., config.vocab_size]`
+
+> Returns
+
+A [TFMaskedLMOutput](main_classes/output.html#transformers.modeling_tf_outputs.TFMaskedLMOutput) or a tuple of
+`tf.Tensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising various
+elements depending on the configuration ([RoFormerConfig](model_doc/roformer.html#transformers.RoFormerConfig)) and inputs.
+
+- **loss** (`tf.Tensor` of shape `(n,)`, _optional_, where n is the number of non-masked labels, returned when `labels` is provided) -- Masked language modeling (MLM) loss.
+- **logits** (`tf.Tensor` of shape `(batch_size, sequence_length, config.vocab_size)`) -- Prediction scores of the language modeling head (scores for each vocabulary token before SoftMax).
+- **hidden_states** (`tuple(tf.Tensor)`, _optional_, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `tf.Tensor` (one for the output of the embeddings + one for the output of each layer) of
+  shape `(batch_size, sequence_length, hidden_size)`.
+
+  Hidden-states of the model at the output of each layer plus the initial embedding outputs.
+- **attentions** (`tuple(tf.Tensor)`, _optional_, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `tf.Tensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+
+  Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
+  heads.
+
+> Return type
+
+[TFMaskedLMOutput](main_classes/output.html#transformers.modeling_tf_outputs.TFMaskedLMOutput) or `tuple(tf.Tensor)``
+
+> Example:
+
+```python
+>>> from transformers import RoFormerTokenizer, TFRoFormerForMaskedLM
+>>> import tensorflow as tf
+
+>>> tokenizer = RoFormerTokenizer.from_pretrained('junnyu/roformer_chinese_base')
+>>> model = TFRoFormerForMaskedLM.from_pretrained('junnyu/roformer_chinese_base')
+
+>>> inputs = tokenizer("The capital of France is [MASK].", return_tensors="tf")
+>>> inputs["labels"] = tokenizer("The capital of France is Paris.", return_tensors="tf")["input_ids"]
+
+>>> outputs = model(inputs)
+>>> loss = outputs.loss
+>>> logits = outputs.logits
+```
+
+
+## TFRoFormerForCausalLM
+
+<a id='transformers.TFRoFormerForCausalLM'></a>
+> **class transformers.TFRoFormerForCausalLM**(*args, **kwargs)
+
+RoFormer Model with a _language modeling_ head on top for CLM fine-tuning. 
+
+This model inherits from [TFPreTrainedModel](main_classes/model.html#transformers.TFPreTrainedModel). Check the superclass documentation for the
+generic methods the library implements for all its model (such as downloading or saving, resizing the input
+embeddings, pruning heads etc.)
+
+This model is also a [tf.keras.Model](https://www.tensorflow.org/api_docs/python/tf/keras/Model) subclass. Use
+it as a regular TF 2.0 Keras Model and refer to the TF 2.0 documentation for all matter related to general usage
+and behavior.
+
+<Tip>
+
+TF 2.0 models accepts two formats as inputs:
+
+- having all inputs as keyword arguments (like PyTorch models), or
+- having all inputs as a list, tuple or dict in the first positional arguments.
+
+This second option is useful when using `tf.keras.Model.fit` method which currently requires having all
+the tensors in the first argument of the model call function: `model(inputs)`.
+
+If you choose this second option, there are three possibilities you can use to gather all the input Tensors in
+the first positional argument :
+
+- a single Tensor with `input_ids` only and nothing else: `model(inputs_ids)`
+- a list of varying length with one or several input Tensors IN THE ORDER given in the docstring:
+  `model([input_ids, attention_mask])` or `model([input_ids, attention_mask, token_type_ids])`
+- a dictionary with one or several input Tensors associated to the input names given in the docstring:
+  `model({"input_ids": input_ids, "token_type_ids": token_type_ids})`
+
+</Tip>
+
+> Parameters
+
+- **config** ([RoFormerConfig](model_doc/roformer.html#transformers.RoFormerConfig)) -- Model configuration class with all the parameters of the model.
+  Initializing with a config file does not load the weights associated with the model, only the
+  configuration. Check out the [from_pretrained()](main_classes/model.html#transformers.PreTrainedModel.from_pretrained) method to load the model
+  weights.
+
+
+<a id='transformers.TFRoFormerForCausalLM.call'></a>
+> **call**(self, input_ids: typing.Union[typing.List[tensorflow.python.framework.ops.Tensor], typing.List[numpy.ndarray], typing.Dict[str, tensorflow.python.framework.ops.Tensor], typing.Dict[str, numpy.ndarray], numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None, attention_mask: typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None, token_type_ids: typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None, head_mask: typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None, inputs_embeds: typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None, output_attentions: typing.Optional[bool] = None, output_hidden_states: typing.Optional[bool] = None, return_dict: typing.Optional[bool] = None, labels: typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None, training: typing.Optional[bool] = False, **kwargs)
+
+
+labels (`tf.Tensor` or `np.ndarray` of shape `(batch_size, sequence_length)`, _optional_):
+Labels for computing the cross entropy classification loss. Indices should be in `[0, ..., config.vocab_size - 1]`.
+
+> Returns
+
+A [TFCausalLMOutput](main_classes/output.html#transformers.modeling_tf_outputs.TFCausalLMOutput) or a tuple of
+`tf.Tensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising various
+elements depending on the configuration ([RoFormerConfig](model_doc/roformer.html#transformers.RoFormerConfig)) and inputs.
+
+- **loss** (`tf.Tensor` of shape `(n,)`, _optional_, where n is the number of non-masked labels, returned when `labels` is provided) -- Language modeling loss (for next-token prediction).
+- **logits** (`tf.Tensor` of shape `(batch_size, sequence_length, config.vocab_size)`) -- Prediction scores of the language modeling head (scores for each vocabulary token before SoftMax).
+- **hidden_states** (`tuple(tf.Tensor)`, _optional_, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `tf.Tensor` (one for the output of the embeddings + one for the output of each layer) of
+  shape `(batch_size, sequence_length, hidden_size)`.
+
+  Hidden-states of the model at the output of each layer plus the initial embedding outputs.
+- **attentions** (`tuple(tf.Tensor)`, _optional_, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `tf.Tensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+
+  Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
+  heads.
+
+> Return type
+
+[TFCausalLMOutput](main_classes/output.html#transformers.modeling_tf_outputs.TFCausalLMOutput) or `tuple(tf.Tensor)`
+
+> Example:
+
+```python
+>>> from transformers import RoFormerTokenizer, TFRoFormerForCausalLM
+>>> import tensorflow as tf
+
+>>> tokenizer = RoFormerTokenizer.from_pretrained('junnyu/roformer_chinese_base')
+>>> model = TFRoFormerForCausalLM.from_pretrained('junnyu/roformer_chinese_base')
+
+>>> inputs = tokenizer("Hello, my dog is cute", return_tensors="tf")
+>>> outputs = model(inputs)
+>>> logits = outputs.logits
+```
+
+
+## TFRoFormerForSequenceClassification
+
+<a id='transformers.TFRoFormerForSequenceClassification'></a>
+> **class transformers.TFRoFormerForSequenceClassification**(*args, **kwargs)
+
+
+RoFormer Model transformer with a sequence classification/regression head on top e.g., for GLUE tasks.
+
+
+This model inherits from [TFPreTrainedModel](main_classes/model.html#transformers.TFPreTrainedModel). Check the superclass documentation for the
+generic methods the library implements for all its model (such as downloading or saving, resizing the input
+embeddings, pruning heads etc.)
+
+This model is also a [tf.keras.Model](https://www.tensorflow.org/api_docs/python/tf/keras/Model) subclass. Use
+it as a regular TF 2.0 Keras Model and refer to the TF 2.0 documentation for all matter related to general usage
+and behavior.
+
+<Tip>
+
+TF 2.0 models accepts two formats as inputs:
+
+- having all inputs as keyword arguments (like PyTorch models), or
+- having all inputs as a list, tuple or dict in the first positional arguments.
+
+This second option is useful when using `tf.keras.Model.fit` method which currently requires having all
+the tensors in the first argument of the model call function: `model(inputs)`.
+
+If you choose this second option, there are three possibilities you can use to gather all the input Tensors in
+the first positional argument :
+
+- a single Tensor with `input_ids` only and nothing else: `model(inputs_ids)`
+- a list of varying length with one or several input Tensors IN THE ORDER given in the docstring:
+  `model([input_ids, attention_mask])` or `model([input_ids, attention_mask, token_type_ids])`
+- a dictionary with one or several input Tensors associated to the input names given in the docstring:
+  `model({"input_ids": input_ids, "token_type_ids": token_type_ids})`
+
+</Tip>
+
+> Parameters
+
+- **config** ([RoFormerConfig](model_doc/roformer.html#transformers.RoFormerConfig)) -- Model configuration class with all the parameters of the model.
+  Initializing with a config file does not load the weights associated with the model, only the
+  configuration. Check out the [from_pretrained()](main_classes/model.html#transformers.PreTrainedModel.from_pretrained) method to load the model
+  weights.
+
+
+<a id='transformers.TFRoFormerForSequenceClassification.call'></a>
+> **call**(self, input_ids: typing.Union[typing.List[tensorflow.python.framework.ops.Tensor], typing.List[numpy.ndarray], typing.Dict[str, tensorflow.python.framework.ops.Tensor], typing.Dict[str, numpy.ndarray], numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None, attention_mask: typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None, token_type_ids: typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None, head_mask: typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None, inputs_embeds: typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None, output_attentions: typing.Optional[bool] = None, output_hidden_states: typing.Optional[bool] = None, return_dict: typing.Optional[bool] = None, labels: typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None, training: typing.Optional[bool] = False, **kwargs)
+
+The [TFRoFormerForSequenceClassification](model_doc/roformer.html#transformers.TFRoFormerForSequenceClassification) forward method, overrides the `__call__` special method.
+
+<Tip>
+
+Although the recipe for forward pass needs to be defined within this function, one should call the
+`Module` instance afterwards instead of this since the former takes care of running the pre and post
+processing steps while the latter silently ignores them.
+
+</Tip>
+
+> Parameters
+
+- **input_ids** (`np.ndarray`, `tf.Tensor`, `List[tf.Tensor]` ``Dict[str, tf.Tensor]` or `Dict[str, np.ndarray]` and each example must have the shape `(batch_size, sequence_length)`) --
+  Indices of input sequence tokens in the vocabulary.
+
+  Indices can be obtained using [RoFormerTokenizer](model_doc/roformer.html#transformers.RoFormerTokenizer). See
+  [transformers.PreTrainedTokenizer.__call__()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) and [transformers.PreTrainedTokenizer.encode()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) for
+  details.
+
+  [What are input IDs?](../glossary.html#input-ids)
+- **attention_mask** (`np.ndarray` or `tf.Tensor` of shape `(batch_size, sequence_length)`, _optional_) --
+  Mask to avoid performing attention on padding token indices. Mask values selected in `[0, 1]`:
+
+  - 1 for tokens that are **not masked**,
+  - 0 for tokens that are **masked**.
+
+  [What are attention masks?](../glossary.html#attention-mask)
+- **token_type_ids** (`np.ndarray` or `tf.Tensor` of shape `(batch_size, sequence_length)`, _optional_) --
+  Segment token indices to indicate first and second portions of the inputs. Indices are selected in `[0, 1]`:
+
+  - 0 corresponds to a _sentence A_ token,
+  - 1 corresponds to a _sentence B_ token.
+
+  [What are token type IDs?](../glossary.html#token-type-ids)
+- **head_mask** (`np.ndarray` or `tf.Tensor` of shape `(num_heads,)` or `(num_layers, num_heads)`, _optional_) --
+  Mask to nullify selected heads of the self-attention modules. Mask values selected in `[0, 1]`:
+
+  - 1 indicates the head is **not masked**,
+  - 0 indicates the head is **masked**.
+
+- **inputs_embeds** (`np.ndarray` or `tf.Tensor` of shape `(batch_size, sequence_length, hidden_size)`, _optional_) --
+  Optionally, instead of passing `input_ids` you can choose to directly pass an embedded representation.
+  This is useful if you want more control over how to convert `input_ids` indices into associated
+  vectors than the model's internal embedding lookup matrix.
+- **output_attentions** (`bool`, _optional_) --
+  Whether or not to return the attentions tensors of all attention layers. See `attentions` under returned
+  tensors for more detail. This argument can be used only in eager mode, in graph mode the value in the
+  config will be used instead.
+- **output_hidden_states** (`bool`, _optional_) --
+  Whether or not to return the hidden states of all layers. See `hidden_states` under returned tensors for
+  more detail. This argument can be used only in eager mode, in graph mode the value in the config will be
+  used instead.
+- **return_dict** (`bool`, _optional_) --
+  Whether or not to return a [ModelOutput](main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple. This
+  argument can be used in eager mode, in graph mode the value will always be set to True.
+- **training** (`bool`, _optional_, defaults to `False`) --
+  Whether or not to use the model in training mode (some modules like dropout modules have different
+  behaviors between training and evaluation).
+
+- **labels** (`tf.Tensor` or `np.ndarray` of shape `(batch_size,)`, _optional_) --
+  Labels for computing the sequence classification/regression loss. Indices should be in `[0, ..., config.num_labels - 1]`. If `config.num_labels == 1` a regression loss is computed (Mean-Square loss),
+  If `config.num_labels > 1` a classification loss is computed (Cross-Entropy).
+
+> Returns
+
+A [TFSequenceClassifierOutput](main_classes/output.html#transformers.modeling_tf_outputs.TFSequenceClassifierOutput) or a tuple of
+`tf.Tensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising various
+elements depending on the configuration ([RoFormerConfig](model_doc/roformer.html#transformers.RoFormerConfig)) and inputs.
+
+- **loss** (`tf.Tensor` of shape `(batch_size, )`, _optional_, returned when `labels` is provided) -- Classification (or regression if config.num_labels==1) loss.
+- **logits** (`tf.Tensor` of shape `(batch_size, config.num_labels)`) -- Classification (or regression if config.num_labels==1) scores (before SoftMax).
+- **hidden_states** (`tuple(tf.Tensor)`, _optional_, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `tf.Tensor` (one for the output of the embeddings + one for the output of each layer) of
+  shape `(batch_size, sequence_length, hidden_size)`.
+
+  Hidden-states of the model at the output of each layer plus the initial embedding outputs.
+- **attentions** (`tuple(tf.Tensor)`, _optional_, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `tf.Tensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+
+  Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
+  heads.
+
+> Return type
+
+[TFSequenceClassifierOutput](main_classes/output.html#transformers.modeling_tf_outputs.TFSequenceClassifierOutput) or `tuple(tf.Tensor)``
+
+> Example:
+
+```python
+>>> from transformers import RoFormerTokenizer, TFRoFormerForSequenceClassification
+>>> import tensorflow as tf
+
+>>> tokenizer = RoFormerTokenizer.from_pretrained('junnyu/roformer_chinese_base')
+>>> model = TFRoFormerForSequenceClassification.from_pretrained('junnyu/roformer_chinese_base')
+
+>>> inputs = tokenizer("Hello, my dog is cute", return_tensors="tf")
+>>> inputs["labels"] = tf.reshape(tf.constant(1), (-1, 1)) # Batch size 1
+
+>>> outputs = model(inputs)
+>>> loss = outputs.loss
+>>> logits = outputs.logits
+```
+
+
+## TFRoFormerForMultipleChoice
+
+<a id='transformers.TFRoFormerForMultipleChoice'></a>
+> **class transformers.TFRoFormerForMultipleChoice**(*args, **kwargs)
+
+
+RoFormer Model with a multiple choice classification head on top (a linear layer on top of the pooled output and a
+softmax) e.g. for RocStories/SWAG tasks.
+
+
+This model inherits from [TFPreTrainedModel](main_classes/model.html#transformers.TFPreTrainedModel). Check the superclass documentation for the
+generic methods the library implements for all its model (such as downloading or saving, resizing the input
+embeddings, pruning heads etc.)
+
+This model is also a [tf.keras.Model](https://www.tensorflow.org/api_docs/python/tf/keras/Model) subclass. Use
+it as a regular TF 2.0 Keras Model and refer to the TF 2.0 documentation for all matter related to general usage
+and behavior.
+
+<Tip>
+
+TF 2.0 models accepts two formats as inputs:
+
+- having all inputs as keyword arguments (like PyTorch models), or
+- having all inputs as a list, tuple or dict in the first positional arguments.
+
+This second option is useful when using `tf.keras.Model.fit` method which currently requires having all
+the tensors in the first argument of the model call function: `model(inputs)`.
+
+If you choose this second option, there are three possibilities you can use to gather all the input Tensors in
+the first positional argument :
+
+- a single Tensor with `input_ids` only and nothing else: `model(inputs_ids)`
+- a list of varying length with one or several input Tensors IN THE ORDER given in the docstring:
+  `model([input_ids, attention_mask])` or `model([input_ids, attention_mask, token_type_ids])`
+- a dictionary with one or several input Tensors associated to the input names given in the docstring:
+  `model({"input_ids": input_ids, "token_type_ids": token_type_ids})`
+
+</Tip>
+
+> Parameters
+
+- **config** ([RoFormerConfig](model_doc/roformer.html#transformers.RoFormerConfig)) -- Model configuration class with all the parameters of the model.
+  Initializing with a config file does not load the weights associated with the model, only the
+  configuration. Check out the [from_pretrained()](main_classes/model.html#transformers.PreTrainedModel.from_pretrained) method to load the model
+  weights.
+
+
+<a id='transformers.TFRoFormerForMultipleChoice.call'></a>
+> **call**(self, input_ids: typing.Union[typing.List[tensorflow.python.framework.ops.Tensor], typing.List[numpy.ndarray], typing.Dict[str, tensorflow.python.framework.ops.Tensor], typing.Dict[str, numpy.ndarray], numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None, attention_mask: typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None, token_type_ids: typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None, head_mask: typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None, inputs_embeds: typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None, output_attentions: typing.Optional[bool] = None, output_hidden_states: typing.Optional[bool] = None, return_dict: typing.Optional[bool] = None, labels: typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None, training: typing.Optional[bool] = False, **kwargs)
+
+The [TFRoFormerForMultipleChoice](model_doc/roformer.html#transformers.TFRoFormerForMultipleChoice) forward method, overrides the `__call__` special method.
+
+<Tip>
+
+Although the recipe for forward pass needs to be defined within this function, one should call the
+`Module` instance afterwards instead of this since the former takes care of running the pre and post
+processing steps while the latter silently ignores them.
+
+</Tip>
+
+> Parameters
+
+- **input_ids** (`np.ndarray`, `tf.Tensor`, `List[tf.Tensor]` ``Dict[str, tf.Tensor]` or `Dict[str, np.ndarray]` and each example must have the shape `(batch_size, num_choices, sequence_length)`) --
+  Indices of input sequence tokens in the vocabulary.
+
+  Indices can be obtained using [RoFormerTokenizer](model_doc/roformer.html#transformers.RoFormerTokenizer). See
+  [transformers.PreTrainedTokenizer.__call__()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) and [transformers.PreTrainedTokenizer.encode()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) for
+  details.
+
+  [What are input IDs?](../glossary.html#input-ids)
+- **attention_mask** (`np.ndarray` or `tf.Tensor` of shape `(batch_size, num_choices, sequence_length)`, _optional_) --
+  Mask to avoid performing attention on padding token indices. Mask values selected in `[0, 1]`:
+
+  - 1 for tokens that are **not masked**,
+  - 0 for tokens that are **masked**.
+
+  [What are attention masks?](../glossary.html#attention-mask)
+- **token_type_ids** (`np.ndarray` or `tf.Tensor` of shape `(batch_size, num_choices, sequence_length)`, _optional_) --
+  Segment token indices to indicate first and second portions of the inputs. Indices are selected in `[0, 1]`:
+
+  - 0 corresponds to a _sentence A_ token,
+  - 1 corresponds to a _sentence B_ token.
+
+  [What are token type IDs?](../glossary.html#token-type-ids)
+- **head_mask** (`np.ndarray` or `tf.Tensor` of shape `(num_heads,)` or `(num_layers, num_heads)`, _optional_) --
+  Mask to nullify selected heads of the self-attention modules. Mask values selected in `[0, 1]`:
+
+  - 1 indicates the head is **not masked**,
+  - 0 indicates the head is **masked**.
+
+- **inputs_embeds** (`np.ndarray` or `tf.Tensor` of shape `(batch_size, num_choices, sequence_length, hidden_size)`, _optional_) --
+  Optionally, instead of passing `input_ids` you can choose to directly pass an embedded representation.
+  This is useful if you want more control over how to convert `input_ids` indices into associated
+  vectors than the model's internal embedding lookup matrix.
+- **output_attentions** (`bool`, _optional_) --
+  Whether or not to return the attentions tensors of all attention layers. See `attentions` under returned
+  tensors for more detail. This argument can be used only in eager mode, in graph mode the value in the
+  config will be used instead.
+- **output_hidden_states** (`bool`, _optional_) --
+  Whether or not to return the hidden states of all layers. See `hidden_states` under returned tensors for
+  more detail. This argument can be used only in eager mode, in graph mode the value in the config will be
+  used instead.
+- **return_dict** (`bool`, _optional_) --
+  Whether or not to return a [ModelOutput](main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple. This
+  argument can be used in eager mode, in graph mode the value will always be set to True.
+- **training** (`bool`, _optional_, defaults to `False`) --
+  Whether or not to use the model in training mode (some modules like dropout modules have different
+  behaviors between training and evaluation).
+
+- **labels** (`tf.Tensor` or `np.ndarray` of shape `(batch_size,)`, _optional_) --
+  Labels for computing the multiple choice classification loss. Indices should be in `[0, ..., num_choices]` where `num_choices` is the size of the second dimension of the input tensors. (See
+  `input_ids` above)
+
+> Returns
+
+A [TFMultipleChoiceModelOutput](main_classes/output.html#transformers.modeling_tf_outputs.TFMultipleChoiceModelOutput) or a tuple of
+`tf.Tensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising various
+elements depending on the configuration ([RoFormerConfig](model_doc/roformer.html#transformers.RoFormerConfig)) and inputs.
+
+- **loss** (`tf.Tensor` of shape _(batch_size, )_, _optional_, returned when `labels` is provided) -- Classification loss.
+- **logits** (`tf.Tensor` of shape `(batch_size, num_choices)`) -- _num_choices_ is the second dimension of the input tensors. (see _input_ids_ above).
+
+  Classification scores (before SoftMax).
+- **hidden_states** (`tuple(tf.Tensor)`, _optional_, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `tf.Tensor` (one for the output of the embeddings + one for the output of each layer) of
+  shape `(batch_size, sequence_length, hidden_size)`.
+
+  Hidden-states of the model at the output of each layer plus the initial embedding outputs.
+- **attentions** (`tuple(tf.Tensor)`, _optional_, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `tf.Tensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+
+  Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
+  heads.
+
+> Return type
+
+[TFMultipleChoiceModelOutput](main_classes/output.html#transformers.modeling_tf_outputs.TFMultipleChoiceModelOutput) or `tuple(tf.Tensor)``
+
+> Example:
+
+```python
+>>> from transformers import RoFormerTokenizer, TFRoFormerForMultipleChoice
+>>> import tensorflow as tf
+
+>>> tokenizer = RoFormerTokenizer.from_pretrained('junnyu/roformer_chinese_base')
+>>> model = TFRoFormerForMultipleChoice.from_pretrained('junnyu/roformer_chinese_base')
+
+>>> prompt = "In Italy, pizza served in formal settings, such as at a restaurant, is presented unsliced."
+>>> choice0 = "It is eaten with a fork and a knife."
+>>> choice1 = "It is eaten while held in the hand."
+
+>>> encoding = tokenizer([prompt, prompt], [choice0, choice1], return_tensors='tf', padding=True)
+>>> inputs = {k: tf.expand_dims(v, 0) for k, v in encoding.items()}
+>>> outputs = model(inputs)  # batch size is 1
+
+>>> # the linear classifier still needs to be trained
+>>> logits = outputs.logits
+```
+
+
+## TFRoFormerForTokenClassification
+
+<a id='transformers.TFRoFormerForTokenClassification'></a>
+> **class transformers.TFRoFormerForTokenClassification**(*args, **kwargs)
+
+
+RoFormer Model with a token classification head on top (a linear layer on top of the hidden-states output) e.g. for
+Named-Entity-Recognition (NER) tasks.
+
+
+This model inherits from [TFPreTrainedModel](main_classes/model.html#transformers.TFPreTrainedModel). Check the superclass documentation for the
+generic methods the library implements for all its model (such as downloading or saving, resizing the input
+embeddings, pruning heads etc.)
+
+This model is also a [tf.keras.Model](https://www.tensorflow.org/api_docs/python/tf/keras/Model) subclass. Use
+it as a regular TF 2.0 Keras Model and refer to the TF 2.0 documentation for all matter related to general usage
+and behavior.
+
+<Tip>
+
+TF 2.0 models accepts two formats as inputs:
+
+- having all inputs as keyword arguments (like PyTorch models), or
+- having all inputs as a list, tuple or dict in the first positional arguments.
+
+This second option is useful when using `tf.keras.Model.fit` method which currently requires having all
+the tensors in the first argument of the model call function: `model(inputs)`.
+
+If you choose this second option, there are three possibilities you can use to gather all the input Tensors in
+the first positional argument :
+
+- a single Tensor with `input_ids` only and nothing else: `model(inputs_ids)`
+- a list of varying length with one or several input Tensors IN THE ORDER given in the docstring:
+  `model([input_ids, attention_mask])` or `model([input_ids, attention_mask, token_type_ids])`
+- a dictionary with one or several input Tensors associated to the input names given in the docstring:
+  `model({"input_ids": input_ids, "token_type_ids": token_type_ids})`
+
+</Tip>
+
+> Parameters
+
+- **config** ([RoFormerConfig](model_doc/roformer.html#transformers.RoFormerConfig)) -- Model configuration class with all the parameters of the model.
+  Initializing with a config file does not load the weights associated with the model, only the
+  configuration. Check out the [from_pretrained()](main_classes/model.html#transformers.PreTrainedModel.from_pretrained) method to load the model
+  weights.
+
+
+<a id='transformers.TFRoFormerForTokenClassification.call'></a>
+> **call**(self, input_ids: typing.Union[typing.List[tensorflow.python.framework.ops.Tensor], typing.List[numpy.ndarray], typing.Dict[str, tensorflow.python.framework.ops.Tensor], typing.Dict[str, numpy.ndarray], numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None, attention_mask: typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None, token_type_ids: typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None, head_mask: typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None, inputs_embeds: typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None, output_attentions: typing.Optional[bool] = None, output_hidden_states: typing.Optional[bool] = None, return_dict: typing.Optional[bool] = None, labels: typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None, training: typing.Optional[bool] = False, **kwargs)
+
+The [TFRoFormerForTokenClassification](model_doc/roformer.html#transformers.TFRoFormerForTokenClassification) forward method, overrides the `__call__` special method.
+
+<Tip>
+
+Although the recipe for forward pass needs to be defined within this function, one should call the
+`Module` instance afterwards instead of this since the former takes care of running the pre and post
+processing steps while the latter silently ignores them.
+
+</Tip>
+
+> Parameters
+
+- **input_ids** (`np.ndarray`, `tf.Tensor`, `List[tf.Tensor]` ``Dict[str, tf.Tensor]` or `Dict[str, np.ndarray]` and each example must have the shape `(batch_size, sequence_length)`) --
+  Indices of input sequence tokens in the vocabulary.
+
+  Indices can be obtained using [RoFormerTokenizer](model_doc/roformer.html#transformers.RoFormerTokenizer). See
+  [transformers.PreTrainedTokenizer.__call__()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) and [transformers.PreTrainedTokenizer.encode()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) for
+  details.
+
+  [What are input IDs?](../glossary.html#input-ids)
+- **attention_mask** (`np.ndarray` or `tf.Tensor` of shape `(batch_size, sequence_length)`, _optional_) --
+  Mask to avoid performing attention on padding token indices. Mask values selected in `[0, 1]`:
+
+  - 1 for tokens that are **not masked**,
+  - 0 for tokens that are **masked**.
+
+  [What are attention masks?](../glossary.html#attention-mask)
+- **token_type_ids** (`np.ndarray` or `tf.Tensor` of shape `(batch_size, sequence_length)`, _optional_) --
+  Segment token indices to indicate first and second portions of the inputs. Indices are selected in `[0, 1]`:
+
+  - 0 corresponds to a _sentence A_ token,
+  - 1 corresponds to a _sentence B_ token.
+
+  [What are token type IDs?](../glossary.html#token-type-ids)
+- **head_mask** (`np.ndarray` or `tf.Tensor` of shape `(num_heads,)` or `(num_layers, num_heads)`, _optional_) --
+  Mask to nullify selected heads of the self-attention modules. Mask values selected in `[0, 1]`:
+
+  - 1 indicates the head is **not masked**,
+  - 0 indicates the head is **masked**.
+
+- **inputs_embeds** (`np.ndarray` or `tf.Tensor` of shape `(batch_size, sequence_length, hidden_size)`, _optional_) --
+  Optionally, instead of passing `input_ids` you can choose to directly pass an embedded representation.
+  This is useful if you want more control over how to convert `input_ids` indices into associated
+  vectors than the model's internal embedding lookup matrix.
+- **output_attentions** (`bool`, _optional_) --
+  Whether or not to return the attentions tensors of all attention layers. See `attentions` under returned
+  tensors for more detail. This argument can be used only in eager mode, in graph mode the value in the
+  config will be used instead.
+- **output_hidden_states** (`bool`, _optional_) --
+  Whether or not to return the hidden states of all layers. See `hidden_states` under returned tensors for
+  more detail. This argument can be used only in eager mode, in graph mode the value in the config will be
+  used instead.
+- **return_dict** (`bool`, _optional_) --
+  Whether or not to return a [ModelOutput](main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple. This
+  argument can be used in eager mode, in graph mode the value will always be set to True.
+- **training** (`bool`, _optional_, defaults to `False`) --
+  Whether or not to use the model in training mode (some modules like dropout modules have different
+  behaviors between training and evaluation).
+
+- **labels** (`tf.Tensor` or `np.ndarray` of shape `(batch_size, sequence_length)`, _optional_) --
+  Labels for computing the token classification loss. Indices should be in `[0, ..., config.num_labels - 1]`.
+
+> Returns
+
+A [TFTokenClassifierOutput](main_classes/output.html#transformers.modeling_tf_outputs.TFTokenClassifierOutput) or a tuple of
+`tf.Tensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising various
+elements depending on the configuration ([RoFormerConfig](model_doc/roformer.html#transformers.RoFormerConfig)) and inputs.
+
+- **loss** (`tf.Tensor` of shape `(n,)`, _optional_, where n is the number of unmasked labels, returned when `labels` is provided)  -- Classification loss.
+- **logits** (`tf.Tensor` of shape `(batch_size, sequence_length, config.num_labels)`) -- Classification scores (before SoftMax).
+- **hidden_states** (`tuple(tf.Tensor)`, _optional_, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `tf.Tensor` (one for the output of the embeddings + one for the output of each layer) of
+  shape `(batch_size, sequence_length, hidden_size)`.
+
+  Hidden-states of the model at the output of each layer plus the initial embedding outputs.
+- **attentions** (`tuple(tf.Tensor)`, _optional_, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `tf.Tensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+
+  Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
+  heads.
+
+> Return type
+
+[TFTokenClassifierOutput](main_classes/output.html#transformers.modeling_tf_outputs.TFTokenClassifierOutput) or `tuple(tf.Tensor)``
+
+> Example:
+
+```python
+>>> from transformers import RoFormerTokenizer, TFRoFormerForTokenClassification
+>>> import tensorflow as tf
+
+>>> tokenizer = RoFormerTokenizer.from_pretrained('junnyu/roformer_chinese_base')
+>>> model = TFRoFormerForTokenClassification.from_pretrained('junnyu/roformer_chinese_base')
+
+>>> inputs = tokenizer("Hello, my dog is cute", return_tensors="tf")
+>>> input_ids = inputs["input_ids"]
+>>> inputs["labels"] = tf.reshape(tf.constant([1] * tf.size(input_ids).numpy()), (-1, tf.size(input_ids))) # Batch size 1
+
+>>> outputs = model(inputs)
+>>> loss = outputs.loss
+>>> logits = outputs.logits
+```
+
+
+## TFRoFormerForQuestionAnswering
+
+<a id='transformers.TFRoFormerForQuestionAnswering'></a>
+> **class transformers.TFRoFormerForQuestionAnswering**(*args, **kwargs)
+
+
+RoFormer Model with a span classification head on top for extractive question-answering tasks like SQuAD (a linear
+layer on top of the hidden-states output to compute _span start logits_ and _span end logits_).
+
+
+This model inherits from [TFPreTrainedModel](main_classes/model.html#transformers.TFPreTrainedModel). Check the superclass documentation for the
+generic methods the library implements for all its model (such as downloading or saving, resizing the input
+embeddings, pruning heads etc.)
+
+This model is also a [tf.keras.Model](https://www.tensorflow.org/api_docs/python/tf/keras/Model) subclass. Use
+it as a regular TF 2.0 Keras Model and refer to the TF 2.0 documentation for all matter related to general usage
+and behavior.
+
+<Tip>
+
+TF 2.0 models accepts two formats as inputs:
+
+- having all inputs as keyword arguments (like PyTorch models), or
+- having all inputs as a list, tuple or dict in the first positional arguments.
+
+This second option is useful when using `tf.keras.Model.fit` method which currently requires having all
+the tensors in the first argument of the model call function: `model(inputs)`.
+
+If you choose this second option, there are three possibilities you can use to gather all the input Tensors in
+the first positional argument :
+
+- a single Tensor with `input_ids` only and nothing else: `model(inputs_ids)`
+- a list of varying length with one or several input Tensors IN THE ORDER given in the docstring:
+  `model([input_ids, attention_mask])` or `model([input_ids, attention_mask, token_type_ids])`
+- a dictionary with one or several input Tensors associated to the input names given in the docstring:
+  `model({"input_ids": input_ids, "token_type_ids": token_type_ids})`
+
+</Tip>
+
+> Parameters
+
+- **config** ([RoFormerConfig](model_doc/roformer.html#transformers.RoFormerConfig)) -- Model configuration class with all the parameters of the model.
+  Initializing with a config file does not load the weights associated with the model, only the
+  configuration. Check out the [from_pretrained()](main_classes/model.html#transformers.PreTrainedModel.from_pretrained) method to load the model
+  weights.
+
+
+<a id='transformers.TFRoFormerForQuestionAnswering.call'></a>
+> **call**(self, input_ids: typing.Union[typing.List[tensorflow.python.framework.ops.Tensor], typing.List[numpy.ndarray], typing.Dict[str, tensorflow.python.framework.ops.Tensor], typing.Dict[str, numpy.ndarray], numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None, attention_mask: typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None, token_type_ids: typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None, head_mask: typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None, inputs_embeds: typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None, output_attentions: typing.Optional[bool] = None, output_hidden_states: typing.Optional[bool] = None, return_dict: typing.Optional[bool] = None, start_positions: typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None, end_positions: typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None, training: typing.Optional[bool] = False, **kwargs)
+
+The [TFRoFormerForQuestionAnswering](model_doc/roformer.html#transformers.TFRoFormerForQuestionAnswering) forward method, overrides the `__call__` special method.
+
+<Tip>
+
+Although the recipe for forward pass needs to be defined within this function, one should call the
+`Module` instance afterwards instead of this since the former takes care of running the pre and post
+processing steps while the latter silently ignores them.
+
+</Tip>
+
+> Parameters
+
+- **input_ids** (`np.ndarray`, `tf.Tensor`, `List[tf.Tensor]` ``Dict[str, tf.Tensor]` or `Dict[str, np.ndarray]` and each example must have the shape `(batch_size, sequence_length)`) --
+  Indices of input sequence tokens in the vocabulary.
+
+  Indices can be obtained using [RoFormerTokenizer](model_doc/roformer.html#transformers.RoFormerTokenizer). See
+  [transformers.PreTrainedTokenizer.__call__()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) and [transformers.PreTrainedTokenizer.encode()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) for
+  details.
+
+  [What are input IDs?](../glossary.html#input-ids)
+- **attention_mask** (`np.ndarray` or `tf.Tensor` of shape `(batch_size, sequence_length)`, _optional_) --
+  Mask to avoid performing attention on padding token indices. Mask values selected in `[0, 1]`:
+
+  - 1 for tokens that are **not masked**,
+  - 0 for tokens that are **masked**.
+
+  [What are attention masks?](../glossary.html#attention-mask)
+- **token_type_ids** (`np.ndarray` or `tf.Tensor` of shape `(batch_size, sequence_length)`, _optional_) --
+  Segment token indices to indicate first and second portions of the inputs. Indices are selected in `[0, 1]`:
+
+  - 0 corresponds to a _sentence A_ token,
+  - 1 corresponds to a _sentence B_ token.
+
+  [What are token type IDs?](../glossary.html#token-type-ids)
+- **head_mask** (`np.ndarray` or `tf.Tensor` of shape `(num_heads,)` or `(num_layers, num_heads)`, _optional_) --
+  Mask to nullify selected heads of the self-attention modules. Mask values selected in `[0, 1]`:
+
+  - 1 indicates the head is **not masked**,
+  - 0 indicates the head is **masked**.
+
+- **inputs_embeds** (`np.ndarray` or `tf.Tensor` of shape `(batch_size, sequence_length, hidden_size)`, _optional_) --
+  Optionally, instead of passing `input_ids` you can choose to directly pass an embedded representation.
+  This is useful if you want more control over how to convert `input_ids` indices into associated
+  vectors than the model's internal embedding lookup matrix.
+- **output_attentions** (`bool`, _optional_) --
+  Whether or not to return the attentions tensors of all attention layers. See `attentions` under returned
+  tensors for more detail. This argument can be used only in eager mode, in graph mode the value in the
+  config will be used instead.
+- **output_hidden_states** (`bool`, _optional_) --
+  Whether or not to return the hidden states of all layers. See `hidden_states` under returned tensors for
+  more detail. This argument can be used only in eager mode, in graph mode the value in the config will be
+  used instead.
+- **return_dict** (`bool`, _optional_) --
+  Whether or not to return a [ModelOutput](main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple. This
+  argument can be used in eager mode, in graph mode the value will always be set to True.
+- **training** (`bool`, _optional_, defaults to `False`) --
+  Whether or not to use the model in training mode (some modules like dropout modules have different
+  behaviors between training and evaluation).
+
+- **start_positions** (`tf.Tensor` or `np.ndarray` of shape `(batch_size,)`, _optional_) --
+  Labels for position (index) of the start of the labelled span for computing the token classification loss.
+  Positions are clamped to the length of the sequence (`sequence_length`). Position outside of the
+  sequence are not taken into account for computing the loss.
+- **end_positions** (`tf.Tensor` or `np.ndarray` of shape `(batch_size,)`, _optional_) --
+  Labels for position (index) of the end of the labelled span for computing the token classification loss.
+  Positions are clamped to the length of the sequence (`sequence_length`). Position outside of the
+  sequence are not taken into account for computing the loss.
+
+> Returns
+
+A [TFQuestionAnsweringModelOutput](main_classes/output.html#transformers.modeling_tf_outputs.TFQuestionAnsweringModelOutput) or a tuple of
+`tf.Tensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising various
+elements depending on the configuration ([RoFormerConfig](model_doc/roformer.html#transformers.RoFormerConfig)) and inputs.
+
+- **loss** (`tf.Tensor` of shape `(batch_size, )`, _optional_, returned when `start_positions` and `end_positions` are provided) -- Total span extraction loss is the sum of a Cross-Entropy for the start and end positions.
+- **start_logits** (`tf.Tensor` of shape `(batch_size, sequence_length)`) -- Span-start scores (before SoftMax).
+- **end_logits** (`tf.Tensor` of shape `(batch_size, sequence_length)`) -- Span-end scores (before SoftMax).
+- **hidden_states** (`tuple(tf.Tensor)`, _optional_, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `tf.Tensor` (one for the output of the embeddings + one for the output of each layer) of
+  shape `(batch_size, sequence_length, hidden_size)`.
+
+  Hidden-states of the model at the output of each layer plus the initial embedding outputs.
+- **attentions** (`tuple(tf.Tensor)`, _optional_, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `tf.Tensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+
+  Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
+  heads.
+
+> Return type
+
+[TFQuestionAnsweringModelOutput](main_classes/output.html#transformers.modeling_tf_outputs.TFQuestionAnsweringModelOutput) or `tuple(tf.Tensor)``
+
+> Example:
+
+```python
+>>> from transformers import RoFormerTokenizer, TFRoFormerForQuestionAnswering
+>>> import tensorflow as tf
+
+>>> tokenizer = RoFormerTokenizer.from_pretrained('junnyu/roformer_chinese_base')
+>>> model = TFRoFormerForQuestionAnswering.from_pretrained('junnyu/roformer_chinese_base')
+
+>>> question, text = "Who was Jim Henson?", "Jim Henson was a nice puppet"
+>>> input_dict = tokenizer(question, text, return_tensors='tf')
+>>> outputs = model(input_dict)
+>>> start_logits = outputs.start_logits
+>>> end_logits = outputs.end_logits
+
+>>> all_tokens = tokenizer.convert_ids_to_tokens(input_dict["input_ids"].numpy()[0])
+>>> answer = ' '.join(all_tokens[tf.math.argmax(start_logits, 1)[0] : tf.math.argmax(end_logits, 1)[0]+1])
+```
+
