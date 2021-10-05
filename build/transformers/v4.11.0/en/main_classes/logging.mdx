@@ -1,0 +1,161 @@
+<script>
+import Tip from "../../Tip.svelte";
+import Youtube from "../../Youtube.svelte";	
+export let fw: "pt" | "tf"
+</script>
+
+<!--Copyright 2020 The HuggingFace Team. All rights reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
+the License. You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on
+an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
+specific language governing permissions and limitations under the License.
+-->
+
+# Logging
+
+🤗 Transformers has a centralized logging system, so that you can setup the verbosity of the library easily.
+
+Currently the default verbosity of the library is `WARNING`.
+
+To change the level of verbosity, just use one of the direct setters. For instance, here is how to change the verbosity
+to the INFO level.
+
+```python
+import transformers
+transformers.logging.set_verbosity_info()
+```
+
+You can also use the environment variable `TRANSFORMERS_VERBOSITY` to override the default verbosity. You can set it
+to one of the following: `debug`, `info`, `warning`, `error`, `critical`. For example:
+
+```bash
+TRANSFORMERS_VERBOSITY=error ./myprogram.py
+```
+
+All the methods of this logging module are documented below, the main ones are
+[transformers.logging.get_verbosity()](main_classes/logging.html#transformers.utils.logging.get_verbosity) to get the current level of verbosity in the logger and
+[transformers.logging.set_verbosity()](main_classes/logging.html#transformers.utils.logging.set_verbosity) to set the verbosity to the level of your choice. In order (from the least
+verbose to the most verbose), those levels (with their corresponding int values in parenthesis) are:
+
+- `transformers.logging.CRITICAL` or `transformers.logging.FATAL` (int value, 50): only report the most
+  critical errors.
+- `transformers.logging.ERROR` (int value, 40): only report errors.
+- `transformers.logging.WARNING` or `transformers.logging.WARN` (int value, 30): only reports error and
+  warnings. This the default level used by the library.
+- `transformers.logging.INFO` (int value, 20): reports error, warnings and basic information.
+- `transformers.logging.DEBUG` (int value, 10): report all information.
+
+## Base setters
+
+<a id='transformers.utils.logging.set_verbosity_error'></a>
+> **transformers.utils.logging.set\_verbosity\_error**()
+
+Set the verbosity to the `ERROR` level.
+
+<a id='transformers.utils.logging.set_verbosity_warning'></a>
+> **transformers.utils.logging.set\_verbosity\_warning**()
+
+Set the verbosity to the `WARNING` level.
+
+<a id='transformers.utils.logging.set_verbosity_info'></a>
+> **transformers.utils.logging.set\_verbosity\_info**()
+
+Set the verbosity to the `INFO` level.
+
+<a id='transformers.utils.logging.set_verbosity_debug'></a>
+> **transformers.utils.logging.set\_verbosity\_debug**()
+
+Set the verbosity to the `DEBUG` level.
+
+## Other functions
+
+<a id='transformers.utils.logging.get_verbosity'></a>
+> **transformers.utils.logging.get\_verbosity**()
+
+
+Return the current level for the 🤗 Transformers's root logger as an int.
+
+> Returns
+
+The logging level.
+
+> Return type
+
+`int`
+
+<Tip>
+
+🤗 Transformers has following logging levels:
+
+- 50: `transformers.logging.CRITICAL` or `transformers.logging.FATAL`
+- 40: `transformers.logging.ERROR`
+- 30: `transformers.logging.WARNING` or `transformers.logging.WARN`
+- 20: `transformers.logging.INFO`
+- 10: `transformers.logging.DEBUG`
+
+</Tip>
+
+
+<a id='transformers.utils.logging.set_verbosity'></a>
+> **transformers.utils.logging.set\_verbosity**(verbosity: int)
+
+
+Set the verbosity level for the 🤗 Transformers's root logger.
+
+> Parameters
+
+- **verbosity** (`int`) --
+  Logging level, e.g., one of:
+
+  - `transformers.logging.CRITICAL` or `transformers.logging.FATAL`
+  - `transformers.logging.ERROR`
+  - `transformers.logging.WARNING` or `transformers.logging.WARN`
+  - `transformers.logging.INFO`
+  - `transformers.logging.DEBUG`
+
+
+<a id='transformers.utils.logging.get_logger'></a>
+> **transformers.utils.logging.get\_logger**(name: typing.Optional[str] = None)
+
+
+Return a logger with the specified name.
+
+This function is not supposed to be directly accessed unless you are writing a custom transformers module.
+
+
+<a id='transformers.utils.logging.enable_default_handler'></a>
+> **transformers.utils.logging.enable\_default\_handler**()
+
+Enable the default handler of the HuggingFace Transformers's root logger.
+
+<a id='transformers.utils.logging.disable_default_handler'></a>
+> **transformers.utils.logging.disable\_default\_handler**()
+
+Disable the default handler of the HuggingFace Transformers's root logger.
+
+<a id='transformers.utils.logging.enable_explicit_format'></a>
+> **transformers.utils.logging.enable\_explicit\_format**()
+
+
+Enable explicit formatting for every HuggingFace Transformers's logger. The explicit formatter is as follows:
+
+```
+[LEVELNAME|FILENAME|LINE NUMBER] TIME >> MESSAGE
+```
+
+All handlers currently bound to the root logger are affected by this method.
+
+
+<a id='transformers.utils.logging.reset_format'></a>
+> **transformers.utils.logging.reset\_format**()
+
+
+Resets the formatting for HuggingFace Transformers's loggers.
+
+All handlers currently bound to the root logger are affected by this method.
+

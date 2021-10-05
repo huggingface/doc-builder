@@ -1,0 +1,3323 @@
+<script>
+import Tip from "../../Tip.svelte";
+import Youtube from "../../Youtube.svelte";	
+export let fw: "pt" | "tf"
+</script>
+
+<!--Copyright 2020 The HuggingFace Team. All rights reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
+the License. You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on
+an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
+specific language governing permissions and limitations under the License.
+-->
+
+# ALBERT
+
+## Overview
+
+The ALBERT model was proposed in [ALBERT: A Lite BERT for Self-supervised Learning of Language Representations](https://arxiv.org/abs/1909.11942) by Zhenzhong Lan, Mingda Chen, Sebastian Goodman, Kevin Gimpel, Piyush Sharma,
+Radu Soricut. It presents two parameter-reduction techniques to lower memory consumption and increase the training
+speed of BERT:
+
+- Splitting the embedding matrix into two smaller matrices.
+- Using repeating layers split among groups.
+
+The abstract from the paper is the following:
+
+*Increasing model size when pretraining natural language representations often results in improved performance on
+downstream tasks. However, at some point further model increases become harder due to GPU/TPU memory limitations,
+longer training times, and unexpected model degradation. To address these problems, we present two parameter-reduction
+techniques to lower memory consumption and increase the training speed of BERT. Comprehensive empirical evidence shows
+that our proposed methods lead to models that scale much better compared to the original BERT. We also use a
+self-supervised loss that focuses on modeling inter-sentence coherence, and show it consistently helps downstream tasks
+with multi-sentence inputs. As a result, our best model establishes new state-of-the-art results on the GLUE, RACE, and
+SQuAD benchmarks while having fewer parameters compared to BERT-large.*
+
+Tips:
+
+- ALBERT is a model with absolute position embeddings so it's usually advised to pad the inputs on the right rather
+  than the left.
+- ALBERT uses repeating layers which results in a small memory footprint, however the computational cost remains
+  similar to a BERT-like architecture with the same number of hidden layers as it has to iterate through the same
+  number of (repeating) layers.
+
+This model was contributed by [lysandre](https://huggingface.co/lysandre). This model jax version was contributed by
+[kamalkraj](https://huggingface.co/kamalkraj). The original code can be found [here](https://github.com/google-research/ALBERT).
+
+## AlbertConfig
+
+<a id='transformers.AlbertConfig'></a>
+> **class transformers.AlbertConfig**(vocab_size = 30000, embedding_size = 128, hidden_size = 4096, num_hidden_layers = 12, num_hidden_groups = 1, num_attention_heads = 64, intermediate_size = 16384, inner_group_num = 1, hidden_act = gelu_new, hidden_dropout_prob = 0, attention_probs_dropout_prob = 0, max_position_embeddings = 512, type_vocab_size = 2, initializer_range = 0.02, layer_norm_eps = 1e-12, classifier_dropout_prob = 0.1, position_embedding_type = absolute, pad_token_id = 0, bos_token_id = 2, eos_token_id = 3, **kwargs)
+
+
+This is the configuration class to store the configuration of a [AlbertModel](model_doc/albert.html#transformers.AlbertModel) or a
+[TFAlbertModel](model_doc/albert.html#transformers.TFAlbertModel). It is used to instantiate an ALBERT model according to the specified
+arguments, defining the model architecture. Instantiating a configuration with the defaults will yield a similar
+configuration to that of the ALBERT [xxlarge](https://huggingface.co/albert-xxlarge-v2) architecture.
+
+Configuration objects inherit from [PretrainedConfig](main_classes/configuration.html#transformers.PretrainedConfig) and can be used to control the model
+outputs. Read the documentation from [PretrainedConfig](main_classes/configuration.html#transformers.PretrainedConfig) for more information.
+
+> Parameters
+
+- **vocab_size** (`int`, _optional_, defaults to 30000) --
+  Vocabulary size of the ALBERT model. Defines the number of different tokens that can be represented by the
+  `inputs_ids` passed when calling [AlbertModel](model_doc/albert.html#transformers.AlbertModel) or
+  [TFAlbertModel](model_doc/albert.html#transformers.TFAlbertModel).
+- **embedding_size** (`int`, _optional_, defaults to 128) --
+  Dimensionality of vocabulary embeddings.
+- **hidden_size** (`int`, _optional_, defaults to 4096) --
+  Dimensionality of the encoder layers and the pooler layer.
+- **num_hidden_layers** (`int`, _optional_, defaults to 12) --
+  Number of hidden layers in the Transformer encoder.
+- **num_hidden_groups** (`int`, _optional_, defaults to 1) --
+  Number of groups for the hidden layers, parameters in the same group are shared.
+- **num_attention_heads** (`int`, _optional_, defaults to 64) --
+  Number of attention heads for each attention layer in the Transformer encoder.
+- **intermediate_size** (`int`, _optional_, defaults to 16384) --
+  The dimensionality of the "intermediate" (often named feed-forward) layer in the Transformer encoder.
+- **inner_group_num** (`int`, _optional_, defaults to 1) --
+  The number of inner repetition of attention and ffn.
+- **hidden_act** (`str` or `Callable`, _optional_, defaults to `"gelu_new"`) --
+  The non-linear activation function (function or string) in the encoder and pooler. If string,
+  `"gelu"`, `"relu"`, `"silu"` and `"gelu_new"` are supported.
+- **hidden_dropout_prob** (`float`, _optional_, defaults to 0) --
+  The dropout probability for all fully connected layers in the embeddings, encoder, and pooler.
+- **attention_probs_dropout_prob** (`float`, _optional_, defaults to 0) --
+  The dropout ratio for the attention probabilities.
+- **max_position_embeddings** (`int`, _optional_, defaults to 512) --
+  The maximum sequence length that this model might ever be used with. Typically set this to something large
+  (e.g., 512 or 1024 or 2048).
+- **type_vocab_size** (`int`, _optional_, defaults to 2) --
+  The vocabulary size of the `token_type_ids` passed when calling [AlbertModel](model_doc/albert.html#transformers.AlbertModel) or
+  [TFAlbertModel](model_doc/albert.html#transformers.TFAlbertModel).
+- **initializer_range** (`float`, _optional_, defaults to 0.02) --
+  The standard deviation of the truncated_normal_initializer for initializing all weight matrices.
+- **layer_norm_eps** (`float`, _optional_, defaults to 1e-12) --
+  The epsilon used by the layer normalization layers.
+- **classifier_dropout_prob** (`float`, _optional_, defaults to 0.1) --
+  The dropout ratio for attached classifiers.
+- **position_embedding_type** (`str`, _optional_, defaults to `"absolute"`) --
+  Type of position embedding. Choose one of `"absolute"`, `"relative_key"`,
+  `"relative_key_query"`. For positional embeddings use `"absolute"`. For more information on
+  `"relative_key"`, please refer to [Self-Attention with Relative Position Representations (Shaw et al.)](https://arxiv.org/abs/1803.02155). For more information on `"relative_key_query"`, please refer to
+  _Method 4_ in [Improve Transformer Models with Better Relative Position Embeddings (Huang et al.)](https://arxiv.org/abs/2009.13658).
+
+> Examples:
+
+```python
+>>> from transformers import AlbertConfig, AlbertModel
+>>> # Initializing an ALBERT-xxlarge style configuration
+>>> albert_xxlarge_configuration = AlbertConfig()
+
+>>> # Initializing an ALBERT-base style configuration
+>>> albert_base_configuration = AlbertConfig(
+...      hidden_size=768,
+...      num_attention_heads=12,
+...      intermediate_size=3072,
+...  )
+
+>>> # Initializing a model from the ALBERT-base style configuration
+>>> model = AlbertModel(albert_xxlarge_configuration)
+
+>>> # Accessing the model configuration
+>>> configuration = model.config
+```
+
+
+## AlbertTokenizer
+
+<a id='transformers.AlbertTokenizer'></a>
+> **class transformers.AlbertTokenizer**(vocab_file, do_lower_case = True, remove_space = True, keep_accents = False, bos_token = [CLS], eos_token = [SEP], unk_token = <unk>, sep_token = [SEP], pad_token = <pad>, cls_token = [CLS], mask_token = [MASK], sp_model_kwargs: typing.Union[typing.Dict[str, typing.Any], NoneType] = None, **kwargs)
+
+
+Construct an ALBERT tokenizer. Based on [SentencePiece](https://github.com/google/sentencepiece).
+
+This tokenizer inherits from [PreTrainedTokenizer](main_classes/tokenizer.html#transformers.PreTrainedTokenizer) which contains most of the main methods.
+Users should refer to this superclass for more information regarding those methods.
+
+> Parameters
+
+- **vocab_file** (`str`) --
+  [SentencePiece](https://github.com/google/sentencepiece) file (generally has a _.spm_ extension) that
+  contains the vocabulary necessary to instantiate a tokenizer.
+- **do_lower_case** (`bool`, _optional_, defaults to `True`) --
+  Whether or not to lowercase the input when tokenizing.
+- **remove_space** (`bool`, _optional_, defaults to `True`) --
+  Whether or not to strip the text when tokenizing (removing excess spaces before and after the string).
+- **keep_accents** (`bool`, _optional_, defaults to `False`) --
+  Whether or not to keep accents when tokenizing.
+- **bos_token** (`str`, _optional_, defaults to `"[CLS]"`) --
+  The beginning of sequence token that was used during pretraining. Can be used a sequence classifier token.
+
+<Tip>
+
+When building a sequence using special tokens, this is not the token that is used for the beginning of
+sequence. The token used is the `cls_token`.
+
+</Tip>
+
+- **eos_token** (`str`, _optional_, defaults to `"[SEP]"`) --
+  The end of sequence token.
+
+<Tip>
+
+When building a sequence using special tokens, this is not the token that is used for the end of
+sequence. The token used is the `sep_token`.
+
+</Tip>
+
+- **unk_token** (`str`, _optional_, defaults to `"<unk>"`) --
+  The unknown token. A token that is not in the vocabulary cannot be converted to an ID and is set to be this
+  token instead.
+- **sep_token** (`str`, _optional_, defaults to `"[SEP]"`) --
+  The separator token, which is used when building a sequence from multiple sequences, e.g. two sequences for
+  sequence classification or for a text and a question for question answering. It is also used as the last
+  token of a sequence built with special tokens.
+- **pad_token** (`str`, _optional_, defaults to `"<pad>"`) --
+  The token used for padding, for example when batching sequences of different lengths.
+- **cls_token** (`str`, _optional_, defaults to `"[CLS]"`) --
+  The classifier token which is used when doing sequence classification (classification of the whole sequence
+  instead of per-token classification). It is the first token of the sequence when built with special tokens.
+- **mask_token** (`str`, _optional_, defaults to `"[MASK]"`) --
+  The token used for masking values. This is the token used when training this model with masked language
+  modeling. This is the token which the model will try to predict.
+- **sp_model_kwargs** (`dict`, _optional_) --
+  Will be passed to the `SentencePieceProcessor.__init__()` method. The [Python wrapper for SentencePiece](https://github.com/google/sentencepiece/tree/master/python) can be used, among other things, to set:
+
+  - `enable_sampling`: Enable subword regularization.
+  - `nbest_size`: Sampling parameters for unigram. Invalid for BPE-Dropout.
+
+    - `nbest_size = {0,1}`: No sampling is performed.
+    - `nbest_size > 1`: samples from the nbest_size results.
+    - `nbest_size < 0`: assuming that nbest_size is infinite and samples from the all hypothesis (lattice)
+      using forward-filtering-and-backward-sampling algorithm.
+
+  - `alpha`: Smoothing parameter for unigram sampling, and dropout probability of merge operations for
+    BPE-dropout.
+
+Attributes:
+sp_model (`SentencePieceProcessor`):
+The _SentencePiece_ processor that is used for every conversion (string, tokens and IDs).
+
+
+<a id='transformers.AlbertTokenizer.build_inputs_with_special_tokens'></a>
+> **build\_inputs\_with\_special\_tokens**(self, token_ids_0: typing.List[int], token_ids_1: typing.Optional[typing.List[int]] = None)
+
+
+Build model inputs from a sequence or a pair of sequence for sequence classification tasks by concatenating and
+adding special tokens. An ALBERT sequence has the following format:
+
+- single sequence: `[CLS] X [SEP]`
+- pair of sequences: `[CLS] A [SEP] B [SEP]`
+
+> Parameters
+
+- **token_ids_0** (`List[int]`) --
+  List of IDs to which the special tokens will be added.
+- **token_ids_1** (`List[int]`, _optional_) --
+  Optional second list of IDs for sequence pairs.
+
+> Returns
+
+List of [input IDs](../glossary.html#input-ids) with the appropriate special tokens.
+
+> Return type
+
+`List[int]`
+
+
+<a id='transformers.AlbertTokenizer.get_special_tokens_mask'></a>
+> **get\_special\_tokens\_mask**(self, token_ids_0: typing.List[int], token_ids_1: typing.Optional[typing.List[int]] = None, already_has_special_tokens: bool = False)
+
+
+Retrieve sequence ids from a token list that has no special tokens added. This method is called when adding
+special tokens using the tokenizer `prepare_for_model` method.
+
+> Parameters
+
+- **token_ids_0** (`List[int]`) --
+  List of IDs.
+- **token_ids_1** (`List[int]`, _optional_) --
+  Optional second list of IDs for sequence pairs.
+- **already_has_special_tokens** (`bool`, _optional_, defaults to `False`) --
+  Whether or not the token list is already formatted with special tokens for the model.
+
+> Returns
+
+A list of integers in the range [0, 1]: 1 for a special token, 0 for a sequence token.
+
+> Return type
+
+`List[int]`
+
+
+<a id='transformers.AlbertTokenizer.create_token_type_ids_from_sequences'></a>
+> **create\_token\_type\_ids\_from\_sequences**(self, token_ids_0: typing.List[int], token_ids_1: typing.Optional[typing.List[int]] = None)
+
+
+Create a mask from the two sequences passed to be used in a sequence-pair classification task. An ALBERT
+sequence pair mask has the following format:
+
+```
+0 0 0 0 0 0 0 0 0 0 0 1 1 1 1 1 1 1 1 1
+| first sequence    | second sequence |
+```
+
+If `token_ids_1` is `None`, this method only returns the first portion of the mask (0s).
+
+> Parameters
+
+- **token_ids_0** (`List[int]`) --
+  List of IDs.
+- **token_ids_1** (`List[int]`, _optional_) --
+  Optional second list of IDs for sequence pairs.
+
+> Returns
+
+List of [token type IDs](../glossary.html#token-type-ids) according to the given
+sequence(s).
+
+> Return type
+
+`List[int]`
+
+
+<a id='transformers.AlbertTokenizer.save_vocabulary'></a>
+> **save\_vocabulary**(self, save_directory: str, filename_prefix: typing.Optional[str] = None)
+
+## AlbertTokenizerFast
+
+<a id='transformers.AlbertTokenizerFast'></a>
+> **class transformers.AlbertTokenizerFast**(vocab_file = None, tokenizer_file = None, do_lower_case = True, remove_space = True, keep_accents = False, bos_token = [CLS], eos_token = [SEP], unk_token = <unk>, sep_token = [SEP], pad_token = <pad>, cls_token = [CLS], mask_token = [MASK], **kwargs)
+
+
+Construct a "fast" ALBERT tokenizer (backed by HuggingFace's _tokenizers_ library). Based on [Unigram](https://huggingface.co/docs/tokenizers/python/latest/components.html?highlight=unigram#models). This tokenizer
+inherits from [PreTrainedTokenizerFast](main_classes/tokenizer.html#transformers.PreTrainedTokenizerFast) which contains most of the main methods. Users should
+refer to this superclass for more information regarding those methods
+
+> Parameters
+
+- **vocab_file** (`str`) --
+  [SentencePiece](https://github.com/google/sentencepiece) file (generally has a _.spm_ extension) that
+  contains the vocabulary necessary to instantiate a tokenizer.
+- **do_lower_case** (`bool`, _optional_, defaults to `True`) --
+  Whether or not to lowercase the input when tokenizing.
+- **remove_space** (`bool`, _optional_, defaults to `True`) --
+  Whether or not to strip the text when tokenizing (removing excess spaces before and after the string).
+- **keep_accents** (`bool`, _optional_, defaults to `False`) --
+  Whether or not to keep accents when tokenizing.
+- **bos_token** (`str`, _optional_, defaults to `"[CLS]"`) --
+  The beginning of sequence token that was used during pretraining. Can be used a sequence classifier token.
+
+<Tip>
+
+When building a sequence using special tokens, this is not the token that is used for the beginning of
+sequence. The token used is the `cls_token`.
+
+</Tip>
+
+- **eos_token** (`str`, _optional_, defaults to `"[SEP]"`) --
+  The end of sequence token. .. note:: When building a sequence using special tokens, this is not the token
+  that is used for the end of sequence. The token used is the `sep_token`.
+- **unk_token** (`str`, _optional_, defaults to `"<unk>"`) --
+  The unknown token. A token that is not in the vocabulary cannot be converted to an ID and is set to be this
+  token instead.
+- **sep_token** (`str`, _optional_, defaults to `"[SEP]"`) --
+  The separator token, which is used when building a sequence from multiple sequences, e.g. two sequences for
+  sequence classification or for a text and a question for question answering. It is also used as the last
+  token of a sequence built with special tokens.
+- **pad_token** (`str`, _optional_, defaults to `"<pad>"`) --
+  The token used for padding, for example when batching sequences of different lengths.
+- **cls_token** (`str`, _optional_, defaults to `"[CLS]"`) --
+  The classifier token which is used when doing sequence classification (classification of the whole sequence
+  instead of per-token classification). It is the first token of the sequence when built with special tokens.
+- **mask_token** (`str`, _optional_, defaults to `"[MASK]"`) --
+  The token used for masking values. This is the token used when training this model with masked language
+  modeling. This is the token which the model will try to predict.
+
+
+<a id='transformers.AlbertTokenizerFast.build_inputs_with_special_tokens'></a>
+> **build\_inputs\_with\_special\_tokens**(self, token_ids_0: typing.List[int], token_ids_1: typing.Optional[typing.List[int]] = None)
+
+
+Build model inputs from a sequence or a pair of sequence for sequence classification tasks by concatenating and
+adding special tokens. An ALBERT sequence has the following format:
+
+- single sequence: `[CLS] X [SEP]`
+- pair of sequences: `[CLS] A [SEP] B [SEP]`
+
+> Parameters
+
+- **token_ids_0** (`List[int]`) --
+  List of IDs to which the special tokens will be added
+- **token_ids_1** (`List[int]`, _optional_) --
+  Optional second list of IDs for sequence pairs.
+
+> Returns
+
+list of [input IDs](../glossary.html#input-ids) with the appropriate special tokens.
+
+> Return type
+
+`List[int]`
+
+
+<a id='transformers.AlbertTokenizerFast.create_token_type_ids_from_sequences'></a>
+> **create\_token\_type\_ids\_from\_sequences**(self, token_ids_0: typing.List[int], token_ids_1: typing.Optional[typing.List[int]] = None)
+
+
+Creates a mask from the two sequences passed to be used in a sequence-pair classification task. An ALBERT
+sequence pair mask has the following format:
+
+```
+0 0 0 0 0 0 0 0 0 0 0 1 1 1 1 1 1 1 1 1
+| first sequence    | second sequence |
+```
+
+if token_ids_1 is None, only returns the first portion of the mask (0s).
+
+> Parameters
+
+- **token_ids_0** (`List[int]`) --
+  List of ids.
+- **token_ids_1** (`List[int]`, _optional_) --
+  Optional second list of IDs for sequence pairs.
+
+> Returns
+
+List of [token type IDs](../glossary.html#token-type-ids) according to the given
+sequence(s).
+
+> Return type
+
+`List[int]`
+
+
+<a id='transformers.AlbertTokenizer'></a>
+> **class AlbertTokenizer**(vocab_file, do_lower_case = True, remove_space = True, keep_accents = False, bos_token = [CLS], eos_token = [SEP], unk_token = <unk>, sep_token = [SEP], pad_token = <pad>, cls_token = [CLS], mask_token = [MASK], sp_model_kwargs: typing.Union[typing.Dict[str, typing.Any], NoneType] = None, **kwargs)
+
+
+Construct an ALBERT tokenizer. Based on [SentencePiece](https://github.com/google/sentencepiece).
+
+This tokenizer inherits from [PreTrainedTokenizer](main_classes/tokenizer.html#transformers.PreTrainedTokenizer) which contains most of the main methods.
+Users should refer to this superclass for more information regarding those methods.
+
+> Parameters
+
+- **vocab_file** (`str`) --
+  [SentencePiece](https://github.com/google/sentencepiece) file (generally has a _.spm_ extension) that
+  contains the vocabulary necessary to instantiate a tokenizer.
+- **do_lower_case** (`bool`, _optional_, defaults to `True`) --
+  Whether or not to lowercase the input when tokenizing.
+- **remove_space** (`bool`, _optional_, defaults to `True`) --
+  Whether or not to strip the text when tokenizing (removing excess spaces before and after the string).
+- **keep_accents** (`bool`, _optional_, defaults to `False`) --
+  Whether or not to keep accents when tokenizing.
+- **bos_token** (`str`, _optional_, defaults to `"[CLS]"`) --
+  The beginning of sequence token that was used during pretraining. Can be used a sequence classifier token.
+
+<Tip>
+
+When building a sequence using special tokens, this is not the token that is used for the beginning of
+sequence. The token used is the `cls_token`.
+
+</Tip>
+
+- **eos_token** (`str`, _optional_, defaults to `"[SEP]"`) --
+  The end of sequence token.
+
+<Tip>
+
+When building a sequence using special tokens, this is not the token that is used for the end of
+sequence. The token used is the `sep_token`.
+
+</Tip>
+
+- **unk_token** (`str`, _optional_, defaults to `"<unk>"`) --
+  The unknown token. A token that is not in the vocabulary cannot be converted to an ID and is set to be this
+  token instead.
+- **sep_token** (`str`, _optional_, defaults to `"[SEP]"`) --
+  The separator token, which is used when building a sequence from multiple sequences, e.g. two sequences for
+  sequence classification or for a text and a question for question answering. It is also used as the last
+  token of a sequence built with special tokens.
+- **pad_token** (`str`, _optional_, defaults to `"<pad>"`) --
+  The token used for padding, for example when batching sequences of different lengths.
+- **cls_token** (`str`, _optional_, defaults to `"[CLS]"`) --
+  The classifier token which is used when doing sequence classification (classification of the whole sequence
+  instead of per-token classification). It is the first token of the sequence when built with special tokens.
+- **mask_token** (`str`, _optional_, defaults to `"[MASK]"`) --
+  The token used for masking values. This is the token used when training this model with masked language
+  modeling. This is the token which the model will try to predict.
+- **sp_model_kwargs** (`dict`, _optional_) --
+  Will be passed to the `SentencePieceProcessor.__init__()` method. The [Python wrapper for SentencePiece](https://github.com/google/sentencepiece/tree/master/python) can be used, among other things, to set:
+
+  - `enable_sampling`: Enable subword regularization.
+  - `nbest_size`: Sampling parameters for unigram. Invalid for BPE-Dropout.
+
+    - `nbest_size = {0,1}`: No sampling is performed.
+    - `nbest_size > 1`: samples from the nbest_size results.
+    - `nbest_size < 0`: assuming that nbest_size is infinite and samples from the all hypothesis (lattice)
+      using forward-filtering-and-backward-sampling algorithm.
+
+  - `alpha`: Smoothing parameter for unigram sampling, and dropout probability of merge operations for
+    BPE-dropout.
+
+Attributes:
+sp_model (`SentencePieceProcessor`):
+The _SentencePiece_ processor that is used for every conversion (string, tokens and IDs).
+
+
+## Albert specific outputs
+
+<a id='transformers.models.albert.modeling_albert.AlbertForPreTrainingOutput'></a>
+> **class transformers.models.albert.modeling\_albert.AlbertForPreTrainingOutput**(loss: typing.Optional[torch.FloatTensor] = None, prediction_logits: FloatTensor = None, sop_logits: FloatTensor = None, hidden_states: typing.Optional[typing.Tuple[torch.FloatTensor]] = None, attentions: typing.Optional[typing.Tuple[torch.FloatTensor]] = None)
+
+
+Output type of [AlbertForPreTraining](model_doc/albert.html#transformers.AlbertForPreTraining).
+
+> Parameters
+
+- **loss** (_optional_, returned when `labels` is provided, `torch.FloatTensor` of shape `(1,)`) --
+  Total loss as the sum of the masked language modeling loss and the next sequence prediction
+  (classification) loss.
+- **prediction_logits** (`torch.FloatTensor` of shape `(batch_size, sequence_length, config.vocab_size)`) --
+  Prediction scores of the language modeling head (scores for each vocabulary token before SoftMax).
+- **sop_logits** (`torch.FloatTensor` of shape `(batch_size, 2)`) --
+  Prediction scores of the next sequence prediction (classification) head (scores of True/False continuation
+  before SoftMax).
+- **hidden_states** (`tuple(torch.FloatTensor)`, _optional_, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) --
+  Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer)
+  of shape `(batch_size, sequence_length, hidden_size)`.
+
+  Hidden-states of the model at the output of each layer plus the initial embedding outputs.
+- **attentions** (`tuple(torch.FloatTensor)`, _optional_, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) --
+  Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+
+  Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
+  heads.
+
+
+<a id='transformers.models.albert.modeling_tf_albert.TFAlbertForPreTrainingOutput'></a>
+> **class transformers.models.albert.modeling\_tf\_albert.TFAlbertForPreTrainingOutput**(loss: Tensor = None, prediction_logits: Tensor = None, sop_logits: Tensor = None, hidden_states: typing.Optional[typing.Tuple[tensorflow.python.framework.ops.Tensor]] = None, attentions: typing.Optional[typing.Tuple[tensorflow.python.framework.ops.Tensor]] = None)
+
+
+Output type of [TFAlbertForPreTraining](model_doc/albert.html#transformers.TFAlbertForPreTraining).
+
+> Parameters
+
+- **prediction_logits** (`tf.Tensor` of shape `(batch_size, sequence_length, config.vocab_size)`) --
+  Prediction scores of the language modeling head (scores for each vocabulary token before SoftMax).
+- **sop_logits** (`tf.Tensor` of shape `(batch_size, 2)`) --
+  Prediction scores of the next sequence prediction (classification) head (scores of True/False continuation
+  before SoftMax).
+- **hidden_states** (`tuple(tf.Tensor)`, _optional_, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) --
+  Tuple of `tf.Tensor` (one for the output of the embeddings + one for the output of each layer) of
+  shape `(batch_size, sequence_length, hidden_size)`.
+
+  Hidden-states of the model at the output of each layer plus the initial embedding outputs.
+- **attentions** (`tuple(tf.Tensor)`, _optional_, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) --
+  Tuple of `tf.Tensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+
+  Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
+  heads.
+
+
+## AlbertModel
+
+<a id='transformers.AlbertModel'></a>
+> **class transformers.AlbertModel**(config, add_pooling_layer = True)
+
+The bare ALBERT Model transformer outputting raw hidden-states without any specific head on top.
+
+This model inherits from [PreTrainedModel](main_classes/model.html#transformers.PreTrainedModel). Check the superclass documentation for the generic
+methods the library implements for all its model (such as downloading or saving, resizing the input embeddings,
+pruning heads etc.)
+
+This model is also a PyTorch [torch.nn.Module](https://pytorch.org/docs/stable/nn.html#torch.nn.Module)
+subclass. Use it as a regular PyTorch Module and refer to the PyTorch documentation for all matter related to
+general usage and behavior.
+
+> Parameters
+
+- **config** ([AlbertConfig](model_doc/albert.html#transformers.AlbertConfig)) -- Model configuration class with all the parameters of the model.
+  Initializing with a config file does not load the weights associated with the model, only the
+  configuration. Check out the [from_pretrained()](main_classes/model.html#transformers.PreTrainedModel.from_pretrained) method to load the model
+  weights.
+
+
+<a id='transformers.AlbertModel.forward'></a>
+> **forward**(self, input_ids = None, attention_mask = None, token_type_ids = None, position_ids = None, head_mask = None, inputs_embeds = None, output_attentions = None, output_hidden_states = None, return_dict = None)
+
+The [AlbertModel](model_doc/albert.html#transformers.AlbertModel) forward method, overrides the `__call__` special method.
+
+<Tip>
+
+Although the recipe for forward pass needs to be defined within this function, one should call the
+`Module` instance afterwards instead of this since the former takes care of running the pre and post
+processing steps while the latter silently ignores them.
+
+</Tip>
+
+> Parameters
+
+- **input_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`) --
+  Indices of input sequence tokens in the vocabulary.
+
+  Indices can be obtained using [AlbertTokenizer](model_doc/albert.html#transformers.AlbertTokenizer). See
+  [transformers.PreTrainedTokenizer.__call__()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) and [transformers.PreTrainedTokenizer.encode()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) for
+  details.
+
+  [What are input IDs?](../glossary.html#input-ids)
+- **attention_mask** (`torch.FloatTensor` of shape `(batch_size, sequence_length)`, _optional_) --
+  Mask to avoid performing attention on padding token indices. Mask values selected in `[0, 1]`:
+
+  - 1 for tokens that are **not masked**,
+  - 0 for tokens that are **masked**.
+
+  [What are attention masks?](../glossary.html#attention-mask)
+- **token_type_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`, _optional_) --
+  Segment token indices to indicate first and second portions of the inputs. Indices are selected in `[0, 1]`:
+
+  - 0 corresponds to a _sentence A_ token,
+  - 1 corresponds to a _sentence B_ token.
+
+  [What are token type IDs?](../glossary.html#token-type-ids)
+- **position_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`, _optional_) --
+  Indices of positions of each input sequence tokens in the position embeddings. Selected in the range `[0, config.max_position_embeddings - 1]`.
+
+  [What are position IDs?](../glossary.html#position-ids)
+- **head_mask** (`torch.FloatTensor` of shape `(num_heads,)` or `(num_layers, num_heads)`, _optional_) --
+  Mask to nullify selected heads of the self-attention modules. Mask values selected in `[0, 1]`:
+
+  - 1 indicates the head is **not masked**,
+  - 0 indicates the head is **masked**.
+
+- **inputs_embeds** (`torch.FloatTensor` of shape `(batch_size, sequence_length, hidden_size)`, _optional_) --
+  Optionally, instead of passing `input_ids` you can choose to directly pass an embedded representation.
+  This is useful if you want more control over how to convert `input_ids` indices into associated
+  vectors than the model's internal embedding lookup matrix.
+- **output_attentions** (`bool`, _optional_) --
+  Whether or not to return the attentions tensors of all attention layers. See `attentions` under returned
+  tensors for more detail.
+- **output_hidden_states** (`bool`, _optional_) --
+  Whether or not to return the hidden states of all layers. See `hidden_states` under returned tensors for
+  more detail.
+- **return_dict** (`bool`, _optional_) --
+  Whether or not to return a [ModelOutput](main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple.
+
+> Returns
+
+A [BaseModelOutputWithPooling](main_classes/output.html#transformers.modeling_outputs.BaseModelOutputWithPooling) or a tuple of
+`torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising
+various elements depending on the configuration ([AlbertConfig](model_doc/albert.html#transformers.AlbertConfig)) and inputs.
+
+- **last_hidden_state** (`torch.FloatTensor` of shape `(batch_size, sequence_length, hidden_size)`) -- Sequence of hidden-states at the output of the last layer of the model.
+- **pooler_output** (`torch.FloatTensor` of shape `(batch_size, hidden_size)`) -- Last layer hidden-state of the first token of the sequence (classification token) after further processing
+  through the layers used for the auxiliary pretraining task. E.g. for BERT-family of models, this returns
+  the classification token after processing through a linear layer and a tanh activation function. The linear
+  layer weights are trained from the next sentence prediction (classification) objective during pretraining.
+- **hidden_states** (`tuple(torch.FloatTensor)`, _optional_, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer)
+  of shape `(batch_size, sequence_length, hidden_size)`.
+
+  Hidden-states of the model at the output of each layer plus the initial embedding outputs.
+- **attentions** (`tuple(torch.FloatTensor)`, _optional_, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+
+  Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
+  heads.
+
+> Return type
+
+[BaseModelOutputWithPooling](main_classes/output.html#transformers.modeling_outputs.BaseModelOutputWithPooling) or `tuple(torch.FloatTensor)`
+
+> Example:
+
+```python
+>>> from transformers import AlbertTokenizer, AlbertModel
+>>> import torch
+
+>>> tokenizer = AlbertTokenizer.from_pretrained('albert-base-v2')
+>>> model = AlbertModel.from_pretrained('albert-base-v2')
+
+>>> inputs = tokenizer("Hello, my dog is cute", return_tensors="pt")
+>>> outputs = model(**inputs)
+
+>>> last_hidden_states = outputs.last_hidden_state
+```
+
+
+## AlbertForPreTraining
+
+<a id='transformers.AlbertForPreTraining'></a>
+> **class transformers.AlbertForPreTraining**(config)
+
+
+Albert Model with two heads on top as done during the pretraining: a _masked language modeling_ head and a
+_sentence order prediction (classification)_ head.
+
+
+This model inherits from [PreTrainedModel](main_classes/model.html#transformers.PreTrainedModel). Check the superclass documentation for the generic
+methods the library implements for all its model (such as downloading or saving, resizing the input embeddings,
+pruning heads etc.)
+
+This model is also a PyTorch [torch.nn.Module](https://pytorch.org/docs/stable/nn.html#torch.nn.Module)
+subclass. Use it as a regular PyTorch Module and refer to the PyTorch documentation for all matter related to
+general usage and behavior.
+
+> Parameters
+
+- **config** ([AlbertConfig](model_doc/albert.html#transformers.AlbertConfig)) -- Model configuration class with all the parameters of the model.
+  Initializing with a config file does not load the weights associated with the model, only the
+  configuration. Check out the [from_pretrained()](main_classes/model.html#transformers.PreTrainedModel.from_pretrained) method to load the model
+  weights.
+
+
+<a id='transformers.AlbertForPreTraining.forward'></a>
+> **forward**(self, input_ids = None, attention_mask = None, token_type_ids = None, position_ids = None, head_mask = None, inputs_embeds = None, labels = None, sentence_order_label = None, output_attentions = None, output_hidden_states = None, return_dict = None)
+
+The [AlbertForPreTraining](model_doc/albert.html#transformers.AlbertForPreTraining) forward method, overrides the `__call__` special method.
+
+<Tip>
+
+Although the recipe for forward pass needs to be defined within this function, one should call the
+`Module` instance afterwards instead of this since the former takes care of running the pre and post
+processing steps while the latter silently ignores them.
+
+</Tip>
+
+> Parameters
+
+- **input_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`) --
+  Indices of input sequence tokens in the vocabulary.
+
+  Indices can be obtained using [AlbertTokenizer](model_doc/albert.html#transformers.AlbertTokenizer). See
+  [transformers.PreTrainedTokenizer.__call__()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) and [transformers.PreTrainedTokenizer.encode()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) for
+  details.
+
+  [What are input IDs?](../glossary.html#input-ids)
+- **attention_mask** (`torch.FloatTensor` of shape `(batch_size, sequence_length)`, _optional_) --
+  Mask to avoid performing attention on padding token indices. Mask values selected in `[0, 1]`:
+
+  - 1 for tokens that are **not masked**,
+  - 0 for tokens that are **masked**.
+
+  [What are attention masks?](../glossary.html#attention-mask)
+- **token_type_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`, _optional_) --
+  Segment token indices to indicate first and second portions of the inputs. Indices are selected in `[0, 1]`:
+
+  - 0 corresponds to a _sentence A_ token,
+  - 1 corresponds to a _sentence B_ token.
+
+  [What are token type IDs?](../glossary.html#token-type-ids)
+- **position_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`, _optional_) --
+  Indices of positions of each input sequence tokens in the position embeddings. Selected in the range `[0, config.max_position_embeddings - 1]`.
+
+  [What are position IDs?](../glossary.html#position-ids)
+- **head_mask** (`torch.FloatTensor` of shape `(num_heads,)` or `(num_layers, num_heads)`, _optional_) --
+  Mask to nullify selected heads of the self-attention modules. Mask values selected in `[0, 1]`:
+
+  - 1 indicates the head is **not masked**,
+  - 0 indicates the head is **masked**.
+
+- **inputs_embeds** (`torch.FloatTensor` of shape `(batch_size, sequence_length, hidden_size)`, _optional_) --
+  Optionally, instead of passing `input_ids` you can choose to directly pass an embedded representation.
+  This is useful if you want more control over how to convert `input_ids` indices into associated
+  vectors than the model's internal embedding lookup matrix.
+- **output_attentions** (`bool`, _optional_) --
+  Whether or not to return the attentions tensors of all attention layers. See `attentions` under returned
+  tensors for more detail.
+- **output_hidden_states** (`bool`, _optional_) --
+  Whether or not to return the hidden states of all layers. See `hidden_states` under returned tensors for
+  more detail.
+- **return_dict** (`bool`, _optional_) --
+  Whether or not to return a [ModelOutput](main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple.
+
+- **labels** (`torch.LongTensor` of shape `(batch_size, sequence_length)`, _optional_) --
+  Labels for computing the masked language modeling loss. Indices should be in `[-100, 0, ..., config.vocab_size]` (see `input_ids` docstring) Tokens with indices set to `-100` are ignored
+  (masked), the loss is only computed for the tokens with labels in `[0, ..., config.vocab_size]`
+- **sentence_order_label** (`torch.LongTensor` of shape `(batch_size,)`, _optional_) --
+  Labels for computing the next sequence prediction (classification) loss. Input should be a sequence pair
+  (see `input_ids` docstring) Indices should be in `[0, 1]`. `0` indicates original order (sequence
+  A, then sequence B), `1` indicates switched order (sequence B, then sequence A).
+
+
+> Returns
+
+A [AlbertForPreTrainingOutput](model_doc/albert.html#transformers.models.albert.modeling_albert.AlbertForPreTrainingOutput) or a tuple of
+`torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising
+various elements depending on the configuration ([AlbertConfig](model_doc/albert.html#transformers.AlbertConfig)) and inputs.
+
+- **loss** (_optional_, returned when `labels` is provided, `torch.FloatTensor` of shape `(1,)`) -- Total loss as the sum of the masked language modeling loss and the next sequence prediction
+  (classification) loss.
+- **prediction_logits** (`torch.FloatTensor` of shape `(batch_size, sequence_length, config.vocab_size)`) -- Prediction scores of the language modeling head (scores for each vocabulary token before SoftMax).
+- **sop_logits** (`torch.FloatTensor` of shape `(batch_size, 2)`) -- Prediction scores of the next sequence prediction (classification) head (scores of True/False continuation
+  before SoftMax).
+- **hidden_states** (`tuple(torch.FloatTensor)`, _optional_, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer)
+  of shape `(batch_size, sequence_length, hidden_size)`.
+
+  Hidden-states of the model at the output of each layer plus the initial embedding outputs.
+- **attentions** (`tuple(torch.FloatTensor)`, _optional_, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+
+  Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
+  heads.
+
+
+> Example:
+
+```python
+>>> from transformers import AlbertTokenizer, AlbertForPreTraining
+>>> import torch
+
+>>> tokenizer = AlbertTokenizer.from_pretrained('albert-base-v2')
+>>> model = AlbertForPreTraining.from_pretrained('albert-base-v2')
+
+>>> input_ids = torch.tensor(tokenizer.encode("Hello, my dog is cute", add_special_tokens=True)).unsqueeze(0)  # Batch size 1
+>>> outputs = model(input_ids)
+
+>>> prediction_logits = outputs.prediction_logits
+>>> sop_logits = outputs.sop_logits
+```
+
+> Return type
+
+[AlbertForPreTrainingOutput](model_doc/albert.html#transformers.models.albert.modeling_albert.AlbertForPreTrainingOutput) or `tuple(torch.FloatTensor)`
+
+
+## AlbertForMaskedLM
+
+<a id='transformers.AlbertForMaskedLM'></a>
+> **class transformers.AlbertForMaskedLM**(config)
+
+Albert Model with a _language modeling_ head on top.
+
+This model inherits from [PreTrainedModel](main_classes/model.html#transformers.PreTrainedModel). Check the superclass documentation for the generic
+methods the library implements for all its model (such as downloading or saving, resizing the input embeddings,
+pruning heads etc.)
+
+This model is also a PyTorch [torch.nn.Module](https://pytorch.org/docs/stable/nn.html#torch.nn.Module)
+subclass. Use it as a regular PyTorch Module and refer to the PyTorch documentation for all matter related to
+general usage and behavior.
+
+> Parameters
+
+- **config** ([AlbertConfig](model_doc/albert.html#transformers.AlbertConfig)) -- Model configuration class with all the parameters of the model.
+  Initializing with a config file does not load the weights associated with the model, only the
+  configuration. Check out the [from_pretrained()](main_classes/model.html#transformers.PreTrainedModel.from_pretrained) method to load the model
+  weights.
+
+
+<a id='transformers.AlbertForMaskedLM.forward'></a>
+> **forward**(self, input_ids = None, attention_mask = None, token_type_ids = None, position_ids = None, head_mask = None, inputs_embeds = None, labels = None, output_attentions = None, output_hidden_states = None, return_dict = None)
+
+The [AlbertForMaskedLM](model_doc/albert.html#transformers.AlbertForMaskedLM) forward method, overrides the `__call__` special method.
+
+<Tip>
+
+Although the recipe for forward pass needs to be defined within this function, one should call the
+`Module` instance afterwards instead of this since the former takes care of running the pre and post
+processing steps while the latter silently ignores them.
+
+</Tip>
+
+> Parameters
+
+- **input_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`) --
+  Indices of input sequence tokens in the vocabulary.
+
+  Indices can be obtained using [AlbertTokenizer](model_doc/albert.html#transformers.AlbertTokenizer). See
+  [transformers.PreTrainedTokenizer.__call__()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) and [transformers.PreTrainedTokenizer.encode()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) for
+  details.
+
+  [What are input IDs?](../glossary.html#input-ids)
+- **attention_mask** (`torch.FloatTensor` of shape `(batch_size, sequence_length)`, _optional_) --
+  Mask to avoid performing attention on padding token indices. Mask values selected in `[0, 1]`:
+
+  - 1 for tokens that are **not masked**,
+  - 0 for tokens that are **masked**.
+
+  [What are attention masks?](../glossary.html#attention-mask)
+- **token_type_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`, _optional_) --
+  Segment token indices to indicate first and second portions of the inputs. Indices are selected in `[0, 1]`:
+
+  - 0 corresponds to a _sentence A_ token,
+  - 1 corresponds to a _sentence B_ token.
+
+  [What are token type IDs?](../glossary.html#token-type-ids)
+- **position_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`, _optional_) --
+  Indices of positions of each input sequence tokens in the position embeddings. Selected in the range `[0, config.max_position_embeddings - 1]`.
+
+  [What are position IDs?](../glossary.html#position-ids)
+- **head_mask** (`torch.FloatTensor` of shape `(num_heads,)` or `(num_layers, num_heads)`, _optional_) --
+  Mask to nullify selected heads of the self-attention modules. Mask values selected in `[0, 1]`:
+
+  - 1 indicates the head is **not masked**,
+  - 0 indicates the head is **masked**.
+
+- **inputs_embeds** (`torch.FloatTensor` of shape `(batch_size, sequence_length, hidden_size)`, _optional_) --
+  Optionally, instead of passing `input_ids` you can choose to directly pass an embedded representation.
+  This is useful if you want more control over how to convert `input_ids` indices into associated
+  vectors than the model's internal embedding lookup matrix.
+- **output_attentions** (`bool`, _optional_) --
+  Whether or not to return the attentions tensors of all attention layers. See `attentions` under returned
+  tensors for more detail.
+- **output_hidden_states** (`bool`, _optional_) --
+  Whether or not to return the hidden states of all layers. See `hidden_states` under returned tensors for
+  more detail.
+- **return_dict** (`bool`, _optional_) --
+  Whether or not to return a [ModelOutput](main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple.
+
+- **labels** (`torch.LongTensor` of shape `(batch_size, sequence_length)`, _optional_) --
+  Labels for computing the masked language modeling loss. Indices should be in `[-100, 0, ..., config.vocab_size]` (see `input_ids` docstring) Tokens with indices set to `-100` are ignored
+  (masked), the loss is only computed for the tokens with labels in `[0, ..., config.vocab_size]`
+
+> Returns
+
+A [MaskedLMOutput](main_classes/output.html#transformers.modeling_outputs.MaskedLMOutput) or a tuple of
+`torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising
+various elements depending on the configuration ([AlbertConfig](model_doc/albert.html#transformers.AlbertConfig)) and inputs.
+
+- **loss** (`torch.FloatTensor` of shape `(1,)`, _optional_, returned when `labels` is provided) -- Masked language modeling (MLM) loss.
+- **logits** (`torch.FloatTensor` of shape `(batch_size, sequence_length, config.vocab_size)`) -- Prediction scores of the language modeling head (scores for each vocabulary token before SoftMax).
+- **hidden_states** (`tuple(torch.FloatTensor)`, _optional_, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer)
+  of shape `(batch_size, sequence_length, hidden_size)`.
+
+  Hidden-states of the model at the output of each layer plus the initial embedding outputs.
+- **attentions** (`tuple(torch.FloatTensor)`, _optional_, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+
+  Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
+  heads.
+
+> Return type
+
+[MaskedLMOutput](main_classes/output.html#transformers.modeling_outputs.MaskedLMOutput) or `tuple(torch.FloatTensor)`
+
+> Example:
+
+```python
+>>> from transformers import AlbertTokenizer, AlbertForMaskedLM
+>>> import torch
+
+>>> tokenizer = AlbertTokenizer.from_pretrained('albert-base-v2')
+>>> model = AlbertForMaskedLM.from_pretrained('albert-base-v2')
+
+>>> inputs = tokenizer("The capital of France is [MASK].", return_tensors="pt")
+>>> labels = tokenizer("The capital of France is Paris.", return_tensors="pt")["input_ids"]
+
+>>> outputs = model(**inputs, labels=labels)
+>>> loss = outputs.loss
+>>> logits = outputs.logits
+```
+
+
+## AlbertForSequenceClassification
+
+<a id='transformers.AlbertForSequenceClassification'></a>
+> **class transformers.AlbertForSequenceClassification**(config)
+
+
+Albert Model transformer with a sequence classification/regression head on top (a linear layer on top of the pooled
+output) e.g. for GLUE tasks.
+
+
+This model inherits from [PreTrainedModel](main_classes/model.html#transformers.PreTrainedModel). Check the superclass documentation for the generic
+methods the library implements for all its model (such as downloading or saving, resizing the input embeddings,
+pruning heads etc.)
+
+This model is also a PyTorch [torch.nn.Module](https://pytorch.org/docs/stable/nn.html#torch.nn.Module)
+subclass. Use it as a regular PyTorch Module and refer to the PyTorch documentation for all matter related to
+general usage and behavior.
+
+> Parameters
+
+- **config** ([AlbertConfig](model_doc/albert.html#transformers.AlbertConfig)) -- Model configuration class with all the parameters of the model.
+  Initializing with a config file does not load the weights associated with the model, only the
+  configuration. Check out the [from_pretrained()](main_classes/model.html#transformers.PreTrainedModel.from_pretrained) method to load the model
+  weights.
+
+
+<a id='transformers.AlbertForSequenceClassification.forward'></a>
+> **forward**(self, input_ids = None, attention_mask = None, token_type_ids = None, position_ids = None, head_mask = None, inputs_embeds = None, labels = None, output_attentions = None, output_hidden_states = None, return_dict = None)
+
+The [AlbertForSequenceClassification](model_doc/albert.html#transformers.AlbertForSequenceClassification) forward method, overrides the `__call__` special method.
+
+<Tip>
+
+Although the recipe for forward pass needs to be defined within this function, one should call the
+`Module` instance afterwards instead of this since the former takes care of running the pre and post
+processing steps while the latter silently ignores them.
+
+</Tip>
+
+> Parameters
+
+- **input_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`) --
+  Indices of input sequence tokens in the vocabulary.
+
+  Indices can be obtained using [AlbertTokenizer](model_doc/albert.html#transformers.AlbertTokenizer). See
+  [transformers.PreTrainedTokenizer.__call__()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) and [transformers.PreTrainedTokenizer.encode()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) for
+  details.
+
+  [What are input IDs?](../glossary.html#input-ids)
+- **attention_mask** (`torch.FloatTensor` of shape `(batch_size, sequence_length)`, _optional_) --
+  Mask to avoid performing attention on padding token indices. Mask values selected in `[0, 1]`:
+
+  - 1 for tokens that are **not masked**,
+  - 0 for tokens that are **masked**.
+
+  [What are attention masks?](../glossary.html#attention-mask)
+- **token_type_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`, _optional_) --
+  Segment token indices to indicate first and second portions of the inputs. Indices are selected in `[0, 1]`:
+
+  - 0 corresponds to a _sentence A_ token,
+  - 1 corresponds to a _sentence B_ token.
+
+  [What are token type IDs?](../glossary.html#token-type-ids)
+- **position_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`, _optional_) --
+  Indices of positions of each input sequence tokens in the position embeddings. Selected in the range `[0, config.max_position_embeddings - 1]`.
+
+  [What are position IDs?](../glossary.html#position-ids)
+- **head_mask** (`torch.FloatTensor` of shape `(num_heads,)` or `(num_layers, num_heads)`, _optional_) --
+  Mask to nullify selected heads of the self-attention modules. Mask values selected in `[0, 1]`:
+
+  - 1 indicates the head is **not masked**,
+  - 0 indicates the head is **masked**.
+
+- **inputs_embeds** (`torch.FloatTensor` of shape `(batch_size, sequence_length, hidden_size)`, _optional_) --
+  Optionally, instead of passing `input_ids` you can choose to directly pass an embedded representation.
+  This is useful if you want more control over how to convert `input_ids` indices into associated
+  vectors than the model's internal embedding lookup matrix.
+- **output_attentions** (`bool`, _optional_) --
+  Whether or not to return the attentions tensors of all attention layers. See `attentions` under returned
+  tensors for more detail.
+- **output_hidden_states** (`bool`, _optional_) --
+  Whether or not to return the hidden states of all layers. See `hidden_states` under returned tensors for
+  more detail.
+- **return_dict** (`bool`, _optional_) --
+  Whether or not to return a [ModelOutput](main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple.
+
+- **labels** (`torch.LongTensor` of shape `(batch_size,)`, _optional_) --
+  Labels for computing the sequence classification/regression loss. Indices should be in `[0, ..., config.num_labels - 1]`. If `config.num_labels == 1` a regression loss is computed (Mean-Square loss),
+  If `config.num_labels > 1` a classification loss is computed (Cross-Entropy).
+
+> Returns
+
+A [SequenceClassifierOutput](main_classes/output.html#transformers.modeling_outputs.SequenceClassifierOutput) or a tuple of
+`torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising
+various elements depending on the configuration ([AlbertConfig](model_doc/albert.html#transformers.AlbertConfig)) and inputs.
+
+- **loss** (`torch.FloatTensor` of shape `(1,)`, _optional_, returned when `labels` is provided) -- Classification (or regression if config.num_labels==1) loss.
+- **logits** (`torch.FloatTensor` of shape `(batch_size, config.num_labels)`) -- Classification (or regression if config.num_labels==1) scores (before SoftMax).
+- **hidden_states** (`tuple(torch.FloatTensor)`, _optional_, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer)
+  of shape `(batch_size, sequence_length, hidden_size)`.
+
+  Hidden-states of the model at the output of each layer plus the initial embedding outputs.
+- **attentions** (`tuple(torch.FloatTensor)`, _optional_, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+
+  Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
+  heads.
+
+> Return type
+
+[SequenceClassifierOutput](main_classes/output.html#transformers.modeling_outputs.SequenceClassifierOutput) or `tuple(torch.FloatTensor)`
+
+> Example:
+
+```python
+>>> from transformers import AlbertTokenizer, AlbertForSequenceClassification
+>>> import torch
+
+>>> tokenizer = AlbertTokenizer.from_pretrained('albert-base-v2')
+>>> model = AlbertForSequenceClassification.from_pretrained('albert-base-v2')
+
+>>> inputs = tokenizer("Hello, my dog is cute", return_tensors="pt")
+>>> labels = torch.tensor([1]).unsqueeze(0)  # Batch size 1
+>>> outputs = model(**inputs, labels=labels)
+>>> loss = outputs.loss
+>>> logits = outputs.logits
+```
+
+
+## AlbertForMultipleChoice
+
+<a id='transformers.AlbertForMultipleChoice'></a>
+> **class transformers.AlbertForMultipleChoice**(config)
+
+
+Albert Model with a multiple choice classification head on top (a linear layer on top of the pooled output and a
+softmax) e.g. for RocStories/SWAG tasks.
+
+
+This model inherits from [PreTrainedModel](main_classes/model.html#transformers.PreTrainedModel). Check the superclass documentation for the generic
+methods the library implements for all its model (such as downloading or saving, resizing the input embeddings,
+pruning heads etc.)
+
+This model is also a PyTorch [torch.nn.Module](https://pytorch.org/docs/stable/nn.html#torch.nn.Module)
+subclass. Use it as a regular PyTorch Module and refer to the PyTorch documentation for all matter related to
+general usage and behavior.
+
+> Parameters
+
+- **config** ([AlbertConfig](model_doc/albert.html#transformers.AlbertConfig)) -- Model configuration class with all the parameters of the model.
+  Initializing with a config file does not load the weights associated with the model, only the
+  configuration. Check out the [from_pretrained()](main_classes/model.html#transformers.PreTrainedModel.from_pretrained) method to load the model
+  weights.
+
+
+<a id='transformers.AlbertForMultipleChoice.forward'></a>
+> **forward**(self, input_ids = None, attention_mask = None, token_type_ids = None, position_ids = None, head_mask = None, inputs_embeds = None, labels = None, output_attentions = None, output_hidden_states = None, return_dict = None)
+
+The [AlbertForMultipleChoice](model_doc/albert.html#transformers.AlbertForMultipleChoice) forward method, overrides the `__call__` special method.
+
+<Tip>
+
+Although the recipe for forward pass needs to be defined within this function, one should call the
+`Module` instance afterwards instead of this since the former takes care of running the pre and post
+processing steps while the latter silently ignores them.
+
+</Tip>
+
+> Parameters
+
+- **input_ids** (`torch.LongTensor` of shape `(batch_size, num_choices, sequence_length)`) --
+  Indices of input sequence tokens in the vocabulary.
+
+  Indices can be obtained using [AlbertTokenizer](model_doc/albert.html#transformers.AlbertTokenizer). See
+  [transformers.PreTrainedTokenizer.__call__()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) and [transformers.PreTrainedTokenizer.encode()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) for
+  details.
+
+  [What are input IDs?](../glossary.html#input-ids)
+- **attention_mask** (`torch.FloatTensor` of shape `(batch_size, num_choices, sequence_length)`, _optional_) --
+  Mask to avoid performing attention on padding token indices. Mask values selected in `[0, 1]`:
+
+  - 1 for tokens that are **not masked**,
+  - 0 for tokens that are **masked**.
+
+  [What are attention masks?](../glossary.html#attention-mask)
+- **token_type_ids** (`torch.LongTensor` of shape `(batch_size, num_choices, sequence_length)`, _optional_) --
+  Segment token indices to indicate first and second portions of the inputs. Indices are selected in `[0, 1]`:
+
+  - 0 corresponds to a _sentence A_ token,
+  - 1 corresponds to a _sentence B_ token.
+
+  [What are token type IDs?](../glossary.html#token-type-ids)
+- **position_ids** (`torch.LongTensor` of shape `(batch_size, num_choices, sequence_length)`, _optional_) --
+  Indices of positions of each input sequence tokens in the position embeddings. Selected in the range `[0, config.max_position_embeddings - 1]`.
+
+  [What are position IDs?](../glossary.html#position-ids)
+- **head_mask** (`torch.FloatTensor` of shape `(num_heads,)` or `(num_layers, num_heads)`, _optional_) --
+  Mask to nullify selected heads of the self-attention modules. Mask values selected in `[0, 1]`:
+
+  - 1 indicates the head is **not masked**,
+  - 0 indicates the head is **masked**.
+
+- **inputs_embeds** (`torch.FloatTensor` of shape `(batch_size, num_choices, sequence_length, hidden_size)`, _optional_) --
+  Optionally, instead of passing `input_ids` you can choose to directly pass an embedded representation.
+  This is useful if you want more control over how to convert `input_ids` indices into associated
+  vectors than the model's internal embedding lookup matrix.
+- **output_attentions** (`bool`, _optional_) --
+  Whether or not to return the attentions tensors of all attention layers. See `attentions` under returned
+  tensors for more detail.
+- **output_hidden_states** (`bool`, _optional_) --
+  Whether or not to return the hidden states of all layers. See `hidden_states` under returned tensors for
+  more detail.
+- **return_dict** (`bool`, _optional_) --
+  Whether or not to return a [ModelOutput](main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple.
+
+- **labels** (`torch.LongTensor` of shape `(batch_size,)`, _optional_) --
+  Labels for computing the multiple choice classification loss. Indices should be in `[0, ..., num_choices-1]` where _num_choices_ is the size of the second dimension of the input tensors. (see
+  _input_ids_ above)
+
+> Returns
+
+A [MultipleChoiceModelOutput](main_classes/output.html#transformers.modeling_outputs.MultipleChoiceModelOutput) or a tuple of
+`torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising
+various elements depending on the configuration ([AlbertConfig](model_doc/albert.html#transformers.AlbertConfig)) and inputs.
+
+- **loss** (`torch.FloatTensor` of shape _(1,)_, _optional_, returned when `labels` is provided) -- Classification loss.
+- **logits** (`torch.FloatTensor` of shape `(batch_size, num_choices)`) -- _num_choices_ is the second dimension of the input tensors. (see _input_ids_ above).
+
+  Classification scores (before SoftMax).
+- **hidden_states** (`tuple(torch.FloatTensor)`, _optional_, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer)
+  of shape `(batch_size, sequence_length, hidden_size)`.
+
+  Hidden-states of the model at the output of each layer plus the initial embedding outputs.
+- **attentions** (`tuple(torch.FloatTensor)`, _optional_, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+
+  Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
+  heads.
+
+> Return type
+
+[MultipleChoiceModelOutput](main_classes/output.html#transformers.modeling_outputs.MultipleChoiceModelOutput) or `tuple(torch.FloatTensor)`
+
+> Example:
+
+```python
+>>> from transformers import AlbertTokenizer, AlbertForMultipleChoice
+>>> import torch
+
+>>> tokenizer = AlbertTokenizer.from_pretrained('albert-base-v2')
+>>> model = AlbertForMultipleChoice.from_pretrained('albert-base-v2')
+
+>>> prompt = "In Italy, pizza served in formal settings, such as at a restaurant, is presented unsliced."
+>>> choice0 = "It is eaten with a fork and a knife."
+>>> choice1 = "It is eaten while held in the hand."
+>>> labels = torch.tensor(0).unsqueeze(0)  # choice0 is correct (according to Wikipedia ;)), batch size 1
+
+>>> encoding = tokenizer([prompt, prompt], [choice0, choice1], return_tensors='pt', padding=True)
+>>> outputs = model(**{k: v.unsqueeze(0) for k,v in encoding.items()}, labels=labels)  # batch size is 1
+
+>>> # the linear classifier still needs to be trained
+>>> loss = outputs.loss
+>>> logits = outputs.logits
+```
+
+
+## AlbertForTokenClassification
+
+<a id='transformers.AlbertForTokenClassification'></a>
+> **class transformers.AlbertForTokenClassification**(config)
+
+
+Albert Model with a token classification head on top (a linear layer on top of the hidden-states output) e.g. for
+Named-Entity-Recognition (NER) tasks.
+
+
+This model inherits from [PreTrainedModel](main_classes/model.html#transformers.PreTrainedModel). Check the superclass documentation for the generic
+methods the library implements for all its model (such as downloading or saving, resizing the input embeddings,
+pruning heads etc.)
+
+This model is also a PyTorch [torch.nn.Module](https://pytorch.org/docs/stable/nn.html#torch.nn.Module)
+subclass. Use it as a regular PyTorch Module and refer to the PyTorch documentation for all matter related to
+general usage and behavior.
+
+> Parameters
+
+- **config** ([AlbertConfig](model_doc/albert.html#transformers.AlbertConfig)) -- Model configuration class with all the parameters of the model.
+  Initializing with a config file does not load the weights associated with the model, only the
+  configuration. Check out the [from_pretrained()](main_classes/model.html#transformers.PreTrainedModel.from_pretrained) method to load the model
+  weights.
+
+
+<a id='transformers.AlbertForTokenClassification.forward'></a>
+> **forward**(self, input_ids = None, attention_mask = None, token_type_ids = None, position_ids = None, head_mask = None, inputs_embeds = None, labels = None, output_attentions = None, output_hidden_states = None, return_dict = None)
+
+The [AlbertForTokenClassification](model_doc/albert.html#transformers.AlbertForTokenClassification) forward method, overrides the `__call__` special method.
+
+<Tip>
+
+Although the recipe for forward pass needs to be defined within this function, one should call the
+`Module` instance afterwards instead of this since the former takes care of running the pre and post
+processing steps while the latter silently ignores them.
+
+</Tip>
+
+> Parameters
+
+- **input_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`) --
+  Indices of input sequence tokens in the vocabulary.
+
+  Indices can be obtained using [AlbertTokenizer](model_doc/albert.html#transformers.AlbertTokenizer). See
+  [transformers.PreTrainedTokenizer.__call__()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) and [transformers.PreTrainedTokenizer.encode()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) for
+  details.
+
+  [What are input IDs?](../glossary.html#input-ids)
+- **attention_mask** (`torch.FloatTensor` of shape `(batch_size, sequence_length)`, _optional_) --
+  Mask to avoid performing attention on padding token indices. Mask values selected in `[0, 1]`:
+
+  - 1 for tokens that are **not masked**,
+  - 0 for tokens that are **masked**.
+
+  [What are attention masks?](../glossary.html#attention-mask)
+- **token_type_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`, _optional_) --
+  Segment token indices to indicate first and second portions of the inputs. Indices are selected in `[0, 1]`:
+
+  - 0 corresponds to a _sentence A_ token,
+  - 1 corresponds to a _sentence B_ token.
+
+  [What are token type IDs?](../glossary.html#token-type-ids)
+- **position_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`, _optional_) --
+  Indices of positions of each input sequence tokens in the position embeddings. Selected in the range `[0, config.max_position_embeddings - 1]`.
+
+  [What are position IDs?](../glossary.html#position-ids)
+- **head_mask** (`torch.FloatTensor` of shape `(num_heads,)` or `(num_layers, num_heads)`, _optional_) --
+  Mask to nullify selected heads of the self-attention modules. Mask values selected in `[0, 1]`:
+
+  - 1 indicates the head is **not masked**,
+  - 0 indicates the head is **masked**.
+
+- **inputs_embeds** (`torch.FloatTensor` of shape `(batch_size, sequence_length, hidden_size)`, _optional_) --
+  Optionally, instead of passing `input_ids` you can choose to directly pass an embedded representation.
+  This is useful if you want more control over how to convert `input_ids` indices into associated
+  vectors than the model's internal embedding lookup matrix.
+- **output_attentions** (`bool`, _optional_) --
+  Whether or not to return the attentions tensors of all attention layers. See `attentions` under returned
+  tensors for more detail.
+- **output_hidden_states** (`bool`, _optional_) --
+  Whether or not to return the hidden states of all layers. See `hidden_states` under returned tensors for
+  more detail.
+- **return_dict** (`bool`, _optional_) --
+  Whether or not to return a [ModelOutput](main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple.
+
+- **labels** (`torch.LongTensor` of shape `(batch_size, sequence_length)`, _optional_) --
+  Labels for computing the token classification loss. Indices should be in `[0, ..., config.num_labels - 1]`.
+
+> Returns
+
+A [TokenClassifierOutput](main_classes/output.html#transformers.modeling_outputs.TokenClassifierOutput) or a tuple of
+`torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising
+various elements depending on the configuration ([AlbertConfig](model_doc/albert.html#transformers.AlbertConfig)) and inputs.
+
+- **loss** (`torch.FloatTensor` of shape `(1,)`, _optional_, returned when `labels` is provided)  -- Classification loss.
+- **logits** (`torch.FloatTensor` of shape `(batch_size, sequence_length, config.num_labels)`) -- Classification scores (before SoftMax).
+- **hidden_states** (`tuple(torch.FloatTensor)`, _optional_, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer)
+  of shape `(batch_size, sequence_length, hidden_size)`.
+
+  Hidden-states of the model at the output of each layer plus the initial embedding outputs.
+- **attentions** (`tuple(torch.FloatTensor)`, _optional_, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+
+  Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
+  heads.
+
+> Return type
+
+[TokenClassifierOutput](main_classes/output.html#transformers.modeling_outputs.TokenClassifierOutput) or `tuple(torch.FloatTensor)`
+
+> Example:
+
+```python
+>>> from transformers import AlbertTokenizer, AlbertForTokenClassification
+>>> import torch
+
+>>> tokenizer = AlbertTokenizer.from_pretrained('albert-base-v2')
+>>> model = AlbertForTokenClassification.from_pretrained('albert-base-v2')
+
+>>> inputs = tokenizer("Hello, my dog is cute", return_tensors="pt")
+>>> labels = torch.tensor([1] * inputs["input_ids"].size(1)).unsqueeze(0)  # Batch size 1
+
+>>> outputs = model(**inputs, labels=labels)
+>>> loss = outputs.loss
+>>> logits = outputs.logits
+```
+
+
+## AlbertForQuestionAnswering
+
+<a id='transformers.AlbertForQuestionAnswering'></a>
+> **class transformers.AlbertForQuestionAnswering**(config)
+
+
+Albert Model with a span classification head on top for extractive question-answering tasks like SQuAD (a linear
+layers on top of the hidden-states output to compute _span start logits_ and _span end logits_).
+
+
+This model inherits from [PreTrainedModel](main_classes/model.html#transformers.PreTrainedModel). Check the superclass documentation for the generic
+methods the library implements for all its model (such as downloading or saving, resizing the input embeddings,
+pruning heads etc.)
+
+This model is also a PyTorch [torch.nn.Module](https://pytorch.org/docs/stable/nn.html#torch.nn.Module)
+subclass. Use it as a regular PyTorch Module and refer to the PyTorch documentation for all matter related to
+general usage and behavior.
+
+> Parameters
+
+- **config** ([AlbertConfig](model_doc/albert.html#transformers.AlbertConfig)) -- Model configuration class with all the parameters of the model.
+  Initializing with a config file does not load the weights associated with the model, only the
+  configuration. Check out the [from_pretrained()](main_classes/model.html#transformers.PreTrainedModel.from_pretrained) method to load the model
+  weights.
+
+
+<a id='transformers.AlbertForQuestionAnswering.forward'></a>
+> **forward**(self, input_ids = None, attention_mask = None, token_type_ids = None, position_ids = None, head_mask = None, inputs_embeds = None, start_positions = None, end_positions = None, output_attentions = None, output_hidden_states = None, return_dict = None)
+
+The [AlbertForQuestionAnswering](model_doc/albert.html#transformers.AlbertForQuestionAnswering) forward method, overrides the `__call__` special method.
+
+<Tip>
+
+Although the recipe for forward pass needs to be defined within this function, one should call the
+`Module` instance afterwards instead of this since the former takes care of running the pre and post
+processing steps while the latter silently ignores them.
+
+</Tip>
+
+> Parameters
+
+- **input_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`) --
+  Indices of input sequence tokens in the vocabulary.
+
+  Indices can be obtained using [AlbertTokenizer](model_doc/albert.html#transformers.AlbertTokenizer). See
+  [transformers.PreTrainedTokenizer.__call__()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) and [transformers.PreTrainedTokenizer.encode()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) for
+  details.
+
+  [What are input IDs?](../glossary.html#input-ids)
+- **attention_mask** (`torch.FloatTensor` of shape `(batch_size, sequence_length)`, _optional_) --
+  Mask to avoid performing attention on padding token indices. Mask values selected in `[0, 1]`:
+
+  - 1 for tokens that are **not masked**,
+  - 0 for tokens that are **masked**.
+
+  [What are attention masks?](../glossary.html#attention-mask)
+- **token_type_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`, _optional_) --
+  Segment token indices to indicate first and second portions of the inputs. Indices are selected in `[0, 1]`:
+
+  - 0 corresponds to a _sentence A_ token,
+  - 1 corresponds to a _sentence B_ token.
+
+  [What are token type IDs?](../glossary.html#token-type-ids)
+- **position_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`, _optional_) --
+  Indices of positions of each input sequence tokens in the position embeddings. Selected in the range `[0, config.max_position_embeddings - 1]`.
+
+  [What are position IDs?](../glossary.html#position-ids)
+- **head_mask** (`torch.FloatTensor` of shape `(num_heads,)` or `(num_layers, num_heads)`, _optional_) --
+  Mask to nullify selected heads of the self-attention modules. Mask values selected in `[0, 1]`:
+
+  - 1 indicates the head is **not masked**,
+  - 0 indicates the head is **masked**.
+
+- **inputs_embeds** (`torch.FloatTensor` of shape `(batch_size, sequence_length, hidden_size)`, _optional_) --
+  Optionally, instead of passing `input_ids` you can choose to directly pass an embedded representation.
+  This is useful if you want more control over how to convert `input_ids` indices into associated
+  vectors than the model's internal embedding lookup matrix.
+- **output_attentions** (`bool`, _optional_) --
+  Whether or not to return the attentions tensors of all attention layers. See `attentions` under returned
+  tensors for more detail.
+- **output_hidden_states** (`bool`, _optional_) --
+  Whether or not to return the hidden states of all layers. See `hidden_states` under returned tensors for
+  more detail.
+- **return_dict** (`bool`, _optional_) --
+  Whether or not to return a [ModelOutput](main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple.
+
+- **start_positions** (`torch.LongTensor` of shape `(batch_size,)`, _optional_) --
+  Labels for position (index) of the start of the labelled span for computing the token classification loss.
+  Positions are clamped to the length of the sequence (`sequence_length`). Position outside of the
+  sequence are not taken into account for computing the loss.
+- **end_positions** (`torch.LongTensor` of shape `(batch_size,)`, _optional_) --
+  Labels for position (index) of the end of the labelled span for computing the token classification loss.
+  Positions are clamped to the length of the sequence (`sequence_length`). Position outside of the
+  sequence are not taken into account for computing the loss.
+
+> Returns
+
+A [QuestionAnsweringModelOutput](main_classes/output.html#transformers.modeling_outputs.QuestionAnsweringModelOutput) or a tuple of
+`torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising
+various elements depending on the configuration ([AlbertConfig](model_doc/albert.html#transformers.AlbertConfig)) and inputs.
+
+- **loss** (`torch.FloatTensor` of shape `(1,)`, _optional_, returned when `labels` is provided) -- Total span extraction loss is the sum of a Cross-Entropy for the start and end positions.
+- **start_logits** (`torch.FloatTensor` of shape `(batch_size, sequence_length)`) -- Span-start scores (before SoftMax).
+- **end_logits** (`torch.FloatTensor` of shape `(batch_size, sequence_length)`) -- Span-end scores (before SoftMax).
+- **hidden_states** (`tuple(torch.FloatTensor)`, _optional_, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer)
+  of shape `(batch_size, sequence_length, hidden_size)`.
+
+  Hidden-states of the model at the output of each layer plus the initial embedding outputs.
+- **attentions** (`tuple(torch.FloatTensor)`, _optional_, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+
+  Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
+  heads.
+
+> Return type
+
+[QuestionAnsweringModelOutput](main_classes/output.html#transformers.modeling_outputs.QuestionAnsweringModelOutput) or `tuple(torch.FloatTensor)`
+
+> Example:
+
+```python
+>>> from transformers import AlbertTokenizer, AlbertForQuestionAnswering
+>>> import torch
+
+>>> tokenizer = AlbertTokenizer.from_pretrained('albert-base-v2')
+>>> model = AlbertForQuestionAnswering.from_pretrained('albert-base-v2')
+
+>>> question, text = "Who was Jim Henson?", "Jim Henson was a nice puppet"
+>>> inputs = tokenizer(question, text, return_tensors='pt')
+>>> start_positions = torch.tensor([1])
+>>> end_positions = torch.tensor([3])
+
+>>> outputs = model(**inputs, start_positions=start_positions, end_positions=end_positions)
+>>> loss = outputs.loss
+>>> start_scores = outputs.start_logits
+>>> end_scores = outputs.end_logits
+```
+
+
+## TFAlbertModel
+
+<a id='transformers.TFAlbertModel'></a>
+> **class transformers.TFAlbertModel**(*args, **kwargs)
+
+The bare Albert Model transformer outputting raw hidden-states without any specific head on top.
+
+This model inherits from [TFPreTrainedModel](main_classes/model.html#transformers.TFPreTrainedModel). Check the superclass documentation for the
+generic methods the library implements for all its model (such as downloading or saving, resizing the input
+embeddings, pruning heads etc.)
+
+This model is also a [tf.keras.Model](https://www.tensorflow.org/api_docs/python/tf/keras/Model) subclass. Use
+it as a regular TF 2.0 Keras Model and refer to the TF 2.0 documentation for all matter related to general usage
+and behavior.
+
+<Tip>
+
+TF 2.0 models accepts two formats as inputs:
+
+- having all inputs as keyword arguments (like PyTorch models), or
+- having all inputs as a list, tuple or dict in the first positional arguments.
+
+This second option is useful when using `tf.keras.Model.fit` method which currently requires having all
+the tensors in the first argument of the model call function: `model(inputs)`.
+
+If you choose this second option, there are three possibilities you can use to gather all the input Tensors in
+the first positional argument :
+
+- a single Tensor with `input_ids` only and nothing else: `model(inputs_ids)`
+- a list of varying length with one or several input Tensors IN THE ORDER given in the docstring:
+  `model([input_ids, attention_mask])` or `model([input_ids, attention_mask, token_type_ids])`
+- a dictionary with one or several input Tensors associated to the input names given in the docstring:
+  `model({"input_ids": input_ids, "token_type_ids": token_type_ids})`
+
+</Tip>
+
+> Parameters
+
+- **config** ([AlbertConfig](model_doc/albert.html#transformers.AlbertConfig)) -- Model configuration class with all the parameters of the model.
+  Initializing with a config file does not load the weights associated with the model, only the
+  configuration. Check out the [from_pretrained()](main_classes/model.html#transformers.PreTrainedModel.from_pretrained) method to load the model
+  weights.
+
+
+<a id='transformers.TFAlbertModel.call'></a>
+> **call**(self, input_ids: typing.Union[typing.List[tensorflow.python.framework.ops.Tensor], typing.List[numpy.ndarray], typing.Dict[str, tensorflow.python.framework.ops.Tensor], typing.Dict[str, numpy.ndarray], numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None, attention_mask: typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None, token_type_ids: typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None, position_ids: typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None, head_mask: typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None, inputs_embeds: typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None, output_attentions: typing.Optional[bool] = None, output_hidden_states: typing.Optional[bool] = None, return_dict: typing.Optional[bool] = None, training: typing.Optional[bool] = False, **kwargs)
+
+The [TFAlbertModel](model_doc/albert.html#transformers.TFAlbertModel) forward method, overrides the `__call__` special method.
+
+<Tip>
+
+Although the recipe for forward pass needs to be defined within this function, one should call the
+`Module` instance afterwards instead of this since the former takes care of running the pre and post
+processing steps while the latter silently ignores them.
+
+</Tip>
+
+> Parameters
+
+- **input_ids** (`Numpy array` or `tf.Tensor` of shape `(batch_size, sequence_length)`) --
+  Indices of input sequence tokens in the vocabulary.
+
+  Indices can be obtained using [AlbertTokenizer](model_doc/albert.html#transformers.AlbertTokenizer). See
+  [transformers.PreTrainedTokenizer.__call__()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) and [transformers.PreTrainedTokenizer.encode()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) for
+  details.
+
+  [What are input IDs?](../glossary.html#input-ids)
+- **attention_mask** (`Numpy array` or `tf.Tensor` of shape `(batch_size, sequence_length)`, _optional_) --
+  Mask to avoid performing attention on padding token indices. Mask values selected in `[0, 1]`:
+
+  - 1 for tokens that are **not masked**,
+  - 0 for tokens that are **masked**.
+
+  [What are attention masks?](../glossary.html#attention-mask)
+- **token_type_ids** (`Numpy array` or `tf.Tensor` of shape `(batch_size, sequence_length)`, _optional_) --
+  Segment token indices to indicate first and second portions of the inputs. Indices are selected in `[0, 1]`:
+
+  - 0 corresponds to a _sentence A_ token,
+  - 1 corresponds to a _sentence B_ token.
+
+  [What are token type IDs?](../glossary.html#token-type-ids)
+- **position_ids** (`Numpy array` or `tf.Tensor` of shape `(batch_size, sequence_length)`, _optional_) --
+  Indices of positions of each input sequence tokens in the position embeddings. Selected in the range `[0, config.max_position_embeddings - 1]`.
+
+  [What are position IDs?](../glossary.html#position-ids)
+- **head_mask** (`Numpy array` or `tf.Tensor` of shape `(num_heads,)` or `(num_layers, num_heads)`, _optional_) --
+  Mask to nullify selected heads of the self-attention modules. Mask values selected in `[0, 1]`:
+
+  - 1 indicates the head is **not masked**,
+  - 0 indicates the head is **masked**.
+
+- **inputs_embeds** (`tf.Tensor` of shape `(batch_size, sequence_length, hidden_size)`, _optional_) --
+  Optionally, instead of passing `input_ids` you can choose to directly pass an embedded representation.
+  This is useful if you want more control over how to convert `input_ids` indices into associated
+  vectors than the model's internal embedding lookup matrix.
+- **output_attentions** (`bool`, _optional_) --
+  Whether or not to return the attentions tensors of all attention layers. See `attentions` under returned
+  tensors for more detail. This argument can be used only in eager mode, in graph mode the value in the
+  config will be used instead.
+- **output_hidden_states** (`bool`, _optional_) --
+  Whether or not to return the hidden states of all layers. See `hidden_states` under returned tensors for
+  more detail. This argument can be used only in eager mode, in graph mode the value in the config will be
+  used instead.
+- **return_dict** (`bool`, _optional_) --
+  Whether or not to return a [ModelOutput](main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple. This
+  argument can be used in eager mode, in graph mode the value will always be set to True.
+- **training** (`bool`, _optional_, defaults to `False`) --
+  Whether or not to use the model in training mode (some modules like dropout modules have different
+  behaviors between training and evaluation).
+
+> Returns
+
+A [TFBaseModelOutputWithPooling](main_classes/output.html#transformers.modeling_tf_outputs.TFBaseModelOutputWithPooling) or a tuple of
+`tf.Tensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising various
+elements depending on the configuration ([AlbertConfig](model_doc/albert.html#transformers.AlbertConfig)) and inputs.
+
+- **last_hidden_state** (`tf.Tensor` of shape `(batch_size, sequence_length, hidden_size)`) -- Sequence of hidden-states at the output of the last layer of the model.
+- **pooler_output** (`tf.Tensor` of shape `(batch_size, hidden_size)`) -- Last layer hidden-state of the first token of the sequence (classification token) further processed by a
+  Linear layer and a Tanh activation function. The Linear layer weights are trained from the next sentence
+  prediction (classification) objective during pretraining.
+
+  This output is usually *not* a good summary of the semantic content of the input, you're often better with
+  averaging or pooling the sequence of hidden-states for the whole input sequence.
+- **hidden_states** (`tuple(tf.Tensor)`, _optional_, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `tf.Tensor` (one for the output of the embeddings + one for the output of each layer) of
+  shape `(batch_size, sequence_length, hidden_size)`.
+
+  Hidden-states of the model at the output of each layer plus the initial embedding outputs.
+- **attentions** (`tuple(tf.Tensor)`, _optional_, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `tf.Tensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+
+  Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
+  heads.
+
+> Return type
+
+[TFBaseModelOutputWithPooling](main_classes/output.html#transformers.modeling_tf_outputs.TFBaseModelOutputWithPooling) or `tuple(tf.Tensor)`
+
+> Example:
+
+```python
+>>> from transformers import AlbertTokenizer, TFAlbertModel
+>>> import tensorflow as tf
+
+>>> tokenizer = AlbertTokenizer.from_pretrained('albert-base-v2')
+>>> model = TFAlbertModel.from_pretrained('albert-base-v2')
+
+>>> inputs = tokenizer("Hello, my dog is cute", return_tensors="tf")
+>>> outputs = model(inputs)
+
+>>> last_hidden_states = outputs.last_hidden_state
+```
+
+
+## TFAlbertForPreTraining
+
+<a id='transformers.TFAlbertForPreTraining'></a>
+> **class transformers.TFAlbertForPreTraining**(*args, **kwargs)
+
+
+Albert Model with two heads on top for pretraining: a _masked language modeling_ head and a _sentence order
+prediction_ (classification) head.
+
+
+This model inherits from [TFPreTrainedModel](main_classes/model.html#transformers.TFPreTrainedModel). Check the superclass documentation for the
+generic methods the library implements for all its model (such as downloading or saving, resizing the input
+embeddings, pruning heads etc.)
+
+This model is also a [tf.keras.Model](https://www.tensorflow.org/api_docs/python/tf/keras/Model) subclass. Use
+it as a regular TF 2.0 Keras Model and refer to the TF 2.0 documentation for all matter related to general usage
+and behavior.
+
+<Tip>
+
+TF 2.0 models accepts two formats as inputs:
+
+- having all inputs as keyword arguments (like PyTorch models), or
+- having all inputs as a list, tuple or dict in the first positional arguments.
+
+This second option is useful when using `tf.keras.Model.fit` method which currently requires having all
+the tensors in the first argument of the model call function: `model(inputs)`.
+
+If you choose this second option, there are three possibilities you can use to gather all the input Tensors in
+the first positional argument :
+
+- a single Tensor with `input_ids` only and nothing else: `model(inputs_ids)`
+- a list of varying length with one or several input Tensors IN THE ORDER given in the docstring:
+  `model([input_ids, attention_mask])` or `model([input_ids, attention_mask, token_type_ids])`
+- a dictionary with one or several input Tensors associated to the input names given in the docstring:
+  `model({"input_ids": input_ids, "token_type_ids": token_type_ids})`
+
+</Tip>
+
+> Parameters
+
+- **config** ([AlbertConfig](model_doc/albert.html#transformers.AlbertConfig)) -- Model configuration class with all the parameters of the model.
+  Initializing with a config file does not load the weights associated with the model, only the
+  configuration. Check out the [from_pretrained()](main_classes/model.html#transformers.PreTrainedModel.from_pretrained) method to load the model
+  weights.
+
+
+<a id='transformers.TFAlbertForPreTraining.call'></a>
+> **call**(self, input_ids: typing.Union[typing.List[tensorflow.python.framework.ops.Tensor], typing.List[numpy.ndarray], typing.Dict[str, tensorflow.python.framework.ops.Tensor], typing.Dict[str, numpy.ndarray], numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None, attention_mask: typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None, token_type_ids: typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None, position_ids: typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None, head_mask: typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None, inputs_embeds: typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None, output_attentions: typing.Optional[bool] = None, output_hidden_states: typing.Optional[bool] = None, return_dict: typing.Optional[bool] = None, labels: typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None, sentence_order_label: typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None, training: typing.Optional[bool] = False, **kwargs)
+
+The [TFAlbertForPreTraining](model_doc/albert.html#transformers.TFAlbertForPreTraining) forward method, overrides the `__call__` special method.
+
+<Tip>
+
+Although the recipe for forward pass needs to be defined within this function, one should call the
+`Module` instance afterwards instead of this since the former takes care of running the pre and post
+processing steps while the latter silently ignores them.
+
+</Tip>
+
+> Parameters
+
+- **input_ids** (`Numpy array` or `tf.Tensor` of shape `(batch_size, sequence_length)`) --
+  Indices of input sequence tokens in the vocabulary.
+
+  Indices can be obtained using [AlbertTokenizer](model_doc/albert.html#transformers.AlbertTokenizer). See
+  [transformers.PreTrainedTokenizer.__call__()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) and [transformers.PreTrainedTokenizer.encode()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) for
+  details.
+
+  [What are input IDs?](../glossary.html#input-ids)
+- **attention_mask** (`Numpy array` or `tf.Tensor` of shape `(batch_size, sequence_length)`, _optional_) --
+  Mask to avoid performing attention on padding token indices. Mask values selected in `[0, 1]`:
+
+  - 1 for tokens that are **not masked**,
+  - 0 for tokens that are **masked**.
+
+  [What are attention masks?](../glossary.html#attention-mask)
+- **token_type_ids** (`Numpy array` or `tf.Tensor` of shape `(batch_size, sequence_length)`, _optional_) --
+  Segment token indices to indicate first and second portions of the inputs. Indices are selected in `[0, 1]`:
+
+  - 0 corresponds to a _sentence A_ token,
+  - 1 corresponds to a _sentence B_ token.
+
+  [What are token type IDs?](../glossary.html#token-type-ids)
+- **position_ids** (`Numpy array` or `tf.Tensor` of shape `(batch_size, sequence_length)`, _optional_) --
+  Indices of positions of each input sequence tokens in the position embeddings. Selected in the range `[0, config.max_position_embeddings - 1]`.
+
+  [What are position IDs?](../glossary.html#position-ids)
+- **head_mask** (`Numpy array` or `tf.Tensor` of shape `(num_heads,)` or `(num_layers, num_heads)`, _optional_) --
+  Mask to nullify selected heads of the self-attention modules. Mask values selected in `[0, 1]`:
+
+  - 1 indicates the head is **not masked**,
+  - 0 indicates the head is **masked**.
+
+- **inputs_embeds** (`tf.Tensor` of shape `(batch_size, sequence_length, hidden_size)`, _optional_) --
+  Optionally, instead of passing `input_ids` you can choose to directly pass an embedded representation.
+  This is useful if you want more control over how to convert `input_ids` indices into associated
+  vectors than the model's internal embedding lookup matrix.
+- **output_attentions** (`bool`, _optional_) --
+  Whether or not to return the attentions tensors of all attention layers. See `attentions` under returned
+  tensors for more detail. This argument can be used only in eager mode, in graph mode the value in the
+  config will be used instead.
+- **output_hidden_states** (`bool`, _optional_) --
+  Whether or not to return the hidden states of all layers. See `hidden_states` under returned tensors for
+  more detail. This argument can be used only in eager mode, in graph mode the value in the config will be
+  used instead.
+- **return_dict** (`bool`, _optional_) --
+  Whether or not to return a [ModelOutput](main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple. This
+  argument can be used in eager mode, in graph mode the value will always be set to True.
+- **training** (`bool`, _optional_, defaults to `False`) --
+  Whether or not to use the model in training mode (some modules like dropout modules have different
+  behaviors between training and evaluation).
+
+
+> Returns
+
+A [TFAlbertForPreTrainingOutput](model_doc/albert.html#transformers.models.albert.modeling_tf_albert.TFAlbertForPreTrainingOutput) or a tuple of
+`tf.Tensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising various
+elements depending on the configuration ([AlbertConfig](model_doc/albert.html#transformers.AlbertConfig)) and inputs.
+
+- **prediction_logits** (`tf.Tensor` of shape `(batch_size, sequence_length, config.vocab_size)`) -- Prediction scores of the language modeling head (scores for each vocabulary token before SoftMax).
+- **sop_logits** (`tf.Tensor` of shape `(batch_size, 2)`) -- Prediction scores of the next sequence prediction (classification) head (scores of True/False continuation
+  before SoftMax).
+- **hidden_states** (`tuple(tf.Tensor)`, _optional_, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `tf.Tensor` (one for the output of the embeddings + one for the output of each layer) of
+  shape `(batch_size, sequence_length, hidden_size)`.
+
+  Hidden-states of the model at the output of each layer plus the initial embedding outputs.
+- **attentions** (`tuple(tf.Tensor)`, _optional_, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `tf.Tensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+
+  Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
+  heads.
+
+
+> Example:
+
+```python
+>>> import tensorflow as tf
+>>> from transformers import AlbertTokenizer, TFAlbertForPreTraining
+
+>>> tokenizer = AlbertTokenizer.from_pretrained('albert-base-v2')
+>>> model = TFAlbertForPreTraining.from_pretrained('albert-base-v2')
+
+>>> input_ids = tf.constant(tokenizer.encode("Hello, my dog is cute", add_special_tokens=True))[None, :]  # Batch size 1
+>>> outputs = model(input_ids)
+
+>>> prediction_logits = outputs.prediction_logits
+>>> sop_logits = outputs.sop_logits
+```
+
+> Return type
+
+[TFAlbertForPreTrainingOutput](model_doc/albert.html#transformers.models.albert.modeling_tf_albert.TFAlbertForPreTrainingOutput) or `tuple(tf.Tensor)`
+
+
+## TFAlbertForMaskedLM
+
+<a id='transformers.TFAlbertForMaskedLM'></a>
+> **class transformers.TFAlbertForMaskedLM**(*args, **kwargs)
+
+Albert Model with a _language modeling_ head on top. 
+
+This model inherits from [TFPreTrainedModel](main_classes/model.html#transformers.TFPreTrainedModel). Check the superclass documentation for the
+generic methods the library implements for all its model (such as downloading or saving, resizing the input
+embeddings, pruning heads etc.)
+
+This model is also a [tf.keras.Model](https://www.tensorflow.org/api_docs/python/tf/keras/Model) subclass. Use
+it as a regular TF 2.0 Keras Model and refer to the TF 2.0 documentation for all matter related to general usage
+and behavior.
+
+<Tip>
+
+TF 2.0 models accepts two formats as inputs:
+
+- having all inputs as keyword arguments (like PyTorch models), or
+- having all inputs as a list, tuple or dict in the first positional arguments.
+
+This second option is useful when using `tf.keras.Model.fit` method which currently requires having all
+the tensors in the first argument of the model call function: `model(inputs)`.
+
+If you choose this second option, there are three possibilities you can use to gather all the input Tensors in
+the first positional argument :
+
+- a single Tensor with `input_ids` only and nothing else: `model(inputs_ids)`
+- a list of varying length with one or several input Tensors IN THE ORDER given in the docstring:
+  `model([input_ids, attention_mask])` or `model([input_ids, attention_mask, token_type_ids])`
+- a dictionary with one or several input Tensors associated to the input names given in the docstring:
+  `model({"input_ids": input_ids, "token_type_ids": token_type_ids})`
+
+</Tip>
+
+> Parameters
+
+- **config** ([AlbertConfig](model_doc/albert.html#transformers.AlbertConfig)) -- Model configuration class with all the parameters of the model.
+  Initializing with a config file does not load the weights associated with the model, only the
+  configuration. Check out the [from_pretrained()](main_classes/model.html#transformers.PreTrainedModel.from_pretrained) method to load the model
+  weights.
+
+
+<a id='transformers.TFAlbertForMaskedLM.call'></a>
+> **call**(self, input_ids: typing.Union[typing.List[tensorflow.python.framework.ops.Tensor], typing.List[numpy.ndarray], typing.Dict[str, tensorflow.python.framework.ops.Tensor], typing.Dict[str, numpy.ndarray], numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None, attention_mask: typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None, token_type_ids: typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None, position_ids: typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None, head_mask: typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None, inputs_embeds: typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None, output_attentions: typing.Optional[bool] = None, output_hidden_states: typing.Optional[bool] = None, return_dict: typing.Optional[bool] = None, labels: typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None, training: typing.Optional[bool] = False, **kwargs)
+
+The [TFAlbertForMaskedLM](model_doc/albert.html#transformers.TFAlbertForMaskedLM) forward method, overrides the `__call__` special method.
+
+<Tip>
+
+Although the recipe for forward pass needs to be defined within this function, one should call the
+`Module` instance afterwards instead of this since the former takes care of running the pre and post
+processing steps while the latter silently ignores them.
+
+</Tip>
+
+> Parameters
+
+- **input_ids** (`Numpy array` or `tf.Tensor` of shape `(batch_size, sequence_length)`) --
+  Indices of input sequence tokens in the vocabulary.
+
+  Indices can be obtained using [AlbertTokenizer](model_doc/albert.html#transformers.AlbertTokenizer). See
+  [transformers.PreTrainedTokenizer.__call__()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) and [transformers.PreTrainedTokenizer.encode()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) for
+  details.
+
+  [What are input IDs?](../glossary.html#input-ids)
+- **attention_mask** (`Numpy array` or `tf.Tensor` of shape `(batch_size, sequence_length)`, _optional_) --
+  Mask to avoid performing attention on padding token indices. Mask values selected in `[0, 1]`:
+
+  - 1 for tokens that are **not masked**,
+  - 0 for tokens that are **masked**.
+
+  [What are attention masks?](../glossary.html#attention-mask)
+- **token_type_ids** (`Numpy array` or `tf.Tensor` of shape `(batch_size, sequence_length)`, _optional_) --
+  Segment token indices to indicate first and second portions of the inputs. Indices are selected in `[0, 1]`:
+
+  - 0 corresponds to a _sentence A_ token,
+  - 1 corresponds to a _sentence B_ token.
+
+  [What are token type IDs?](../glossary.html#token-type-ids)
+- **position_ids** (`Numpy array` or `tf.Tensor` of shape `(batch_size, sequence_length)`, _optional_) --
+  Indices of positions of each input sequence tokens in the position embeddings. Selected in the range `[0, config.max_position_embeddings - 1]`.
+
+  [What are position IDs?](../glossary.html#position-ids)
+- **head_mask** (`Numpy array` or `tf.Tensor` of shape `(num_heads,)` or `(num_layers, num_heads)`, _optional_) --
+  Mask to nullify selected heads of the self-attention modules. Mask values selected in `[0, 1]`:
+
+  - 1 indicates the head is **not masked**,
+  - 0 indicates the head is **masked**.
+
+- **inputs_embeds** (`tf.Tensor` of shape `(batch_size, sequence_length, hidden_size)`, _optional_) --
+  Optionally, instead of passing `input_ids` you can choose to directly pass an embedded representation.
+  This is useful if you want more control over how to convert `input_ids` indices into associated
+  vectors than the model's internal embedding lookup matrix.
+- **output_attentions** (`bool`, _optional_) --
+  Whether or not to return the attentions tensors of all attention layers. See `attentions` under returned
+  tensors for more detail. This argument can be used only in eager mode, in graph mode the value in the
+  config will be used instead.
+- **output_hidden_states** (`bool`, _optional_) --
+  Whether or not to return the hidden states of all layers. See `hidden_states` under returned tensors for
+  more detail. This argument can be used only in eager mode, in graph mode the value in the config will be
+  used instead.
+- **return_dict** (`bool`, _optional_) --
+  Whether or not to return a [ModelOutput](main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple. This
+  argument can be used in eager mode, in graph mode the value will always be set to True.
+- **training** (`bool`, _optional_, defaults to `False`) --
+  Whether or not to use the model in training mode (some modules like dropout modules have different
+  behaviors between training and evaluation).
+
+- **labels** (`tf.Tensor` of shape `(batch_size, sequence_length)`, _optional_) --
+  Labels for computing the masked language modeling loss. Indices should be in `[-100, 0, ..., config.vocab_size]` (see `input_ids` docstring) Tokens with indices set to `-100` are ignored
+  (masked), the loss is only computed for the tokens with labels in `[0, ..., config.vocab_size]`
+
+> Returns
+
+A [TFMaskedLMOutput](main_classes/output.html#transformers.modeling_tf_outputs.TFMaskedLMOutput) or a tuple of
+`tf.Tensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising various
+elements depending on the configuration ([AlbertConfig](model_doc/albert.html#transformers.AlbertConfig)) and inputs.
+
+- **loss** (`tf.Tensor` of shape `(n,)`, _optional_, where n is the number of non-masked labels, returned when `labels` is provided) -- Masked language modeling (MLM) loss.
+- **logits** (`tf.Tensor` of shape `(batch_size, sequence_length, config.vocab_size)`) -- Prediction scores of the language modeling head (scores for each vocabulary token before SoftMax).
+- **hidden_states** (`tuple(tf.Tensor)`, _optional_, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `tf.Tensor` (one for the output of the embeddings + one for the output of each layer) of
+  shape `(batch_size, sequence_length, hidden_size)`.
+
+  Hidden-states of the model at the output of each layer plus the initial embedding outputs.
+- **attentions** (`tuple(tf.Tensor)`, _optional_, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `tf.Tensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+
+  Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
+  heads.
+
+> Return type
+
+[TFMaskedLMOutput](main_classes/output.html#transformers.modeling_tf_outputs.TFMaskedLMOutput) or `tuple(tf.Tensor)`
+
+> Example:
+
+```python
+>>> from transformers import AlbertTokenizer, TFAlbertForMaskedLM
+>>> import tensorflow as tf
+
+>>> tokenizer = AlbertTokenizer.from_pretrained('albert-base-v2')
+>>> model = TFAlbertForMaskedLM.from_pretrained('albert-base-v2')
+
+>>> inputs = tokenizer("The capital of France is [MASK].", return_tensors="tf")
+>>> inputs["labels"] = tokenizer("The capital of France is Paris.", return_tensors="tf")["input_ids"]
+
+>>> outputs = model(inputs)
+>>> loss = outputs.loss
+>>> logits = outputs.logits
+```
+
+
+## TFAlbertForSequenceClassification
+
+<a id='transformers.TFAlbertForSequenceClassification'></a>
+> **class transformers.TFAlbertForSequenceClassification**(*args, **kwargs)
+
+
+Albert Model transformer with a sequence classification/regression head on top (a linear layer on top of the pooled
+output) e.g. for GLUE tasks.
+
+
+This model inherits from [TFPreTrainedModel](main_classes/model.html#transformers.TFPreTrainedModel). Check the superclass documentation for the
+generic methods the library implements for all its model (such as downloading or saving, resizing the input
+embeddings, pruning heads etc.)
+
+This model is also a [tf.keras.Model](https://www.tensorflow.org/api_docs/python/tf/keras/Model) subclass. Use
+it as a regular TF 2.0 Keras Model and refer to the TF 2.0 documentation for all matter related to general usage
+and behavior.
+
+<Tip>
+
+TF 2.0 models accepts two formats as inputs:
+
+- having all inputs as keyword arguments (like PyTorch models), or
+- having all inputs as a list, tuple or dict in the first positional arguments.
+
+This second option is useful when using `tf.keras.Model.fit` method which currently requires having all
+the tensors in the first argument of the model call function: `model(inputs)`.
+
+If you choose this second option, there are three possibilities you can use to gather all the input Tensors in
+the first positional argument :
+
+- a single Tensor with `input_ids` only and nothing else: `model(inputs_ids)`
+- a list of varying length with one or several input Tensors IN THE ORDER given in the docstring:
+  `model([input_ids, attention_mask])` or `model([input_ids, attention_mask, token_type_ids])`
+- a dictionary with one or several input Tensors associated to the input names given in the docstring:
+  `model({"input_ids": input_ids, "token_type_ids": token_type_ids})`
+
+</Tip>
+
+> Parameters
+
+- **config** ([AlbertConfig](model_doc/albert.html#transformers.AlbertConfig)) -- Model configuration class with all the parameters of the model.
+  Initializing with a config file does not load the weights associated with the model, only the
+  configuration. Check out the [from_pretrained()](main_classes/model.html#transformers.PreTrainedModel.from_pretrained) method to load the model
+  weights.
+
+
+<a id='transformers.TFAlbertForSequenceClassification.call'></a>
+> **call**(self, input_ids: typing.Union[typing.List[tensorflow.python.framework.ops.Tensor], typing.List[numpy.ndarray], typing.Dict[str, tensorflow.python.framework.ops.Tensor], typing.Dict[str, numpy.ndarray], numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None, attention_mask: typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None, token_type_ids: typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None, position_ids: typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None, head_mask: typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None, inputs_embeds: typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None, output_attentions: typing.Optional[bool] = None, output_hidden_states: typing.Optional[bool] = None, return_dict: typing.Optional[bool] = None, labels: typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None, training: typing.Optional[bool] = False, **kwargs)
+
+The [TFAlbertForSequenceClassification](model_doc/albert.html#transformers.TFAlbertForSequenceClassification) forward method, overrides the `__call__` special method.
+
+<Tip>
+
+Although the recipe for forward pass needs to be defined within this function, one should call the
+`Module` instance afterwards instead of this since the former takes care of running the pre and post
+processing steps while the latter silently ignores them.
+
+</Tip>
+
+> Parameters
+
+- **input_ids** (`Numpy array` or `tf.Tensor` of shape `(batch_size, sequence_length)`) --
+  Indices of input sequence tokens in the vocabulary.
+
+  Indices can be obtained using [AlbertTokenizer](model_doc/albert.html#transformers.AlbertTokenizer). See
+  [transformers.PreTrainedTokenizer.__call__()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) and [transformers.PreTrainedTokenizer.encode()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) for
+  details.
+
+  [What are input IDs?](../glossary.html#input-ids)
+- **attention_mask** (`Numpy array` or `tf.Tensor` of shape `(batch_size, sequence_length)`, _optional_) --
+  Mask to avoid performing attention on padding token indices. Mask values selected in `[0, 1]`:
+
+  - 1 for tokens that are **not masked**,
+  - 0 for tokens that are **masked**.
+
+  [What are attention masks?](../glossary.html#attention-mask)
+- **token_type_ids** (`Numpy array` or `tf.Tensor` of shape `(batch_size, sequence_length)`, _optional_) --
+  Segment token indices to indicate first and second portions of the inputs. Indices are selected in `[0, 1]`:
+
+  - 0 corresponds to a _sentence A_ token,
+  - 1 corresponds to a _sentence B_ token.
+
+  [What are token type IDs?](../glossary.html#token-type-ids)
+- **position_ids** (`Numpy array` or `tf.Tensor` of shape `(batch_size, sequence_length)`, _optional_) --
+  Indices of positions of each input sequence tokens in the position embeddings. Selected in the range `[0, config.max_position_embeddings - 1]`.
+
+  [What are position IDs?](../glossary.html#position-ids)
+- **head_mask** (`Numpy array` or `tf.Tensor` of shape `(num_heads,)` or `(num_layers, num_heads)`, _optional_) --
+  Mask to nullify selected heads of the self-attention modules. Mask values selected in `[0, 1]`:
+
+  - 1 indicates the head is **not masked**,
+  - 0 indicates the head is **masked**.
+
+- **inputs_embeds** (`tf.Tensor` of shape `(batch_size, sequence_length, hidden_size)`, _optional_) --
+  Optionally, instead of passing `input_ids` you can choose to directly pass an embedded representation.
+  This is useful if you want more control over how to convert `input_ids` indices into associated
+  vectors than the model's internal embedding lookup matrix.
+- **output_attentions** (`bool`, _optional_) --
+  Whether or not to return the attentions tensors of all attention layers. See `attentions` under returned
+  tensors for more detail. This argument can be used only in eager mode, in graph mode the value in the
+  config will be used instead.
+- **output_hidden_states** (`bool`, _optional_) --
+  Whether or not to return the hidden states of all layers. See `hidden_states` under returned tensors for
+  more detail. This argument can be used only in eager mode, in graph mode the value in the config will be
+  used instead.
+- **return_dict** (`bool`, _optional_) --
+  Whether or not to return a [ModelOutput](main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple. This
+  argument can be used in eager mode, in graph mode the value will always be set to True.
+- **training** (`bool`, _optional_, defaults to `False`) --
+  Whether or not to use the model in training mode (some modules like dropout modules have different
+  behaviors between training and evaluation).
+
+- **labels** (`tf.Tensor` of shape `(batch_size,)`, _optional_) --
+  Labels for computing the sequence classification/regression loss. Indices should be in `[0, ..., config.num_labels - 1]`. If `config.num_labels == 1` a regression loss is computed (Mean-Square loss),
+  If `config.num_labels > 1` a classification loss is computed (Cross-Entropy).
+
+> Returns
+
+A [TFSequenceClassifierOutput](main_classes/output.html#transformers.modeling_tf_outputs.TFSequenceClassifierOutput) or a tuple of
+`tf.Tensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising various
+elements depending on the configuration ([AlbertConfig](model_doc/albert.html#transformers.AlbertConfig)) and inputs.
+
+- **loss** (`tf.Tensor` of shape `(batch_size, )`, _optional_, returned when `labels` is provided) -- Classification (or regression if config.num_labels==1) loss.
+- **logits** (`tf.Tensor` of shape `(batch_size, config.num_labels)`) -- Classification (or regression if config.num_labels==1) scores (before SoftMax).
+- **hidden_states** (`tuple(tf.Tensor)`, _optional_, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `tf.Tensor` (one for the output of the embeddings + one for the output of each layer) of
+  shape `(batch_size, sequence_length, hidden_size)`.
+
+  Hidden-states of the model at the output of each layer plus the initial embedding outputs.
+- **attentions** (`tuple(tf.Tensor)`, _optional_, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `tf.Tensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+
+  Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
+  heads.
+
+> Return type
+
+[TFSequenceClassifierOutput](main_classes/output.html#transformers.modeling_tf_outputs.TFSequenceClassifierOutput) or `tuple(tf.Tensor)`
+
+> Example:
+
+```python
+>>> from transformers import AlbertTokenizer, TFAlbertForSequenceClassification
+>>> import tensorflow as tf
+
+>>> tokenizer = AlbertTokenizer.from_pretrained('albert-base-v2')
+>>> model = TFAlbertForSequenceClassification.from_pretrained('albert-base-v2')
+
+>>> inputs = tokenizer("Hello, my dog is cute", return_tensors="tf")
+>>> inputs["labels"] = tf.reshape(tf.constant(1), (-1, 1)) # Batch size 1
+
+>>> outputs = model(inputs)
+>>> loss = outputs.loss
+>>> logits = outputs.logits
+```
+
+
+## TFAlbertForMultipleChoice
+
+<a id='transformers.TFAlbertForMultipleChoice'></a>
+> **class transformers.TFAlbertForMultipleChoice**(*args, **kwargs)
+
+
+Albert Model with a multiple choice classification head on top (a linear layer on top of the pooled output and a
+softmax) e.g. for RocStories/SWAG tasks.
+
+
+This model inherits from [TFPreTrainedModel](main_classes/model.html#transformers.TFPreTrainedModel). Check the superclass documentation for the
+generic methods the library implements for all its model (such as downloading or saving, resizing the input
+embeddings, pruning heads etc.)
+
+This model is also a [tf.keras.Model](https://www.tensorflow.org/api_docs/python/tf/keras/Model) subclass. Use
+it as a regular TF 2.0 Keras Model and refer to the TF 2.0 documentation for all matter related to general usage
+and behavior.
+
+<Tip>
+
+TF 2.0 models accepts two formats as inputs:
+
+- having all inputs as keyword arguments (like PyTorch models), or
+- having all inputs as a list, tuple or dict in the first positional arguments.
+
+This second option is useful when using `tf.keras.Model.fit` method which currently requires having all
+the tensors in the first argument of the model call function: `model(inputs)`.
+
+If you choose this second option, there are three possibilities you can use to gather all the input Tensors in
+the first positional argument :
+
+- a single Tensor with `input_ids` only and nothing else: `model(inputs_ids)`
+- a list of varying length with one or several input Tensors IN THE ORDER given in the docstring:
+  `model([input_ids, attention_mask])` or `model([input_ids, attention_mask, token_type_ids])`
+- a dictionary with one or several input Tensors associated to the input names given in the docstring:
+  `model({"input_ids": input_ids, "token_type_ids": token_type_ids})`
+
+</Tip>
+
+> Parameters
+
+- **config** ([AlbertConfig](model_doc/albert.html#transformers.AlbertConfig)) -- Model configuration class with all the parameters of the model.
+  Initializing with a config file does not load the weights associated with the model, only the
+  configuration. Check out the [from_pretrained()](main_classes/model.html#transformers.PreTrainedModel.from_pretrained) method to load the model
+  weights.
+
+
+<a id='transformers.TFAlbertForMultipleChoice.call'></a>
+> **call**(self, input_ids: typing.Union[typing.List[tensorflow.python.framework.ops.Tensor], typing.List[numpy.ndarray], typing.Dict[str, tensorflow.python.framework.ops.Tensor], typing.Dict[str, numpy.ndarray], numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None, attention_mask: typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None, token_type_ids: typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None, position_ids: typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None, head_mask: typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None, inputs_embeds: typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None, output_attentions: typing.Optional[bool] = None, output_hidden_states: typing.Optional[bool] = None, return_dict: typing.Optional[bool] = None, labels: typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None, training: typing.Optional[bool] = False, **kwargs)
+
+The [TFAlbertForMultipleChoice](model_doc/albert.html#transformers.TFAlbertForMultipleChoice) forward method, overrides the `__call__` special method.
+
+<Tip>
+
+Although the recipe for forward pass needs to be defined within this function, one should call the
+`Module` instance afterwards instead of this since the former takes care of running the pre and post
+processing steps while the latter silently ignores them.
+
+</Tip>
+
+> Parameters
+
+- **input_ids** (`Numpy array` or `tf.Tensor` of shape `(batch_size, num_choices, sequence_length)`) --
+  Indices of input sequence tokens in the vocabulary.
+
+  Indices can be obtained using [AlbertTokenizer](model_doc/albert.html#transformers.AlbertTokenizer). See
+  [transformers.PreTrainedTokenizer.__call__()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) and [transformers.PreTrainedTokenizer.encode()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) for
+  details.
+
+  [What are input IDs?](../glossary.html#input-ids)
+- **attention_mask** (`Numpy array` or `tf.Tensor` of shape `(batch_size, num_choices, sequence_length)`, _optional_) --
+  Mask to avoid performing attention on padding token indices. Mask values selected in `[0, 1]`:
+
+  - 1 for tokens that are **not masked**,
+  - 0 for tokens that are **masked**.
+
+  [What are attention masks?](../glossary.html#attention-mask)
+- **token_type_ids** (`Numpy array` or `tf.Tensor` of shape `(batch_size, num_choices, sequence_length)`, _optional_) --
+  Segment token indices to indicate first and second portions of the inputs. Indices are selected in `[0, 1]`:
+
+  - 0 corresponds to a _sentence A_ token,
+  - 1 corresponds to a _sentence B_ token.
+
+  [What are token type IDs?](../glossary.html#token-type-ids)
+- **position_ids** (`Numpy array` or `tf.Tensor` of shape `(batch_size, num_choices, sequence_length)`, _optional_) --
+  Indices of positions of each input sequence tokens in the position embeddings. Selected in the range `[0, config.max_position_embeddings - 1]`.
+
+  [What are position IDs?](../glossary.html#position-ids)
+- **head_mask** (`Numpy array` or `tf.Tensor` of shape `(num_heads,)` or `(num_layers, num_heads)`, _optional_) --
+  Mask to nullify selected heads of the self-attention modules. Mask values selected in `[0, 1]`:
+
+  - 1 indicates the head is **not masked**,
+  - 0 indicates the head is **masked**.
+
+- **inputs_embeds** (`tf.Tensor` of shape `(batch_size, num_choices, sequence_length, hidden_size)`, _optional_) --
+  Optionally, instead of passing `input_ids` you can choose to directly pass an embedded representation.
+  This is useful if you want more control over how to convert `input_ids` indices into associated
+  vectors than the model's internal embedding lookup matrix.
+- **output_attentions** (`bool`, _optional_) --
+  Whether or not to return the attentions tensors of all attention layers. See `attentions` under returned
+  tensors for more detail. This argument can be used only in eager mode, in graph mode the value in the
+  config will be used instead.
+- **output_hidden_states** (`bool`, _optional_) --
+  Whether or not to return the hidden states of all layers. See `hidden_states` under returned tensors for
+  more detail. This argument can be used only in eager mode, in graph mode the value in the config will be
+  used instead.
+- **return_dict** (`bool`, _optional_) --
+  Whether or not to return a [ModelOutput](main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple. This
+  argument can be used in eager mode, in graph mode the value will always be set to True.
+- **training** (`bool`, _optional_, defaults to `False`) --
+  Whether or not to use the model in training mode (some modules like dropout modules have different
+  behaviors between training and evaluation).
+
+- **labels** (`tf.Tensor` of shape `(batch_size,)`, _optional_) --
+  Labels for computing the multiple choice classification loss. Indices should be in `[0, ..., num_choices]` where `num_choices` is the size of the second dimension of the input tensors. (See
+  `input_ids` above)
+
+> Returns
+
+A [TFMultipleChoiceModelOutput](main_classes/output.html#transformers.modeling_tf_outputs.TFMultipleChoiceModelOutput) or a tuple of
+`tf.Tensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising various
+elements depending on the configuration ([AlbertConfig](model_doc/albert.html#transformers.AlbertConfig)) and inputs.
+
+- **loss** (`tf.Tensor` of shape _(batch_size, )_, _optional_, returned when `labels` is provided) -- Classification loss.
+- **logits** (`tf.Tensor` of shape `(batch_size, num_choices)`) -- _num_choices_ is the second dimension of the input tensors. (see _input_ids_ above).
+
+  Classification scores (before SoftMax).
+- **hidden_states** (`tuple(tf.Tensor)`, _optional_, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `tf.Tensor` (one for the output of the embeddings + one for the output of each layer) of
+  shape `(batch_size, sequence_length, hidden_size)`.
+
+  Hidden-states of the model at the output of each layer plus the initial embedding outputs.
+- **attentions** (`tuple(tf.Tensor)`, _optional_, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `tf.Tensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+
+  Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
+  heads.
+
+> Return type
+
+[TFMultipleChoiceModelOutput](main_classes/output.html#transformers.modeling_tf_outputs.TFMultipleChoiceModelOutput) or `tuple(tf.Tensor)`
+
+> Example:
+
+```python
+>>> from transformers import AlbertTokenizer, TFAlbertForMultipleChoice
+>>> import tensorflow as tf
+
+>>> tokenizer = AlbertTokenizer.from_pretrained('albert-base-v2')
+>>> model = TFAlbertForMultipleChoice.from_pretrained('albert-base-v2')
+
+>>> prompt = "In Italy, pizza served in formal settings, such as at a restaurant, is presented unsliced."
+>>> choice0 = "It is eaten with a fork and a knife."
+>>> choice1 = "It is eaten while held in the hand."
+
+>>> encoding = tokenizer([prompt, prompt], [choice0, choice1], return_tensors='tf', padding=True)
+>>> inputs = {k: tf.expand_dims(v, 0) for k, v in encoding.items()}
+>>> outputs = model(inputs)  # batch size is 1
+
+>>> # the linear classifier still needs to be trained
+>>> logits = outputs.logits
+```
+
+
+## TFAlbertForTokenClassification
+
+<a id='transformers.TFAlbertForTokenClassification'></a>
+> **class transformers.TFAlbertForTokenClassification**(*args, **kwargs)
+
+
+Albert Model with a token classification head on top (a linear layer on top of the hidden-states output) e.g. for
+Named-Entity-Recognition (NER) tasks.
+
+
+This model inherits from [TFPreTrainedModel](main_classes/model.html#transformers.TFPreTrainedModel). Check the superclass documentation for the
+generic methods the library implements for all its model (such as downloading or saving, resizing the input
+embeddings, pruning heads etc.)
+
+This model is also a [tf.keras.Model](https://www.tensorflow.org/api_docs/python/tf/keras/Model) subclass. Use
+it as a regular TF 2.0 Keras Model and refer to the TF 2.0 documentation for all matter related to general usage
+and behavior.
+
+<Tip>
+
+TF 2.0 models accepts two formats as inputs:
+
+- having all inputs as keyword arguments (like PyTorch models), or
+- having all inputs as a list, tuple or dict in the first positional arguments.
+
+This second option is useful when using `tf.keras.Model.fit` method which currently requires having all
+the tensors in the first argument of the model call function: `model(inputs)`.
+
+If you choose this second option, there are three possibilities you can use to gather all the input Tensors in
+the first positional argument :
+
+- a single Tensor with `input_ids` only and nothing else: `model(inputs_ids)`
+- a list of varying length with one or several input Tensors IN THE ORDER given in the docstring:
+  `model([input_ids, attention_mask])` or `model([input_ids, attention_mask, token_type_ids])`
+- a dictionary with one or several input Tensors associated to the input names given in the docstring:
+  `model({"input_ids": input_ids, "token_type_ids": token_type_ids})`
+
+</Tip>
+
+> Parameters
+
+- **config** ([AlbertConfig](model_doc/albert.html#transformers.AlbertConfig)) -- Model configuration class with all the parameters of the model.
+  Initializing with a config file does not load the weights associated with the model, only the
+  configuration. Check out the [from_pretrained()](main_classes/model.html#transformers.PreTrainedModel.from_pretrained) method to load the model
+  weights.
+
+
+<a id='transformers.TFAlbertForTokenClassification.call'></a>
+> **call**(self, input_ids: typing.Union[typing.List[tensorflow.python.framework.ops.Tensor], typing.List[numpy.ndarray], typing.Dict[str, tensorflow.python.framework.ops.Tensor], typing.Dict[str, numpy.ndarray], numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None, attention_mask: typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None, token_type_ids: typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None, position_ids: typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None, head_mask: typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None, inputs_embeds: typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None, output_attentions: typing.Optional[bool] = None, output_hidden_states: typing.Optional[bool] = None, return_dict: typing.Optional[bool] = None, labels: typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None, training: typing.Optional[bool] = False, **kwargs)
+
+The [TFAlbertForTokenClassification](model_doc/albert.html#transformers.TFAlbertForTokenClassification) forward method, overrides the `__call__` special method.
+
+<Tip>
+
+Although the recipe for forward pass needs to be defined within this function, one should call the
+`Module` instance afterwards instead of this since the former takes care of running the pre and post
+processing steps while the latter silently ignores them.
+
+</Tip>
+
+> Parameters
+
+- **input_ids** (`Numpy array` or `tf.Tensor` of shape `(batch_size, sequence_length)`) --
+  Indices of input sequence tokens in the vocabulary.
+
+  Indices can be obtained using [AlbertTokenizer](model_doc/albert.html#transformers.AlbertTokenizer). See
+  [transformers.PreTrainedTokenizer.__call__()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) and [transformers.PreTrainedTokenizer.encode()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) for
+  details.
+
+  [What are input IDs?](../glossary.html#input-ids)
+- **attention_mask** (`Numpy array` or `tf.Tensor` of shape `(batch_size, sequence_length)`, _optional_) --
+  Mask to avoid performing attention on padding token indices. Mask values selected in `[0, 1]`:
+
+  - 1 for tokens that are **not masked**,
+  - 0 for tokens that are **masked**.
+
+  [What are attention masks?](../glossary.html#attention-mask)
+- **token_type_ids** (`Numpy array` or `tf.Tensor` of shape `(batch_size, sequence_length)`, _optional_) --
+  Segment token indices to indicate first and second portions of the inputs. Indices are selected in `[0, 1]`:
+
+  - 0 corresponds to a _sentence A_ token,
+  - 1 corresponds to a _sentence B_ token.
+
+  [What are token type IDs?](../glossary.html#token-type-ids)
+- **position_ids** (`Numpy array` or `tf.Tensor` of shape `(batch_size, sequence_length)`, _optional_) --
+  Indices of positions of each input sequence tokens in the position embeddings. Selected in the range `[0, config.max_position_embeddings - 1]`.
+
+  [What are position IDs?](../glossary.html#position-ids)
+- **head_mask** (`Numpy array` or `tf.Tensor` of shape `(num_heads,)` or `(num_layers, num_heads)`, _optional_) --
+  Mask to nullify selected heads of the self-attention modules. Mask values selected in `[0, 1]`:
+
+  - 1 indicates the head is **not masked**,
+  - 0 indicates the head is **masked**.
+
+- **inputs_embeds** (`tf.Tensor` of shape `(batch_size, sequence_length, hidden_size)`, _optional_) --
+  Optionally, instead of passing `input_ids` you can choose to directly pass an embedded representation.
+  This is useful if you want more control over how to convert `input_ids` indices into associated
+  vectors than the model's internal embedding lookup matrix.
+- **output_attentions** (`bool`, _optional_) --
+  Whether or not to return the attentions tensors of all attention layers. See `attentions` under returned
+  tensors for more detail. This argument can be used only in eager mode, in graph mode the value in the
+  config will be used instead.
+- **output_hidden_states** (`bool`, _optional_) --
+  Whether or not to return the hidden states of all layers. See `hidden_states` under returned tensors for
+  more detail. This argument can be used only in eager mode, in graph mode the value in the config will be
+  used instead.
+- **return_dict** (`bool`, _optional_) --
+  Whether or not to return a [ModelOutput](main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple. This
+  argument can be used in eager mode, in graph mode the value will always be set to True.
+- **training** (`bool`, _optional_, defaults to `False`) --
+  Whether or not to use the model in training mode (some modules like dropout modules have different
+  behaviors between training and evaluation).
+
+- **labels** (`tf.Tensor` of shape `(batch_size, sequence_length)`, _optional_) --
+  Labels for computing the token classification loss. Indices should be in `[0, ..., config.num_labels - 1]`.
+
+> Returns
+
+A [TFTokenClassifierOutput](main_classes/output.html#transformers.modeling_tf_outputs.TFTokenClassifierOutput) or a tuple of
+`tf.Tensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising various
+elements depending on the configuration ([AlbertConfig](model_doc/albert.html#transformers.AlbertConfig)) and inputs.
+
+- **loss** (`tf.Tensor` of shape `(n,)`, _optional_, where n is the number of unmasked labels, returned when `labels` is provided)  -- Classification loss.
+- **logits** (`tf.Tensor` of shape `(batch_size, sequence_length, config.num_labels)`) -- Classification scores (before SoftMax).
+- **hidden_states** (`tuple(tf.Tensor)`, _optional_, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `tf.Tensor` (one for the output of the embeddings + one for the output of each layer) of
+  shape `(batch_size, sequence_length, hidden_size)`.
+
+  Hidden-states of the model at the output of each layer plus the initial embedding outputs.
+- **attentions** (`tuple(tf.Tensor)`, _optional_, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `tf.Tensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+
+  Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
+  heads.
+
+> Return type
+
+[TFTokenClassifierOutput](main_classes/output.html#transformers.modeling_tf_outputs.TFTokenClassifierOutput) or `tuple(tf.Tensor)`
+
+> Example:
+
+```python
+>>> from transformers import AlbertTokenizer, TFAlbertForTokenClassification
+>>> import tensorflow as tf
+
+>>> tokenizer = AlbertTokenizer.from_pretrained('albert-base-v2')
+>>> model = TFAlbertForTokenClassification.from_pretrained('albert-base-v2')
+
+>>> inputs = tokenizer("Hello, my dog is cute", return_tensors="tf")
+>>> input_ids = inputs["input_ids"]
+>>> inputs["labels"] = tf.reshape(tf.constant([1] * tf.size(input_ids).numpy()), (-1, tf.size(input_ids))) # Batch size 1
+
+>>> outputs = model(inputs)
+>>> loss = outputs.loss
+>>> logits = outputs.logits
+```
+
+
+## TFAlbertForQuestionAnswering
+
+<a id='transformers.TFAlbertForQuestionAnswering'></a>
+> **class transformers.TFAlbertForQuestionAnswering**(*args, **kwargs)
+
+
+Albert Model with a span classification head on top for extractive question-answering tasks like SQuAD (a linear
+layer on top of the hidden-states output to compute _span start logits_ and _span end logits_).
+
+
+This model inherits from [TFPreTrainedModel](main_classes/model.html#transformers.TFPreTrainedModel). Check the superclass documentation for the
+generic methods the library implements for all its model (such as downloading or saving, resizing the input
+embeddings, pruning heads etc.)
+
+This model is also a [tf.keras.Model](https://www.tensorflow.org/api_docs/python/tf/keras/Model) subclass. Use
+it as a regular TF 2.0 Keras Model and refer to the TF 2.0 documentation for all matter related to general usage
+and behavior.
+
+<Tip>
+
+TF 2.0 models accepts two formats as inputs:
+
+- having all inputs as keyword arguments (like PyTorch models), or
+- having all inputs as a list, tuple or dict in the first positional arguments.
+
+This second option is useful when using `tf.keras.Model.fit` method which currently requires having all
+the tensors in the first argument of the model call function: `model(inputs)`.
+
+If you choose this second option, there are three possibilities you can use to gather all the input Tensors in
+the first positional argument :
+
+- a single Tensor with `input_ids` only and nothing else: `model(inputs_ids)`
+- a list of varying length with one or several input Tensors IN THE ORDER given in the docstring:
+  `model([input_ids, attention_mask])` or `model([input_ids, attention_mask, token_type_ids])`
+- a dictionary with one or several input Tensors associated to the input names given in the docstring:
+  `model({"input_ids": input_ids, "token_type_ids": token_type_ids})`
+
+</Tip>
+
+> Parameters
+
+- **config** ([AlbertConfig](model_doc/albert.html#transformers.AlbertConfig)) -- Model configuration class with all the parameters of the model.
+  Initializing with a config file does not load the weights associated with the model, only the
+  configuration. Check out the [from_pretrained()](main_classes/model.html#transformers.PreTrainedModel.from_pretrained) method to load the model
+  weights.
+
+
+<a id='transformers.TFAlbertForQuestionAnswering.call'></a>
+> **call**(self, input_ids: typing.Union[typing.List[tensorflow.python.framework.ops.Tensor], typing.List[numpy.ndarray], typing.Dict[str, tensorflow.python.framework.ops.Tensor], typing.Dict[str, numpy.ndarray], numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None, attention_mask: typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None, token_type_ids: typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None, position_ids: typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None, head_mask: typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None, inputs_embeds: typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None, output_attentions: typing.Optional[bool] = None, output_hidden_states: typing.Optional[bool] = None, return_dict: typing.Optional[bool] = None, start_positions: typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None, end_positions: typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None, training: typing.Optional[bool] = False, **kwargs)
+
+The [TFAlbertForQuestionAnswering](model_doc/albert.html#transformers.TFAlbertForQuestionAnswering) forward method, overrides the `__call__` special method.
+
+<Tip>
+
+Although the recipe for forward pass needs to be defined within this function, one should call the
+`Module` instance afterwards instead of this since the former takes care of running the pre and post
+processing steps while the latter silently ignores them.
+
+</Tip>
+
+> Parameters
+
+- **input_ids** (`Numpy array` or `tf.Tensor` of shape `(batch_size, sequence_length)`) --
+  Indices of input sequence tokens in the vocabulary.
+
+  Indices can be obtained using [AlbertTokenizer](model_doc/albert.html#transformers.AlbertTokenizer). See
+  [transformers.PreTrainedTokenizer.__call__()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) and [transformers.PreTrainedTokenizer.encode()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) for
+  details.
+
+  [What are input IDs?](../glossary.html#input-ids)
+- **attention_mask** (`Numpy array` or `tf.Tensor` of shape `(batch_size, sequence_length)`, _optional_) --
+  Mask to avoid performing attention on padding token indices. Mask values selected in `[0, 1]`:
+
+  - 1 for tokens that are **not masked**,
+  - 0 for tokens that are **masked**.
+
+  [What are attention masks?](../glossary.html#attention-mask)
+- **token_type_ids** (`Numpy array` or `tf.Tensor` of shape `(batch_size, sequence_length)`, _optional_) --
+  Segment token indices to indicate first and second portions of the inputs. Indices are selected in `[0, 1]`:
+
+  - 0 corresponds to a _sentence A_ token,
+  - 1 corresponds to a _sentence B_ token.
+
+  [What are token type IDs?](../glossary.html#token-type-ids)
+- **position_ids** (`Numpy array` or `tf.Tensor` of shape `(batch_size, sequence_length)`, _optional_) --
+  Indices of positions of each input sequence tokens in the position embeddings. Selected in the range `[0, config.max_position_embeddings - 1]`.
+
+  [What are position IDs?](../glossary.html#position-ids)
+- **head_mask** (`Numpy array` or `tf.Tensor` of shape `(num_heads,)` or `(num_layers, num_heads)`, _optional_) --
+  Mask to nullify selected heads of the self-attention modules. Mask values selected in `[0, 1]`:
+
+  - 1 indicates the head is **not masked**,
+  - 0 indicates the head is **masked**.
+
+- **inputs_embeds** (`tf.Tensor` of shape `(batch_size, sequence_length, hidden_size)`, _optional_) --
+  Optionally, instead of passing `input_ids` you can choose to directly pass an embedded representation.
+  This is useful if you want more control over how to convert `input_ids` indices into associated
+  vectors than the model's internal embedding lookup matrix.
+- **output_attentions** (`bool`, _optional_) --
+  Whether or not to return the attentions tensors of all attention layers. See `attentions` under returned
+  tensors for more detail. This argument can be used only in eager mode, in graph mode the value in the
+  config will be used instead.
+- **output_hidden_states** (`bool`, _optional_) --
+  Whether or not to return the hidden states of all layers. See `hidden_states` under returned tensors for
+  more detail. This argument can be used only in eager mode, in graph mode the value in the config will be
+  used instead.
+- **return_dict** (`bool`, _optional_) --
+  Whether or not to return a [ModelOutput](main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple. This
+  argument can be used in eager mode, in graph mode the value will always be set to True.
+- **training** (`bool`, _optional_, defaults to `False`) --
+  Whether or not to use the model in training mode (some modules like dropout modules have different
+  behaviors between training and evaluation).
+
+- **start_positions** (`tf.Tensor` of shape `(batch_size,)`, _optional_) --
+  Labels for position (index) of the start of the labelled span for computing the token classification loss.
+  Positions are clamped to the length of the sequence (`sequence_length`). Position outside of the
+  sequence are not taken into account for computing the loss.
+- **end_positions** (`tf.Tensor` of shape `(batch_size,)`, _optional_) --
+  Labels for position (index) of the end of the labelled span for computing the token classification loss.
+  Positions are clamped to the length of the sequence (`sequence_length`). Position outside of the
+  sequence are not taken into account for computing the loss.
+
+> Returns
+
+A [TFQuestionAnsweringModelOutput](main_classes/output.html#transformers.modeling_tf_outputs.TFQuestionAnsweringModelOutput) or a tuple of
+`tf.Tensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising various
+elements depending on the configuration ([AlbertConfig](model_doc/albert.html#transformers.AlbertConfig)) and inputs.
+
+- **loss** (`tf.Tensor` of shape `(batch_size, )`, _optional_, returned when `start_positions` and `end_positions` are provided) -- Total span extraction loss is the sum of a Cross-Entropy for the start and end positions.
+- **start_logits** (`tf.Tensor` of shape `(batch_size, sequence_length)`) -- Span-start scores (before SoftMax).
+- **end_logits** (`tf.Tensor` of shape `(batch_size, sequence_length)`) -- Span-end scores (before SoftMax).
+- **hidden_states** (`tuple(tf.Tensor)`, _optional_, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `tf.Tensor` (one for the output of the embeddings + one for the output of each layer) of
+  shape `(batch_size, sequence_length, hidden_size)`.
+
+  Hidden-states of the model at the output of each layer plus the initial embedding outputs.
+- **attentions** (`tuple(tf.Tensor)`, _optional_, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `tf.Tensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+
+  Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
+  heads.
+
+> Return type
+
+[TFQuestionAnsweringModelOutput](main_classes/output.html#transformers.modeling_tf_outputs.TFQuestionAnsweringModelOutput) or `tuple(tf.Tensor)`
+
+> Example:
+
+```python
+>>> from transformers import AlbertTokenizer, TFAlbertForQuestionAnswering
+>>> import tensorflow as tf
+
+>>> tokenizer = AlbertTokenizer.from_pretrained('albert-base-v2')
+>>> model = TFAlbertForQuestionAnswering.from_pretrained('albert-base-v2')
+
+>>> question, text = "Who was Jim Henson?", "Jim Henson was a nice puppet"
+>>> input_dict = tokenizer(question, text, return_tensors='tf')
+>>> outputs = model(input_dict)
+>>> start_logits = outputs.start_logits
+>>> end_logits = outputs.end_logits
+
+>>> all_tokens = tokenizer.convert_ids_to_tokens(input_dict["input_ids"].numpy()[0])
+>>> answer = ' '.join(all_tokens[tf.math.argmax(start_logits, 1)[0] : tf.math.argmax(end_logits, 1)[0]+1])
+```
+
+
+## FlaxAlbertModel
+
+<a id='transformers.FlaxAlbertModel'></a>
+> **class transformers.FlaxAlbertModel**(config: AlbertConfig, input_shape: typing.Tuple = (1, 1), seed: int = 0, dtype: dtype = <class 'jax._src.numpy.lax_numpy.float32'>, **kwargs)
+
+The bare Albert Model transformer outputting raw hidden-states without any specific head on top.
+
+This model inherits from [FlaxPreTrainedModel](main_classes/model.html#transformers.FlaxPreTrainedModel). Check the superclass documentation for the
+generic methods the library implements for all its model (such as downloading, saving and converting weights from
+PyTorch models)
+
+This model is also a Flax Linen [flax.linen.Module](https://flax.readthedocs.io/en/latest/flax.linen.html#module) subclass. Use it as a regular Flax linen Module
+and refer to the Flax documentation for all matter related to general usage and behavior.
+
+Finally, this model supports inherent JAX features such as:
+
+- [Just-In-Time (JIT) compilation](https://jax.readthedocs.io/en/latest/jax.html#just-in-time-compilation-jit)
+- [Automatic Differentiation](https://jax.readthedocs.io/en/latest/jax.html#automatic-differentiation)
+- [Vectorization](https://jax.readthedocs.io/en/latest/jax.html#vectorization-vmap)
+- [Parallelization](https://jax.readthedocs.io/en/latest/jax.html#parallelization-pmap)
+
+> Parameters
+
+- **config** ([AlbertConfig](model_doc/albert.html#transformers.AlbertConfig)) -- Model configuration class with all the parameters of the model.
+  Initializing with a config file does not load the weights associated with the model, only the
+  configuration. Check out the [from_pretrained()](main_classes/model.html#transformers.FlaxPreTrainedModel.from_pretrained) method to load the
+  model weights.
+
+
+<a id='transformers.FlaxAlbertPreTrainedModel.__call__'></a>
+> **\_\_call\_\_**(self, input_ids, attention_mask = None, token_type_ids = None, position_ids = None, params: dict = None, dropout_rng: PRNGKey = None, train: bool = False, output_attentions: typing.Optional[bool] = None, output_hidden_states: typing.Optional[bool] = None, return_dict: typing.Optional[bool] = None)
+
+The `FlaxAlbertPreTrainedModel` forward method, overrides the `__call__` special method.
+
+<Tip>
+
+Although the recipe for forward pass needs to be defined within this function, one should call the
+`Module` instance afterwards instead of this since the former takes care of running the pre and post
+processing steps while the latter silently ignores them.
+
+</Tip>
+
+> Parameters
+
+- **input_ids** (`numpy.ndarray` of shape `(batch_size, sequence_length)`) --
+  Indices of input sequence tokens in the vocabulary.
+
+  Indices can be obtained using [AlbertTokenizer](model_doc/albert.html#transformers.AlbertTokenizer). See
+  [transformers.PreTrainedTokenizer.encode()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
+  details.
+
+  [What are input IDs?](../glossary.html#input-ids)
+- **attention_mask** (`numpy.ndarray` of shape `(batch_size, sequence_length)`, _optional_) --
+  Mask to avoid performing attention on padding token indices. Mask values selected in `[0, 1]`:
+
+  - 1 for tokens that are **not masked**,
+  - 0 for tokens that are **masked**.
+
+  [What are attention masks?](../glossary.html#attention-mask)
+- **token_type_ids** (`numpy.ndarray` of shape `(batch_size, sequence_length)`, _optional_) --
+  Segment token indices to indicate first and second portions of the inputs. Indices are selected in `[0, 1]`:
+
+  - 0 corresponds to a _sentence A_ token,
+  - 1 corresponds to a _sentence B_ token.
+
+  [What are token type IDs?](../glossary.html#token-type-ids)
+- **position_ids** (`numpy.ndarray` of shape `(batch_size, sequence_length)`, _optional_) --
+  Indices of positions of each input sequence tokens in the position embeddings. Selected in the range `[0, config.max_position_embeddings - 1]`.
+- **return_dict** (`bool`, _optional_) --
+  Whether or not to return a [ModelOutput](main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple.
+
+
+> Returns
+
+A [FlaxBaseModelOutputWithPooling](main_classes/output.html#transformers.modeling_flax_outputs.FlaxBaseModelOutputWithPooling) or a tuple of
+`torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising
+various elements depending on the configuration ([AlbertConfig](model_doc/albert.html#transformers.AlbertConfig)) and inputs.
+
+- **last_hidden_state** (`jnp.ndarray` of shape `(batch_size, sequence_length, hidden_size)`) -- Sequence of hidden-states at the output of the last layer of the model.
+- **pooler_output** (`jnp.ndarray` of shape `(batch_size, hidden_size)`) -- Last layer hidden-state of the first token of the sequence (classification token) further processed by a
+  Linear layer and a Tanh activation function. The Linear layer weights are trained from the next sentence
+  prediction (classification) objective during pretraining.
+- **hidden_states** (`tuple(jnp.ndarray)`, _optional_, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `jnp.ndarray` (one for the output of the embeddings + one for the output of each layer) of
+  shape `(batch_size, sequence_length, hidden_size)`.
+
+  Hidden-states of the model at the output of each layer plus the initial embedding outputs.
+- **attentions** (`tuple(jnp.ndarray)`, _optional_, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `jnp.ndarray` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+
+  Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
+  heads.
+
+> Return type
+
+[FlaxBaseModelOutputWithPooling](main_classes/output.html#transformers.modeling_flax_outputs.FlaxBaseModelOutputWithPooling) or `tuple(torch.FloatTensor)`
+
+> Example:
+
+```python
+>>> from transformers import AlbertTokenizer, FlaxAlbertModel
+
+>>> tokenizer = AlbertTokenizer.from_pretrained('albert-base-v2')
+>>> model = FlaxAlbertModel.from_pretrained('albert-base-v2')
+
+>>> inputs = tokenizer("Hello, my dog is cute", return_tensors='jax')
+>>> outputs = model(**inputs)
+
+>>> last_hidden_states = outputs.last_hidden_state
+```
+
+
+## FlaxAlbertForPreTraining
+
+<a id='transformers.FlaxAlbertForPreTraining'></a>
+> **class transformers.FlaxAlbertForPreTraining**(config: AlbertConfig, input_shape: typing.Tuple = (1, 1), seed: int = 0, dtype: dtype = <class 'jax._src.numpy.lax_numpy.float32'>, **kwargs)
+
+
+Albert Model with two heads on top as done during the pretraining: a _masked language modeling_ head and a
+_sentence order prediction (classification)_ head.
+
+
+This model inherits from [FlaxPreTrainedModel](main_classes/model.html#transformers.FlaxPreTrainedModel). Check the superclass documentation for the
+generic methods the library implements for all its model (such as downloading, saving and converting weights from
+PyTorch models)
+
+This model is also a Flax Linen [flax.linen.Module](https://flax.readthedocs.io/en/latest/flax.linen.html#module) subclass. Use it as a regular Flax linen Module
+and refer to the Flax documentation for all matter related to general usage and behavior.
+
+Finally, this model supports inherent JAX features such as:
+
+- [Just-In-Time (JIT) compilation](https://jax.readthedocs.io/en/latest/jax.html#just-in-time-compilation-jit)
+- [Automatic Differentiation](https://jax.readthedocs.io/en/latest/jax.html#automatic-differentiation)
+- [Vectorization](https://jax.readthedocs.io/en/latest/jax.html#vectorization-vmap)
+- [Parallelization](https://jax.readthedocs.io/en/latest/jax.html#parallelization-pmap)
+
+> Parameters
+
+- **config** ([AlbertConfig](model_doc/albert.html#transformers.AlbertConfig)) -- Model configuration class with all the parameters of the model.
+  Initializing with a config file does not load the weights associated with the model, only the
+  configuration. Check out the [from_pretrained()](main_classes/model.html#transformers.FlaxPreTrainedModel.from_pretrained) method to load the
+  model weights.
+
+
+<a id='transformers.FlaxAlbertPreTrainedModel.__call__'></a>
+> **\_\_call\_\_**(self, input_ids, attention_mask = None, token_type_ids = None, position_ids = None, params: dict = None, dropout_rng: PRNGKey = None, train: bool = False, output_attentions: typing.Optional[bool] = None, output_hidden_states: typing.Optional[bool] = None, return_dict: typing.Optional[bool] = None)
+
+The `FlaxAlbertPreTrainedModel` forward method, overrides the `__call__` special method.
+
+<Tip>
+
+Although the recipe for forward pass needs to be defined within this function, one should call the
+`Module` instance afterwards instead of this since the former takes care of running the pre and post
+processing steps while the latter silently ignores them.
+
+</Tip>
+
+> Parameters
+
+- **input_ids** (`numpy.ndarray` of shape `(batch_size, sequence_length)`) --
+  Indices of input sequence tokens in the vocabulary.
+
+  Indices can be obtained using [AlbertTokenizer](model_doc/albert.html#transformers.AlbertTokenizer). See
+  [transformers.PreTrainedTokenizer.encode()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
+  details.
+
+  [What are input IDs?](../glossary.html#input-ids)
+- **attention_mask** (`numpy.ndarray` of shape `(batch_size, sequence_length)`, _optional_) --
+  Mask to avoid performing attention on padding token indices. Mask values selected in `[0, 1]`:
+
+  - 1 for tokens that are **not masked**,
+  - 0 for tokens that are **masked**.
+
+  [What are attention masks?](../glossary.html#attention-mask)
+- **token_type_ids** (`numpy.ndarray` of shape `(batch_size, sequence_length)`, _optional_) --
+  Segment token indices to indicate first and second portions of the inputs. Indices are selected in `[0, 1]`:
+
+  - 0 corresponds to a _sentence A_ token,
+  - 1 corresponds to a _sentence B_ token.
+
+  [What are token type IDs?](../glossary.html#token-type-ids)
+- **position_ids** (`numpy.ndarray` of shape `(batch_size, sequence_length)`, _optional_) --
+  Indices of positions of each input sequence tokens in the position embeddings. Selected in the range `[0, config.max_position_embeddings - 1]`.
+- **return_dict** (`bool`, _optional_) --
+  Whether or not to return a [ModelOutput](main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple.
+
+
+
+> Returns
+
+A `FlaxAlbertForPreTrainingOutput` or a tuple of
+`torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising
+various elements depending on the configuration ([AlbertConfig](model_doc/albert.html#transformers.AlbertConfig)) and inputs.
+
+- **prediction_logits** (`jnp.ndarray` of shape `(batch_size, sequence_length, config.vocab_size)`) -- Prediction scores of the language modeling head (scores for each vocabulary token before SoftMax).
+- **sop_logits** (`jnp.ndarray` of shape `(batch_size, 2)`) -- Prediction scores of the next sequence prediction (classification) head (scores of True/False continuation
+  before SoftMax).
+- **hidden_states** (`tuple(jnp.ndarray)`, _optional_, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `jnp.ndarray` (one for the output of the embeddings + one for the output of each layer) of
+  shape `(batch_size, sequence_length, hidden_size)`.
+
+  Hidden-states of the model at the output of each layer plus the initial embedding outputs.
+- **attentions** (`tuple(jnp.ndarray)`, _optional_, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `jnp.ndarray` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+
+  Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
+  heads.
+
+
+> Return type
+
+`FlaxAlbertForPreTrainingOutput` or `tuple(torch.FloatTensor)`
+
+> Example:
+
+```python
+>>> from transformers import AlbertTokenizer, FlaxAlbertForPreTraining
+
+>>> tokenizer = AlbertTokenizer.from_pretrained('albert-base-v2')
+>>> model = FlaxAlbertForPreTraining.from_pretrained('albert-base-v2')
+
+>>> inputs = tokenizer("Hello, my dog is cute", return_tensors="np")
+>>> outputs = model(**inputs)
+
+>>> prediction_logits = outputs.prediction_logits
+>>> seq_relationship_logits = outputs.sop_logits
+```
+
+
+## FlaxAlbertForMaskedLM
+
+<a id='transformers.FlaxAlbertForMaskedLM'></a>
+> **class transformers.FlaxAlbertForMaskedLM**(config: AlbertConfig, input_shape: typing.Tuple = (1, 1), seed: int = 0, dtype: dtype = <class 'jax._src.numpy.lax_numpy.float32'>, **kwargs)
+
+Albert Model with a _language modeling_ head on top. 
+
+This model inherits from [FlaxPreTrainedModel](main_classes/model.html#transformers.FlaxPreTrainedModel). Check the superclass documentation for the
+generic methods the library implements for all its model (such as downloading, saving and converting weights from
+PyTorch models)
+
+This model is also a Flax Linen [flax.linen.Module](https://flax.readthedocs.io/en/latest/flax.linen.html#module) subclass. Use it as a regular Flax linen Module
+and refer to the Flax documentation for all matter related to general usage and behavior.
+
+Finally, this model supports inherent JAX features such as:
+
+- [Just-In-Time (JIT) compilation](https://jax.readthedocs.io/en/latest/jax.html#just-in-time-compilation-jit)
+- [Automatic Differentiation](https://jax.readthedocs.io/en/latest/jax.html#automatic-differentiation)
+- [Vectorization](https://jax.readthedocs.io/en/latest/jax.html#vectorization-vmap)
+- [Parallelization](https://jax.readthedocs.io/en/latest/jax.html#parallelization-pmap)
+
+> Parameters
+
+- **config** ([AlbertConfig](model_doc/albert.html#transformers.AlbertConfig)) -- Model configuration class with all the parameters of the model.
+  Initializing with a config file does not load the weights associated with the model, only the
+  configuration. Check out the [from_pretrained()](main_classes/model.html#transformers.FlaxPreTrainedModel.from_pretrained) method to load the
+  model weights.
+
+
+<a id='transformers.FlaxAlbertPreTrainedModel.__call__'></a>
+> **\_\_call\_\_**(self, input_ids, attention_mask = None, token_type_ids = None, position_ids = None, params: dict = None, dropout_rng: PRNGKey = None, train: bool = False, output_attentions: typing.Optional[bool] = None, output_hidden_states: typing.Optional[bool] = None, return_dict: typing.Optional[bool] = None)
+
+The `FlaxAlbertPreTrainedModel` forward method, overrides the `__call__` special method.
+
+<Tip>
+
+Although the recipe for forward pass needs to be defined within this function, one should call the
+`Module` instance afterwards instead of this since the former takes care of running the pre and post
+processing steps while the latter silently ignores them.
+
+</Tip>
+
+> Parameters
+
+- **input_ids** (`numpy.ndarray` of shape `(batch_size, sequence_length)`) --
+  Indices of input sequence tokens in the vocabulary.
+
+  Indices can be obtained using [AlbertTokenizer](model_doc/albert.html#transformers.AlbertTokenizer). See
+  [transformers.PreTrainedTokenizer.encode()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
+  details.
+
+  [What are input IDs?](../glossary.html#input-ids)
+- **attention_mask** (`numpy.ndarray` of shape `(batch_size, sequence_length)`, _optional_) --
+  Mask to avoid performing attention on padding token indices. Mask values selected in `[0, 1]`:
+
+  - 1 for tokens that are **not masked**,
+  - 0 for tokens that are **masked**.
+
+  [What are attention masks?](../glossary.html#attention-mask)
+- **token_type_ids** (`numpy.ndarray` of shape `(batch_size, sequence_length)`, _optional_) --
+  Segment token indices to indicate first and second portions of the inputs. Indices are selected in `[0, 1]`:
+
+  - 0 corresponds to a _sentence A_ token,
+  - 1 corresponds to a _sentence B_ token.
+
+  [What are token type IDs?](../glossary.html#token-type-ids)
+- **position_ids** (`numpy.ndarray` of shape `(batch_size, sequence_length)`, _optional_) --
+  Indices of positions of each input sequence tokens in the position embeddings. Selected in the range `[0, config.max_position_embeddings - 1]`.
+- **return_dict** (`bool`, _optional_) --
+  Whether or not to return a [ModelOutput](main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple.
+
+
+> Returns
+
+A [FlaxMaskedLMOutput](main_classes/output.html#transformers.modeling_flax_outputs.FlaxMaskedLMOutput) or a tuple of
+`torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising
+various elements depending on the configuration ([AlbertConfig](model_doc/albert.html#transformers.AlbertConfig)) and inputs.
+
+- **logits** (`jnp.ndarray` of shape `(batch_size, sequence_length, config.vocab_size)`) -- Prediction scores of the language modeling head (scores for each vocabulary token before SoftMax).
+- **hidden_states** (`tuple(jnp.ndarray)`, _optional_, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `jnp.ndarray` (one for the output of the embeddings + one for the output of each layer) of
+  shape `(batch_size, sequence_length, hidden_size)`.
+
+  Hidden-states of the model at the output of each layer plus the initial embedding outputs.
+- **attentions** (`tuple(jnp.ndarray)`, _optional_, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `jnp.ndarray` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+
+  Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
+  heads.
+
+> Return type
+
+[FlaxMaskedLMOutput](main_classes/output.html#transformers.modeling_flax_outputs.FlaxMaskedLMOutput) or `tuple(torch.FloatTensor)`
+
+> Example:
+
+```python
+>>> from transformers import AlbertTokenizer, FlaxAlbertForMaskedLM
+
+>>> tokenizer = AlbertTokenizer.from_pretrained('albert-base-v2')
+>>> model = FlaxAlbertForMaskedLM.from_pretrained('albert-base-v2')
+
+>>> inputs = tokenizer("The capital of France is [MASK].", return_tensors='jax')
+
+>>> outputs = model(**inputs)
+>>> logits = outputs.logits
+```
+
+
+## FlaxAlbertForSequenceClassification
+
+<a id='transformers.FlaxAlbertForSequenceClassification'></a>
+> **class transformers.FlaxAlbertForSequenceClassification**(config: AlbertConfig, input_shape: typing.Tuple = (1, 1), seed: int = 0, dtype: dtype = <class 'jax._src.numpy.lax_numpy.float32'>, **kwargs)
+
+
+Albert Model transformer with a sequence classification/regression head on top (a linear layer on top of the pooled
+output) e.g. for GLUE tasks.
+
+
+This model inherits from [FlaxPreTrainedModel](main_classes/model.html#transformers.FlaxPreTrainedModel). Check the superclass documentation for the
+generic methods the library implements for all its model (such as downloading, saving and converting weights from
+PyTorch models)
+
+This model is also a Flax Linen [flax.linen.Module](https://flax.readthedocs.io/en/latest/flax.linen.html#module) subclass. Use it as a regular Flax linen Module
+and refer to the Flax documentation for all matter related to general usage and behavior.
+
+Finally, this model supports inherent JAX features such as:
+
+- [Just-In-Time (JIT) compilation](https://jax.readthedocs.io/en/latest/jax.html#just-in-time-compilation-jit)
+- [Automatic Differentiation](https://jax.readthedocs.io/en/latest/jax.html#automatic-differentiation)
+- [Vectorization](https://jax.readthedocs.io/en/latest/jax.html#vectorization-vmap)
+- [Parallelization](https://jax.readthedocs.io/en/latest/jax.html#parallelization-pmap)
+
+> Parameters
+
+- **config** ([AlbertConfig](model_doc/albert.html#transformers.AlbertConfig)) -- Model configuration class with all the parameters of the model.
+  Initializing with a config file does not load the weights associated with the model, only the
+  configuration. Check out the [from_pretrained()](main_classes/model.html#transformers.FlaxPreTrainedModel.from_pretrained) method to load the
+  model weights.
+
+
+<a id='transformers.FlaxAlbertPreTrainedModel.__call__'></a>
+> **\_\_call\_\_**(self, input_ids, attention_mask = None, token_type_ids = None, position_ids = None, params: dict = None, dropout_rng: PRNGKey = None, train: bool = False, output_attentions: typing.Optional[bool] = None, output_hidden_states: typing.Optional[bool] = None, return_dict: typing.Optional[bool] = None)
+
+The `FlaxAlbertPreTrainedModel` forward method, overrides the `__call__` special method.
+
+<Tip>
+
+Although the recipe for forward pass needs to be defined within this function, one should call the
+`Module` instance afterwards instead of this since the former takes care of running the pre and post
+processing steps while the latter silently ignores them.
+
+</Tip>
+
+> Parameters
+
+- **input_ids** (`numpy.ndarray` of shape `(batch_size, sequence_length)`) --
+  Indices of input sequence tokens in the vocabulary.
+
+  Indices can be obtained using [AlbertTokenizer](model_doc/albert.html#transformers.AlbertTokenizer). See
+  [transformers.PreTrainedTokenizer.encode()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
+  details.
+
+  [What are input IDs?](../glossary.html#input-ids)
+- **attention_mask** (`numpy.ndarray` of shape `(batch_size, sequence_length)`, _optional_) --
+  Mask to avoid performing attention on padding token indices. Mask values selected in `[0, 1]`:
+
+  - 1 for tokens that are **not masked**,
+  - 0 for tokens that are **masked**.
+
+  [What are attention masks?](../glossary.html#attention-mask)
+- **token_type_ids** (`numpy.ndarray` of shape `(batch_size, sequence_length)`, _optional_) --
+  Segment token indices to indicate first and second portions of the inputs. Indices are selected in `[0, 1]`:
+
+  - 0 corresponds to a _sentence A_ token,
+  - 1 corresponds to a _sentence B_ token.
+
+  [What are token type IDs?](../glossary.html#token-type-ids)
+- **position_ids** (`numpy.ndarray` of shape `(batch_size, sequence_length)`, _optional_) --
+  Indices of positions of each input sequence tokens in the position embeddings. Selected in the range `[0, config.max_position_embeddings - 1]`.
+- **return_dict** (`bool`, _optional_) --
+  Whether or not to return a [ModelOutput](main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple.
+
+
+> Returns
+
+A [FlaxSequenceClassifierOutput](main_classes/output.html#transformers.modeling_flax_outputs.FlaxSequenceClassifierOutput) or a tuple of
+`torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising
+various elements depending on the configuration ([AlbertConfig](model_doc/albert.html#transformers.AlbertConfig)) and inputs.
+
+- **logits** (`jnp.ndarray` of shape `(batch_size, config.num_labels)`) -- Classification (or regression if config.num_labels==1) scores (before SoftMax).
+- **hidden_states** (`tuple(jnp.ndarray)`, _optional_, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `jnp.ndarray` (one for the output of the embeddings + one for the output of each layer) of
+  shape `(batch_size, sequence_length, hidden_size)`.
+
+  Hidden-states of the model at the output of each layer plus the initial embedding outputs.
+- **attentions** (`tuple(jnp.ndarray)`, _optional_, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `jnp.ndarray` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+
+  Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
+  heads.
+
+> Return type
+
+[FlaxSequenceClassifierOutput](main_classes/output.html#transformers.modeling_flax_outputs.FlaxSequenceClassifierOutput) or `tuple(torch.FloatTensor)`
+
+> Example:
+
+```python
+>>> from transformers import AlbertTokenizer, FlaxAlbertForSequenceClassification
+
+>>> tokenizer = AlbertTokenizer.from_pretrained('albert-base-v2')
+>>> model = FlaxAlbertForSequenceClassification.from_pretrained('albert-base-v2')
+
+>>> inputs = tokenizer("Hello, my dog is cute", return_tensors='jax')
+
+>>> outputs = model(**inputs)
+>>> logits = outputs.logits
+```
+
+
+## FlaxAlbertForMultipleChoice
+
+<a id='transformers.FlaxAlbertForMultipleChoice'></a>
+> **class transformers.FlaxAlbertForMultipleChoice**(config: AlbertConfig, input_shape: typing.Tuple = (1, 1), seed: int = 0, dtype: dtype = <class 'jax._src.numpy.lax_numpy.float32'>, **kwargs)
+
+
+Albert Model with a multiple choice classification head on top (a linear layer on top of the pooled output and a
+softmax) e.g. for RocStories/SWAG tasks.
+
+
+This model inherits from [FlaxPreTrainedModel](main_classes/model.html#transformers.FlaxPreTrainedModel). Check the superclass documentation for the
+generic methods the library implements for all its model (such as downloading, saving and converting weights from
+PyTorch models)
+
+This model is also a Flax Linen [flax.linen.Module](https://flax.readthedocs.io/en/latest/flax.linen.html#module) subclass. Use it as a regular Flax linen Module
+and refer to the Flax documentation for all matter related to general usage and behavior.
+
+Finally, this model supports inherent JAX features such as:
+
+- [Just-In-Time (JIT) compilation](https://jax.readthedocs.io/en/latest/jax.html#just-in-time-compilation-jit)
+- [Automatic Differentiation](https://jax.readthedocs.io/en/latest/jax.html#automatic-differentiation)
+- [Vectorization](https://jax.readthedocs.io/en/latest/jax.html#vectorization-vmap)
+- [Parallelization](https://jax.readthedocs.io/en/latest/jax.html#parallelization-pmap)
+
+> Parameters
+
+- **config** ([AlbertConfig](model_doc/albert.html#transformers.AlbertConfig)) -- Model configuration class with all the parameters of the model.
+  Initializing with a config file does not load the weights associated with the model, only the
+  configuration. Check out the [from_pretrained()](main_classes/model.html#transformers.FlaxPreTrainedModel.from_pretrained) method to load the
+  model weights.
+
+
+<a id='transformers.FlaxAlbertPreTrainedModel.__call__'></a>
+> **\_\_call\_\_**(self, input_ids, attention_mask = None, token_type_ids = None, position_ids = None, params: dict = None, dropout_rng: PRNGKey = None, train: bool = False, output_attentions: typing.Optional[bool] = None, output_hidden_states: typing.Optional[bool] = None, return_dict: typing.Optional[bool] = None)
+
+The `FlaxAlbertPreTrainedModel` forward method, overrides the `__call__` special method.
+
+<Tip>
+
+Although the recipe for forward pass needs to be defined within this function, one should call the
+`Module` instance afterwards instead of this since the former takes care of running the pre and post
+processing steps while the latter silently ignores them.
+
+</Tip>
+
+> Parameters
+
+- **input_ids** (`numpy.ndarray` of shape `(batch_size, num_choices, sequence_length)`) --
+  Indices of input sequence tokens in the vocabulary.
+
+  Indices can be obtained using [AlbertTokenizer](model_doc/albert.html#transformers.AlbertTokenizer). See
+  [transformers.PreTrainedTokenizer.encode()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
+  details.
+
+  [What are input IDs?](../glossary.html#input-ids)
+- **attention_mask** (`numpy.ndarray` of shape `(batch_size, num_choices, sequence_length)`, _optional_) --
+  Mask to avoid performing attention on padding token indices. Mask values selected in `[0, 1]`:
+
+  - 1 for tokens that are **not masked**,
+  - 0 for tokens that are **masked**.
+
+  [What are attention masks?](../glossary.html#attention-mask)
+- **token_type_ids** (`numpy.ndarray` of shape `(batch_size, num_choices, sequence_length)`, _optional_) --
+  Segment token indices to indicate first and second portions of the inputs. Indices are selected in `[0, 1]`:
+
+  - 0 corresponds to a _sentence A_ token,
+  - 1 corresponds to a _sentence B_ token.
+
+  [What are token type IDs?](../glossary.html#token-type-ids)
+- **position_ids** (`numpy.ndarray` of shape `(batch_size, num_choices, sequence_length)`, _optional_) --
+  Indices of positions of each input sequence tokens in the position embeddings. Selected in the range `[0, config.max_position_embeddings - 1]`.
+- **return_dict** (`bool`, _optional_) --
+  Whether or not to return a [ModelOutput](main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple.
+
+
+> Returns
+
+A [FlaxMultipleChoiceModelOutput](main_classes/output.html#transformers.modeling_flax_outputs.FlaxMultipleChoiceModelOutput) or a tuple of
+`torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising
+various elements depending on the configuration ([AlbertConfig](model_doc/albert.html#transformers.AlbertConfig)) and inputs.
+
+- **logits** (`jnp.ndarray` of shape `(batch_size, num_choices)`) -- _num_choices_ is the second dimension of the input tensors. (see _input_ids_ above).
+
+  Classification scores (before SoftMax).
+- **hidden_states** (`tuple(jnp.ndarray)`, _optional_, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `jnp.ndarray` (one for the output of the embeddings + one for the output of each layer) of
+  shape `(batch_size, sequence_length, hidden_size)`.
+
+  Hidden-states of the model at the output of each layer plus the initial embedding outputs.
+- **attentions** (`tuple(jnp.ndarray)`, _optional_, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `jnp.ndarray` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+
+  Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
+  heads.
+
+> Return type
+
+[FlaxMultipleChoiceModelOutput](main_classes/output.html#transformers.modeling_flax_outputs.FlaxMultipleChoiceModelOutput) or `tuple(torch.FloatTensor)`
+
+> Example:
+
+```python
+>>> from transformers import AlbertTokenizer, FlaxAlbertForMultipleChoice
+
+>>> tokenizer = AlbertTokenizer.from_pretrained('albert-base-v2')
+>>> model = FlaxAlbertForMultipleChoice.from_pretrained('albert-base-v2')
+
+>>> prompt = "In Italy, pizza served in formal settings, such as at a restaurant, is presented unsliced."
+>>> choice0 = "It is eaten with a fork and a knife."
+>>> choice1 = "It is eaten while held in the hand."
+
+>>> encoding = tokenizer([prompt, prompt], [choice0, choice1], return_tensors='jax', padding=True)
+>>> outputs = model(**{k: v[None, :] for k,v in encoding.items()})
+
+>>> logits = outputs.logits
+```
+
+
+## FlaxAlbertForTokenClassification
+
+<a id='transformers.FlaxAlbertForTokenClassification'></a>
+> **class transformers.FlaxAlbertForTokenClassification**(config: AlbertConfig, input_shape: typing.Tuple = (1, 1), seed: int = 0, dtype: dtype = <class 'jax._src.numpy.lax_numpy.float32'>, **kwargs)
+
+
+Albert Model with a token classification head on top (a linear layer on top of the hidden-states output) e.g. for
+Named-Entity-Recognition (NER) tasks.
+
+
+This model inherits from [FlaxPreTrainedModel](main_classes/model.html#transformers.FlaxPreTrainedModel). Check the superclass documentation for the
+generic methods the library implements for all its model (such as downloading, saving and converting weights from
+PyTorch models)
+
+This model is also a Flax Linen [flax.linen.Module](https://flax.readthedocs.io/en/latest/flax.linen.html#module) subclass. Use it as a regular Flax linen Module
+and refer to the Flax documentation for all matter related to general usage and behavior.
+
+Finally, this model supports inherent JAX features such as:
+
+- [Just-In-Time (JIT) compilation](https://jax.readthedocs.io/en/latest/jax.html#just-in-time-compilation-jit)
+- [Automatic Differentiation](https://jax.readthedocs.io/en/latest/jax.html#automatic-differentiation)
+- [Vectorization](https://jax.readthedocs.io/en/latest/jax.html#vectorization-vmap)
+- [Parallelization](https://jax.readthedocs.io/en/latest/jax.html#parallelization-pmap)
+
+> Parameters
+
+- **config** ([AlbertConfig](model_doc/albert.html#transformers.AlbertConfig)) -- Model configuration class with all the parameters of the model.
+  Initializing with a config file does not load the weights associated with the model, only the
+  configuration. Check out the [from_pretrained()](main_classes/model.html#transformers.FlaxPreTrainedModel.from_pretrained) method to load the
+  model weights.
+
+
+<a id='transformers.FlaxAlbertPreTrainedModel.__call__'></a>
+> **\_\_call\_\_**(self, input_ids, attention_mask = None, token_type_ids = None, position_ids = None, params: dict = None, dropout_rng: PRNGKey = None, train: bool = False, output_attentions: typing.Optional[bool] = None, output_hidden_states: typing.Optional[bool] = None, return_dict: typing.Optional[bool] = None)
+
+The `FlaxAlbertPreTrainedModel` forward method, overrides the `__call__` special method.
+
+<Tip>
+
+Although the recipe for forward pass needs to be defined within this function, one should call the
+`Module` instance afterwards instead of this since the former takes care of running the pre and post
+processing steps while the latter silently ignores them.
+
+</Tip>
+
+> Parameters
+
+- **input_ids** (`numpy.ndarray` of shape `(batch_size, sequence_length)`) --
+  Indices of input sequence tokens in the vocabulary.
+
+  Indices can be obtained using [AlbertTokenizer](model_doc/albert.html#transformers.AlbertTokenizer). See
+  [transformers.PreTrainedTokenizer.encode()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
+  details.
+
+  [What are input IDs?](../glossary.html#input-ids)
+- **attention_mask** (`numpy.ndarray` of shape `(batch_size, sequence_length)`, _optional_) --
+  Mask to avoid performing attention on padding token indices. Mask values selected in `[0, 1]`:
+
+  - 1 for tokens that are **not masked**,
+  - 0 for tokens that are **masked**.
+
+  [What are attention masks?](../glossary.html#attention-mask)
+- **token_type_ids** (`numpy.ndarray` of shape `(batch_size, sequence_length)`, _optional_) --
+  Segment token indices to indicate first and second portions of the inputs. Indices are selected in `[0, 1]`:
+
+  - 0 corresponds to a _sentence A_ token,
+  - 1 corresponds to a _sentence B_ token.
+
+  [What are token type IDs?](../glossary.html#token-type-ids)
+- **position_ids** (`numpy.ndarray` of shape `(batch_size, sequence_length)`, _optional_) --
+  Indices of positions of each input sequence tokens in the position embeddings. Selected in the range `[0, config.max_position_embeddings - 1]`.
+- **return_dict** (`bool`, _optional_) --
+  Whether or not to return a [ModelOutput](main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple.
+
+
+> Returns
+
+A [FlaxTokenClassifierOutput](main_classes/output.html#transformers.modeling_flax_outputs.FlaxTokenClassifierOutput) or a tuple of
+`torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising
+various elements depending on the configuration ([AlbertConfig](model_doc/albert.html#transformers.AlbertConfig)) and inputs.
+
+- **logits** (`jnp.ndarray` of shape `(batch_size, sequence_length, config.num_labels)`) -- Classification scores (before SoftMax).
+- **hidden_states** (`tuple(jnp.ndarray)`, _optional_, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `jnp.ndarray` (one for the output of the embeddings + one for the output of each layer) of
+  shape `(batch_size, sequence_length, hidden_size)`.
+
+  Hidden-states of the model at the output of each layer plus the initial embedding outputs.
+- **attentions** (`tuple(jnp.ndarray)`, _optional_, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `jnp.ndarray` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+
+  Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
+  heads.
+
+> Return type
+
+[FlaxTokenClassifierOutput](main_classes/output.html#transformers.modeling_flax_outputs.FlaxTokenClassifierOutput) or `tuple(torch.FloatTensor)`
+
+> Example:
+
+```python
+>>> from transformers import AlbertTokenizer, FlaxAlbertForTokenClassification
+
+>>> tokenizer = AlbertTokenizer.from_pretrained('albert-base-v2')
+>>> model = FlaxAlbertForTokenClassification.from_pretrained('albert-base-v2')
+
+>>> inputs = tokenizer("Hello, my dog is cute", return_tensors='jax')
+
+>>> outputs = model(**inputs)
+>>> logits = outputs.logits
+```
+
+
+## FlaxAlbertForQuestionAnswering
+
+<a id='transformers.FlaxAlbertForQuestionAnswering'></a>
+> **class transformers.FlaxAlbertForQuestionAnswering**(config: AlbertConfig, input_shape: typing.Tuple = (1, 1), seed: int = 0, dtype: dtype = <class 'jax._src.numpy.lax_numpy.float32'>, **kwargs)
+
+
+Albert Model with a span classification head on top for extractive question-answering tasks like SQuAD (a linear
+layers on top of the hidden-states output to compute _span start logits_ and _span end logits_).
+
+
+This model inherits from [FlaxPreTrainedModel](main_classes/model.html#transformers.FlaxPreTrainedModel). Check the superclass documentation for the
+generic methods the library implements for all its model (such as downloading, saving and converting weights from
+PyTorch models)
+
+This model is also a Flax Linen [flax.linen.Module](https://flax.readthedocs.io/en/latest/flax.linen.html#module) subclass. Use it as a regular Flax linen Module
+and refer to the Flax documentation for all matter related to general usage and behavior.
+
+Finally, this model supports inherent JAX features such as:
+
+- [Just-In-Time (JIT) compilation](https://jax.readthedocs.io/en/latest/jax.html#just-in-time-compilation-jit)
+- [Automatic Differentiation](https://jax.readthedocs.io/en/latest/jax.html#automatic-differentiation)
+- [Vectorization](https://jax.readthedocs.io/en/latest/jax.html#vectorization-vmap)
+- [Parallelization](https://jax.readthedocs.io/en/latest/jax.html#parallelization-pmap)
+
+> Parameters
+
+- **config** ([AlbertConfig](model_doc/albert.html#transformers.AlbertConfig)) -- Model configuration class with all the parameters of the model.
+  Initializing with a config file does not load the weights associated with the model, only the
+  configuration. Check out the [from_pretrained()](main_classes/model.html#transformers.FlaxPreTrainedModel.from_pretrained) method to load the
+  model weights.
+
+
+<a id='transformers.FlaxAlbertPreTrainedModel.__call__'></a>
+> **\_\_call\_\_**(self, input_ids, attention_mask = None, token_type_ids = None, position_ids = None, params: dict = None, dropout_rng: PRNGKey = None, train: bool = False, output_attentions: typing.Optional[bool] = None, output_hidden_states: typing.Optional[bool] = None, return_dict: typing.Optional[bool] = None)
+
+The `FlaxAlbertPreTrainedModel` forward method, overrides the `__call__` special method.
+
+<Tip>
+
+Although the recipe for forward pass needs to be defined within this function, one should call the
+`Module` instance afterwards instead of this since the former takes care of running the pre and post
+processing steps while the latter silently ignores them.
+
+</Tip>
+
+> Parameters
+
+- **input_ids** (`numpy.ndarray` of shape `(batch_size, sequence_length)`) --
+  Indices of input sequence tokens in the vocabulary.
+
+  Indices can be obtained using [AlbertTokenizer](model_doc/albert.html#transformers.AlbertTokenizer). See
+  [transformers.PreTrainedTokenizer.encode()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
+  details.
+
+  [What are input IDs?](../glossary.html#input-ids)
+- **attention_mask** (`numpy.ndarray` of shape `(batch_size, sequence_length)`, _optional_) --
+  Mask to avoid performing attention on padding token indices. Mask values selected in `[0, 1]`:
+
+  - 1 for tokens that are **not masked**,
+  - 0 for tokens that are **masked**.
+
+  [What are attention masks?](../glossary.html#attention-mask)
+- **token_type_ids** (`numpy.ndarray` of shape `(batch_size, sequence_length)`, _optional_) --
+  Segment token indices to indicate first and second portions of the inputs. Indices are selected in `[0, 1]`:
+
+  - 0 corresponds to a _sentence A_ token,
+  - 1 corresponds to a _sentence B_ token.
+
+  [What are token type IDs?](../glossary.html#token-type-ids)
+- **position_ids** (`numpy.ndarray` of shape `(batch_size, sequence_length)`, _optional_) --
+  Indices of positions of each input sequence tokens in the position embeddings. Selected in the range `[0, config.max_position_embeddings - 1]`.
+- **return_dict** (`bool`, _optional_) --
+  Whether or not to return a [ModelOutput](main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple.
+
+
+> Returns
+
+A [FlaxQuestionAnsweringModelOutput](main_classes/output.html#transformers.modeling_flax_outputs.FlaxQuestionAnsweringModelOutput) or a tuple of
+`torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising
+various elements depending on the configuration ([AlbertConfig](model_doc/albert.html#transformers.AlbertConfig)) and inputs.
+
+- **start_logits** (`jnp.ndarray` of shape `(batch_size, sequence_length)`) -- Span-start scores (before SoftMax).
+- **end_logits** (`jnp.ndarray` of shape `(batch_size, sequence_length)`) -- Span-end scores (before SoftMax).
+- **hidden_states** (`tuple(jnp.ndarray)`, _optional_, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `jnp.ndarray` (one for the output of the embeddings + one for the output of each layer) of
+  shape `(batch_size, sequence_length, hidden_size)`.
+
+  Hidden-states of the model at the output of each layer plus the initial embedding outputs.
+- **attentions** (`tuple(jnp.ndarray)`, _optional_, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `jnp.ndarray` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+
+  Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
+  heads.
+
+> Return type
+
+[FlaxQuestionAnsweringModelOutput](main_classes/output.html#transformers.modeling_flax_outputs.FlaxQuestionAnsweringModelOutput) or `tuple(torch.FloatTensor)`
+
+> Example:
+
+```python
+>>> from transformers import AlbertTokenizer, FlaxAlbertForQuestionAnswering
+
+>>> tokenizer = AlbertTokenizer.from_pretrained('albert-base-v2')
+>>> model = FlaxAlbertForQuestionAnswering.from_pretrained('albert-base-v2')
+
+>>> question, text = "Who was Jim Henson?", "Jim Henson was a nice puppet"
+>>> inputs = tokenizer(question, text, return_tensors='jax')
+
+>>> outputs = model(**inputs)
+>>> start_scores = outputs.start_logits
+>>> end_scores = outputs.end_logits
+```
+

@@ -1,0 +1,1573 @@
+<script>
+import Tip from "../../Tip.svelte";
+import Youtube from "../../Youtube.svelte";	
+export let fw: "pt" | "tf"
+</script>
+
+<!--Copyright 2020 The HuggingFace Team. All rights reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
+the License. You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on
+an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
+specific language governing permissions and limitations under the License.
+-->
+
+# Tokenizer
+
+A tokenizer is in charge of preparing the inputs for a model. The library contains tokenizers for all the models. Most
+of the tokenizers are available in two flavors: a full python implementation and a "Fast" implementation based on the
+Rust library [tokenizers](https://github.com/huggingface/tokenizers). The "Fast" implementations allows:
+
+1. a significant speed-up in particular when doing batched tokenization and
+2. additional methods to map between the original string (character and words) and the token space (e.g. getting the
+   index of the token comprising a given character or the span of characters corresponding to a given token). Currently
+   no "Fast" implementation is available for the SentencePiece-based tokenizers (for T5, ALBERT, CamemBERT, XLMRoBERTa
+   and XLNet models).
+
+The base classes [PreTrainedTokenizer](main_classes/tokenizer.html#transformers.PreTrainedTokenizer) and [PreTrainedTokenizerFast](main_classes/tokenizer.html#transformers.PreTrainedTokenizerFast)
+implement the common methods for encoding string inputs in model inputs (see below) and instantiating/saving python and
+"Fast" tokenizers either from a local file or directory or from a pretrained tokenizer provided by the library
+(downloaded from HuggingFace's AWS S3 repository). They both rely on
+[PreTrainedTokenizerBase](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase) that contains the common methods, and
+[SpecialTokensMixin](internal/tokenization_utils.html#transformers.SpecialTokensMixin).
+
+[PreTrainedTokenizer](main_classes/tokenizer.html#transformers.PreTrainedTokenizer) and [PreTrainedTokenizerFast](main_classes/tokenizer.html#transformers.PreTrainedTokenizerFast) thus implement the main
+methods for using all the tokenizers:
+
+- Tokenizing (splitting strings in sub-word token strings), converting tokens strings to ids and back, and
+  encoding/decoding (i.e., tokenizing and converting to integers).
+- Adding new tokens to the vocabulary in a way that is independent of the underlying structure (BPE, SentencePiece...).
+- Managing special tokens (like mask, beginning-of-sentence, etc.): adding them, assigning them to attributes in the
+  tokenizer for easy access and making sure they are not split during tokenization.
+
+[BatchEncoding](main_classes/tokenizer.html#transformers.BatchEncoding) holds the output of the tokenizer's encoding methods (`__call__`,
+`encode_plus` and `batch_encode_plus`) and is derived from a Python dictionary. When the tokenizer is a pure python
+tokenizer, this class behaves just like a standard python dictionary and holds the various model inputs computed by
+these methods (`input_ids`, `attention_mask`...). When the tokenizer is a "Fast" tokenizer (i.e., backed by
+HuggingFace [tokenizers library](https://github.com/huggingface/tokenizers)), this class provides in addition
+several advanced alignment methods which can be used to map between the original string (character and words) and the
+token space (e.g., getting the index of the token comprising a given character or the span of characters corresponding
+to a given token).
+
+
+## PreTrainedTokenizer
+
+<a id='transformers.PreTrainedTokenizer'></a>
+> **class transformers.PreTrainedTokenizer**(**kwargs)
+
+
+Base class for all slow tokenizers.
+
+Inherits from [PreTrainedTokenizerBase](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase).
+
+Handle all the shared methods for tokenization and special tokens as well as methods downloading/caching/loading
+pretrained tokenizers as well as adding tokens to the vocabulary.
+
+This class also contain the added tokens in a unified way on top of all tokenizers so we don't have to handle the
+specific vocabulary augmentation methods of the various underlying dictionary structures (BPE, sentencepiece...).
+
+Class attributes (overridden by derived classes)
+
+- **vocab_files_names** (`Dict[str, str]`) -- A dictionary with, as keys, the `__init__` keyword name of
+  each vocabulary file required by the model, and as associated values, the filename for saving the associated
+  file (string).
+- **pretrained_vocab_files_map** (`Dict[str, Dict[str, str]]`) -- A dictionary of dictionaries, with the
+  high-level keys being the `__init__` keyword name of each vocabulary file required by the model, the
+  low-level being the `short-cut-names` of the pretrained models with, as associated values, the
+  `url` to the associated pretrained vocabulary file.
+- **max_model_input_sizes** (`Dict[str, Optional[int]]`) -- A dictionary with, as keys, the
+  `short-cut-names` of the pretrained models, and as associated values, the maximum length of the sequence
+  inputs of this model, or `None` if the model has no maximum input size.
+- **pretrained_init_configuration** (`Dict[str, Dict[str, Any]]`) -- A dictionary with, as keys, the
+  `short-cut-names` of the pretrained models, and as associated values, a dictionary of specific arguments
+  to pass to the `__init__` method of the tokenizer class for this pretrained model when loading the
+  tokenizer with the [from_pretrained()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.from_pretrained)
+  method.
+- **model_input_names** (`List[str]`) -- A list of inputs expected in the forward pass of the model.
+- **padding_side** (`str`) -- The default value for the side on which the model should have padding
+  applied. Should be `'right'` or `'left'`.
+
+> Parameters
+
+- **model_max_length** (`int`, _optional_) --
+  The maximum length (in number of tokens) for the inputs to the transformer model. When the tokenizer is
+  loaded with [from_pretrained()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.from_pretrained), this
+  will be set to the value stored for the associated model in `max_model_input_sizes` (see above). If no
+  value is provided, will default to VERY_LARGE_INTEGER (`int(1e30)`).
+  padding_side -- (`str`, _optional_):
+  The side on which the model should have padding applied. Should be selected between ['right', 'left'].
+  Default value is picked from the class attribute of the same name.
+- **model_input_names** (`List[string]`, _optional_) --
+  The list of inputs accepted by the forward pass of the model (like `"token_type_ids"` or
+  `"attention_mask"`). Default value is picked from the class attribute of the same name.
+- **bos_token** (`str` or `tokenizers.AddedToken`, _optional_) --
+  A special token representing the beginning of a sentence. Will be associated to `self.bos_token` and
+  `self.bos_token_id`.
+- **eos_token** (`str` or `tokenizers.AddedToken`, _optional_) --
+  A special token representing the end of a sentence. Will be associated to `self.eos_token` and
+  `self.eos_token_id`.
+- **unk_token** (`str` or `tokenizers.AddedToken`, _optional_) --
+  A special token representing an out-of-vocabulary token. Will be associated to `self.unk_token` and
+  `self.unk_token_id`.
+- **sep_token** (`str` or `tokenizers.AddedToken`, _optional_) --
+  A special token separating two different sentences in the same input (used by BERT for instance). Will be
+  associated to `self.sep_token` and `self.sep_token_id`.
+- **pad_token** (`str` or `tokenizers.AddedToken`, _optional_) --
+  A special token used to make arrays of tokens the same size for batching purpose. Will then be ignored by
+  attention mechanisms or loss computation. Will be associated to `self.pad_token` and
+  `self.pad_token_id`.
+- **cls_token** (`str` or `tokenizers.AddedToken`, _optional_) --
+  A special token representing the class of the input (used by BERT for instance). Will be associated to
+  `self.cls_token` and `self.cls_token_id`.
+- **mask_token** (`str` or `tokenizers.AddedToken`, _optional_) --
+  A special token representing a masked token (used by masked-language modeling pretraining objectives, like
+  BERT). Will be associated to `self.mask_token` and `self.mask_token_id`.
+- **additional_special_tokens** (tuple or list of `str` or `tokenizers.AddedToken`, _optional_) --
+  A tuple or a list of additional special tokens. Add them here to ensure they won't be split by the
+  tokenization process. Will be associated to `self.additional_special_tokens` and
+  `self.additional_special_tokens_ids`.
+
+
+<a id='transformers.PreTrainedTokenizerBase.__call__'></a>
+> **\_\_call\_\_**(self, text: typing.Union[str, typing.List[str], typing.List[typing.List[str]]], text_pair: typing.Union[str, typing.List[str], typing.List[typing.List[str]], NoneType] = None, add_special_tokens: bool = True, padding: typing.Union[bool, str, transformers.file_utils.PaddingStrategy] = False, truncation: typing.Union[bool, str, transformers.tokenization_utils_base.TruncationStrategy] = False, max_length: typing.Optional[int] = None, stride: int = 0, is_split_into_words: bool = False, pad_to_multiple_of: typing.Optional[int] = None, return_tensors: typing.Union[str, transformers.file_utils.TensorType, NoneType] = None, return_token_type_ids: typing.Optional[bool] = None, return_attention_mask: typing.Optional[bool] = None, return_overflowing_tokens: bool = False, return_special_tokens_mask: bool = False, return_offsets_mapping: bool = False, return_length: bool = False, verbose: bool = True, **kwargs)
+
+
+Main method to tokenize and prepare for the model one or several sequence(s) or one or several pair(s) of
+sequences.
+
+> Parameters
+
+- **text** (`str`, `List[str]`, `List[List[str]]`) --
+  The sequence or batch of sequences to be encoded. Each sequence can be a string or a list of strings
+  (pretokenized string). If the sequences are provided as list of strings (pretokenized), you must set
+  `is_split_into_words=True` (to lift the ambiguity with a batch of sequences).
+- **text_pair** (`str`, `List[str]`, `List[List[str]]`) --
+  The sequence or batch of sequences to be encoded. Each sequence can be a string or a list of strings
+  (pretokenized string). If the sequences are provided as list of strings (pretokenized), you must set
+  `is_split_into_words=True` (to lift the ambiguity with a batch of sequences).
+
+- **add_special_tokens** (`bool`, _optional_, defaults to `True`) --
+  Whether or not to encode the sequences with the special tokens relative to their model.
+- **padding** (`bool`, `str` or [PaddingStrategy](internal/file_utils.html#transformers.file_utils.PaddingStrategy), _optional_, defaults to `False`) --
+  Activates and controls padding. Accepts the following values:
+
+  - `True` or `'longest'`: Pad to the longest sequence in the batch (or no padding if only a
+    single sequence if provided).
+  - `'max_length'`: Pad to a maximum length specified with the argument `max_length` or to the
+    maximum acceptable input length for the model if that argument is not provided.
+  - `False` or `'do_not_pad'` (default): No padding (i.e., can output a batch with sequences of
+    different lengths).
+- **truncation** (`bool`, `str` or [TruncationStrategy](internal/tokenization_utils.html#transformers.tokenization_utils_base.TruncationStrategy), _optional_, defaults to `False`) --
+  Activates and controls truncation. Accepts the following values:
+
+  - `True` or `'longest_first'`: Truncate to a maximum length specified with the argument
+    `max_length` or to the maximum acceptable input length for the model if that argument is not
+    provided. This will truncate token by token, removing a token from the longest sequence in the pair
+    if a pair of sequences (or a batch of pairs) is provided.
+  - `'only_first'`: Truncate to a maximum length specified with the argument `max_length` or to
+    the maximum acceptable input length for the model if that argument is not provided. This will only
+    truncate the first sequence of a pair if a pair of sequences (or a batch of pairs) is provided.
+  - `'only_second'`: Truncate to a maximum length specified with the argument `max_length` or
+    to the maximum acceptable input length for the model if that argument is not provided. This will only
+    truncate the second sequence of a pair if a pair of sequences (or a batch of pairs) is provided.
+  - `False` or `'do_not_truncate'` (default): No truncation (i.e., can output batch with
+    sequence lengths greater than the model maximum admissible input size).
+- **max_length** (`int`, _optional_) --
+  Controls the maximum length to use by one of the truncation/padding parameters.
+
+  If left unset or set to `None`, this will use the predefined model maximum length if a maximum
+  length is required by one of the truncation/padding parameters. If the model has no specific maximum
+  input length (like XLNet) truncation/padding to a maximum length will be deactivated.
+- **stride** (`int`, _optional_, defaults to 0) --
+  If set to a number along with `max_length`, the overflowing tokens returned when
+  `return_overflowing_tokens=True` will contain some tokens from the end of the truncated sequence
+  returned to provide some overlap between truncated and overflowing sequences. The value of this
+  argument defines the number of overlapping tokens.
+- **is_split_into_words** (`bool`, _optional_, defaults to `False`) --
+  Whether or not the input is already pre-tokenized (e.g., split into words). If set to `True`, the
+  tokenizer assumes the input is already split into words (for instance, by splitting it on whitespace)
+  which it will tokenize. This is useful for NER or token classification.
+- **pad_to_multiple_of** (`int`, _optional_) --
+  If set will pad the sequence to a multiple of the provided value. This is especially useful to enable
+  the use of Tensor Cores on NVIDIA hardware with compute capability >= 7.5 (Volta).
+- **return_tensors** (`str` or [TensorType](internal/file_utils.html#transformers.TensorType), _optional_) --
+  If set, will return tensors instead of list of python integers. Acceptable values are:
+
+  - `'tf'`: Return TensorFlow `tf.constant` objects.
+  - `'pt'`: Return PyTorch `torch.Tensor` objects.
+  - `'np'`: Return Numpy `np.ndarray` objects.
+
+- **return_token_type_ids** (`bool`, _optional_) --
+  Whether to return token type IDs. If left to the default, will return the token type IDs according to
+  the specific tokenizer's default, defined by the `return_outputs` attribute.
+
+  [What are token type IDs?](../glossary.html#token-type-ids)
+- **return_attention_mask** (`bool`, _optional_) --
+  Whether to return the attention mask. If left to the default, will return the attention mask according
+  to the specific tokenizer's default, defined by the `return_outputs` attribute.
+
+  [What are attention masks?](../glossary.html#attention-mask)
+- **return_overflowing_tokens** (`bool`, _optional_, defaults to `False`) --
+  Whether or not to return overflowing token sequences.
+- **return_special_tokens_mask** (`bool`, _optional_, defaults to `False`) --
+  Whether or not to return special tokens mask information.
+- **return_offsets_mapping** (`bool`, _optional_, defaults to `False`) --
+  Whether or not to return `(char_start, char_end)` for each token.
+
+  This is only available on fast tokenizers inheriting from
+  [PreTrainedTokenizerFast](main_classes/tokenizer.html#transformers.PreTrainedTokenizerFast), if using Python's tokenizer, this method will raise
+  `NotImplementedError`.
+- **return_length**  (`bool`, _optional_, defaults to `False`) --
+  Whether or not to return the lengths of the encoded inputs.
+- **verbose** (`bool`, _optional_, defaults to `True`) --
+  Whether or not to print more information and warnings.
+  **kwargs -- passed to the `self.tokenize()` method
+
+> Returns
+
+A [BatchEncoding](main_classes/tokenizer.html#transformers.BatchEncoding) with the following fields:
+
+- **input_ids** -- List of token ids to be fed to a model.
+
+  [What are input IDs?](../glossary.html#input-ids)
+
+- **token_type_ids** -- List of token type ids to be fed to a model (when `return_token_type_ids=True`
+  or if _"token_type_ids"_ is in `self.model_input_names`).
+
+  [What are token type IDs?](../glossary.html#token-type-ids)
+
+- **attention_mask** -- List of indices specifying which tokens should be attended to by the model (when
+  `return_attention_mask=True` or if _"attention_mask"_ is in `self.model_input_names`).
+
+  [What are attention masks?](../glossary.html#attention-mask)
+
+- **overflowing_tokens** -- List of overflowing tokens sequences (when a `max_length` is specified and
+  `return_overflowing_tokens=True`).
+- **num_truncated_tokens** -- Number of tokens truncated (when a `max_length` is specified and
+  `return_overflowing_tokens=True`).
+- **special_tokens_mask** -- List of 0s and 1s, with 1 specifying added special tokens and 0 specifying
+  regular sequence tokens (when `add_special_tokens=True` and `return_special_tokens_mask=True`).
+- **length** -- The length of the inputs (when `return_length=True`)
+
+> Return type
+
+[BatchEncoding](main_classes/tokenizer.html#transformers.BatchEncoding)
+
+
+<a id='transformers.PreTrainedTokenizerBase.batch_decode'></a>
+> **batch\_decode**(self, sequences: typing.Union[typing.List[int], typing.List[typing.List[int]], ForwardRef('np.ndarray'), ForwardRef('torch.Tensor'), ForwardRef('tf.Tensor')], skip_special_tokens: bool = False, clean_up_tokenization_spaces: bool = True, **kwargs)
+
+
+Convert a list of lists of token ids into a list of strings by calling decode.
+
+> Parameters
+
+- **sequences** (`Union[List[int], List[List[int]], np.ndarray, torch.Tensor, tf.Tensor]`) --
+  List of tokenized input ids. Can be obtained using the `__call__` method.
+- **skip_special_tokens** (`bool`, _optional_, defaults to `False`) --
+  Whether or not to remove special tokens in the decoding.
+- **clean_up_tokenization_spaces** (`bool`, _optional_, defaults to `True`) --
+  Whether or not to clean up the tokenization spaces.
+- **kwargs** (additional keyword arguments, _optional_) --
+  Will be passed to the underlying model specific decode method.
+
+> Returns
+
+The list of decoded sentences.
+
+> Return type
+
+`List[str]`
+
+
+<a id='transformers.PreTrainedTokenizerBase.decode'></a>
+> **decode**(self, token_ids: typing.Union[int, typing.List[int], ForwardRef('np.ndarray'), ForwardRef('torch.Tensor'), ForwardRef('tf.Tensor')], skip_special_tokens: bool = False, clean_up_tokenization_spaces: bool = True, **kwargs)
+
+
+Converts a sequence of ids in a string, using the tokenizer and vocabulary with options to remove special
+tokens and clean up tokenization spaces.
+
+Similar to doing `self.convert_tokens_to_string(self.convert_ids_to_tokens(token_ids))`.
+
+> Parameters
+
+- **token_ids** (`Union[int, List[int], np.ndarray, torch.Tensor, tf.Tensor]`) --
+  List of tokenized input ids. Can be obtained using the `__call__` method.
+- **skip_special_tokens** (`bool`, _optional_, defaults to `False`) --
+  Whether or not to remove special tokens in the decoding.
+- **clean_up_tokenization_spaces** (`bool`, _optional_, defaults to `True`) --
+  Whether or not to clean up the tokenization spaces.
+- **kwargs** (additional keyword arguments, _optional_) --
+  Will be passed to the underlying model specific decode method.
+
+> Returns
+
+The decoded sentence.
+
+> Return type
+
+`str`
+
+
+<a id='transformers.PreTrainedTokenizerBase.encode'></a>
+> **encode**(self, text: typing.Union[str, typing.List[str], typing.List[int]], text_pair: typing.Union[str, typing.List[str], typing.List[int], NoneType] = None, add_special_tokens: bool = True, padding: typing.Union[bool, str, transformers.file_utils.PaddingStrategy] = False, truncation: typing.Union[bool, str, transformers.tokenization_utils_base.TruncationStrategy] = False, max_length: typing.Optional[int] = None, stride: int = 0, return_tensors: typing.Union[str, transformers.file_utils.TensorType, NoneType] = None, **kwargs)
+
+
+Converts a string to a sequence of ids (integer), using the tokenizer and vocabulary.
+
+Same as doing `self.convert_tokens_to_ids(self.tokenize(text))`.
+
+> Parameters
+
+- **text** (`str`, `List[str]` or `List[int]`) --
+  The first sequence to be encoded. This can be a string, a list of strings (tokenized string using the
+  `tokenize` method) or a list of integers (tokenized string ids using the `convert_tokens_to_ids`
+  method).
+- **text_pair** (`str`, `List[str]` or `List[int]`, _optional_) --
+  Optional second sequence to be encoded. This can be a string, a list of strings (tokenized string using
+  the `tokenize` method) or a list of integers (tokenized string ids using the
+  `convert_tokens_to_ids` method).
+
+- **add_special_tokens** (`bool`, _optional_, defaults to `True`) --
+  Whether or not to encode the sequences with the special tokens relative to their model.
+- **padding** (`bool`, `str` or [PaddingStrategy](internal/file_utils.html#transformers.file_utils.PaddingStrategy), _optional_, defaults to `False`) --
+  Activates and controls padding. Accepts the following values:
+
+  - `True` or `'longest'`: Pad to the longest sequence in the batch (or no padding if only a
+    single sequence if provided).
+  - `'max_length'`: Pad to a maximum length specified with the argument `max_length` or to the
+    maximum acceptable input length for the model if that argument is not provided.
+  - `False` or `'do_not_pad'` (default): No padding (i.e., can output a batch with sequences of
+    different lengths).
+- **truncation** (`bool`, `str` or [TruncationStrategy](internal/tokenization_utils.html#transformers.tokenization_utils_base.TruncationStrategy), _optional_, defaults to `False`) --
+  Activates and controls truncation. Accepts the following values:
+
+  - `True` or `'longest_first'`: Truncate to a maximum length specified with the argument
+    `max_length` or to the maximum acceptable input length for the model if that argument is not
+    provided. This will truncate token by token, removing a token from the longest sequence in the pair
+    if a pair of sequences (or a batch of pairs) is provided.
+  - `'only_first'`: Truncate to a maximum length specified with the argument `max_length` or to
+    the maximum acceptable input length for the model if that argument is not provided. This will only
+    truncate the first sequence of a pair if a pair of sequences (or a batch of pairs) is provided.
+  - `'only_second'`: Truncate to a maximum length specified with the argument `max_length` or
+    to the maximum acceptable input length for the model if that argument is not provided. This will only
+    truncate the second sequence of a pair if a pair of sequences (or a batch of pairs) is provided.
+  - `False` or `'do_not_truncate'` (default): No truncation (i.e., can output batch with
+    sequence lengths greater than the model maximum admissible input size).
+- **max_length** (`int`, _optional_) --
+  Controls the maximum length to use by one of the truncation/padding parameters.
+
+  If left unset or set to `None`, this will use the predefined model maximum length if a maximum
+  length is required by one of the truncation/padding parameters. If the model has no specific maximum
+  input length (like XLNet) truncation/padding to a maximum length will be deactivated.
+- **stride** (`int`, _optional_, defaults to 0) --
+  If set to a number along with `max_length`, the overflowing tokens returned when
+  `return_overflowing_tokens=True` will contain some tokens from the end of the truncated sequence
+  returned to provide some overlap between truncated and overflowing sequences. The value of this
+  argument defines the number of overlapping tokens.
+- **is_split_into_words** (`bool`, _optional_, defaults to `False`) --
+  Whether or not the input is already pre-tokenized (e.g., split into words). If set to `True`, the
+  tokenizer assumes the input is already split into words (for instance, by splitting it on whitespace)
+  which it will tokenize. This is useful for NER or token classification.
+- **pad_to_multiple_of** (`int`, _optional_) --
+  If set will pad the sequence to a multiple of the provided value. This is especially useful to enable
+  the use of Tensor Cores on NVIDIA hardware with compute capability >= 7.5 (Volta).
+- **return_tensors** (`str` or [TensorType](internal/file_utils.html#transformers.TensorType), _optional_) --
+  If set, will return tensors instead of list of python integers. Acceptable values are:
+
+  - `'tf'`: Return TensorFlow `tf.constant` objects.
+  - `'pt'`: Return PyTorch `torch.Tensor` objects.
+  - `'np'`: Return Numpy `np.ndarray` objects.
+
+**kwargs -- Passed along to the _.tokenize()_ method.
+
+> Returns
+
+The tokenized ids of the
+text.
+
+> Return type
+
+`List[int]`, `torch.Tensor`, `tf.Tensor` or `np.ndarray`
+
+
+<a id='transformers.file_utils.PushToHubMixin.push_to_hub'></a>
+> **push\_to\_hub**(self, repo_path_or_name: typing.Optional[str] = None, repo_url: typing.Optional[str] = None, use_temp_dir: bool = False, commit_message: typing.Optional[str] = None, organization: typing.Optional[str] = None, private: typing.Optional[bool] = None, use_auth_token: typing.Union[bool, str, NoneType] = None)
+
+
+Upload the tokenizer files to the 🤗 Model Hub while synchronizing a local clone of the repo in
+`repo_path_or_name`.
+
+> Parameters
+
+- **repo_path_or_name** (`str`, _optional_) --
+  Can either be a repository name for your tokenizer in the Hub or a path to a local folder (in which case
+  the repository will have the name of that local folder). If not specified, will default to the name
+  given by `repo_url` and a local directory with that name will be created.
+- **repo_url** (`str`, _optional_) --
+  Specify this in case you want to push to an existing repository in the hub. If unspecified, a new
+  repository will be created in your namespace (unless you specify an `organization`) with
+  `repo_name`.
+- **use_temp_dir** (`bool`, _optional_, defaults to `False`) --
+  Whether or not to clone the distant repo in a temporary directory or in `repo_path_or_name` inside
+  the current working directory. This will slow things down if you are making changes in an existing repo
+  since you will need to clone the repo before every push.
+- **commit_message** (`str`, _optional_) --
+  Message to commit while pushing. Will default to `"add tokenizer"`.
+- **organization** (`str`, _optional_) --
+  Organization in which you want to push your tokenizer (you must be a member of this organization).
+- **private** (`bool`, _optional_) --
+  Whether or not the repository created should be private (requires a paying subscription).
+- **use_auth_token** (`bool` or `str`, _optional_) --
+  The token to use as HTTP bearer authorization for remote files. If `True`, will use the token
+  generated when running `transformers-cli login` (stored in `~/.huggingface`). Will default to
+  `True` if `repo_url` is not specified.
+
+
+> Returns
+
+The url of the commit of your tokenizer in the given repository.
+
+> Return type
+
+`str`
+
+> Examples:
+
+```python
+from transformers import AutoTokenizer
+
+tokenizer = AutoTokenizer.from_pretrained("bert-base-cased")
+
+# Push the tokenizer to your namespace with the name "my-finetuned-bert" and have a local clone in the
+# _my-finetuned-bert_ folder.
+tokenizer.push_to_hub("my-finetuned-bert")
+
+# Push the tokenizer to your namespace with the name "my-finetuned-bert" with no local clone.
+tokenizer.push_to_hub("my-finetuned-bert", use_temp_dir=True)
+
+# Push the tokenizer to an organization with the name "my-finetuned-bert" and have a local clone in the
+# _my-finetuned-bert_ folder.
+tokenizer.push_to_hub("my-finetuned-bert", organization="huggingface")
+
+# Make a change to an existing repo that has been cloned locally in _my-finetuned-bert_.
+tokenizer.push_to_hub("my-finetuned-bert", repo_url="https://huggingface.co/sgugger/my-finetuned-bert")
+```
+
+
+<a id='transformers.PreTrainedTokenizer.convert_ids_to_tokens'></a>
+> **convert\_ids\_to\_tokens**(self, ids: typing.Union[int, typing.List[int]], skip_special_tokens: bool = False)
+
+
+Converts a single index or a sequence of indices in a token or a sequence of tokens, using the vocabulary and
+added tokens.
+
+> Parameters
+
+- **ids** (`int` or `List[int]`) --
+  The token id (or token ids) to convert to tokens.
+- **skip_special_tokens** (`bool`, _optional_, defaults to `False`) --
+  Whether or not to remove special tokens in the decoding.
+
+> Returns
+
+The decoded token(s).
+
+> Return type
+
+`str` or `List[str]`
+
+
+<a id='transformers.PreTrainedTokenizer.convert_tokens_to_ids'></a>
+> **convert\_tokens\_to\_ids**(self, tokens: typing.Union[str, typing.List[str]])
+
+
+Converts a token string (or a sequence of tokens) in a single integer id (or a sequence of ids), using the
+vocabulary.
+
+> Parameters
+
+- **tokens** (`str` or `List[str]`) -- One or several token(s) to convert to token id(s).
+
+> Returns
+
+The token id or list of token ids.
+
+> Return type
+
+`int` or `List[int]`
+
+
+<a id='transformers.PreTrainedTokenizer.get_added_vocab'></a>
+> **get\_added\_vocab**(self)
+
+
+Returns the added tokens in the vocabulary as a dictionary of token to index.
+
+> Returns
+
+The added tokens.
+
+> Return type
+
+`Dict[str, int]`
+
+
+<a id='transformers.PreTrainedTokenizer.num_special_tokens_to_add'></a>
+> **num\_special\_tokens\_to\_add**(self, pair: bool = False)
+
+
+Returns the number of added tokens when encoding a sequence with special tokens.
+
+<Tip>
+
+This encodes a dummy input and checks the number of added tokens, and is therefore not efficient. Do not
+put this inside your training loop.
+
+</Tip>
+
+> Parameters
+
+- **pair** (`bool`, _optional_, defaults to `False`) --
+  Whether the number of added tokens should be computed in the case of a sequence pair or a single
+  sequence.
+
+> Returns
+
+Number of special tokens added to sequences.
+
+> Return type
+
+`int`
+
+
+<a id='transformers.PreTrainedTokenizer.prepare_for_tokenization'></a>
+> **prepare\_for\_tokenization**(self, text: str, is_split_into_words: bool = False, **kwargs)
+
+
+Performs any necessary transformations before tokenization.
+
+This method should pop the arguments from kwargs and return the remaining `kwargs` as well. We test the
+`kwargs` at the end of the encoding process to be sure all the arguments have been used.
+
+> Parameters
+
+- **text** (`str`) --
+  The text to prepare.
+- **is_split_into_words** (`bool`, _optional_, defaults to `False`) --
+  Whether or not the input is already pre-tokenized (e.g., split into words). If set to `True`, the
+  tokenizer assumes the input is already split into words (for instance, by splitting it on whitespace)
+  which it will tokenize. This is useful for NER or token classification.
+  kwargs --
+  Keyword arguments to use for the tokenization.
+
+> Returns
+
+The prepared text and the unused kwargs.
+
+> Return type
+
+`Tuple[str, Dict[str, Any]]`
+
+
+<a id='transformers.PreTrainedTokenizer.tokenize'></a>
+> **tokenize**(self, text: str, **kwargs)
+
+
+Converts a string in a sequence of tokens, using the tokenizer.
+
+Split in words for word-based vocabulary or sub-words for sub-word-based vocabularies
+(BPE/SentencePieces/WordPieces). Takes care of added tokens.
+
+> Parameters
+
+- **text** (`str`) --
+  The sequence to be encoded.
+- ****kwargs** (additional keyword arguments) --
+  Passed along to the model-specific `prepare_for_tokenization` preprocessing method.
+
+> Returns
+
+The list of tokens.
+
+> Return type
+
+`List[str]`
+
+
+## PreTrainedTokenizerFast
+
+The [PreTrainedTokenizerFast](main_classes/tokenizer.html#transformers.PreTrainedTokenizerFast) depend on the [tokenizers](https://huggingface.co/docs/tokenizers) library. The tokenizers obtained from the 🤗 tokenizers library can be
+loaded very simply into 🤗 transformers. Take a look at the [Using tokenizers from 🤗 tokenizers](../fast_tokenizers.html) page to understand how this is done.
+
+<a id='transformers.PreTrainedTokenizerFast'></a>
+> **class transformers.PreTrainedTokenizerFast**(*args, **kwargs)
+
+
+Base class for all fast tokenizers (wrapping HuggingFace tokenizers library).
+
+Inherits from [PreTrainedTokenizerBase](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase).
+
+Handles all the shared methods for tokenization and special tokens, as well as methods for
+downloading/caching/loading pretrained tokenizers, as well as adding tokens to the vocabulary.
+
+This class also contains the added tokens in a unified way on top of all tokenizers so we don't have to handle the
+specific vocabulary augmentation methods of the various underlying dictionary structures (BPE, sentencepiece...).
+
+Class attributes (overridden by derived classes)
+
+- **vocab_files_names** (`Dict[str, str]`) -- A dictionary with, as keys, the `__init__` keyword name of
+  each vocabulary file required by the model, and as associated values, the filename for saving the associated
+  file (string).
+- **pretrained_vocab_files_map** (`Dict[str, Dict[str, str]]`) -- A dictionary of dictionaries, with the
+  high-level keys being the `__init__` keyword name of each vocabulary file required by the model, the
+  low-level being the `short-cut-names` of the pretrained models with, as associated values, the
+  `url` to the associated pretrained vocabulary file.
+- **max_model_input_sizes** (`Dict[str, Optional[int]]`) -- A dictionary with, as keys, the
+  `short-cut-names` of the pretrained models, and as associated values, the maximum length of the sequence
+  inputs of this model, or `None` if the model has no maximum input size.
+- **pretrained_init_configuration** (`Dict[str, Dict[str, Any]]`) -- A dictionary with, as keys, the
+  `short-cut-names` of the pretrained models, and as associated values, a dictionary of specific arguments
+  to pass to the `__init__` method of the tokenizer class for this pretrained model when loading the
+  tokenizer with the [from_pretrained()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.from_pretrained)
+  method.
+- **model_input_names** (`List[str]`) -- A list of inputs expected in the forward pass of the model.
+- **padding_side** (`str`) -- The default value for the side on which the model should have padding
+  applied. Should be `'right'` or `'left'`.
+
+> Parameters
+
+- **model_max_length** (`int`, _optional_) --
+  The maximum length (in number of tokens) for the inputs to the transformer model. When the tokenizer is
+  loaded with [from_pretrained()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.from_pretrained), this
+  will be set to the value stored for the associated model in `max_model_input_sizes` (see above). If no
+  value is provided, will default to VERY_LARGE_INTEGER (`int(1e30)`).
+  padding_side -- (`str`, _optional_):
+  The side on which the model should have padding applied. Should be selected between ['right', 'left'].
+  Default value is picked from the class attribute of the same name.
+- **model_input_names** (`List[string]`, _optional_) --
+  The list of inputs accepted by the forward pass of the model (like `"token_type_ids"` or
+  `"attention_mask"`). Default value is picked from the class attribute of the same name.
+- **bos_token** (`str` or `tokenizers.AddedToken`, _optional_) --
+  A special token representing the beginning of a sentence. Will be associated to `self.bos_token` and
+  `self.bos_token_id`.
+- **eos_token** (`str` or `tokenizers.AddedToken`, _optional_) --
+  A special token representing the end of a sentence. Will be associated to `self.eos_token` and
+  `self.eos_token_id`.
+- **unk_token** (`str` or `tokenizers.AddedToken`, _optional_) --
+  A special token representing an out-of-vocabulary token. Will be associated to `self.unk_token` and
+  `self.unk_token_id`.
+- **sep_token** (`str` or `tokenizers.AddedToken`, _optional_) --
+  A special token separating two different sentences in the same input (used by BERT for instance). Will be
+  associated to `self.sep_token` and `self.sep_token_id`.
+- **pad_token** (`str` or `tokenizers.AddedToken`, _optional_) --
+  A special token used to make arrays of tokens the same size for batching purpose. Will then be ignored by
+  attention mechanisms or loss computation. Will be associated to `self.pad_token` and
+  `self.pad_token_id`.
+- **cls_token** (`str` or `tokenizers.AddedToken`, _optional_) --
+  A special token representing the class of the input (used by BERT for instance). Will be associated to
+  `self.cls_token` and `self.cls_token_id`.
+- **mask_token** (`str` or `tokenizers.AddedToken`, _optional_) --
+  A special token representing a masked token (used by masked-language modeling pretraining objectives, like
+  BERT). Will be associated to `self.mask_token` and `self.mask_token_id`.
+- **additional_special_tokens** (tuple or list of `str` or `tokenizers.AddedToken`, _optional_) --
+  A tuple or a list of additional special tokens. Add them here to ensure they won't be split by the
+  tokenization process. Will be associated to `self.additional_special_tokens` and
+  `self.additional_special_tokens_ids`.
+
+- **tokenizer_object** (`tokenizers.Tokenizer`) --
+  A `tokenizers.Tokenizer` object from 🤗 tokenizers to instantiate from. See [Using tokenizers
+  from 🤗 tokenizers](../fast_tokenizers.html) for more information.
+- **tokenizer_file** (`str`) --
+  A path to a local JSON file representing a previously serialized `tokenizers.Tokenizer` object from
+  🤗 tokenizers.
+
+
+<a id='transformers.PreTrainedTokenizerBase.__call__'></a>
+> **\_\_call\_\_**(self, text: typing.Union[str, typing.List[str], typing.List[typing.List[str]]], text_pair: typing.Union[str, typing.List[str], typing.List[typing.List[str]], NoneType] = None, add_special_tokens: bool = True, padding: typing.Union[bool, str, transformers.file_utils.PaddingStrategy] = False, truncation: typing.Union[bool, str, transformers.tokenization_utils_base.TruncationStrategy] = False, max_length: typing.Optional[int] = None, stride: int = 0, is_split_into_words: bool = False, pad_to_multiple_of: typing.Optional[int] = None, return_tensors: typing.Union[str, transformers.file_utils.TensorType, NoneType] = None, return_token_type_ids: typing.Optional[bool] = None, return_attention_mask: typing.Optional[bool] = None, return_overflowing_tokens: bool = False, return_special_tokens_mask: bool = False, return_offsets_mapping: bool = False, return_length: bool = False, verbose: bool = True, **kwargs)
+
+
+Main method to tokenize and prepare for the model one or several sequence(s) or one or several pair(s) of
+sequences.
+
+> Parameters
+
+- **text** (`str`, `List[str]`, `List[List[str]]`) --
+  The sequence or batch of sequences to be encoded. Each sequence can be a string or a list of strings
+  (pretokenized string). If the sequences are provided as list of strings (pretokenized), you must set
+  `is_split_into_words=True` (to lift the ambiguity with a batch of sequences).
+- **text_pair** (`str`, `List[str]`, `List[List[str]]`) --
+  The sequence or batch of sequences to be encoded. Each sequence can be a string or a list of strings
+  (pretokenized string). If the sequences are provided as list of strings (pretokenized), you must set
+  `is_split_into_words=True` (to lift the ambiguity with a batch of sequences).
+
+- **add_special_tokens** (`bool`, _optional_, defaults to `True`) --
+  Whether or not to encode the sequences with the special tokens relative to their model.
+- **padding** (`bool`, `str` or [PaddingStrategy](internal/file_utils.html#transformers.file_utils.PaddingStrategy), _optional_, defaults to `False`) --
+  Activates and controls padding. Accepts the following values:
+
+  - `True` or `'longest'`: Pad to the longest sequence in the batch (or no padding if only a
+    single sequence if provided).
+  - `'max_length'`: Pad to a maximum length specified with the argument `max_length` or to the
+    maximum acceptable input length for the model if that argument is not provided.
+  - `False` or `'do_not_pad'` (default): No padding (i.e., can output a batch with sequences of
+    different lengths).
+- **truncation** (`bool`, `str` or [TruncationStrategy](internal/tokenization_utils.html#transformers.tokenization_utils_base.TruncationStrategy), _optional_, defaults to `False`) --
+  Activates and controls truncation. Accepts the following values:
+
+  - `True` or `'longest_first'`: Truncate to a maximum length specified with the argument
+    `max_length` or to the maximum acceptable input length for the model if that argument is not
+    provided. This will truncate token by token, removing a token from the longest sequence in the pair
+    if a pair of sequences (or a batch of pairs) is provided.
+  - `'only_first'`: Truncate to a maximum length specified with the argument `max_length` or to
+    the maximum acceptable input length for the model if that argument is not provided. This will only
+    truncate the first sequence of a pair if a pair of sequences (or a batch of pairs) is provided.
+  - `'only_second'`: Truncate to a maximum length specified with the argument `max_length` or
+    to the maximum acceptable input length for the model if that argument is not provided. This will only
+    truncate the second sequence of a pair if a pair of sequences (or a batch of pairs) is provided.
+  - `False` or `'do_not_truncate'` (default): No truncation (i.e., can output batch with
+    sequence lengths greater than the model maximum admissible input size).
+- **max_length** (`int`, _optional_) --
+  Controls the maximum length to use by one of the truncation/padding parameters.
+
+  If left unset or set to `None`, this will use the predefined model maximum length if a maximum
+  length is required by one of the truncation/padding parameters. If the model has no specific maximum
+  input length (like XLNet) truncation/padding to a maximum length will be deactivated.
+- **stride** (`int`, _optional_, defaults to 0) --
+  If set to a number along with `max_length`, the overflowing tokens returned when
+  `return_overflowing_tokens=True` will contain some tokens from the end of the truncated sequence
+  returned to provide some overlap between truncated and overflowing sequences. The value of this
+  argument defines the number of overlapping tokens.
+- **is_split_into_words** (`bool`, _optional_, defaults to `False`) --
+  Whether or not the input is already pre-tokenized (e.g., split into words). If set to `True`, the
+  tokenizer assumes the input is already split into words (for instance, by splitting it on whitespace)
+  which it will tokenize. This is useful for NER or token classification.
+- **pad_to_multiple_of** (`int`, _optional_) --
+  If set will pad the sequence to a multiple of the provided value. This is especially useful to enable
+  the use of Tensor Cores on NVIDIA hardware with compute capability >= 7.5 (Volta).
+- **return_tensors** (`str` or [TensorType](internal/file_utils.html#transformers.TensorType), _optional_) --
+  If set, will return tensors instead of list of python integers. Acceptable values are:
+
+  - `'tf'`: Return TensorFlow `tf.constant` objects.
+  - `'pt'`: Return PyTorch `torch.Tensor` objects.
+  - `'np'`: Return Numpy `np.ndarray` objects.
+
+- **return_token_type_ids** (`bool`, _optional_) --
+  Whether to return token type IDs. If left to the default, will return the token type IDs according to
+  the specific tokenizer's default, defined by the `return_outputs` attribute.
+
+  [What are token type IDs?](../glossary.html#token-type-ids)
+- **return_attention_mask** (`bool`, _optional_) --
+  Whether to return the attention mask. If left to the default, will return the attention mask according
+  to the specific tokenizer's default, defined by the `return_outputs` attribute.
+
+  [What are attention masks?](../glossary.html#attention-mask)
+- **return_overflowing_tokens** (`bool`, _optional_, defaults to `False`) --
+  Whether or not to return overflowing token sequences.
+- **return_special_tokens_mask** (`bool`, _optional_, defaults to `False`) --
+  Whether or not to return special tokens mask information.
+- **return_offsets_mapping** (`bool`, _optional_, defaults to `False`) --
+  Whether or not to return `(char_start, char_end)` for each token.
+
+  This is only available on fast tokenizers inheriting from
+  [PreTrainedTokenizerFast](main_classes/tokenizer.html#transformers.PreTrainedTokenizerFast), if using Python's tokenizer, this method will raise
+  `NotImplementedError`.
+- **return_length**  (`bool`, _optional_, defaults to `False`) --
+  Whether or not to return the lengths of the encoded inputs.
+- **verbose** (`bool`, _optional_, defaults to `True`) --
+  Whether or not to print more information and warnings.
+  **kwargs -- passed to the `self.tokenize()` method
+
+> Returns
+
+A [BatchEncoding](main_classes/tokenizer.html#transformers.BatchEncoding) with the following fields:
+
+- **input_ids** -- List of token ids to be fed to a model.
+
+  [What are input IDs?](../glossary.html#input-ids)
+
+- **token_type_ids** -- List of token type ids to be fed to a model (when `return_token_type_ids=True`
+  or if _"token_type_ids"_ is in `self.model_input_names`).
+
+  [What are token type IDs?](../glossary.html#token-type-ids)
+
+- **attention_mask** -- List of indices specifying which tokens should be attended to by the model (when
+  `return_attention_mask=True` or if _"attention_mask"_ is in `self.model_input_names`).
+
+  [What are attention masks?](../glossary.html#attention-mask)
+
+- **overflowing_tokens** -- List of overflowing tokens sequences (when a `max_length` is specified and
+  `return_overflowing_tokens=True`).
+- **num_truncated_tokens** -- Number of tokens truncated (when a `max_length` is specified and
+  `return_overflowing_tokens=True`).
+- **special_tokens_mask** -- List of 0s and 1s, with 1 specifying added special tokens and 0 specifying
+  regular sequence tokens (when `add_special_tokens=True` and `return_special_tokens_mask=True`).
+- **length** -- The length of the inputs (when `return_length=True`)
+
+> Return type
+
+[BatchEncoding](main_classes/tokenizer.html#transformers.BatchEncoding)
+
+
+<a id='transformers.PreTrainedTokenizerBase.batch_decode'></a>
+> **batch\_decode**(self, sequences: typing.Union[typing.List[int], typing.List[typing.List[int]], ForwardRef('np.ndarray'), ForwardRef('torch.Tensor'), ForwardRef('tf.Tensor')], skip_special_tokens: bool = False, clean_up_tokenization_spaces: bool = True, **kwargs)
+
+
+Convert a list of lists of token ids into a list of strings by calling decode.
+
+> Parameters
+
+- **sequences** (`Union[List[int], List[List[int]], np.ndarray, torch.Tensor, tf.Tensor]`) --
+  List of tokenized input ids. Can be obtained using the `__call__` method.
+- **skip_special_tokens** (`bool`, _optional_, defaults to `False`) --
+  Whether or not to remove special tokens in the decoding.
+- **clean_up_tokenization_spaces** (`bool`, _optional_, defaults to `True`) --
+  Whether or not to clean up the tokenization spaces.
+- **kwargs** (additional keyword arguments, _optional_) --
+  Will be passed to the underlying model specific decode method.
+
+> Returns
+
+The list of decoded sentences.
+
+> Return type
+
+`List[str]`
+
+
+<a id='transformers.PreTrainedTokenizerBase.decode'></a>
+> **decode**(self, token_ids: typing.Union[int, typing.List[int], ForwardRef('np.ndarray'), ForwardRef('torch.Tensor'), ForwardRef('tf.Tensor')], skip_special_tokens: bool = False, clean_up_tokenization_spaces: bool = True, **kwargs)
+
+
+Converts a sequence of ids in a string, using the tokenizer and vocabulary with options to remove special
+tokens and clean up tokenization spaces.
+
+Similar to doing `self.convert_tokens_to_string(self.convert_ids_to_tokens(token_ids))`.
+
+> Parameters
+
+- **token_ids** (`Union[int, List[int], np.ndarray, torch.Tensor, tf.Tensor]`) --
+  List of tokenized input ids. Can be obtained using the `__call__` method.
+- **skip_special_tokens** (`bool`, _optional_, defaults to `False`) --
+  Whether or not to remove special tokens in the decoding.
+- **clean_up_tokenization_spaces** (`bool`, _optional_, defaults to `True`) --
+  Whether or not to clean up the tokenization spaces.
+- **kwargs** (additional keyword arguments, _optional_) --
+  Will be passed to the underlying model specific decode method.
+
+> Returns
+
+The decoded sentence.
+
+> Return type
+
+`str`
+
+
+<a id='transformers.PreTrainedTokenizerBase.encode'></a>
+> **encode**(self, text: typing.Union[str, typing.List[str], typing.List[int]], text_pair: typing.Union[str, typing.List[str], typing.List[int], NoneType] = None, add_special_tokens: bool = True, padding: typing.Union[bool, str, transformers.file_utils.PaddingStrategy] = False, truncation: typing.Union[bool, str, transformers.tokenization_utils_base.TruncationStrategy] = False, max_length: typing.Optional[int] = None, stride: int = 0, return_tensors: typing.Union[str, transformers.file_utils.TensorType, NoneType] = None, **kwargs)
+
+
+Converts a string to a sequence of ids (integer), using the tokenizer and vocabulary.
+
+Same as doing `self.convert_tokens_to_ids(self.tokenize(text))`.
+
+> Parameters
+
+- **text** (`str`, `List[str]` or `List[int]`) --
+  The first sequence to be encoded. This can be a string, a list of strings (tokenized string using the
+  `tokenize` method) or a list of integers (tokenized string ids using the `convert_tokens_to_ids`
+  method).
+- **text_pair** (`str`, `List[str]` or `List[int]`, _optional_) --
+  Optional second sequence to be encoded. This can be a string, a list of strings (tokenized string using
+  the `tokenize` method) or a list of integers (tokenized string ids using the
+  `convert_tokens_to_ids` method).
+
+- **add_special_tokens** (`bool`, _optional_, defaults to `True`) --
+  Whether or not to encode the sequences with the special tokens relative to their model.
+- **padding** (`bool`, `str` or [PaddingStrategy](internal/file_utils.html#transformers.file_utils.PaddingStrategy), _optional_, defaults to `False`) --
+  Activates and controls padding. Accepts the following values:
+
+  - `True` or `'longest'`: Pad to the longest sequence in the batch (or no padding if only a
+    single sequence if provided).
+  - `'max_length'`: Pad to a maximum length specified with the argument `max_length` or to the
+    maximum acceptable input length for the model if that argument is not provided.
+  - `False` or `'do_not_pad'` (default): No padding (i.e., can output a batch with sequences of
+    different lengths).
+- **truncation** (`bool`, `str` or [TruncationStrategy](internal/tokenization_utils.html#transformers.tokenization_utils_base.TruncationStrategy), _optional_, defaults to `False`) --
+  Activates and controls truncation. Accepts the following values:
+
+  - `True` or `'longest_first'`: Truncate to a maximum length specified with the argument
+    `max_length` or to the maximum acceptable input length for the model if that argument is not
+    provided. This will truncate token by token, removing a token from the longest sequence in the pair
+    if a pair of sequences (or a batch of pairs) is provided.
+  - `'only_first'`: Truncate to a maximum length specified with the argument `max_length` or to
+    the maximum acceptable input length for the model if that argument is not provided. This will only
+    truncate the first sequence of a pair if a pair of sequences (or a batch of pairs) is provided.
+  - `'only_second'`: Truncate to a maximum length specified with the argument `max_length` or
+    to the maximum acceptable input length for the model if that argument is not provided. This will only
+    truncate the second sequence of a pair if a pair of sequences (or a batch of pairs) is provided.
+  - `False` or `'do_not_truncate'` (default): No truncation (i.e., can output batch with
+    sequence lengths greater than the model maximum admissible input size).
+- **max_length** (`int`, _optional_) --
+  Controls the maximum length to use by one of the truncation/padding parameters.
+
+  If left unset or set to `None`, this will use the predefined model maximum length if a maximum
+  length is required by one of the truncation/padding parameters. If the model has no specific maximum
+  input length (like XLNet) truncation/padding to a maximum length will be deactivated.
+- **stride** (`int`, _optional_, defaults to 0) --
+  If set to a number along with `max_length`, the overflowing tokens returned when
+  `return_overflowing_tokens=True` will contain some tokens from the end of the truncated sequence
+  returned to provide some overlap between truncated and overflowing sequences. The value of this
+  argument defines the number of overlapping tokens.
+- **is_split_into_words** (`bool`, _optional_, defaults to `False`) --
+  Whether or not the input is already pre-tokenized (e.g., split into words). If set to `True`, the
+  tokenizer assumes the input is already split into words (for instance, by splitting it on whitespace)
+  which it will tokenize. This is useful for NER or token classification.
+- **pad_to_multiple_of** (`int`, _optional_) --
+  If set will pad the sequence to a multiple of the provided value. This is especially useful to enable
+  the use of Tensor Cores on NVIDIA hardware with compute capability >= 7.5 (Volta).
+- **return_tensors** (`str` or [TensorType](internal/file_utils.html#transformers.TensorType), _optional_) --
+  If set, will return tensors instead of list of python integers. Acceptable values are:
+
+  - `'tf'`: Return TensorFlow `tf.constant` objects.
+  - `'pt'`: Return PyTorch `torch.Tensor` objects.
+  - `'np'`: Return Numpy `np.ndarray` objects.
+
+**kwargs -- Passed along to the _.tokenize()_ method.
+
+> Returns
+
+The tokenized ids of the
+text.
+
+> Return type
+
+`List[int]`, `torch.Tensor`, `tf.Tensor` or `np.ndarray`
+
+
+<a id='transformers.file_utils.PushToHubMixin.push_to_hub'></a>
+> **push\_to\_hub**(self, repo_path_or_name: typing.Optional[str] = None, repo_url: typing.Optional[str] = None, use_temp_dir: bool = False, commit_message: typing.Optional[str] = None, organization: typing.Optional[str] = None, private: typing.Optional[bool] = None, use_auth_token: typing.Union[bool, str, NoneType] = None)
+
+
+Upload the tokenizer files to the 🤗 Model Hub while synchronizing a local clone of the repo in
+`repo_path_or_name`.
+
+> Parameters
+
+- **repo_path_or_name** (`str`, _optional_) --
+  Can either be a repository name for your tokenizer in the Hub or a path to a local folder (in which case
+  the repository will have the name of that local folder). If not specified, will default to the name
+  given by `repo_url` and a local directory with that name will be created.
+- **repo_url** (`str`, _optional_) --
+  Specify this in case you want to push to an existing repository in the hub. If unspecified, a new
+  repository will be created in your namespace (unless you specify an `organization`) with
+  `repo_name`.
+- **use_temp_dir** (`bool`, _optional_, defaults to `False`) --
+  Whether or not to clone the distant repo in a temporary directory or in `repo_path_or_name` inside
+  the current working directory. This will slow things down if you are making changes in an existing repo
+  since you will need to clone the repo before every push.
+- **commit_message** (`str`, _optional_) --
+  Message to commit while pushing. Will default to `"add tokenizer"`.
+- **organization** (`str`, _optional_) --
+  Organization in which you want to push your tokenizer (you must be a member of this organization).
+- **private** (`bool`, _optional_) --
+  Whether or not the repository created should be private (requires a paying subscription).
+- **use_auth_token** (`bool` or `str`, _optional_) --
+  The token to use as HTTP bearer authorization for remote files. If `True`, will use the token
+  generated when running `transformers-cli login` (stored in `~/.huggingface`). Will default to
+  `True` if `repo_url` is not specified.
+
+
+> Returns
+
+The url of the commit of your tokenizer in the given repository.
+
+> Return type
+
+`str`
+
+> Examples:
+
+```python
+from transformers import AutoTokenizer
+
+tokenizer = AutoTokenizer.from_pretrained("bert-base-cased")
+
+# Push the tokenizer to your namespace with the name "my-finetuned-bert" and have a local clone in the
+# _my-finetuned-bert_ folder.
+tokenizer.push_to_hub("my-finetuned-bert")
+
+# Push the tokenizer to your namespace with the name "my-finetuned-bert" with no local clone.
+tokenizer.push_to_hub("my-finetuned-bert", use_temp_dir=True)
+
+# Push the tokenizer to an organization with the name "my-finetuned-bert" and have a local clone in the
+# _my-finetuned-bert_ folder.
+tokenizer.push_to_hub("my-finetuned-bert", organization="huggingface")
+
+# Make a change to an existing repo that has been cloned locally in _my-finetuned-bert_.
+tokenizer.push_to_hub("my-finetuned-bert", repo_url="https://huggingface.co/sgugger/my-finetuned-bert")
+```
+
+
+<a id='transformers.PreTrainedTokenizerFast.convert_ids_to_tokens'></a>
+> **convert\_ids\_to\_tokens**(self, ids: typing.Union[int, typing.List[int]], skip_special_tokens: bool = False)
+
+
+Converts a single index or a sequence of indices in a token or a sequence of tokens, using the vocabulary and
+added tokens.
+
+> Parameters
+
+- **ids** (`int` or `List[int]`) --
+  The token id (or token ids) to convert to tokens.
+- **skip_special_tokens** (`bool`, _optional_, defaults to `False`) --
+  Whether or not to remove special tokens in the decoding.
+
+> Returns
+
+The decoded token(s).
+
+> Return type
+
+`str` or `List[str]`
+
+
+<a id='transformers.PreTrainedTokenizerFast.convert_tokens_to_ids'></a>
+> **convert\_tokens\_to\_ids**(self, tokens: typing.Union[str, typing.List[str]])
+
+
+Converts a token string (or a sequence of tokens) in a single integer id (or a sequence of ids), using the
+vocabulary.
+
+> Parameters
+
+- **tokens** (`str` or `List[str]`) -- One or several token(s) to convert to token id(s).
+
+> Returns
+
+The token id or list of token ids.
+
+> Return type
+
+`int` or `List[int]`
+
+
+<a id='transformers.PreTrainedTokenizerFast.get_added_vocab'></a>
+> **get\_added\_vocab**(self)
+
+
+Returns the added tokens in the vocabulary as a dictionary of token to index.
+
+> Returns
+
+The added tokens.
+
+> Return type
+
+`Dict[str, int]`
+
+
+<a id='transformers.PreTrainedTokenizerFast.num_special_tokens_to_add'></a>
+> **num\_special\_tokens\_to\_add**(self, pair: bool = False)
+
+
+Returns the number of added tokens when encoding a sequence with special tokens.
+
+<Tip>
+
+This encodes a dummy input and checks the number of added tokens, and is therefore not efficient. Do not
+put this inside your training loop.
+
+</Tip>
+
+> Parameters
+
+- **pair** (`bool`, _optional_, defaults to `False`) --
+  Whether the number of added tokens should be computed in the case of a sequence pair or a single
+  sequence.
+
+> Returns
+
+Number of special tokens added to sequences.
+
+> Return type
+
+`int`
+
+
+<a id='transformers.PreTrainedTokenizerFast.set_truncation_and_padding'></a>
+> **set\_truncation\_and\_padding**(self, padding_strategy: PaddingStrategy, truncation_strategy: TruncationStrategy, max_length: int, stride: int, pad_to_multiple_of: typing.Optional[int])
+
+
+Define the truncation and the padding strategies for fast tokenizers (provided by HuggingFace tokenizers
+library) and restore the tokenizer settings afterwards.
+
+The provided tokenizer has no padding / truncation strategy before the managed section. If your tokenizer set a
+padding / truncation strategy before, then it will be reset to no padding / truncation when exiting the managed
+section.
+
+> Parameters
+
+- **padding_strategy** ([PaddingStrategy](internal/file_utils.html#transformers.file_utils.PaddingStrategy)) --
+  The kind of padding that will be applied to the input
+- **truncation_strategy** ([TruncationStrategy](internal/tokenization_utils.html#transformers.tokenization_utils_base.TruncationStrategy)) --
+  The kind of truncation that will be applied to the input
+- **max_length** (`int`) --
+  The maximum size of a sequence.
+- **stride** (`int`) --
+  The stride to use when handling overflow.
+- **pad_to_multiple_of** (`int`, _optional_) --
+  If set will pad the sequence to a multiple of the provided value. This is especially useful to enable
+  the use of Tensor Cores on NVIDIA hardware with compute capability >= 7.5 (Volta).
+
+
+<a id='transformers.PreTrainedTokenizerFast.train_new_from_iterator'></a>
+> **train\_new\_from\_iterator**(self, text_iterator, vocab_size, new_special_tokens = None, special_tokens_map = None, **kwargs)
+
+
+Trains a tokenizer on a new corpus with the same defaults (in terms of special tokens or tokenization pipeline)
+as the current one.
+
+> Parameters
+
+- **text_iterator** (generator of `List[str]`) --
+  The training corpus. Should be a generator of batches of texts, for instance a list of lists of texts
+  if you have everything in memory.
+- **vocab_size** (`int`) --
+  The size of the vocabulary you want for your tokenizer.
+- **new_special_tokens** (list of `str` or `AddedToken`, _optional_) --
+  A list of new special tokens to add to the tokenizer you are training.
+- **special_tokens_map** (`Dict[str, str]`, _optional_) --
+  If you want to rename some of the special tokens this tokenizer uses, pass along a mapping old special
+  token name to new special token name in this argument.
+  kwargs --
+  Additional keyword arguments passed along to the trainer from the 🤗 Tokenizers library.
+
+> Returns
+
+A new tokenizer of the same type as the original one,
+trained on `text_iterator`.
+
+
+> Return type
+
+[PreTrainedTokenizerFast](main_classes/tokenizer.html#transformers.PreTrainedTokenizerFast)
+
+
+## BatchEncoding
+
+<a id='transformers.BatchEncoding'></a>
+> **class transformers.BatchEncoding**(data: typing.Union[typing.Dict[str, typing.Any], NoneType] = None, encoding: typing.Union[tokenizers.Encoding, typing.Sequence[tokenizers.Encoding], NoneType] = None, tensor_type: typing.Union[NoneType, str, transformers.file_utils.TensorType] = None, prepend_batch_axis: bool = False, n_sequences: typing.Optional[int] = None)
+
+
+Holds the output of the [encode_plus()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode_plus) and
+`batch_encode` methods (tokens,
+attention_masks, etc).
+
+This class is derived from a python dictionary and can be used as a dictionary. In addition, this class exposes
+utility methods to map from word/character space to token space.
+
+> Parameters
+
+- **data** (`dict`) --
+  Dictionary of lists/arrays/tensors returned by the encode/batch_encode methods ('input_ids',
+  'attention_mask', etc.).
+- **encoding** (`tokenizers.Encoding` or `Sequence[tokenizers.Encoding]`, _optional_) --
+  If the tokenizer is a fast tokenizer which outputs additional information like mapping from word/character
+  space to token space the `tokenizers.Encoding` instance or list of instance (for batches) hold this
+  information.
+- **tensor_type** (`Union[None, str, TensorType]`, _optional_) --
+  You can give a tensor_type here to convert the lists of integers in PyTorch/TensorFlow/Numpy Tensors at
+  initialization.
+- **prepend_batch_axis** (`bool`, _optional_, defaults to `False`) --
+  Whether or not to add a batch axis when converting to tensors (see `tensor_type` above).
+- **n_sequences** (`Optional[int]`, _optional_) --
+  You can give a tensor_type here to convert the lists of integers in PyTorch/TensorFlow/Numpy Tensors at
+  initialization.
+
+
+<a id='transformers.BatchEncoding.char_to_token'></a>
+> **char\_to\_token**(self, batch_or_char_index: int, char_index: typing.Optional[int] = None, sequence_index: int = 0)
+
+
+Get the index of the token in the encoded output comprising a character in the original string for a sequence
+of the batch.
+
+Can be called as:
+
+- `self.char_to_token(char_index)` if batch size is 1
+- `self.char_to_token(batch_index, char_index)` if batch size is greater or equal to 1
+
+This method is particularly suited when the input sequences are provided as pre-tokenized sequences (i.e. words
+are defined by the user). In this case it allows to easily associate encoded tokens with provided tokenized
+words.
+
+> Parameters
+
+- **batch_or_char_index** (`int`) --
+  Index of the sequence in the batch. If the batch only comprise one sequence, this can be the index of
+  the word in the sequence
+- **char_index** (`int`, _optional_) --
+  If a batch index is provided in _batch_or_token_index_, this can be the index of the word in the
+  sequence.
+- **sequence_index** (`int`, _optional_, defaults to 0) --
+  If pair of sequences are encoded in the batch this can be used to specify which sequence in the pair (0
+  or 1) the provided character index belongs to.
+
+
+> Returns
+
+Index of the token.
+
+> Return type
+
+`int`
+
+
+<a id='transformers.BatchEncoding.char_to_word'></a>
+> **char\_to\_word**(self, batch_or_char_index: int, char_index: typing.Optional[int] = None, sequence_index: int = 0)
+
+
+Get the word in the original string corresponding to a character in the original string of a sequence of the
+batch.
+
+Can be called as:
+
+- `self.char_to_word(char_index)` if batch size is 1
+- `self.char_to_word(batch_index, char_index)` if batch size is greater than 1
+
+This method is particularly suited when the input sequences are provided as pre-tokenized sequences (i.e. words
+are defined by the user). In this case it allows to easily associate encoded tokens with provided tokenized
+words.
+
+> Parameters
+
+- **batch_or_char_index** (`int`) --
+  Index of the sequence in the batch. If the batch only comprise one sequence, this can be the index of
+  the character in the original string.
+- **char_index** (`int`, _optional_) --
+  If a batch index is provided in _batch_or_token_index_, this can be the index of the character in the
+  original string.
+- **sequence_index** (`int`, _optional_, defaults to 0) --
+  If pair of sequences are encoded in the batch this can be used to specify which sequence in the pair (0
+  or 1) the provided character index belongs to.
+
+
+> Returns
+
+Index or indices of the associated encoded token(s).
+
+> Return type
+
+`int` or `List[int]`
+
+
+<a id='transformers.BatchEncoding.convert_to_tensors'></a>
+> **convert\_to\_tensors**(self, tensor_type: typing.Union[str, transformers.file_utils.TensorType, NoneType] = None, prepend_batch_axis: bool = False)
+
+
+Convert the inner content to tensors.
+
+> Parameters
+
+- **tensor_type** (`str` or [TensorType](internal/file_utils.html#transformers.TensorType), _optional_) --
+  The type of tensors to use. If `str`, should be one of the values of the enum
+  [TensorType](internal/file_utils.html#transformers.TensorType). If `None`, no modification is done.
+- **prepend_batch_axis** (`int`, _optional_, defaults to `False`) --
+  Whether or not to add the batch dimension during the conversion.
+
+
+<a id='transformers.BatchEncoding.sequence_ids'></a>
+> **sequence\_ids**(self, batch_index: int = 0)
+
+
+Return a list mapping the tokens to the id of their original sentences:
+
+- `None` for special tokens added around or between sequences,
+- `0` for tokens corresponding to words in the first sequence,
+- `1` for tokens corresponding to words in the second sequence when a pair of sequences was jointly
+  encoded.
+
+> Parameters
+
+- **batch_index** (`int`, _optional_, defaults to 0) -- The index to access in the batch.
+
+> Returns
+
+A list indicating the sequence id corresponding to each token. Special tokens
+added by the tokenizer are mapped to `None` and other tokens are mapped to the index of their
+corresponding sequence.
+
+> Return type
+
+`List[Optional[int]]`
+
+
+<a id='transformers.BatchEncoding.to'></a>
+> **to**(self, device: typing.Union[str, ForwardRef('torch.device')])
+
+
+Send all values to device by calling `v.to(device)` (PyTorch only).
+
+> Parameters
+
+- **device** (`str` or `torch.device`) -- The device to put the tensors on.
+
+> Returns
+
+The same instance after modification.
+
+> Return type
+
+[BatchEncoding](main_classes/tokenizer.html#transformers.BatchEncoding)
+
+
+<a id='transformers.BatchEncoding.token_to_chars'></a>
+> **token\_to\_chars**(self, batch_or_token_index: int, token_index: typing.Optional[int] = None)
+
+
+Get the character span corresponding to an encoded token in a sequence of the batch.
+
+Character spans are returned as a [CharSpan](internal/tokenization_utils.html#transformers.CharSpan) with:
+
+- **start** -- Index of the first character in the original string associated to the token.
+- **end** -- Index of the character following the last character in the original string associated to the
+  token.
+
+Can be called as:
+
+- `self.token_to_chars(token_index)` if batch size is 1
+- `self.token_to_chars(batch_index, token_index)` if batch size is greater or equal to 1
+
+> Parameters
+
+- **batch_or_token_index** (`int`) --
+  Index of the sequence in the batch. If the batch only comprise one sequence, this can be the index of
+  the token in the sequence.
+- **token_index** (`int`, _optional_) --
+  If a batch index is provided in _batch_or_token_index_, this can be the index of the token or tokens in
+  the sequence.
+
+> Returns
+
+Span of characters in the original string.
+
+> Return type
+
+[CharSpan](internal/tokenization_utils.html#transformers.CharSpan)
+
+
+<a id='transformers.BatchEncoding.token_to_sequence'></a>
+> **token\_to\_sequence**(self, batch_or_token_index: int, token_index: typing.Optional[int] = None)
+
+
+Get the index of the sequence represented by the given token. In the general use case, this method returns
+`0` for a single sequence or the first sequence of a pair, and `1` for the second sequence of a pair
+
+Can be called as:
+
+- `self.token_to_sequence(token_index)` if batch size is 1
+- `self.token_to_sequence(batch_index, token_index)` if batch size is greater than 1
+
+This method is particularly suited when the input sequences are provided as pre-tokenized sequences (i.e.,
+words are defined by the user). In this case it allows to easily associate encoded tokens with provided
+tokenized words.
+
+> Parameters
+
+- **batch_or_token_index** (`int`) --
+  Index of the sequence in the batch. If the batch only comprises one sequence, this can be the index of
+  the token in the sequence.
+- **token_index** (`int`, _optional_) --
+  If a batch index is provided in _batch_or_token_index_, this can be the index of the token in the
+  sequence.
+
+> Returns
+
+Index of the word in the input sequence.
+
+> Return type
+
+`int`
+
+
+<a id='transformers.BatchEncoding.token_to_word'></a>
+> **token\_to\_word**(self, batch_or_token_index: int, token_index: typing.Optional[int] = None)
+
+
+Get the index of the word corresponding (i.e. comprising) to an encoded token in a sequence of the batch.
+
+Can be called as:
+
+- `self.token_to_word(token_index)` if batch size is 1
+- `self.token_to_word(batch_index, token_index)` if batch size is greater than 1
+
+This method is particularly suited when the input sequences are provided as pre-tokenized sequences (i.e.,
+words are defined by the user). In this case it allows to easily associate encoded tokens with provided
+tokenized words.
+
+> Parameters
+
+- **batch_or_token_index** (`int`) --
+  Index of the sequence in the batch. If the batch only comprise one sequence, this can be the index of
+  the token in the sequence.
+- **token_index** (`int`, _optional_) --
+  If a batch index is provided in _batch_or_token_index_, this can be the index of the token in the
+  sequence.
+
+> Returns
+
+Index of the word in the input sequence.
+
+> Return type
+
+`int`
+
+
+<a id='transformers.BatchEncoding.tokens'></a>
+> **tokens**(self, batch_index: int = 0)
+
+
+Return the list of tokens (sub-parts of the input strings after word/subword splitting and before conversion to
+integer indices) at a given batch index (only works for the output of a fast tokenizer).
+
+> Parameters
+
+- **batch_index** (`int`, _optional_, defaults to 0) -- The index to access in the batch.
+
+> Returns
+
+The list of tokens at that index.
+
+> Return type
+
+`List[str]`
+
+
+<a id='transformers.BatchEncoding.word_ids'></a>
+> **word\_ids**(self, batch_index: int = 0)
+
+
+Return a list mapping the tokens to their actual word in the initial sentence for a fast tokenizer.
+
+> Parameters
+
+- **batch_index** (`int`, _optional_, defaults to 0) -- The index to access in the batch.
+
+> Returns
+
+A list indicating the word corresponding to each token. Special tokens added by
+the tokenizer are mapped to `None` and other tokens are mapped to the index of their corresponding
+word (several tokens will be mapped to the same word index if they are parts of that word).
+
+> Return type
+
+`List[Optional[int]]`
+
+
+<a id='transformers.BatchEncoding.word_to_chars'></a>
+> **word\_to\_chars**(self, batch_or_word_index: int, word_index: typing.Optional[int] = None, sequence_index: int = 0)
+
+
+Get the character span in the original string corresponding to given word in a sequence of the batch.
+
+Character spans are returned as a CharSpan NamedTuple with:
+
+- start: index of the first character in the original string
+- end: index of the character following the last character in the original string
+
+Can be called as:
+
+- `self.word_to_chars(word_index)` if batch size is 1
+- `self.word_to_chars(batch_index, word_index)` if batch size is greater or equal to 1
+
+> Parameters
+
+- **batch_or_word_index** (`int`) --
+  Index of the sequence in the batch. If the batch only comprise one sequence, this can be the index of
+  the word in the sequence
+- **word_index** (`int`, _optional_) --
+  If a batch index is provided in _batch_or_token_index_, this can be the index of the word in the
+  sequence.
+- **sequence_index** (`int`, _optional_, defaults to 0) --
+  If pair of sequences are encoded in the batch this can be used to specify which sequence in the pair (0
+  or 1) the provided word index belongs to.
+
+> Returns
+
+Span(s) of the associated character or characters in the string.
+CharSpan are NamedTuple with:
+
+- start: index of the first character associated to the token in the original string
+- end: index of the character following the last character associated to the token in the original
+  string
+
+> Return type
+
+`CharSpan` or `List[CharSpan]`
+
+
+<a id='transformers.BatchEncoding.word_to_tokens'></a>
+> **word\_to\_tokens**(self, batch_or_word_index: int, word_index: typing.Optional[int] = None, sequence_index: int = 0)
+
+
+Get the encoded token span corresponding to a word in a sequence of the batch.
+
+Token spans are returned as a [TokenSpan](internal/tokenization_utils.html#transformers.TokenSpan) with:
+
+- **start** -- Index of the first token.
+- **end** -- Index of the token following the last token.
+
+Can be called as:
+
+- `self.word_to_tokens(word_index, sequence_index: int = 0)` if batch size is 1
+- `self.word_to_tokens(batch_index, word_index, sequence_index: int = 0)` if batch size is greater or equal
+  to 1
+
+This method is particularly suited when the input sequences are provided as pre-tokenized sequences (i.e. words
+are defined by the user). In this case it allows to easily associate encoded tokens with provided tokenized
+words.
+
+> Parameters
+
+- **batch_or_word_index** (`int`) --
+  Index of the sequence in the batch. If the batch only comprises one sequence, this can be the index of
+  the word in the sequence.
+- **word_index** (`int`, _optional_) --
+  If a batch index is provided in _batch_or_token_index_, this can be the index of the word in the
+  sequence.
+- **sequence_index** (`int`, _optional_, defaults to 0) --
+  If pair of sequences are encoded in the batch this can be used to specify which sequence in the pair (0
+  or 1) the provided word index belongs to.
+
+> Returns
+
+Optional [TokenSpan](internal/tokenization_utils.html#transformers.TokenSpan) Span of tokens in the encoded sequence.
+Returns `None` if no tokens correspond to the word.
+
+
+<a id='transformers.BatchEncoding.words'></a>
+> **words**(self, batch_index: int = 0)
+
+
+Return a list mapping the tokens to their actual word in the initial sentence for a fast tokenizer.
+
+> Parameters
+
+- **batch_index** (`int`, _optional_, defaults to 0) -- The index to access in the batch.
+
+> Returns
+
+A list indicating the word corresponding to each token. Special tokens added by
+the tokenizer are mapped to `None` and other tokens are mapped to the index of their corresponding
+word (several tokens will be mapped to the same word index if they are parts of that word).
+
+> Return type
+
+`List[Optional[int]]`
+
