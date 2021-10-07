@@ -49,7 +49,7 @@ Tips:
   gained, when [LEDTokenizer](model_doc/led.html#transformers.LEDTokenizer) is used with the `pad_to_multiple_of` argument.
 - LED makes use of *global attention* by means of the `global_attention_mask` (see
   [LongformerModel](model_doc/longformer.html#transformers.LongformerModel)). For summarization, it is advised to put *global attention* only on the first
-  `<s>` token. For question answering, it is advised to put *global attention* on all tokens of the question.
+  `&lcubs>` token. For question answering, it is advised to put *global attention* on all tokens of the question.
 - To fine-tune LED on all 16384, it is necessary to enable *gradient checkpointing* by setting
   `config.gradient_checkpointing = True`.
 - A notebook showing how to evaluate LED, can be accessed [here](https://colab.research.google.com/drive/12INTTR6n64TzS4RrXZxMSXfrOd9Xzamo?usp=sharing).
@@ -136,7 +136,7 @@ outputs. Read the documentation from [PretrainedConfig](main_classes/configurati
 ## LEDTokenizer
 
 <a id='transformers.LEDTokenizer'></a>
-> **class transformers.LEDTokenizer**(vocab_file, merges_file, errors = replace, bos_token = <s>, eos_token = </s>, sep_token = </s>, cls_token = <s>, unk_token = <unk>, pad_token = <pad>, mask_token = <mask>, add_prefix_space = False, **kwargs)
+> **class transformers.LEDTokenizer**(vocab_file, merges_file, errors = replace, bos_token = &lcubs>, eos_token = &lcub/s>, sep_token = &lcub/s>, cls_token = &lcubs>, unk_token = &lcubunk>, pad_token = &lcubpad>, mask_token = &lcubmask>, add_prefix_space = False, **kwargs)
 
 
 Construct a LED tokenizer.
@@ -155,8 +155,8 @@ parameters.
 Build model inputs from a sequence or a pair of sequence for sequence classification tasks by concatenating and
 adding special tokens. A RoBERTa sequence has the following format:
 
-- single sequence: `<s> X </s>`
-- pair of sequences: `<s> A </s></s> B </s>`
+- single sequence: `&lcubs> X &lcub/s>`
+- pair of sequences: `&lcubs> A &lcub/s>&lcub/s> B &lcub/s>`
 
 > Parameters
 
@@ -228,7 +228,7 @@ List of zeros.
 ## LEDTokenizerFast
 
 <a id='transformers.LEDTokenizerFast'></a>
-> **class transformers.LEDTokenizerFast**(vocab_file = None, merges_file = None, tokenizer_file = None, errors = replace, bos_token = <s>, eos_token = </s>, sep_token = </s>, cls_token = <s>, unk_token = <unk>, pad_token = <pad>, mask_token = <mask>, add_prefix_space = False, **kwargs)
+> **class transformers.LEDTokenizerFast**(vocab_file = None, merges_file = None, tokenizer_file = None, errors = replace, bos_token = &lcubs>, eos_token = &lcub/s>, sep_token = &lcub/s>, cls_token = &lcubs>, unk_token = &lcubunk>, pad_token = &lcubpad>, mask_token = &lcubmask>, add_prefix_space = False, **kwargs)
 
 
 Construct a "fast" LED tokenizer (backed by HuggingFace's _tokenizers_ library).
@@ -241,7 +241,7 @@ parameters.
 
 
 <a id='transformers.LEDTokenizer'></a>
-> **class LEDTokenizer**(vocab_file, merges_file, errors = replace, bos_token = <s>, eos_token = </s>, sep_token = </s>, cls_token = <s>, unk_token = <unk>, pad_token = <pad>, mask_token = <mask>, add_prefix_space = False, **kwargs)
+> **class LEDTokenizer**(vocab_file, merges_file, errors = replace, bos_token = &lcubs>, eos_token = &lcub/s>, sep_token = &lcub/s>, cls_token = &lcubs>, unk_token = &lcubunk>, pad_token = &lcubpad>, mask_token = &lcubmask>, add_prefix_space = False, **kwargs)
 
 
 Construct a LED tokenizer.
@@ -723,7 +723,7 @@ processing steps while the latter silently ignores them.
   Mask to decide the attention given on each token, local attention or global attention for the encoder.
   Tokens with global attention attends to all other tokens, and all other tokens attend to them. This is
   important for task-specific finetuning because it makes the model more flexible at representing the task.
-  For example, for classification, the <s> token should be given global attention. For QA, all question
+  For example, for classification, the &lcubs> token should be given global attention. For QA, all question
   tokens should also have global attention. Please refer to the [Longformer paper](https://arxiv.org/abs/2004.05150) for more details. Mask values selected in `[0, 1]`:
 
   - 0 for local attention (a sliding window attention),
@@ -915,7 +915,7 @@ processing steps while the latter silently ignores them.
   Mask to decide the attention given on each token, local attention or global attention for the encoder.
   Tokens with global attention attends to all other tokens, and all other tokens attend to them. This is
   important for task-specific finetuning because it makes the model more flexible at representing the task.
-  For example, for classification, the <s> token should be given global attention. For QA, all question
+  For example, for classification, the &lcubs> token should be given global attention. For QA, all question
   tokens should also have global attention. Please refer to the [Longformer paper](https://arxiv.org/abs/2004.05150) for more details. Mask values selected in `[0, 1]`:
 
   - 0 for local attention (a sliding window attention),
@@ -1021,7 +1021,7 @@ various elements depending on the configuration ([LEDConfig](model_doc/led.html#
 ```python
 >>> from transformers import LEDTokenizer, LEDForConditionalGeneration
 >>> tokenizer = LEDTokenizer.from_pretrained('allenai/led-base-16384')
->>> TXT = "My friends are <mask> but they eat too many carbs."
+>>> TXT = "My friends are &lcubmask> but they eat too many carbs."
 
 >>> model = LEDForConditionalGeneration.from_pretrained('allenai/led-base-16384')
 >>> input_ids = tokenizer([TXT], return_tensors='pt')['input_ids']
@@ -1156,7 +1156,7 @@ processing steps while the latter silently ignores them.
   Mask to decide the attention given on each token, local attention or global attention for the encoder.
   Tokens with global attention attends to all other tokens, and all other tokens attend to them. This is
   important for task-specific finetuning because it makes the model more flexible at representing the task.
-  For example, for classification, the <s> token should be given global attention. For QA, all question
+  For example, for classification, the &lcubs> token should be given global attention. For QA, all question
   tokens should also have global attention. Please refer to the [Longformer paper](https://arxiv.org/abs/2004.05150) for more details. Mask values selected in `[0, 1]`:
 
   - 0 for local attention (a sliding window attention),
@@ -1354,7 +1354,7 @@ processing steps while the latter silently ignores them.
   Mask to decide the attention given on each token, local attention or global attention for the encoder.
   Tokens with global attention attends to all other tokens, and all other tokens attend to them. This is
   important for task-specific finetuning because it makes the model more flexible at representing the task.
-  For example, for classification, the <s> token should be given global attention. For QA, all question
+  For example, for classification, the &lcubs> token should be given global attention. For QA, all question
   tokens should also have global attention. Please refer to the [Longformer paper](https://arxiv.org/abs/2004.05150) for more details. Mask values selected in `[0, 1]`:
 
   - 0 for local attention (a sliding window attention),
@@ -1844,7 +1844,7 @@ elements depending on the configuration ([LEDConfig](model_doc/led.html#transfor
 >>> import tensorflow as tf
 >>> mname = 'allenai/led-base-16384'
 >>> tokenizer = LEDTokenizer.from_pretrained(mname)
->>> TXT = "My friends are <mask> but they eat too many carbs."
+>>> TXT = "My friends are &lcubmask> but they eat too many carbs."
 >>> model = TFLEDForConditionalGeneration.from_pretrained(mname)
 >>> batch = tokenizer([TXT], return_tensors='tf')
 >>> logits = model(inputs=batch.input_ids).logits

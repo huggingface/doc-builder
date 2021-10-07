@@ -194,9 +194,9 @@ is represented as
 
 Assuming, that the Byte-Pair Encoding training would stop at this point, the learned merge rules would then be applied
 to new words (as long as those new words do not include symbols that were not in the base vocabulary). For instance,
-the word `"bug"` would be tokenized to `["b", "ug"]` but `"mug"` would be tokenized as `["<unk>", "ug"]` since
+the word `"bug"` would be tokenized to `["b", "ug"]` but `"mug"` would be tokenized as `["&lcubunk>", "ug"]` since
 the symbol `"m"` is not in the base vocabulary. In general, single letters such as `"m"` are not replaced by the
-`"<unk>"` symbol because the training data usually includes at least one occurrence of each letter, but it is likely
+`"&lcubunk>"` symbol because the training data usually includes at least one occurrence of each letter, but it is likely
 to happen for very special characters like emojis.
 
 As mentioned earlier, the vocabulary size, *i.e.* the base vocabulary size + the number of merges, is a hyperparameter
@@ -209,7 +209,7 @@ A base vocabulary that includes all possible base characters can be quite large 
 considered as base characters. To have a better base vocabulary, [GPT-2](https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf) uses bytes
 as the base vocabulary, which is a clever trick to force the base vocabulary to be of size 256 while ensuring that
 every base character is included in the vocabulary. With some additional rules to deal with punctuation, the GPT2's
-tokenizer can tokenize every text without the need for the <unk> symbol. [GPT-2](model_doc/gpt.html) has a vocabulary
+tokenizer can tokenize every text without the need for the &lcubunk> symbol. [GPT-2](model_doc/gpt.html) has a vocabulary
 size of 50,257, which corresponds to the 256 bytes base tokens, a special end-of-text token and the symbols learned
 with 50,000 merges.
 

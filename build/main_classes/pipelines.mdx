@@ -4,18 +4,6 @@ import Youtube from "../../Youtube.svelte";
 export let fw: "pt" | "tf"
 </script>
 
-<!--Copyright 2020 The HuggingFace Team. All rights reserved.
-
-Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
-the License. You may obtain a copy of the License at
-
-http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on
-an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
-specific language governing permissions and limitations under the License.
--->
-
 # Pipelines
 
 The pipelines are a great and easy way to use models for inference. These pipelines are objects that abstract most of
@@ -50,7 +38,7 @@ The _pipeline_ abstraction is a wrapper around all the other available pipelines
 pipeline but requires an additional argument which is the _task_.
 
 <a id='transformers.pipeline'></a>
-> **transformers.pipeline**(task: str, model: typing.Optional = None, config: typing.Union[str, transformers.configuration_utils.PretrainedConfig, NoneType] = None, tokenizer: typing.Union[str, transformers.tokenization_utils.PreTrainedTokenizer, NoneType] = None, feature_extractor: typing.Union[str, ForwardRef('SequenceFeatureExtractor'), NoneType] = None, framework: typing.Optional[str] = None, revision: typing.Optional[str] = None, use_fast: bool = True, use_auth_token: typing.Union[bool, str, NoneType] = None, model_kwargs: typing.Dict[str, typing.Any] = {}, **kwargs)
+> **transformers.pipeline**(task: str, model: typing.Optional = None, config: typing.Union[str, transformers.configuration_utils.PretrainedConfig, NoneType] = None, tokenizer: typing.Union[str, transformers.tokenization_utils.PreTrainedTokenizer, NoneType] = None, feature_extractor: typing.Union[str, ForwardRef('SequenceFeatureExtractor'), NoneType] = None, framework: typing.Optional[str] = None, revision: typing.Optional[str] = None, use_fast: bool = True, use_auth_token: typing.Union[bool, str, NoneType] = None, model_kwargs: typing.Dict[str, typing.Any] = &lcub&rcub, **kwargs)
 
 
 Utility factory method to build a [Pipeline](main_classes/pipelines.html#transformers.Pipeline).
@@ -684,7 +672,7 @@ The dictionaries contain the following keys:
 ### NerPipeline
 
 <a id='transformers.TokenClassificationPipeline'></a>
-> **class transformers.TokenClassificationPipeline**(model: typing.Union[ForwardRef('PreTrainedModel'), ForwardRef('TFPreTrainedModel')], tokenizer: PreTrainedTokenizer, modelcard: typing.Optional[transformers.modelcard.ModelCard] = None, framework: typing.Optional[str] = None, args_parser: ArgumentHandler = <transformers.pipelines.token_classification.TokenClassificationArgumentHandler object at 0x7f37c161b950>, device: int = -1, binary_output: bool = False, ignore_labels = ['O'], task: str = , grouped_entities: typing.Optional[bool] = None, ignore_subwords: typing.Optional[bool] = None, aggregation_strategy: typing.Optional[transformers.pipelines.token_classification.AggregationStrategy] = None)
+> **class transformers.TokenClassificationPipeline**(model: typing.Union[ForwardRef('PreTrainedModel'), ForwardRef('TFPreTrainedModel')], tokenizer: PreTrainedTokenizer, modelcard: typing.Optional[transformers.modelcard.ModelCard] = None, framework: typing.Optional[str] = None, args_parser: ArgumentHandler = &lcubtransformers.pipelines.token_classification.TokenClassificationArgumentHandler object at 0x7f37c161b950>, device: int = -1, binary_output: bool = False, ignore_labels = ['O'], task: str = , grouped_entities: typing.Optional[bool] = None, ignore_subwords: typing.Optional[bool] = None, aggregation_strategy: typing.Optional[transformers.pipelines.token_classification.AggregationStrategy] = None)
 
 
 Named Entity Recognition pipeline using any `ModelForTokenClassification`. See the [named entity recognition
@@ -733,11 +721,11 @@ aggregation_strategy (`str`, _optional_, defaults to `"none"`): The strategy to 
 
 - "none" : Will simply not do any aggregation and simply return raw results from the model
 - "simple" : Will attempt to group entities following the default schema. (A, B-TAG), (B, I-TAG), (C,
-  I-TAG), (D, B-TAG2) (E, B-TAG2) will end up being [{"word": ABC, "entity": "TAG"}, {"word": "D",
-  "entity": "TAG2"}, {"word": "E", "entity": "TAG2"}] Notice that two consecutive B tags will end up as
+  I-TAG), (D, B-TAG2) (E, B-TAG2) will end up being [&lcub"word": ABC, "entity": "TAG"&rcub, &lcub"word": "D",
+  "entity": "TAG2"&rcub, &lcub"word": "E", "entity": "TAG2"&rcub] Notice that two consecutive B tags will end up as
   different entities. On word based languages, we might end up splitting words undesirably : Imagine
-  Microsoft being tagged as [{"word": "Micro", "entity": "ENTERPRISE"}, {"word": "soft", "entity":
-  "NAME"}]. Look for FIRST, MAX, AVERAGE for ways to mitigate that and disambiguate words (on languages
+  Microsoft being tagged as [&lcub"word": "Micro", "entity": "ENTERPRISE"&rcub, &lcub"word": "soft", "entity":
+  "NAME"&rcub]. Look for FIRST, MAX, AVERAGE for ways to mitigate that and disambiguate words (on languages
   that support that meaning, which is basically tokens separated by a space). These mitigations will
   only work on real words, "New york" might still be tagged with two different entities.
 - "first" : (works only on word based models) Will use the `SIMPLE` strategy except that words,
@@ -940,11 +928,11 @@ When decoding from token probabilities, this method maps token indexes to actual
 
 > Returns
 
-str, 'start': int, 'end': int}_
+str, 'start': int, 'end': int&rcub_
 
 > Return type
 
-Dictionary like :obj:_{'answer'
+Dictionary like :obj:_&lcub'answer'
 
 
 ### SummarizationPipeline
@@ -1039,7 +1027,7 @@ A list or a list of list of `dict`
 ### TableQuestionAnsweringPipeline
 
 <a id='transformers.TableQuestionAnsweringPipeline'></a>
-> **class transformers.TableQuestionAnsweringPipeline**(args_parser = <transformers.pipelines.table_question_answering.TableQuestionAnsweringArgumentHandler object at 0x7f37c1611450>, *args, **kwargs)
+> **class transformers.TableQuestionAnsweringPipeline**(args_parser = &lcubtransformers.pipelines.table_question_answering.TableQuestionAnsweringArgumentHandler object at 0x7f37c1611450>, *args, **kwargs)
 
 
 Table Question Answering pipeline using a `ModelForTableQuestionAnswering`. This pipeline is only available in
@@ -1089,21 +1077,21 @@ Answers queries according to a table. The pipeline accepts several types of inpu
 - `pipeline(table, [query])`
 - `pipeline(table=table, query=query)`
 - `pipeline(table=table, query=[query])`
-- `pipeline({"table": table, "query": query})`
-- `pipeline({"table": table, "query": [query]})`
-- `pipeline([{"table": table, "query": query}, {"table": table, "query": query}])`
+- `pipeline(&lcub"table": table, "query": query&rcub)`
+- `pipeline(&lcub"table": table, "query": [query]&rcub)`
+- `pipeline([&lcub"table": table, "query": query&rcub, &lcub"table": table, "query": query&rcub])`
 
 The `table` argument should be a dict or a DataFrame built from that dict, containing the whole table:
 
 > Example:
 
 ```python
-data = {
+data = &lcub
 "actors": ["brad pitt", "leonardo di caprio", "george clooney"],
 "age": ["56", "45", "59"],
 "number of movies": ["87", "53", "69"],
 "date of birth": ["7 february 1967", "10 june 1996", "28 november 1967"],
-}
+&rcub
 ```
 
 This dictionary can be passed in as such, or can be converted to a pandas DataFrame:
@@ -1440,7 +1428,7 @@ Checks whether there might be something wrong with given input with regard to th
 ### TokenClassificationPipeline
 
 <a id='transformers.TokenClassificationPipeline'></a>
-> **class transformers.TokenClassificationPipeline**(model: typing.Union[ForwardRef('PreTrainedModel'), ForwardRef('TFPreTrainedModel')], tokenizer: PreTrainedTokenizer, modelcard: typing.Optional[transformers.modelcard.ModelCard] = None, framework: typing.Optional[str] = None, args_parser: ArgumentHandler = <transformers.pipelines.token_classification.TokenClassificationArgumentHandler object at 0x7f37c161b950>, device: int = -1, binary_output: bool = False, ignore_labels = ['O'], task: str = , grouped_entities: typing.Optional[bool] = None, ignore_subwords: typing.Optional[bool] = None, aggregation_strategy: typing.Optional[transformers.pipelines.token_classification.AggregationStrategy] = None)
+> **class transformers.TokenClassificationPipeline**(model: typing.Union[ForwardRef('PreTrainedModel'), ForwardRef('TFPreTrainedModel')], tokenizer: PreTrainedTokenizer, modelcard: typing.Optional[transformers.modelcard.ModelCard] = None, framework: typing.Optional[str] = None, args_parser: ArgumentHandler = &lcubtransformers.pipelines.token_classification.TokenClassificationArgumentHandler object at 0x7f37c161b950>, device: int = -1, binary_output: bool = False, ignore_labels = ['O'], task: str = , grouped_entities: typing.Optional[bool] = None, ignore_subwords: typing.Optional[bool] = None, aggregation_strategy: typing.Optional[transformers.pipelines.token_classification.AggregationStrategy] = None)
 
 
 Named Entity Recognition pipeline using any `ModelForTokenClassification`. See the [named entity recognition
@@ -1489,11 +1477,11 @@ aggregation_strategy (`str`, _optional_, defaults to `"none"`): The strategy to 
 
 - "none" : Will simply not do any aggregation and simply return raw results from the model
 - "simple" : Will attempt to group entities following the default schema. (A, B-TAG), (B, I-TAG), (C,
-  I-TAG), (D, B-TAG2) (E, B-TAG2) will end up being [{"word": ABC, "entity": "TAG"}, {"word": "D",
-  "entity": "TAG2"}, {"word": "E", "entity": "TAG2"}] Notice that two consecutive B tags will end up as
+  I-TAG), (D, B-TAG2) (E, B-TAG2) will end up being [&lcub"word": ABC, "entity": "TAG"&rcub, &lcub"word": "D",
+  "entity": "TAG2"&rcub, &lcub"word": "E", "entity": "TAG2"&rcub] Notice that two consecutive B tags will end up as
   different entities. On word based languages, we might end up splitting words undesirably : Imagine
-  Microsoft being tagged as [{"word": "Micro", "entity": "ENTERPRISE"}, {"word": "soft", "entity":
-  "NAME"}]. Look for FIRST, MAX, AVERAGE for ways to mitigate that and disambiguate words (on languages
+  Microsoft being tagged as [&lcub"word": "Micro", "entity": "ENTERPRISE"&rcub, &lcub"word": "soft", "entity":
+  "NAME"&rcub]. Look for FIRST, MAX, AVERAGE for ways to mitigate that and disambiguate words (on languages
   that support that meaning, which is basically tokens separated by a space). These mitigations will
   only work on real words, "New york" might still be tagged with two different entities.
 - "first" : (works only on word based models) Will use the `SIMPLE` strategy except that words,
@@ -1667,7 +1655,7 @@ A list or a list of list of `dict`
 ### ZeroShotClassificationPipeline
 
 <a id='transformers.ZeroShotClassificationPipeline'></a>
-> **class transformers.ZeroShotClassificationPipeline**(args_parser = <transformers.pipelines.zero_shot_classification.ZeroShotClassificationArgumentHandler object at 0x7f37c1623350>, *args, **kwargs)
+> **class transformers.ZeroShotClassificationPipeline**(args_parser = &lcubtransformers.pipelines.zero_shot_classification.ZeroShotClassificationArgumentHandler object at 0x7f37c1623350>, *args, **kwargs)
 
 
 NLI-based zero-shot classification pipeline using a `ModelForSequenceClassification` trained on NLI (natural
@@ -1713,7 +1701,7 @@ Flag indicating if the output the pipeline should happen in a binary format (i.e
 
 
 <a id='transformers.ZeroShotClassificationPipeline.__call__'></a>
-> **\_\_call\_\_**(self, sequences: typing.Union[str, typing.List[str]], candidate_labels, hypothesis_template = This example is {}., multi_label = False, **kwargs)
+> **\_\_call\_\_**(self, sequences: typing.Union[str, typing.List[str]], candidate_labels, hypothesis_template = This example is &lcub&rcub., multi_label = False, **kwargs)
 
 
 Classify the sequence(s) given as inputs. See the `~transformers.ZeroShotClassificationPipeline`
@@ -1726,10 +1714,10 @@ documentation for more information.
 - **candidate_labels** (`str` or `List[str]`) --
   The set of possible class labels to classify each sequence into. Can be a single label, a string of
   comma-separated labels, or a list of labels.
-- **hypothesis_template** (`str`, _optional_, defaults to `"This example is {}."`) --
-  The template used to turn each label into an NLI-style hypothesis. This template must include a {} or
+- **hypothesis_template** (`str`, _optional_, defaults to `"This example is &lcub&rcub."`) --
+  The template used to turn each label into an NLI-style hypothesis. This template must include a &lcub&rcub or
   similar syntax for the candidate label to be inserted into the template. For example, the default
-  template is `"This example is {}."` With the candidate label `"sports"`, this would be fed
+  template is `"This example is &lcub&rcub."` With the candidate label `"sports"`, this would be fed
   into the model like `"<cls> sequence to classify <sep> This example is sports . <sep>"`. The
   default template works well in many cases, but it may be worthwhile to experiment with different
   templates depending on the task setting.

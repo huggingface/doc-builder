@@ -89,9 +89,10 @@ configuration class, called `BrandNewBertConfig`. This configuration is always s
 [PreTrainedModel](main_classes/model.html#transformers.PreTrainedModel), and thus can be accessed via the `config` attribute for all classes
 inheriting from `BrandNewBertPreTrainedModel`:
 
-code,python
+```python
 model = BrandNewBertModel.from_pretrained("brandy/brand_new_bert")
 model.config  # model has access to its config
+```
 
 Similar to the model, the configuration inherits basic serialization and deserialization functionalities from
 [PretrainedConfig](main_classes/configuration.html#transformers.PretrainedConfig). Note that the configuration and the model are always serialized into two
@@ -181,22 +182,25 @@ its attention layer, etc. We will be more than happy to help you.
 
 2. Clone your `transformers` fork to your local disk, and add the base repository as a remote:
 
-code,bash
+```bash
 git clone https://github.com/[your Github handle]/transformers.git
 cd transformers
 git remote add upstream https://github.com/huggingface/transformers.git
+```
 
 3. Set up a development environment, for instance by running the following command:
 
-code,bash
+```bash
 python -m venv .env
 source .env/bin/activate
 pip install -e ".[dev]"
+```
 
 and return to the parent directory
 
-code,bash
+```bash
 cd ..
+```
 
 4. We recommend adding the PyTorch version of *brand_new_bert* to Transformers. To install PyTorch, please follow the
    instructions on https://pytorch.org/get-started/locally/.
@@ -205,10 +209,11 @@ cd ..
 
 5. To port *brand_new_bert*, you will also need access to its original repository:
 
-code,bash
+```bash
 git clone https://github.com/org_that_created_brand_new_bert_org/brand_new_bert.git 
 cd brand_new_bert
 pip install -e .
+```
 
 Now you have set up a development environment to port *brand_new_bert* to 🤗 Transformers.
 
@@ -267,10 +272,11 @@ For each code-base, a good first step is always to load a **small** pretrained c
 single forward pass using a dummy integer vector of input IDs as an input. Such a script could look like this (in
 pseudocode):
 
-code,bash
+```bash
 model = BrandNewBertModel.load_pretrained_checkpoint(/path/to/checkpoint/)
 input_ids = [0, 4, 5, 2, 3, 7, 9]  # vector of input ids
 original_output = model.predict(input_ids)
+```
 
 Next, regarding the debugging strategy, there are generally a few from which to choose from:
 
@@ -322,7 +328,7 @@ Input IDs should thereby consists of an array of integers, *e.g.* `input_ids = [
 
 The outputs of the following layers often consist of multi-dimensional float arrays and can look like this:
 
-code,bash
+```bash
 [[
 [-0.1465, -0.6501,  0.1993,  ...,  0.1451,  0.3430,  0.6024],
 [-0.4417, -0.5920,  0.3450,  ..., -0.3062,  0.6182,  0.7132],
@@ -331,6 +337,7 @@ code,bash
 [-0.5613, -0.6332,  0.4324,  ..., -0.3792,  0.7372,  0.9288],
 [-0.5416, -0.6345,  0.4180,  ..., -0.3564,  0.6992,  0.9191],
 [-0.5334, -0.6403,  0.4271,  ..., -0.3339,  0.6533,  0.8694]]],
+```
 
 We expect that every model added to 🤗 Transformers passes a couple of integration tests, meaning that the original
 model and the reimplemented version in 🤗 Transformers have to give the exact same output up to a precision of 0.001!
@@ -473,9 +480,10 @@ improve/correct the code iteratively with the conversion script as described in 
 has to work at this point is that you can instantiate the 🤗 Transformers implementation of *brand_new_bert*, *i.e.* the
 following command should work:
 
-code,python
+```python
 from transformers import BrandNewBertModel, BrandNewBertConfig
 model = BrandNewBertModel(BrandNewBertConfig())
+```
 
 The above command will create a model according to the default parameters as defined in `BrandNewBertConfig()` with
 random weights, thus making sure that the `init()` methods of all components works.
@@ -497,7 +505,7 @@ In the following, we'll quickly explain how PyTorch models store layer weights a
 name of a layer is defined by the name of the class attribute you give the layer. Let's define a dummy model in
 PyTorch, called `SimpleModel` as follows:
 
-code,python
+```python
 from torch import nn
 
 class SimpleModel(nn.Module):
@@ -506,33 +514,37 @@ super().__init__()
 self.dense = nn.Linear(10, 10)
 self.intermediate = nn.Linear(10, 10)
 self.layer_norm = nn.LayerNorm(10)
+```
 
 Now we can create an instance of this model definition which will fill all weights: `dense`, `intermediate`,
 `layer_norm` with random weights. We can print the model to see its architecture
 
-code,python
+```python
 model = SimpleModel()
 
 print(model)
+```
 
 This will print out the following:
 
-code,bash
+```bash
 SimpleModel(
 (dense): Linear(in_features=10, out_features=10, bias=True)
 (intermediate): Linear(in_features=10, out_features=10, bias=True)
 (layer_norm): LayerNorm((10,), eps=1e-05, elementwise_affine=True)
 )
+```
 
 We can see that the layer names are defined by the name of the class attribute in PyTorch. You can print out the weight
 values of a specific layer:
 
-code,python
+```python
 print(model.dense.weight.data)
+```
 
 to see that the weights were randomly initialized
 
-code,bash
+```bash
 tensor([[-0.0818,  0.2207, -0.0749, -0.0030,  0.0045, -0.1569, -0.1598,  0.0212,
 -0.2077,  0.2157],
 [ 0.1044,  0.0201,  0.0990,  0.2482,  0.3116,  0.2509,  0.2866, -0.2190,
@@ -553,11 +565,12 @@ tensor([[-0.0818,  0.2207, -0.0749, -0.0030,  0.0045, -0.1569, -0.1598,  0.0212,
 0.0333, -0.0536],
 [-0.1492, -0.1616,  0.1057,  0.1950, -0.2807, -0.2710, -0.1586,  0.0739,
 0.2220,  0.2358]]).
+```
 
 In the conversion script, you should fill those randomly initialized weights with the exact weights of the
 corresponding layer in the checkpoint. *E.g.*
 
-code,python
+```python
 # retrieve matching layer weights, e.g. by 
 # recursive algorithm
 layer_name = "dense"
@@ -566,20 +579,23 @@ pretrained_weight = array_of_dense_layer
 model_pointer = getattr(model, "dense")
 
 model_pointer.weight.data = torch.from_numpy(pretrained_weight)
+```
 
 While doing so, you must verify that each randomly initialized weight of your PyTorch model and its corresponding
 pretrained checkpoint weight exactly match in both **shape and name**. To do so, it is **necessary** to add assert
 statements for the shape and print out the names of the checkpoints weights. E.g. you should add statements like:
 
-code,python
+```python
 assert (
 model_pointer.weight.shape == pretrained_weight.shape
 ), f"Pointer shape of random weight {model_pointer.shape} and array shape of checkpoint weight {pretrained_weight.shape} mismatched"
+```
 
 Besides, you should also print out the names of both weights to make sure they match, *e.g.*
 
-code,python
+```python
 logger.info(f"Initialize PyTorch weight {layer_name} from {pretrained_weight.name}")
+```
 
 If either the shape or the name doesn't match, you probably assigned the wrong checkpoint weight to a randomly
 initialized layer of the 🤗 Transformers implementation.
@@ -600,8 +616,9 @@ Transformers model. Having correctly loaded the checkpoint into the 🤗 Transfo
 the model under a folder of your choice `/path/to/converted/checkpoint/folder` that should then contain both a
 `pytorch_model.bin` file and a `config.json` file:
 
-code,python
+```python
 model.save_pretrained("/path/to/converted/checkpoint/folder")
+```
 
 **7. Implement the forward pass**
 
@@ -610,10 +627,11 @@ sure that the forward pass is correctly implemented. In [Get familiar with the o
 pass of the model using the original repository. Now you should write an analogous script using the 🤗 Transformers
 implementation instead of the original one. It should look as follows:
 
-code,python
+```python
 model = BrandNewBertModel.from_pretrained(/path/to/converted/checkpoint/folder)
 input_ids = [0, 4, 4, 3, 2, 4, 1, 7, 19]
 output = model(input_ids).last_hidden_states
+```
 
 It is very likely that the 🤗 Transformers implementation and the original model implementation don't give the exact
 same output the very first time or that the forward pass throws an error. Don't be disappointed - it's expected! First,
@@ -656,8 +674,9 @@ fully comply with the required design. To make sure, the implementation is fully
 common tests should pass. The Cookiecutter should have automatically added a test file for your model, probably under
 the same `tests/test_modeling_brand_new_bert.py`. Run this test file to verify that all common tests pass:
 
-code,python
+```python
 pytest tests/test_modeling_brand_new_bert.py
+```
 
 Having fixed all common tests, it is now crucial to ensure that all the nice work you have done is well tested, so that
 
@@ -674,8 +693,9 @@ you used earlier to implement the model to 🤗 Transformers. A template of thos
 Cookiecutter, called `BrandNewBertModelIntegrationTests` and only has to be filled out by you. To ensure that those
 tests are passing, run
 
-code,python
+```python
 RUN_SLOW=1 pytest -sv tests/test_modeling_brand_new_bert.py::BrandNewBertModelIntegrationTests
+```
 
 <Tip>
 
@@ -703,23 +723,25 @@ Transformers' implementation of the tokenizer.
 To ensure that the tokenizer works correctly, it is recommended to first create a script in the original repository
 that inputs a string and returns the `input_ids`. It could look similar to this (in pseudo-code):
 
-code,bash
+```bash
 input_str = "This is a long example input string containing special characters .$?-, numbers 2872 234 12 and words."
 model = BrandNewBertModel.load_pretrained_checkpoint(/path/to/checkpoint/)
 input_ids = model.tokenize(input_str)
+```
 
 You might have to take a deeper look again into the original repository to find the correct tokenizer function or you
 might even have to do changes to your clone of the original repository to only output the `input_ids`. Having written
 a functional tokenization script that uses the original repository, an analogous script for 🤗 Transformers should be
 created. It should look similar to this:
 
-code,python
+```python
 from transformers import BrandNewBertTokenizer
 input_str = "This is a long example input string containing special characters .$?-, numbers 2872 234 12 and words."
 
 tokenizer = BrandNewBertTokenizer.from_pretrained(/path/to/tokenizer/folder/)
 
 input_ids = tokenizer(input_str).input_ids
+```
 
 When both `input_ids` yield the same values, as a final step a tokenizer test file should also be added.
 
@@ -757,13 +779,15 @@ point of the community with the model.
 Great, now you have added all the necessary code for *brand_new_bert*. At this point, you should correct some potential
 incorrect code style by running:
 
-code,bash
+```bash
 make style
+```
 
 and verify that your coding style passes the quality check:
 
-code,bash
+```bash
 make quality
+```
 
 There are a couple of other very strict design tests in 🤗 Transformers that might still be failing, which shows up in
 the tests of your pull request. This is often because of some missing information in the docstring or some incorrect

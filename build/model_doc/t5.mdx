@@ -91,8 +91,8 @@ language modeling head on top of the decoder.
 
   In this setup, spans of the input sequence are masked by so-called sentinel tokens (*a.k.a* unique mask tokens) and
   the output sequence is formed as a concatenation of the same sentinel tokens and the *real* masked tokens. Each
-  sentinel token represents a unique mask token for this sentence and should start with `<extra_id_0>`,
-  `<extra_id_1>`, ... up to `<extra_id_99>`. As a default, 100 sentinel tokens are available in
+  sentinel token represents a unique mask token for this sentence and should start with `&lcubextra_id_0>`,
+  `&lcubextra_id_1>`, ... up to `&lcubextra_id_99>`. As a default, 100 sentinel tokens are available in
   [T5Tokenizer](model_doc/t5.html#transformers.T5Tokenizer).
 
   For instance, the sentence "The cute dog walks in the park" with the masks put on "cute dog" and "the" should be
@@ -104,8 +104,8 @@ from transformers import T5Tokenizer, T5ForConditionalGeneration
 tokenizer = T5Tokenizer.from_pretrained("t5-small")
 model = T5ForConditionalGeneration.from_pretrained("t5-small")
 
-input_ids = tokenizer('The <extra_id_0> walks in <extra_id_1> park', return_tensors='pt').input_ids
-labels = tokenizer('<extra_id_0> cute dog <extra_id_1> the <extra_id_2>', return_tensors='pt').input_ids
+input_ids = tokenizer('The &lcubextra_id_0> walks in &lcubextra_id_1> park', return_tensors='pt').input_ids
+labels = tokenizer('&lcubextra_id_0> cute dog &lcubextra_id_1> the &lcubextra_id_2>', return_tensors='pt').input_ids
 # the forward function automatically creates the correct decoder_input_ids
 loss = model(input_ids=input_ids, labels=labels).loss
 ```
@@ -335,7 +335,7 @@ If True, use gradient checkpointing to save memory at the expense of slower back
 ## T5Tokenizer
 
 <a id='transformers.T5Tokenizer'></a>
-> **class transformers.T5Tokenizer**(vocab_file, eos_token = </s>, unk_token = <unk>, pad_token = <pad>, extra_ids = 100, additional_special_tokens = None, sp_model_kwargs: typing.Union[typing.Dict[str, typing.Any], NoneType] = None, **kwargs)
+> **class transformers.T5Tokenizer**(vocab_file, eos_token = &lcub/s>, unk_token = &lcubunk>, pad_token = &lcubpad>, extra_ids = 100, additional_special_tokens = None, sp_model_kwargs: typing.Union[typing.Dict[str, typing.Any], NoneType] = None, **kwargs)
 
 
 Construct a T5 tokenizer. Based on [SentencePiece](https://github.com/google/sentencepiece).
@@ -348,7 +348,7 @@ Users should refer to this superclass for more information regarding those metho
 - **vocab_file** (`str`) --
   [SentencePiece](https://github.com/google/sentencepiece) file (generally has a _.spm_ extension) that
   contains the vocabulary necessary to instantiate a tokenizer.
-- **eos_token** (`str`, _optional_, defaults to `"</s>"`) --
+- **eos_token** (`str`, _optional_, defaults to `"&lcub/s>"`) --
   The end of sequence token.
 
 <Tip>
@@ -358,15 +358,15 @@ sequence. The token used is the `sep_token`.
 
 </Tip>
 
-- **unk_token** (`str`, _optional_, defaults to `"<unk>"`) --
+- **unk_token** (`str`, _optional_, defaults to `"&lcubunk>"`) --
   The unknown token. A token that is not in the vocabulary cannot be converted to an ID and is set to be this
   token instead.
-- **pad_token** (`str`, _optional_, defaults to `"<pad>"`) --
+- **pad_token** (`str`, _optional_, defaults to `"&lcubpad>"`) --
   The token used for padding, for example when batching sequences of different lengths.
 - **extra_ids** (`int`, _optional_, defaults to 100) --
   Add a number of extra ids added to the end of the vocabulary for use as sentinels. These tokens are
-  accessible as "<extra_id_{%d}>" where "{%d}" is a number between 0 and extra_ids-1. Extra tokens are
-  indexed from the end of the vocabulary up to beginning ("<extra_id_0>" is the last token in the vocabulary
+  accessible as "&lcubextra_id_&lcub%d}>" where "&lcub%d}" is a number between 0 and extra_ids-1. Extra tokens are
+  indexed from the end of the vocabulary up to beginning ("&lcubextra_id_0>" is the last token in the vocabulary
   like in T5 preprocessing see [here](https://github.com/google-research/text-to-text-transfer-transformer/blob/9fd7b14a769417be33bc6c850f9598764913c833/t5/data/preprocessors.py#L2117)).
 - **additional_special_tokens** (`List[str]`, _optional_) --
   Additional special tokens used by the tokenizer.
@@ -378,7 +378,7 @@ sequence. The token used is the `sep_token`.
 
     - `nbest_size = {0,1}`: No sampling is performed.
     - `nbest_size > 1`: samples from the nbest_size results.
-    - `nbest_size < 0`: assuming that nbest_size is infinite and samples from the all hypothesis (lattice)
+    - `nbest_size&amp;lt;0`: assuming that nbest_size is infinite and samples from the all hypothesis (lattice)
       using forward-filtering-and-backward-sampling algorithm.
 
   - `alpha`: Smoothing parameter for unigram sampling, and dropout probability of merge operations for
@@ -396,8 +396,8 @@ The _SentencePiece_ processor that is used for every conversion (string, tokens 
 Build model inputs from a sequence or a pair of sequence for sequence classification tasks by concatenating and
 adding special tokens. A sequence has the following format:
 
-- single sequence: `X </s>`
-- pair of sequences: `A </s> B </s>`
+- single sequence: `X &lcub/s>`
+- pair of sequences: `A &lcub/s> B &lcub/s>`
 
 > Parameters
 
@@ -469,7 +469,7 @@ List of zeros.
 ## T5TokenizerFast
 
 <a id='transformers.T5TokenizerFast'></a>
-> **class transformers.T5TokenizerFast**(vocab_file = None, tokenizer_file = None, eos_token = </s>, unk_token = <unk>, pad_token = <pad>, extra_ids = 100, additional_special_tokens = None, **kwargs)
+> **class transformers.T5TokenizerFast**(vocab_file = None, tokenizer_file = None, eos_token = &lcub/s>, unk_token = &lcubunk>, pad_token = &lcubpad>, extra_ids = 100, additional_special_tokens = None, **kwargs)
 
 
 Construct a "fast" T5 tokenizer (backed by HuggingFace's _tokenizers_ library). Based on [Unigram](https://huggingface.co/docs/tokenizers/python/latest/components.html?highlight=unigram#models).
@@ -482,7 +482,7 @@ methods. Users should refer to this superclass for more information regarding th
 - **vocab_file** (`str`) --
   [SentencePiece](https://github.com/google/sentencepiece) file (generally has a _.spm_ extension) that
   contains the vocabulary necessary to instantiate a tokenizer.
-- **eos_token** (`str`, _optional_, defaults to `"</s>"`) --
+- **eos_token** (`str`, _optional_, defaults to `"&lcub/s>"`) --
   The end of sequence token.
 
 <Tip>
@@ -492,15 +492,15 @@ sequence. The token used is the `sep_token`.
 
 </Tip>
 
-- **unk_token** (`str`, _optional_, defaults to `"<unk>"`) --
+- **unk_token** (`str`, _optional_, defaults to `"&lcubunk>"`) --
   The unknown token. A token that is not in the vocabulary cannot be converted to an ID and is set to be this
   token instead.
-- **pad_token** (`str`, _optional_, defaults to `"<pad>"`) --
+- **pad_token** (`str`, _optional_, defaults to `"&lcubpad>"`) --
   The token used for padding, for example when batching sequences of different lengths.
 - **extra_ids** (`int`, _optional_, defaults to 100) --
   Add a number of extra ids added to the end of the vocabulary for use as sentinels. These tokens are
-  accessible as "<extra_id_{%d}>" where "{%d}" is a number between 0 and extra_ids-1. Extra tokens are
-  indexed from the end of the vocabulary up to beginning ("<extra_id_0>" is the last token in the vocabulary
+  accessible as "&lcubextra_id_&lcub%d}>" where "&lcub%d}" is a number between 0 and extra_ids-1. Extra tokens are
+  indexed from the end of the vocabulary up to beginning ("&lcubextra_id_0>" is the last token in the vocabulary
   like in T5 preprocessing see [here](https://github.com/google-research/text-to-text-transfer-transformer/blob/9fd7b14a769417be33bc6c850f9598764913c833/t5/data/preprocessors.py#L2117)).
 - **additional_special_tokens** (`List[str]`, _optional_) --
   Additional special tokens used by the tokenizer.
@@ -513,8 +513,8 @@ sequence. The token used is the `sep_token`.
 Build model inputs from a sequence or a pair of sequence for sequence classification tasks by concatenating and
 adding special tokens. A sequence has the following format:
 
-- single sequence: `X </s>`
-- pair of sequences: `A </s> B </s>`
+- single sequence: `X &lcub/s>`
+- pair of sequences: `A &lcub/s> B &lcub/s>`
 
 > Parameters
 
@@ -556,7 +556,7 @@ List of zeros.
 
 
 <a id='transformers.T5Tokenizer'></a>
-> **class T5Tokenizer**(vocab_file, eos_token = </s>, unk_token = <unk>, pad_token = <pad>, extra_ids = 100, additional_special_tokens = None, sp_model_kwargs: typing.Union[typing.Dict[str, typing.Any], NoneType] = None, **kwargs)
+> **class T5Tokenizer**(vocab_file, eos_token = &lcub/s>, unk_token = &lcubunk>, pad_token = &lcubpad>, extra_ids = 100, additional_special_tokens = None, sp_model_kwargs: typing.Union[typing.Dict[str, typing.Any], NoneType] = None, **kwargs)
 
 
 Construct a T5 tokenizer. Based on [SentencePiece](https://github.com/google/sentencepiece).
@@ -569,7 +569,7 @@ Users should refer to this superclass for more information regarding those metho
 - **vocab_file** (`str`) --
   [SentencePiece](https://github.com/google/sentencepiece) file (generally has a _.spm_ extension) that
   contains the vocabulary necessary to instantiate a tokenizer.
-- **eos_token** (`str`, _optional_, defaults to `"</s>"`) --
+- **eos_token** (`str`, _optional_, defaults to `"&lcub/s>"`) --
   The end of sequence token.
 
 <Tip>
@@ -579,15 +579,15 @@ sequence. The token used is the `sep_token`.
 
 </Tip>
 
-- **unk_token** (`str`, _optional_, defaults to `"<unk>"`) --
+- **unk_token** (`str`, _optional_, defaults to `"&lcubunk>"`) --
   The unknown token. A token that is not in the vocabulary cannot be converted to an ID and is set to be this
   token instead.
-- **pad_token** (`str`, _optional_, defaults to `"<pad>"`) --
+- **pad_token** (`str`, _optional_, defaults to `"&lcubpad>"`) --
   The token used for padding, for example when batching sequences of different lengths.
 - **extra_ids** (`int`, _optional_, defaults to 100) --
   Add a number of extra ids added to the end of the vocabulary for use as sentinels. These tokens are
-  accessible as "<extra_id_{%d}>" where "{%d}" is a number between 0 and extra_ids-1. Extra tokens are
-  indexed from the end of the vocabulary up to beginning ("<extra_id_0>" is the last token in the vocabulary
+  accessible as "&lcubextra_id_&lcub%d}>" where "&lcub%d}" is a number between 0 and extra_ids-1. Extra tokens are
+  indexed from the end of the vocabulary up to beginning ("&lcubextra_id_0>" is the last token in the vocabulary
   like in T5 preprocessing see [here](https://github.com/google-research/text-to-text-transfer-transformer/blob/9fd7b14a769417be33bc6c850f9598764913c833/t5/data/preprocessors.py#L2117)).
 - **additional_special_tokens** (`List[str]`, _optional_) --
   Additional special tokens used by the tokenizer.
@@ -599,7 +599,7 @@ sequence. The token used is the `sep_token`.
 
     - `nbest_size = {0,1}`: No sampling is performed.
     - `nbest_size > 1`: samples from the nbest_size results.
-    - `nbest_size < 0`: assuming that nbest_size is infinite and samples from the all hypothesis (lattice)
+    - `nbest_size&amp;lt;0`: assuming that nbest_size is infinite and samples from the all hypothesis (lattice)
       using forward-filtering-and-backward-sampling algorithm.
 
   - `alpha`: Smoothing parameter for unigram sampling, and dropout probability of merge operations for
@@ -1045,8 +1045,8 @@ various elements depending on the configuration ([T5Config](model_doc/t5.html#tr
 >>> model = T5ForConditionalGeneration.from_pretrained('t5-small')
 
 >>> # training
->>> input_ids = tokenizer('The <extra_id_0> walks in <extra_id_1> park', return_tensors='pt').input_ids
->>> labels = tokenizer('<extra_id_0> cute dog <extra_id_1> the <extra_id_2>', return_tensors='pt').input_ids
+>>> input_ids = tokenizer('The &lcubextra_id_0> walks in &lcubextra_id_1> park', return_tensors='pt').input_ids
+>>> labels = tokenizer('&lcubextra_id_0> cute dog &lcubextra_id_1> the &lcubextra_id_2>', return_tensors='pt').input_ids
 >>> outputs = model(input_ids=input_ids, labels=labels)
 >>> loss = outputs.loss
 >>> logits = outputs.logits
@@ -1682,8 +1682,8 @@ elements depending on the configuration ([T5Config](model_doc/t5.html#transforme
 >>> model = TFT5ForConditionalGeneration.from_pretrained('t5-small')
 
 >>> # training
->>> inputs = tokenizer('The <extra_id_0> walks in <extra_id_1> park', return_tensors='tf').input_ids
->>> labels = tokenizer('<extra_id_0> cute dog <extra_id_1> the <extra_id_2>', return_tensors='tf').input_ids
+>>> inputs = tokenizer('The &lcubextra_id_0> walks in &lcubextra_id_1> park', return_tensors='tf').input_ids
+>>> labels = tokenizer('&lcubextra_id_0> cute dog &lcubextra_id_1> the &lcubextra_id_2>', return_tensors='tf').input_ids
 >>> outputs = model(inputs, labels=labels)
 >>> loss = outputs.loss
 >>> logits = outputs.logits
@@ -1839,7 +1839,7 @@ elements depending on the configuration ([T5Config](model_doc/t5.html#transforme
 ## FlaxT5Model
 
 <a id='transformers.FlaxT5Model'></a>
-> **class transformers.FlaxT5Model**(config: T5Config, input_shape: typing.Tuple[int] = (1, 1), seed: int = 0, dtype: dtype = <class 'jax._src.numpy.lax_numpy.float32'>, **kwargs)
+> **class transformers.FlaxT5Model**(config: T5Config, input_shape: typing.Tuple[int] = (1, 1), seed: int = 0, dtype: dtype = &lcubclass 'jax._src.numpy.lax_numpy.float32'&rcub, **kwargs)
 
 <a id='transformers.FlaxT5PreTrainedModel.__call__'></a>
 > **\_\_call\_\_**(self, input_ids: ndarray, attention_mask: typing.Optional[jax._src.numpy.lax_numpy.ndarray] = None, decoder_input_ids: ndarray = None, decoder_attention_mask: typing.Optional[jax._src.numpy.lax_numpy.ndarray] = None, output_attentions: typing.Optional[bool] = None, output_hidden_states: typing.Optional[bool] = None, return_dict: typing.Optional[bool] = None, train: bool = False, params: dict = None, dropout_rng: PRNGKey = None)
@@ -2142,7 +2142,7 @@ various elements depending on the configuration (`T5Config'>`) and inputs.
 ## FlaxT5ForConditionalGeneration
 
 <a id='transformers.FlaxT5ForConditionalGeneration'></a>
-> **class transformers.FlaxT5ForConditionalGeneration**(config: T5Config, input_shape: typing.Tuple[int] = (1, 1), seed: int = 0, dtype: dtype = <class 'jax._src.numpy.lax_numpy.float32'>, **kwargs)
+> **class transformers.FlaxT5ForConditionalGeneration**(config: T5Config, input_shape: typing.Tuple[int] = (1, 1), seed: int = 0, dtype: dtype = &lcubclass 'jax._src.numpy.lax_numpy.float32'&rcub, **kwargs)
 
 <a id='transformers.FlaxT5PreTrainedModel.__call__'></a>
 > **\_\_call\_\_**(self, input_ids: ndarray, attention_mask: typing.Optional[jax._src.numpy.lax_numpy.ndarray] = None, decoder_input_ids: ndarray = None, decoder_attention_mask: typing.Optional[jax._src.numpy.lax_numpy.ndarray] = None, output_attentions: typing.Optional[bool] = None, output_hidden_states: typing.Optional[bool] = None, return_dict: typing.Optional[bool] = None, train: bool = False, params: dict = None, dropout_rng: PRNGKey = None)
