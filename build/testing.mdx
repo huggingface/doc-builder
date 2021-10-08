@@ -1,8 +1,8 @@
-<script>
+&amp;lt;script>
 import Tip from "../../Tip.svelte";
 import Youtube from "../../Youtube.svelte";	
 export let fw: "pt" | "tf"
-</script>
+&amp;lt;/script>
 
 <!--Copyright 2020 The HuggingFace Team. All rights reserved.
 
@@ -29,21 +29,21 @@ There are 2 test suites in the repository:
 ## How transformers are tested
 
 1. Once a PR is submitted it gets tested with 9 CircleCi jobs. Every new commit to that PR gets retested. These jobs
-   are defined in this :prefix_link:_config file <.circleci/config.yml>_, so that if needed you can reproduce the same
+   are defined in this [config file](https://github.com/huggingface/transformers/tree/master/.circleci/config.yml), so that if needed you can reproduce the same
    environment on your machine.
 
    These CI jobs don't run `@slow` tests.
 
 2. There are 3 jobs run by [github actions](https://github.com/huggingface/transformers/actions):
 
-   - :prefix_link:_torch hub integration <.github/workflows/github-torch-hub.yml>_: checks whether torch hub
+   - [torch hub integration](https://github.com/huggingface/transformers/tree/master/.github/workflows/github-torch-hub.yml): checks whether torch hub
      integration works.
 
-   - :prefix_link:_self-hosted (push) <.github/workflows/self-push.yml>_: runs fast tests on GPU only on commits on
+   - [self-hosted (push)](https://github.com/huggingface/transformers/tree/master/.github/workflows/self-push.yml): runs fast tests on GPU only on commits on
      `master`. It only runs if a commit on `master` has updated the code in one of the following folders: `src`,
      `tests`, `.github` (to prevent running on added model cards, notebooks, etc.)
 
-   - :prefix_link:_self-hosted runner <.github/workflows/self-scheduled.yml>_: runs normal and slow tests on GPU in
+   - [self-hosted runner](https://github.com/huggingface/transformers/tree/master/.github/workflows/self-scheduled.yml): runs normal and slow tests on GPU in
      `tests` and `examples`:
 
 ```bash
@@ -341,7 +341,7 @@ By default `--random-order-bucket=module` is implied, which will shuffle the fil
 shuffle on `class`, `package`, `global` and `none` levels. For the complete details please see its
 [documentation](https://github.com/jbasko/pytest-random-order).
 
-Another randomization alternative is: `pytest-randomly` <https://github.com/pytest-dev/pytest-randomly>`__. This
+Another randomization alternative is: `pytest-randomly` &amp;lt;https://github.com/pytest-dev/pytest-randomly>`__. This
 module has a very similar functionality/interface, but it doesn't have the bucket modes available in
 `pytest-random-order`. It has the same problem of imposing itself once installed.
 
@@ -422,8 +422,8 @@ Let's depict the GPU requirements in the following table:
 | `>= 0` | `@require_torch`               |
 | `>= 1` | `@require_torch_gpu`           |
 | `>= 2` | `@require_torch_multi_gpu`     |
-| `< 2`  | `@require_torch_non_multi_gpu` |
-| `< 3`  | `@require_torch_up_to_2_gpus`  |
+| `&amp;lt; 2`  | `@require_torch_non_multi_gpu` |
+| `&amp;lt; 3`  | `@require_torch_up_to_2_gpus`  |
 
 
 For example, here is a test that must be run only when there are 2 or more GPUs available and pytorch is installed:
@@ -478,8 +478,8 @@ spawns a normal process that then spawns off multiple workers and manages the IO
 
 Here are some tests that use it:
 
-- :prefix_link:_test_trainer_distributed.py <tests/test_trainer_distributed.py>_
-- :prefix_link:_test_deepspeed.py <tests/deepspeed/test_deepspeed.py>_
+- [test_trainer_distributed.py](https://github.com/huggingface/transformers/tree/master/tests/test_trainer_distributed.py)
+- [test_deepspeed.py](https://github.com/huggingface/transformers/tree/master/tests/deepspeed/test_deepspeed.py)
 
 To jump right into the execution point, search for the `execute_subprocess_async` call in those tests.
 
@@ -766,7 +766,7 @@ If you need to temporary override `sys.path` to import from another test for exa
 import os
 from transformers.testing_utils import ExtendSysPath
 bindir = os.path.abspath(os.path.dirname(__file__))
-with ExtendSysPath(f"{bindir}/.."):
+with ExtendSysPath(f"&lcubbindir}/.."):
 from test_trainer import TrainerIntegrationCommon  # noqa
 ```
 
@@ -842,7 +842,7 @@ docutils = pytest.importorskip("docutils", minversion="0.3")
 -  Skip a test based on a condition:
 
 ```python
-@pytest.mark.skipif(sys.version_info < (3,6), reason="requires python3.6 or higher")
+@pytest.mark.skipif(sys.version_info &amp;lt; (3,6), reason="requires python3.6 or higher")
 def test_feature_x():
 ```
 
@@ -921,7 +921,7 @@ slow models to do qualitative testing. To see the use of these simply look for *
 grep tiny tests examples
 ```
 
-Here is a an example of a :prefix_link:_script <scripts/fsmt/fsmt-make-tiny-model.py>_ that created the tiny model
+Here is a an example of a [script](https://github.com/huggingface/transformers/tree/master/scripts/fsmt/fsmt-make-tiny-model.py) that created the tiny model
 [stas/tiny-wmt19-en-de](https://huggingface.co/stas/tiny-wmt19-en-de). You can easily adjust it to your specific
 model's architecture.
 
@@ -968,7 +968,7 @@ try:
 raise_exception(msg)
 except Exception as e:
 error = str(e)
-assert msg in error, f"{msg} is in the exception:\n{error}"
+assert msg in error, f"&lcubmsg} is in the exception:\n&lcuberror}"
 ```
 
 Another approach to capturing stdout is via `contextlib.redirect_stdout`:
@@ -1012,7 +1012,7 @@ msg = "Secret message\r"
 final = "Hello World"
 with CaptureStdout() as cs:
 print(msg + final)
-assert cs.out == final+"\n", f"captured: {cs.out}, expecting {final}"
+assert cs.out == final+"\n", f"captured: &lcubcs.out}, expecting &lcubfinal}"
 ```
 
 If you'd like to capture `stderr` use the `CaptureStderr` class instead:
@@ -1032,6 +1032,10 @@ with CaptureStd() as cs:
 function_that_writes_to_stdout_and_stderr()
 print(cs.err, cs.out)
 ```
+
+Also, to aid debugging test issues, by default these context managers automatically replay the captured streams on exit
+from the context.
+
 
 ### Capturing logger stream
 

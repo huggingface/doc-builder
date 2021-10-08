@@ -1,8 +1,8 @@
-<script>
+&amp;lt;script>
 import Tip from "../../Tip.svelte";
 import Youtube from "../../Youtube.svelte";	
 export let fw: "pt" | "tf"
-</script>
+&amp;lt;/script>
 
 <!--Copyright 2020 The HuggingFace Team. All rights reserved.
 
@@ -34,6 +34,8 @@ There are two categories of pipeline abstractions to be aware about:
   - [FeatureExtractionPipeline](main_classes/pipelines.html#transformers.FeatureExtractionPipeline)
   - [FillMaskPipeline](main_classes/pipelines.html#transformers.FillMaskPipeline)
   - [ImageClassificationPipeline](main_classes/pipelines.html#transformers.ImageClassificationPipeline)
+  - [ImageSegmentationPipeline](main_classes/pipelines.html#transformers.ImageSegmentationPipeline)
+  - [ObjectDetectionPipeline](main_classes/pipelines.html#transformers.ObjectDetectionPipeline)
   - [QuestionAnsweringPipeline](main_classes/pipelines.html#transformers.QuestionAnsweringPipeline)
   - [SummarizationPipeline](main_classes/pipelines.html#transformers.SummarizationPipeline)
   - [TableQuestionAnsweringPipeline](main_classes/pipelines.html#transformers.TableQuestionAnsweringPipeline)
@@ -48,6 +50,40 @@ There are two categories of pipeline abstractions to be aware about:
 
 The _pipeline_ abstraction is a wrapper around all the other available pipelines. It is instantiated as any other
 pipeline but requires an additional argument which is the _task_.
+
+Simple call on one item:
+
+```
+>>> pipe = pipeline("text-classification")
+>>> pipe("This restaurant is awesome")
+[&lcub'label': 'POSITIVE', 'score': 0.9998743534088135}]
+```
+
+To call a pipeline on many items, you can either call with a _list_.
+
+```
+>>> pipe = pipeline("text-classification")
+>>> pipe(["This restaurant is awesome", "This restaurant is aweful"])
+[&lcub'label': 'POSITIVE', 'score': 0.9998743534088135},
+&lcub'label': 'NEGATIVE', 'score': 0.9996669292449951}]
+```
+
+To iterate of full datasets it is recommended to use a `dataset` directly. This means you don't need to allocate
+the whole dataset at once, nor do you need to do batching yourself. This should work just as fast as custom loops on
+GPU. If it doesn't don't hesitate to create an issue.
+
+```
+pipe = pipeline("automatic-speech-recognition", model="facebook/wav2vec2-base-960h", device=0)
+dataset = datasets.load_dataset("superb", name="asr", split="test")
+
+# KeyDataset (only _pt_) will simply return the item in the dict returned by the dataset item
+# as we're not interested in the _target_ part of the dataset.
+for out in tqdm.tqdm(pipe(KeyDataset(dataset, "file"))):
+print(out)
+# &lcub"text": "NUMBER TEN FRESH NELLY IS WAITING ON YOU GOOD NIGHT HUSBAND"}
+# &lcub"text": ....}
+# ....
+```
 
 <a id='transformers.pipeline'></a>
 > **transformers.pipeline**(task: str, model: typing.Optional = None, config: typing.Union[str, transformers.configuration_utils.PretrainedConfig, NoneType] = None, tokenizer: typing.Union[str, transformers.tokenization_utils.PreTrainedTokenizer, NoneType] = None, feature_extractor: typing.Union[str, ForwardRef('SequenceFeatureExtractor'), NoneType] = None, framework: typing.Optional[str] = None, revision: typing.Optional[str] = None, use_fast: bool = True, use_auth_token: typing.Union[bool, str, NoneType] = None, model_kwargs: typing.Dict[str, typing.Any] = {}, **kwargs)
@@ -66,21 +102,26 @@ Pipelines are made of:
 - **task** (`str`) --
   The task defining which pipeline will be returned. Currently accepted tasks are:
 
-  - `"feature-extraction"`: will return a [FeatureExtractionPipeline](main_classes/pipelines.html#transformers.FeatureExtractionPipeline).
-  - `"text-classification"`: will return a [TextClassificationPipeline](main_classes/pipelines.html#transformers.TextClassificationPipeline).
-  - `"sentiment-analysis"`: (alias of `"text-classification"`) will return a
-    [TextClassificationPipeline](main_classes/pipelines.html#transformers.TextClassificationPipeline).
-  - `"token-classification"`: will return a [TokenClassificationPipeline](main_classes/pipelines.html#transformers.TokenClassificationPipeline).
-  - `"ner"` (alias of `"token-classification"`): will return a
-    [TokenClassificationPipeline](main_classes/pipelines.html#transformers.TokenClassificationPipeline).
-  - `"question-answering"`: will return a [QuestionAnsweringPipeline](main_classes/pipelines.html#transformers.QuestionAnsweringPipeline).
-  - `"fill-mask"`: will return a [FillMaskPipeline](main_classes/pipelines.html#transformers.FillMaskPipeline).
-  - `"summarization"`: will return a [SummarizationPipeline](main_classes/pipelines.html#transformers.SummarizationPipeline).
-  - `"translation_xx_to_yy"`: will return a [TranslationPipeline](main_classes/pipelines.html#transformers.TranslationPipeline).
-  - `"text2text-generation"`: will return a [Text2TextGenerationPipeline](main_classes/pipelines.html#transformers.Text2TextGenerationPipeline).
-  - `"text-generation"`: will return a [TextGenerationPipeline](main_classes/pipelines.html#transformers.TextGenerationPipeline).
-  - `"zero-shot-classification:`: will return a [ZeroShotClassificationPipeline](main_classes/pipelines.html#transformers.ZeroShotClassificationPipeline).
-  - `"conversational"`: will return a [ConversationalPipeline](main_classes/pipelines.html#transformers.ConversationalPipeline).
+  - `"audio-classification"`: will return a [AudioClassificationPipeline](main_classes/pipelines.html#transformers.AudioClassificationPipeline):.
+  - `"automatic-speech-recognition"`: will return a
+    [AutomaticSpeechRecognitionPipeline](main_classes/pipelines.html#transformers.AutomaticSpeechRecognitionPipeline):.
+  - `"conversational"`: will return a [ConversationalPipeline](main_classes/pipelines.html#transformers.ConversationalPipeline):.
+  - `"feature-extraction"`: will return a [FeatureExtractionPipeline](main_classes/pipelines.html#transformers.FeatureExtractionPipeline):.
+  - `"fill-mask"`: will return a [FillMaskPipeline](main_classes/pipelines.html#transformers.FillMaskPipeline):.
+  - `"image-classification"`: will return a [ImageClassificationPipeline](main_classes/pipelines.html#transformers.ImageClassificationPipeline):.
+  - `"question-answering"`: will return a [QuestionAnsweringPipeline](main_classes/pipelines.html#transformers.QuestionAnsweringPipeline):.
+  - `"table-question-answering"`: will return a [TableQuestionAnsweringPipeline](main_classes/pipelines.html#transformers.TableQuestionAnsweringPipeline):.
+  - `"text2text-generation"`: will return a [Text2TextGenerationPipeline](main_classes/pipelines.html#transformers.Text2TextGenerationPipeline):.
+  - `"text-classification"` (alias ``"sentiment-analysis" available): will return a
+    [```~transformers.TextClassificationPipeline`]:.
+  - `"text-generation"`: will return a [TextGenerationPipeline](main_classes/pipelines.html#transformers.TextGenerationPipeline):.
+  - `"token-classification"` (alias `"ner"` available): will return a
+    [TokenClassificationPipeline](main_classes/pipelines.html#transformers.TokenClassificationPipeline):.
+  - `"translation"`: will return a [TranslationPipeline](main_classes/pipelines.html#transformers.TranslationPipeline):.
+  - `"translation_xx_to_yy"`: will return a [TranslationPipeline](main_classes/pipelines.html#transformers.TranslationPipeline):.
+  - `"summarization"`: will return a [SummarizationPipeline](main_classes/pipelines.html#transformers.SummarizationPipeline):.
+  - `"zero-shot-classification"`: will return a [ZeroShotClassificationPipeline](main_classes/pipelines.html#transformers.ZeroShotClassificationPipeline):.
+
 - **model** (`str` or `~transformers.PreTrainedModel` or `~transformers.TFPreTrainedModel`, _optional_) --
   The model that will be used by the pipeline to make predictions. This can be a model identifier or an
   actual instance of a pretrained model inheriting from [PreTrainedModel](main_classes/model.html#transformers.PreTrainedModel) (for PyTorch)
@@ -144,7 +185,7 @@ A suitable pipeline for the task.
 
 > Return type
 
-[Pipeline](main_classes/pipelines.html#transformers.Pipeline)
+[`~transformers.Pipeline``]
 
 > Examples:
 
@@ -164,12 +205,17 @@ A suitable pipeline for the task.
 ```
 
 
+## Implementing a pipeline
+
+[Implementing a new pipeline](../add_new_pipeline.html)
+
 ## The task specific pipelines
+
 
 ### AudioClassificationPipeline
 
 <a id='transformers.AudioClassificationPipeline'></a>
-> **class transformers.AudioClassificationPipeline**(model: typing.Union[ForwardRef('PreTrainedModel'), ForwardRef('TFPreTrainedModel')], feature_extractor: ForwardRef('SequenceFeatureExtractor'), framework: typing.Optional[str] = None, **kwargs)
+> **class transformers.AudioClassificationPipeline**(*args, **kwargs)
 
 
 Audio classification pipeline using any `AutoModelForAudioClassification`. This pipeline predicts the class of
@@ -210,7 +256,7 @@ Flag indicating if the output the pipeline should happen in a binary format (i.e
 
 
 <a id='transformers.AudioClassificationPipeline.__call__'></a>
-> **\_\_call\_\_**(self, inputs: typing.Union[numpy.ndarray, bytes, str], top_k: typing.Optional[int] = None, **kwargs)
+> **\_\_call\_\_**(self, inputs: typing.Union[numpy.ndarray, bytes, str], **kwargs)
 
 
 Classify the sequence(s) given as inputs. See the `~transformers.AutomaticSpeechRecognitionPipeline`
@@ -369,7 +415,7 @@ empties the `new_user_input` field.
 
 
 <a id='transformers.ConversationalPipeline'></a>
-> **class transformers.ConversationalPipeline**(min_length_for_response = 32, minimum_tokens = 10, *args, **kwargs)
+> **class transformers.ConversationalPipeline**(*args, **kwargs)
 
 
 Multi-turn conversational pipeline.
@@ -431,7 +477,7 @@ The minimum length of tokens to leave for a response.
 
 
 <a id='transformers.ConversationalPipeline.__call__'></a>
-> **\_\_call\_\_**(self, conversations: typing.Union[transformers.pipelines.conversational.Conversation, typing.List[transformers.pipelines.conversational.Conversation]], clean_up_tokenization_spaces = True, **generate_kwargs)
+> **\_\_call\_\_**(self, conversations: typing.Union[transformers.pipelines.conversational.Conversation, typing.List[transformers.pipelines.conversational.Conversation]], num_workers = 0, **kwargs)
 
 
 Generate responses for the conversation(s) given as inputs.
@@ -459,7 +505,7 @@ updated generated responses for those containing a new user input.
 ### FeatureExtractionPipeline
 
 <a id='transformers.FeatureExtractionPipeline'></a>
-> **class transformers.FeatureExtractionPipeline**(model: typing.Union[ForwardRef('PreTrainedModel'), ForwardRef('TFPreTrainedModel')], tokenizer: PreTrainedTokenizer, feature_extractor: typing.Optional[ForwardRef('SequenceFeatureExtractor')] = None, modelcard: typing.Optional[transformers.modelcard.ModelCard] = None, framework: typing.Optional[str] = None, args_parser: ArgumentHandler = None, device: int = -1, task: str = )
+> **class transformers.FeatureExtractionPipeline**(model: typing.Union[ForwardRef('PreTrainedModel'), ForwardRef('TFPreTrainedModel')], tokenizer: typing.Optional[transformers.tokenization_utils.PreTrainedTokenizer] = None, feature_extractor: typing.Optional[ForwardRef('SequenceFeatureExtractor')] = None, modelcard: typing.Optional[transformers.modelcard.ModelCard] = None, framework: typing.Optional[str] = None, task: str = , args_parser: ArgumentHandler = None, device: int = -1, binary_output: bool = False, **kwargs)
 
 
 Feature extraction pipeline using no model head. This pipeline extracts the hidden states from the base
@@ -519,7 +565,7 @@ A nested list of `float`
 ### FillMaskPipeline
 
 <a id='transformers.FillMaskPipeline'></a>
-> **class transformers.FillMaskPipeline**(model: typing.Union[ForwardRef('PreTrainedModel'), ForwardRef('TFPreTrainedModel')], tokenizer: PreTrainedTokenizer, modelcard: typing.Optional[transformers.modelcard.ModelCard] = None, framework: typing.Optional[str] = None, args_parser: ArgumentHandler = None, device: int = -1, top_k = 5, targets = None, task: str = )
+> **class transformers.FillMaskPipeline**(model: typing.Union[ForwardRef('PreTrainedModel'), ForwardRef('TFPreTrainedModel')], tokenizer: typing.Optional[transformers.tokenization_utils.PreTrainedTokenizer] = None, feature_extractor: typing.Optional[ForwardRef('SequenceFeatureExtractor')] = None, modelcard: typing.Optional[transformers.modelcard.ModelCard] = None, framework: typing.Optional[str] = None, task: str = , args_parser: ArgumentHandler = None, device: int = -1, binary_output: bool = False, **kwargs)
 
 
 Masked language modeling prediction pipeline using any `ModelWithLMHead`. See the [masked language modeling
@@ -575,7 +621,7 @@ token will be used (with a warning, and that might be slower).
 
 
 <a id='transformers.FillMaskPipeline.__call__'></a>
-> **\_\_call\_\_**(self, inputs, *args, targets = None, top_k: typing.Optional[int] = None, **kwargs)
+> **\_\_call\_\_**(self, inputs, *args, **kwargs)
 
 
 Fill the masked token in the text(s) given as inputs.
@@ -608,7 +654,7 @@ A list or a list of list of `dict`
 ### ImageClassificationPipeline
 
 <a id='transformers.ImageClassificationPipeline'></a>
-> **class transformers.ImageClassificationPipeline**(model: typing.Union[ForwardRef('PreTrainedModel'), ForwardRef('TFPreTrainedModel')], feature_extractor: ForwardRef('SequenceFeatureExtractor'), framework: typing.Optional[str] = None, **kwargs)
+> **class transformers.ImageClassificationPipeline**(*args, **kwargs)
 
 
 Image classification pipeline using any `AutoModelForImageClassification`. This pipeline predicts the class of
@@ -648,7 +694,7 @@ Flag indicating if the output the pipeline should happen in a binary format (i.e
 
 
 <a id='transformers.ImageClassificationPipeline.__call__'></a>
-> **\_\_call\_\_**(self, images: typing.Union[str, typing.List[str], ForwardRef('Image'), typing.List[ForwardRef('Image')]], top_k = 5)
+> **\_\_call\_\_**(self, images: typing.Union[str, typing.List[str], ForwardRef('Image'), typing.List[ForwardRef('Image')]], **kwargs)
 
 
 Assign labels to the image(s) passed as inputs.
@@ -681,10 +727,89 @@ The dictionaries contain the following keys:
 - **score** (`int`) -- The score attributed by the model for that label.
 
 
+### ImageSegmentationPipeline
+
+<a id='transformers.ImageSegmentationPipeline'></a>
+> **class transformers.ImageSegmentationPipeline**(*args, **kwargs)
+
+
+Image segmentation pipeline using any `AutoModelForImageSegmentation`. This pipeline predicts masks of objects
+and their classes.
+
+This image segmntation pipeline can currently be loaded from [pipeline()](main_classes/pipelines.html#transformers.pipeline) using the following
+task identifier: `"image-segmentation"`.
+
+See the list of available models on [huggingface.co/models](https://huggingface.co/models?filter=image-segmentation).
+
+Arguments:
+model (`~transformers.PreTrainedModel` or `~transformers.TFPreTrainedModel`):
+The model that will be used by the pipeline to make predictions. This needs to be a model inheriting from
+[PreTrainedModel](main_classes/model.html#transformers.PreTrainedModel) for PyTorch and [TFPreTrainedModel](main_classes/model.html#transformers.TFPreTrainedModel) for
+TensorFlow.
+tokenizer (`~transformers.PreTrainedTokenizer`):
+The tokenizer that will be used by the pipeline to encode data for the model. This object inherits from
+[PreTrainedTokenizer](main_classes/tokenizer.html#transformers.PreTrainedTokenizer).
+modelcard (`str` or `ModelCard`, _optional_):
+Model card attributed to the model for this pipeline.
+framework (`str`, _optional_):
+The framework to use, either `"pt"` for PyTorch or `"tf"` for TensorFlow. The specified framework
+must be installed.
+
+If no framework is specified, will default to the one currently installed. If no framework is specified and
+both frameworks are installed, will default to the framework of the `model`, or to PyTorch if no model
+is provided.
+task (`str`, defaults to `""`):
+A task-identifier for the pipeline.
+args_parser ([ArgumentHandler](internal/pipelines_utils.html#transformers.pipelines.ArgumentHandler), _optional_):
+Reference to the object in charge of parsing supplied pipeline parameters.
+device (`int`, _optional_, defaults to -1):
+Device ordinal for CPU/GPU supports. Setting this to -1 will leverage CPU, a positive will run the model on
+the associated CUDA device id.
+binary_output (`bool`, _optional_, defaults to `False`):
+Flag indicating if the output the pipeline should happen in a binary format (i.e., pickle) or as raw text.
+
+
+<a id='transformers.ImageSegmentationPipeline.__call__'></a>
+> **\_\_call\_\_**(self, *args, **kwargs)
+
+
+Perform segmentation (detect masks & classes) in the image(s) passed as inputs.
+
+> Parameters
+
+- **images** (`str`, `List[str]`, `PIL.Image` or `List[PIL.Image]`) --
+  The pipeline handles three types of images:
+
+  - A string containing an HTTP(S) link pointing to an image
+  - A string containing a local path to an image
+  - An image loaded in PIL directly
+
+  The pipeline accepts either a single image or a batch of images. Images in a batch must all be in the
+  same format: all as HTTP(S) links, all as local paths, or all as PIL images.
+- **threshold** (`float`, _optional_, defaults to 0.9) --
+  The probability necessary to make a prediction.
+- **mask_threshold** (`float`, _optional_, defaults to 0.5) --
+  Threshold to use when turning the predicted masks into binary values.
+
+> Returns
+
+A dictionary or a list of dictionaries containing the result. If the input is a single image, will return a
+dictionary, if the input is a list of several images, will return a list of dictionaries corresponding to
+each image.
+
+The dictionaries contain the following keys:
+
+- **label** (`str`) -- The class label identified by the model.
+- **score** (`float`) -- The score attributed by the model for that label.
+- **mask** (`str`) -- base64 string of a single-channel PNG image that contain masks information. The
+  PNG image has size (heigth, width) of the original image. Pixel values in the image are either 0 or 255
+  (i.e. mask is absent VS mask is present).
+
+
 ### NerPipeline
 
 <a id='transformers.TokenClassificationPipeline'></a>
-> **class transformers.TokenClassificationPipeline**(model: typing.Union[ForwardRef('PreTrainedModel'), ForwardRef('TFPreTrainedModel')], tokenizer: PreTrainedTokenizer, modelcard: typing.Optional[transformers.modelcard.ModelCard] = None, framework: typing.Optional[str] = None, args_parser: ArgumentHandler = <transformers.pipelines.token_classification.TokenClassificationArgumentHandler object at 0x7f37c161b950>, device: int = -1, binary_output: bool = False, ignore_labels = ['O'], task: str = , grouped_entities: typing.Optional[bool] = None, ignore_subwords: typing.Optional[bool] = None, aggregation_strategy: typing.Optional[transformers.pipelines.token_classification.AggregationStrategy] = None)
+> **class transformers.TokenClassificationPipeline**(args_parser = <transformers.pipelines.token_classification.TokenClassificationArgumentHandler object at 0x7fc58c7d2a10>, *args, **kwargs)
 
 
 Named Entity Recognition pipeline using any `ModelForTokenClassification`. See the [named entity recognition
@@ -733,10 +858,10 @@ aggregation_strategy (`str`, _optional_, defaults to `"none"`): The strategy to 
 
 - "none" : Will simply not do any aggregation and simply return raw results from the model
 - "simple" : Will attempt to group entities following the default schema. (A, B-TAG), (B, I-TAG), (C,
-  I-TAG), (D, B-TAG2) (E, B-TAG2) will end up being [{"word": ABC, "entity": "TAG"}, {"word": "D",
-  "entity": "TAG2"}, {"word": "E", "entity": "TAG2"}] Notice that two consecutive B tags will end up as
+  I-TAG), (D, B-TAG2) (E, B-TAG2) will end up being [&lcub"word": ABC, "entity": "TAG"}, &lcub"word": "D",
+  "entity": "TAG2"}, &lcub"word": "E", "entity": "TAG2"}] Notice that two consecutive B tags will end up as
   different entities. On word based languages, we might end up splitting words undesirably : Imagine
-  Microsoft being tagged as [{"word": "Micro", "entity": "ENTERPRISE"}, {"word": "soft", "entity":
+  Microsoft being tagged as [&lcub"word": "Micro", "entity": "ENTERPRISE"}, &lcub"word": "soft", "entity":
   "NAME"}]. Look for FIRST, MAX, AVERAGE for ways to mitigate that and disambiguate words (on languages
   that support that meaning, which is basically tokens separated by a space). These mitigations will
   only work on real words, "New york" might still be tagged with two different entities.
@@ -761,7 +886,7 @@ company| B-ENT I-ENT
 
 
 <a id='transformers.TokenClassificationPipeline.gather_pre_entities'></a>
-> **gather\_pre\_entities**(self, sentence: str, input_ids: ndarray, scores: ndarray, offset_mapping: typing.Union[typing.List[typing.Tuple[int, int]], NoneType], special_tokens_mask: ndarray)
+> **gather\_pre\_entities**(self, sentence: str, input_ids: ndarray, scores: ndarray, offset_mapping: typing.Union[typing.List[typing.Tuple[int, int]], NoneType], special_tokens_mask: ndarray, aggregation_strategy: AggregationStrategy)
 
 Fuse various numpy arrays into dicts with all the information needed for aggregation
 
@@ -788,6 +913,81 @@ Group together the adjacent tokens with the same entity predicted.
 
 
 See [TokenClassificationPipeline](main_classes/pipelines.html#transformers.TokenClassificationPipeline) for all details.
+
+### ObjectDetectionPipeline
+
+<a id='transformers.ObjectDetectionPipeline'></a>
+> **class transformers.ObjectDetectionPipeline**(*args, **kwargs)
+
+
+Object detection pipeline using any `AutoModelForObjectDetection`. This pipeline predicts bounding boxes of
+objects and their classes.
+
+This object detection pipeline can currently be loaded from [pipeline()](main_classes/pipelines.html#transformers.pipeline) using the following task
+identifier: `"object-detection"`.
+
+See the list of available models on [huggingface.co/models](https://huggingface.co/models?filter=object-detection).
+
+Arguments:
+model (`~transformers.PreTrainedModel` or `~transformers.TFPreTrainedModel`):
+The model that will be used by the pipeline to make predictions. This needs to be a model inheriting from
+[PreTrainedModel](main_classes/model.html#transformers.PreTrainedModel) for PyTorch and [TFPreTrainedModel](main_classes/model.html#transformers.TFPreTrainedModel) for
+TensorFlow.
+tokenizer (`~transformers.PreTrainedTokenizer`):
+The tokenizer that will be used by the pipeline to encode data for the model. This object inherits from
+[PreTrainedTokenizer](main_classes/tokenizer.html#transformers.PreTrainedTokenizer).
+modelcard (`str` or `ModelCard`, _optional_):
+Model card attributed to the model for this pipeline.
+framework (`str`, _optional_):
+The framework to use, either `"pt"` for PyTorch or `"tf"` for TensorFlow. The specified framework
+must be installed.
+
+If no framework is specified, will default to the one currently installed. If no framework is specified and
+both frameworks are installed, will default to the framework of the `model`, or to PyTorch if no model
+is provided.
+task (`str`, defaults to `""`):
+A task-identifier for the pipeline.
+args_parser ([ArgumentHandler](internal/pipelines_utils.html#transformers.pipelines.ArgumentHandler), _optional_):
+Reference to the object in charge of parsing supplied pipeline parameters.
+device (`int`, _optional_, defaults to -1):
+Device ordinal for CPU/GPU supports. Setting this to -1 will leverage CPU, a positive will run the model on
+the associated CUDA device id.
+binary_output (`bool`, _optional_, defaults to `False`):
+Flag indicating if the output the pipeline should happen in a binary format (i.e., pickle) or as raw text.
+
+
+<a id='transformers.ObjectDetectionPipeline.__call__'></a>
+> **\_\_call\_\_**(self, *args, **kwargs)
+
+
+Detect objects (bounding boxes & classes) in the image(s) passed as inputs.
+
+> Parameters
+
+- **images** (`str`, `List[str]`, `PIL.Image` or `List[PIL.Image]`) --
+  The pipeline handles three types of images:
+
+  - A string containing an HTTP(S) link pointing to an image
+  - A string containing a local path to an image
+  - An image loaded in PIL directly
+
+  The pipeline accepts either a single image or a batch of images. Images in a batch must all be in the
+  same format: all as HTTP(S) links, all as local paths, or all as PIL images.
+- **threshold** (`float`, _optional_, defaults to 0.9) --
+  The probability necessary to make a prediction.
+
+> Returns
+
+A list of dictionaries or a list of list of dictionaries containing the result. If the input is a single
+image, will return a list of dictionaries, if the input is a list of several images, will return a list of
+list of dictionaries corresponding to each image.
+
+The dictionaries contain the following keys:
+
+- **label** (`str`) -- The class label identified by the model.
+- **score** (`float`) -- The score attributed by the model for that label.
+- **box** (`List[Dict[str, int]]`) -- The bounding box of detected object in image's original size.
+
 
 ### QuestionAnsweringPipeline
 
@@ -944,7 +1144,7 @@ str, 'start': int, 'end': int}_
 
 > Return type
 
-Dictionary like :obj:_{'answer'
+Dictionary like :obj:_&lcub'answer'
 
 
 ### SummarizationPipeline
@@ -1039,7 +1239,7 @@ A list or a list of list of `dict`
 ### TableQuestionAnsweringPipeline
 
 <a id='transformers.TableQuestionAnsweringPipeline'></a>
-> **class transformers.TableQuestionAnsweringPipeline**(args_parser = <transformers.pipelines.table_question_answering.TableQuestionAnsweringArgumentHandler object at 0x7f37c1611450>, *args, **kwargs)
+> **class transformers.TableQuestionAnsweringPipeline**(args_parser = <transformers.pipelines.table_question_answering.TableQuestionAnsweringArgumentHandler object at 0x7fc58c841c90>, *args, **kwargs)
 
 
 Table Question Answering pipeline using a `ModelForTableQuestionAnswering`. This pipeline is only available in
@@ -1089,16 +1289,16 @@ Answers queries according to a table. The pipeline accepts several types of inpu
 - `pipeline(table, [query])`
 - `pipeline(table=table, query=query)`
 - `pipeline(table=table, query=[query])`
-- `pipeline({"table": table, "query": query})`
-- `pipeline({"table": table, "query": [query]})`
-- `pipeline([{"table": table, "query": query}, {"table": table, "query": query}])`
+- `pipeline(&lcub"table": table, "query": query})`
+- `pipeline(&lcub"table": table, "query": [query]})`
+- `pipeline([&lcub"table": table, "query": query}, &lcub"table": table, "query": query}])`
 
 The `table` argument should be a dict or a DataFrame built from that dict, containing the whole table:
 
 > Example:
 
 ```python
-data = {
+data = &lcub
 "actors": ["brad pitt", "leonardo di caprio", "george clooney"],
 "age": ["56", "45", "59"],
 "number of movies": ["87", "53", "69"],
@@ -1165,7 +1365,7 @@ A dictionary or a list of dictionaries containing results
 ### TextClassificationPipeline
 
 <a id='transformers.TextClassificationPipeline'></a>
-> **class transformers.TextClassificationPipeline**(return_all_scores: bool = None, function_to_apply: str = None, **kwargs)
+> **class transformers.TextClassificationPipeline**(**kwargs)
 
 
 Text classification pipeline using any `ModelForSequenceClassification`. See the [sequence classification
@@ -1221,7 +1421,7 @@ The function to apply to the model outputs in order to retrieve the scores. Acce
 
 
 <a id='transformers.TextClassificationPipeline.__call__'></a>
-> **\_\_call\_\_**(self, *args, return_all_scores: typing.Optional[bool] = None, function_to_apply: typing.Optional[transformers.pipelines.text_classification.ClassificationFunction] = None, **kwargs)
+> **\_\_call\_\_**(self, *args, **kwargs)
 
 
 Classify the text(s) given as inputs.
@@ -1262,10 +1462,15 @@ If `self.return_all_scores=True`, one such dictionary is returned per label.
 A list or a list of list of `dict`
 
 
+<a id='transformers.TextClassificationPipeline.run_single'></a>
+> **run\_single**(self, inputs, preprocess_params, forward_params, postprocess_params)
+
+This pipeline is odd, and return a list when single item is run
+
 ### TextGenerationPipeline
 
 <a id='transformers.TextGenerationPipeline'></a>
-> **class transformers.TextGenerationPipeline**(*args, return_full_text = True, **kwargs)
+> **class transformers.TextGenerationPipeline**(*args, **kwargs)
 
 
 Language generation pipeline using any `ModelWithLMHead`. This pipeline predicts the words that will follow a
@@ -1307,7 +1512,7 @@ Flag indicating if the output the pipeline should happen in a binary format (i.e
 
 
 <a id='transformers.TextGenerationPipeline.__call__'></a>
-> **\_\_call\_\_**(self, text_inputs, return_tensors = False, return_text = True, return_full_text = None, clean_up_tokenization_spaces = False, prefix = None, **generate_kwargs)
+> **\_\_call\_\_**(self, text_inputs, **kwargs)
 
 
 Complete the prompt(s) given as inputs.
@@ -1394,7 +1599,7 @@ Flag indicating if the output the pipeline should happen in a binary format (i.e
 
 
 <a id='transformers.Text2TextGenerationPipeline.__call__'></a>
-> **\_\_call\_\_**(self, *args, return_tensors = False, return_text = True, clean_up_tokenization_spaces = False, truncation = TruncationStrategy.DO_NOT_TRUNCATE, **generate_kwargs)
+> **\_\_call\_\_**(self, *args, **kwargs)
 
 
 Generate the output text(s) using text(s) given as inputs.
@@ -1440,7 +1645,7 @@ Checks whether there might be something wrong with given input with regard to th
 ### TokenClassificationPipeline
 
 <a id='transformers.TokenClassificationPipeline'></a>
-> **class transformers.TokenClassificationPipeline**(model: typing.Union[ForwardRef('PreTrainedModel'), ForwardRef('TFPreTrainedModel')], tokenizer: PreTrainedTokenizer, modelcard: typing.Optional[transformers.modelcard.ModelCard] = None, framework: typing.Optional[str] = None, args_parser: ArgumentHandler = <transformers.pipelines.token_classification.TokenClassificationArgumentHandler object at 0x7f37c161b950>, device: int = -1, binary_output: bool = False, ignore_labels = ['O'], task: str = , grouped_entities: typing.Optional[bool] = None, ignore_subwords: typing.Optional[bool] = None, aggregation_strategy: typing.Optional[transformers.pipelines.token_classification.AggregationStrategy] = None)
+> **class transformers.TokenClassificationPipeline**(args_parser = <transformers.pipelines.token_classification.TokenClassificationArgumentHandler object at 0x7fc58c7d2a10>, *args, **kwargs)
 
 
 Named Entity Recognition pipeline using any `ModelForTokenClassification`. See the [named entity recognition
@@ -1489,10 +1694,10 @@ aggregation_strategy (`str`, _optional_, defaults to `"none"`): The strategy to 
 
 - "none" : Will simply not do any aggregation and simply return raw results from the model
 - "simple" : Will attempt to group entities following the default schema. (A, B-TAG), (B, I-TAG), (C,
-  I-TAG), (D, B-TAG2) (E, B-TAG2) will end up being [{"word": ABC, "entity": "TAG"}, {"word": "D",
-  "entity": "TAG2"}, {"word": "E", "entity": "TAG2"}] Notice that two consecutive B tags will end up as
+  I-TAG), (D, B-TAG2) (E, B-TAG2) will end up being [&lcub"word": ABC, "entity": "TAG"}, &lcub"word": "D",
+  "entity": "TAG2"}, &lcub"word": "E", "entity": "TAG2"}] Notice that two consecutive B tags will end up as
   different entities. On word based languages, we might end up splitting words undesirably : Imagine
-  Microsoft being tagged as [{"word": "Micro", "entity": "ENTERPRISE"}, {"word": "soft", "entity":
+  Microsoft being tagged as [&lcub"word": "Micro", "entity": "ENTERPRISE"}, &lcub"word": "soft", "entity":
   "NAME"}]. Look for FIRST, MAX, AVERAGE for ways to mitigate that and disambiguate words (on languages
   that support that meaning, which is basically tokens separated by a space). These mitigations will
   only work on real words, "New york" might still be tagged with two different entities.
@@ -1550,7 +1755,7 @@ company| B-ENT I-ENT
 
 
 <a id='transformers.TokenClassificationPipeline.gather_pre_entities'></a>
-> **gather\_pre\_entities**(self, sentence: str, input_ids: ndarray, scores: ndarray, offset_mapping: typing.Union[typing.List[typing.Tuple[int, int]], NoneType], special_tokens_mask: ndarray)
+> **gather\_pre\_entities**(self, sentence: str, input_ids: ndarray, scores: ndarray, offset_mapping: typing.Union[typing.List[typing.Tuple[int, int]], NoneType], special_tokens_mask: ndarray, aggregation_strategy: AggregationStrategy)
 
 Fuse various numpy arrays into dicts with all the information needed for aggregation
 
@@ -1579,7 +1784,7 @@ Group together the adjacent tokens with the same entity predicted.
 ### TranslationPipeline
 
 <a id='transformers.TranslationPipeline'></a>
-> **class transformers.TranslationPipeline**(*args, src_lang = None, tgt_lang = None, **kwargs)
+> **class transformers.TranslationPipeline**(*args, **kwargs)
 
 
 Translates from one language to another.
@@ -1626,7 +1831,7 @@ Flag indicating if the output the pipeline should happen in a binary format (i.e
 
 
 <a id='transformers.TranslationPipeline.__call__'></a>
-> **\_\_call\_\_**(self, *args, return_tensors = False, return_text = True, clean_up_tokenization_spaces = False, truncation = TruncationStrategy.DO_NOT_TRUNCATE, src_lang = None, tgt_lang = None, **generate_kwargs)
+> **\_\_call\_\_**(self, *args, **kwargs)
 
 
 Translate the text(s) given as inputs.
@@ -1667,7 +1872,7 @@ A list or a list of list of `dict`
 ### ZeroShotClassificationPipeline
 
 <a id='transformers.ZeroShotClassificationPipeline'></a>
-> **class transformers.ZeroShotClassificationPipeline**(args_parser = <transformers.pipelines.zero_shot_classification.ZeroShotClassificationArgumentHandler object at 0x7f37c1623350>, *args, **kwargs)
+> **class transformers.ZeroShotClassificationPipeline**(args_parser = <transformers.pipelines.zero_shot_classification.ZeroShotClassificationArgumentHandler object at 0x7fc58c7d9750>, *args, **kwargs)
 
 
 NLI-based zero-shot classification pipeline using a `ModelForSequenceClassification` trained on NLI (natural
@@ -1713,7 +1918,7 @@ Flag indicating if the output the pipeline should happen in a binary format (i.e
 
 
 <a id='transformers.ZeroShotClassificationPipeline.__call__'></a>
-> **\_\_call\_\_**(self, sequences: typing.Union[str, typing.List[str]], candidate_labels, hypothesis_template = This example is {}., multi_label = False, **kwargs)
+> **\_\_call\_\_**(self, sequences: typing.Union[str, typing.List[str]], *args, **kwargs)
 
 
 Classify the sequence(s) given as inputs. See the `~transformers.ZeroShotClassificationPipeline`
@@ -1726,11 +1931,11 @@ documentation for more information.
 - **candidate_labels** (`str` or `List[str]`) --
   The set of possible class labels to classify each sequence into. Can be a single label, a string of
   comma-separated labels, or a list of labels.
-- **hypothesis_template** (`str`, _optional_, defaults to `"This example is {}."`) --
-  The template used to turn each label into an NLI-style hypothesis. This template must include a {} or
+- **hypothesis_template** (`str`, _optional_, defaults to `"This example is &lcub}."`) --
+  The template used to turn each label into an NLI-style hypothesis. This template must include a &lcub} or
   similar syntax for the candidate label to be inserted into the template. For example, the default
-  template is `"This example is {}."` With the candidate label `"sports"`, this would be fed
-  into the model like `"<cls> sequence to classify <sep> This example is sports . <sep>"`. The
+  template is `"This example is &lcub}."` With the candidate label `"sports"`, this would be fed
+  into the model like `"&amp;lt;cls> sequence to classify &amp;lt;sep> This example is sports . &amp;lt;sep>"`. The
   default template works well in many cases, but it may be worthwhile to experiment with different
   templates depending on the task setting.
 - **multi_label** (`bool`, _optional_, defaults to `False`) --
@@ -1755,7 +1960,7 @@ A `dict` or a list of `dict`
 ## Parent class: `Pipeline`
 
 <a id='transformers.Pipeline'></a>
-> **class transformers.Pipeline**(model: typing.Union[ForwardRef('PreTrainedModel'), ForwardRef('TFPreTrainedModel')], tokenizer: typing.Optional[transformers.tokenization_utils.PreTrainedTokenizer] = None, feature_extractor: typing.Optional[ForwardRef('SequenceFeatureExtractor')] = None, modelcard: typing.Optional[transformers.modelcard.ModelCard] = None, framework: typing.Optional[str] = None, task: str = , args_parser: ArgumentHandler = None, device: int = -1, binary_output: bool = False)
+> **class transformers.Pipeline**(model: typing.Union[ForwardRef('PreTrainedModel'), ForwardRef('TFPreTrainedModel')], tokenizer: typing.Optional[transformers.tokenization_utils.PreTrainedTokenizer] = None, feature_extractor: typing.Optional[ForwardRef('SequenceFeatureExtractor')] = None, modelcard: typing.Optional[transformers.modelcard.ModelCard] = None, framework: typing.Optional[str] = None, task: str = , args_parser: ArgumentHandler = None, device: int = -1, binary_output: bool = False, **kwargs)
 
 
 The Pipeline class is the class from which all pipelines inherit. Refer to this class for methods shared across
@@ -1842,7 +2047,8 @@ Ensure PyTorch tensors are on the specified device.
 
 > Parameters
 
-- **inputs** (keyword arguments that should be `torch.Tensor`) -- The tensors to place on `self.device`.
+- **inputs** (keyword arguments that should be `torch.Tensor`, the rest is ignored) -- The tensors to place on `self.device`.
+- **Recursive** on lists **only**. --
 
 > Returns
 
@@ -1853,11 +2059,28 @@ The same as `inputs` but on the proper device.
 `Dict[str, torch.Tensor]`
 
 
+<a id='transformers.Pipeline.postprocess'></a>
+> **postprocess**(self, model_outputs: ModelOutput, **postprocess_parameters: typing.Dict)
+
+
+Postprocess will receive the raw outputs of the __forward_ method, generally tensors, and reformat them into
+something more friendly. Generally it will output a list or a dict or results (containing just strings and
+numbers).
+
+
 <a id='transformers.Pipeline.predict'></a>
 > **predict**(self, X)
 
 
 Scikit / Keras interface to transformers' pipelines. This method will forward to __call__().
+
+
+<a id='transformers.Pipeline.preprocess'></a>
+> **preprocess**(self, input_: typing.Any, **preprocess_parameters: typing.Dict)
+
+
+Preprocess will take the _input__ of a specific pipeline and return a dictionnary of everything necessary for
+__forward_ to run properly. It should contain at least one tensor, but might have arbitrary other items.
 
 
 <a id='transformers.Pipeline.save_pretrained'></a>

@@ -1,8 +1,8 @@
-<script>
+&amp;lt;script>
 import Tip from "../../Tip.svelte";
 import Youtube from "../../Youtube.svelte";	
 export let fw: "pt" | "tf"
-</script>
+&amp;lt;/script>
 
 <!--Copyright 2020 The HuggingFace Team. All rights reserved.
 
@@ -36,9 +36,9 @@ not, the code is expected to work for both backends without any change needed.
 
 The easiest way to use a pretrained model on a given task is to use [pipeline()](main_classes/pipelines.html#transformers.pipeline).
 
-<iframe width="560" height="315" src="https://www.youtube.com/embed/tiZFewofSLM" title="YouTube video player"
+&amp;lt;iframe width="560" height="315" src="https://www.youtube.com/embed/tiZFewofSLM" title="YouTube video player"
 frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope;
-picture-in-picture" allowfullscreen></iframe>
+picture-in-picture" allowfullscreen>&amp;lt;/iframe>
 
 🤗 Transformers provides the following tasks out of the box:
 
@@ -67,20 +67,22 @@ make them readable. For instance:
 
 ```
 >>> classifier('We are very happy to show you the 🤗 Transformers library.')
-[{'label': 'POSITIVE', 'score': 0.9998}]
+[&lcub'label': 'POSITIVE', 'score': 0.9998}]
 ```
 
-That's encouraging! You can use it on a list of sentences, which will be preprocessed then fed to the model as a
-_batch_, returning a list of dictionaries like this one:
+That's encouraging! You can use it on a list of sentences, which will be preprocessed then fed to the model, returning
+a list of dictionaries like this one:
 
 ```
 >>> results = classifier(["We are very happy to show you the 🤗 Transformers library.",
 ...            "We hope you don't hate it."])
 >>> for result in results:
-...     print(f"label: {result['label']}, with score: {round(result['score'], 4)}")
+...     print(f"label: &lcubresult['label']}, with score: &lcubround(result['score'], 4)}")
 label: POSITIVE, with score: 0.9998
 label: NEGATIVE, with score: 0.5309
 ```
+
+To use with a large dataset, look at [iterating over a pipeline](./main_classes/pipelines.html)
 
 You can see the second sentence has been classified as negative (it needs to be positive or negative) but its score is
 fairly neutral.
@@ -148,15 +150,15 @@ If you don't find a model that has been pretrained on some data similar to yours
 pretrained model on your data. We provide [example scripts](examples.html) to do so. Once you're done, don't forget
 to share your fine-tuned model on the hub with the community, using [this tutorial](model_sharing.html).
 
-<a id='pretrained-model'></a>
+&amp;lt;a id='pretrained-model'>&amp;lt;/a>
 
 ## Under the hood: pretrained models
 
 Let's now see what happens beneath the hood when using those pipelines.
 
-<iframe width="560" height="315" src="https://www.youtube.com/embed/AhChOFRegn4" title="YouTube video player"
+&amp;lt;iframe width="560" height="315" src="https://www.youtube.com/embed/AhChOFRegn4" title="YouTube video player"
 frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope;
-picture-in-picture" allowfullscreen></iframe>
+picture-in-picture" allowfullscreen>&amp;lt;/iframe>
 
 As we saw, the model and tokenizer are created using the `from_pretrained` method:
 
@@ -202,7 +204,7 @@ sequence:
 
 ```
 >>> print(inputs)
-{'input_ids': [101, 2057, 2024, 2200, 3407, 2000, 2265, 2017, 1996, 100, 19081, 3075, 1012, 102],
+&lcub'input_ids': [101, 2057, 2024, 2200, 3407, 2000, 2265, 2017, 1996, 100, 19081, 3075, 1012, 102],
 'attention_mask': [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]}
 ```
 
@@ -238,14 +240,14 @@ token the model was pretrained with. The attention mask is also adapted to take 
 {#if fw === 'pt'}
 ```
 >>> for key, value in pt_batch.items():
-...     print(f"{key}: {value.numpy().tolist()}")
+...     print(f"&lcubkey}: &lcubvalue.numpy().tolist()}")
 input_ids: [[101, 2057, 2024, 2200, 3407, 2000, 2265, 2017, 1996, 100, 19081, 3075, 1012, 102], [101, 2057, 3246, 2017, 2123, 1005, 1056, 5223, 2009, 1012, 102, 0, 0, 0]]
 attention_mask: [[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0]]
 ```
 {:else}
 ```
 >>> for key, value in tf_batch.items():
-...     print(f"{key}: {value.numpy().tolist()}")
+...     print(f"&lcubkey}: &lcubvalue.numpy().tolist()}")
 input_ids: [[101, 2057, 2024, 2200, 3407, 2000, 2265, 2017, 1996, 100, 19081, 3075, 1012, 102], [101, 2057, 3246, 2017, 2123, 1005, 1056, 5223, 2009, 1012, 102, 0, 0, 0]]
 attention_mask: [[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0]]
 ```
@@ -276,12 +278,12 @@ objects are described in greater detail [here](main_classes/output.html). For no
 ```
 >>> print(pt_outputs)
 SequenceClassifierOutput(loss=None, logits=tensor([[-4.0833,  4.3364],
-[ 0.0818, -0.0418]], grad_fn=<AddmmBackward>), hidden_states=None, attentions=None)
+[ 0.0818, -0.0418]], grad_fn=&amp;lt;AddmmBackward>), hidden_states=None, attentions=None)
 ```
 {:else}
 ```
 >>> print(tf_outputs)
-TFSequenceClassifierOutput(loss=None, logits=<tf.Tensor: shape=(2, 2), dtype=float32, numpy=
+TFSequenceClassifierOutput(loss=None, logits=&amp;lt;tf.Tensor: shape=(2, 2), dtype=float32, numpy=
 array([[-4.0833 ,  4.3364  ],
 [ 0.0818, -0.0418]], dtype=float32)>, hidden_states=None, attentions=None)
 ```
@@ -316,7 +318,7 @@ We can see we get the numbers from before:
 ```
 >>> print(pt_predictions)
 tensor([[2.2043e-04, 9.9978e-01],
-[5.3086e-01, 4.6914e-01]], grad_fn=<SoftmaxBackward>)
+[5.3086e-01, 4.6914e-01]], grad_fn=&amp;lt;SoftmaxBackward>)
 ```
 {:else}
 ```
@@ -335,15 +337,15 @@ attribute:
 >>> import torch
 >>> pt_outputs = pt_model(**pt_batch, labels = torch.tensor([1, 0]))
 >>> print(pt_outputs)
-SequenceClassifierOutput(loss=tensor(0.3167, grad_fn=<NllLossBackward>), logits=tensor([[-4.0833,  4.3364],
-[ 0.0818, -0.0418]], grad_fn=<AddmmBackward>), hidden_states=None, attentions=None)
+SequenceClassifierOutput(loss=tensor(0.3167, grad_fn=&amp;lt;NllLossBackward>), logits=tensor([[-4.0833,  4.3364],
+[ 0.0818, -0.0418]], grad_fn=&amp;lt;AddmmBackward>), hidden_states=None, attentions=None)
 ```
 {:else}
 ```
 >>> import tensorflow as tf
 >>> tf_outputs = tf_model(tf_batch, labels = tf.constant([1, 0]))
 >>> print(tf_outputs)
-TFSequenceClassifierOutput(loss=<tf.Tensor: shape=(2,), dtype=float32, numpy=array([2.2051e-04, 6.3326e-01], dtype=float32)>, logits=<tf.Tensor: shape=(2, 2), dtype=float32, numpy=
+TFSequenceClassifierOutput(loss=&amp;lt;tf.Tensor: shape=(2,), dtype=float32, numpy=array([2.2051e-04, 6.3326e-01], dtype=float32)>, logits=&amp;lt;tf.Tensor: shape=(2, 2), dtype=float32, numpy=
 array([[-4.0833 ,  4.3364  ],
 [ 0.0818, -0.0418]], dtype=float32)>, hidden_states=None, attentions=None)
 ```

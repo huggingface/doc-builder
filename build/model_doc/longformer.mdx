@@ -1,8 +1,8 @@
-<script>
+&amp;lt;script>
 import Tip from "../../Tip.svelte";
 import Youtube from "../../Youtube.svelte";	
 export let fw: "pt" | "tf"
-</script>
+&amp;lt;/script>
 
 <!--Copyright 2020 The HuggingFace Team. All rights reserved.
 
@@ -40,15 +40,15 @@ Tips:
 
 - Since the Longformer is based on RoBERTa, it doesn't have `token_type_ids`. You don't need to indicate which
   token belongs to which segment. Just separate your segments with the separation token `tokenizer.sep_token` (or
-  `</s>`).
+  `&amp;lt;/s>`).
 
 This model was contributed by [beltagy](https://huggingface.co/beltagy). The Authors' code can be found [here](https://github.com/allenai/longformer).
 
 ## Longformer Self Attention
 
 Longformer self attention employs self attention on both a "local" context and a "global" context. Most tokens only
-attend "locally" to each other meaning that each token attends to its \\(\frac{1}{2} w\\) previous tokens and
-\\(\frac{1}{2} w\\) succeding tokens with \\(w\\) being the window length as defined in
+attend "locally" to each other meaning that each token attends to its \\(\frac&lcub1}&lcub2} w\\) previous tokens and
+\\(\frac&lcub1}&lcub2} w\\) succeding tokens with \\(w\\) being the window length as defined in
 `config.attention_window`. Note that `config.attention_window` can be of type `List` to define a
 different \\(w\\) for each layer. A selected few tokens attend "globally" to all other tokens, as it is
 conventionally done for all tokens in `BertSelfAttention`.
@@ -67,8 +67,8 @@ The user can define which tokens attend "locally" and which tokens attend "globa
 For more information please also refer to [forward()](model_doc/longformer.html#transformers.LongformerModel.forward) method.
 
 Using Longformer self attention, the memory and time complexity of the query-key matmul operation, which usually
-represents the memory and time bottleneck, can be reduced from \\(\mathcal{O}(n_s \times n_s)\\) to
-\\(\mathcal{O}(n_s \times w)\\), with \\(n_s\\) being the sequence length and \\(w\\) being the average window
+represents the memory and time bottleneck, can be reduced from \\(\mathcal&lcubO}(n_s \times n_s)\\) to
+\\(\mathcal&lcubO}(n_s \times w)\\), with \\(n_s\\) being the sequence length and \\(w\\) being the average window
 size. It is assumed that the number of "globally" attending tokens is insignificant as compared to the number of
 "locally" attending tokens.
 
@@ -787,7 +787,7 @@ processing steps while the latter silently ignores them.
   Mask to decide the attention given on each token, local attention or global attention. Tokens with global
   attention attends to all other tokens, and all other tokens attend to them. This is important for
   task-specific finetuning because it makes the model more flexible at representing the task. For example,
-  for classification, the <s> token should be given global attention. For QA, all question tokens should also
+  for classification, the &amp;lt;s> token should be given global attention. For QA, all question tokens should also
   have global attention. Please refer to the [Longformer paper](https://arxiv.org/abs/2004.05150) for more
   details. Mask values selected in `[0, 1]`:
 
@@ -882,7 +882,7 @@ various elements depending on the configuration ([LongformerConfig](model_doc/lo
 >>> global_attention_mask = torch.zeros(input_ids.shape, dtype=torch.long, device=input_ids.device) # initialize to global attention to be deactivated for all tokens
 >>> global_attention_mask[:, [1, 4, 21,]] = 1  # Set global attention to random tokens for the sake of this example
 ...                                     # Usually, set global attention based on the task. For example,
-...                                     # classification: the <s> token
+...                                     # classification: the &amp;lt;s> token
 ...                                     # QA: question tokens
 ...                                     # LM: potentially on the beginning of sentences and paragraphs
 >>> outputs = model(input_ids, attention_mask=attention_mask, global_attention_mask=global_attention_mask)
@@ -952,7 +952,7 @@ processing steps while the latter silently ignores them.
   Mask to decide the attention given on each token, local attention or global attention. Tokens with global
   attention attends to all other tokens, and all other tokens attend to them. This is important for
   task-specific finetuning because it makes the model more flexible at representing the task. For example,
-  for classification, the <s> token should be given global attention. For QA, all question tokens should also
+  for classification, the &amp;lt;s> token should be given global attention. For QA, all question tokens should also
   have global attention. Please refer to the [Longformer paper](https://arxiv.org/abs/2004.05150) for more
   details. Mask values selected in `[0, 1]`:
 
@@ -998,7 +998,7 @@ processing steps while the latter silently ignores them.
 - **labels** (`torch.LongTensor` of shape `(batch_size, sequence_length)`, _optional_) --
   Labels for computing the masked language modeling loss. Indices should be in `[-100, 0, ..., config.vocab_size]` (see `input_ids` docstring) Tokens with indices set to `-100` are ignored
   (masked), the loss is only computed for the tokens with labels in `[0, ..., config.vocab_size]`
-- **kwargs** (`Dict[str, any]`, optional, defaults to _{}_) --
+- **kwargs** (`Dict[str, any]`, optional, defaults to _&lcub}_) --
   Used to hide legacy arguments that have been deprecated.
 
 
@@ -1118,7 +1118,7 @@ processing steps while the latter silently ignores them.
   Mask to decide the attention given on each token, local attention or global attention. Tokens with global
   attention attends to all other tokens, and all other tokens attend to them. This is important for
   task-specific finetuning because it makes the model more flexible at representing the task. For example,
-  for classification, the <s> token should be given global attention. For QA, all question tokens should also
+  for classification, the &amp;lt;s> token should be given global attention. For QA, all question tokens should also
   have global attention. Please refer to the [Longformer paper](https://arxiv.org/abs/2004.05150) for more
   details. Mask values selected in `[0, 1]`:
 
@@ -1277,7 +1277,7 @@ processing steps while the latter silently ignores them.
   Mask to decide the attention given on each token, local attention or global attention. Tokens with global
   attention attends to all other tokens, and all other tokens attend to them. This is important for
   task-specific finetuning because it makes the model more flexible at representing the task. For example,
-  for classification, the <s> token should be given global attention. For QA, all question tokens should also
+  for classification, the &amp;lt;s> token should be given global attention. For QA, all question tokens should also
   have global attention. Please refer to the [Longformer paper](https://arxiv.org/abs/2004.05150) for more
   details. Mask values selected in `[0, 1]`:
 
@@ -1376,7 +1376,7 @@ various elements depending on the configuration ([LongformerConfig](model_doc/lo
 >>> labels = torch.tensor(0).unsqueeze(0)  # choice0 is correct (according to Wikipedia ;)), batch size 1
 
 >>> encoding = tokenizer([prompt, prompt], [choice0, choice1], return_tensors='pt', padding=True)
->>> outputs = model(**{k: v.unsqueeze(0) for k,v in encoding.items()}, labels=labels)  # batch size is 1
+>>> outputs = model(**&lcubk: v.unsqueeze(0) for k,v in encoding.items()}, labels=labels)  # batch size is 1
 
 >>> # the linear classifier still needs to be trained
 >>> loss = outputs.loss
@@ -1444,7 +1444,7 @@ processing steps while the latter silently ignores them.
   Mask to decide the attention given on each token, local attention or global attention. Tokens with global
   attention attends to all other tokens, and all other tokens attend to them. This is important for
   task-specific finetuning because it makes the model more flexible at representing the task. For example,
-  for classification, the <s> token should be given global attention. For QA, all question tokens should also
+  for classification, the &amp;lt;s> token should be given global attention. For QA, all question tokens should also
   have global attention. Please refer to the [Longformer paper](https://arxiv.org/abs/2004.05150) for more
   details. Mask values selected in `[0, 1]`:
 
@@ -1603,7 +1603,7 @@ processing steps while the latter silently ignores them.
   Mask to decide the attention given on each token, local attention or global attention. Tokens with global
   attention attends to all other tokens, and all other tokens attend to them. This is important for
   task-specific finetuning because it makes the model more flexible at representing the task. For example,
-  for classification, the <s> token should be given global attention. For QA, all question tokens should also
+  for classification, the &amp;lt;s> token should be given global attention. For QA, all question tokens should also
   have global attention. Please refer to the [Longformer paper](https://arxiv.org/abs/2004.05150) for more
   details. Mask values selected in `[0, 1]`:
 
@@ -1752,7 +1752,7 @@ the first positional argument :
 - a list of varying length with one or several input Tensors IN THE ORDER given in the docstring:
   `model([input_ids, attention_mask])` or `model([input_ids, attention_mask, token_type_ids])`
 - a dictionary with one or several input Tensors associated to the input names given in the docstring:
-  `model({"input_ids": input_ids, "token_type_ids": token_type_ids})`
+  `model(&lcub"input_ids": input_ids, "token_type_ids": token_type_ids})`
 
 </Tip>
 
@@ -1818,7 +1818,7 @@ processing steps while the latter silently ignores them.
   Mask to decide the attention given on each token, local attention or global attention. Tokens with global
   attention attends to all other tokens, and all other tokens attend to them. This is important for
   task-specific finetuning because it makes the model more flexible at representing the task. For example,
-  for classification, the <s> token should be given global attention. For QA, all question tokens should also
+  for classification, the &amp;lt;s> token should be given global attention. For QA, all question tokens should also
   have global attention. Please refer to the [Longformer paper](https://arxiv.org/abs/2004.05150) for more
   details. Mask values selected in `[0, 1]`:
 
@@ -1888,7 +1888,7 @@ the first positional argument :
 - a list of varying length with one or several input Tensors IN THE ORDER given in the docstring:
   `model([input_ids, attention_mask])` or `model([input_ids, attention_mask, token_type_ids])`
 - a dictionary with one or several input Tensors associated to the input names given in the docstring:
-  `model({"input_ids": input_ids, "token_type_ids": token_type_ids})`
+  `model(&lcub"input_ids": input_ids, "token_type_ids": token_type_ids})`
 
 </Tip>
 
@@ -1940,7 +1940,7 @@ processing steps while the latter silently ignores them.
   Mask to decide the attention given on each token, local attention or global attention. Tokens with global
   attention attends to all other tokens, and all other tokens attend to them. This is important for
   task-specific finetuning because it makes the model more flexible at representing the task. For example,
-  for classification, the <s> token should be given global attention. For QA, all question tokens should also
+  for classification, the &amp;lt;s> token should be given global attention. For QA, all question tokens should also
   have global attention. Please refer to the [Longformer paper](https://arxiv.org/abs/2004.05150) for more
   details. Mask values selected in `[0, 1]`:
 
@@ -2025,7 +2025,7 @@ elements depending on the configuration ([LongformerConfig](model_doc/longformer
 >>> tokenizer = LongformerTokenizer.from_pretrained('allenai/longformer-base-4096')
 >>> model = TFLongformerForMaskedLM.from_pretrained('allenai/longformer-base-4096')
 
->>> inputs = tokenizer("The capital of France is <mask>.", return_tensors="tf")
+>>> inputs = tokenizer("The capital of France is &amp;lt;mask>.", return_tensors="tf")
 >>> inputs["labels"] = tokenizer("The capital of France is Paris.", return_tensors="tf")["input_ids"]
 
 >>> outputs = model(inputs)
@@ -2069,7 +2069,7 @@ the first positional argument :
 - a list of varying length with one or several input Tensors IN THE ORDER given in the docstring:
   `model([input_ids, attention_mask])` or `model([input_ids, attention_mask, token_type_ids])`
 - a dictionary with one or several input Tensors associated to the input names given in the docstring:
-  `model({"input_ids": input_ids, "token_type_ids": token_type_ids})`
+  `model(&lcub"input_ids": input_ids, "token_type_ids": token_type_ids})`
 
 </Tip>
 
@@ -2121,7 +2121,7 @@ processing steps while the latter silently ignores them.
   Mask to decide the attention given on each token, local attention or global attention. Tokens with global
   attention attends to all other tokens, and all other tokens attend to them. This is important for
   task-specific finetuning because it makes the model more flexible at representing the task. For example,
-  for classification, the <s> token should be given global attention. For QA, all question tokens should also
+  for classification, the &amp;lt;s> token should be given global attention. For QA, all question tokens should also
   have global attention. Please refer to the [Longformer paper](https://arxiv.org/abs/2004.05150) for more
   details. Mask values selected in `[0, 1]`:
 
@@ -2258,7 +2258,7 @@ the first positional argument :
 - a list of varying length with one or several input Tensors IN THE ORDER given in the docstring:
   `model([input_ids, attention_mask])` or `model([input_ids, attention_mask, token_type_ids])`
 - a dictionary with one or several input Tensors associated to the input names given in the docstring:
-  `model({"input_ids": input_ids, "token_type_ids": token_type_ids})`
+  `model(&lcub"input_ids": input_ids, "token_type_ids": token_type_ids})`
 
 </Tip>
 
@@ -2310,7 +2310,7 @@ processing steps while the latter silently ignores them.
   Mask to decide the attention given on each token, local attention or global attention. Tokens with global
   attention attends to all other tokens, and all other tokens attend to them. This is important for
   task-specific finetuning because it makes the model more flexible at representing the task. For example,
-  for classification, the <s> token should be given global attention. For QA, all question tokens should also
+  for classification, the &amp;lt;s> token should be given global attention. For QA, all question tokens should also
   have global attention. Please refer to the [Longformer paper](https://arxiv.org/abs/2004.05150) for more
   details. Mask values selected in `[0, 1]`:
 
@@ -2435,7 +2435,7 @@ the first positional argument :
 - a list of varying length with one or several input Tensors IN THE ORDER given in the docstring:
   `model([input_ids, attention_mask])` or `model([input_ids, attention_mask, token_type_ids])`
 - a dictionary with one or several input Tensors associated to the input names given in the docstring:
-  `model({"input_ids": input_ids, "token_type_ids": token_type_ids})`
+  `model(&lcub"input_ids": input_ids, "token_type_ids": token_type_ids})`
 
 </Tip>
 
@@ -2487,7 +2487,7 @@ processing steps while the latter silently ignores them.
   Mask to decide the attention given on each token, local attention or global attention. Tokens with global
   attention attends to all other tokens, and all other tokens attend to them. This is important for
   task-specific finetuning because it makes the model more flexible at representing the task. For example,
-  for classification, the <s> token should be given global attention. For QA, all question tokens should also
+  for classification, the &amp;lt;s> token should be given global attention. For QA, all question tokens should also
   have global attention. Please refer to the [Longformer paper](https://arxiv.org/abs/2004.05150) for more
   details. Mask values selected in `[0, 1]`:
 
@@ -2616,7 +2616,7 @@ the first positional argument :
 - a list of varying length with one or several input Tensors IN THE ORDER given in the docstring:
   `model([input_ids, attention_mask])` or `model([input_ids, attention_mask, token_type_ids])`
 - a dictionary with one or several input Tensors associated to the input names given in the docstring:
-  `model({"input_ids": input_ids, "token_type_ids": token_type_ids})`
+  `model(&lcub"input_ids": input_ids, "token_type_ids": token_type_ids})`
 
 </Tip>
 
@@ -2668,7 +2668,7 @@ processing steps while the latter silently ignores them.
   Mask to decide the attention given on each token, local attention or global attention. Tokens with global
   attention attends to all other tokens, and all other tokens attend to them. This is important for
   task-specific finetuning because it makes the model more flexible at representing the task. For example,
-  for classification, the <s> token should be given global attention. For QA, all question tokens should also
+  for classification, the &amp;lt;s> token should be given global attention. For QA, all question tokens should also
   have global attention. Please refer to the [Longformer paper](https://arxiv.org/abs/2004.05150) for more
   details. Mask values selected in `[0, 1]`:
 
@@ -2760,7 +2760,7 @@ elements depending on the configuration ([LongformerConfig](model_doc/longformer
 >>> choice1 = "It is eaten while held in the hand."
 
 >>> encoding = tokenizer([prompt, prompt], [choice0, choice1], return_tensors='tf', padding=True)
->>> inputs = {k: tf.expand_dims(v, 0) for k, v in encoding.items()}
+>>> inputs = &lcubk: tf.expand_dims(v, 0) for k, v in encoding.items()}
 >>> outputs = model(inputs)  # batch size is 1
 
 >>> # the linear classifier still needs to be trained

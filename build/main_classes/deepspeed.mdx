@@ -1,8 +1,8 @@
-<script>
+&amp;lt;script>
 import Tip from "../../Tip.svelte";
 import Youtube from "../../Youtube.svelte";	
 export let fw: "pt" | "tf"
-</script>
+&amp;lt;/script>
 
 <!--Copyright 2020 The HuggingFace Team. All rights reserved.
 
@@ -51,13 +51,13 @@ won't be possible on a single GPU.
 
 
 
-<a id='deepspeed-trainer-integration'></a>
+&amp;lt;a id='deepspeed-trainer-integration'>&amp;lt;/a>
 
 
 ## Trainer Deepspeed Integration
 
 
-<a id='deepspeed-installation'></a>
+&amp;lt;a id='deepspeed-installation'>&amp;lt;/a>
 
 ### Installation
 
@@ -153,7 +153,7 @@ If after trying everything suggested you still encounter build issues, please, p
 
 
 
-<a id='deepspeed-multi-gpu'></a>
+&amp;lt;a id='deepspeed-multi-gpu'>&amp;lt;/a>
 
 ### Deployment with multiple GPUs
 
@@ -167,13 +167,13 @@ following:
 Therefore, if your original command line looked as following:
 
 ```bash
-python -m torch.distributed.launch --nproc_per_node=2 your_program.py <normal cl args>
+python -m torch.distributed.launch --nproc_per_node=2 your_program.py &amp;lt;normal cl args>
 ```
 
 Now it should be:
 
 ```bash
-deepspeed --num_gpus=2 your_program.py <normal cl args> --deepspeed ds_config.json
+deepspeed --num_gpus=2 your_program.py &amp;lt;normal cl args> --deepspeed ds_config.json
 ```
 
 Unlike, `torch.distributed.launch` where you have to specify how many GPUs to use with `--nproc_per_node`, with the
@@ -205,7 +205,7 @@ For some practical usage examples, please, see this [post](https://github.com/hu
 
 
 
-<a id='deepspeed-one-gpu'></a>
+&amp;lt;a id='deepspeed-one-gpu'>&amp;lt;/a>
 
 ### Deployment with one GPU
 
@@ -237,10 +237,10 @@ While we are going to discuss the configuration in details next, the key to gett
 with DeepSpeed is to have at least the following configuration in the configuration file:
 
 ```json
-{
-"zero_optimization": {
+&lcub
+"zero_optimization": &lcub
 "stage": 2,
-"offload_optimizer": {
+"offload_optimizer": &lcub
 "device": "cpu",
 "pin_memory": true
 },
@@ -261,7 +261,7 @@ For a practical usage example of this type of deployment, please, see this [post
 
 You may also try the ZeRO-3 with CPU and NVMe offload as explained further in this document.
 
-<!--- TODO: Benchmark whether we can get better performance out of ZeRO-3 vs. ZeRO-2 on a single GPU, and then
+&amp;lt;!--- TODO: Benchmark whether we can get better performance out of ZeRO-3 vs. ZeRO-2 on a single GPU, and then
 recommend ZeRO-3 config as starting one. -->
 
 Notes:
@@ -277,7 +277,7 @@ In this example, we tell DeepSpeed to use GPU 1 (second gpu).
 
 
 
-<a id='deepspeed-notebook'></a>
+&amp;lt;a id='deepspeed-notebook'>&amp;lt;/a>
 
 ### Deployment in Notebooks
 
@@ -313,9 +313,9 @@ cell with:
 
 ```python
 %%bash
-cat <<'EOT' > ds_config_zero3.json
-{
-"fp16": {
+cat &amp;lt;&amp;lt;'EOT' > ds_config_zero3.json
+&lcub
+"fp16": &lcub
 "enabled": "auto",
 "loss_scale": 0,
 "loss_scale_window": 1000,
@@ -324,9 +324,9 @@ cat <<'EOT' > ds_config_zero3.json
 "min_loss_scale": 1
 },
 
-"optimizer": {
+"optimizer": &lcub
 "type": "AdamW",
-"params": {
+"params": &lcub
 "lr": "auto",
 "betas": "auto",
 "eps": "auto",
@@ -334,22 +334,22 @@ cat <<'EOT' > ds_config_zero3.json
 }
 },
 
-"scheduler": {
+"scheduler": &lcub
 "type": "WarmupLR",
-"params": {
+"params": &lcub
 "warmup_min_lr": "auto",
 "warmup_max_lr": "auto",
 "warmup_num_steps": "auto"
 }
 },
 
-"zero_optimization": {
+"zero_optimization": &lcub
 "stage": 3,
-"offload_optimizer": {
+"offload_optimizer": &lcub
 "device": "cpu",
 "pin_memory": true
 },
-"offload_param": {
+"offload_param": &lcub
 "device": "cpu",
 "pin_memory": true
 },
@@ -400,7 +400,7 @@ completes.
 
 
 
-<a id='deepspeed-config'></a>
+&amp;lt;a id='deepspeed-config'>&amp;lt;/a>
 
 ### Configuration
 
@@ -433,8 +433,8 @@ including optimizer states cpu offload, uses `AdamW` optimizer and `WarmupLR` sc
 precision training if `--fp16` is passed:
 
 ```json
-{
-"fp16": {
+&lcub
+"fp16": &lcub
 "enabled": "auto",
 "loss_scale": 0,
 "loss_scale_window": 1000,
@@ -443,9 +443,9 @@ precision training if `--fp16` is passed:
 "min_loss_scale": 1
 },
 
-"optimizer": {
+"optimizer": &lcub
 "type": "AdamW",
-"params": {
+"params": &lcub
 "lr": "auto",
 "betas": "auto",
 "eps": "auto",
@@ -453,18 +453,18 @@ precision training if `--fp16` is passed:
 }
 },
 
-"scheduler": {
+"scheduler": &lcub
 "type": "WarmupLR",
-"params": {
+"params": &lcub
 "warmup_min_lr": "auto",
 "warmup_max_lr": "auto",
 "warmup_num_steps": "auto"
 }
 },
 
-"zero_optimization": {
+"zero_optimization": &lcub
 "stage": 2,
-"offload_optimizer": {
+"offload_optimizer": &lcub
 "device": "cpu",
 "pin_memory": true
 },
@@ -488,7 +488,7 @@ to the console, so you can see exactly what was the final configuration passed t
 
 
 
-<a id='deepspeed-config-passing'></a>
+&amp;lt;a id='deepspeed-config-passing'>&amp;lt;/a>
 
 ### Passing Configuration
 
@@ -511,7 +511,7 @@ ds_config_dict=dict(scheduler=scheduler_params, optimizer=optimizer_params)
 TrainingArguments(..., deespeed=ds_config_dict)
 ```
 
-<a id='deepspeed-config-shared'></a>
+&amp;lt;a id='deepspeed-config-shared'>&amp;lt;/a>
 
 ### Shared Configuration
 
@@ -549,7 +549,7 @@ and configure [TrainingArguments](main_classes/trainer.html#transformers.Trainin
 Do note that some values, such as `scheduler.params.total_num_steps` are calculated by
 [Trainer](main_classes/trainer.html#transformers.Trainer) during `train`, but you can of course do the math yourself.
 
-<a id='deepspeed-zero'></a>
+&amp;lt;a id='deepspeed-zero'>&amp;lt;/a>
 
 ### ZeRO
 
@@ -571,17 +571,17 @@ going to use.
 
 
 
-<a id='deepspeed-zero2-config'></a>
+&amp;lt;a id='deepspeed-zero2-config'>&amp;lt;/a>
 
 #### ZeRO-2 Config
 
 The following is an example configuration for ZeRO stage 2:
 
 ```json
-{
-"zero_optimization": {
+&lcub
+"zero_optimization": &lcub
 "stage": 2,
-"offload_optimizer": {
+"offload_optimizer": &lcub
 "device": "cpu",
 "pin_memory": true
 },
@@ -609,21 +609,21 @@ The following is an example configuration for ZeRO stage 2:
 
 
 
-<a id='deepspeed-zero3-config'></a>
+&amp;lt;a id='deepspeed-zero3-config'>&amp;lt;/a>
 
 #### ZeRO-3 Config
 
 The following is an example configuration for ZeRO stage 3:
 
 ```json
-{
-"zero_optimization": {
+&lcub
+"zero_optimization": &lcub
 "stage": 3,
-"offload_optimizer": {
+"offload_optimizer": &lcub
 "device": "cpu",
 "pin_memory": true
 },
-"offload_param": {
+"offload_param": &lcub
 "device": "cpu",
 "pin_memory": true
 },
@@ -698,7 +698,7 @@ default value in the following cases:
    the increased data buffers.
 
 
-<a id='deepspeed-nvme'></a>
+&amp;lt;a id='deepspeed-nvme'>&amp;lt;/a>
 
 ### NVMe Support
 
@@ -710,17 +710,17 @@ process. ZeRO-Infinity requires ZeRO-3 enabled.
 The following configuration example enables NVMe to offload both optimizer states and the params:
 
 ```json
-{
-"zero_optimization": {
+&lcub
+"zero_optimization": &lcub
 "stage": 3,
-"offload_optimizer": {
+"offload_optimizer": &lcub
 "device": "nvme",
 "nvme_path": "/local_nvme",
 "pin_memory": true,
 "buffer_count": 4,
 "fast_init": false
 },
-"offload_param": {
+"offload_param": &lcub
 "device": "nvme",
 "nvme_path": "/local_nvme",
 "pin_memory": true,
@@ -728,7 +728,7 @@ The following configuration example enables NVMe to offload both optimizer state
 "buffer_size": 1e8,
 "max_in_cpu": 1e9
 }
-"aio": {
+"aio": &lcub
 "block_size": 262144,
 "queue_depth": 32,
 "thread_count": 1,
@@ -763,7 +763,7 @@ In order to figure out the optimal `aio` configuration block you must run a benc
 
 
 
-<a id='deepspeed-zero2-zero3-performance'></a>
+&amp;lt;a id='deepspeed-zero2-zero3-performance'>&amp;lt;/a>
 
 #### ZeRO-2 vs ZeRO-3 Performance
 
@@ -783,15 +783,15 @@ these help you to trade scalability for speed depending on your needs.
 
 
 
-<a id='deepspeed-zero2-example'></a>
+&amp;lt;a id='deepspeed-zero2-example'>&amp;lt;/a>
 
 #### ZeRO-2 Example
 
 Here is a full ZeRO-2 auto-configuration file `ds_config_zero2.json`:
 
 ```json
-{
-"fp16": {
+&lcub
+"fp16": &lcub
 "enabled": "auto",
 "loss_scale": 0,
 "loss_scale_window": 1000,
@@ -800,9 +800,9 @@ Here is a full ZeRO-2 auto-configuration file `ds_config_zero2.json`:
 "min_loss_scale": 1
 },
 
-"optimizer": {
+"optimizer": &lcub
 "type": "AdamW",
-"params": {
+"params": &lcub
 "lr": "auto",
 "betas": "auto",
 "eps": "auto",
@@ -810,18 +810,18 @@ Here is a full ZeRO-2 auto-configuration file `ds_config_zero2.json`:
 }
 },
 
-"scheduler": {
+"scheduler": &lcub
 "type": "WarmupLR",
-"params": {
+"params": &lcub
 "warmup_min_lr": "auto",
 "warmup_max_lr": "auto",
 "warmup_num_steps": "auto"
 }
 },
 
-"zero_optimization": {
+"zero_optimization": &lcub
 "stage": 2,
-"offload_optimizer": {
+"offload_optimizer": &lcub
 "device": "cpu",
 "pin_memory": true
 },
@@ -846,8 +846,8 @@ Here is a full ZeRO-2 all-enabled manually set configuration file. It is here ma
 values look like, but we highly recommend using the one with multiple `auto` settings in it.
 
 ```json
-{
-"fp16": {
+&lcub
+"fp16": &lcub
 "enabled": true,
 "loss_scale": 0,
 "loss_scale_window": 1000,
@@ -856,9 +856,9 @@ values look like, but we highly recommend using the one with multiple `auto` set
 "min_loss_scale": 1
 },
 
-"optimizer": {
+"optimizer": &lcub
 "type": "AdamW",
-"params": {
+"params": &lcub
 "lr": 3e-5,
 "betas": [0.8, 0.999],
 "eps": 1e-8,
@@ -866,18 +866,18 @@ values look like, but we highly recommend using the one with multiple `auto` set
 }
 },
 
-"scheduler": {
+"scheduler": &lcub
 "type": "WarmupLR",
-"params": {
+"params": &lcub
 "warmup_min_lr": 0,
 "warmup_max_lr": 3e-5,
 "warmup_num_steps": 500
 }
 },
 
-"zero_optimization": {
+"zero_optimization": &lcub
 "stage": 2,
-"offload_optimizer": {
+"offload_optimizer": &lcub
 "device": "cpu",
 "pin_memory": true
 },
@@ -894,7 +894,7 @@ values look like, but we highly recommend using the one with multiple `auto` set
 }
 ```
 
-<a id='deepspeed-zero3-example'></a>
+&amp;lt;a id='deepspeed-zero3-example'>&amp;lt;/a>
 
 #### ZeRO-3 Example
 
@@ -902,8 +902,8 @@ Here is a full ZeRO-3 auto-configuration file `ds_config_zero3.json`:
 
 
 ```json
-{
-"fp16": {
+&lcub
+"fp16": &lcub
 "enabled": "auto",
 "loss_scale": 0,
 "loss_scale_window": 1000,
@@ -912,9 +912,9 @@ Here is a full ZeRO-3 auto-configuration file `ds_config_zero3.json`:
 "min_loss_scale": 1
 },
 
-"optimizer": {
+"optimizer": &lcub
 "type": "AdamW",
-"params": {
+"params": &lcub
 "lr": "auto",
 "betas": "auto",
 "eps": "auto",
@@ -922,22 +922,22 @@ Here is a full ZeRO-3 auto-configuration file `ds_config_zero3.json`:
 }
 },
 
-"scheduler": {
+"scheduler": &lcub
 "type": "WarmupLR",
-"params": {
+"params": &lcub
 "warmup_min_lr": "auto",
 "warmup_max_lr": "auto",
 "warmup_num_steps": "auto"
 }
 },
 
-"zero_optimization": {
+"zero_optimization": &lcub
 "stage": 3,
-"offload_optimizer": {
+"offload_optimizer": &lcub
 "device": "cpu",
 "pin_memory": true
 },
-"offload_param": {
+"offload_param": &lcub
 "device": "cpu",
 "pin_memory": true
 },
@@ -965,8 +965,8 @@ Here is a full ZeRO-3 all-enabled manually set configuration file. It is here ma
 values look like, but we highly recommend using the one with multiple `auto` settings in it.
 
 ```json
-{
-"fp16": {
+&lcub
+"fp16": &lcub
 "enabled": true,
 "loss_scale": 0,
 "loss_scale_window": 1000,
@@ -975,9 +975,9 @@ values look like, but we highly recommend using the one with multiple `auto` set
 "min_loss_scale": 1
 },
 
-"optimizer": {
+"optimizer": &lcub
 "type": "AdamW",
-"params": {
+"params": &lcub
 "lr": 3e-5,
 "betas": [0.8, 0.999],
 "eps": 1e-8,
@@ -985,22 +985,22 @@ values look like, but we highly recommend using the one with multiple `auto` set
 }
 },
 
-"scheduler": {
+"scheduler": &lcub
 "type": "WarmupLR",
-"params": {
+"params": &lcub
 "warmup_min_lr": 0,
 "warmup_max_lr": 3e-5,
 "warmup_num_steps": 500
 }
 },
 
-"zero_optimization": {
+"zero_optimization": &lcub
 "stage": 3,
-"offload_optimizer": {
+"offload_optimizer": &lcub
 "device": "cpu",
 "pin_memory": true
 },
-"offload_param": {
+"offload_param": &lcub
 "device": "cpu",
 "pin_memory": true
 },
@@ -1035,7 +1035,7 @@ GPU implementation (except LAMB).
 
 
 
-<a id='deepspeed-optimizer'></a>
+&amp;lt;a id='deepspeed-optimizer'>&amp;lt;/a>
 
 #### Optimizer
 
@@ -1050,10 +1050,10 @@ arguments: `--learning_rate`, `--adam_beta1`, `--adam_beta2`, `--adam_epsilon` a
 Here is an example of the auto-configured `optimizer` entry for `AdamW`:
 
 ```json
-{
-"optimizer": {
+&lcub
+"optimizer": &lcub
 "type": "AdamW",
-"params": {
+"params": &lcub
 "lr": "auto",
 "betas": "auto",
 "eps": "auto",
@@ -1077,10 +1077,10 @@ Therefore please remember to tune the shared hyperparameters on the command line
 You can also set the values explicitly:
 
 ```json
-{
-"optimizer": {
+&lcub
+"optimizer": &lcub
 "type": "AdamW",
-"params": {
+"params": &lcub
 "lr": 0.001,
 "betas": [0.8, 0.999],
 "eps": 1e-8,
@@ -1096,7 +1096,7 @@ configuration.
 If you want to use another optimizer which is not listed above, you will have to add to the top level configuration.
 
 ```json
-{
+&lcub
 "zero_allow_untested_optimizer": true
 }
 ```
@@ -1106,7 +1106,7 @@ config values. e.g. for Adam you will want `weight_decay` around `0.01`.
 
 
 
-<a id='deepspeed-scheduler'></a>
+&amp;lt;a id='deepspeed-scheduler'>&amp;lt;/a>
 
 #### Scheduler
 
@@ -1126,10 +1126,10 @@ the values of `--lr_scheduler_type`, `--learning_rate` and `--warmup_steps` or `
 Here is an example of the auto-configured `scheduler` entry for `WarmupLR`:
 
 ```json
-{
-"scheduler": {
+&lcub
+"scheduler": &lcub
 "type": "WarmupLR",
-"params": {
+"params": &lcub
 "warmup_min_lr": "auto",
 "warmup_max_lr": "auto",
 "warmup_num_steps": "auto"
@@ -1153,10 +1153,10 @@ the learning rate is set to different values in different places. Command line r
 You can, of course, take over any or all of the configuration values and set those yourself:
 
 ```json
-{
-"scheduler": {
+&lcub
+"scheduler": &lcub
 "type": "WarmupLR",
-"params": {
+"params": &lcub
 "warmup_min_lr": 0,
 "warmup_max_lr": 0.001,
 "warmup_num_steps": 1000
@@ -1171,10 +1171,10 @@ configuration.
 For example, for `WarmupDecayLR`, you can use the following entry:
 
 ```json
-{
-"scheduler": {
+&lcub
+"scheduler": &lcub
 "type": "WarmupDecayLR",
-"params": {
+"params": &lcub
 "last_batch_iteration": -1,
 "total_num_steps": "auto",
 "warmup_min_lr": "auto",
@@ -1190,7 +1190,7 @@ and ``total_num_steps`, `warmup_max_lr`, `warmup_num_steps` and `total_num_steps
 
 
 
-<a id='deepspeed-fp32'></a>
+&amp;lt;a id='deepspeed-fp32'>&amp;lt;/a>
 
 ### fp32 Precision
 
@@ -1203,8 +1203,8 @@ models). Such models may overflow or underflow leading to `NaN` loss. If this is
 the full fp32 mode, by explicitly disabling the otherwise default fp16 mixed precision mode with:
 
 ```json
-{
-"fp16": {
+&lcub
+"fp16": &lcub
 "enabled": "false",
 }
 }
@@ -1218,7 +1218,7 @@ instructions on how to disable this automatic conversion if for some reason you 
 
 
 
-<a id='deepspeed-amp'></a>
+&amp;lt;a id='deepspeed-amp'>&amp;lt;/a>
 
 ### Automatic Mixed Precision
 
@@ -1227,8 +1227,8 @@ You can use automatic mixed precision with either a pytorch-like AMP way or the 
 To configure pytorch AMP-like mode set:
 
 ```json
-{
-"fp16": {
+&lcub
+"fp16": &lcub
 "enabled": "auto",
 "loss_scale": 0,
 "loss_scale_window": 1000,
@@ -1247,8 +1247,8 @@ This mode gets enabled when `--fp16 --fp16_backend amp` command line args are pa
 You can also enable/disable this mode explicitly:
 
 ```json
-{
-"fp16": {
+&lcub
+"fp16": &lcub
 "enabled": true,
 "loss_scale": 0,
 "loss_scale_window": 1000,
@@ -1267,7 +1267,7 @@ Here is the [documentation](https://www.deepspeed.ai/docs/config-json/#fp16-trai
 To configure apex AMP-like mode set:
 
 ```json
-"amp": {
+"amp": &lcub
 "enabled": "auto",
 "opt_level": "auto"
 }
@@ -1281,8 +1281,8 @@ This mode gets enabled when `--fp16 --fp16_backend apex --fp16_opt_level 01` com
 You can also configure this mode explicitly:
 
 ```json
-{
-"amp": {
+&lcub
+"amp": &lcub
 "enabled": true,
 "opt_level": "O1"
 }
@@ -1296,14 +1296,14 @@ Here is the [documentation](https://www.deepspeed.ai/docs/config-json/#automatic
 
 
 
-<a id='deepspeed-bs'></a>
+&amp;lt;a id='deepspeed-bs'>&amp;lt;/a>
 
 ### Batch Size
 
 To configure batch size, use:
 
 ```json
-{
+&lcub
 "train_batch_size": "auto",
 "train_micro_batch_size_per_gpu": "auto"
 }
@@ -1315,7 +1315,7 @@ and the [Trainer](main_classes/trainer.html#transformers.Trainer) will automatic
 You can also set the values explicitly:
 
 ```json
-{
+&lcub
 "train_batch_size": 12,
 "train_micro_batch_size_per_gpu": 4
 }
@@ -1326,14 +1326,14 @@ configuration.
 
 
 
-<a id='deepspeed-grad-acc'></a>
+&amp;lt;a id='deepspeed-grad-acc'>&amp;lt;/a>
 
 ### Gradient Accumulation
 
 To configure gradient accumulation set:
 
 ```json
-{
+&lcub
 "gradient_accumulation_steps": "auto"
 }
 ```
@@ -1343,7 +1343,7 @@ and the [Trainer](main_classes/trainer.html#transformers.Trainer) will automatic
 You can also set the value explicitly:
 
 ```json
-{
+&lcub
 "gradient_accumulation_steps": 3
 }
 ```
@@ -1353,14 +1353,14 @@ configuration.
 
 
 
-<a id='deepspeed-grad-clip'></a>
+&amp;lt;a id='deepspeed-grad-clip'>&amp;lt;/a>
 
 ### Gradient Clipping
 
 To configure gradient gradient clipping set:
 
 ```json
-{
+&lcub
 "gradient_clipping": "auto"
 }
 ```
@@ -1370,7 +1370,7 @@ and the [Trainer](main_classes/trainer.html#transformers.Trainer) will automatic
 You can also set the value explicitly:
 
 ```json
-{
+&lcub
 "gradient_clipping": 1.0
 }
 ```
@@ -1380,7 +1380,7 @@ configuration.
 
 
 
-<a id='deepspeed-weight-extraction'></a>
+&amp;lt;a id='deepspeed-weight-extraction'>&amp;lt;/a>
 
 ### Getting The Model Weights Out
 
@@ -1400,8 +1400,8 @@ won't be possible to load it back.
 
 
 ```json
-{
-"zero_optimization": {
+&lcub
+"zero_optimization": &lcub
 "stage3_gather_fp16_weights_on_model_save": true
 }
 }
@@ -1593,9 +1593,9 @@ In your report please always include:
 3. Output of:
 
 ```bash
-python -c 'import torch; print(f"torch: {torch.__version__}")'
-python -c 'import transformers; print(f"transformers: {transformers.__version__}")'
-python -c 'import deepspeed; print(f"deepspeed: {deepspeed.__version__}")'
+python -c 'import torch; print(f"torch: &lcubtorch.__version__}")'
+python -c 'import transformers; print(f"transformers: &lcubtransformers.__version__}")'
+python -c 'import deepspeed; print(f"deepspeed: &lcubdeepspeed.__version__}")'
 ```
 
 4. If possible include a link to a Google Colab notebook that we can reproduce the problem with. You can use this
@@ -1652,7 +1652,7 @@ Work is being done to enable estimating how much memory is needed for a specific
 
 
 
-<a id='deepspeed-non-trainer-integration'></a>
+&amp;lt;a id='deepspeed-non-trainer-integration'>&amp;lt;/a>
 
 ## Non-Trainer Deepspeed Integration
 
@@ -1668,9 +1668,9 @@ For example for a pretrained model:
 
 ```python
 from transformers.deepspeed import HfDeepSpeedConfig
-from transformers import AugoModel
+from transformers import AutoModel, deepspeed
 
-ds_config = { ... } # deepspeed config object or path to the file
+ds_config = &lcub ... } # deepspeed config object or path to the file
 # must run before instantiating the model
 dschf = HfDeepSpeedConfig(ds_config) # keep this object alive
 model = AutoModel.from_pretrained("gpt2")
@@ -1681,9 +1681,9 @@ or for non-pretrained model:
 
 ```python
 from transformers.deepspeed import HfDeepSpeedConfig
-from transformers import AugoModel, AutoConfig
+from transformers import AutoModel, AutoConfig, deepspeed
 
-ds_config = { ... } # deepspeed config object or path to the file
+ds_config = &lcub ... } # deepspeed config object or path to the file
 # must run before instantiating the model
 dschf = HfDeepSpeedConfig(ds_config) # keep this object alive
 config = AutoConfig.from_pretrained("gpt2")

@@ -1,8 +1,8 @@
-<script>
+&amp;lt;script>
 import Tip from "../../Tip.svelte";
 import Youtube from "../../Youtube.svelte";	
 export let fw: "pt" | "tf"
-</script>
+&amp;lt;/script>
 
 <!--Copyright 2020 The HuggingFace Team. All rights reserved.
 
@@ -44,7 +44,7 @@ This model was contributed by [sshleifer](https://huggingface.co/sshleifer). The
 ### Examples
 
 - Examples and scripts for fine-tuning BART and other models for sequence to sequence tasks can be found in
-  :prefix_link:_examples/pytorch/summarization/ <examples/pytorch/summarization/README.md>_.
+  [examples/pytorch/summarization/](https://github.com/huggingface/transformers/tree/master/examples/pytorch/summarization/README.md).
 - An example of how to train [BartForConditionalGeneration](model_doc/bart.html#transformers.BartForConditionalGeneration) with a Hugging Face `datasets`
   object can be found in this [forum discussion](https://discuss.huggingface.co/t/train-bart-for-conditional-generation-e-g-summarization/1904).
 - [Distilled checkpoints](https://huggingface.co/models?search=distilbart) are described in this [paper](https://arxiv.org/abs/2010.13002).
@@ -72,7 +72,7 @@ The `facebook/bart-base` and `facebook/bart-large` checkpoints can be used to fi
 from transformers import BartForConditionalGeneration, BartTokenizer
 model = BartForConditionalGeneration.from_pretrained("facebook/bart-large", force_bos_token_to_be_generated=True)
 tok = BartTokenizer.from_pretrained("facebook/bart-large")
-example_english_phrase = "UN Chief Says There Is No <mask> in Syria"
+example_english_phrase = "UN Chief Says There Is No &amp;lt;mask> in Syria"
 batch = tok(example_english_phrase, return_tensors='pt')
 generated_ids = model.generate(batch['input_ids'])
 assert tok.batch_decode(generated_ids, skip_special_tokens=True) == ['UN Chief Says There Is No Plan to Stop Chemical Weapons in Syria']
@@ -81,7 +81,7 @@ assert tok.batch_decode(generated_ids, skip_special_tokens=True) == ['UN Chief S
 ## BartConfig
 
 <a id='transformers.BartConfig'></a>
-> **class transformers.BartConfig**(vocab_size = 50265, max_position_embeddings = 1024, encoder_layers = 12, encoder_ffn_dim = 4096, encoder_attention_heads = 16, decoder_layers = 12, decoder_ffn_dim = 4096, decoder_attention_heads = 16, encoder_layerdrop = 0.0, decoder_layerdrop = 0.0, activation_function = gelu, d_model = 1024, dropout = 0.1, attention_dropout = 0.0, activation_dropout = 0.0, init_std = 0.02, classifier_dropout = 0.0, scale_embedding = False, gradient_checkpointing = False, use_cache = True, num_labels = 3, pad_token_id = 1, bos_token_id = 0, eos_token_id = 2, is_encoder_decoder = True, decoder_start_token_id = 2, forced_eos_token_id = 2, **kwargs)
+> **class transformers.BartConfig**(vocab_size = 50265, max_position_embeddings = 1024, encoder_layers = 12, encoder_ffn_dim = 4096, encoder_attention_heads = 16, decoder_layers = 12, decoder_ffn_dim = 4096, decoder_attention_heads = 16, encoder_layerdrop = 0.0, decoder_layerdrop = 0.0, activation_function = gelu, d_model = 1024, dropout = 0.1, attention_dropout = 0.0, activation_dropout = 0.0, init_std = 0.02, classifier_dropout = 0.0, scale_embedding = False, use_cache = True, num_labels = 3, pad_token_id = 1, bos_token_id = 0, eos_token_id = 2, is_encoder_decoder = True, decoder_start_token_id = 2, forced_eos_token_id = 2, **kwargs)
 
 
 This is the configuration class to store the configuration of a [BartModel](model_doc/bart.html#transformers.BartModel). It is used to
@@ -134,8 +134,6 @@ outputs. Read the documentation from [PretrainedConfig](main_classes/configurati
   decoder_layerdrop -- (`float`, _optional_, defaults to 0.0):
   The LayerDrop probability for the decoder. See the [LayerDrop paper](see
   https://arxiv.org/abs/1909.11556) for more details.
-- **gradient_checkpointing** (`bool`, _optional_, defaults to `False`) --
-  If True, use gradient checkpointing to save memory at the expense of slower backward pass.
 - **scale_embedding** (`bool`, _optional_, defaults to `False`) --
   Scale embeddings by diving by sqrt(d_model).
 - **use_cache** (`bool`, _optional_, defaults to `True`) --
@@ -585,7 +583,7 @@ various elements depending on the configuration ([BartConfig](model_doc/bart.htm
 ```python
 >>> from transformers import BartTokenizer, BartForConditionalGeneration
 >>> tokenizer = BartTokenizer.from_pretrained('facebook/bart-large')
->>> TXT = "My friends are <mask> but they eat too many carbs."
+>>> TXT = "My friends are &amp;lt;mask> but they eat too many carbs."
 
 >>> model = BartForConditionalGeneration.from_pretrained('facebook/bart-large')
 >>> input_ids = tokenizer([TXT], return_tensors='pt')['input_ids']
@@ -1111,7 +1109,7 @@ various elements depending on the configuration ([BartConfig](model_doc/bart.htm
 
 >>> tokenizer = BartTokenizer.from_pretrained('facebook/bart-large')
 >>> model = BartForCausalLM.from_pretrained('facebook/bart-large', add_cross_attention=False)
->>> assert model.config.is_decoder, f"{model.__class__} has to be configured as a decoder."
+>>> assert model.config.is_decoder, f"&lcubmodel.__class__} has to be configured as a decoder."
 >>> inputs = tokenizer("Hello, my dog is cute", return_tensors="pt")
 >>> outputs = model(**inputs)
 
@@ -1154,7 +1152,7 @@ the first positional argument :
 - a list of varying length with one or several input Tensors IN THE ORDER given in the docstring:
   `model([input_ids, attention_mask])` or `model([input_ids, attention_mask, token_type_ids])`
 - a dictionary with one or several input Tensors associated to the input names given in the docstring:
-  `model({"input_ids": input_ids, "token_type_ids": token_type_ids})`
+  `model(&lcub"input_ids": input_ids, "token_type_ids": token_type_ids})`
 
 </Tip>
 
@@ -1344,7 +1342,7 @@ the first positional argument :
 - a list of varying length with one or several input Tensors IN THE ORDER given in the docstring:
   `model([input_ids, attention_mask])` or `model([input_ids, attention_mask, token_type_ids])`
 - a dictionary with one or several input Tensors associated to the input names given in the docstring:
-  `model({"input_ids": input_ids, "token_type_ids": token_type_ids})`
+  `model(&lcub"input_ids": input_ids, "token_type_ids": token_type_ids})`
 
 </Tip>
 
@@ -1371,7 +1369,7 @@ processing steps while the latter silently ignores them.
 
 > Parameters
 
-- **input_ids** (`tf.Tensor` of shape `({0})`) --
+- **input_ids** (`tf.Tensor` of shape `(&lcub0})`) --
   Indices of input sequence tokens in the vocabulary.
 
   Indices can be obtained using [BertTokenizer](model_doc/bert.html#transformers.BertTokenizer). See
@@ -1379,7 +1377,7 @@ processing steps while the latter silently ignores them.
   details.
 
   [What are input IDs?](../glossary.html#input-ids)
-- **attention_mask** (`tf.Tensor` of shape `({0})`, _optional_) --
+- **attention_mask** (`tf.Tensor` of shape `(&lcub0})`, _optional_) --
   Mask to avoid performing attention on padding token indices. Mask values selected in `[0, 1]`:
 
   - 1 for tokens that are **not masked**,
@@ -1514,7 +1512,7 @@ elements depending on the configuration ([BartConfig](model_doc/bart.html#transf
 ```python
 >>> from transformers import BartTokenizer, TFBartForConditionalGeneration
 >>> tokenizer = BartTokenizer.from_pretrained('facebook/bart-large')
->>> TXT = "My friends are <mask> but they eat too many carbs."
+>>> TXT = "My friends are &amp;lt;mask> but they eat too many carbs."
 
 >>> model = TFBartForConditionalGeneration.from_pretrained('facebook/bart-large')
 >>> input_ids = tokenizer([TXT], return_tensors='tf')['input_ids']
@@ -1996,7 +1994,7 @@ various elements depending on the configuration ([BartConfig](model_doc/bart.htm
 ```python
 >>> from transformers import BartTokenizer, FlaxBartForConditionalGeneration
 >>> tokenizer = BartTokenizer.from_pretrained('facebook/bart-large')
->>> TXT = "My friends are <mask> but they eat too many carbs."
+>>> TXT = "My friends are &amp;lt;mask> but they eat too many carbs."
 
 >>> model = FlaxBartForConditionalGeneration.from_pretrained('facebook/bart-large')
 >>> input_ids = tokenizer([TXT], return_tensors='jax')['input_ids']

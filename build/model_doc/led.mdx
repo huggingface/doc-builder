@@ -1,8 +1,8 @@
-<script>
+&amp;lt;script>
 import Tip from "../../Tip.svelte";
 import Youtube from "../../Youtube.svelte";	
 export let fw: "pt" | "tf"
-</script>
+&amp;lt;/script>
 
 <!--Copyright 2020 The HuggingFace Team. All rights reserved.
 
@@ -49,9 +49,9 @@ Tips:
   gained, when [LEDTokenizer](model_doc/led.html#transformers.LEDTokenizer) is used with the `pad_to_multiple_of` argument.
 - LED makes use of *global attention* by means of the `global_attention_mask` (see
   [LongformerModel](model_doc/longformer.html#transformers.LongformerModel)). For summarization, it is advised to put *global attention* only on the first
-  `<s>` token. For question answering, it is advised to put *global attention* on all tokens of the question.
-- To fine-tune LED on all 16384, it is necessary to enable *gradient checkpointing* by setting
-  `config.gradient_checkpointing = True`.
+  `&amp;lt;s>` token. For question answering, it is advised to put *global attention* on all tokens of the question.
+- To fine-tune LED on all 16384, it is necessary to enable *gradient checkpointing* by executing
+  `model.gradient_checkpointing_enable()`.
 - A notebook showing how to evaluate LED, can be accessed [here](https://colab.research.google.com/drive/12INTTR6n64TzS4RrXZxMSXfrOd9Xzamo?usp=sharing).
 - A notebook showing how to fine-tune LED, can be accessed [here](https://colab.research.google.com/drive/12LjJazBl7Gam0XBPy_y0CTOJZeZ34c2v?usp=sharing).
 
@@ -61,7 +61,7 @@ This model was contributed by [patrickvonplaten](https://huggingface.co/patrickv
 ## LEDConfig
 
 <a id='transformers.LEDConfig'></a>
-> **class transformers.LEDConfig**(vocab_size = 50265, max_encoder_position_embeddings = 16384, max_decoder_position_embeddings = 1024, encoder_layers = 12, encoder_ffn_dim = 4096, encoder_attention_heads = 16, decoder_layers = 12, decoder_ffn_dim = 4096, decoder_attention_heads = 16, encoder_layerdrop = 0.0, decoder_layerdrop = 0.0, use_cache = True, is_encoder_decoder = True, activation_function = gelu, d_model = 1024, dropout = 0.1, attention_dropout = 0.0, activation_dropout = 0.0, init_std = 0.02, decoder_start_token_id = 2, classifier_dropout = 0.0, pad_token_id = 1, bos_token_id = 0, eos_token_id = 2, gradient_checkpointing = False, attention_window: typing.Union[typing.List[int], int] = 512, **kwargs)
+> **class transformers.LEDConfig**(vocab_size = 50265, max_encoder_position_embeddings = 16384, max_decoder_position_embeddings = 1024, encoder_layers = 12, encoder_ffn_dim = 4096, encoder_attention_heads = 16, decoder_layers = 12, decoder_ffn_dim = 4096, decoder_attention_heads = 16, encoder_layerdrop = 0.0, decoder_layerdrop = 0.0, use_cache = True, is_encoder_decoder = True, activation_function = gelu, d_model = 1024, dropout = 0.1, attention_dropout = 0.0, activation_dropout = 0.0, init_std = 0.02, decoder_start_token_id = 2, classifier_dropout = 0.0, pad_token_id = 1, bos_token_id = 0, eos_token_id = 2, attention_window: typing.Union[typing.List[int], int] = 512, **kwargs)
 
 
 This is the configuration class to store the configuration of a [LEDModel](model_doc/led.html#transformers.LEDModel). It is used to
@@ -116,8 +116,6 @@ outputs. Read the documentation from [PretrainedConfig](main_classes/configurati
   https://arxiv.org/abs/1909.11556) for more details.
 - **use_cache** (`bool`, _optional_, defaults to `True`) --
   Whether or not the model should return the last key/values attentions (not used by all models)
-- **gradient_checkpointing** (`bool`, _optional_, defaults to `False`) --
-  If True, use gradient checkpointing to save memory at the expense of slower backward pass.
 
   Example --:
 
@@ -155,8 +153,8 @@ parameters.
 Build model inputs from a sequence or a pair of sequence for sequence classification tasks by concatenating and
 adding special tokens. A RoBERTa sequence has the following format:
 
-- single sequence: `<s> X </s>`
-- pair of sequences: `<s> A </s></s> B </s>`
+- single sequence: `&amp;lt;s> X &amp;lt;/s>`
+- pair of sequences: `&amp;lt;s> A &amp;lt;/s>&amp;lt;/s> B &amp;lt;/s>`
 
 > Parameters
 
@@ -723,7 +721,7 @@ processing steps while the latter silently ignores them.
   Mask to decide the attention given on each token, local attention or global attention for the encoder.
   Tokens with global attention attends to all other tokens, and all other tokens attend to them. This is
   important for task-specific finetuning because it makes the model more flexible at representing the task.
-  For example, for classification, the <s> token should be given global attention. For QA, all question
+  For example, for classification, the &amp;lt;s> token should be given global attention. For QA, all question
   tokens should also have global attention. Please refer to the [Longformer paper](https://arxiv.org/abs/2004.05150) for more details. Mask values selected in `[0, 1]`:
 
   - 0 for local attention (a sliding window attention),
@@ -915,7 +913,7 @@ processing steps while the latter silently ignores them.
   Mask to decide the attention given on each token, local attention or global attention for the encoder.
   Tokens with global attention attends to all other tokens, and all other tokens attend to them. This is
   important for task-specific finetuning because it makes the model more flexible at representing the task.
-  For example, for classification, the <s> token should be given global attention. For QA, all question
+  For example, for classification, the &amp;lt;s> token should be given global attention. For QA, all question
   tokens should also have global attention. Please refer to the [Longformer paper](https://arxiv.org/abs/2004.05150) for more details. Mask values selected in `[0, 1]`:
 
   - 0 for local attention (a sliding window attention),
@@ -1021,7 +1019,7 @@ various elements depending on the configuration ([LEDConfig](model_doc/led.html#
 ```python
 >>> from transformers import LEDTokenizer, LEDForConditionalGeneration
 >>> tokenizer = LEDTokenizer.from_pretrained('allenai/led-base-16384')
->>> TXT = "My friends are <mask> but they eat too many carbs."
+>>> TXT = "My friends are &amp;lt;mask> but they eat too many carbs."
 
 >>> model = LEDForConditionalGeneration.from_pretrained('allenai/led-base-16384')
 >>> input_ids = tokenizer([TXT], return_tensors='pt')['input_ids']
@@ -1156,7 +1154,7 @@ processing steps while the latter silently ignores them.
   Mask to decide the attention given on each token, local attention or global attention for the encoder.
   Tokens with global attention attends to all other tokens, and all other tokens attend to them. This is
   important for task-specific finetuning because it makes the model more flexible at representing the task.
-  For example, for classification, the <s> token should be given global attention. For QA, all question
+  For example, for classification, the &amp;lt;s> token should be given global attention. For QA, all question
   tokens should also have global attention. Please refer to the [Longformer paper](https://arxiv.org/abs/2004.05150) for more details. Mask values selected in `[0, 1]`:
 
   - 0 for local attention (a sliding window attention),
@@ -1354,7 +1352,7 @@ processing steps while the latter silently ignores them.
   Mask to decide the attention given on each token, local attention or global attention for the encoder.
   Tokens with global attention attends to all other tokens, and all other tokens attend to them. This is
   important for task-specific finetuning because it makes the model more flexible at representing the task.
-  For example, for classification, the <s> token should be given global attention. For QA, all question
+  For example, for classification, the &amp;lt;s> token should be given global attention. For QA, all question
   tokens should also have global attention. Please refer to the [Longformer paper](https://arxiv.org/abs/2004.05150) for more details. Mask values selected in `[0, 1]`:
 
   - 0 for local attention (a sliding window attention),
@@ -1515,7 +1513,7 @@ the first positional argument :
 - a list of varying length with one or several input Tensors IN THE ORDER given in the docstring:
   `model([input_ids, attention_mask])` or `model([input_ids, attention_mask, token_type_ids])`
 - a dictionary with one or several input Tensors associated to the input names given in the docstring:
-  `model({"input_ids": input_ids, "token_type_ids": token_type_ids})`
+  `model(&lcub"input_ids": input_ids, "token_type_ids": token_type_ids})`
 
 </Tip>
 
@@ -1701,7 +1699,7 @@ the first positional argument :
 - a list of varying length with one or several input Tensors IN THE ORDER given in the docstring:
   `model([input_ids, attention_mask])` or `model([input_ids, attention_mask, token_type_ids])`
 - a dictionary with one or several input Tensors associated to the input names given in the docstring:
-  `model({"input_ids": input_ids, "token_type_ids": token_type_ids})`
+  `model(&lcub"input_ids": input_ids, "token_type_ids": token_type_ids})`
 
 </Tip>
 
@@ -1728,7 +1726,7 @@ processing steps while the latter silently ignores them.
 
 > Parameters
 
-- **input_ids** (`tf.Tensor` of shape `({0})`) --
+- **input_ids** (`tf.Tensor` of shape `(&lcub0})`) --
   Indices of input sequence tokens in the vocabulary.
 
   Indices can be obtained using [BertTokenizer](model_doc/bert.html#transformers.BertTokenizer). See
@@ -1736,7 +1734,7 @@ processing steps while the latter silently ignores them.
   details.
 
   [What are input IDs?](../glossary.html#input-ids)
-- **attention_mask** (`tf.Tensor` of shape `({0})`, _optional_) --
+- **attention_mask** (`tf.Tensor` of shape `(&lcub0})`, _optional_) --
   Mask to avoid performing attention on padding token indices. Mask values selected in `[0, 1]`:
 
   - 1 for tokens that are **not masked**,
@@ -1844,7 +1842,7 @@ elements depending on the configuration ([LEDConfig](model_doc/led.html#transfor
 >>> import tensorflow as tf
 >>> mname = 'allenai/led-base-16384'
 >>> tokenizer = LEDTokenizer.from_pretrained(mname)
->>> TXT = "My friends are <mask> but they eat too many carbs."
+>>> TXT = "My friends are &amp;lt;mask> but they eat too many carbs."
 >>> model = TFLEDForConditionalGeneration.from_pretrained(mname)
 >>> batch = tokenizer([TXT], return_tensors='tf')
 >>> logits = model(inputs=batch.input_ids).logits

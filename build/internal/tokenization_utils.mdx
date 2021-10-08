@@ -1,8 +1,8 @@
-<script>
+&amp;lt;script>
 import Tip from "../../Tip.svelte";
 import Youtube from "../../Youtube.svelte";	
 export let fw: "pt" | "tf"
-</script>
+&amp;lt;/script>
 
 <!--Copyright 2020 The HuggingFace Team. All rights reserved.
 
@@ -177,7 +177,9 @@ sequences.
 
   [What are attention masks?](../glossary.html#attention-mask)
 - **return_overflowing_tokens** (`bool`, _optional_, defaults to `False`) --
-  Whether or not to return overflowing token sequences.
+  Whether or not to return overflowing token sequences. If a pair of sequences of input ids (or a batch
+  of pairs) is provided with `truncation_strategy = longest_first` or `True`, an error is
+  raised instead of returning overflowing tokens.
 - **return_special_tokens_mask** (`bool`, _optional_, defaults to `False`) --
   Whether or not to return special tokens mask information.
 - **return_offsets_mapping** (`bool`, _optional_, defaults to `False`) --
@@ -338,7 +340,9 @@ This method is deprecated, `__call__` should be used instead.
 
   [What are attention masks?](../glossary.html#attention-mask)
 - **return_overflowing_tokens** (`bool`, _optional_, defaults to `False`) --
-  Whether or not to return overflowing token sequences.
+  Whether or not to return overflowing token sequences. If a pair of sequences of input ids (or a batch
+  of pairs) is provided with `truncation_strategy = longest_first` or `True`, an error is
+  raised instead of returning overflowing tokens.
 - **return_special_tokens_mask** (`bool`, _optional_, defaults to `False`) --
   Whether or not to return special tokens mask information.
 - **return_offsets_mapping** (`bool`, _optional_, defaults to `False`) --
@@ -664,7 +668,9 @@ This method is deprecated, `__call__` should be used instead.
 
   [What are attention masks?](../glossary.html#attention-mask)
 - **return_overflowing_tokens** (`bool`, _optional_, defaults to `False`) --
-  Whether or not to return overflowing token sequences.
+  Whether or not to return overflowing token sequences. If a pair of sequences of input ids (or a batch
+  of pairs) is provided with `truncation_strategy = longest_first` or `True`, an error is
+  raised instead of returning overflowing tokens.
 - **return_special_tokens_mask** (`bool`, _optional_, defaults to `False`) --
   Whether or not to return special tokens mask information.
 - **return_offsets_mapping** (`bool`, _optional_, defaults to `False`) --
@@ -740,8 +746,12 @@ a predefined tokenizer.
 - **resume_download** (`bool`, _optional_, defaults to `False`) --
   Whether or not to delete incompletely received files. Attempt to resume the download if such a file
   exists.
-- **proxies** (`Dict[str, str], `optional`) -- A dictionary of proxy servers to use by protocol or endpoint, e.g., `{'http': 'foo.bar:3128',
-  'http://hostname': 'foo.bar:4012'}`. The proxies are used on each request. - **use_auth_token** (`str` or _bool_, _optional_) -- The token to use as HTTP bearer authorization for remote files. If `True`, will use the token generated when running `transformers-cli login` (stored in `~/.huggingface`). - **local_files_only** (`bool`, _optional_, defaults to `False`) --
+- **proxies** (`Dict[str, str]`, _optional_) --
+  A dictionary of proxy servers to use by protocol or endpoint, e.g., `&lcub'http': 'foo.bar:3128', 'http://hostname': 'foo.bar:4012'}`. The proxies are used on each request.
+- **use_auth_token** (`str` or _bool_, _optional_) --
+  The token to use as HTTP bearer authorization for remote files. If `True`, will use the token
+  generated when running `transformers-cli login` (stored in `~/.huggingface`).
+- **local_files_only** (`bool`, _optional_, defaults to `False`) --
   Whether or not to only rely on local files and not to attempt to download any files.
 - **revision(`str`,** _optional_, defaults to `"main"`) --
   The specific model version to use. It can be a branch name, a tag name, or a commit id, since we use a
@@ -780,10 +790,10 @@ tokenizer = BertTokenizer.from_pretrained('./test/saved_model/')
 tokenizer = BertTokenizer.from_pretrained('./test/saved_model/my_vocab.txt')
 
 # You can link tokens to special vocabulary when instantiating
-tokenizer = BertTokenizer.from_pretrained('bert-base-uncased', unk_token='<unk>')
-# You should be sure '<unk>' is in the vocabulary when doing that.
-# Otherwise use tokenizer.add_special_tokens({'unk_token': '<unk>'}) instead)
-assert tokenizer.unk_token == '<unk>'
+tokenizer = BertTokenizer.from_pretrained('bert-base-uncased', unk_token='&amp;lt;unk>')
+# You should be sure '&amp;lt;unk>' is in the vocabulary when doing that.
+# Otherwise use tokenizer.add_special_tokens(&lcub'unk_token': '&amp;lt;unk>'}) instead)
+assert tokenizer.unk_token == '&amp;lt;unk>'
 ```
 
 
@@ -895,7 +905,9 @@ case of PyTorch tensors, you will lose the specific device of your tensors howev
 
 Prepares a sequence of input id, or a pair of sequences of inputs ids so that it can be used by the model. It
 adds special tokens, truncates sequences if overflowing while taking into account the special tokens and
-manages a moving window (with user defined stride) for overflowing tokens
+manages a moving window (with user defined stride) for overflowing tokens. Please Note, for _pair_ids_
+different than _None_ and _truncation_strategy = longest_first_ or _True_, it is not possible to return
+overflowing tokens. Such a combination of arguments will raise an error.
 
 > Parameters
 
@@ -968,7 +980,9 @@ manages a moving window (with user defined stride) for overflowing tokens
 
   [What are attention masks?](../glossary.html#attention-mask)
 - **return_overflowing_tokens** (`bool`, _optional_, defaults to `False`) --
-  Whether or not to return overflowing token sequences.
+  Whether or not to return overflowing token sequences. If a pair of sequences of input ids (or a batch
+  of pairs) is provided with `truncation_strategy = longest_first` or `True`, an error is
+  raised instead of returning overflowing tokens.
 - **return_special_tokens_mask** (`bool`, _optional_, defaults to `False`) --
   Whether or not to return special tokens mask information.
 - **return_offsets_mapping** (`bool`, _optional_, defaults to `False`) --
@@ -1287,7 +1301,8 @@ Truncates a sequence pair in-place following the strategy.
 > Returns
 
 The truncated `ids`, the truncated `pair_ids` and the
-list of overflowing tokens.
+list of overflowing tokens. Note: The _longest_first_ strategy returns empty list of overflowing_tokens if
+a pair of sequences (or a batch of pairs) is provided.
 
 > Return type
 
@@ -1349,7 +1364,7 @@ Using `add_special_tokens` will ensure your special tokens can be used in severa
 
 When possible, special tokens are already registered for provided pretrained models (for instance
 [BertTokenizer](model_doc/bert.html#transformers.BertTokenizer) `cls_token` is already registered to be :obj_'[CLS]'_ and XLM's one
-is also registered to be `'</s>'`).
+is also registered to be `'&amp;lt;/s>'`).
 
 > Parameters
 
@@ -1376,14 +1391,14 @@ Number of tokens added to the vocabulary.
 tokenizer = GPT2Tokenizer.from_pretrained('gpt2')
 model = GPT2Model.from_pretrained('gpt2')
 
-special_tokens_dict = {'cls_token': '<CLS>'}
+special_tokens_dict = &lcub'cls_token': '&amp;lt;CLS>'}
 
 num_added_toks = tokenizer.add_special_tokens(special_tokens_dict)
 print('We have added', num_added_toks, 'tokens')
 # Notice: resize_token_embeddings expect to receive the full size of the new vocabulary, i.e., the length of the tokenizer.
 model.resize_token_embeddings(len(tokenizer))
 
-assert tokenizer.cls_token == '<CLS>'
+assert tokenizer.cls_token == '&amp;lt;CLS>'
 ```
 
 
