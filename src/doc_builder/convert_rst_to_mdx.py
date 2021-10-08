@@ -57,6 +57,8 @@ def convert_rst_formatting(text):
 
 # Re pattern to catch description and url in links of the form `description <url>`_.
 _re_links = re.compile(r"`([^`]+\S)\s+</*([^/][^>`]*)>`_+")
+# Re pattern to catch description and url in links of the form :prefix_link:`description <url>`_.
+_re_prefix_links = re.compile(r":prefix_link:`([^`]+\S)\s+</*([^/][^>`]*)>`")
 # Re pattern to catch reference in links of the form :doc:`reference`.
 _re_simple_doc = re.compile(r":doc:`([^`<]*)`")
 # Re pattern to catch description and reference in links of the form :doc:`description <reference>`.
@@ -79,6 +81,10 @@ def convert_rst_links(text):
     text = _re_simple_ref.sub(r'[\1](#\1)', text)
     # Refs of the form :ref:`text <page>`
     text = _re_ref_with_description.sub(r'[\1](#\2)', text)
+    # Links with a prefix
+    # TODO: when it exists, use the API to deal with prefix links properly.
+    prefix = "https://github.com/huggingface/transformers/tree/master/"
+    text = _re_prefix_links.sub(fr'[\1]({prefix}\2)', text)
     # Other links
     text = _re_links.sub(r"[\1](\2)", text)
     return text
@@ -107,6 +113,15 @@ def find_indent(line):
 
 
 _re_rst_option = re.compile("^\s*:(\S+):(.*)$")
+
+
+def convert_special_chars(text):
+    """
+    Converts { and < that have special meanings in MDX.
+    """
+    text = text.replace("{", "&lcub")
+    text = text.replace("<", "&amp;lt;")
+    return text
 
 
 def parse_options(block_content):
@@ -169,7 +184,7 @@ def convert_rst_blocks(text):
                     idx += 1
                 block_content = "\n".join(block_lines)
             
-            if block_type == "code-block":
+            if block_type in ["code", "code-block"]:
                 prefix = "```" if block_info is None else f"```{block_info}"
                 new_lines.append(f"{prefix}\n{block_content.strip()}\n```\n")
             elif block_type == "note":
@@ -436,6 +451,7 @@ def base_rst_to_mdx(text):
     Convert a text from rst to mdx, with the base operations necessary for both docstrings and rst docs.
     """
     text = convert_rst_links(text)
+    text = convert_special_chars(text)
     text = convert_rst_blocks(text)
     # Convert * in lists to - to avoid the formatting conversion treat them as bold.
     text = re.sub(r"^(\s*)\*(\s)", r"\1-\2", text, flags=re.MULTILINE)

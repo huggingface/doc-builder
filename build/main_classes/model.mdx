@@ -1,8 +1,8 @@
-<script>
+&amp;lt;script>
 import Tip from "../../Tip.svelte";
 import Youtube from "../../Youtube.svelte";	
 export let fw: "pt" | "tf"
-</script>
+&amp;lt;/script>
 
 <!--Copyright 2020 The HuggingFace Team. All rights reserved.
 
@@ -210,8 +210,9 @@ weights. In this case though, you should check if using
 - **resume_download** (`bool`, _optional_, defaults to `False`) --
   Whether or not to delete incompletely received files. Will attempt to resume the download if such a
   file exists.
-- **proxies** (`Dict[str, str], `optional`) -- A dictionary of proxy servers to use by protocol or endpoint, e.g., `{'http': 'foo.bar:3128',
-  'http://hostname': 'foo.bar:4012'}`. The proxies are used on each request. - **output_loading_info(`bool`,** _optional_, defaults to `False`) --
+- **proxies** (`Dict[str, str]`, _optional_) --
+  A dictionary of proxy servers to use by protocol or endpoint, e.g., `&lcub'http': 'foo.bar:3128', 'http://hostname': 'foo.bar:4012'}`. The proxies are used on each request.
+- **output_loading_info(`bool`,** _optional_, defaults to `False`) --
   Whether ot not to also return a dictionary containing missing keys, unexpected keys and error messages.
 - **local_files_only(`bool`,** _optional_, defaults to `False`) --
   Whether or not to only look at local files (i.e., do not try to download the model).
@@ -228,6 +229,9 @@ weights. In this case though, you should check if using
   Please refer to the mirror site for more information.
 - **_fast_init(`bool`,** _optional_, defaults to ```True`) --
   Whether or not to disable fast initialization.
+- **low_cpu_mem_usage(`bool``,** _optional_, defaults to ```False`) --
+  Tries to not use more than 1x model size in CPU memory (including peak memory) while loading the model.
+  This is an experimental feature and a subject to change at any moment.
 - **torch_dtype** (`str` or `torch.dtype`, _optional_) --
   Override the default `torch.dtype` and load the model under this dtype. If `"auto"` is passed the
   dtype will be automatically derived from the model's weights.
@@ -235,7 +239,7 @@ weights. In this case though, you should check if using
 <Tip warning={true}>
 
 One should only disable __fast_init_ to ensure backwards compatibility with
-`transformers.__version__ < 4.6.0` for seeded model initialization. This argument will be removed
+`transformers.__version__ &amp;lt; 4.6.0` for seeded model initialization. This argument will be removed
 at the next major version. See [pull request 11471](https://github.com/huggingface/transformers/pull/11471) for more information.
 
 </Tip>
@@ -316,6 +320,26 @@ A torch module mapping hidden states to vocabulary.
 `nn.Module`
 
 
+<a id='transformers.PreTrainedModel.gradient_checkpointing_disable'></a>
+> **gradient\_checkpointing\_disable**(self, flag: bool = True)
+
+
+Deactivates gradient checkpointing for the current model.
+
+Note that in other frameworks this feature can be referred to as "activation checkpointing" or "checkpoint
+activations".
+
+
+<a id='transformers.PreTrainedModel.gradient_checkpointing_enable'></a>
+> **gradient\_checkpointing\_enable**(self, flag: bool = True)
+
+
+Activates gradient checkpointing for the current model.
+
+Note that in other frameworks this feature can be referred to as "activation checkpointing" or "checkpoint
+activations".
+
+
 <a id='transformers.PreTrainedModel.init_weights'></a>
 > **init\_weights**(self)
 
@@ -332,7 +356,7 @@ Prunes heads of the base model.
 Arguments:
 heads_to_prune (`Dict[int, List[int]]`):
 Dictionary with keys being selected layer indices (`int`) and associated values being the list of
-heads to prune in said layer (list of `int`). For instance {1: [0, 2], 2: [2, 3]} will prune heads
+heads to prune in said layer (list of `int`). For instance &lcub1: [0, 2], 2: [2, 3]} will prune heads
 0 and 2 on layer 1 and heads 2 and 3 on layer 2.
 
 
@@ -361,7 +385,7 @@ Pointer to the input tokens Embeddings Module of the model.
 
 
 <a id='transformers.PreTrainedModel.save_pretrained'></a>
-> **save\_pretrained**(self, save_directory: typing.Union[str, os.PathLike], save_config: bool = True, state_dict: typing.Optional[dict] = None, save_function: typing.Callable = <function save at 0x7f3854db49e0>, push_to_hub: bool = False, **kwargs)
+> **save\_pretrained**(self, save_directory: typing.Union[str, os.PathLike], save_config: bool = True, state_dict: typing.Optional[dict] = None, save_function: typing.Callable = <function save at 0x7fc61fea50e0>, push_to_hub: bool = False, **kwargs)
 
 
 Save a model and its configuration file to a directory, so that it can be re-loaded using the
@@ -419,7 +443,7 @@ If the `torchscript` flag is set in the configuration, can't handle parameter sh
 the weights instead.
 
 
-<a id='from_pretrained-torch-dtype'></a>
+&amp;lt;a id='from_pretrained-torch-dtype'>&amp;lt;/a>
 
 ### Model Instantiation dtype
 
@@ -493,7 +517,7 @@ The total number of tokens.
 
 Get number of (optionally, non-embeddings) floating-point operations for the forward and backward passes of a
 batch with this transformer model. Default approximation neglects the quadratic dependency on the number of
-tokens (valid if `12 * d_model << sequence_length`) as laid out in [this paper](https://arxiv.org/pdf/2001.08361.pdf) section 2.1. Should be overridden for transformers with parameter
+tokens (valid if `12 * d_model &amp;lt;&amp;lt; sequence_length`) as laid out in [this paper](https://arxiv.org/pdf/2001.08361.pdf) section 2.1. Should be overridden for transformers with parameter
 re-use e.g. Albert or Universal Transformers, or if doing long-range modeling with very high sequence lengths.
 
 > Parameters
@@ -517,7 +541,7 @@ The number of floating-point operations.
 
 
 <a id='transformers.modeling_utils.ModuleUtilsMixin.get_extended_attention_mask'></a>
-> **get\_extended\_attention\_mask**(self, attention_mask: Tensor, input_shape: typing.Tuple[int], device: <property object at 0x7f37d2bfb0b0>)
+> **get\_extended\_attention\_mask**(self, attention_mask: Tensor, input_shape: typing.Tuple[int], device: <property object at 0x7fc5a232cad0>)
 
 
 Makes broadcastable attention and causal masks so that future and masked tokens are ignored.
@@ -692,6 +716,14 @@ model.push_to_hub("my-finetuned-bert", repo_url="https://huggingface.co/sgugger/
 ```
 
 
+<a id='transformers.TFPreTrainedModel.compile'></a>
+> **compile**(self, optimizer = rmsprop, loss = passthrough, metrics = None, loss_weights = None, weighted_metrics = None, run_eagerly = None, steps_per_execution = None, **kwargs)
+
+
+This is a thin wrapper that sets the model's loss output head as the loss if the user does not specify a loss
+function themselves.
+
+
 <a id='transformers.TFPreTrainedModel.from_pretrained'></a>
 > **from\_pretrained**(pretrained_model_name_or_path, *model_args, **kwargs)
 
@@ -755,7 +787,7 @@ Load the model weights from a PyTorch state_dict save file (see docstring of
 - **resume_download** (`bool`, _optional_, defaults to `False`) --
   Whether or not to delete incompletely received files. Will attempt to resume the download if such a
   file exists.
-  proxies -- (`Dict[str, str], `optional`): A dictionary of proxy servers to use by protocol or endpoint, e.g., `{'http': 'foo.bar:3128',
+  proxies -- (`Dict[str, str], `optional`): A dictionary of proxy servers to use by protocol or endpoint, e.g., `&lcub'http': 'foo.bar:3128',
   'http://hostname': 'foo.bar:4012'}`. The proxies are used on each request. - **output_loading_info(`bool`,** _optional_, defaults to `False`) --
   Whether ot not to also return a dictionary containing missing keys, unexpected keys and error messages.
 - **local_files_only(`bool`,** _optional_, defaults to `False`) --
@@ -908,7 +940,7 @@ Prunes heads of the base model.
 Arguments:
 heads_to_prune (`Dict[int, List[int]]`):
 Dictionary with keys being selected layer indices (`int`) and associated values being the list of
-heads to prune in said layer (list of `int`). For instance {1: [0, 2], 2: [2, 3]} will prune heads
+heads to prune in said layer (list of `int`). For instance &lcub1: [0, 2], 2: [2, 3]} will prune heads
 0 and 2 on layer 1 and heads 2 and 3 on layer 2.
 
 
@@ -1027,6 +1059,20 @@ Set model's output embeddings
 
 - **value** (`tf.Variable`) --
   The new weights mapping hidden states to vocabulary.
+
+
+<a id='transformers.TFPreTrainedModel.test_step'></a>
+> **test\_step**(self, data)
+
+
+A modification of Keras's default test_step that cleans up the printed metrics when we use a dummy loss.
+
+
+<a id='transformers.TFPreTrainedModel.train_step'></a>
+> **train\_step**(self, data)
+
+
+A modification of Keras's default train_step that cleans up the printed metrics when we use a dummy loss.
 
 
 ## TFModelUtilsMixin
@@ -1199,8 +1245,9 @@ standard cache should not be used.
 - **resume_download** (`bool`, _optional_, defaults to `False`) --
   Whether or not to delete incompletely received files. Will attempt to resume the download if such a
   file exists.
-- **proxies** (`Dict[str, str], `optional`) -- A dictionary of proxy servers to use by protocol or endpoint, e.g., `{'http': 'foo.bar:3128',
-  'http://hostname': 'foo.bar:4012'}`. The proxies are used on each request. - **local_files_only(`bool`,** _optional_, defaults to `False`) --
+- **proxies** (`Dict[str, str]`, _optional_) --
+  A dictionary of proxy servers to use by protocol or endpoint, e.g., `&lcub'http': 'foo.bar:3128', 'http://hostname': 'foo.bar:4012'}`. The proxies are used on each request.
+- **local_files_only(`bool`,** _optional_, defaults to `False`) --
   Whether or not to only look at local files (i.e., do not try to download the model).
 - **revision(`str`,** _optional_, defaults to `"main"`) --
   The specific model version to use. It can be a branch name, a tag name, or a commit id, since we use a
@@ -1365,7 +1412,7 @@ Generates sequences for models with a language modeling head using beam search w
 >>> input_ids = input_ids * model.config.decoder_start_token_id
 
 >>> # add encoder_outputs to model keyword arguments
->>> model_kwargs = {
+>>> model_kwargs = &lcub
 ...     "encoder_outputs": model.get_encoder()(encoder_input_ids.repeat_interleave(num_beams, dim=0), return_dict=True)
 ... }
 
@@ -1477,7 +1524,7 @@ Generates sequences for models with a language modeling head using beam search d
 >>> input_ids = input_ids * model.config.decoder_start_token_id
 
 >>> # add encoder_outputs to model keyword arguments
->>> model_kwargs = {
+>>> model_kwargs = &lcub
 ...     "encoder_outputs": model.get_encoder()(encoder_input_ids.repeat_interleave(num_beams, dim=0), return_dict=True)
 ... }
 
@@ -1536,7 +1583,7 @@ Most of these parameters are explained in more detail in [this blog post](https:
 - **top_k** (`int`, _optional_, defaults to 50) --
   The number of highest probability vocabulary tokens to keep for top-k-filtering.
 - **top_p** (`float`, _optional_, defaults to 1.0) --
-  If set to float < 1, only the most probable tokens with probabilities that add up to `top_p` or
+  If set to float &amp;lt; 1, only the most probable tokens with probabilities that add up to `top_p` or
   higher are kept for generation.
 - **repetition_penalty** (`float`, _optional_, defaults to 1.0) --
   The parameter for repetition penalty. 1.0 means no penalty. See [this paper](https://arxiv.org/pdf/1909.05858.pdf) for more details.
@@ -1547,7 +1594,7 @@ Most of these parameters are explained in more detail in [this blog post](https:
 - **eos_token_id** (`int`, _optional_) --
   The id of the _end-of-sequence_ token.
 - **length_penalty** (`float`, _optional_, defaults to 1.0) --
-  Exponential penalty to the length. 1.0 means no penalty. Set to values < 1.0 in order to encourage the
+  Exponential penalty to the length. 1.0 means no penalty. Set to values &amp;lt; 1.0 in order to encourage the
   model to generate shorter sequences, to a value > 1.0 in order to encourage the model to produce longer
   sequences.
 - **no_repeat_ngram_size** (`int`, _optional_, defaults to 0) --
@@ -1860,7 +1907,7 @@ Generates sequences for models with a language modeling head using beam search d
 >>> input_ids = input_ids * model.config.decoder_start_token_id
 
 >>> # add encoder_outputs to model keyword arguments
->>> model_kwargs = {
+>>> model_kwargs = &lcub
 ...     "encoder_outputs": model.get_encoder()(encoder_input_ids.repeat_interleave(num_beams, dim=0), return_dict=True)
 ... }
 
@@ -2037,7 +2084,7 @@ Most of these parameters are explained in more detail in [this blog post](https:
 - **top_k** (`int`, _optional_, defaults to 50) --
   The number of highest probability vocabulary tokens to keep for top-k-filtering.
 - **top_p** (`float`, _optional_, defaults to 1.0) --
-  If set to float < 1, only the most probable tokens with probabilities that add up to `top_p` or
+  If set to float &amp;lt; 1, only the most probable tokens with probabilities that add up to `top_p` or
   higher are kept for generation.
 - **repetition_penalty** (`float`, _optional_, defaults to 1.0) --
   The parameter for repetition penalty. 1.0 means no penalty. See [this paper](https://arxiv.org/pdf/1909.05858.pdf) for more details.
@@ -2050,7 +2097,7 @@ Most of these parameters are explained in more detail in [this blog post](https:
 - **length_penalty** (`float`, _optional_, defaults to 1.0) --
   Exponential penalty to the length. 1.0 means no penalty.
 
-  Set to values < 1.0 in order to encourage the model to generate shorter sequences, to a value > 1.0 in
+  Set to values &amp;lt; 1.0 in order to encourage the model to generate shorter sequences, to a value > 1.0 in
   order to encourage the model to produce longer sequences.
 - **no_repeat_ngram_size** (`int`, _optional_, defaults to 0) --
   If set to int > 0, all ngrams of that size can only occur once.
@@ -2122,7 +2169,7 @@ If the model is an encoder-decoder model (`model.config.is_encoder_decoder=True`
 tokenizer = AutoTokenizer.from_pretrained('distilgpt2')   # Initialize tokenizer
 model = TFAutoModelWithLMHead.from_pretrained('distilgpt2')    # Download model and configuration from huggingface.co and cache.
 outputs = model.generate(max_length=40)  # do greedy decoding
-print(f'Generated: {tokenizer.decode(outputs[0], skip_special_tokens=True)}')
+print(f'Generated: &lcubtokenizer.decode(outputs[0], skip_special_tokens=True)}')
 
 tokenizer = AutoTokenizer.from_pretrained('openai-gpt')   # Initialize tokenizer
 model = TFAutoModelWithLMHead.from_pretrained('openai-gpt')    # Download model and configuration from huggingface.co and cache.
@@ -2130,7 +2177,7 @@ input_context = 'The dog'
 input_ids = tokenizer.encode(input_context, return_tensors='tf')  # encode input context
 outputs = model.generate(input_ids=input_ids, num_beams=5, num_return_sequences=3, temperature=1.5)  # generate 3 independent sequences using beam search decoding (5 beams) with sampling from initial context 'The dog'
 for i in range(3): #  3 output sequences were generated
-print(f'Generated {i}: {tokenizer.decode(outputs[i], skip_special_tokens=True)}')
+print(f'Generated &lcubi}: &lcubtokenizer.decode(outputs[i], skip_special_tokens=True)}')
 
 tokenizer = AutoTokenizer.from_pretrained('distilgpt2')   # Initialize tokenizer
 model = TFAutoModelWithLMHead.from_pretrained('distilgpt2')    # Download model and configuration from huggingface.co and cache.
@@ -2138,14 +2185,14 @@ input_context = 'The dog'
 input_ids = tokenizer.encode(input_context, return_tensors='tf')  # encode input context
 outputs = model.generate(input_ids=input_ids, max_length=40, temperature=0.7, num_return_sequences=3, do_sample=True)  # generate 3 candidates using sampling
 for i in range(3): #  3 output sequences were generated
-print(f'Generated {i}: {tokenizer.decode(outputs[i], skip_special_tokens=True)}')
+print(f'Generated &lcubi}: &lcubtokenizer.decode(outputs[i], skip_special_tokens=True)}')
 
 tokenizer = AutoTokenizer.from_pretrained('ctrl')   # Initialize tokenizer
 model = TFAutoModelWithLMHead.from_pretrained('ctrl')    # Download model and configuration from huggingface.co and cache.
 input_context = 'Legal My neighbor is'  # "Legal" is one of the control codes for ctrl
 input_ids = tokenizer.encode(input_context, return_tensors='tf')  # encode input context
 outputs = model.generate(input_ids=input_ids, max_length=50, temperature=0.7, repetition_penalty=1.2)  # generate sequences
-print(f'Generated: {tokenizer.decode(outputs[0], skip_special_tokens=True)}')
+print(f'Generated: &lcubtokenizer.decode(outputs[0], skip_special_tokens=True)}')
 
 tokenizer = AutoTokenizer.from_pretrained('gpt2')   # Initialize tokenizer
 model = TFAutoModelWithLMHead.from_pretrained('gpt2')    # Download model and configuration from huggingface.co and cache.
@@ -2199,7 +2246,7 @@ Most of these parameters are explained in more detail in [this blog post](https:
 - **top_k** (`int`, _optional_, defaults to 50) --
   The number of highest probability vocabulary tokens to keep for top-k-filtering.
 - **top_p** (`float`, _optional_, defaults to 1.0) --
-  If set to float < 1, only the most probable tokens with probabilities that add up to `top_p` or
+  If set to float &amp;lt; 1, only the most probable tokens with probabilities that add up to `top_p` or
   higher are kept for generation.
 - **pad_token_id** (`int`, _optional_) --
   The id of the _padding_ token.
@@ -2252,13 +2299,13 @@ A Mixin containing the functionality to push a model or tokenizer to the hub.
 > **push\_to\_hub**(self, repo_path_or_name: typing.Optional[str] = None, repo_url: typing.Optional[str] = None, use_temp_dir: bool = False, commit_message: typing.Optional[str] = None, organization: typing.Optional[str] = None, private: typing.Optional[bool] = None, use_auth_token: typing.Union[bool, str, NoneType] = None)
 
 
-Upload the {object_files} to the 🤗 Model Hub while synchronizing a local clone of the repo in
+Upload the &lcubobject_files} to the 🤗 Model Hub while synchronizing a local clone of the repo in
 `repo_path_or_name`.
 
 > Parameters
 
 - **repo_path_or_name** (`str`, _optional_) --
-  Can either be a repository name for your {object} in the Hub or a path to a local folder (in which case
+  Can either be a repository name for your &lcubobject} in the Hub or a path to a local folder (in which case
   the repository will have the name of that local folder). If not specified, will default to the name
   given by `repo_url` and a local directory with that name will be created.
 - **repo_url** (`str`, _optional_) --
@@ -2270,9 +2317,9 @@ Upload the {object_files} to the 🤗 Model Hub while synchronizing a local clon
   the current working directory. This will slow things down if you are making changes in an existing repo
   since you will need to clone the repo before every push.
 - **commit_message** (`str`, _optional_) --
-  Message to commit while pushing. Will default to `"add {object}"`.
+  Message to commit while pushing. Will default to `"add &lcubobject}"`.
 - **organization** (`str`, _optional_) --
-  Organization in which you want to push your {object} (you must be a member of this organization).
+  Organization in which you want to push your &lcubobject} (you must be a member of this organization).
 - **private** (`bool`, _optional_) --
   Whether or not the repository created should be private (requires a paying subscription).
 - **use_auth_token** (`bool` or `str`, _optional_) --
@@ -2283,7 +2330,7 @@ Upload the {object_files} to the 🤗 Model Hub while synchronizing a local clon
 
 > Returns
 
-The url of the commit of your {object} in the given repository.
+The url of the commit of your &lcubobject} in the given repository.
 
 > Return type
 
@@ -2292,22 +2339,22 @@ The url of the commit of your {object} in the given repository.
 > Examples:
 
 ```python
-from transformers import {object_class}
+from transformers import &lcubobject_class}
 
-{object} = {object_class}.from_pretrained("bert-base-cased")
+&lcubobject} = &lcubobject_class}.from_pretrained("bert-base-cased")
 
-# Push the {object} to your namespace with the name "my-finetuned-bert" and have a local clone in the
+# Push the &lcubobject} to your namespace with the name "my-finetuned-bert" and have a local clone in the
 # _my-finetuned-bert_ folder.
-{object}.push_to_hub("my-finetuned-bert")
+&lcubobject}.push_to_hub("my-finetuned-bert")
 
-# Push the {object} to your namespace with the name "my-finetuned-bert" with no local clone.
-{object}.push_to_hub("my-finetuned-bert", use_temp_dir=True)
+# Push the &lcubobject} to your namespace with the name "my-finetuned-bert" with no local clone.
+&lcubobject}.push_to_hub("my-finetuned-bert", use_temp_dir=True)
 
-# Push the {object} to an organization with the name "my-finetuned-bert" and have a local clone in the
+# Push the &lcubobject} to an organization with the name "my-finetuned-bert" and have a local clone in the
 # _my-finetuned-bert_ folder.
-{object}.push_to_hub("my-finetuned-bert", organization="huggingface")
+&lcubobject}.push_to_hub("my-finetuned-bert", organization="huggingface")
 
 # Make a change to an existing repo that has been cloned locally in _my-finetuned-bert_.
-{object}.push_to_hub("my-finetuned-bert", repo_url="https://huggingface.co/sgugger/my-finetuned-bert")
+&lcubobject}.push_to_hub("my-finetuned-bert", repo_url="https://huggingface.co/sgugger/my-finetuned-bert")
 ```
 

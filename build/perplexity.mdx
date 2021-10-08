@@ -1,8 +1,8 @@
-<script>
+&amp;lt;script>
 import Tip from "../../Tip.svelte";
 import Youtube from "../../Youtube.svelte";	
 export let fw: "pt" | "tf"
-</script>
+&amp;lt;/script>
 
 <!--Copyright 2020 The HuggingFace Team. All rights reserved.
 
@@ -25,11 +25,11 @@ models) and is not well defined for masked language models like BERT (see [summa
 Perplexity is defined as the exponentiated average negative log-likelihood of a sequence. If we have a tokenized
 sequence \\(X = (x_0, x_1, \dots, x_t)\\), then the perplexity of \\(X\\) is,
 
-$$\text{PPL}(X)
-= \exp \left\{ {-\frac{1}{t}\sum_i^t \log p_\theta (x_i|x_{<i}) } \right\}$$
+$$\text&lcubPPL}(X)
+= \exp \left\&lcub &lcub-\frac&lcub1}&lcubt}\sum_i^t \log p_\theta (x_i|x_&lcub&amp;lt;i}) } \right\}$$
 
-where \\(\log p_\theta (x_i|x_{<i})\\) is the log-likelihood of the ith token conditioned on the preceding tokens
-\\(x_{<i}\\) according to our model. Intuitively, it can be thought of as an evaluation of the model's ability to
+where \\(\log p_\theta (x_i|x_&lcub&amp;lt;i})\\) is the log-likelihood of the ith token conditioned on the preceding tokens
+\\(x_&lcub&amp;lt;i}\\) according to our model. Intuitively, it can be thought of as an evaluation of the model's ability to
 predict uniformly among the set of specified tokens in a corpus. Importantly, this means that the tokenization
 procedure has a direct impact on a model's perplexity which should always be taken into consideration when comparing
 different models.
@@ -47,7 +47,7 @@ factorizing a sequence and conditioning on the entire preceding subsequence at e
 
 When working with approximate models, however, we typically have a constraint on the number of tokens the model can
 process. The largest version of [GPT-2](model_doc/gpt2.html), for example, has a fixed length of 1024 tokens, so we
-cannot calculate \\(p_\theta(x_t|x_{<t})\\) directly when \\(t\\) is greater than 1024.
+cannot calculate \\(p_\theta(x_t|x_&lcub&amp;lt;t})\\) directly when \\(t\\) is greater than 1024.
 
 Instead, the sequence is typically broken into subsequences equal to the model's maximum input size. If a model's max
 input size is \\(k\\), we then approximate the likelihood of a token \\(x_t\\) by conditioning only on the
@@ -94,7 +94,7 @@ test = load_dataset('wikitext', 'wikitext-2-raw-v1', split='test')
 encodings = tokenizer('\n\n'.join(test['text']), return_tensors='pt')
 ```
 
-With 🤗 Transformers, we can simply pass the `input_ids` as the `labels` to our model, and the average
+With 🤗 Transformers, we can simply pass the `input_ids` as the `labels` to our model, and the average negative
 log-likelihood for each token is returned as the loss. With our sliding window approach, however, there is overlap in
 the tokens we pass to the model at each iteration. We don't want the log-likelihood for the tokens we're just treating
 as context to be included in our loss, so we can set these targets to `-100` so that they are ignored. The following
@@ -103,10 +103,13 @@ for context when calculating the conditional likelihood of any one token (provid
 available to condition on).
 
 ```python
+import torch
+from tqdm import tqdm
+
 max_length = model.config.n_positions
 stride = 512
 
-lls = []
+nlls = []
 for i in tqdm(range(0, encodings.input_ids.size(1), stride)):
 begin_loc = max(i + stride - max_length, 0)
 end_loc = min(i + stride, encodings.input_ids.size(1))
@@ -117,11 +120,11 @@ target_ids[:,:-trg_len] = -100
 
 with torch.no_grad():
 outputs = model(input_ids, labels=target_ids)
-log_likelihood = outputs[0] * trg_len
+neg_log_likelihood = outputs[0] * trg_len
 
-lls.append(log_likelihood)
+nlls.append(neg_log_likelihood)
 
-ppl = torch.exp(torch.stack(lls).sum() / end_loc)
+ppl = torch.exp(torch.stack(nlls).sum() / end_loc)
 ```
 
 Running this with the stride length equal to the max input length is equivalent to the suboptimal, non-sliding-window

@@ -1,8 +1,8 @@
-<script>
+&amp;lt;script>
 import Tip from "../../Tip.svelte";
 import Youtube from "../../Youtube.svelte";	
 export let fw: "pt" | "tf"
-</script>
+&amp;lt;/script>
 
 <!--Copyright 2020 The HuggingFace Team. All rights reserved.
 
@@ -27,15 +27,15 @@ Before we can fine-tune a model, we need a dataset. In this tutorial, we will sh
 [IMDB dataset](https://www.imdb.com/interfaces/): the task is to classify whether movie reviews are positive or
 negative. For examples of other tasks, refer to the [additional-resources](#additional-resources) section!
 
-<a id='data-processing'></a>
+&amp;lt;a id='data-processing'>&amp;lt;/a>
 
 ## Preparing the datasets
 
-<iframe width="560" height="315" src="https://www.youtube.com/embed/_BZearw7f0w" title="YouTube video player"
+&amp;lt;iframe width="560" height="315" src="https://www.youtube.com/embed/_BZearw7f0w" title="YouTube video player"
 frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope;
-picture-in-picture" allowfullscreen></iframe>
+picture-in-picture" allowfullscreen>&amp;lt;/iframe>
 
-We will use the [🤗 Datasets](https:/github.com/huggingface/datasets/) library to download and preprocess the IMDB
+We will use the [🤗 Datasets](https://github.com/huggingface/datasets/) library to download and preprocess the IMDB
 datasets. We will go over this part pretty quickly. Since the focus of this tutorial is on training, you should refer
 to the 🤗 Datasets [documentation](https://huggingface.co/docs/datasets/) or the [preprocessing](preprocessing.html) tutorial for
 more information.
@@ -97,13 +97,13 @@ full_eval_dataset = tokenized_datasets["test"]
 In all the examples below, we will always use `small_train_dataset` and `small_eval_dataset`. Just replace
 them by their _full_ equivalent to train or evaluate on the full dataset.
 
-<a id='trainer'></a>
+&amp;lt;a id='trainer'>&amp;lt;/a>
 
 ## Fine-tuning in PyTorch with the Trainer API
 
-<iframe width="560" height="315" src="https://www.youtube.com/embed/nvBXf7s7vTI" title="YouTube video player"
+&amp;lt;iframe width="560" height="315" src="https://www.youtube.com/embed/nvBXf7s7vTI" title="YouTube video player"
 frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope;
-picture-in-picture" allowfullscreen></iframe>
+picture-in-picture" allowfullscreen>&amp;lt;/iframe>
 
 Since PyTorch does not provide a training loop, the 🤗 Transformers library provides a [Trainer](main_classes/trainer.html#transformers.Trainer)
 API that is optimized for 🤗 Transformers models, with a wide range of training options and with built-in features like
@@ -205,13 +205,13 @@ training_args = TrainingArguments("test_trainer", evaluation_strategy="epoch")
 See the documentation of [TrainingArguments](main_classes/trainer.html#transformers.TrainingArguments) for more options.
 
 
-<a id='keras'></a>
+&amp;lt;a id='keras'>&amp;lt;/a>
 
 ## Fine-tuning with Keras
 
-<iframe width="560" height="315" src="https://www.youtube.com/embed/rnTGBy2ax1c" title="YouTube video player"
+&amp;lt;iframe width="560" height="315" src="https://www.youtube.com/embed/rnTGBy2ax1c" title="YouTube video player"
 frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope;
-picture-in-picture" allowfullscreen></iframe>
+picture-in-picture" allowfullscreen>&amp;lt;/iframe>
 
 Models can also be trained natively in TensorFlow using the Keras API. First, let's define our model:
 
@@ -234,11 +234,11 @@ tf_eval_dataset = small_eval_dataset.remove_columns(["text"]).with_format("tenso
 Then we convert everything in big tensors and use the `tf.data.Dataset.from_tensor_slices` method:
 
 ```python
-train_features = {x: tf_train_dataset[x].to_tensor() for x in tokenizer.model_input_names}
+train_features = &lcubx: tf_train_dataset[x].to_tensor() for x in tokenizer.model_input_names}
 train_tf_dataset = tf.data.Dataset.from_tensor_slices((train_features, tf_train_dataset["label"]))
 train_tf_dataset = train_tf_dataset.shuffle(len(tf_train_dataset)).batch(8)
 
-eval_features = {x: tf_eval_dataset[x].to_tensor() for x in tokenizer.model_input_names}
+eval_features = &lcubx: tf_eval_dataset[x].to_tensor() for x in tokenizer.model_input_names}
 eval_tf_dataset = tf.data.Dataset.from_tensor_slices((eval_features, tf_eval_dataset["label"]))
 eval_tf_dataset = eval_tf_dataset.batch(8)
 ```
@@ -265,13 +265,13 @@ model.save_pretrained("my_imdb_model")
 pytorch_model = AutoModelForSequenceClassification.from_pretrained("my_imdb_model", from_tf=True)
 ```
 
-<a id='pytorch_native'></a>
+&amp;lt;a id='pytorch_native'>&amp;lt;/a>
 
 ## Fine-tuning in native PyTorch
 
-<iframe width="560" height="315" src="https://www.youtube.com/embed/Dh9CL8fyG80" title="YouTube video player"
+&amp;lt;iframe width="560" height="315" src="https://www.youtube.com/embed/Dh9CL8fyG80" title="YouTube video player"
 frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope;
-picture-in-picture" allowfullscreen></iframe>
+picture-in-picture" allowfullscreen>&amp;lt;/iframe>
 
 You might need to restart your notebook at this stage to free some memory, or execute the following code:
 
@@ -363,7 +363,7 @@ progress_bar = tqdm(range(num_training_steps))
 model.train()
 for epoch in range(num_epochs):
 for batch in train_dataloader:
-batch = {k: v.to(device) for k, v in batch.items()}
+batch = &lcubk: v.to(device) for k, v in batch.items()}
 outputs = model(**batch)
 loss = outputs.loss
 loss.backward()
@@ -387,7 +387,7 @@ result when the loop is finished.
 metric= load_metric("accuracy")
 model.eval()
 for batch in eval_dataloader:
-batch = {k: v.to(device) for k, v in batch.items()}
+batch = &lcubk: v.to(device) for k, v in batch.items()}
 with torch.no_grad():
 outputs = model(**batch)
 
@@ -398,7 +398,7 @@ metric.add_batch(predictions=predictions, references=batch["labels"])
 metric.compute()
 ```
 
-<a id='additional-resources'></a>
+&amp;lt;a id='additional-resources'>&amp;lt;/a>
 
 ## Additional resources
 

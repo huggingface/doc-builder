@@ -1,8 +1,8 @@
-<script>
+&amp;lt;script>
 import Tip from "../../Tip.svelte";
 import Youtube from "../../Youtube.svelte";	
 export let fw: "pt" | "tf"
-</script>
+&amp;lt;/script>
 
 # TAPAS
 
@@ -191,14 +191,14 @@ are already in the TSV file of step 2. Here's an example:
 >>> model_name = 'google/tapas-base'
 >>> tokenizer = TapasTokenizer.from_pretrained(model_name)
 
->>> data = {'Actors': ["Brad Pitt", "Leonardo Di Caprio", "George Clooney"], 'Number of movies': ["87", "53", "69"]}
+>>> data = &lcub'Actors': ["Brad Pitt", "Leonardo Di Caprio", "George Clooney"], 'Number of movies': ["87", "53", "69"]}
 >>> queries = ["What is the name of the first actor?", "How many movies has George Clooney played in?", "What is the total number of movies?"]
 >>> answer_coordinates = [[(0, 0)], [(2, 1)], [(0, 1), (1, 1), (2, 1)]]
 >>> answer_text = [["Brad Pitt"], ["69"], ["209"]]
 >>> table = pd.DataFrame.from_dict(data)
 >>> inputs = tokenizer(table=table, queries=queries, answer_coordinates=answer_coordinates, answer_text=answer_text, padding='max_length', return_tensors='pt')
 >>> inputs
-{'input_ids': tensor([[ ... ]]), 'attention_mask': tensor([[...]]), 'token_type_ids': tensor([[[...]]]),
+&lcub'input_ids': tensor([[ ... ]]), 'attention_mask': tensor([[...]]), 'token_type_ids': tensor([[[...]]]),
 'numeric_values': tensor([[ ... ]]), 'numeric_values_scale: tensor([[ ... ]]), labels: tensor([[ ... ]])}
 ```
 
@@ -230,7 +230,7 @@ training example. It is advised to create a PyTorch dataset and a corresponding 
 ...                                   return_tensors="pt"
 ...         )
 ...         # remove the batch dimension which the tokenizer adds by default
-...         encoding = {key: val.squeeze(0) for key, val in encoding.items()}
+...         encoding = &lcubkey: val.squeeze(0) for key, val in encoding.items()}
 ...         # add the float_answer which is also required (weak supervision for aggregation case)
 ...         encoding["float_answer"] = torch.tensor(item.float_answer) 
 ...         return encoding
@@ -317,7 +317,7 @@ of that:
 >>> model = TapasForQuestionAnswering.from_pretrained(model_name)
 >>> tokenizer = TapasTokenizer.from_pretrained(model_name)
 
->>> data = {'Actors': ["Brad Pitt", "Leonardo Di Caprio", "George Clooney"], 'Number of movies': ["87", "53", "69"]}
+>>> data = &lcub'Actors': ["Brad Pitt", "Leonardo Di Caprio", "George Clooney"], 'Number of movies': ["87", "53", "69"]}
 >>> queries = ["What is the name of the first actor?", "How many movies has George Clooney played in?", "What is the total number of movies?"]
 >>> table = pd.DataFrame.from_dict(data)
 >>> inputs = tokenizer(table=table, queries=queries, padding='max_length', return_tensors="pt") 
@@ -329,7 +329,7 @@ of that:
 ... )
 
 >>> # let's print out the results:
->>> id2aggregation = {0: "NONE", 1: "SUM", 2: "AVERAGE", 3:"COUNT"}
+>>> id2aggregation = &lcub0: "NONE", 1: "SUM", 2: "AVERAGE", 3:"COUNT"}
 >>> aggregation_predictions_string = [id2aggregation[x] for x in predicted_aggregation_indices]
 
 >>> answers = []
@@ -394,7 +394,7 @@ Output type of [TapasForQuestionAnswering](model_doc/tapas.html#transformers.Tap
 ## TapasConfig
 
 <a id='transformers.TapasConfig'></a>
-> **class transformers.TapasConfig**(vocab_size = 30522, hidden_size = 768, num_hidden_layers = 12, num_attention_heads = 12, intermediate_size = 3072, hidden_act = gelu, hidden_dropout_prob = 0.1, attention_probs_dropout_prob = 0.1, max_position_embeddings = 1024, type_vocab_sizes = [3, 256, 256, 2, 256, 256, 10], initializer_range = 0.02, layer_norm_eps = 1e-12, pad_token_id = 0, gradient_checkpointing = False, positive_label_weight = 10.0, num_aggregation_labels = 0, aggregation_loss_weight = 1.0, use_answer_as_supervision = None, answer_loss_importance = 1.0, use_normalized_answer_loss = False, huber_loss_delta = None, temperature = 1.0, aggregation_temperature = 1.0, use_gumbel_for_cells = False, use_gumbel_for_aggregation = False, average_approximation_function = ratio, cell_selection_preference = None, answer_loss_cutoff = None, max_num_rows = 64, max_num_columns = 32, average_logits_per_cell = False, select_one_column = True, allow_empty_column_selection = False, init_cell_selection_weights_to_zero = False, reset_position_index_per_cell = True, disable_per_token_loss = False, aggregation_labels = None, no_aggregation_label_index = None, **kwargs)
+> **class transformers.TapasConfig**(vocab_size = 30522, hidden_size = 768, num_hidden_layers = 12, num_attention_heads = 12, intermediate_size = 3072, hidden_act = gelu, hidden_dropout_prob = 0.1, attention_probs_dropout_prob = 0.1, max_position_embeddings = 1024, type_vocab_sizes = [3, 256, 256, 2, 256, 256, 10], initializer_range = 0.02, layer_norm_eps = 1e-12, pad_token_id = 0, positive_label_weight = 10.0, num_aggregation_labels = 0, aggregation_loss_weight = 1.0, use_answer_as_supervision = None, answer_loss_importance = 1.0, use_normalized_answer_loss = False, huber_loss_delta = None, temperature = 1.0, aggregation_temperature = 1.0, use_gumbel_for_cells = False, use_gumbel_for_aggregation = False, average_approximation_function = ratio, cell_selection_preference = None, answer_loss_cutoff = None, max_num_rows = 64, max_num_columns = 32, average_logits_per_cell = False, select_one_column = True, allow_empty_column_selection = False, init_cell_selection_weights_to_zero = False, reset_position_index_per_cell = True, disable_per_token_loss = False, aggregation_labels = None, no_aggregation_label_index = None, **kwargs)
 
 
 This is the configuration class to store the configuration of a [TapasModel](model_doc/tapas.html#transformers.TapasModel). It is used to
@@ -435,8 +435,6 @@ implementation. Original implementation available at https://github.com/google-r
   The standard deviation of the truncated_normal_initializer for initializing all weight matrices.
 - **layer_norm_eps** (`float`, _optional_, defaults to 1e-12) --
   The epsilon used by the layer normalization layers.
-- **gradient_checkpointing** (`bool`, _optional_, defaults to `False`) --
-  Whether to use gradient checkpointing to save memory at the expense of a slower backward pass.
 - **positive_label_weight** (`float`, _optional_, defaults to 10.0) --
   Weight for positive labels.
 - **num_aggregation_labels** (`int`, _optional_, defaults to 0) --
@@ -486,7 +484,7 @@ implementation. Original implementation available at https://github.com/google-r
   Whether to disable any (strong or weak) supervision on cells.
 - **aggregation_labels** (`Dict[int, label]`, _optional_) --
   The aggregation labels used to aggregate the results. For example, the WTQ models have the following
-  aggregation labels: `{0: "NONE", 1: "SUM", 2: "AVERAGE", 3: "COUNT"}`
+  aggregation labels: `&lcub0: "NONE", 1: "SUM", 2: "AVERAGE", 3: "COUNT"}`
 - **no_aggregation_label_index** (`int`, _optional_) --
   If the aggregation labels are defined and one of these labels represents "No aggregation", this should be
   set to its index. For example, the WTQ models have the "NONE" aggregation label at index 0, so that value
@@ -576,7 +574,7 @@ splitting and wordpiece.
   Whether or not to strip all accents. If this option is not specified, then it will be determined by the
   value for `lowercase` (as in the original BERT).
 - **cell_trim_length** (`int`, _optional_, defaults to -1) --
-  If > 0: Trim cells so that the length is <= this value. Also disables further cell trimming, should thus be
+  If > 0: Trim cells so that the length is &amp;lt;= this value. Also disables further cell trimming, should thus be
   used with `truncation` set to `True`.
 - **max_column_id** (`int`, _optional_) --
   Max column id to extract.
@@ -818,7 +816,7 @@ various elements depending on the configuration ([TapasConfig](model_doc/tapas.h
 >>> tokenizer = TapasTokenizer.from_pretrained('google/tapas-base')
 >>> model = TapasModel.from_pretrained('google/tapas-base')
 
->>> data = {'Actors': ["Brad Pitt", "Leonardo Di Caprio", "George Clooney"],
+>>> data = &lcub'Actors': ["Brad Pitt", "Leonardo Di Caprio", "George Clooney"],
 ...         'Age': ["56", "45", "59"],
 ...         'Number of movies': ["87", "53", "69"]
 ... }
@@ -945,7 +943,7 @@ various elements depending on the configuration ([TapasConfig](model_doc/tapas.h
 >>> tokenizer = TapasTokenizer.from_pretrained('google/tapas-base')
 >>> model = TapasForMaskedLM.from_pretrained('google/tapas-base')
 
->>> data = {'Actors': ["Brad Pitt", "Leonardo Di Caprio", "George Clooney"],
+>>> data = &lcub'Actors': ["Brad Pitt", "Leonardo Di Caprio", "George Clooney"],
 ...         'Age': ["56", "45", "59"],
 ...         'Number of movies': ["87", "53", "69"]
 ... }
@@ -1077,7 +1075,7 @@ various elements depending on the configuration ([TapasConfig](model_doc/tapas.h
 >>> tokenizer = TapasTokenizer.from_pretrained('google/tapas-base-finetuned-tabfact')
 >>> model = TapasForSequenceClassification.from_pretrained('google/tapas-base-finetuned-tabfact')
 
->>> data = {'Actors': ["Brad Pitt", "Leonardo Di Caprio", "George Clooney"],
+>>> data = &lcub'Actors': ["Brad Pitt", "Leonardo Di Caprio", "George Clooney"],
 ...         'Age': ["56", "45", "59"],
 ...         'Number of movies': ["87", "53", "69"]
 ... }
@@ -1230,7 +1228,7 @@ various elements depending on the configuration ([TapasConfig](model_doc/tapas.h
 >>> tokenizer = TapasTokenizer.from_pretrained('google/tapas-base-finetuned-wtq')
 >>> model = TapasForQuestionAnswering.from_pretrained('google/tapas-base-finetuned-wtq')
 
->>> data = {'Actors': ["Brad Pitt", "Leonardo Di Caprio", "George Clooney"],
+>>> data = &lcub'Actors': ["Brad Pitt", "Leonardo Di Caprio", "George Clooney"],
 ...         'Age': ["56", "45", "59"],
 ...         'Number of movies': ["87", "53", "69"]
 ... }

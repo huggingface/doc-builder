@@ -1,8 +1,8 @@
-<script>
+&amp;lt;script>
 import Tip from "../../Tip.svelte";
 import Youtube from "../../Youtube.svelte";	
 export let fw: "pt" | "tf"
-</script>
+&amp;lt;/script>
 
 <!--Copyright 2021 The HuggingFace Team. All rights reserved.
 
@@ -50,7 +50,7 @@ This model was contributed by [patrickvonplaten](https://huggingface.co/patrickv
 ## HubertConfig
 
 <a id='transformers.HubertConfig'></a>
-> **class transformers.HubertConfig**(vocab_size = 32, hidden_size = 768, num_hidden_layers = 12, num_attention_heads = 12, intermediate_size = 3072, hidden_act = gelu, hidden_dropout = 0.1, activation_dropout = 0.1, attention_dropout = 0.1, feat_proj_dropout = 0.1, final_dropout = 0.1, layerdrop = 0.1, initializer_range = 0.02, layer_norm_eps = 1e-05, feat_extract_norm = group, feat_extract_activation = gelu, conv_dim = (512, 512, 512, 512, 512, 512, 512), conv_stride = (5, 2, 2, 2, 2, 2, 2), conv_kernel = (10, 3, 3, 3, 3, 2, 2), conv_bias = False, num_conv_pos_embeddings = 128, num_conv_pos_embedding_groups = 16, do_stable_layer_norm = False, apply_spec_augment = True, mask_time_prob = 0.05, mask_time_length = 10, mask_feature_prob = 0.0, mask_feature_length = 10, ctc_loss_reduction = sum, ctc_zero_infinity = False, use_weighted_layer_sum = False, classifier_proj_size = 256, gradient_checkpointing = False, pad_token_id = 0, bos_token_id = 1, eos_token_id = 2, **kwargs)
+> **class transformers.HubertConfig**(vocab_size = 32, hidden_size = 768, num_hidden_layers = 12, num_attention_heads = 12, intermediate_size = 3072, hidden_act = gelu, hidden_dropout = 0.1, activation_dropout = 0.1, attention_dropout = 0.1, feat_proj_dropout = 0.0, final_dropout = 0.1, layerdrop = 0.1, initializer_range = 0.02, layer_norm_eps = 1e-05, feat_extract_norm = group, feat_extract_activation = gelu, conv_dim = (512, 512, 512, 512, 512, 512, 512), conv_stride = (5, 2, 2, 2, 2, 2, 2), conv_kernel = (10, 3, 3, 3, 3, 2, 2), conv_bias = False, num_conv_pos_embeddings = 128, num_conv_pos_embedding_groups = 16, do_stable_layer_norm = False, apply_spec_augment = True, mask_time_prob = 0.05, mask_time_length = 10, mask_feature_prob = 0.0, mask_feature_length = 10, ctc_loss_reduction = sum, ctc_zero_infinity = False, use_weighted_layer_sum = False, classifier_proj_size = 256, pad_token_id = 0, bos_token_id = 1, eos_token_id = 2, **kwargs)
 
 
 This is the configuration class to store the configuration of a [HubertModel](model_doc/hubert.html#transformers.HubertModel). It is used to
@@ -80,10 +80,12 @@ outputs. Read the documentation from [PretrainedConfig](main_classes/configurati
 - **hidden_act** (`str` or `function`, _optional_, defaults to `"gelu"`) --
   The non-linear activation function (function or string) in the encoder and pooler. If string,
   `"gelu"`, `"relu"`, `"selu"` and `"gelu_new"` are supported.
-- **hidden_dropout_prob** (`float`, _optional_, defaults to 0.1) --
-  The dropout probabilitiy for all fully connected layers in the embeddings, encoder, and pooler.
-- **attention_probs_dropout_prob** (`float`, _optional_, defaults to 0.1) --
+- **hidden_dropout(`float`,** _optional_, defaults to 0.1) --
+  The dropout probability for all fully connected layers in the embeddings, encoder, and pooler.
+- **attention_dropout(`float`,** _optional_, defaults to 0.1) --
   The dropout ratio for the attention probabilities.
+- **final_dropout** (`float`, _optional_, defaults to 0.1) --
+  The dropout probabilitiy for the final projection layer of [Wav2Vec2ForCTC](model_doc/wav2vec2.html#transformers.Wav2Vec2ForCTC).
 - **initializer_range** (`float`, _optional_, defaults to 0.02) --
   The standard deviation of the truncated_normal_initializer for initializing all weight matrices.
 - **layer_norm_eps** (`float`, _optional_, defaults to 1e-12) --
@@ -92,8 +94,8 @@ outputs. Read the documentation from [PretrainedConfig](main_classes/configurati
   The norm to be applied to 1D convolutional layers in feature extractor. One of `"group"` for group
   normalization of only the first 1D convolutional layer or `"layer"` for layer normalization of all 1D
   convolutional layers.
-- **feat_extract_dropout** (`float`, _optional_, defaults to 0.0) --
-  The dropout probabilitiy for all 1D convolutional layers in feature extractor.
+- **feat_proj_dropout** (`float`, _optional_, defaults to 0.0) --
+  The dropout probability for output of the feature extractor.
 - **feat_extract_activation** (`str, `optional`, defaults to `"gelu"`) --
   The non-linear activation function (function or string) in the 1D convolutional layers of the feature
   extractor. If string, `"gelu"`, `"relu"`, `"selu"` and `"gelu_new"` are supported.
@@ -143,8 +145,6 @@ outputs. Read the documentation from [PretrainedConfig](main_classes/configurati
   instance of [HubertForSequenceClassification](model_doc/hubert.html#transformers.HubertForSequenceClassification).
 - **classifier_proj_size** (`int`, _optional_, defaults to 256) --
   Dimensionality of the projection before token mean-pooling for classification.
-- **gradient_checkpointing** (`bool`, _optional_, defaults to `False`) --
-  If True, use gradient checkpointing to save memory at the expense of slower backward pass.
 
 > Example:
 
@@ -576,7 +576,7 @@ the first positional argument :
 - a list of varying length with one or several input Tensors IN THE ORDER given in the docstring:
   `model([input_values, attention_mask])` or `model([input_values, attention_mask, token_type_ids])`
 - a dictionary with one or several input Tensors associated to the input names given in the docstring:
-  `model({"input_values": input_values, "token_type_ids": token_type_ids})`
+  `model(&lcub"input_values": input_values, "token_type_ids": token_type_ids})`
 
 </Tip>
 
@@ -603,7 +603,7 @@ processing steps while the latter silently ignores them.
 
 > Parameters
 
-- **input_values** (`np.ndarray`, `tf.Tensor`, `List[tf.Tensor]` ``Dict[str, tf.Tensor]` or `Dict[str, np.ndarray]` and each example must have the shape `({0})`) --
+- **input_values** (`np.ndarray`, `tf.Tensor`, `List[tf.Tensor]` ``Dict[str, tf.Tensor]` or `Dict[str, np.ndarray]` and each example must have the shape `(&lcub0})`) --
   Indices of input sequence tokens in the vocabulary.
 
   Indices can be obtained using [BertTokenizer](model_doc/bert.html#transformers.BertTokenizer). See
@@ -611,21 +611,21 @@ processing steps while the latter silently ignores them.
   details.
 
   [What are input IDs?](../glossary.html#input-ids)
-- **attention_mask** (`np.ndarray` or `tf.Tensor` of shape `({0})`, _optional_) --
+- **attention_mask** (`np.ndarray` or `tf.Tensor` of shape `(&lcub0})`, _optional_) --
   Mask to avoid performing attention on padding token indices. Mask values selected in `[0, 1]`:
 
   - 1 for tokens that are **not masked**,
   - 0 for tokens that are **masked**.
 
   [What are attention masks?](../glossary.html#attention-mask)
-- **token_type_ids** (`np.ndarray` or `tf.Tensor` of shape `({0})`, _optional_) --
+- **token_type_ids** (`np.ndarray` or `tf.Tensor` of shape `(&lcub0})`, _optional_) --
   Segment token indices to indicate first and second portions of the inputs. Indices are selected in `[0, 1]`:
 
   - 0 corresponds to a _sentence A_ token,
   - 1 corresponds to a _sentence B_ token.
 
   [What are token type IDs?](../glossary.html#token-type-ids)
-- **position_ids** (`np.ndarray` or `tf.Tensor` of shape `({0})`, _optional_) --
+- **position_ids** (`np.ndarray` or `tf.Tensor` of shape `(&lcub0})`, _optional_) --
   Indices of positions of each input sequence tokens in the position embeddings. Selected in the range `[0, config.max_position_embeddings - 1]`.
 
   [What are position IDs?](../glossary.html#position-ids)
@@ -635,7 +635,7 @@ processing steps while the latter silently ignores them.
   - 1 indicates the head is **not masked**,
   - 0 indicates the head is **masked**.
 
-- **inputs_embeds** (`np.ndarray` or `tf.Tensor` of shape `({0}, hidden_size)`, _optional_) --
+- **inputs_embeds** (`np.ndarray` or `tf.Tensor` of shape `(&lcub0}, hidden_size)`, _optional_) --
   Optionally, instead of passing `input_values` you can choose to directly pass an embedded
   representation. This is useful if you want more control over how to convert `input_values` indices
   into associated vectors than the model's internal embedding lookup matrix.
@@ -732,7 +732,7 @@ the first positional argument :
 - a list of varying length with one or several input Tensors IN THE ORDER given in the docstring:
   `model([input_values, attention_mask])` or `model([input_values, attention_mask, token_type_ids])`
 - a dictionary with one or several input Tensors associated to the input names given in the docstring:
-  `model({"input_values": input_values, "token_type_ids": token_type_ids})`
+  `model(&lcub"input_values": input_values, "token_type_ids": token_type_ids})`
 
 </Tip>
 
@@ -759,7 +759,7 @@ processing steps while the latter silently ignores them.
 
 > Parameters
 
-- **input_values** (`np.ndarray`, `tf.Tensor`, `List[tf.Tensor]` ``Dict[str, tf.Tensor]` or `Dict[str, np.ndarray]` and each example must have the shape `({0})`) --
+- **input_values** (`np.ndarray`, `tf.Tensor`, `List[tf.Tensor]` ``Dict[str, tf.Tensor]` or `Dict[str, np.ndarray]` and each example must have the shape `(&lcub0})`) --
   Indices of input sequence tokens in the vocabulary.
 
   Indices can be obtained using [BertTokenizer](model_doc/bert.html#transformers.BertTokenizer). See
@@ -767,21 +767,21 @@ processing steps while the latter silently ignores them.
   details.
 
   [What are input IDs?](../glossary.html#input-ids)
-- **attention_mask** (`np.ndarray` or `tf.Tensor` of shape `({0})`, _optional_) --
+- **attention_mask** (`np.ndarray` or `tf.Tensor` of shape `(&lcub0})`, _optional_) --
   Mask to avoid performing attention on padding token indices. Mask values selected in `[0, 1]`:
 
   - 1 for tokens that are **not masked**,
   - 0 for tokens that are **masked**.
 
   [What are attention masks?](../glossary.html#attention-mask)
-- **token_type_ids** (`np.ndarray` or `tf.Tensor` of shape `({0})`, _optional_) --
+- **token_type_ids** (`np.ndarray` or `tf.Tensor` of shape `(&lcub0})`, _optional_) --
   Segment token indices to indicate first and second portions of the inputs. Indices are selected in `[0, 1]`:
 
   - 0 corresponds to a _sentence A_ token,
   - 1 corresponds to a _sentence B_ token.
 
   [What are token type IDs?](../glossary.html#token-type-ids)
-- **position_ids** (`np.ndarray` or `tf.Tensor` of shape `({0})`, _optional_) --
+- **position_ids** (`np.ndarray` or `tf.Tensor` of shape `(&lcub0})`, _optional_) --
   Indices of positions of each input sequence tokens in the position embeddings. Selected in the range `[0, config.max_position_embeddings - 1]`.
 
   [What are position IDs?](../glossary.html#position-ids)
@@ -791,7 +791,7 @@ processing steps while the latter silently ignores them.
   - 1 indicates the head is **not masked**,
   - 0 indicates the head is **masked**.
 
-- **inputs_embeds** (`np.ndarray` or `tf.Tensor` of shape `({0}, hidden_size)`, _optional_) --
+- **inputs_embeds** (`np.ndarray` or `tf.Tensor` of shape `(&lcub0}, hidden_size)`, _optional_) --
   Optionally, instead of passing `input_values` you can choose to directly pass an embedded
   representation. This is useful if you want more control over how to convert `input_values` indices
   into associated vectors than the model's internal embedding lookup matrix.

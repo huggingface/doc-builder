@@ -1,8 +1,8 @@
-<script>
+&amp;lt;script>
 import Tip from "../../Tip.svelte";
 import Youtube from "../../Youtube.svelte";	
 export let fw: "pt" | "tf"
-</script>
+&amp;lt;/script>
 
 <!--Copyright 2020 The HuggingFace Team. All rights reserved.
 
@@ -20,9 +20,9 @@ specific language governing permissions and limitations under the License.
 
 On this page, we will have a closer look at tokenization.
 
-<iframe width="560" height="315" src="https://www.youtube.com/embed/VFp38yj8h3A" title="YouTube video player"
+&amp;lt;iframe width="560" height="315" src="https://www.youtube.com/embed/VFp38yj8h3A" title="YouTube video player"
 frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope;
-picture-in-picture" allowfullscreen></iframe>
+picture-in-picture" allowfullscreen>&amp;lt;/iframe>
 
 As we saw in [the preprocessing tutorial](preprocessing.html), tokenizing a text is splitting it into words or
 subwords, which then are converted to ids through a look-up table. Converting words or subwords to ids is
@@ -40,9 +40,9 @@ that the model uses [WordPiece](#wordpiece).
 Splitting a text into smaller chunks is a task that is harder than it looks, and there are multiple ways of doing so.
 For instance, let's look at the sentence `"Don't you love 🤗 Transformers? We sure do."`
 
-<iframe width="560" height="315" src="https://www.youtube.com/embed/nhJxYji1aho" title="YouTube video player"
+&amp;lt;iframe width="560" height="315" src="https://www.youtube.com/embed/nhJxYji1aho" title="YouTube video player"
 frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope;
-picture-in-picture" allowfullscreen></iframe>
+picture-in-picture" allowfullscreen>&amp;lt;/iframe>
 
 A simple way of tokenizing this text is to split it by spaces, which would give:
 
@@ -85,9 +85,9 @@ greater than 50,000, especially if they are pretrained only on a single language
 
 So if simple space and punctuation tokenization is unsatisfactory, why not simply tokenize on characters?
 
-<iframe width="560" height="315" src="https://www.youtube.com/embed/ssLq_EK2jLE" title="YouTube video player"
+&amp;lt;iframe width="560" height="315" src="https://www.youtube.com/embed/ssLq_EK2jLE" title="YouTube video player"
 frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope;
-picture-in-picture" allowfullscreen></iframe>
+picture-in-picture" allowfullscreen>&amp;lt;/iframe>
 
 While character tokenization is very simple and would greatly reduce memory and time complexity it makes it much harder
 for the model to learn meaningful input representations. *E.g.* learning a meaningful context-independent
@@ -98,9 +98,9 @@ tokenization.
 
 ### Subword tokenization
 
-<iframe width="560" height="315" src="https://www.youtube.com/embed/zHvTiHr506c" title="YouTube video player"
+&amp;lt;iframe width="560" height="315" src="https://www.youtube.com/embed/zHvTiHr506c" title="YouTube video player"
 frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope;
-picture-in-picture" allowfullscreen></iframe>
+picture-in-picture" allowfullscreen>&amp;lt;/iframe>
 
 Subword tokenization algorithms rely on the principle that frequently used words should not be split into smaller
 subwords, but rare words should be decomposed into meaningful subwords. For instance `"annoyingly"` might be
@@ -141,7 +141,7 @@ Let's now look at how the different subword tokenization algorithms work. Note t
 algorithms rely on some form of training which is usually done on the corpus the corresponding model will be trained
 on.
 
-<a id='byte-pair-encoding'></a>
+&amp;lt;a id='byte-pair-encoding'>&amp;lt;/a>
 
 ## Byte-Pair Encoding (BPE)
 
@@ -194,9 +194,9 @@ is represented as
 
 Assuming, that the Byte-Pair Encoding training would stop at this point, the learned merge rules would then be applied
 to new words (as long as those new words do not include symbols that were not in the base vocabulary). For instance,
-the word `"bug"` would be tokenized to `["b", "ug"]` but `"mug"` would be tokenized as `["<unk>", "ug"]` since
+the word `"bug"` would be tokenized to `["b", "ug"]` but `"mug"` would be tokenized as `["&amp;lt;unk>", "ug"]` since
 the symbol `"m"` is not in the base vocabulary. In general, single letters such as `"m"` are not replaced by the
-`"<unk>"` symbol because the training data usually includes at least one occurrence of each letter, but it is likely
+`"&amp;lt;unk>"` symbol because the training data usually includes at least one occurrence of each letter, but it is likely
 to happen for very special characters like emojis.
 
 As mentioned earlier, the vocabulary size, *i.e.* the base vocabulary size + the number of merges, is a hyperparameter
@@ -209,11 +209,11 @@ A base vocabulary that includes all possible base characters can be quite large 
 considered as base characters. To have a better base vocabulary, [GPT-2](https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf) uses bytes
 as the base vocabulary, which is a clever trick to force the base vocabulary to be of size 256 while ensuring that
 every base character is included in the vocabulary. With some additional rules to deal with punctuation, the GPT2's
-tokenizer can tokenize every text without the need for the <unk> symbol. [GPT-2](model_doc/gpt.html) has a vocabulary
+tokenizer can tokenize every text without the need for the &amp;lt;unk> symbol. [GPT-2](model_doc/gpt.html) has a vocabulary
 size of 50,257, which corresponds to the 256 bytes base tokens, a special end-of-text token and the symbols learned
 with 50,000 merges.
 
-<a id='wordpiece'></a>
+&amp;lt;a id='wordpiece'>&amp;lt;/a>
 
 #### WordPiece
 
@@ -230,7 +230,7 @@ merged if the probability of `"ug"` divided by `"u"`, `"g"` would have been grea
 pair. Intuitively, WordPiece is slightly different to BPE in that it evaluates what it _loses_ by merging two symbols
 to make ensure it's _worth it_.
 
-<a id='unigram'></a>
+&amp;lt;a id='unigram'>&amp;lt;/a>
 
 #### Unigram
 
@@ -262,12 +262,12 @@ likely tokenization in practice, but also offers the possibility to sample a pos
 probabilities.
 
 Those probabilities are defined by the loss the tokenizer is trained on. Assuming that the training data consists of
-the words \\(x_{1}, \dots, x_{N}\\) and that the set of all possible tokenizations for a word \\(x_{i}\\) is
-defined as \\(S(x_{i})\\), then the overall loss is defined as
+the words \\(x_&lcub1}, \dots, x_&lcubN}\\) and that the set of all possible tokenizations for a word \\(x_&lcubi}\\) is
+defined as \\(S(x_&lcubi})\\), then the overall loss is defined as
 
-$$\mathcal{L} = -\sum_{i=1}^{N} \log \left ( \sum_{x \in S(x_{i})} p(x) \right )$$
+$$\mathcal&lcubL} = -\sum_&lcubi=1}^&lcubN} \log \left ( \sum_&lcubx \in S(x_&lcubi})} p(x) \right )$$
 
-<a id='sentencepiece'></a>
+&amp;lt;a id='sentencepiece'>&amp;lt;/a>
 
 #### SentencePiece
 

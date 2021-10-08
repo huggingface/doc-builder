@@ -1,8 +1,8 @@
-<script>
+&amp;lt;script>
 import Tip from "../../Tip.svelte";
 import Youtube from "../../Youtube.svelte";	
 export let fw: "pt" | "tf"
-</script>
+&amp;lt;/script>
 
 <!--Copyright 2020 The HuggingFace Team. All rights reserved.
 
@@ -69,9 +69,9 @@ from transformers import Trainer
 
 class MultilabelTrainer(Trainer):
 def compute_loss(self, model, inputs, return_outputs=False):
-labels = inputs.pop("labels")
+labels = inputs.get("labels")
 outputs = model(**inputs)
-logits = outputs.logits
+logits = outputs.get('logits')
 loss_fct = nn.BCEWithLogitsLoss()
 loss = loss_fct(logits.view(-1, self.model.config.num_labels),
 labels.float().view(-1, self.model.config.num_labels))
@@ -132,9 +132,9 @@ they work the same way as the 🤗 Transformers models.
   A function that instantiates the model to be used. If provided, each call to
   [train()](main_classes/trainer.html#transformers.Trainer.train) will start from a new instance of the model as given by this function.
 
-  The function may have zero argument, or a single one containing the optuna/Ray Tune trial object, to be
-  able to choose different architectures according to hyper parameters (such as layer count, sizes of inner
-  layers, dropout probabilities etc).
+  The function may have zero argument, or a single one containing the optuna/Ray Tune/SigOpt trial object, to
+  be able to choose different architectures according to hyper parameters (such as layer count, sizes of
+  inner layers, dropout probabilities etc).
 - **compute_metrics** (`Callable[[EvalPrediction], Dict]`, _optional_) --
   The function that will be used to compute metrics at evaluation. Must take a
   [EvalPrediction](internal/trainer_utils.html#transformers.EvalPrediction) and return a dictionary string to metric values.
@@ -328,9 +328,9 @@ Subclass and override this method if you want to inject some custom behavior.
 > **hyperparameter\_search**(self, hp_space: typing.Union[typing.Callable[[ForwardRef('optuna.Trial')], typing.Dict[str, float]], NoneType] = None, compute_objective: typing.Union[typing.Callable[[typing.Dict[str, float]], float], NoneType] = None, n_trials: int = 20, direction: str = minimize, backend: typing.Union[ForwardRef('str'), transformers.trainer_utils.HPSearchBackend, NoneType] = None, hp_name: typing.Union[typing.Callable[[ForwardRef('optuna.Trial')], str], NoneType] = None, **kwargs)
 
 
-Launch an hyperparameter search using `optuna` or `Ray Tune`. The optimized quantity is determined by
-`compute_objective`, which defaults to a function returning the evaluation loss when no metric is
-provided, the sum of all metrics otherwise.
+Launch an hyperparameter search using `optuna` or `Ray Tune` or `SigOpt`. The optimized quantity is
+determined by `compute_objective`, which defaults to a function returning the evaluation loss when no
+metric is provided, the sum of all metrics otherwise.
 
 <Tip warning={true}>
 
@@ -346,7 +346,8 @@ method [create_optimizer_and_scheduler()](main_classes/trainer.html#transformers
 - **hp_space** (`Callable[["optuna.Trial"], Dict[str, float]]`, _optional_) --
   A function that defines the hyperparameter search space. Will default to
   `default_hp_space_optuna()` or
-  `default_hp_space_ray()` depending on your backend.
+  `default_hp_space_ray()` or
+  `default_hp_space_sigopt()` depending on your backend.
 - **compute_objective** (`Callable[[Dict[str, float]], float]`, _optional_) --
   A function computing the objective to minimize or maximize from the metrics returned by the
   `evaluate` method. Will default to `default_compute_objective()`.
@@ -357,14 +358,15 @@ method [create_optimizer_and_scheduler()](main_classes/trainer.html#transformers
   pick `"minimize"` when optimizing the validation loss, `"maximize"` when optimizing one or
   several metrics.
 - **backend(`str`** or `HPSearchBackend`, _optional_) --
-  The backend to use for hyperparameter search. Will default to optuna or Ray Tune, depending on which
-  one is installed. If both are installed, will default to optuna.
+  The backend to use for hyperparameter search. Will default to optuna or Ray Tune or SigOpt, depending
+  on which one is installed. If all are installed, will default to optuna.
   kwargs --
   Additional keyword arguments passed along to `optuna.create_study` or `ray.tune.run`. For
   more information see:
 
   - the documentation of [optuna.create_study](https://optuna.readthedocs.io/en/stable/reference/generated/optuna.study.create_study.html)
   - the documentation of [tune.run](https://docs.ray.io/en/latest/tune/api_docs/execution.html#tune-run)
+  - the documentation of [sigopt](https://app.sigopt.com/docs/endpoints/experiments/create)
 
 > Returns
 
@@ -379,7 +381,7 @@ All the information about the best run.
 > **init\_git\_repo**(self)
 
 
-Initializes a git repo in `self.args.push_to_hub_model_id`.
+Initializes a git repo in `self.args.hub_model_id`.
 
 
 <a id='transformers.Trainer.is_local_process_zero'></a>
@@ -628,21 +630,24 @@ Tuple[Optional[torch.Tensor], Optional[torch.Tensor], Optional[torch.Tensor]]
 
 
 <a id='transformers.Trainer.push_to_hub'></a>
-> **push\_to\_hub**(self, commit_message: typing.Optional[str] = add model, **kwargs)
+> **push\_to\_hub**(self, commit_message: typing.Optional[str] = End of training, blocking: bool = True, **kwargs)
 
 
-Upload _self.model_ and _self.tokenizer_ to the 🤗 model hub on the repo _self.args.push_to_hub_model_id_.
+Upload _self.model_ and _self.tokenizer_ to the 🤗 model hub on the repo _self.args.hub_model_id_.
 
 > Parameters
 
-- **commit_message** (`str`, _optional_, defaults to `"add model"`) --
+- **commit_message** (`str`, _optional_, defaults to `"End of training"`) --
   Message to commit while pushing.
+- **blocking** (`bool`, _optional_, defaults to `True`) --
+  Whether the function should return only when the `git push` has finished.
   kwargs --
   Additional keyword arguments passed along to `create_model_card()`.
 
 > Returns
 
-The url of the commit of your model in the given repository.
+The url of the commit of your model in the given repository if `blocking=False`, a tuple with the url
+of the commit and an object to track the progress of the commit if `blocking=True`
 
 
 <a id='transformers.Trainer.remove_callback'></a>
@@ -699,7 +704,7 @@ Under distributed environment this is done only for a process with rank 0.
 
 
 <a id='transformers.Trainer.train'></a>
-> **train**(self, resume_from_checkpoint: typing.Union[str, bool, NoneType] = None, trial: typing.Union[ForwardRef('optuna.Trial'), typing.Dict[str, typing.Any]] = None, ignore_keys_for_eval: typing.Optional[typing.List[str]] = None, **kwargs)
+> **train**(self, resume_from_checkpoint: typing.Union[bool, str, NoneType] = None, trial: typing.Union[ForwardRef('optuna.Trial'), typing.Dict[str, typing.Any]] = None, ignore_keys_for_eval: typing.Optional[typing.List[str]] = None, **kwargs)
 
 
 Main training entry point.
@@ -1085,7 +1090,7 @@ Subclass and override to inject some custom behavior.
 ## TrainingArguments
 
 <a id='transformers.TrainingArguments'></a>
-> **class transformers.TrainingArguments**(output_dir: str, overwrite_output_dir: bool = False, do_train: bool = False, do_eval: bool = False, do_predict: bool = False, evaluation_strategy: IntervalStrategy = no, prediction_loss_only: bool = False, per_device_train_batch_size: int = 8, per_device_eval_batch_size: int = 8, per_gpu_train_batch_size: typing.Optional[int] = None, per_gpu_eval_batch_size: typing.Optional[int] = None, gradient_accumulation_steps: int = 1, eval_accumulation_steps: typing.Optional[int] = None, learning_rate: float = 5e-05, weight_decay: float = 0.0, adam_beta1: float = 0.9, adam_beta2: float = 0.999, adam_epsilon: float = 1e-08, max_grad_norm: float = 1.0, num_train_epochs: float = 3.0, max_steps: int = -1, lr_scheduler_type: SchedulerType = linear, warmup_ratio: float = 0.0, warmup_steps: int = 0, log_level: typing.Optional[str] = passive, log_level_replica: typing.Optional[str] = passive, log_on_each_node: bool = True, logging_dir: typing.Optional[str] = None, logging_strategy: IntervalStrategy = steps, logging_first_step: bool = False, logging_steps: int = 500, save_strategy: IntervalStrategy = steps, save_steps: int = 500, save_total_limit: typing.Optional[int] = None, save_on_each_node: bool = False, no_cuda: bool = False, seed: int = 42, fp16: bool = False, fp16_opt_level: str = O1, fp16_backend: str = auto, fp16_full_eval: bool = False, local_rank: int = -1, tpu_num_cores: typing.Optional[int] = None, tpu_metrics_debug: bool = False, debug: str = , dataloader_drop_last: bool = False, eval_steps: int = None, dataloader_num_workers: int = 0, past_index: int = -1, run_name: typing.Optional[str] = None, disable_tqdm: typing.Optional[bool] = None, remove_unused_columns: typing.Optional[bool] = True, label_names: typing.Optional[typing.List[str]] = None, load_best_model_at_end: typing.Optional[bool] = False, metric_for_best_model: typing.Optional[str] = None, greater_is_better: typing.Optional[bool] = None, ignore_data_skip: bool = False, sharded_ddp: str = , deepspeed: typing.Optional[str] = None, label_smoothing_factor: float = 0.0, adafactor: bool = False, group_by_length: bool = False, length_column_name: typing.Optional[str] = length, report_to: typing.Optional[typing.List[str]] = None, ddp_find_unused_parameters: typing.Optional[bool] = None, dataloader_pin_memory: bool = True, skip_memory_metrics: bool = True, use_legacy_prediction_loop: bool = False, push_to_hub: bool = False, resume_from_checkpoint: typing.Optional[str] = None, push_to_hub_model_id: str = None, push_to_hub_organization: str = None, push_to_hub_token: str = None, mp_parameters: str = )
+> **class transformers.TrainingArguments**(output_dir: str, overwrite_output_dir: bool = False, do_train: bool = False, do_eval: bool = False, do_predict: bool = False, evaluation_strategy: IntervalStrategy = no, prediction_loss_only: bool = False, per_device_train_batch_size: int = 8, per_device_eval_batch_size: int = 8, per_gpu_train_batch_size: typing.Optional[int] = None, per_gpu_eval_batch_size: typing.Optional[int] = None, gradient_accumulation_steps: int = 1, eval_accumulation_steps: typing.Optional[int] = None, learning_rate: float = 5e-05, weight_decay: float = 0.0, adam_beta1: float = 0.9, adam_beta2: float = 0.999, adam_epsilon: float = 1e-08, max_grad_norm: float = 1.0, num_train_epochs: float = 3.0, max_steps: int = -1, lr_scheduler_type: SchedulerType = linear, warmup_ratio: float = 0.0, warmup_steps: int = 0, log_level: typing.Optional[str] = passive, log_level_replica: typing.Optional[str] = passive, log_on_each_node: bool = True, logging_dir: typing.Optional[str] = None, logging_strategy: IntervalStrategy = steps, logging_first_step: bool = False, logging_steps: int = 500, logging_nan_inf_filter: str = True, save_strategy: IntervalStrategy = steps, save_steps: int = 500, save_total_limit: typing.Optional[int] = None, save_on_each_node: bool = False, no_cuda: bool = False, seed: int = 42, fp16: bool = False, fp16_opt_level: str = O1, fp16_backend: str = auto, fp16_full_eval: bool = False, local_rank: int = -1, xpu_backend: str = None, tpu_num_cores: typing.Optional[int] = None, tpu_metrics_debug: bool = False, debug: str = , dataloader_drop_last: bool = False, eval_steps: int = None, dataloader_num_workers: int = 0, past_index: int = -1, run_name: typing.Optional[str] = None, disable_tqdm: typing.Optional[bool] = None, remove_unused_columns: typing.Optional[bool] = True, label_names: typing.Optional[typing.List[str]] = None, load_best_model_at_end: typing.Optional[bool] = False, metric_for_best_model: typing.Optional[str] = None, greater_is_better: typing.Optional[bool] = None, ignore_data_skip: bool = False, sharded_ddp: str = , deepspeed: typing.Optional[str] = None, label_smoothing_factor: float = 0.0, adafactor: bool = False, group_by_length: bool = False, length_column_name: typing.Optional[str] = length, report_to: typing.Optional[typing.List[str]] = None, ddp_find_unused_parameters: typing.Optional[bool] = None, dataloader_pin_memory: bool = True, skip_memory_metrics: bool = True, use_legacy_prediction_loop: bool = False, push_to_hub: bool = False, resume_from_checkpoint: typing.Optional[str] = None, hub_model_id: str = None, hub_strategy: HubStrategy = every_save, hub_token: str = None, gradient_checkpointing: bool = False, push_to_hub_model_id: str = None, push_to_hub_organization: str = None, push_to_hub_token: str = None, mp_parameters: str = )
 
 
 TrainingArguments is the subset of the arguments we use in our example scripts **which relate to the training loop
@@ -1193,6 +1198,18 @@ examples.
   Whether to log and evaluate the first `global_step` or not.
 - **logging_steps** (`int`, _optional_, defaults to 500) --
   Number of update steps between two logs if `logging_strategy="steps"`.
+- **logging_nan_inf_filter** (`bool`, _optional_, defaults to `True`) --
+  Whether to filter `nan` and `inf` losses for logging. If set to obj:_True_ the loss of every step
+  that is `nan` or `inf` is filtered and the average loss of the current logging window is taken
+  instead.
+
+<Tip>
+
+`logging_nan_inf_filter` only influences the logging of loss values, it does not change the
+behavior the gradient is computed or applied to the model.
+
+</Tip>
+
 - **save_strategy** (`str` or [IntervalStrategy](internal/trainer_utils.html#transformers.IntervalStrategy), _optional_, defaults to `"steps"`) --
   The checkpoint save strategy to adopt during training. Possible values are:
 
@@ -1230,6 +1247,8 @@ examples.
   can harm metric values.
 - **local_rank** (`int`, _optional_, defaults to -1) --
   Rank of the process during distributed training.
+- **xpu_backend** (`str`, _optional_) --
+  The backend to use for xpu distributed training. Must be one of `"mpi"` or `"ccl"`.
 - **tpu_num_cores** (`int`, _optional_) --
   When training on TPU, the number of TPU cores (automatically passed by launcher script).
 - **dataloader_drop_last** (`bool`, _optional_, defaults to `False`) --
@@ -1357,14 +1376,34 @@ When set to `True`, the parameters `save_strategy` needs to be the same as
   [Trainer](main_classes/trainer.html#transformers.Trainer), it's intended to be used by your training/evaluation scripts instead. See
   the [example scripts](https://github.com/huggingface/transformers/tree/master/examples) for more
   details.
-- **push_to_hub_model_id** (`str`, _optional_) --
-  The name of the repository to which push the [Trainer](main_classes/trainer.html#transformers.Trainer) when `push_to_hub=True`.
-  Will default to the name of `output_dir`.
-- **push_to_hub_organization** (`str`, _optional_) --
-  The name of the organization in with to which push the [Trainer](main_classes/trainer.html#transformers.Trainer).
-- **push_to_hub_token** (`str`, _optional_) --
+- **hub_model_id** (`str`, _optional_) --
+  The name of the repository to keep in sync with the local _output_dir_. Should be the whole repository
+  name, for instance `"user_name/model"`, which allows you to push to an organization you are a member
+  of with `"organization_name/model"`.
+
+  Will default to `user_name/output_dir_name` with _output_dir_name_ being the name of
+  `output_dir`.
+- **hub_strategy** (`str` or `HubStrategy`, _optional_, defaults to `"every_save"`) --
+  Defines the scope of what is pushed to the Hub and when. Possible values are:
+
+  - `"end"`: push the model, its configuration, the tokenizer (if passed along to the
+    [Trainer](main_classes/trainer.html#transformers.Trainer)) and a draft of a model card at the end of training.
+  - `"every_save"`: push the model, its configuration, the tokenizer (if passed along to the
+    [Trainer](main_classes/trainer.html#transformers.Trainer)) and a draft of a model card each time there is a model save. The pushes
+    are asynchronous to not block training, and in case the save are very frequent, a new push is only
+    attempted if the previous one is finished. A last push is made with the final model at the end of
+    training.
+  - `"checkpoint"`: like `"every_save"` but the latest checkpoint is also pushed in a subfolder
+    named last-checkpoint, allowing you to resume training easily with
+    `trainer.train(resume_from_checkpoint="last-checkpoint")`.
+  - `"all_checkpoints"`: like `"checkpoint"` but all checkpoints are pushed like they appear in the
+    output folder (so you will get one checkpoint folder per folder in your final repository)
+
+- **hub_token** (`str`, _optional_) --
   The token to use to push the model to the Hub. Will default to the token in the cache folder obtained with
   `huggingface-cli login`.
+- **gradient_checkpointing** (`bool`, _optional_, defaults to `False`) --
+  If True, use gradient checkpointing to save memory at the expense of slower backward pass.
 
 
 <a id='transformers.TrainingArguments.get_process_log_level'></a>
@@ -1418,7 +1457,8 @@ by the replicas.
 > **to\_dict**(self)
 
 
-Serializes this instance while replace _Enum_ by their values (for JSON serialization support).
+Serializes this instance while replace _Enum_ by their values (for JSON serialization support). It obfuscates
+the token values by removing their value.
 
 
 <a id='transformers.TrainingArguments.to_json_string'></a>
@@ -1438,7 +1478,7 @@ Sanitized serialization to use with TensorBoard’s hparams
 ## Seq2SeqTrainingArguments
 
 <a id='transformers.Seq2SeqTrainingArguments'></a>
-> **class transformers.Seq2SeqTrainingArguments**(output_dir: str, overwrite_output_dir: bool = False, do_train: bool = False, do_eval: bool = False, do_predict: bool = False, evaluation_strategy: IntervalStrategy = no, prediction_loss_only: bool = False, per_device_train_batch_size: int = 8, per_device_eval_batch_size: int = 8, per_gpu_train_batch_size: typing.Optional[int] = None, per_gpu_eval_batch_size: typing.Optional[int] = None, gradient_accumulation_steps: int = 1, eval_accumulation_steps: typing.Optional[int] = None, learning_rate: float = 5e-05, weight_decay: float = 0.0, adam_beta1: float = 0.9, adam_beta2: float = 0.999, adam_epsilon: float = 1e-08, max_grad_norm: float = 1.0, num_train_epochs: float = 3.0, max_steps: int = -1, lr_scheduler_type: SchedulerType = linear, warmup_ratio: float = 0.0, warmup_steps: int = 0, log_level: typing.Optional[str] = passive, log_level_replica: typing.Optional[str] = passive, log_on_each_node: bool = True, logging_dir: typing.Optional[str] = None, logging_strategy: IntervalStrategy = steps, logging_first_step: bool = False, logging_steps: int = 500, save_strategy: IntervalStrategy = steps, save_steps: int = 500, save_total_limit: typing.Optional[int] = None, save_on_each_node: bool = False, no_cuda: bool = False, seed: int = 42, fp16: bool = False, fp16_opt_level: str = O1, fp16_backend: str = auto, fp16_full_eval: bool = False, local_rank: int = -1, tpu_num_cores: typing.Optional[int] = None, tpu_metrics_debug: bool = False, debug: str = , dataloader_drop_last: bool = False, eval_steps: int = None, dataloader_num_workers: int = 0, past_index: int = -1, run_name: typing.Optional[str] = None, disable_tqdm: typing.Optional[bool] = None, remove_unused_columns: typing.Optional[bool] = True, label_names: typing.Optional[typing.List[str]] = None, load_best_model_at_end: typing.Optional[bool] = False, metric_for_best_model: typing.Optional[str] = None, greater_is_better: typing.Optional[bool] = None, ignore_data_skip: bool = False, sharded_ddp: str = , deepspeed: typing.Optional[str] = None, label_smoothing_factor: float = 0.0, adafactor: bool = False, group_by_length: bool = False, length_column_name: typing.Optional[str] = length, report_to: typing.Optional[typing.List[str]] = None, ddp_find_unused_parameters: typing.Optional[bool] = None, dataloader_pin_memory: bool = True, skip_memory_metrics: bool = True, use_legacy_prediction_loop: bool = False, push_to_hub: bool = False, resume_from_checkpoint: typing.Optional[str] = None, push_to_hub_model_id: str = None, push_to_hub_organization: str = None, push_to_hub_token: str = None, mp_parameters: str = , sortish_sampler: bool = False, predict_with_generate: bool = False, generation_max_length: typing.Optional[int] = None, generation_num_beams: typing.Optional[int] = None)
+> **class transformers.Seq2SeqTrainingArguments**(output_dir: str, overwrite_output_dir: bool = False, do_train: bool = False, do_eval: bool = False, do_predict: bool = False, evaluation_strategy: IntervalStrategy = no, prediction_loss_only: bool = False, per_device_train_batch_size: int = 8, per_device_eval_batch_size: int = 8, per_gpu_train_batch_size: typing.Optional[int] = None, per_gpu_eval_batch_size: typing.Optional[int] = None, gradient_accumulation_steps: int = 1, eval_accumulation_steps: typing.Optional[int] = None, learning_rate: float = 5e-05, weight_decay: float = 0.0, adam_beta1: float = 0.9, adam_beta2: float = 0.999, adam_epsilon: float = 1e-08, max_grad_norm: float = 1.0, num_train_epochs: float = 3.0, max_steps: int = -1, lr_scheduler_type: SchedulerType = linear, warmup_ratio: float = 0.0, warmup_steps: int = 0, log_level: typing.Optional[str] = passive, log_level_replica: typing.Optional[str] = passive, log_on_each_node: bool = True, logging_dir: typing.Optional[str] = None, logging_strategy: IntervalStrategy = steps, logging_first_step: bool = False, logging_steps: int = 500, logging_nan_inf_filter: str = True, save_strategy: IntervalStrategy = steps, save_steps: int = 500, save_total_limit: typing.Optional[int] = None, save_on_each_node: bool = False, no_cuda: bool = False, seed: int = 42, fp16: bool = False, fp16_opt_level: str = O1, fp16_backend: str = auto, fp16_full_eval: bool = False, local_rank: int = -1, xpu_backend: str = None, tpu_num_cores: typing.Optional[int] = None, tpu_metrics_debug: bool = False, debug: str = , dataloader_drop_last: bool = False, eval_steps: int = None, dataloader_num_workers: int = 0, past_index: int = -1, run_name: typing.Optional[str] = None, disable_tqdm: typing.Optional[bool] = None, remove_unused_columns: typing.Optional[bool] = True, label_names: typing.Optional[typing.List[str]] = None, load_best_model_at_end: typing.Optional[bool] = False, metric_for_best_model: typing.Optional[str] = None, greater_is_better: typing.Optional[bool] = None, ignore_data_skip: bool = False, sharded_ddp: str = , deepspeed: typing.Optional[str] = None, label_smoothing_factor: float = 0.0, adafactor: bool = False, group_by_length: bool = False, length_column_name: typing.Optional[str] = length, report_to: typing.Optional[typing.List[str]] = None, ddp_find_unused_parameters: typing.Optional[bool] = None, dataloader_pin_memory: bool = True, skip_memory_metrics: bool = True, use_legacy_prediction_loop: bool = False, push_to_hub: bool = False, resume_from_checkpoint: typing.Optional[str] = None, hub_model_id: str = None, hub_strategy: HubStrategy = every_save, hub_token: str = None, gradient_checkpointing: bool = False, push_to_hub_model_id: str = None, push_to_hub_organization: str = None, push_to_hub_token: str = None, mp_parameters: str = , sortish_sampler: bool = False, predict_with_generate: bool = False, generation_max_length: typing.Optional[int] = None, generation_num_beams: typing.Optional[int] = None)
 
 
 TrainingArguments is the subset of the arguments we use in our example scripts **which relate to the training loop
@@ -1546,6 +1586,18 @@ examples.
   Whether to log and evaluate the first `global_step` or not.
 - **logging_steps** (`int`, _optional_, defaults to 500) --
   Number of update steps between two logs if `logging_strategy="steps"`.
+- **logging_nan_inf_filter** (`bool`, _optional_, defaults to `True`) --
+  Whether to filter `nan` and `inf` losses for logging. If set to obj:_True_ the loss of every step
+  that is `nan` or `inf` is filtered and the average loss of the current logging window is taken
+  instead.
+
+<Tip>
+
+`logging_nan_inf_filter` only influences the logging of loss values, it does not change the
+behavior the gradient is computed or applied to the model.
+
+</Tip>
+
 - **save_strategy** (`str` or [IntervalStrategy](internal/trainer_utils.html#transformers.IntervalStrategy), _optional_, defaults to `"steps"`) --
   The checkpoint save strategy to adopt during training. Possible values are:
 
@@ -1583,6 +1635,8 @@ examples.
   can harm metric values.
 - **local_rank** (`int`, _optional_, defaults to -1) --
   Rank of the process during distributed training.
+- **xpu_backend** (`str`, _optional_) --
+  The backend to use for xpu distributed training. Must be one of `"mpi"` or `"ccl"`.
 - **tpu_num_cores** (`int`, _optional_) --
   When training on TPU, the number of TPU cores (automatically passed by launcher script).
 - **dataloader_drop_last** (`bool`, _optional_, defaults to `False`) --
@@ -1710,14 +1764,34 @@ When set to `True`, the parameters `save_strategy` needs to be the same as
   [Trainer](main_classes/trainer.html#transformers.Trainer), it's intended to be used by your training/evaluation scripts instead. See
   the [example scripts](https://github.com/huggingface/transformers/tree/master/examples) for more
   details.
-- **push_to_hub_model_id** (`str`, _optional_) --
-  The name of the repository to which push the [Trainer](main_classes/trainer.html#transformers.Trainer) when `push_to_hub=True`.
-  Will default to the name of `output_dir`.
-- **push_to_hub_organization** (`str`, _optional_) --
-  The name of the organization in with to which push the [Trainer](main_classes/trainer.html#transformers.Trainer).
-- **push_to_hub_token** (`str`, _optional_) --
+- **hub_model_id** (`str`, _optional_) --
+  The name of the repository to keep in sync with the local _output_dir_. Should be the whole repository
+  name, for instance `"user_name/model"`, which allows you to push to an organization you are a member
+  of with `"organization_name/model"`.
+
+  Will default to `user_name/output_dir_name` with _output_dir_name_ being the name of
+  `output_dir`.
+- **hub_strategy** (`str` or `HubStrategy`, _optional_, defaults to `"every_save"`) --
+  Defines the scope of what is pushed to the Hub and when. Possible values are:
+
+  - `"end"`: push the model, its configuration, the tokenizer (if passed along to the
+    [Trainer](main_classes/trainer.html#transformers.Trainer)) and a draft of a model card at the end of training.
+  - `"every_save"`: push the model, its configuration, the tokenizer (if passed along to the
+    [Trainer](main_classes/trainer.html#transformers.Trainer)) and a draft of a model card each time there is a model save. The pushes
+    are asynchronous to not block training, and in case the save are very frequent, a new push is only
+    attempted if the previous one is finished. A last push is made with the final model at the end of
+    training.
+  - `"checkpoint"`: like `"every_save"` but the latest checkpoint is also pushed in a subfolder
+    named last-checkpoint, allowing you to resume training easily with
+    `trainer.train(resume_from_checkpoint="last-checkpoint")`.
+  - `"all_checkpoints"`: like `"checkpoint"` but all checkpoints are pushed like they appear in the
+    output folder (so you will get one checkpoint folder per folder in your final repository)
+
+- **hub_token** (`str`, _optional_) --
   The token to use to push the model to the Hub. Will default to the token in the cache folder obtained with
   `huggingface-cli login`.
+- **gradient_checkpointing** (`bool`, _optional_, defaults to `False`) --
+  If True, use gradient checkpointing to save memory at the expense of slower backward pass.
 
   sortish_sampler (`bool`, _optional_, defaults to `False`):
   Whether to use a _sortish sampler_ or not. Only possible if the underlying datasets are _Seq2SeqDataset_ for
@@ -1738,7 +1812,7 @@ When set to `True`, the parameters `save_strategy` needs to be the same as
 ## TFTrainingArguments
 
 <a id='transformers.TFTrainingArguments'></a>
-> **class transformers.TFTrainingArguments**(output_dir: str, overwrite_output_dir: bool = False, do_train: bool = False, do_eval: bool = False, do_predict: bool = False, evaluation_strategy: IntervalStrategy = no, prediction_loss_only: bool = False, per_device_train_batch_size: int = 8, per_device_eval_batch_size: int = 8, per_gpu_train_batch_size: typing.Optional[int] = None, per_gpu_eval_batch_size: typing.Optional[int] = None, gradient_accumulation_steps: int = 1, eval_accumulation_steps: typing.Optional[int] = None, learning_rate: float = 5e-05, weight_decay: float = 0.0, adam_beta1: float = 0.9, adam_beta2: float = 0.999, adam_epsilon: float = 1e-08, max_grad_norm: float = 1.0, num_train_epochs: float = 3.0, max_steps: int = -1, lr_scheduler_type: SchedulerType = linear, warmup_ratio: float = 0.0, warmup_steps: int = 0, log_level: typing.Optional[str] = passive, log_level_replica: typing.Optional[str] = passive, log_on_each_node: bool = True, logging_dir: typing.Optional[str] = None, logging_strategy: IntervalStrategy = steps, logging_first_step: bool = False, logging_steps: int = 500, save_strategy: IntervalStrategy = steps, save_steps: int = 500, save_total_limit: typing.Optional[int] = None, save_on_each_node: bool = False, no_cuda: bool = False, seed: int = 42, fp16: bool = False, fp16_opt_level: str = O1, fp16_backend: str = auto, fp16_full_eval: bool = False, local_rank: int = -1, tpu_num_cores: typing.Optional[int] = None, tpu_metrics_debug: bool = False, debug: str = , dataloader_drop_last: bool = False, eval_steps: int = None, dataloader_num_workers: int = 0, past_index: int = -1, run_name: typing.Optional[str] = None, disable_tqdm: typing.Optional[bool] = None, remove_unused_columns: typing.Optional[bool] = True, label_names: typing.Optional[typing.List[str]] = None, load_best_model_at_end: typing.Optional[bool] = False, metric_for_best_model: typing.Optional[str] = None, greater_is_better: typing.Optional[bool] = None, ignore_data_skip: bool = False, sharded_ddp: str = , deepspeed: typing.Optional[str] = None, label_smoothing_factor: float = 0.0, adafactor: bool = False, group_by_length: bool = False, length_column_name: typing.Optional[str] = length, report_to: typing.Optional[typing.List[str]] = None, ddp_find_unused_parameters: typing.Optional[bool] = None, dataloader_pin_memory: bool = True, skip_memory_metrics: bool = True, use_legacy_prediction_loop: bool = False, push_to_hub: bool = False, resume_from_checkpoint: typing.Optional[str] = None, push_to_hub_model_id: str = None, push_to_hub_organization: str = None, push_to_hub_token: str = None, mp_parameters: str = , tpu_name: str = None, tpu_zone: str = None, gcp_project: str = None, poly_power: float = 1.0, xla: bool = False)
+> **class transformers.TFTrainingArguments**(output_dir: str, overwrite_output_dir: bool = False, do_train: bool = False, do_eval: bool = False, do_predict: bool = False, evaluation_strategy: IntervalStrategy = no, prediction_loss_only: bool = False, per_device_train_batch_size: int = 8, per_device_eval_batch_size: int = 8, per_gpu_train_batch_size: typing.Optional[int] = None, per_gpu_eval_batch_size: typing.Optional[int] = None, gradient_accumulation_steps: int = 1, eval_accumulation_steps: typing.Optional[int] = None, learning_rate: float = 5e-05, weight_decay: float = 0.0, adam_beta1: float = 0.9, adam_beta2: float = 0.999, adam_epsilon: float = 1e-08, max_grad_norm: float = 1.0, num_train_epochs: float = 3.0, max_steps: int = -1, lr_scheduler_type: SchedulerType = linear, warmup_ratio: float = 0.0, warmup_steps: int = 0, log_level: typing.Optional[str] = passive, log_level_replica: typing.Optional[str] = passive, log_on_each_node: bool = True, logging_dir: typing.Optional[str] = None, logging_strategy: IntervalStrategy = steps, logging_first_step: bool = False, logging_steps: int = 500, logging_nan_inf_filter: str = True, save_strategy: IntervalStrategy = steps, save_steps: int = 500, save_total_limit: typing.Optional[int] = None, save_on_each_node: bool = False, no_cuda: bool = False, seed: int = 42, fp16: bool = False, fp16_opt_level: str = O1, fp16_backend: str = auto, fp16_full_eval: bool = False, local_rank: int = -1, xpu_backend: str = None, tpu_num_cores: typing.Optional[int] = None, tpu_metrics_debug: bool = False, debug: str = , dataloader_drop_last: bool = False, eval_steps: int = None, dataloader_num_workers: int = 0, past_index: int = -1, run_name: typing.Optional[str] = None, disable_tqdm: typing.Optional[bool] = None, remove_unused_columns: typing.Optional[bool] = True, label_names: typing.Optional[typing.List[str]] = None, load_best_model_at_end: typing.Optional[bool] = False, metric_for_best_model: typing.Optional[str] = None, greater_is_better: typing.Optional[bool] = None, ignore_data_skip: bool = False, sharded_ddp: str = , deepspeed: typing.Optional[str] = None, label_smoothing_factor: float = 0.0, adafactor: bool = False, group_by_length: bool = False, length_column_name: typing.Optional[str] = length, report_to: typing.Optional[typing.List[str]] = None, ddp_find_unused_parameters: typing.Optional[bool] = None, dataloader_pin_memory: bool = True, skip_memory_metrics: bool = True, use_legacy_prediction_loop: bool = False, push_to_hub: bool = False, resume_from_checkpoint: typing.Optional[str] = None, hub_model_id: str = None, hub_strategy: HubStrategy = every_save, hub_token: str = None, gradient_checkpointing: bool = False, push_to_hub_model_id: str = None, push_to_hub_organization: str = None, push_to_hub_token: str = None, mp_parameters: str = , tpu_name: str = None, tpu_zone: str = None, gcp_project: str = None, poly_power: float = 1.0, xla: bool = False)
 
 
 TrainingArguments is the subset of the arguments we use in our example scripts **which relate to the training loop
@@ -1859,7 +1933,7 @@ examples.
 - **eval_steps** (`int`, _optional_, defaults to 1000) --
   Number of update steps before two evaluations.
 - **past_index** (`int`, _optional_, defaults to -1) --
-  Some models like [TransformerXL](../model_doc/transformerxl.html) or :doc_XLNet <../model_doc/xlnet>_ can
+  Some models like [TransformerXL](../model_doc/transformerxl.html) or :doc_XLNet &amp;lt;../model_doc/xlnet>_ can
   make use of the past hidden states for their predictions. If this argument is set to a positive int, the
   `Trainer` will use the corresponding output (usually index 2) as the past state and feed it to the model
   at the next training step under the keyword argument `mems`.
@@ -1875,6 +1949,28 @@ examples.
   A descriptor for the run. Notably used for wandb logging.
 - **xla** (`bool`, _optional_) --
   Whether to activate the XLA compilation or not.
+
+
+## Checkpoints
+
+By default, [Trainer](main_classes/trainer.html#transformers.Trainer) will save all checkpoints in the `output_dir` you set in the
+[TrainingArguments](main_classes/trainer.html#transformers.TrainingArguments) you are using. Those will go in subfolder named `checkpoint-xxx` with xxx
+being the step at which the training was at.
+
+Resuming training from a checkpoint can be done when calling [train()](main_classes/trainer.html#transformers.Trainer.train) with either:
+
+- `resume_from_checkpoint=True` which will resume training from the latest checkpoint
+- `resume_from_checkpoint=checkpoint_dir` which will resume training from the specific checkpoint in the directory
+  passed.
+
+In addition, you can easily save your checkpoints on the Model Hub when using `push_to_hub=True`. By default, all
+the models saved in intermediate checkpoints are saved in different commits, but not the optimizer state. You can adapt
+the `hub-strategy` value of your [TrainingArguments](main_classes/trainer.html#transformers.TrainingArguments) to either:
+
+- `"checkpoint"`: the latest checkpoint is also pushed in a subfolder named last-checkpoint, allowing you to
+  resume training easily with `trainer.train(resume_from_checkpoint="output_dir/last-checkpoint")`.
+- `"all_checkpoints"`: all checkpoints are pushed like they appear in the output folder (so you will get one
+  checkpoint folder per folder in your final repository)
 
 
 ## Logging
@@ -1968,7 +2064,7 @@ Toward Training Trillion Parameter Models, by Samyam Rajbhandari, Jeff Rasley, O
 
 This provided support is new and experimental as of this writing.
 
-<a id='zero-install-notes'></a>
+&amp;lt;a id='zero-install-notes'>&amp;lt;/a>
 
 ### CUDA Extension Installation Notes
 

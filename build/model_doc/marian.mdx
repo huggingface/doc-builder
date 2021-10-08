@@ -1,8 +1,8 @@
-<script>
+&amp;lt;script>
 import Tip from "../../Tip.svelte";
 import Youtube from "../../Youtube.svelte";	
 export let fw: "pt" | "tf"
-</script>
+&amp;lt;/script>
 
 <!--Copyright 2020 The HuggingFace Team. All rights reserved.
 
@@ -36,16 +36,16 @@ Translations should be similar, but not identical to output in the test set link
   - static (sinusoid) positional embeddings (`MarianConfig.static_position_embeddings=True`)
   - no layernorm_embedding (`MarianConfig.normalize_embedding=False`)
   - the model starts generating with `pad_token_id` (which has 0 as a token_embedding) as the prefix (Bart uses
-    `<s/>`),
+    `&amp;lt;s/>`),
 - Code to bulk convert models can be found in `convert_marian_to_pytorch.py`.
 - This model was contributed by [sshleifer](https://huggingface.co/sshleifer).
 
 ## Naming
 
-- All model names use the following format: `Helsinki-NLP/opus-mt-{src}-{tgt}`
+- All model names use the following format: `Helsinki-NLP/opus-mt-&lcubsrc}-&lcubtgt}`
 - The language codes used to name models are inconsistent. Two digit codes can usually be found [here](https://developers.google.com/admin-sdk/directory/v1/languages), three digit codes require googling "language
-  code {code}".
-- Codes formatted like `es_AR` are usually `code_{region}`. That one is Spanish from Argentina.
+  code &lcubcode}".
+- Codes formatted like `es_AR` are usually `code_&lcubregion}`. That one is Spanish from Argentina.
 - The models were converted in two stages. The first 1000 models use ISO-639-2 codes to identify languages, the second
   group use a combination of ISO-639-5 codes and ISO-639-2 codes.
 
@@ -59,7 +59,7 @@ Translations should be similar, but not identical to output in the test set link
 
 ## Multilingual Models
 
-- All model names use the following format: `Helsinki-NLP/opus-mt-{src}-{tgt}`:
+- All model names use the following format: `Helsinki-NLP/opus-mt-&lcubsrc}-&lcubtgt}`:
 - If a model can output multiple languages, and you should specify a language code by prepending the desired output
   language to the `src_text`.
 - You can see a models's supported language codes in its model card, under target constituents, like in [opus-mt-en-roa](https://huggingface.co/Helsinki-NLP/opus-mt-en-roa).
@@ -72,15 +72,15 @@ require 3 character language codes:
 ```python
 >>> from transformers import MarianMTModel, MarianTokenizer
 >>> src_text = [
-...     '>>fra<< this is a sentence in english that we want to translate to french',
-...     '>>por<< This should go to portuguese',
-...     '>>esp<< And this to Spanish'
+...     '>>fra&amp;lt;&amp;lt; this is a sentence in english that we want to translate to french',
+...     '>>por&amp;lt;&amp;lt; This should go to portuguese',
+...     '>>esp&amp;lt;&amp;lt; And this to Spanish'
 >>> ]
 
 >>> model_name = 'Helsinki-NLP/opus-mt-en-roa'
 >>> tokenizer = MarianTokenizer.from_pretrained(model_name)
 >>> print(tokenizer.supported_language_codes)
-['>>zlm_Latn<<', '>>mfe<<', '>>hat<<', '>>pap<<', '>>ast<<', '>>cat<<', '>>ind<<', '>>glg<<', '>>wln<<', '>>spa<<', '>>fra<<', '>>ron<<', '>>por<<', '>>ita<<', '>>oci<<', '>>arg<<', '>>min<<']
+['>>zlm_Latn&amp;lt;&amp;lt;', '>>mfe&amp;lt;&amp;lt;', '>>hat&amp;lt;&amp;lt;', '>>pap&amp;lt;&amp;lt;', '>>ast&amp;lt;&amp;lt;', '>>cat&amp;lt;&amp;lt;', '>>ind&amp;lt;&amp;lt;', '>>glg&amp;lt;&amp;lt;', '>>wln&amp;lt;&amp;lt;', '>>spa&amp;lt;&amp;lt;', '>>fra&amp;lt;&amp;lt;', '>>ron&amp;lt;&amp;lt;', '>>por&amp;lt;&amp;lt;', '>>ita&amp;lt;&amp;lt;', '>>oci&amp;lt;&amp;lt;', '>>arg&amp;lt;&amp;lt;', '>>min&amp;lt;&amp;lt;']
 
 >>> model = MarianMTModel.from_pretrained(model_name)
 >>> translated = model.generate(**tokenizer(src_text, return_tensors="pt", padding=True))
@@ -98,7 +98,7 @@ model_list = HfApi().list_models()
 org = "Helsinki-NLP"
 model_ids = [x.modelId for x in model_list if x.modelId.startswith(org)]
 suffix = [x.split('/')[1] for x in model_ids]
-old_style_multi_models = [f'{org}/{s}' for s in suffix if s != s.lower()]
+old_style_multi_models = [f'&lcuborg}/&lcubs}' for s in suffix if s != s.lower()]
 ```
 
 ## Old Style Multi-Lingual Models
@@ -119,7 +119,7 @@ group:
 'Helsinki-NLP/opus-mt-fi_nb_no_nn_ru_sv_en-SAMI',
 'Helsinki-NLP/opus-mt-sv-NORWAY',
 'Helsinki-NLP/opus-mt-sv-ZH']
-GROUP_MEMBERS = {
+GROUP_MEMBERS = &lcub
 'ZH': ['cmn', 'cn', 'yue', 'ze_zh', 'zh_cn', 'zh_CN', 'zh_HK', 'zh_tw', 'zh_TW', 'zh_yue', 'zhs', 'zht', 'zh'],
 'ROMANCE': ['fr', 'fr_BE', 'fr_CA', 'fr_FR', 'wa', 'frp', 'oc', 'ca', 'rm', 'lld', 'fur', 'lij', 'lmo', 'es', 'es_AR', 'es_CL', 'es_CO', 'es_CR', 'es_DO', 'es_EC', 'es_ES', 'es_GT', 'es_HN', 'es_MX', 'es_NI', 'es_PA', 'es_PE', 'es_PR', 'es_SV', 'es_UY', 'es_VE', 'pt', 'pt_br', 'pt_BR', 'pt_PT', 'gl', 'lad', 'an', 'mwl', 'it', 'it_IT', 'co', 'nap', 'scn', 'vec', 'sc', 'ro', 'la'],
 'NORTH_EU': ['de', 'nl', 'fy', 'af', 'da', 'fo', 'is', 'no', 'nb', 'nn', 'sv'],
@@ -136,9 +136,9 @@ Example of translating english to many romance languages, using old-style 2 char
 ```python
 >>> from transformers import MarianMTModel, MarianTokenizer
 >>> src_text = [
-...     '>>fr<< this is a sentence in english that we want to translate to french',
-...     '>>pt<< This should go to portuguese',
-...     '>>es<< And this to Spanish'
+...     '>>fr&amp;lt;&amp;lt; this is a sentence in english that we want to translate to french',
+...     '>>pt&amp;lt;&amp;lt; This should go to portuguese',
+...     '>>es&amp;lt;&amp;lt; And this to Spanish'
 >>> ]
 
 >>> model_name = 'Helsinki-NLP/opus-mt-en-ROMANCE'
@@ -155,7 +155,7 @@ Example of translating english to many romance languages, using old-style 2 char
 ## MarianConfig
 
 <a id='transformers.MarianConfig'></a>
-> **class transformers.MarianConfig**(vocab_size = 50265, max_position_embeddings = 1024, encoder_layers = 12, encoder_ffn_dim = 4096, encoder_attention_heads = 16, decoder_layers = 12, decoder_ffn_dim = 4096, decoder_attention_heads = 16, encoder_layerdrop = 0.0, decoder_layerdrop = 0.0, use_cache = True, is_encoder_decoder = True, activation_function = gelu, d_model = 1024, dropout = 0.1, attention_dropout = 0.0, activation_dropout = 0.0, init_std = 0.02, decoder_start_token_id = 58100, classifier_dropout = 0.0, scale_embedding = False, gradient_checkpointing = False, pad_token_id = 58100, eos_token_id = 0, forced_eos_token_id = 0, **kwargs)
+> **class transformers.MarianConfig**(vocab_size = 50265, max_position_embeddings = 1024, encoder_layers = 12, encoder_ffn_dim = 4096, encoder_attention_heads = 16, decoder_layers = 12, decoder_ffn_dim = 4096, decoder_attention_heads = 16, encoder_layerdrop = 0.0, decoder_layerdrop = 0.0, use_cache = True, is_encoder_decoder = True, activation_function = gelu, d_model = 1024, dropout = 0.1, attention_dropout = 0.0, activation_dropout = 0.0, init_std = 0.02, decoder_start_token_id = 58100, classifier_dropout = 0.0, scale_embedding = False, pad_token_id = 58100, eos_token_id = 0, forced_eos_token_id = 0, **kwargs)
 
 
 This is the configuration class to store the configuration of a [MarianModel](model_doc/marian.html#transformers.MarianModel). It is used to
@@ -209,8 +209,6 @@ outputs. Read the documentation from [PretrainedConfig](main_classes/configurati
   decoder_layerdrop -- (`float`, _optional_, defaults to 0.0):
   The LayerDrop probability for the decoder. See the [LayerDrop paper](see
   https://arxiv.org/abs/1909.11556) for more details.
-- **gradient_checkpointing** (`bool`, _optional_, defaults to `False`) --
-  If True, use gradient checkpointing to save memory at the expense of slower backward pass.
 - **scale_embedding** (`bool`, _optional_, defaults to `False`) --
   Scale embeddings by diving by sqrt(d_model).
 - **use_cache** (`bool`, _optional_, defaults to `True`) --
@@ -258,16 +256,16 @@ Users should refer to this superclass for more information regarding those metho
   A string representing the source language.
 - **target_lang** (`str`, _optional_) --
   A string representing the target language.
-- **unk_token** (`str`, _optional_, defaults to `"<unk>"`) --
+- **unk_token** (`str`, _optional_, defaults to `"&amp;lt;unk>"`) --
   The unknown token. A token that is not in the vocabulary cannot be converted to an ID and is set to be this
   token instead.
-- **eos_token** (`str`, _optional_, defaults to `"</s>"`) --
+- **eos_token** (`str`, _optional_, defaults to `"&amp;lt;/s>"`) --
   The end of sequence token.
-- **pad_token** (`str`, _optional_, defaults to `"<pad>"`) --
+- **pad_token** (`str`, _optional_, defaults to `"&amp;lt;pad>"`) --
   The token used for padding, for example when batching sequences of different lengths.
 - **model_max_length** (`int`, _optional_, defaults to 512) --
   The maximum sentence length the model accepts.
-- **additional_special_tokens** (`List[str]`, _optional_, defaults to `["<eop>", "<eod>"]`) --
+- **additional_special_tokens** (`List[str]`, _optional_, defaults to `["&amp;lt;eop>", "&amp;lt;eod>"]`) --
   Additional special tokens used by the tokenizer.
 - **sp_model_kwargs** (`dict`, _optional_) --
   Will be passed to the `SentencePieceProcessor.__init__()` method. The [Python wrapper for SentencePiece](https://github.com/google/sentencepiece/tree/master/python) can be used, among other things, to set:
@@ -275,9 +273,9 @@ Users should refer to this superclass for more information regarding those metho
   - `enable_sampling`: Enable subword regularization.
   - `nbest_size`: Sampling parameters for unigram. Invalid for BPE-Dropout.
 
-    - `nbest_size = {0,1}`: No sampling is performed.
+    - `nbest_size = &lcub0,1}`: No sampling is performed.
     - `nbest_size > 1`: samples from the nbest_size results.
-    - `nbest_size < 0`: assuming that nbest_size is infinite and samples from the all hypothesis (lattice)
+    - `nbest_size &amp;lt; 0`: assuming that nbest_size is infinite and samples from the all hypothesis (lattice)
       using forward-filtering-and-backward-sampling algorithm.
 
   - `alpha`: Smoothing parameter for unigram sampling, and dropout probability of merge operations for
@@ -478,7 +476,7 @@ various elements depending on the configuration ([MarianConfig](model_doc/marian
 >>> model = MarianModel.from_pretrained('Helsinki-NLP/opus-mt-en-de')
 
 >>> input_ids = tokenizer("Studies have been shown that owning a dog is good for you", return_tensors="pt").input_ids  # Batch size 1
->>> decoder_input_ids = tokenizer("<pad> Studien haben gezeigt dass es hilfreich ist einen Hund zu besitzen",
+>>> decoder_input_ids = tokenizer("&amp;lt;pad> Studien haben gezeigt dass es hilfreich ist einen Hund zu besitzen",
 ... return_tensors="pt", add_special_tokens=False).input_ids  # Batch size 1
 >>> outputs = model(input_ids=input_ids, decoder_input_ids=decoder_input_ids)
 
@@ -667,7 +665,7 @@ Available models are listed [here](https://huggingface.co/models?search=Helsinki
 >>> src = 'fr'  # source language
 >>> trg = 'en'  # target language
 >>> sample_text = "où est l'arrêt de bus ?"
->>> model_name = f'Helsinki-NLP/opus-mt-{src}-{trg}'
+>>> model_name = f'Helsinki-NLP/opus-mt-&lcubsrc}-&lcubtrg}'
 
 >>> model = MarianMTModel.from_pretrained(model_name)
 >>> tokenizer = MarianTokenizer.from_pretrained(model_name)
@@ -795,7 +793,7 @@ various elements depending on the configuration ([MarianConfig](model_doc/marian
 
 >>> tokenizer = MarianTokenizer.from_pretrained('facebook/bart-large')
 >>> model = MarianForCausalLM.from_pretrained('facebook/bart-large', add_cross_attention=False)
->>> assert model.config.is_decoder, f"{model.__class__} has to be configured as a decoder."
+>>> assert model.config.is_decoder, f"&lcubmodel.__class__} has to be configured as a decoder."
 >>> inputs = tokenizer("Hello, my dog is cute", return_tensors="pt")
 >>> outputs = model(**inputs)
 
@@ -838,7 +836,7 @@ the first positional argument :
 - a list of varying length with one or several input Tensors IN THE ORDER given in the docstring:
   `model([input_ids, attention_mask])` or `model([input_ids, attention_mask, token_type_ids])`
 - a dictionary with one or several input Tensors associated to the input names given in the docstring:
-  `model({"input_ids": input_ids, "token_type_ids": token_type_ids})`
+  `model(&lcub"input_ids": input_ids, "token_type_ids": token_type_ids})`
 
 </Tip>
 
@@ -1024,7 +1022,7 @@ the first positional argument :
 - a list of varying length with one or several input Tensors IN THE ORDER given in the docstring:
   `model([input_ids, attention_mask])` or `model([input_ids, attention_mask, token_type_ids])`
 - a dictionary with one or several input Tensors associated to the input names given in the docstring:
-  `model({"input_ids": input_ids, "token_type_ids": token_type_ids})`
+  `model(&lcub"input_ids": input_ids, "token_type_ids": token_type_ids})`
 
 </Tip>
 
@@ -1051,7 +1049,7 @@ processing steps while the latter silently ignores them.
 
 > Parameters
 
-- **input_ids** (`tf.Tensor` of shape `({0})`) --
+- **input_ids** (`tf.Tensor` of shape `(&lcub0})`) --
   Indices of input sequence tokens in the vocabulary.
 
   Indices can be obtained using [MarianTokenizer](model_doc/marian.html#transformers.MarianTokenizer). See
@@ -1059,7 +1057,7 @@ processing steps while the latter silently ignores them.
   details.
 
   [What are input IDs?](../glossary.html#input-ids)
-- **attention_mask** (`tf.Tensor` of shape `({0})`, _optional_) --
+- **attention_mask** (`tf.Tensor` of shape `(&lcub0})`, _optional_) --
   Mask to avoid performing attention on padding token indices. Mask values selected in `[0, 1]`:
 
   - 1 for tokens that are **not masked**,
@@ -1176,7 +1174,7 @@ models are listed [here](https://huggingface.co/models?search=Helsinki-NLP).
 >>> src = 'fr'  # source language
 >>> trg = 'en'  # target language
 >>> sample_text = "où est l'arrêt de bus ?"
->>> model_name = f'Helsinki-NLP/opus-mt-{src}-{trg}'
+>>> model_name = f'Helsinki-NLP/opus-mt-&lcubsrc}-&lcubtrg}'
 
 >>> model = TFMarianMTModel.from_pretrained(model_name)
 >>> tokenizer = MarianTokenizer.from_pretrained(model_name)
