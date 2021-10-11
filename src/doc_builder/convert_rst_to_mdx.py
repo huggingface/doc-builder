@@ -120,7 +120,10 @@ def convert_special_chars(text):
     Converts { and < that have special meanings in MDX.
     """
     text = text.replace("{", "&lcub")
-    text = text.replace("<", "&amp;lt;")
+    # We don't want to replace those by the HTML code, so we temporarily set them at <<<
+    text = re.sub(r"<(\S+)([^>]*>)([^<]*)<(/\1>)", r"<<<\1\2\3<<<\4", text)
+    text = re.sub(r"(^|[^<])<([^<]|$)", r"\1&amp;lt;\2", text)
+    text = text.replace("<<<", "<")
     return text
 
 
