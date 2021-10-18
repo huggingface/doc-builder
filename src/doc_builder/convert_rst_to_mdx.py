@@ -119,7 +119,7 @@ def convert_special_chars(text):
     """
     Converts { and < that have special meanings in MDX.
     """
-    text = text.replace("{", "&lcub")
+    text = text.replace("{", "&amp;lcub;")
     # We don't want to replace those by the HTML code, so we temporarily set them at <<<
     text = re.sub(r"<(\S+)([^>]*>)([^<]*)<(/\1>)", r"<<<\1\2\3<<<\4", text)
     text = re.sub(r"(^|[^<])<([^<]|$)", r"\1&amp;lt;\2", text)
@@ -163,7 +163,7 @@ def convert_rst_blocks(text):
             block_type = "code-block"
             block_info = "python"
             example_name = _re_example.search(lines[idx]).groups()[0]
-            new_lines.append(f"> {example_name}:\n")
+            new_lines.append(f"<blockquote>{example_name}:</blockquote>\n")
         elif lines[idx].strip() == "..":
             block_type = "comment"
         elif lines[idx].strip() == "::":
@@ -199,7 +199,8 @@ def convert_rst_blocks(text):
             elif block_type == "math":
                 new_lines.append(f"$${block_content.strip()}$$\n")
             elif block_type == "comment":
-                new_lines.append(f"<!--{block_content.strip()}\n-->\n")
+                # new_lines.append(f"<!--{block_content.strip()}\n-->\n")
+                pass
             elif block_type == "autofunction":
                 if block_info is not None:
                     new_lines.append(f"[[autodoc]] {block_info}\n")
@@ -286,7 +287,7 @@ def parse_rst_docstring(docstring):
         # Parameters section
         if _re_args.search(lines[idx]) is not None:
             # Title of the section. TODO: change this when we have the proper syntax.
-            lines[idx] = "> Parameters\n"
+            lines[idx] = "<blockquote>\nParameters\n"
             # Find the next nonempty line
             idx += 1
             while is_empty_line(lines[idx]):
@@ -299,11 +300,13 @@ def parse_rst_docstring(docstring):
                 idx += 1
                 while idx < len(lines) and (is_empty_line(lines[idx]) or find_indent(lines[idx]) > param_indent):
                     idx += 1
+            lines.insert(idx, "</blockquote>\n")
+            idx += 1
         
         # Returns section
         elif _re_returns.search(lines[idx]) is not None:
             # Title of the section. TODO: change this when we have the proper syntax.
-            lines[idx] = "> Returns\n"
+            lines[idx] = "<blockquote>\nReturns\n"
             # Find the next nonempty line
             idx += 1
             while is_empty_line(lines[idx]):
@@ -315,11 +318,13 @@ def parse_rst_docstring(docstring):
             idx += 1
             while idx < len(lines) and (is_empty_line(lines[idx]) or find_indent(lines[idx]) >= return_indent):
                 idx += 1
+            lines.insert(idx, "</blockquote>\n")
+            idx += 1
             
             # Return block finished, we insert the return type if one was specified
             if return_type is not None:
                 # TODO: change this when we have the proper syntax
-                lines[idx - 1] += f"\n> Return type\n\n{return_type}\n"
+                lines[idx - 1] += f"\n<blockquote>\nReturn type\n\n{return_type}\n</blockquote>\n"
         
         else:
             idx += 1

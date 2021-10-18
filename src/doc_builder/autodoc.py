@@ -122,7 +122,7 @@ def document_object(object_name, package, full_name=True):
     
     prefix = "class " if isinstance(obj, type) else ""
     documentation = f"<a id='{anchor_name}'></a>\n" if anchor_name is not None else ""
-    documentation += f"> **{prefix}{name}**({format_signature(obj)})\n"
+    documentation += f"**{prefix}{name}**({format_signature(obj)})\n"
     if getattr(obj, "__doc__", None) is not None and len(obj.__doc__) > 0:
         object_doc = convert_rst_docstring_to_mdx(obj.__doc__)
         if is_rst_docstring(object_doc):
@@ -182,8 +182,9 @@ def autodoc(object_name, package, methods=None, return_anchors=False):
             methods.extend([m for m in methods_to_add if m not in methods])
         for method in methods:
             method_doc = document_object(object_name=f"{object_name}.{method}", package=package, full_name=False)
-            documentation += "\n" + method_doc
+            documentation += "\n<blockquote>" + method_doc + "</blockquote>"
             if return_anchors:
                 anchors.append(f"{anchors[0]}.{method}")
-    
+    documentation = "<blockquote>\n" + documentation + "</blockquote>\n"
+
     return (documentation, anchors) if return_anchors else documentation
