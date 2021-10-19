@@ -90,7 +90,7 @@ def build_mdx_files(package, doc_folder, output_dir):
             os.makedirs(dest_file.parent, exist_ok=True)
             with open(file, "r", encoding="utf-8") as reader:
                 content = reader.read()
-            content = convert_rst_to_mdx(content)
+            content = convert_rst_to_mdx(content, package.__name__)
             content, new_anchors = resolve_autodoc(content, package, return_anchors=True)
             with open(dest_file, "w", encoding="utf-8") as writer:
                 writer.write(content)
@@ -134,7 +134,7 @@ def resolve_links_in_text(text, package, mapping):
         anchor = get_shortest_path(obj, package)
         if anchor not in mapping:
             return f"`{object_name}`"
-        page = mapping[anchor]
+        page = f"docs/{package.__name__}/:version/:language/{mapping[anchor]}"
         return f"[{object_name}]({page}#{anchor})"
 
     return re.sub(r"\[`([^`]+)`\]", _resolve_link, text)

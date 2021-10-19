@@ -124,9 +124,9 @@ def document_object(object_name, package, full_name=True):
     documentation = f"<a id='{anchor_name}'></a>\n" if anchor_name is not None else ""
     documentation += f"> **{prefix}{name}**({format_signature(obj)})\n"
     if getattr(obj, "__doc__", None) is not None and len(obj.__doc__) > 0:
-        object_doc = convert_rst_docstring_to_mdx(obj.__doc__)
+        object_doc = convert_rst_docstring_to_mdx(obj.__doc__, package.__name__)
         if is_rst_docstring(object_doc):
-            object_doc = convert_rst_docstring_to_mdx(obj.__doc__)
+            object_doc = convert_rst_docstring_to_mdx(obj.__doc__, package.__name__)
         documentation += "\n" + object_doc + "\n"
     
     return documentation

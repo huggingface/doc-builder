@@ -69,21 +69,22 @@ _re_simple_ref = re.compile(r":ref:`([^`<]*)`")
 _re_ref_with_description = re.compile(r":ref:`([^`<]+\S)\s+<([^>]*)>`")
 
 
-def convert_rst_links(text):
+def convert_rst_links(text, package_name):
     """
     Convert the rst links in text to markdown.
     """
+    prefix = f"/docs/{package_name}/:version/:language/"
     # Links of the form :doc:`page`
-    text = _re_simple_doc.sub(r'[\1](\1.html)', text)
+    text = _re_simple_doc.sub(rf'[\1]({prefix}\1.html)', text)
     # Links of the form :doc:`text <page>`
-    text = _re_doc_with_description.sub(r'[\1](\2.html)', text)
+    text = _re_doc_with_description.sub(rf'[\1]({prefix}\2.html)', text)
     # Refs of the form :ref:`page`
     text = _re_simple_ref.sub(r'[\1](#\1)', text)
     # Refs of the form :ref:`text <page>`
     text = _re_ref_with_description.sub(r'[\1](#\2)', text)
     # Links with a prefix
     # TODO: when it exists, use the API to deal with prefix links properly.
-    prefix = "https://github.com/huggingface/transformers/tree/master/"
+    prefix = f"https://github.com/huggingface/{package_name}/tree/master/"
     text = _re_prefix_links.sub(fr'[\1]({prefix}\2)', text)
     # Other links
     text = _re_links.sub(r"[\1](\2)", text)
@@ -401,62 +402,11 @@ def remove_indent(text):
     return "\n".join(lines)
 
 
-assert remove_indent("""
-    Lala
-    Loulou
-    
-    - This is a list.
-      This item is long.
-    - This is the second item.
-        - This list is nested
-        - With two items.
-        Now we are at the nested level
-
-    - We return to the previous level.
-
-    Now we are out of the list.
-""") == """
-Lala
-Loulou
-
-- This is a list.
-  This item is long.
-- This is the second item.
-  - This list is nested
-  - With two items.
-  Now we are at the nested level
-
-- We return to the previous level.
-
-Now we are out of the list.
-"""
-
-assert remove_indent("""
-[[autodoc]] transformers.BertModel
-    - forward
-
-  [[autodoc]] transformers.function
-
-[[autodoc]] transformers.BertTokenizer
-    - __call__
-    - all
-""") == """
-[[autodoc]] transformers.BertModel
-    - forward
-
-[[autodoc]] transformers.function
-
-[[autodoc]] transformers.BertTokenizer
-    - __call__
-    - all
-"""
-
-
-def base_rst_to_mdx(text):
+def base_rst_to_mdx(text, package_name):
     """
     Convert a text from rst to mdx, with the base operations necessary for both docstrings and rst docs.
     """
-    text = convert_rst_links(text)
+    text = convert_rst_links(text, package_name)
     text = convert_special_chars(text)
     text = convert_rst_blocks(text)
     # Convert * in lists to - to avoid the formatting conversion treat them as bold.
@@ -465,12 +415,12 @@ def base_rst_to_mdx(text):
     return remove_indent(text)
 
 
-def convert_rst_docstring_to_mdx(docstring):
+def convert_rst_docstring_to_mdx(docstring, package_name):
     """
     Convert a docstring written in rst to mdx.
     """
     text = parse_rst_docstring(docstring)
-    return base_rst_to_mdx(text)
+    return base_rst_to_mdx(text, package_name)
 
 
 def process_titles(lines):
@@ -541,7 +491,7 @@ def split_pt_tf_code_blocks(text):
     return "\n".join(new_lines)
 
 
-def convert_rst_to_mdx(rst_text):
+def convert_rst_to_mdx(rst_text, package_name):
     """
     Convert a document written in rst to mdx.
     """
@@ -569,4 +519,4 @@ def convert_rst_to_mdx(rst_text):
         new_lines.append(line)
     text = "\n".join(new_lines)
 
-    return split_pt_tf_code_blocks(base_rst_to_mdx(text))
+    return split_pt_tf_code_blocks(base_rst_to_mdx(text, package_name))

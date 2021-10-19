@@ -184,33 +184,37 @@ third line``.
         self.assertEqual(convert_rst_formatting(test_text_4), expected_converted_4)
 
     def test_convert_rst_links(self):
-        self.assertEqual(convert_rst_links("This is a regular `link <url>`_"), "This is a regular [link](url)")
-        self.assertEqual(convert_rst_links("This is a regular `link <url>`__"), "This is a regular [link](url)")
+        self.assertEqual(
+            convert_rst_links("This is a regular `link <url>`_", "transformers"), "This is a regular [link](url)"
+        )
+        self.assertEqual(
+            convert_rst_links("This is a regular `link <url>`__", "transformers"), "This is a regular [link](url)"
+        )
 
         self.assertEqual(
-            convert_rst_links("This is a prefixed :prefix_link:`link <url>`"),
+            convert_rst_links("This is a prefixed :prefix_link:`link <url>`", "transformers"),
             "This is a prefixed [link](https://github.com/huggingface/transformers/tree/master/url)",
         )
         self.assertEqual(
-            convert_rst_links("This is a prefixed :prefix_link:`link <url>`"),
+            convert_rst_links("This is a prefixed :prefix_link:`link <url>`", "transformers"),
             "This is a prefixed [link](https://github.com/huggingface/transformers/tree/master/url)",
         )
 
         self.assertEqual(
-            convert_rst_links("This is a link to an inner page :doc:`page`."),
-            "This is a link to an inner page [page](page.html).",
+            convert_rst_links("This is a link to an inner page :doc:`page`.", "transformers"),
+            "This is a link to an inner page [page](/docs/transformers/:version/:language/page.html).",
         )
         self.assertEqual(
-            convert_rst_links("This is a link to an inner page :doc:`page name <page ref>`."),
-            "This is a link to an inner page [page name](page ref.html).",
+            convert_rst_links("This is a link to an inner page :doc:`page name <page ref>`.", "transformers"),
+            "This is a link to an inner page [page name](/docs/transformers/:version/:language/page ref.html).",
         )
 
         self.assertEqual(
-            convert_rst_links("This is a link to an inner section :ref:`section`."),
+            convert_rst_links("This is a link to an inner section :ref:`section`.", "transformers"),
             "This is a link to an inner section [section](#section).",
         )
         self.assertEqual(
-            convert_rst_links("This is a link to an inner section :ref:`section name <section ref>`."),
+            convert_rst_links("This is a link to an inner section :ref:`section name <section ref>`.", "transformers"),
             "This is a link to an inner section [section name](#section ref).",
         )
 

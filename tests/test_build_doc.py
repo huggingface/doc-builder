@@ -38,9 +38,9 @@ class BuildDocTester(unittest.TestCase):
                 small_mapping,
             ),
             (
-                "Link to [BertModel](model_doc/bert.html#transformers.BertModel), "
-                "[BertModel.forward()](model_doc/bert.html#transformers.BertModel.forward) "
-                "and [BertTokenizer](bert.html#transformers.BertTokenizer) as well as `SomeClass`."
+                "Link to [BertModel](docs/transformers/:version/:language/model_doc/bert.html#transformers.BertModel), "
+                "[BertModel.forward()](docs/transformers/:version/:language/model_doc/bert.html#transformers.BertModel.forward) "
+                "and [BertTokenizer](docs/transformers/:version/:language/bert.html#transformers.BertTokenizer) as well as `SomeClass`."
             ),
         )
 
@@ -51,8 +51,8 @@ class BuildDocTester(unittest.TestCase):
                 small_mapping,
             ),
             (
-                "Link to [BertModel](model_doc/bert.html#transformers.BertModel), "
-                "[forward()](model_doc/bert.html#transformers.BertModel.forward)."
+                "Link to [BertModel](docs/transformers/:version/:language/model_doc/bert.html#transformers.BertModel), "
+                "[forward()](docs/transformers/:version/:language/model_doc/bert.html#transformers.BertModel.forward)."
             ),
         )
 
@@ -63,7 +63,7 @@ class BuildDocTester(unittest.TestCase):
                 small_mapping,
             ),
             (
-                "Link to [transformers.BertModel](model_doc/bert.html#transformers.BertModel), "
-                "[transformers.BertModel.forward()](model_doc/bert.html#transformers.BertModel.forward)."
+                "Link to [transformers.BertModel](docs/transformers/:version/:language/model_doc/bert.html#transformers.BertModel), "
+                "[transformers.BertModel.forward()](docs/transformers/:version/:language/model_doc/bert.html#transformers.BertModel.forward)."
             ),
         )
