@@ -18,22 +18,22 @@ specific language governing permissions and limitations under the License.
 
 # Models
 
-The base classes [PreTrainedModel](main_classes/model.html#transformers.PreTrainedModel), [TFPreTrainedModel](main_classes/model.html#transformers.TFPreTrainedModel), and
-[FlaxPreTrainedModel](main_classes/model.html#transformers.FlaxPreTrainedModel) implement the common methods for loading/saving a model either from a local
+The base classes [PreTrainedModel](docs/transformers/:version/:language/main_classes/model.html#transformers.PreTrainedModel), [TFPreTrainedModel](docs/transformers/:version/:language/main_classes/model.html#transformers.TFPreTrainedModel), and
+[FlaxPreTrainedModel](docs/transformers/:version/:language/main_classes/model.html#transformers.FlaxPreTrainedModel) implement the common methods for loading/saving a model either from a local
 file or directory, or from a pretrained model configuration provided by the library (downloaded from HuggingFace's AWS
 S3 repository).
 
-[PreTrainedModel](main_classes/model.html#transformers.PreTrainedModel) and [TFPreTrainedModel](main_classes/model.html#transformers.TFPreTrainedModel) also implement a few methods which
+[PreTrainedModel](docs/transformers/:version/:language/main_classes/model.html#transformers.PreTrainedModel) and [TFPreTrainedModel](docs/transformers/:version/:language/main_classes/model.html#transformers.TFPreTrainedModel) also implement a few methods which
 are common among all the models to:
 
 - resize the input token embeddings when new tokens are added to the vocabulary
 - prune the attention heads of the model.
 
-The other methods that are common to each model are defined in [ModuleUtilsMixin](main_classes/model.html#transformers.modeling_utils.ModuleUtilsMixin)
+The other methods that are common to each model are defined in [ModuleUtilsMixin](docs/transformers/:version/:language/main_classes/model.html#transformers.modeling_utils.ModuleUtilsMixin)
 (for the PyTorch models) and `TFModuleUtilsMixin` (for the TensorFlow models) or
-for text generation, [GenerationMixin](main_classes/model.html#transformers.generation_utils.GenerationMixin) (for the PyTorch models),
-[TFGenerationMixin](main_classes/model.html#transformers.generation_tf_utils.TFGenerationMixin) (for the TensorFlow models) and
-[FlaxGenerationMixin](main_classes/model.html#transformers.generation_flax_utils.FlaxGenerationMixin) (for the Flax/JAX models).
+for text generation, [GenerationMixin](docs/transformers/:version/:language/main_classes/model.html#transformers.generation_utils.GenerationMixin) (for the PyTorch models),
+[TFGenerationMixin](docs/transformers/:version/:language/main_classes/model.html#transformers.generation_tf_utils.TFGenerationMixin) (for the TensorFlow models) and
+[FlaxGenerationMixin](docs/transformers/:version/:language/main_classes/model.html#transformers.generation_flax_utils.FlaxGenerationMixin) (for the Flax/JAX models).
 
 
 ## PreTrainedModel
@@ -44,7 +44,7 @@ for text generation, [GenerationMixin](main_classes/model.html#transformers.gene
 
 Base class for all models.
 
-[PreTrainedModel](main_classes/model.html#transformers.PreTrainedModel) takes care of storing the configuration of the models and handles methods
+[PreTrainedModel](docs/transformers/:version/:language/main_classes/model.html#transformers.PreTrainedModel) takes care of storing the configuration of the models and handles methods
 for loading, downloading and saving models as well as a few methods common to all models to:
 
 - resize the input embeddings,
@@ -52,12 +52,12 @@ for loading, downloading and saving models as well as a few methods common to al
 
 Class attributes (overridden by derived classes):
 
-- **config_class** ([PretrainedConfig](main_classes/configuration.html#transformers.PretrainedConfig)) -- A subclass of
-  [PretrainedConfig](main_classes/configuration.html#transformers.PretrainedConfig) to use as configuration class for this model architecture.
+- **config_class** ([PretrainedConfig](docs/transformers/:version/:language/main_classes/configuration.html#transformers.PretrainedConfig)) -- A subclass of
+  [PretrainedConfig](docs/transformers/:version/:language/main_classes/configuration.html#transformers.PretrainedConfig) to use as configuration class for this model architecture.
 - **load_tf_weights** (`Callable`) -- A python _method_ for loading a TensorFlow checkpoint in a PyTorch
   model, taking as arguments:
 
-  - **model** ([PreTrainedModel](main_classes/model.html#transformers.PreTrainedModel)) -- An instance of the model on which to load the
+  - **model** ([PreTrainedModel](docs/transformers/:version/:language/main_classes/model.html#transformers.PreTrainedModel)) -- An instance of the model on which to load the
     TensorFlow checkpoint.
   - **config** (`PreTrainedConfig`) -- An instance of the configuration associated to
     the model.
@@ -157,7 +157,7 @@ weights are discarded.
     Valid model ids can be located at the root-level, like `bert-base-uncased`, or namespaced under
     a user or organization name, like `dbmdz/bert-base-german-cased`.
   - A path to a _directory_ containing model weights saved using
-    [save_pretrained()](main_classes/model.html#transformers.PreTrainedModel.save_pretrained), e.g., `./my_model_directory/`.
+    [save_pretrained()](docs/transformers/:version/:language/main_classes/model.html#transformers.PreTrainedModel.save_pretrained), e.g., `./my_model_directory/`.
   - A path or url to a _tensorflow index checkpoint file_ (e.g, `./tf_model/model.ckpt.index`). In
     this case, `from_tf` should be set to `True` and a configuration object should be provided
     as `config` argument. This loading path is slower than converting the TensorFlow checkpoint in
@@ -172,15 +172,15 @@ weights are discarded.
 - **config** (`Union[PretrainedConfig, str, os.PathLike]`, _optional_) --
   Can be either:
 
-  - an instance of a class derived from [PretrainedConfig](main_classes/configuration.html#transformers.PretrainedConfig),
-  - a string or path valid as input to [from_pretrained()](main_classes/configuration.html#transformers.PretrainedConfig.from_pretrained).
+  - an instance of a class derived from [PretrainedConfig](docs/transformers/:version/:language/main_classes/configuration.html#transformers.PretrainedConfig),
+  - a string or path valid as input to [from_pretrained()](docs/transformers/:version/:language/main_classes/configuration.html#transformers.PretrainedConfig.from_pretrained).
 
 Configuration for the model to use instead of an automatically loaded configuration. Configuration can
 be automatically loaded when:
 
 - The model is a model provided by the library (loaded with the _model id_ string of a pretrained
   model).
-- The model was saved using [save_pretrained()](main_classes/model.html#transformers.PreTrainedModel.save_pretrained) and is reloaded
+- The model was saved using [save_pretrained()](docs/transformers/:version/:language/main_classes/model.html#transformers.PreTrainedModel.save_pretrained) and is reloaded
   by supplying the save directory.
 - The model is loaded by supplying a local directory as `pretrained_model_name_or_path` and a
   configuration JSON file named _config.json_ is found in the directory.
@@ -189,8 +189,8 @@ A state dictionary to use instead of a state dictionary loaded from saved weight
 
 This option can be used if you want to create a model from a pretrained configuration but load your own
 weights. In this case though, you should check if using
-[save_pretrained()](main_classes/model.html#transformers.PreTrainedModel.save_pretrained) and
-[from_pretrained()](main_classes/model.html#transformers.PreTrainedModel.from_pretrained) is not a simpler option.
+[save_pretrained()](docs/transformers/:version/:language/main_classes/model.html#transformers.PreTrainedModel.save_pretrained) and
+[from_pretrained()](docs/transformers/:version/:language/main_classes/model.html#transformers.PreTrainedModel.from_pretrained) is not a simpler option.
   - **cache_dir** (`Union[str, os.PathLike]`, _optional_) --
     Path to a directory in which a downloaded pretrained model configuration should be cached if the
     standard cache should not be used.
@@ -211,7 +211,7 @@ weights. In this case though, you should check if using
   Whether or not to delete incompletely received files. Will attempt to resume the download if such a
   file exists.
 - **proxies** (`Dict[str, str]`, _optional_) --
-  A dictionary of proxy servers to use by protocol or endpoint, e.g., `&lcub'http': 'foo.bar:3128', 'http://hostname': 'foo.bar:4012'}`. The proxies are used on each request.
+  A dictionary of proxy servers to use by protocol or endpoint, e.g., `&amp;lcub;'http': 'foo.bar:3128', 'http://hostname': 'foo.bar:4012'}`. The proxies are used on each request.
 - **output_loading_info(`bool`,** _optional_, defaults to `False`) --
   Whether ot not to also return a dictionary containing missing keys, unexpected keys and error messages.
 - **local_files_only(`bool`,** _optional_, defaults to `False`) --
@@ -253,7 +253,7 @@ at the next major version. See [pull request 11471](https://github.com/huggingfa
     underlying model's `__init__` method (we assume all relevant updates to the configuration have
     already been done)
   - If a configuration is not provided, `kwargs` will be first passed to the configuration class
-    initialization function ([from_pretrained()](main_classes/configuration.html#transformers.PretrainedConfig.from_pretrained)). Each key of
+    initialization function ([from_pretrained()](docs/transformers/:version/:language/main_classes/configuration.html#transformers.PretrainedConfig.from_pretrained)). Each key of
     `kwargs` that corresponds to a configuration attribute will be used to override said attribute
     with the supplied `kwargs` value. Remaining keys that do not correspond to any configuration
     attribute will be passed to the underlying model's `__init__` function.
@@ -356,7 +356,7 @@ Prunes heads of the base model.
 Arguments:
 heads_to_prune (`Dict[int, List[int]]`):
 Dictionary with keys being selected layer indices (`int`) and associated values being the list of
-heads to prune in said layer (list of `int`). For instance &lcub1: [0, 2], 2: [2, 3]} will prune heads
+heads to prune in said layer (list of `int`). For instance &amp;lcub;1: [0, 2], 2: [2, 3]} will prune heads
 0 and 2 on layer 1 and heads 2 and 3 on layer 2.
 
 
@@ -385,11 +385,11 @@ Pointer to the input tokens Embeddings Module of the model.
 
 
 <a id='transformers.PreTrainedModel.save_pretrained'></a>
-> **save\_pretrained**(self, save_directory: typing.Union[str, os.PathLike], save_config: bool = True, state_dict: typing.Optional[dict] = None, save_function: typing.Callable = <function save at 0x7f4b8d0200e0>, push_to_hub: bool = False, **kwargs)
+> **save\_pretrained**(self, save_directory: typing.Union[str, os.PathLike], save_config: bool = True, state_dict: typing.Optional[dict] = None, save_function: typing.Callable = <function save at 0x7f70a8087b90>, push_to_hub: bool = False, **kwargs)
 
 
 Save a model and its configuration file to a directory, so that it can be re-loaded using the
-`[from_pretrained()](main_classes/model.html#transformers.PreTrainedModel.from_pretrained)` class method.
+`[from_pretrained()](docs/transformers/:version/:language/main_classes/model.html#transformers.PreTrainedModel.from_pretrained)` class method.
 
 Arguments:
 save_directory (`str` or `os.PathLike`):
@@ -419,7 +419,7 @@ instead.
 
 kwargs:
 Additional key word arguments passed along to the
-[push_to_hub()](main_classes/model.html#transformers.file_utils.PushToHubMixin.push_to_hub) method.
+[push_to_hub()](docs/transformers/:version/:language/main_classes/model.html#transformers.file_utils.PushToHubMixin.push_to_hub) method.
 
 
 <a id='transformers.PreTrainedModel.set_input_embeddings'></a>
@@ -541,7 +541,7 @@ The number of floating-point operations.
 
 
 <a id='transformers.modeling_utils.ModuleUtilsMixin.get_extended_attention_mask'></a>
-> **get\_extended\_attention\_mask**(self, attention_mask: Tensor, input_shape: typing.Tuple[int], device: <property object at 0x7f4b0ef64d10>)
+> **get\_extended\_attention\_mask**(self, attention_mask: Tensor, input_shape: typing.Tuple[int], device: <property object at 0x7f6f18441f50>)
 
 
 Makes broadcastable attention and causal masks so that future and masked tokens are ignored.
@@ -627,7 +627,7 @@ The number of parameters.
 
 
 Reset the `mem_rss_diff` attribute of each module (see
-[add_memory_hooks()](main_classes/model.html#transformers.modeling_utils.ModuleUtilsMixin.add_memory_hooks)).
+[add_memory_hooks()](docs/transformers/:version/:language/main_classes/model.html#transformers.modeling_utils.ModuleUtilsMixin.add_memory_hooks)).
 
 
 ## TFPreTrainedModel
@@ -638,7 +638,7 @@ Reset the `mem_rss_diff` attribute of each module (see
 
 Base class for all TF models.
 
-[TFPreTrainedModel](main_classes/model.html#transformers.TFPreTrainedModel) takes care of storing the configuration of the models and handles methods
+[TFPreTrainedModel](docs/transformers/:version/:language/main_classes/model.html#transformers.TFPreTrainedModel) takes care of storing the configuration of the models and handles methods
 for loading, downloading and saving models as well as a few methods common to all models to:
 
 - resize the input embeddings,
@@ -646,8 +646,8 @@ for loading, downloading and saving models as well as a few methods common to al
 
 Class attributes (overridden by derived classes):
 
-- **config_class** ([PretrainedConfig](main_classes/configuration.html#transformers.PretrainedConfig)) -- A subclass of
-  [PretrainedConfig](main_classes/configuration.html#transformers.PretrainedConfig) to use as configuration class for this model architecture.
+- **config_class** ([PretrainedConfig](docs/transformers/:version/:language/main_classes/configuration.html#transformers.PretrainedConfig)) -- A subclass of
+  [PretrainedConfig](docs/transformers/:version/:language/main_classes/configuration.html#transformers.PretrainedConfig) to use as configuration class for this model architecture.
 - **base_model_prefix** (`str`) -- A string indicating the attribute associated to the base model in
   derived classes of the same architecture adding modules on top of the base model.
 
@@ -746,7 +746,7 @@ weights are discarded.
     Valid model ids can be located at the root-level, like `bert-base-uncased`, or namespaced under
     a user or organization name, like `dbmdz/bert-base-german-cased`.
   - A path to a _directory_ containing model weights saved using
-    [save_pretrained()](main_classes/model.html#transformers.TFPreTrainedModel.save_pretrained), e.g., `./my_model_directory/`.
+    [save_pretrained()](docs/transformers/:version/:language/main_classes/model.html#transformers.TFPreTrainedModel.save_pretrained), e.g., `./my_model_directory/`.
   - A path or url to a _PyTorch state_dict save file_ (e.g, `./pt_model/pytorch_model.bin`). In
     this case, `from_pt` should be set to `True` and a configuration object should be provided
     as `config` argument. This loading path is slower than converting the PyTorch model in a
@@ -759,15 +759,15 @@ weights are discarded.
 - **config** (`Union[PretrainedConfig, str]`, _optional_) --
   Can be either:
 
-  - an instance of a class derived from [PretrainedConfig](main_classes/configuration.html#transformers.PretrainedConfig),
-  - a string valid as input to [from_pretrained()](main_classes/configuration.html#transformers.PretrainedConfig.from_pretrained).
+  - an instance of a class derived from [PretrainedConfig](docs/transformers/:version/:language/main_classes/configuration.html#transformers.PretrainedConfig),
+  - a string valid as input to [from_pretrained()](docs/transformers/:version/:language/main_classes/configuration.html#transformers.PretrainedConfig.from_pretrained).
 
 Configuration for the model to use instead of an automatically loaded configuration. Configuration can
 be automatically loaded when:
 
 - The model is a model provided by the library (loaded with the _model id_ string of a pretrained
   model).
-- The model was saved using [save_pretrained()](main_classes/model.html#transformers.TFPreTrainedModel.save_pretrained) and is reloaded
+- The model was saved using [save_pretrained()](docs/transformers/:version/:language/main_classes/model.html#transformers.TFPreTrainedModel.save_pretrained) and is reloaded
   by supplying the save directory.
 - The model is loaded by supplying a local directory as `pretrained_model_name_or_path` and a
   configuration JSON file named _config.json_ is found in the directory.
@@ -787,7 +787,7 @@ Load the model weights from a PyTorch state_dict save file (see docstring of
 - **resume_download** (`bool`, _optional_, defaults to `False`) --
   Whether or not to delete incompletely received files. Will attempt to resume the download if such a
   file exists.
-  proxies -- (`Dict[str, str], `optional`): A dictionary of proxy servers to use by protocol or endpoint, e.g., `&lcub'http': 'foo.bar:3128',
+  proxies -- (`Dict[str, str], `optional`): A dictionary of proxy servers to use by protocol or endpoint, e.g., `&amp;lcub;'http': 'foo.bar:3128',
   'http://hostname': 'foo.bar:4012'}`. The proxies are used on each request. - **output_loading_info(`bool`,** _optional_, defaults to `False`) --
   Whether ot not to also return a dictionary containing missing keys, unexpected keys and error messages.
 - **local_files_only(`bool`,** _optional_, defaults to `False`) --
@@ -812,7 +812,7 @@ Load the model weights from a PyTorch state_dict save file (see docstring of
     underlying model's `__init__` method (we assume all relevant updates to the configuration have
     already been done)
   - If a configuration is not provided, `kwargs` will be first passed to the configuration class
-    initialization function ([from_pretrained()](main_classes/configuration.html#transformers.PretrainedConfig.from_pretrained)). Each key of
+    initialization function ([from_pretrained()](docs/transformers/:version/:language/main_classes/configuration.html#transformers.PretrainedConfig.from_pretrained)). Each key of
     `kwargs` that corresponds to a configuration attribute will be used to override said attribute
     with the supplied `kwargs` value. Remaining keys that do not correspond to any configuration
     attribute will be passed to the underlying model's `__init__` function.
@@ -940,7 +940,7 @@ Prunes heads of the base model.
 Arguments:
 heads_to_prune (`Dict[int, List[int]]`):
 Dictionary with keys being selected layer indices (`int`) and associated values being the list of
-heads to prune in said layer (list of `int`). For instance &lcub1: [0, 2], 2: [2, 3]} will prune heads
+heads to prune in said layer (list of `int`). For instance &amp;lcub;1: [0, 2], 2: [2, 3]} will prune heads
 0 and 2 on layer 1 and heads 2 and 3 on layer 2.
 
 
@@ -973,7 +973,7 @@ Pointer to the input tokens Embeddings Module of the model.
 
 
 Save a model and its configuration file to a directory, so that it can be re-loaded using the
-[from_pretrained()](main_classes/model.html#transformers.TFPreTrainedModel.from_pretrained) class method.
+[from_pretrained()](docs/transformers/:version/:language/main_classes/model.html#transformers.TFPreTrainedModel.from_pretrained) class method.
 
 Arguments:
 save_directory (`str`):
@@ -998,7 +998,7 @@ instead.
 
 kwargs:
 Additional key word arguments passed along to the
-[push_to_hub()](main_classes/model.html#transformers.file_utils.PushToHubMixin.push_to_hub) method.
+[push_to_hub()](docs/transformers/:version/:language/main_classes/model.html#transformers.file_utils.PushToHubMixin.push_to_hub) method.
 
 
 <a id='transformers.TFPreTrainedModel.serving'></a>
@@ -1112,13 +1112,13 @@ The number of parameters.
 
 Base class for all models.
 
-[FlaxPreTrainedModel](main_classes/model.html#transformers.FlaxPreTrainedModel) takes care of storing the configuration of the models and handles
+[FlaxPreTrainedModel](docs/transformers/:version/:language/main_classes/model.html#transformers.FlaxPreTrainedModel) takes care of storing the configuration of the models and handles
 methods for loading, downloading and saving models.
 
 Class attributes (overridden by derived classes):
 
-- **config_class** ([PretrainedConfig](main_classes/configuration.html#transformers.PretrainedConfig)) -- A subclass of
-  [PretrainedConfig](main_classes/configuration.html#transformers.PretrainedConfig) to use as configuration class for this model architecture.
+- **config_class** ([PretrainedConfig](docs/transformers/:version/:language/main_classes/configuration.html#transformers.PretrainedConfig)) -- A subclass of
+  [PretrainedConfig](docs/transformers/:version/:language/main_classes/configuration.html#transformers.PretrainedConfig) to use as configuration class for this model architecture.
 - **base_model_prefix** (`str`) -- A string indicating the attribute associated to the base model in
   derived classes of the same architecture adding modules on top of the base model.
 
@@ -1209,7 +1209,7 @@ weights are discarded.
     Valid model ids can be located at the root-level, like `bert-base-uncased`, or namespaced under
     a user or organization name, like `dbmdz/bert-base-german-cased`.
   - A path to a _directory_ containing model weights saved using
-    [save_pretrained()](main_classes/model.html#transformers.FlaxPreTrainedModel.save_pretrained), e.g., `./my_model_directory/`.
+    [save_pretrained()](docs/transformers/:version/:language/main_classes/model.html#transformers.FlaxPreTrainedModel.save_pretrained), e.g., `./my_model_directory/`.
   - A path or url to a _pt index checkpoint file_ (e.g, `./tf_model/model.ckpt.index`). In this
     case, `from_pt` should be set to `True`.
 - **model_args** (sequence of positional arguments, _optional_) --
@@ -1217,15 +1217,15 @@ weights are discarded.
 - **config** (`Union[PretrainedConfig, str, os.PathLike]`, _optional_) --
   Can be either:
 
-  - an instance of a class derived from [PretrainedConfig](main_classes/configuration.html#transformers.PretrainedConfig),
-  - a string or path valid as input to [from_pretrained()](main_classes/configuration.html#transformers.PretrainedConfig.from_pretrained).
+  - an instance of a class derived from [PretrainedConfig](docs/transformers/:version/:language/main_classes/configuration.html#transformers.PretrainedConfig),
+  - a string or path valid as input to [from_pretrained()](docs/transformers/:version/:language/main_classes/configuration.html#transformers.PretrainedConfig.from_pretrained).
 
 Configuration for the model to use instead of an automatically loaded configuration. Configuration can
 be automatically loaded when:
 
 - The model is a model provided by the library (loaded with the _model id_ string of a pretrained
   model).
-- The model was saved using [save_pretrained()](main_classes/model.html#transformers.PreTrainedModel.save_pretrained) and is reloaded
+- The model was saved using [save_pretrained()](docs/transformers/:version/:language/main_classes/model.html#transformers.PreTrainedModel.save_pretrained) and is reloaded
   by supplying the save directory.
 - The model is loaded by supplying a local directory as `pretrained_model_name_or_path` and a
   configuration JSON file named _config.json_ is found in the directory.
@@ -1246,7 +1246,7 @@ standard cache should not be used.
   Whether or not to delete incompletely received files. Will attempt to resume the download if such a
   file exists.
 - **proxies** (`Dict[str, str]`, _optional_) --
-  A dictionary of proxy servers to use by protocol or endpoint, e.g., `&lcub'http': 'foo.bar:3128', 'http://hostname': 'foo.bar:4012'}`. The proxies are used on each request.
+  A dictionary of proxy servers to use by protocol or endpoint, e.g., `&amp;lcub;'http': 'foo.bar:3128', 'http://hostname': 'foo.bar:4012'}`. The proxies are used on each request.
 - **local_files_only(`bool`,** _optional_, defaults to `False`) --
   Whether or not to only look at local files (i.e., do not try to download the model).
 - **revision(`str`,** _optional_, defaults to `"main"`) --
@@ -1262,7 +1262,7 @@ standard cache should not be used.
     underlying model's `__init__` method (we assume all relevant updates to the configuration have
     already been done)
   - If a configuration is not provided, `kwargs` will be first passed to the configuration class
-    initialization function ([from_pretrained()](main_classes/configuration.html#transformers.PretrainedConfig.from_pretrained)). Each key of
+    initialization function ([from_pretrained()](docs/transformers/:version/:language/main_classes/configuration.html#transformers.PretrainedConfig.from_pretrained)). Each key of
     `kwargs` that corresponds to a configuration attribute will be used to override said attribute
     with the supplied `kwargs` value. Remaining keys that do not correspond to any configuration
     attribute will be passed to the underlying model's `__init__` function.
@@ -1286,7 +1286,7 @@ standard cache should not be used.
 
 
 Save a model and its configuration file to a directory, so that it can be re-loaded using the
-`[from_pretrained()](main_classes/model.html#transformers.FlaxPreTrainedModel.from_pretrained)` class method
+`[from_pretrained()](docs/transformers/:version/:language/main_classes/model.html#transformers.FlaxPreTrainedModel.from_pretrained)` class method
 
 Arguments:
 save_directory (`str` or `os.PathLike`):
@@ -1305,7 +1305,7 @@ instead.
 
 kwargs:
 Additional key word arguments passed along to the
-[push_to_hub()](main_classes/model.html#transformers.file_utils.PushToHubMixin.push_to_hub) method.
+[push_to_hub()](docs/transformers/:version/:language/main_classes/model.html#transformers.file_utils.PushToHubMixin.push_to_hub) method.
 
 
 ## Generation
@@ -1315,14 +1315,14 @@ Additional key word arguments passed along to the
 
 
 A class containing all of the functions supporting generation, to be used as a mixin in
-[PreTrainedModel](main_classes/model.html#transformers.PreTrainedModel).
+[PreTrainedModel](docs/transformers/:version/:language/main_classes/model.html#transformers.PreTrainedModel).
 
 
 <a id='transformers.generation_utils.GenerationMixin.adjust_logits_during_generation'></a>
 > **adjust\_logits\_during\_generation**(self, logits: FloatTensor, **kwargs)
 
 
-Implement in subclasses of [PreTrainedModel](main_classes/model.html#transformers.PreTrainedModel) for custom behavior to adjust the logits in
+Implement in subclasses of [PreTrainedModel](docs/transformers/:version/:language/main_classes/model.html#transformers.PreTrainedModel) for custom behavior to adjust the logits in
 the generate method.
 
 
@@ -1338,19 +1338,19 @@ Generates sequences for models with a language modeling head using beam search w
 - **input_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`) --
   The sequence used as a prompt for the generation.
 - **beam_scorer** (`BeamScorer`) --
-  A derived instance of [BeamScorer](internal/generation_utils.html#transformers.BeamScorer) that defines how beam hypotheses are
+  A derived instance of [BeamScorer](docs/transformers/:version/:language/internal/generation_utils.html#transformers.BeamScorer) that defines how beam hypotheses are
   constructed, stored and sorted during generation. For more information, the documentation of
-  [BeamScorer](internal/generation_utils.html#transformers.BeamScorer) should be read.
+  [BeamScorer](docs/transformers/:version/:language/internal/generation_utils.html#transformers.BeamScorer) should be read.
 - **logits_processor** (`LogitsProcessorList`, _optional_) --
-  An instance of [LogitsProcessorList](internal/generation_utils.html#transformers.LogitsProcessorList). List of instances of class derived from
-  [LogitsProcessor](internal/generation_utils.html#transformers.LogitsProcessor) used to modify the prediction scores of the language modeling
+  An instance of [LogitsProcessorList](docs/transformers/:version/:language/internal/generation_utils.html#transformers.LogitsProcessorList). List of instances of class derived from
+  [LogitsProcessor](docs/transformers/:version/:language/internal/generation_utils.html#transformers.LogitsProcessor) used to modify the prediction scores of the language modeling
   head applied at each generation step.
 - **stopping_criteria** (`StoppingCriteriaList`, _optional_) --
-  An instance of [StoppingCriteriaList](internal/generation_utils.html#transformers.StoppingCriteriaList). List of instances of class derived from
-  [StoppingCriteria](internal/generation_utils.html#transformers.StoppingCriteria) used to tell if the generation loop should stop.
+  An instance of [StoppingCriteriaList](docs/transformers/:version/:language/internal/generation_utils.html#transformers.StoppingCriteriaList). List of instances of class derived from
+  [StoppingCriteria](docs/transformers/:version/:language/internal/generation_utils.html#transformers.StoppingCriteria) used to tell if the generation loop should stop.
 - **logits_warper** (`LogitsProcessorList`, _optional_) --
-  An instance of [LogitsProcessorList](internal/generation_utils.html#transformers.LogitsProcessorList). List of instances of class derived from
-  [LogitsWarper](internal/generation_utils.html#transformers.LogitsWarper) used to warp the prediction score distribution of the language
+  An instance of [LogitsProcessorList](docs/transformers/:version/:language/internal/generation_utils.html#transformers.LogitsProcessorList). List of instances of class derived from
+  [LogitsWarper](docs/transformers/:version/:language/internal/generation_utils.html#transformers.LogitsWarper) used to warp the prediction score distribution of the language
   modeling head applied before multinomial sampling at each generation step.
 - **max_length** (`int`, _optional_, defaults to 20) --
   **DEPRECATED**. Use `logits_processor` or `stopping_criteria` directly to cap the number of
@@ -1368,7 +1368,7 @@ Generates sequences for models with a language modeling head using beam search w
 - **output_scores** (`bool`, _optional_, defaults to _False_) --
   Whether or not to return the prediction scores. See `scores` under returned tensors for more details.
 - **return_dict_in_generate** (`bool`, _optional_, defaults to _False_) --
-  Whether or not to return a [ModelOutput](main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple.
+  Whether or not to return a [ModelOutput](docs/transformers/:version/:language/main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple.
 - **synced_gpus** (`bool`, _optional_, defaults to `False`) --
   Whether to continue running the while loop until max_length (needed for ZeRO stage 3)
   model_kwargs --
@@ -1377,12 +1377,12 @@ Generates sequences for models with a language modeling head using beam search w
 
 > Returns
 
-[BeamSampleDecoderOnlyOutput](internal/generation_utils.html#transformers.generation_utils.BeamSampleDecoderOnlyOutput),
-[BeamSampleEncoderDecoderOutput](internal/generation_utils.html#transformers.generation_utils.BeamSampleEncoderDecoderOutput) or obj:_torch.LongTensor_: A
+[BeamSampleDecoderOnlyOutput](docs/transformers/:version/:language/internal/generation_utils.html#transformers.generation_utils.BeamSampleDecoderOnlyOutput),
+[BeamSampleEncoderDecoderOutput](docs/transformers/:version/:language/internal/generation_utils.html#transformers.generation_utils.BeamSampleEncoderDecoderOutput) or obj:_torch.LongTensor_: A
 `torch.LongTensor` containing the generated tokens (default behaviour) or a
-[BeamSampleDecoderOnlyOutput](internal/generation_utils.html#transformers.generation_utils.BeamSampleDecoderOnlyOutput) if
+[BeamSampleDecoderOnlyOutput](docs/transformers/:version/:language/internal/generation_utils.html#transformers.generation_utils.BeamSampleDecoderOnlyOutput) if
 `model.config.is_encoder_decoder=False` and `return_dict_in_generate=True` or a
-[BeamSampleEncoderDecoderOutput](internal/generation_utils.html#transformers.generation_utils.BeamSampleEncoderDecoderOutput) if
+[BeamSampleEncoderDecoderOutput](docs/transformers/:version/:language/internal/generation_utils.html#transformers.generation_utils.BeamSampleEncoderDecoderOutput) if
 `model.config.is_encoder_decoder=True`.
 
 > Examples:
@@ -1412,7 +1412,7 @@ Generates sequences for models with a language modeling head using beam search w
 >>> input_ids = input_ids * model.config.decoder_start_token_id
 
 >>> # add encoder_outputs to model keyword arguments
->>> model_kwargs = &lcub
+>>> model_kwargs = &amp;lcub;
 ...     "encoder_outputs": model.get_encoder()(encoder_input_ids.repeat_interleave(num_beams, dim=0), return_dict=True)
 ... }
 
@@ -1454,16 +1454,16 @@ Generates sequences for models with a language modeling head using beam search d
 - **input_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`) --
   The sequence used as a prompt for the generation.
 - **beam_scorer** (`BeamScorer`) --
-  An derived instance of [BeamScorer](internal/generation_utils.html#transformers.BeamScorer) that defines how beam hypotheses are
+  An derived instance of [BeamScorer](docs/transformers/:version/:language/internal/generation_utils.html#transformers.BeamScorer) that defines how beam hypotheses are
   constructed, stored and sorted during generation. For more information, the documentation of
-  [BeamScorer](internal/generation_utils.html#transformers.BeamScorer) should be read.
+  [BeamScorer](docs/transformers/:version/:language/internal/generation_utils.html#transformers.BeamScorer) should be read.
 - **logits_processor** (`LogitsProcessorList`, _optional_) --
-  An instance of [LogitsProcessorList](internal/generation_utils.html#transformers.LogitsProcessorList). List of instances of class derived from
-  [LogitsProcessor](internal/generation_utils.html#transformers.LogitsProcessor) used to modify the prediction scores of the language modeling
+  An instance of [LogitsProcessorList](docs/transformers/:version/:language/internal/generation_utils.html#transformers.LogitsProcessorList). List of instances of class derived from
+  [LogitsProcessor](docs/transformers/:version/:language/internal/generation_utils.html#transformers.LogitsProcessor) used to modify the prediction scores of the language modeling
   head applied at each generation step.
 - **stopping_criteria** (`StoppingCriteriaList`, _optional_) --
-  An instance of [StoppingCriteriaList](internal/generation_utils.html#transformers.StoppingCriteriaList). List of instances of class derived from
-  [StoppingCriteria](internal/generation_utils.html#transformers.StoppingCriteria) used to tell if the generation loop should stop.
+  An instance of [StoppingCriteriaList](docs/transformers/:version/:language/internal/generation_utils.html#transformers.StoppingCriteriaList). List of instances of class derived from
+  [StoppingCriteria](docs/transformers/:version/:language/internal/generation_utils.html#transformers.StoppingCriteria) used to tell if the generation loop should stop.
 - **max_length** (`int`, _optional_, defaults to 20) --
   **DEPRECATED**. Use `logits_processor` or `stopping_criteria` directly to cap the number of
   generated tokens. The maximum length of the sequence to be generated.
@@ -1480,7 +1480,7 @@ Generates sequences for models with a language modeling head using beam search d
 - **output_scores** (`bool`, _optional_, defaults to _False_) --
   Whether or not to return the prediction scores. See `scores` under returned tensors for more details.
 - **return_dict_in_generate** (`bool`, _optional_, defaults to _False_) --
-  Whether or not to return a [ModelOutput](main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple.
+  Whether or not to return a [ModelOutput](docs/transformers/:version/:language/main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple.
 - **synced_gpus** (`bool`, _optional_, defaults to `False`) --
   Whether to continue running the while loop until max_length (needed for ZeRO stage 3)
   model_kwargs --
@@ -1490,11 +1490,11 @@ Generates sequences for models with a language modeling head using beam search d
 > Returns
 
 `generation_utilsBeamSearchDecoderOnlyOutput`,
-[BeamSearchEncoderDecoderOutput](internal/generation_utils.html#transformers.generation_utils.BeamSearchEncoderDecoderOutput) or obj:_torch.LongTensor_: A
+[BeamSearchEncoderDecoderOutput](docs/transformers/:version/:language/internal/generation_utils.html#transformers.generation_utils.BeamSearchEncoderDecoderOutput) or obj:_torch.LongTensor_: A
 `torch.LongTensor` containing the generated tokens (default behaviour) or a
-[BeamSearchDecoderOnlyOutput](internal/generation_utils.html#transformers.generation_utils.BeamSearchDecoderOnlyOutput) if
+[BeamSearchDecoderOnlyOutput](docs/transformers/:version/:language/internal/generation_utils.html#transformers.generation_utils.BeamSearchDecoderOnlyOutput) if
 `model.config.is_encoder_decoder=False` and `return_dict_in_generate=True` or a
-[BeamSearchEncoderDecoderOutput](internal/generation_utils.html#transformers.generation_utils.BeamSearchEncoderDecoderOutput) if
+[BeamSearchEncoderDecoderOutput](docs/transformers/:version/:language/internal/generation_utils.html#transformers.generation_utils.BeamSearchEncoderDecoderOutput) if
 `model.config.is_encoder_decoder=True`.
 
 
@@ -1524,7 +1524,7 @@ Generates sequences for models with a language modeling head using beam search d
 >>> input_ids = input_ids * model.config.decoder_start_token_id
 
 >>> # add encoder_outputs to model keyword arguments
->>> model_kwargs = &lcub
+>>> model_kwargs = &amp;lcub;
 ...     "encoder_outputs": model.get_encoder()(encoder_input_ids.repeat_interleave(num_beams, dim=0), return_dict=True)
 ... }
 
@@ -1554,7 +1554,7 @@ Generates sequences for models with a language modeling head. The method current
 multinomial sampling, beam-search decoding, and beam-search multinomial sampling.
 
 Apart from `input_ids` and `attention_mask`, all the arguments below will default to the value of the
-attribute of the same name inside the [PretrainedConfig](main_classes/configuration.html#transformers.PretrainedConfig) of the model. The default values
+attribute of the same name inside the [PretrainedConfig](docs/transformers/:version/:language/main_classes/configuration.html#transformers.PretrainedConfig) of the model. The default values
 indicated are the default values of those config.
 
 Most of these parameters are explained in more detail in [this blog post](https://huggingface.co/blog/how-to-generate).
@@ -1642,10 +1642,10 @@ Most of these parameters are explained in more detail in [this blog post](https:
 - **output_scores** (`bool`, _optional_, defaults to _False_) --
   Whether or not to return the prediction scores. See `scores` under returned tensors for more details.
 - **return_dict_in_generate** (`bool`, _optional_, defaults to _False_) --
-  Whether or not to return a [ModelOutput](main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple.
+  Whether or not to return a [ModelOutput](docs/transformers/:version/:language/main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple.
 - **forced_bos_token_id** (`int`, _optional_) --
   The id of the token to force as the first generated token after the `decoder_start_token_id`.
-  Useful for multilingual models like [mBART](../model_doc/mbart.html) where the first generated token
+  Useful for multilingual models like [mBART](/docs/transformers/:version/:language/../model_doc/mbart.html) where the first generated token
   needs to be the target language token.
 - **forced_eos_token_id** (`int`, _optional_) --
   The id of the token to force as the last generated token when `max_length` is reached.
@@ -1663,28 +1663,28 @@ Most of these parameters are explained in more detail in [this blog post](https:
 > Returns
 
 A
-[ModelOutput](main_classes/output.html#transformers.file_utils.ModelOutput) (if `return_dict_in_generate=True` or when
+[ModelOutput](docs/transformers/:version/:language/main_classes/output.html#transformers.file_utils.ModelOutput) (if `return_dict_in_generate=True` or when
 `config.return_dict_in_generate=True`) or a `torch.FloatTensor`.
 
 If the model is _not_ an encoder-decoder model (`model.config.is_encoder_decoder=False`), the
-possible [ModelOutput](main_classes/output.html#transformers.file_utils.ModelOutput) types are:
+possible [ModelOutput](docs/transformers/:version/:language/main_classes/output.html#transformers.file_utils.ModelOutput) types are:
 
-- [GreedySearchDecoderOnlyOutput](internal/generation_utils.html#transformers.generation_utils.GreedySearchDecoderOnlyOutput),
-- [SampleDecoderOnlyOutput](internal/generation_utils.html#transformers.generation_utils.SampleDecoderOnlyOutput),
-- [BeamSearchDecoderOnlyOutput](internal/generation_utils.html#transformers.generation_utils.BeamSearchDecoderOnlyOutput),
-- [BeamSampleDecoderOnlyOutput](internal/generation_utils.html#transformers.generation_utils.BeamSampleDecoderOnlyOutput)
+- [GreedySearchDecoderOnlyOutput](docs/transformers/:version/:language/internal/generation_utils.html#transformers.generation_utils.GreedySearchDecoderOnlyOutput),
+- [SampleDecoderOnlyOutput](docs/transformers/:version/:language/internal/generation_utils.html#transformers.generation_utils.SampleDecoderOnlyOutput),
+- [BeamSearchDecoderOnlyOutput](docs/transformers/:version/:language/internal/generation_utils.html#transformers.generation_utils.BeamSearchDecoderOnlyOutput),
+- [BeamSampleDecoderOnlyOutput](docs/transformers/:version/:language/internal/generation_utils.html#transformers.generation_utils.BeamSampleDecoderOnlyOutput)
 
 If the model is an encoder-decoder model (`model.config.is_encoder_decoder=True`), the possible
-[ModelOutput](main_classes/output.html#transformers.file_utils.ModelOutput) types are:
+[ModelOutput](docs/transformers/:version/:language/main_classes/output.html#transformers.file_utils.ModelOutput) types are:
 
-- [GreedySearchEncoderDecoderOutput](internal/generation_utils.html#transformers.generation_utils.GreedySearchEncoderDecoderOutput),
-- [SampleEncoderDecoderOutput](internal/generation_utils.html#transformers.generation_utils.SampleEncoderDecoderOutput),
-- [BeamSearchEncoderDecoderOutput](internal/generation_utils.html#transformers.generation_utils.BeamSearchEncoderDecoderOutput),
-- [BeamSampleEncoderDecoderOutput](internal/generation_utils.html#transformers.generation_utils.BeamSampleEncoderDecoderOutput)
+- [GreedySearchEncoderDecoderOutput](docs/transformers/:version/:language/internal/generation_utils.html#transformers.generation_utils.GreedySearchEncoderDecoderOutput),
+- [SampleEncoderDecoderOutput](docs/transformers/:version/:language/internal/generation_utils.html#transformers.generation_utils.SampleEncoderDecoderOutput),
+- [BeamSearchEncoderDecoderOutput](docs/transformers/:version/:language/internal/generation_utils.html#transformers.generation_utils.BeamSearchEncoderDecoderOutput),
+- [BeamSampleEncoderDecoderOutput](docs/transformers/:version/:language/internal/generation_utils.html#transformers.generation_utils.BeamSampleEncoderDecoderOutput)
 
 > Return type
 
-[ModelOutput](main_classes/output.html#transformers.file_utils.ModelOutput) or `torch.LongTensor`
+[ModelOutput](docs/transformers/:version/:language/main_classes/output.html#transformers.file_utils.ModelOutput) or `torch.LongTensor`
 
 > Examples:
 
@@ -1753,12 +1753,12 @@ Generates sequences for models with a language modeling head using greedy decodi
 - **input_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`) --
   The sequence used as a prompt for the generation.
 - **logits_processor** (`LogitsProcessorList`, _optional_) --
-  An instance of [LogitsProcessorList](internal/generation_utils.html#transformers.LogitsProcessorList). List of instances of class derived from
-  [LogitsProcessor](internal/generation_utils.html#transformers.LogitsProcessor) used to modify the prediction scores of the language modeling
+  An instance of [LogitsProcessorList](docs/transformers/:version/:language/internal/generation_utils.html#transformers.LogitsProcessorList). List of instances of class derived from
+  [LogitsProcessor](docs/transformers/:version/:language/internal/generation_utils.html#transformers.LogitsProcessor) used to modify the prediction scores of the language modeling
   head applied at each generation step.
 - **stopping_criteria** (`StoppingCriteriaList`, _optional_) --
-  An instance of [StoppingCriteriaList](internal/generation_utils.html#transformers.StoppingCriteriaList). List of instances of class derived from
-  [StoppingCriteria](internal/generation_utils.html#transformers.StoppingCriteria) used to tell if the generation loop should stop.
+  An instance of [StoppingCriteriaList](docs/transformers/:version/:language/internal/generation_utils.html#transformers.StoppingCriteriaList). List of instances of class derived from
+  [StoppingCriteria](docs/transformers/:version/:language/internal/generation_utils.html#transformers.StoppingCriteria) used to tell if the generation loop should stop.
 
 - **max_length** (`int`, _optional_, defaults to 20) --
   **DEPRECATED**. Use `logits_processor` or `stopping_criteria` directly to cap the number of
@@ -1776,7 +1776,7 @@ Generates sequences for models with a language modeling head using greedy decodi
 - **output_scores** (`bool`, _optional_, defaults to _False_) --
   Whether or not to return the prediction scores. See `scores` under returned tensors for more details.
 - **return_dict_in_generate** (`bool`, _optional_, defaults to _False_) --
-  Whether or not to return a [ModelOutput](main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple.
+  Whether or not to return a [ModelOutput](docs/transformers/:version/:language/main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple.
 - **synced_gpus** (`bool`, _optional_, defaults to `False`) --
   Whether to continue running the while loop until max_length (needed for ZeRO stage 3)
   model_kwargs --
@@ -1785,12 +1785,12 @@ Generates sequences for models with a language modeling head using greedy decodi
 
 > Returns
 
-[GreedySearchDecoderOnlyOutput](internal/generation_utils.html#transformers.generation_utils.GreedySearchDecoderOnlyOutput),
-[GreedySearchEncoderDecoderOutput](internal/generation_utils.html#transformers.generation_utils.GreedySearchEncoderDecoderOutput) or obj:_torch.LongTensor_: A
+[GreedySearchDecoderOnlyOutput](docs/transformers/:version/:language/internal/generation_utils.html#transformers.generation_utils.GreedySearchDecoderOnlyOutput),
+[GreedySearchEncoderDecoderOutput](docs/transformers/:version/:language/internal/generation_utils.html#transformers.generation_utils.GreedySearchEncoderDecoderOutput) or obj:_torch.LongTensor_: A
 `torch.LongTensor` containing the generated tokens (default behaviour) or a
-[GreedySearchDecoderOnlyOutput](internal/generation_utils.html#transformers.generation_utils.GreedySearchDecoderOnlyOutput) if
+[GreedySearchDecoderOnlyOutput](docs/transformers/:version/:language/internal/generation_utils.html#transformers.generation_utils.GreedySearchDecoderOnlyOutput) if
 `model.config.is_encoder_decoder=False` and `return_dict_in_generate=True` or a
-[GreedySearchEncoderDecoderOutput](internal/generation_utils.html#transformers.generation_utils.GreedySearchEncoderDecoderOutput) if
+[GreedySearchEncoderDecoderOutput](docs/transformers/:version/:language/internal/generation_utils.html#transformers.generation_utils.GreedySearchEncoderDecoderOutput) if
 `model.config.is_encoder_decoder=True`.
 
 > Examples:
@@ -1835,16 +1835,16 @@ Generates sequences for models with a language modeling head using beam search d
 - **input_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`) --
   The sequence used as a prompt for the generation.
 - **beam_scorer** (`BeamScorer`) --
-  An derived instance of [BeamScorer](internal/generation_utils.html#transformers.BeamScorer) that defines how beam hypotheses are
+  An derived instance of [BeamScorer](docs/transformers/:version/:language/internal/generation_utils.html#transformers.BeamScorer) that defines how beam hypotheses are
   constructed, stored and sorted during generation. For more information, the documentation of
-  [BeamScorer](internal/generation_utils.html#transformers.BeamScorer) should be read.
+  [BeamScorer](docs/transformers/:version/:language/internal/generation_utils.html#transformers.BeamScorer) should be read.
 - **logits_processor** (`LogitsProcessorList`, _optional_) --
-  An instance of [LogitsProcessorList](internal/generation_utils.html#transformers.LogitsProcessorList). List of instances of class derived from
-  [LogitsProcessor](internal/generation_utils.html#transformers.LogitsProcessor) used to modify the prediction scores of the language modeling
+  An instance of [LogitsProcessorList](docs/transformers/:version/:language/internal/generation_utils.html#transformers.LogitsProcessorList). List of instances of class derived from
+  [LogitsProcessor](docs/transformers/:version/:language/internal/generation_utils.html#transformers.LogitsProcessor) used to modify the prediction scores of the language modeling
   head applied at each generation step.
 - **stopping_criteria** (`StoppingCriteriaList`, _optional_) --
-  An instance of [StoppingCriteriaList](internal/generation_utils.html#transformers.StoppingCriteriaList). List of instances of class derived from
-  [StoppingCriteria](internal/generation_utils.html#transformers.StoppingCriteria) used to tell if the generation loop should stop.
+  An instance of [StoppingCriteriaList](docs/transformers/:version/:language/internal/generation_utils.html#transformers.StoppingCriteriaList). List of instances of class derived from
+  [StoppingCriteria](docs/transformers/:version/:language/internal/generation_utils.html#transformers.StoppingCriteria) used to tell if the generation loop should stop.
 - **max_length** (`int`, _optional_, defaults to 20) --
   **DEPRECATED**. Use `logits_processor` or `stopping_criteria` directly to cap the number of
   generated tokens. The maximum length of the sequence to be generated.
@@ -1861,7 +1861,7 @@ Generates sequences for models with a language modeling head using beam search d
 - **output_scores** (`bool`, _optional_, defaults to _False_) --
   Whether or not to return the prediction scores. See `scores` under returned tensors for more details.
 - **return_dict_in_generate** (`bool`, _optional_, defaults to _False_) --
-  Whether or not to return a [ModelOutput](main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple.
+  Whether or not to return a [ModelOutput](docs/transformers/:version/:language/main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple.
 - **synced_gpus** (`bool`, _optional_, defaults to `False`) --
   Whether to continue running the while loop until max_length (needed for ZeRO stage 3)
 
@@ -1871,13 +1871,13 @@ Generates sequences for models with a language modeling head using beam search d
 
 > Returns
 
-[BeamSearchDecoderOnlyOutput](internal/generation_utils.html#transformers.generation_utils.BeamSearchDecoderOnlyOutput),
-[BeamSearchEncoderDecoderOutput](internal/generation_utils.html#transformers.generation_utils.BeamSearchEncoderDecoderOutput) or obj:_torch.LongTensor_: A
+[BeamSearchDecoderOnlyOutput](docs/transformers/:version/:language/internal/generation_utils.html#transformers.generation_utils.BeamSearchDecoderOnlyOutput),
+[BeamSearchEncoderDecoderOutput](docs/transformers/:version/:language/internal/generation_utils.html#transformers.generation_utils.BeamSearchEncoderDecoderOutput) or obj:_torch.LongTensor_: A
 `torch.LongTensor` containing the generated tokens (default behaviour) or a
-[BeamSearchDecoderOnlyOutput](internal/generation_utils.html#transformers.generation_utils.BeamSearchDecoderOnlyOutput) if
-[BeamSearchDecoderOnlyOutput](internal/generation_utils.html#transformers.generation_utils.BeamSearchDecoderOnlyOutput) if
+[BeamSearchDecoderOnlyOutput](docs/transformers/:version/:language/internal/generation_utils.html#transformers.generation_utils.BeamSearchDecoderOnlyOutput) if
+[BeamSearchDecoderOnlyOutput](docs/transformers/:version/:language/internal/generation_utils.html#transformers.generation_utils.BeamSearchDecoderOnlyOutput) if
 `model.config.is_encoder_decoder=False` and `return_dict_in_generate=True` or a
-[BeamSearchEncoderDecoderOutput](internal/generation_utils.html#transformers.generation_utils.BeamSearchEncoderDecoderOutput) if
+[BeamSearchEncoderDecoderOutput](docs/transformers/:version/:language/internal/generation_utils.html#transformers.generation_utils.BeamSearchEncoderDecoderOutput) if
 `model.config.is_encoder_decoder=True`.
 
 > Examples:
@@ -1907,7 +1907,7 @@ Generates sequences for models with a language modeling head using beam search d
 >>> input_ids = input_ids * model.config.decoder_start_token_id
 
 >>> # add encoder_outputs to model keyword arguments
->>> model_kwargs = &lcub
+>>> model_kwargs = &amp;lcub;
 ...     "encoder_outputs": model.get_encoder()(encoder_input_ids.repeat_interleave(num_beams, dim=0), return_dict=True)
 ... }
 
@@ -1936,7 +1936,7 @@ Generates sequences for models with a language modeling head using beam search d
 > **prepare\_inputs\_for\_generation**(self, input_ids: LongTensor, **kwargs)
 
 
-Implement in subclasses of [PreTrainedModel](main_classes/model.html#transformers.PreTrainedModel) for custom behavior to prepare inputs in the
+Implement in subclasses of [PreTrainedModel](docs/transformers/:version/:language/main_classes/model.html#transformers.PreTrainedModel) for custom behavior to prepare inputs in the
 generate method.
 
 
@@ -1952,15 +1952,15 @@ Generates sequences for models with a language modeling head using multinomial s
 - **input_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`) --
   The sequence used as a prompt for the generation.
 - **logits_processor** (`LogitsProcessorList`, _optional_) --
-  An instance of [LogitsProcessorList](internal/generation_utils.html#transformers.LogitsProcessorList). List of instances of class derived from
-  [LogitsProcessor](internal/generation_utils.html#transformers.LogitsProcessor) used to modify the prediction scores of the language modeling
+  An instance of [LogitsProcessorList](docs/transformers/:version/:language/internal/generation_utils.html#transformers.LogitsProcessorList). List of instances of class derived from
+  [LogitsProcessor](docs/transformers/:version/:language/internal/generation_utils.html#transformers.LogitsProcessor) used to modify the prediction scores of the language modeling
   head applied at each generation step.
 - **stopping_criteria** (`StoppingCriteriaList`, _optional_) --
-  An instance of [StoppingCriteriaList](internal/generation_utils.html#transformers.StoppingCriteriaList). List of instances of class derived from
-  [StoppingCriteria](internal/generation_utils.html#transformers.StoppingCriteria) used to tell if the generation loop should stop.
+  An instance of [StoppingCriteriaList](docs/transformers/:version/:language/internal/generation_utils.html#transformers.StoppingCriteriaList). List of instances of class derived from
+  [StoppingCriteria](docs/transformers/:version/:language/internal/generation_utils.html#transformers.StoppingCriteria) used to tell if the generation loop should stop.
 - **logits_warper** (`LogitsProcessorList`, _optional_) --
-  An instance of [LogitsProcessorList](internal/generation_utils.html#transformers.LogitsProcessorList). List of instances of class derived from
-  [LogitsWarper](internal/generation_utils.html#transformers.LogitsWarper) used to warp the prediction score distribution of the language
+  An instance of [LogitsProcessorList](docs/transformers/:version/:language/internal/generation_utils.html#transformers.LogitsProcessorList). List of instances of class derived from
+  [LogitsWarper](docs/transformers/:version/:language/internal/generation_utils.html#transformers.LogitsWarper) used to warp the prediction score distribution of the language
   modeling head applied before multinomial sampling at each generation step.
 - **max_length** (`int`, _optional_, defaults to 20) --
   **DEPRECATED**. Use `logits_processor` or `stopping_criteria` directly to cap the number of
@@ -1978,7 +1978,7 @@ Generates sequences for models with a language modeling head using multinomial s
 - **output_scores** (`bool`, _optional_, defaults to _False_) --
   Whether or not to return the prediction scores. See `scores` under returned tensors for more details.
 - **return_dict_in_generate** (`bool`, _optional_, defaults to _False_) --
-  Whether or not to return a [ModelOutput](main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple.
+  Whether or not to return a [ModelOutput](docs/transformers/:version/:language/main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple.
 - **synced_gpus** (`bool`, _optional_, defaults to `False`) --
   Whether to continue running the while loop until max_length (needed for ZeRO stage 3)
   model_kwargs --
@@ -1987,12 +1987,12 @@ Generates sequences for models with a language modeling head using multinomial s
 
 > Returns
 
-[SampleDecoderOnlyOutput](internal/generation_utils.html#transformers.generation_utils.SampleDecoderOnlyOutput),
-[SampleEncoderDecoderOutput](internal/generation_utils.html#transformers.generation_utils.SampleEncoderDecoderOutput) or obj:_torch.LongTensor_: A
+[SampleDecoderOnlyOutput](docs/transformers/:version/:language/internal/generation_utils.html#transformers.generation_utils.SampleDecoderOnlyOutput),
+[SampleEncoderDecoderOutput](docs/transformers/:version/:language/internal/generation_utils.html#transformers.generation_utils.SampleEncoderDecoderOutput) or obj:_torch.LongTensor_: A
 `torch.LongTensor` containing the generated tokens (default behaviour) or a
-[SampleDecoderOnlyOutput](internal/generation_utils.html#transformers.generation_utils.SampleDecoderOnlyOutput) if
+[SampleDecoderOnlyOutput](docs/transformers/:version/:language/internal/generation_utils.html#transformers.generation_utils.SampleDecoderOnlyOutput) if
 `model.config.is_encoder_decoder=False` and `return_dict_in_generate=True` or a
-[SampleEncoderDecoderOutput](internal/generation_utils.html#transformers.generation_utils.SampleEncoderDecoderOutput) if
+[SampleEncoderDecoderOutput](docs/transformers/:version/:language/internal/generation_utils.html#transformers.generation_utils.SampleEncoderDecoderOutput) if
 `model.config.is_encoder_decoder=True`.
 
 > Examples:
@@ -2037,14 +2037,14 @@ Generates sequences for models with a language modeling head using multinomial s
 
 
 A class containing all of the functions supporting generation, to be used as a mixin in
-[TFPreTrainedModel](main_classes/model.html#transformers.TFPreTrainedModel).
+[TFPreTrainedModel](docs/transformers/:version/:language/main_classes/model.html#transformers.TFPreTrainedModel).
 
 
 <a id='transformers.generation_tf_utils.TFGenerationMixin.adjust_logits_during_generation'></a>
 > **adjust\_logits\_during\_generation**(self, logits, cur_len, max_length, forced_bos_token_id, forced_eos_token_id, **kwargs)
 
 
-Implement in subclasses of [PreTrainedModel](main_classes/model.html#transformers.PreTrainedModel) for custom behavior to adjust the logits in
+Implement in subclasses of [PreTrainedModel](docs/transformers/:version/:language/main_classes/model.html#transformers.PreTrainedModel) for custom behavior to adjust the logits in
 the generate method.
 
 
@@ -2058,7 +2058,7 @@ beam-search decoding, sampling with temperature, sampling with top-k or nucleus 
 Adapted in part from [Facebook's XLM beam search code](https://github.com/facebookresearch/XLM/blob/9e6f6814d17be4fe5b15f2e6c43eb2b2d76daeb4/src/model/transformer.py#L529).
 
 Apart from `input_ids` and `attention_mask`, all the arguments below will default to the value of the
-attribute of the same name inside the [PretrainedConfig](main_classes/configuration.html#transformers.PretrainedConfig) of the model. The default values
+attribute of the same name inside the [PretrainedConfig](docs/transformers/:version/:language/main_classes/configuration.html#transformers.PretrainedConfig) of the model. The default values
 indicated are the default values of those config.
 
 Most of these parameters are explained in more detail in [this blog post](https://huggingface.co/blog/how-to-generate).
@@ -2127,10 +2127,10 @@ Most of these parameters are explained in more detail in [this blog post](https:
 - **output_scores** (`bool`, _optional_, defaults to _False_) --
   Whether or not to return the prediction scores. See `scores` under returned tensors for more details.
 - **return_dict_in_generate** (`bool`, _optional_, defaults to _False_) --
-  Whether or not to return a [ModelOutput](main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple.
+  Whether or not to return a [ModelOutput](docs/transformers/:version/:language/main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple.
 - **forced_bos_token_id** (`int`, _optional_) --
   The id of the token to force as the first generated token after the `decoder_start_token_id`.
-  Useful for multilingual models like [mBART](../model_doc/mbart.html) where the first generated token
+  Useful for multilingual models like [mBART](/docs/transformers/:version/:language/../model_doc/mbart.html) where the first generated token
   needs to be the target language token.
 - **forced_eos_token_id** (`int`, _optional_) --
   The id of the token to force as the last generated token when `max_length` is reached.
@@ -2140,11 +2140,11 @@ Most of these parameters are explained in more detail in [this blog post](https:
 > Returns
 
 A
-[ModelOutput](main_classes/output.html#transformers.file_utils.ModelOutput) (if `return_dict_in_generate=True` or when
+[ModelOutput](docs/transformers/:version/:language/main_classes/output.html#transformers.file_utils.ModelOutput) (if `return_dict_in_generate=True` or when
 `config.return_dict_in_generate=True`) or a `tf.Tensor`.
 
 If the model is _not_ an encoder-decoder model (`model.config.is_encoder_decoder=False`), the
-possible [ModelOutput](main_classes/output.html#transformers.file_utils.ModelOutput) types are:
+possible [ModelOutput](docs/transformers/:version/:language/main_classes/output.html#transformers.file_utils.ModelOutput) types are:
 
 - `TFGreedySearchDecoderOnlyOutput`,
 - `TFSampleDecoderOnlyOutput`,
@@ -2152,7 +2152,7 @@ possible [ModelOutput](main_classes/output.html#transformers.file_utils.ModelOut
 - `TFBeamSampleDecoderOnlyOutput`
 
 If the model is an encoder-decoder model (`model.config.is_encoder_decoder=True`), the possible
-[ModelOutput](main_classes/output.html#transformers.file_utils.ModelOutput) types are:
+[ModelOutput](docs/transformers/:version/:language/main_classes/output.html#transformers.file_utils.ModelOutput) types are:
 
 - `TFGreedySearchEncoderDecoderOutput`,
 - `TFSampleEncoderDecoderOutput`,
@@ -2161,7 +2161,7 @@ If the model is an encoder-decoder model (`model.config.is_encoder_decoder=True`
 
 > Return type
 
-[ModelOutput](main_classes/output.html#transformers.file_utils.ModelOutput) or `tf.Tensor`
+[ModelOutput](docs/transformers/:version/:language/main_classes/output.html#transformers.file_utils.ModelOutput) or `tf.Tensor`
 
 > Examples:
 
@@ -2169,7 +2169,7 @@ If the model is an encoder-decoder model (`model.config.is_encoder_decoder=True`
 tokenizer = AutoTokenizer.from_pretrained('distilgpt2')   # Initialize tokenizer
 model = TFAutoModelWithLMHead.from_pretrained('distilgpt2')    # Download model and configuration from huggingface.co and cache.
 outputs = model.generate(max_length=40)  # do greedy decoding
-print(f'Generated: &lcubtokenizer.decode(outputs[0], skip_special_tokens=True)}')
+print(f'Generated: &amp;lcub;tokenizer.decode(outputs[0], skip_special_tokens=True)}')
 
 tokenizer = AutoTokenizer.from_pretrained('openai-gpt')   # Initialize tokenizer
 model = TFAutoModelWithLMHead.from_pretrained('openai-gpt')    # Download model and configuration from huggingface.co and cache.
@@ -2177,7 +2177,7 @@ input_context = 'The dog'
 input_ids = tokenizer.encode(input_context, return_tensors='tf')  # encode input context
 outputs = model.generate(input_ids=input_ids, num_beams=5, num_return_sequences=3, temperature=1.5)  # generate 3 independent sequences using beam search decoding (5 beams) with sampling from initial context 'The dog'
 for i in range(3): #  3 output sequences were generated
-print(f'Generated &lcubi}: &lcubtokenizer.decode(outputs[i], skip_special_tokens=True)}')
+print(f'Generated &amp;lcub;i}: &amp;lcub;tokenizer.decode(outputs[i], skip_special_tokens=True)}')
 
 tokenizer = AutoTokenizer.from_pretrained('distilgpt2')   # Initialize tokenizer
 model = TFAutoModelWithLMHead.from_pretrained('distilgpt2')    # Download model and configuration from huggingface.co and cache.
@@ -2185,14 +2185,14 @@ input_context = 'The dog'
 input_ids = tokenizer.encode(input_context, return_tensors='tf')  # encode input context
 outputs = model.generate(input_ids=input_ids, max_length=40, temperature=0.7, num_return_sequences=3, do_sample=True)  # generate 3 candidates using sampling
 for i in range(3): #  3 output sequences were generated
-print(f'Generated &lcubi}: &lcubtokenizer.decode(outputs[i], skip_special_tokens=True)}')
+print(f'Generated &amp;lcub;i}: &amp;lcub;tokenizer.decode(outputs[i], skip_special_tokens=True)}')
 
 tokenizer = AutoTokenizer.from_pretrained('ctrl')   # Initialize tokenizer
 model = TFAutoModelWithLMHead.from_pretrained('ctrl')    # Download model and configuration from huggingface.co and cache.
 input_context = 'Legal My neighbor is'  # "Legal" is one of the control codes for ctrl
 input_ids = tokenizer.encode(input_context, return_tensors='tf')  # encode input context
 outputs = model.generate(input_ids=input_ids, max_length=50, temperature=0.7, repetition_penalty=1.2)  # generate sequences
-print(f'Generated: &lcubtokenizer.decode(outputs[0], skip_special_tokens=True)}')
+print(f'Generated: &amp;lcub;tokenizer.decode(outputs[0], skip_special_tokens=True)}')
 
 tokenizer = AutoTokenizer.from_pretrained('gpt2')   # Initialize tokenizer
 model = TFAutoModelWithLMHead.from_pretrained('gpt2')    # Download model and configuration from huggingface.co and cache.
@@ -2207,7 +2207,7 @@ outputs = model.generate(input_ids=input_ids, max_length=100, do_sample=True, ba
 > **prepare\_inputs\_for\_generation**(self, inputs, **kwargs)
 
 
-Implement in subclasses of [TFPreTrainedModel](main_classes/model.html#transformers.TFPreTrainedModel) for custom behavior to prepare inputs in
+Implement in subclasses of [TFPreTrainedModel](docs/transformers/:version/:language/main_classes/model.html#transformers.TFPreTrainedModel) for custom behavior to prepare inputs in
 the generate method.
 
 
@@ -2216,7 +2216,7 @@ the generate method.
 
 
 A class containing all of the functions supporting generation, to be used as a mixin in
-[FlaxPreTrainedModel](main_classes/model.html#transformers.FlaxPreTrainedModel).
+[FlaxPreTrainedModel](docs/transformers/:version/:language/main_classes/model.html#transformers.FlaxPreTrainedModel).
 
 
 <a id='transformers.generation_flax_utils.FlaxGenerationMixin.generate'></a>
@@ -2227,7 +2227,7 @@ Generates sequences for models with a language modeling head. The method current
 and, multinomial sampling.
 
 Apart from `input_ids`, all the arguments below will default to the value of the attribute of the same
-name inside the [PretrainedConfig](main_classes/configuration.html#transformers.PretrainedConfig) of the model. The default values indicated are the
+name inside the [PretrainedConfig](docs/transformers/:version/:language/main_classes/configuration.html#transformers.PretrainedConfig) of the model. The default values indicated are the
 default values of those config.
 
 Most of these parameters are explained in more detail in [this blog post](https://huggingface.co/blog/how-to-generate).
@@ -2268,7 +2268,7 @@ Most of these parameters are explained in more detail in [this blog post](https:
 
 > Returns
 
-[ModelOutput](main_classes/output.html#transformers.file_utils.ModelOutput).
+[ModelOutput](docs/transformers/:version/:language/main_classes/output.html#transformers.file_utils.ModelOutput).
 
 > Examples:
 
@@ -2299,13 +2299,13 @@ A Mixin containing the functionality to push a model or tokenizer to the hub.
 > **push\_to\_hub**(self, repo_path_or_name: typing.Optional[str] = None, repo_url: typing.Optional[str] = None, use_temp_dir: bool = False, commit_message: typing.Optional[str] = None, organization: typing.Optional[str] = None, private: typing.Optional[bool] = None, use_auth_token: typing.Union[bool, str, NoneType] = None)
 
 
-Upload the &lcubobject_files} to the 🤗 Model Hub while synchronizing a local clone of the repo in
+Upload the &amp;lcub;object_files} to the 🤗 Model Hub while synchronizing a local clone of the repo in
 `repo_path_or_name`.
 
 > Parameters
 
 - **repo_path_or_name** (`str`, _optional_) --
-  Can either be a repository name for your &lcubobject} in the Hub or a path to a local folder (in which case
+  Can either be a repository name for your &amp;lcub;object} in the Hub or a path to a local folder (in which case
   the repository will have the name of that local folder). If not specified, will default to the name
   given by `repo_url` and a local directory with that name will be created.
 - **repo_url** (`str`, _optional_) --
@@ -2317,9 +2317,9 @@ Upload the &lcubobject_files} to the 🤗 Model Hub while synchronizing a local 
   the current working directory. This will slow things down if you are making changes in an existing repo
   since you will need to clone the repo before every push.
 - **commit_message** (`str`, _optional_) --
-  Message to commit while pushing. Will default to `"add &lcubobject}"`.
+  Message to commit while pushing. Will default to `"add &amp;lcub;object}"`.
 - **organization** (`str`, _optional_) --
-  Organization in which you want to push your &lcubobject} (you must be a member of this organization).
+  Organization in which you want to push your &amp;lcub;object} (you must be a member of this organization).
 - **private** (`bool`, _optional_) --
   Whether or not the repository created should be private (requires a paying subscription).
 - **use_auth_token** (`bool` or `str`, _optional_) --
@@ -2330,7 +2330,7 @@ Upload the &lcubobject_files} to the 🤗 Model Hub while synchronizing a local 
 
 > Returns
 
-The url of the commit of your &lcubobject} in the given repository.
+The url of the commit of your &amp;lcub;object} in the given repository.
 
 > Return type
 
@@ -2339,22 +2339,22 @@ The url of the commit of your &lcubobject} in the given repository.
 > Examples:
 
 ```python
-from transformers import &lcubobject_class}
+from transformers import &amp;lcub;object_class}
 
-&lcubobject} = &lcubobject_class}.from_pretrained("bert-base-cased")
+&amp;lcub;object} = &amp;lcub;object_class}.from_pretrained("bert-base-cased")
 
-# Push the &lcubobject} to your namespace with the name "my-finetuned-bert" and have a local clone in the
+# Push the &amp;lcub;object} to your namespace with the name "my-finetuned-bert" and have a local clone in the
 # _my-finetuned-bert_ folder.
-&lcubobject}.push_to_hub("my-finetuned-bert")
+&amp;lcub;object}.push_to_hub("my-finetuned-bert")
 
-# Push the &lcubobject} to your namespace with the name "my-finetuned-bert" with no local clone.
-&lcubobject}.push_to_hub("my-finetuned-bert", use_temp_dir=True)
+# Push the &amp;lcub;object} to your namespace with the name "my-finetuned-bert" with no local clone.
+&amp;lcub;object}.push_to_hub("my-finetuned-bert", use_temp_dir=True)
 
-# Push the &lcubobject} to an organization with the name "my-finetuned-bert" and have a local clone in the
+# Push the &amp;lcub;object} to an organization with the name "my-finetuned-bert" and have a local clone in the
 # _my-finetuned-bert_ folder.
-&lcubobject}.push_to_hub("my-finetuned-bert", organization="huggingface")
+&amp;lcub;object}.push_to_hub("my-finetuned-bert", organization="huggingface")
 
 # Make a change to an existing repo that has been cloned locally in _my-finetuned-bert_.
-&lcubobject}.push_to_hub("my-finetuned-bert", repo_url="https://huggingface.co/sgugger/my-finetuned-bert")
+&amp;lcub;object}.push_to_hub("my-finetuned-bert", repo_url="https://huggingface.co/sgugger/my-finetuned-bert")
 ```
 
