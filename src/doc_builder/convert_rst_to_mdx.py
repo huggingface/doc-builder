@@ -124,7 +124,7 @@ def convert_special_chars(text):
     text = re.sub(r"<(img|br|hr)", r"LTHTML\1", text) # html void elements with no closing counterpart
     _re_lt_html = re.compile(r"<(\S+)([^>]*>)(((?!</\1>).)*)<(/\1>)", re.DOTALL)
     while _re_lt_html.search(text):
-        text = _re_lt_html.sub(r"LTHTML\1\2\3\4LTHTML\5", text)
+        text = _re_lt_html.sub(r"LTHTML\1\2\3LTHTML\5", text)
     text = re.sub(r"(^|[^<])<([^<]|$)", r"\1&amp;lt;\2", text)
     text = text.replace("LTHTML", "<")
     return text
