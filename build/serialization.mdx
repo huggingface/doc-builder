@@ -71,7 +71,7 @@ The package may be used as a Python module:
 ```
 python -m transformers.onnx --help
 
-usage: Hugging Face ONNX Exporter tool [-h] -m MODEL -f &lcubpytorch} [--features &lcubdefault}] [--opset OPSET] [--atol ATOL] output
+usage: Hugging Face ONNX Exporter tool [-h] -m MODEL -f &amp;lcub;pytorch} [--features &amp;lcub;default}] [--opset OPSET] [--atol ATOL] output
 
 positional arguments:
 output                Path indicating where to store generated ONNX model.
@@ -80,7 +80,7 @@ optional arguments:
 -h, --help            show this help message and exit
 -m MODEL, --model MODEL
 Model's name of path on disk to load.
---features &lcubdefault}  Export the model with some additional features.
+--features &amp;lcub;default}  Export the model with some additional features.
 --opset OPSET         ONNX opset version to export the model with (default 12).
 --atol ATOL           Absolute difference tolerance when validating the model.
 ```
@@ -98,7 +98,7 @@ It will be exported under `onnx/bert-base-cased`. You should see similar logs:
 
 ```
 Validating ONNX model...
--[✓] ONNX model outputs' name match reference model (&lcub'pooler_output', 'last_hidden_state'}
+-[✓] ONNX model outputs' name match reference model (&amp;lcub;'pooler_output', 'last_hidden_state'}
 - Validating ONNX Model output "last_hidden_state":
   -[✓] (2, 8, 768) matchs (2, 8, 768)
   -[✓] all values close (atol: 0.0001)
@@ -145,15 +145,15 @@ class BertOnnxConfig(OnnxConfig):
 def inputs(self) -> Mapping[str, Mapping[int, str]]:
 return OrderedDict(
 [
-("input_ids", &lcub0: "batch", 1: "sequence"}),
-("attention_mask", &lcub0: "batch", 1: "sequence"}),
-("token_type_ids", &lcub0: "batch", 1: "sequence"}),
+("input_ids", &amp;lcub;0: "batch", 1: "sequence"}),
+("attention_mask", &amp;lcub;0: "batch", 1: "sequence"}),
+("token_type_ids", &amp;lcub;0: "batch", 1: "sequence"}),
 ]
 )
 
 @property
 def outputs(self) -> Mapping[str, Mapping[int, str]]:
-return OrderedDict([("last_hidden_state", &lcub0: "batch", 1: "sequence"}), ("pooler_output", &lcub0: "batch"})])
+return OrderedDict([("last_hidden_state", &amp;lcub;0: "batch", 1: "sequence"}), ("pooler_output", &amp;lcub;0: "batch"})])
 ```
 
 Let's understand what's happening here. This configuration has two properties: the inputs, and the outputs.
@@ -266,7 +266,7 @@ More technically, _float32_ parameters are converted to a type requiring fewer b
 reducing the overall size of the model. Here, we are enabling _float32_ mapping to _int8_ values (a non-floating,
 single byte, number representation) according to the following formula:
 
-$$y_&lcubfloat32} = scale * x_&lcubint8} - zero\_point$$
+$$y_&amp;lcub;float32} = scale * x_&amp;lcub;int8} - zero\_point$$
 
 <Tip>
 

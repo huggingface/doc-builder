@@ -51,7 +51,7 @@ chance that you don't agree with some of the library's philosophies or design ch
 found that the fundamental design choices and philosophies of the library are crucial to efficiently scale 🤗
 Transformers while keeping maintenance costs at a reasonable level.
 
-A good first starting point to better understand the library is to read the [documentation of our philosophy](philosophy.html). As a result of our way of working, there are some choices that we try to apply to all models:
+A good first starting point to better understand the library is to read the [documentation of our philosophy](/docs/transformers/master/en/philosophy.html). As a result of our way of working, there are some choices that we try to apply to all models:
 
 -  Composition is generally favored over-abstraction
 -  Duplicating code is not always bad if it strongly improves the readability or accessibility of a model
@@ -67,7 +67,7 @@ With this in mind, let's go a bit deeper into the general library design.
 ### Overview of models
 
 To successfully add a model, it is important to understand the interaction between your model and its config,
-[PreTrainedModel](main_classes/model.html#transformers.PreTrainedModel), and [PretrainedConfig](main_classes/configuration.html#transformers.PretrainedConfig). For exemplary purposes, we will
+[PreTrainedModel](/docs/transformers/master/en/main_classes/model.html#transformers.PreTrainedModel), and [PretrainedConfig](/docs/transformers/master/en/main_classes/configuration.html#transformers.PretrainedConfig). For exemplary purposes, we will
 call the model to be added to 🤗 Transformers `BrandNewBert`.
 
 Let's take a look:
@@ -78,15 +78,15 @@ As you can see, we do make use of inheritance in 🤗 Transformers, but we keep 
 minimum. There are never more than two levels of abstraction for any model in the library. `BrandNewBertModel`
 inherits from `BrandNewBertPreTrainedModel` which in turn inherits from `PreTrainedModel` and
 that's it. As a general rule, we want to make sure that a new model only depends on
-[PreTrainedModel](main_classes/model.html#transformers.PreTrainedModel). The important functionalities that are automatically provided to every new
-model are [from_pretrained()](main_classes/model.html#transformers.PreTrainedModel.from_pretrained) and
-[save_pretrained()](main_classes/model.html#transformers.PreTrainedModel.save_pretrained), which are used for serialization and deserialization. All of the
+[PreTrainedModel](/docs/transformers/master/en/main_classes/model.html#transformers.PreTrainedModel). The important functionalities that are automatically provided to every new
+model are [from_pretrained()](/docs/transformers/master/en/main_classes/model.html#transformers.PreTrainedModel.from_pretrained) and
+[save_pretrained()](/docs/transformers/master/en/main_classes/model.html#transformers.PreTrainedModel.save_pretrained), which are used for serialization and deserialization. All of the
 other important functionalities, such as `BrandNewBertModel.forward` should be completely defined in the new
 `modeling_brand_new_bert.py` script. Next, we want to make sure that a model with a specific head layer, such as
 `BrandNewBertForMaskedLM` does not inherit from `BrandNewBertModel`, but rather uses `BrandNewBertModel`
 as a component that can be called in its forward pass to keep the level of abstraction low. Every new model requires a
 configuration class, called `BrandNewBertConfig`. This configuration is always stored as an attribute in
-[PreTrainedModel](main_classes/model.html#transformers.PreTrainedModel), and thus can be accessed via the `config` attribute for all classes
+[PreTrainedModel](/docs/transformers/master/en/main_classes/model.html#transformers.PreTrainedModel), and thus can be accessed via the `config` attribute for all classes
 inheriting from `BrandNewBertPreTrainedModel`:
 
 ```python
@@ -95,10 +95,10 @@ model.config  # model has access to its config
 ```
 
 Similar to the model, the configuration inherits basic serialization and deserialization functionalities from
-[PretrainedConfig](main_classes/configuration.html#transformers.PretrainedConfig). Note that the configuration and the model are always serialized into two
+[PretrainedConfig](/docs/transformers/master/en/main_classes/configuration.html#transformers.PretrainedConfig). Note that the configuration and the model are always serialized into two
 different formats - the model to a _pytorch_model.bin_ file and the configuration to a _config.json_ file. Calling
-[save_pretrained()](main_classes/model.html#transformers.PreTrainedModel.save_pretrained) will automatically call
-[save_pretrained()](main_classes/configuration.html#transformers.PretrainedConfig.save_pretrained), so that both model and configuration are saved.
+[save_pretrained()](/docs/transformers/master/en/main_classes/model.html#transformers.PreTrainedModel.save_pretrained) will automatically call
+[save_pretrained()](/docs/transformers/master/en/main_classes/configuration.html#transformers.PretrainedConfig.save_pretrained), so that both model and configuration are saved.
 
 
 ### Overview of tokenizers
@@ -162,7 +162,7 @@ effectively re-implement the model in 🤗 Transformers. That being said, you do
 theoretical aspects, but rather focus on the practical ones, namely:
 
 -  What type of model is *brand_new_bert*? BERT-like encoder-only model? GPT2-like decoder-only model? BART-like
-  encoder-decoder model? Look at the [model_summary](model_summary.html) if you're not familiar with the differences between those.
+  encoder-decoder model? Look at the [model_summary](/docs/transformers/master/en/model_summary.html) if you're not familiar with the differences between those.
 -  What are the applications of *brand_new_bert*? Text classification? Text generation? Seq2Seq tasks, *e.g.,*
   summarization?
 -  What is the novel feature of the model making it different from BERT/GPT-2/BART?
@@ -588,13 +588,13 @@ statements for the shape and print out the names of the checkpoints weights. E.g
 ```python
 assert (
 model_pointer.weight.shape == pretrained_weight.shape
-), f"Pointer shape of random weight &lcubmodel_pointer.shape} and array shape of checkpoint weight &lcubpretrained_weight.shape} mismatched"
+), f"Pointer shape of random weight &amp;lcub;model_pointer.shape} and array shape of checkpoint weight &amp;lcub;pretrained_weight.shape} mismatched"
 ```
 
 Besides, you should also print out the names of both weights to make sure they match, *e.g.*
 
 ```python
-logger.info(f"Initialize PyTorch weight &lcublayer_name} from &lcubpretrained_weight.name}")
+logger.info(f"Initialize PyTorch weight &amp;lcub;layer_name} from &amp;lcub;pretrained_weight.name}")
 ```
 
 If either the shape or the name doesn't match, you probably assigned the wrong checkpoint weight to a randomly
