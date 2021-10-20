@@ -62,9 +62,10 @@ class AutodocTester(unittest.TestCase):
         self.assertEqual(format_signature(generic_func), "*args, **kwargs")
     
     def test_document_object(self):
+        page_info = {"package_name": "transformers"}
         # Might need some tweaking if the documentation of those objects change.
         self.assertEqual(
-            document_object("is_torch_available", transformers),
+            document_object("is_torch_available", transformers, page_info),
             "<a id='transformers.is_torch_available'></a>\n> **transformers.is\\_torch\\_available**()\n"
         )
 
@@ -84,7 +85,7 @@ method to convert it to a tuple before.
 </Tip>
 
 """
-        self.assertEqual(document_object("file_utils.ModelOutput", transformers), model_output_doc)
+        self.assertEqual(document_object("file_utils.ModelOutput", transformers, page_info), model_output_doc)
 
     def test_find_document_methods(self):
         self.assertListEqual(find_documented_methods(BertModel), ["forward"])

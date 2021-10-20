@@ -34,19 +34,19 @@ from transformers import Pipeline
 
 class MyPipeline(Pipeline):
 def _sanitize_parameters(self, **kwargs)
-preprocess_kwargs = &lcub}
+preprocess_kwargs = &amp;lcub;}
 if "maybe_arg" in kwargs:
 preprocess_kwargs["maybe_arg"] = kwargs["maybe_arg"]
-return preprocess_kwargs, &lcub}, &lcub}
+return preprocess_kwargs, &amp;lcub;}, &amp;lcub;}
 
 def preprocess(self, inputs, maybe_arg=2)
 model_input = Tensor(....)
-return &lcub"model_input": model_input}
+return &amp;lcub;"model_input": model_input}
 
 def _forward(self, model_inputs)
-# model_inputs == &lcub"model_input": model_input}
+# model_inputs == &amp;lcub;"model_input": model_input}
 oututs = self.model(**model_inputs)
-# Maybe &lcub"logits": Tensor(...)}
+# Maybe &amp;lcub;"logits": Tensor(...)}
 return outputs
 
 def postprocess(self, model_outputs)
@@ -79,11 +79,11 @@ A classic example would be a `top_k` argument in the post processing in classifi
 ```
 >>> pipe = pipeline("my-new-task")
 >>> pipe("This is a test")
-[&lcub"label": "1-star", "score": 0.8}, &lcub"label": "2-star", "score": 0.1}, &lcub"label": "3-star", "score": 0.05}
-&lcub"label": "4-star", "score": 0.025}, &lcub"label": "5-star", "score": 0.025}]
+[&amp;lcub;"label": "1-star", "score": 0.8}, &amp;lcub;"label": "2-star", "score": 0.1}, &amp;lcub;"label": "3-star", "score": 0.05}
+&amp;lcub;"label": "4-star", "score": 0.025}, &amp;lcub;"label": "5-star", "score": 0.025}]
 
 >>> pipe("This is a test", top_k=2)
-[&lcub"label": "1-star", "score": 0.8}, &lcub"label": "2-star", "score": 0.1}]
+[&amp;lcub;"label": "1-star", "score": 0.8}, &amp;lcub;"label": "2-star", "score": 0.1}]
 ```
 
 In order to achieve that, we'll update our `postprocess` method with a default parameter to `5`. and edit
@@ -97,14 +97,14 @@ best_class = model_outputs["logits"].softmax(-1)
 return best_class
 
 def _sanitize_parameters(self, **kwargs)
-preprocess_kwargs = &lcub}
+preprocess_kwargs = &amp;lcub;}
 if "maybe_arg" in kwargs:
 preprocess_kwargs["maybe_arg"] = kwargs["maybe_arg"]
 
-postprocess_kwargs = &lcub}
+postprocess_kwargs = &amp;lcub;}
 if "top_k" in kwargs:
 preprocess_kwargs["top_k"] = kwargs["top_k"]
-return preprocess_kwargs, &lcub}, postprocess_kwargs
+return preprocess_kwargs, &amp;lcub;}, postprocess_kwargs
 ```
 
 Try to keep the inputs/outputs very simple and ideally JSON-serializable as it makes the pipeline usage very easy
