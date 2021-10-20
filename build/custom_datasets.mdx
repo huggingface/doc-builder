@@ -22,7 +22,7 @@ specific language governing permissions and limitations under the License.
 
 The datasets used in this tutorial are available and can be more easily accessed using the [🤗 Datasets library](https://github.com/huggingface/datasets). We do not use this library to access the datasets here since this
 tutorial meant to illustrate how to work with your own data. A brief of introduction can be found at the end of the
-tutorial in the section "[datasetslib](#datasetslib)".
+tutorial in the section "[datasetslib](/docs/transformers/master/en/custom_datasets.html#datasetslib)".
 
 </Tip>
 
@@ -30,14 +30,14 @@ This tutorial will take you through several examples of using 🤗 Transformers 
 shows one of many valid workflows for using these models and is meant to be illustrative rather than definitive. We
 show examples of reading in several data formats, preprocessing the data for several types of tasks, and then preparing
 the data into PyTorch/TensorFlow `Dataset` objects which can easily be used either with
-[Trainer](docs/transformers/:version/:language/main_classes/trainer.html#transformers.Trainer)/[TFTrainer](docs/transformers/:version/:language/main_classes/trainer.html#transformers.TFTrainer) or with native PyTorch/TensorFlow.
+[Trainer](/docs/transformers/master/en/main_classes/trainer.html#transformers.Trainer)/[TFTrainer](/docs/transformers/master/en/main_classes/trainer.html#transformers.TFTrainer) or with native PyTorch/TensorFlow.
 
 We include several examples, each of which demonstrates a different type of common downstream task:
 
-- [seq_imdb](#seq_imdb)
-- [tok_ner](#tok_ner)
-- [qa_squad](#qa_squad)
-- [resources](#resources)
+- [seq_imdb](/docs/transformers/master/en/custom_datasets.html#seq_imdb)
+- [tok_ner](/docs/transformers/master/en/custom_datasets.html#tok_ner)
+- [qa_squad](/docs/transformers/master/en/custom_datasets.html#qa_squad)
+- [resources](/docs/transformers/master/en/custom_datasets.html#resources)
 
 <a id='seq_imdb'></a>
 
@@ -110,7 +110,7 @@ Now, let's turn our labels and encodings into a Dataset object. In PyTorch, this
 `torch.utils.data.Dataset` object and implementing `__len__` and `__getitem__`. In TensorFlow, we pass our input
 encodings and labels to the `from_tensor_slices` constructor method. We put the data in this format so that the data
 can be easily batched such that each key in the batch encoding corresponds to a named parameter of the
-[forward()](docs/transformers/:version/:language/model_doc/distilbert.html#transformers.DistilBertForSequenceClassification.forward) method of the model we will train.
+[forward()](/docs/transformers/master/en/model_doc/distilbert.html#transformers.DistilBertForSequenceClassification.forward) method of the model we will train.
 
 {#if fw === 'pt'}
 ```python
@@ -153,15 +153,15 @@ test_labels
 {/if}
 
 Now that our datasets our ready, we can fine-tune a model either with the 🤗
-[Trainer](docs/transformers/:version/:language/main_classes/trainer.html#transformers.Trainer)/[TFTrainer](docs/transformers/:version/:language/main_classes/trainer.html#transformers.TFTrainer) or with native PyTorch/TensorFlow. See [training](/docs/transformers/:version/:language/training.html).
+[Trainer](/docs/transformers/master/en/main_classes/trainer.html#transformers.Trainer)/[TFTrainer](/docs/transformers/master/en/main_classes/trainer.html#transformers.TFTrainer) or with native PyTorch/TensorFlow. See [training](/docs/transformers/master/en/training.html).
 
 <a id='ft_trainer'></a>
 
 ### Fine-tuning with Trainer
 
 The steps above prepared the datasets in the way that the trainer is expected. Now all we need to do is create a model
-to fine-tune, define the [TrainingArguments](docs/transformers/:version/:language/main_classes/trainer.html#transformers.TrainingArguments)/[TFTrainingArguments](docs/transformers/:version/:language/main_classes/trainer.html#transformers.TFTrainingArguments) and
-instantiate a [Trainer](docs/transformers/:version/:language/main_classes/trainer.html#transformers.Trainer)/[TFTrainer](docs/transformers/:version/:language/main_classes/trainer.html#transformers.TFTrainer).
+to fine-tune, define the [TrainingArguments](/docs/transformers/master/en/main_classes/trainer.html#transformers.TrainingArguments)/[TFTrainingArguments](/docs/transformers/master/en/main_classes/trainer.html#transformers.TFTrainingArguments) and
+instantiate a [Trainer](/docs/transformers/master/en/main_classes/trainer.html#transformers.Trainer)/[TFTrainer](/docs/transformers/master/en/main_classes/trainer.html#transformers.TFTrainer).
 
 {#if fw === 'pt'}
 ```python
@@ -463,11 +463,11 @@ model = TFDistilBertForTokenClassification.from_pretrained('distilbert-base-case
 {/if}
 
 The data and model are both ready to go. You can train the model either with
-[Trainer](docs/transformers/:version/:language/main_classes/trainer.html#transformers.Trainer)/[TFTrainer](docs/transformers/:version/:language/main_classes/trainer.html#transformers.TFTrainer) or with native PyTorch/TensorFlow, exactly as in the
+[Trainer](/docs/transformers/master/en/main_classes/trainer.html#transformers.Trainer)/[TFTrainer](/docs/transformers/master/en/main_classes/trainer.html#transformers.TFTrainer) or with native PyTorch/TensorFlow, exactly as in the
 sequence classification example above.
 
-- [ft_trainer](#ft_trainer)
-- [ft_native](#ft_native)
+- [ft_trainer](/docs/transformers/master/en/custom_datasets.html#ft_trainer)
+- [ft_native](/docs/transformers/master/en/custom_datasets.html#ft_native)
 
 <a id='qa_squad'></a>
 
@@ -567,7 +567,7 @@ val_encodings = tokenizer(val_contexts, val_questions, truncation=True, padding=
 ```
 
 Next we need to convert our character start/end positions to token start/end positions. When using 🤗 Fast Tokenizers,
-we can use the built in [char_to_token()](docs/transformers/:version/:language/main_classes/tokenizer.html#transformers.BatchEncoding.char_to_token) method.
+we can use the built in [char_to_token()](/docs/transformers/master/en/main_classes/tokenizer.html#transformers.BatchEncoding.char_to_token) method.
 
 ```python
 def add_token_positions(encodings, answers):
@@ -640,12 +640,12 @@ model = TFDistilBertForQuestionAnswering.from_pretrained("distilbert-base-uncase
 {/if}
 
 The data and model are both ready to go. You can train the model with
-[Trainer](docs/transformers/:version/:language/main_classes/trainer.html#transformers.Trainer)/[TFTrainer](docs/transformers/:version/:language/main_classes/trainer.html#transformers.TFTrainer) exactly as in the sequence classification example
+[Trainer](/docs/transformers/master/en/main_classes/trainer.html#transformers.Trainer)/[TFTrainer](/docs/transformers/master/en/main_classes/trainer.html#transformers.TFTrainer) exactly as in the sequence classification example
 above. If using native PyTorch, replace `labels` with `start_positions` and `end_positions` in the training
 example. If using Keras's `fit`, we need to make a minor modification to handle this example since it involves
 multiple model outputs.
 
-- [ft_trainer](#ft_trainer)
+- [ft_trainer](/docs/transformers/master/en/custom_datasets.html#ft_trainer)
 
 {#if fw === 'pt'}
 ```python
@@ -698,8 +698,8 @@ model.fit(train_dataset.shuffle(1000).batch(16), epochs=3, batch_size=16)
 
 - [How to train a new language model from scratch using Transformers and Tokenizers](https://huggingface.co/blog/how-to-train). Blog post showing the steps to load in Esperanto data and train a
   masked language model from scratch.
-- [Preprocessing](/docs/transformers/:version/:language/preprocessing.html). Docs page on data preprocessing.
-- [Training](/docs/transformers/:version/:language/training.html). Docs page on training and fine-tuning.
+- [Preprocessing](/docs/transformers/master/en/preprocessing.html). Docs page on data preprocessing.
+- [Training](/docs/transformers/master/en/training.html). Docs page on training and fine-tuning.
 
 <a id='datasetslib'></a>
 
@@ -709,7 +709,7 @@ This tutorial demonstrates how to read in datasets from various raw text formats
 Transformers so that you can do the same thing with your own custom datasets. However, we recommend users use the [🤗
 Datasets library](https://github.com/huggingface/datasets) for working with the 150+ datasets included in the [hub](https://huggingface.co/datasets), including the three datasets used in this tutorial. As a very brief overview, we
 will show how to use the Datasets library to download and prepare the IMDb dataset from the first example,
-[seq_imdb](#seq_imdb).
+[seq_imdb](/docs/transformers/master/en/custom_datasets.html#seq_imdb).
 
 Start by downloading the dataset:
 

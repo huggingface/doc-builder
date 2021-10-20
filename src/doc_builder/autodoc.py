@@ -100,7 +100,7 @@ def is_rst_docstring(docstring):
     return False
 
 
-def document_object(object_name, package, full_name=True):
+def document_object(object_name, package, page_info, full_name=True):
     """
     Writes the document of a function, class or method.
     
@@ -109,6 +109,10 @@ def document_object(object_name, package, full_name=True):
     - **package** (`types.ModuleType`) -- The package of the object.
     - **full_name** (`bool`, _optional_, defaults to `True`) -- Whether to write the full name of the object or not.
     """
+    if page_info is None:
+        page_info = {}
+    if "package_name" not in page_info:
+        page_info["package_name"] = package.__name__
     obj = find_object_in_package(object_name=object_name, package=package)
     anchor_name = get_shortest_path(obj, package)
     if full_name:
@@ -124,9 +128,9 @@ def document_object(object_name, package, full_name=True):
     documentation = f"<a id='{anchor_name}'></a>\n" if anchor_name is not None else ""
     documentation += f"> **{prefix}{name}**({format_signature(obj)})\n"
     if getattr(obj, "__doc__", None) is not None and len(obj.__doc__) > 0:
-        object_doc = convert_rst_docstring_to_mdx(obj.__doc__, package.__name__)
+        object_doc = convert_rst_docstring_to_mdx(obj.__doc__, page_info)
         if is_rst_docstring(object_doc):
-            object_doc = convert_rst_docstring_to_mdx(obj.__doc__, package.__name__)
+            object_doc = convert_rst_docstring_to_mdx(obj.__doc__, page_info)
         documentation += "\n" + object_doc + "\n"
     
     return documentation
@@ -155,7 +159,7 @@ def find_documented_methods(clas):
     return list(documented_methods.keys())
 
 
-def autodoc(object_name, package, methods=None, return_anchors=False):
+def autodoc(object_name, package, methods=None, return_anchors=False, page_info=None):
     """
     Generates the documentation of an object, with a potential filtering on the methods for a class.
     
@@ -167,13 +171,19 @@ def autodoc(object_name, package, methods=None, return_anchors=False):
       passed and ou want to add all those methods, the key "all" will add them.
     - **return_anchors** (`bool`, _optional_, defaults to `False`) -- Whether or not to return the list of anchors
       generated.
+    - **page_info** (`Dict[str, str]`, *optional*) -- Some information about the page.
     """
+    if page_info is None:
+        page_info = {}
+    if "package_name" not in page_info:
+        page_info["package_name"] = package.__name__
+
     obj = find_object_in_package(object_name=object_name, package=package)
-    documentation = document_object(object_name=object_name, package=package)
+    documentation = document_object(object_name=object_name, package=package, page_info=page_info)
     if return_anchors:
         anchors = [get_shortest_path(obj, package)]
     if isinstance(obj, type):
-        documentation = document_object(object_name=object_name, package=package)
+        documentation = document_object(object_name=object_name, package=package, page_info=page_info)
         if methods is None:
             methods = find_documented_methods(obj)
         elif "all" in methods:
@@ -181,7 +191,9 @@ def autodoc(object_name, package, methods=None, return_anchors=False):
             methods_to_add = find_documented_methods(obj)
             methods.extend([m for m in methods_to_add if m not in methods])
         for method in methods:
-            method_doc = document_object(object_name=f"{object_name}.{method}", package=package, full_name=False)
+            method_doc = document_object(
+                object_name=f"{object_name}.{method}", package=package, page_info=page_info, full_name=False
+            )
             documentation += "\n" + method_doc
             if return_anchors:
                 anchors.append(f"{anchors[0]}.{method}")

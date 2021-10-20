@@ -14,7 +14,7 @@ _re_autodoc = re.compile("^\s*\[\[autodoc\]\]\s+(\S+)\s*$")
 _re_list_item = re.compile("^\s*-\s+(\S+)\s*$")
 
 
-def resolve_autodoc(content, package, return_anchors=False):
+def resolve_autodoc(content, package, return_anchors=False, page_info=None):
     """
     Replaces [[autodoc]] special syntax by the corresponding generated documentation in some content.
     
@@ -23,6 +23,7 @@ def resolve_autodoc(content, package, return_anchors=False):
     - **package** (`types.ModuleType`) -- The package where to look for objects to document.
     - **return_anchors** (`bool`, *optional*, defaults to `False`) -- Whether or not to return the list of anchors
       generated.
+    - **page_info** (`Dict[str, str]`, *optional*) -- Some information about the page.
     """
     lines = content.split("\n")
     new_lines = []
@@ -47,7 +48,7 @@ def resolve_autodoc(content, package, return_anchors=False):
                         break
             else:
                 methods = None
-            doc = autodoc(object_name, package, methods=methods, return_anchors=return_anchors)
+            doc = autodoc(object_name, package, methods=methods, return_anchors=return_anchors, page_info=page_info)
             if return_anchors:
                 anchors.extend(doc[1])
                 doc = doc[0]
@@ -60,7 +61,7 @@ def resolve_autodoc(content, package, return_anchors=False):
     return (new_content, anchors) if return_anchors else new_content
 
 
-def build_mdx_files(package, doc_folder, output_dir):
+def build_mdx_files(package, doc_folder, output_dir, page_info):
     """
     Build the MDX files for a given package.
     
@@ -68,32 +69,42 @@ def build_mdx_files(package, doc_folder, output_dir):
     - **package** (`types.ModuleType`) -- The package where to look for objects to document.
     - **doc_folder** (`str` or `os.PathLike`) -- The folder where the doc source files are.
     - **output_dir** (`str` or `os.PathLike`) -- The folder where to put the files built.
+    - **page_info** (`Dict[str, str]`) -- Some information about the page.
     """
     doc_folder = Path(doc_folder)
     output_dir = Path(output_dir)
     os.makedirs(output_dir, exist_ok=True)
     anchor_mapping = {} 
     
+    if "package_name" not in page_info:
+        page_info["package_name"] = package.__name__
+
     all_files = list(doc_folder.glob("**/*"))
     for file in tqdm(all_files, desc="Building the MDX files"):
         new_anchors = None
         if file.suffix in [".md", ".mdx"]:
             dest_file = output_dir / (file.with_suffix(".mdx").relative_to(doc_folder))
+            page_info["page"] = file.with_suffix(".html").relative_to(doc_folder)
             os.makedirs(dest_file.parent, exist_ok=True)
             with open(file, "r", encoding="utf-8") as reader:
                 content = reader.read()
-            content, new_anchors = resolve_autodoc(content, package, return_anchors=True)
+            content, new_anchors = resolve_autodoc(content, package, return_anchors=True, page_info=page_info)
             with open(dest_file, "w", encoding="utf-8") as writer:
                 writer.write(content)
+            # Make sure we clean up for next page.
+            del page_info["page"]
         elif file.suffix in [".rst"]:
             dest_file = output_dir / (file.with_suffix(".mdx").relative_to(doc_folder))
+            page_info["page"] = file.with_suffix(".html").relative_to(doc_folder)
             os.makedirs(dest_file.parent, exist_ok=True)
             with open(file, "r", encoding="utf-8") as reader:
                 content = reader.read()
-            content = convert_rst_to_mdx(content, package.__name__)
-            content, new_anchors = resolve_autodoc(content, package, return_anchors=True)
+            content = convert_rst_to_mdx(content, page_info)
+            content, new_anchors = resolve_autodoc(content, package, return_anchors=True, page_info=page_info)
             with open(dest_file, "w", encoding="utf-8") as writer:
                 writer.write(content)
+            # Make sure we clean up for next page.
+            del page_info["page"]
         elif file.is_file():
             dest_file = output_dir / (file.relative_to(doc_folder))
             os.makedirs(dest_file.parent, exist_ok=True)
@@ -106,7 +117,7 @@ def build_mdx_files(package, doc_folder, output_dir):
     return anchor_mapping
 
 
-def resolve_links_in_text(text, package, mapping):
+def resolve_links_in_text(text, package, mapping, page_info):
     """
     Resolve links of the form [`SomeClass`] to the link in the documentation to `SomeClass`.
     
@@ -114,7 +125,14 @@ def resolve_links_in_text(text, package, mapping):
     - **text** (`str`) -- The text in which to convert the links.
     - **package** (`types.ModuleType`) -- The package in which to search objects for.
     - **mapping** (`Dict[str, str]`) -- The map from anchor names of objects to their page in the documentation.
+    - **page_info** (`Dict[str, str]`) -- Some information about the page.
     """
+    package_name = page_info.get("package_name", package.__name__)
+    version = page_info.get("version", "master")
+    language = page_info.get("language", "en")
+
+    prefix = f"/docs/{package_name}/{version}/{language}/"
+
     def _resolve_link(search):
         object_name = search.groups()[0]
         # If the name begins with `~`, we shortcut to the last part.
@@ -134,13 +152,13 @@ def resolve_links_in_text(text, package, mapping):
         anchor = get_shortest_path(obj, package)
         if anchor not in mapping:
             return f"`{object_name}`"
-        page = f"docs/{package.__name__}/:version/:language/{mapping[anchor]}"
+        page = f"{prefix}{mapping[anchor]}"
         return f"[{object_name}]({page}#{anchor})"
 
     return re.sub(r"\[`([^`]+)`\]", _resolve_link, text)
 
 
-def resolve_links(doc_folder, package, mapping):
+def resolve_links(doc_folder, package, mapping, page_info):
     """
     Resolve links of the form [`SomeClass`] to the link in the documentation to `SomeClass` for all files in a
     folder.
@@ -149,18 +167,19 @@ def resolve_links(doc_folder, package, mapping):
     - **doc_folder** (`str` or `os.PathLike`) -- The folder in which to look for files.
     - **package** (`types.ModuleType`) -- The package in which to search objects for.
     - **mapping** (`Dict[str, str]`) -- The map from anchor names of objects to their page in the documentation.
+    - **page_info** (`Dict[str, str]`) -- Some information about the page.
     """
     doc_folder = Path(doc_folder)
     all_files = list(doc_folder.glob("**/*.mdx"))
     for file in tqdm(all_files, desc="Resolving internal links"):
         with open(file, "r", encoding="utf-8") as reader:
             content = reader.read()
-        content = resolve_links_in_text(content, package, mapping)
+        content = resolve_links_in_text(content, package, mapping, page_info)
         with open(file, "w", encoding="utf-8") as writer:
             writer.write(content)
 
 
-def build_doc(package_name, doc_folder, output_dir, clean=True):
+def build_doc(package_name, doc_folder, output_dir, clean=True, version="master", language="en"):
     """
     Build the documentation of a package.
     
@@ -171,9 +190,12 @@ def build_doc(package_name, doc_folder, output_dir, clean=True):
       be created if it does not exist.
     - **clean** (`bool`, *optional*, defaults to `True`) -- Whether or not to delete the content of the
       `output_dir` if that directory exists.
+    - **version** (`str`, *optional*, defaults to `"master"`) -- The name of the version of the doc.
+    - **language** (`str`, *optional*, defaults to `"en"`) -- The language of the doc.
     """
+    page_info = {"version": version, "language": language, "package_name": package_name}
     if clean and Path(output_dir).exists():
         shutil.rmtree(output_dir)
     package = importlib.import_module(package_name)
-    anchors_mapping = build_mdx_files(package, doc_folder, output_dir)
-    resolve_links(output_dir, package, anchors_mapping)
+    anchors_mapping = build_mdx_files(package, doc_folder, output_dir, page_info)
+    resolve_links(output_dir, package, anchors_mapping, page_info)

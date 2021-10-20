@@ -40,7 +40,7 @@ specific language governing permissions and limitations under the License.
 - RNN: recurrent neural network, a type of model that uses a loop over a layer to process texts.
 - self-attention: each element of the input finds out which other elements of the input they should attend to.
 - seq2seq or sequence-to-sequence: models that generate a new sequence from an input, like translation models, or
-  summarization models (such as [Bart](/docs/transformers/:version/:language/model_doc/bart.html) or [T5](/docs/transformers/:version/:language/model_doc/t5.html)).
+  summarization models (such as [Bart](/docs/transformers/master/en/model_doc/bart.html) or [T5](/docs/transformers/master/en/model_doc/t5.html)).
 - token: a part of a sentence, usually a word, but can also be a subword (non-common words are often split in subwords)
   or a punctuation symbol.
 - transformer: self-attention based deep learning model architecture.
@@ -118,7 +118,7 @@ we will see
 [CLS] A Titan RTX has 24GB of VRAM [SEP]
 ```
 
-because this is the way a [BertModel](docs/transformers/:version/:language/model_doc/bert.html#transformers.BertModel) is going to expect its inputs.
+because this is the way a [BertModel](/docs/transformers/master/en/model_doc/bert.html#transformers.BertModel) is going to expect its inputs.
 
 <a id='attention-mask'></a>
 
@@ -170,7 +170,7 @@ We can see that 0s have been added on the right of the first sentence to make it
 ```
 
 This can then be converted into a tensor in PyTorch or TensorFlow. The attention mask is a binary tensor indicating the
-position of the padded indices so that the model does not attend to them. For the [BertTokenizer](docs/transformers/:version/:language/model_doc/bert.html#transformers.BertTokenizer),
+position of the padded indices so that the model does not attend to them. For the [BertTokenizer](/docs/transformers/master/en/model_doc/bert.html#transformers.BertTokenizer),
 `1` indicates a value that should be attended to, while `0` indicates a padded value. This attention mask is
 in the dictionary returned by the tokenizer under the key "attention_mask":
 
@@ -231,7 +231,7 @@ The tokenizer returns this mask as the "token_type_ids" entry:
 The first sequence, the "context" used for the question, has all its tokens represented by a `0`, whereas the
 second sequence, corresponding to the "question", has all its tokens represented by a `1`.
 
-Some models, like [XLNetModel](docs/transformers/:version/:language/model_doc/xlnet.html#transformers.XLNetModel) use an additional token represented by a `2`.
+Some models, like [XLNetModel](/docs/transformers/master/en/model_doc/xlnet.html#transformers.XLNetModel) use an additional token represented by a `2`.
 
 <a id='position-ids'></a>
 
@@ -257,22 +257,22 @@ predictions and the expected value (the label).
 
 These labels are different according to the model head, for example:
 
-- For sequence classification models (e.g., [BertForSequenceClassification](docs/transformers/:version/:language/model_doc/bert.html#transformers.BertForSequenceClassification)), the model expects a
+- For sequence classification models (e.g., [BertForSequenceClassification](/docs/transformers/master/en/model_doc/bert.html#transformers.BertForSequenceClassification)), the model expects a
   tensor of dimension `(batch_size)` with each value of the batch corresponding to the expected label of the
   entire sequence.
-- For token classification models (e.g., [BertForTokenClassification](docs/transformers/:version/:language/model_doc/bert.html#transformers.BertForTokenClassification)), the model expects a tensor
+- For token classification models (e.g., [BertForTokenClassification](/docs/transformers/master/en/model_doc/bert.html#transformers.BertForTokenClassification)), the model expects a tensor
   of dimension `(batch_size, seq_length)` with each value corresponding to the expected label of each individual
   token.
-- For masked language modeling (e.g., [BertForMaskedLM](docs/transformers/:version/:language/model_doc/bert.html#transformers.BertForMaskedLM)), the model expects a tensor of dimension
+- For masked language modeling (e.g., [BertForMaskedLM](/docs/transformers/master/en/model_doc/bert.html#transformers.BertForMaskedLM)), the model expects a tensor of dimension
   `(batch_size, seq_length)` with each value corresponding to the expected label of each individual token: the
   labels being the token ID for the masked token, and values to be ignored for the rest (usually -100).
-- For sequence to sequence tasks,(e.g., [BartForConditionalGeneration](docs/transformers/:version/:language/model_doc/bart.html#transformers.BartForConditionalGeneration),
-  [MBartForConditionalGeneration](docs/transformers/:version/:language/model_doc/mbart.html#transformers.MBartForConditionalGeneration)), the model expects a tensor of dimension `(batch_size, tgt_seq_length)` with each value corresponding to the target sequences associated with each input sequence. During
+- For sequence to sequence tasks,(e.g., [BartForConditionalGeneration](/docs/transformers/master/en/model_doc/bart.html#transformers.BartForConditionalGeneration),
+  [MBartForConditionalGeneration](/docs/transformers/master/en/model_doc/mbart.html#transformers.MBartForConditionalGeneration)), the model expects a tensor of dimension `(batch_size, tgt_seq_length)` with each value corresponding to the target sequences associated with each input sequence. During
   training, both _BART_ and _T5_ will make the appropriate _decoder_input_ids_ and decoder attention masks internally.
   They usually do not need to be supplied. This does not apply to models leveraging the Encoder-Decoder framework. See
   the documentation of each model for more information on each specific model's labels.
 
-The base models (e.g., [BertModel](docs/transformers/:version/:language/model_doc/bert.html#transformers.BertModel)) do not accept labels, as these are the base transformer
+The base models (e.g., [BertModel](/docs/transformers/master/en/model_doc/bert.html#transformers.BertModel)) do not accept labels, as these are the base transformer
 models, simply outputting features.
 
 <a id='decoder-input-ids'></a>

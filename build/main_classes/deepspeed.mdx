@@ -40,13 +40,13 @@ won't be possible on a single GPU.
 
 🤗 Transformers integrates [DeepSpeed](https://github.com/microsoft/DeepSpeed) via 2 options:
 
-1. Integration of the core DeepSpeed features via [Trainer](docs/transformers/:version/:language/main_classes/trainer.html#transformers.Trainer). This is everything done for you type
+1. Integration of the core DeepSpeed features via [Trainer](/docs/transformers/master/en/main_classes/trainer.html#transformers.Trainer). This is everything done for you type
    of integration - just supply your custom config file or use our template and you have nothing else to do. Most of
    this document is focused on this feature.
-2. If you don't use [Trainer](docs/transformers/:version/:language/main_classes/trainer.html#transformers.Trainer) and want to use your own Trainer where you integrated DeepSpeed
+2. If you don't use [Trainer](/docs/transformers/master/en/main_classes/trainer.html#transformers.Trainer) and want to use your own Trainer where you integrated DeepSpeed
    yourself, core functionality functions like `from_pretrained` and `from_config` include integration of essential
    parts of DeepSpeed like `zero.Init` for ZeRO stage 3 and higher. To tap into this feature read the docs on
-   [deepspeed-non-trainer-integration](#deepspeed-non-trainer-integration).
+   [deepspeed-non-trainer-integration](/docs/transformers/master/en/main_classes/deepspeed.html#deepspeed-non-trainer-integration).
 
 
 
@@ -76,7 +76,7 @@ pip install transformers[deepspeed]
 or find more details on [the DeepSpeed's GitHub page](https://github.com/microsoft/deepspeed#installation) and
 [advanced install](https://www.deepspeed.ai/tutorials/advanced-install/).
 
-If you're still struggling with the build, first make sure to read [zero-install-notes](#zero-install-notes).
+If you're still struggling with the build, first make sure to read [zero-install-notes](/docs/transformers/master/en/main_classes/deepspeed.html#zero-install-notes).
 
 If you don't prebuild the extensions and rely on them to be built at run time and you tried all of the above solutions
 to no avail, the next thing to try is to pre-build the modules before installing them.
@@ -157,7 +157,7 @@ If after trying everything suggested you still encounter build issues, please, p
 
 ### Deployment with multiple GPUs
 
-To deploy this feature with multiple GPUs adjust the [Trainer](docs/transformers/:version/:language/main_classes/trainer.html#transformers.Trainer) command line arguments as
+To deploy this feature with multiple GPUs adjust the [Trainer](/docs/transformers/master/en/main_classes/trainer.html#transformers.Trainer) command line arguments as
 following:
 
 1. replace `python -m torch.distributed.launch` with `deepspeed`.
@@ -209,7 +209,7 @@ For some practical usage examples, please, see this [post](https://github.com/hu
 
 ### Deployment with one GPU
 
-To deploy DeepSpeed with one GPU adjust the [Trainer](docs/transformers/:version/:language/main_classes/trainer.html#transformers.Trainer) command line arguments as following:
+To deploy DeepSpeed with one GPU adjust the [Trainer](/docs/transformers/master/en/main_classes/trainer.html#transformers.Trainer) command line arguments as following:
 
 ```bash
 deepspeed --num_gpus=1 examples/pytorch/translation/run_translation.py \
@@ -483,7 +483,7 @@ precision training if `--fp16` is passed:
 }
 ```
 
-When you execute the program, DeepSpeed will log the configuration it received from the [Trainer](docs/transformers/:version/:language/main_classes/trainer.html#transformers.Trainer)
+When you execute the program, DeepSpeed will log the configuration it received from the [Trainer](/docs/transformers/master/en/main_classes/trainer.html#transformers.Trainer)
 to the console, so you can see exactly what was the final configuration passed to it.
 
 
@@ -494,9 +494,9 @@ to the console, so you can see exactly what was the final configuration passed t
 
 As discussed in this document normally the DeepSpeed configuration is passed as a path to a json file, but if you're
 not using the command line interface to configure the training, and instead instantiate the
-[Trainer](docs/transformers/:version/:language/main_classes/trainer.html#transformers.Trainer) via [TrainingArguments](docs/transformers/:version/:language/main_classes/trainer.html#transformers.TrainingArguments) then for the `deepspeed` argument you can
+[Trainer](/docs/transformers/master/en/main_classes/trainer.html#transformers.Trainer) via [TrainingArguments](/docs/transformers/master/en/main_classes/trainer.html#transformers.TrainingArguments) then for the `deepspeed` argument you can
 pass a nested `dict`. This allows you to create the configuration on the fly and doesn't require you to write it to
-the file system before passing it to [TrainingArguments](docs/transformers/:version/:language/main_classes/trainer.html#transformers.TrainingArguments).
+the file system before passing it to [TrainingArguments](/docs/transformers/master/en/main_classes/trainer.html#transformers.TrainingArguments).
 
 To summarize you can do:
 
@@ -522,18 +522,18 @@ This section is a must-read
 
 </Tip>
 
-Some configuration values are required by both the [Trainer](docs/transformers/:version/:language/main_classes/trainer.html#transformers.Trainer) and DeepSpeed to function correctly,
+Some configuration values are required by both the [Trainer](/docs/transformers/master/en/main_classes/trainer.html#transformers.Trainer) and DeepSpeed to function correctly,
 therefore, to prevent conflicting definitions, which could lead to hard to detect errors, we chose to configure those
-via the [Trainer](docs/transformers/:version/:language/main_classes/trainer.html#transformers.Trainer) command line arguments.
+via the [Trainer](/docs/transformers/master/en/main_classes/trainer.html#transformers.Trainer) command line arguments.
 
 Additionally, some configuration values are derived automatically based on the model's configuration, so instead of
-remembering to manually adjust multiple values, it's the best to let the [Trainer](docs/transformers/:version/:language/main_classes/trainer.html#transformers.Trainer) do the majority
+remembering to manually adjust multiple values, it's the best to let the [Trainer](/docs/transformers/master/en/main_classes/trainer.html#transformers.Trainer) do the majority
 of configuration for you.
 
 Therefore, in the rest of this guide you will find a special configuration value: `auto`, which when set will be
 automatically replaced with the correct or most efficient value. Please feel free to choose to ignore this
 recommendation and set the values explicitly, in which case be very careful that your the
-[Trainer](docs/transformers/:version/:language/main_classes/trainer.html#transformers.Trainer) arguments and DeepSpeed configurations agree. For example, are you using the same
+[Trainer](/docs/transformers/master/en/main_classes/trainer.html#transformers.Trainer) arguments and DeepSpeed configurations agree. For example, are you using the same
 learning rate, or batch size, or gradient accumulation settings? if these mismatch the training may fail in very
 difficult to detect ways. You have been warned.
 
@@ -541,13 +541,13 @@ There are multiple other values that are specific to DeepSpeed-only and those yo
 your needs.
 
 In your own programs, you can also use the following approach if you'd like to modify the DeepSpeed config as a master
-and configure [TrainingArguments](docs/transformers/:version/:language/main_classes/trainer.html#transformers.TrainingArguments) based on that. The steps are:
+and configure [TrainingArguments](/docs/transformers/master/en/main_classes/trainer.html#transformers.TrainingArguments) based on that. The steps are:
 
 1. Create or load the DeepSpeed configuration to be used as a master configuration
-2. Create the [TrainingArguments](docs/transformers/:version/:language/main_classes/trainer.html#transformers.TrainingArguments) object based on these values
+2. Create the [TrainingArguments](/docs/transformers/master/en/main_classes/trainer.html#transformers.TrainingArguments) object based on these values
 
 Do note that some values, such as `scheduler.params.total_num_steps` are calculated by
-[Trainer](docs/transformers/:version/:language/main_classes/trainer.html#transformers.Trainer) during `train`, but you can of course do the math yourself.
+[Trainer](/docs/transformers/master/en/main_classes/trainer.html#transformers.Trainer) during `train`, but you can of course do the math yourself.
 
 <a id='deepspeed-zero'></a>
 
@@ -562,7 +562,7 @@ The `zero_optimization` section of the configuration file is the most important 
 which ZeRO stages you want to enable and how to configure them. You will find the explanation for each parameter in the
 DeepSpeed docs.
 
-This section has to be configured exclusively via DeepSpeed configuration - the [Trainer](docs/transformers/:version/:language/main_classes/trainer.html#transformers.Trainer) provides
+This section has to be configured exclusively via DeepSpeed configuration - the [Trainer](/docs/transformers/master/en/main_classes/trainer.html#transformers.Trainer) provides
 no equivalent command line arguments.
 
 Note: currently DeepSpeed doesn't validate parameter names, so if you misspell any, it'll use the default setting for
@@ -671,7 +671,7 @@ The following configuration values depend on the model's hidden size:
 - `stage3_prefetch_bucket_size`: `0.9 * hidden_size * hidden_size`
 - `stage3_param_persistence_threshold`: `10 * hidden_size`
 
-therefore set these values to `auto` and the [Trainer](docs/transformers/:version/:language/main_classes/trainer.html#transformers.Trainer) will automatically assign the recommended
+therefore set these values to `auto` and the [Trainer](/docs/transformers/master/en/main_classes/trainer.html#transformers.Trainer) will automatically assign the recommended
 values. But, of course, feel free to set these explicitly as well.
 
 `stage3_gather_fp16_weights_on_model_save` enables model fp16 weights consolidation when model gets saved. With large
@@ -1043,7 +1043,7 @@ GPU implementation (except LAMB).
 DeepSpeed's main optimizers are Adam, AdamW, OneBitAdam, and Lamb. These have been thoroughly tested with ZeRO and are
 thus recommended to be used. It, however, can import other optimizers from `torch`. The full documentation is [here](https://www.deepspeed.ai/docs/config-json/#optimizer-parameters).
 
-If you don't configure the `optimizer` entry in the configuration file, the [Trainer](docs/transformers/:version/:language/main_classes/trainer.html#transformers.Trainer) will
+If you don't configure the `optimizer` entry in the configuration file, the [Trainer](/docs/transformers/master/en/main_classes/trainer.html#transformers.Trainer) will
 automatically set it to `AdamW` and will use the supplied values or the defaults for the following command line
 arguments: `--learning_rate`, `--adam_beta1`, `--adam_beta2`, `--adam_epsilon` and `--weight_decay`.
 
@@ -1090,7 +1090,7 @@ You can also set the values explicitly:
 }
 ```
 
-But then you're on your own synchronizing the [Trainer](docs/transformers/:version/:language/main_classes/trainer.html#transformers.Trainer) command line arguments and the DeepSpeed
+But then you're on your own synchronizing the [Trainer](/docs/transformers/master/en/main_classes/trainer.html#transformers.Trainer) command line arguments and the DeepSpeed
 configuration.
 
 If you want to use another optimizer which is not listed above, you will have to add to the top level configuration.
@@ -1119,7 +1119,7 @@ Here is where the schedulers overlap between 🤗 Transformers and DeepSpeed:
 - `WarmupDecayLR` via `--lr_scheduler_type linear`. This is also the default value for `--lr_scheduler_type`,
   therefore, if you don't configure the scheduler this is scheduler that will get configured by default.
 
-If you don't configure the `scheduler` entry in the configuration file, the [Trainer](docs/transformers/:version/:language/main_classes/trainer.html#transformers.Trainer) will use
+If you don't configure the `scheduler` entry in the configuration file, the [Trainer](/docs/transformers/master/en/main_classes/trainer.html#transformers.Trainer) will use
 the values of `--lr_scheduler_type`, `--learning_rate` and `--warmup_steps` or `--warmup_ratio` to configure a
 🤗 Transformers version of it.
 
@@ -1138,7 +1138,7 @@ Here is an example of the auto-configured `scheduler` entry for `WarmupLR`:
 }
 ```
 
-Since _"auto"_ is used the [Trainer](docs/transformers/:version/:language/main_classes/trainer.html#transformers.Trainer) arguments will set the correct values in the configuration
+Since _"auto"_ is used the [Trainer](/docs/transformers/master/en/main_classes/trainer.html#transformers.Trainer) arguments will set the correct values in the configuration
 file. This is so that there is one definitive source of the values and to avoid hard to find errors when, for example,
 the learning rate is set to different values in different places. Command line rules. The values that get set are:
 
@@ -1165,7 +1165,7 @@ You can, of course, take over any or all of the configuration values and set tho
 }
 ```
 
-But then you're on your own synchronizing the [Trainer](docs/transformers/:version/:language/main_classes/trainer.html#transformers.Trainer) command line arguments and the DeepSpeed
+But then you're on your own synchronizing the [Trainer](/docs/transformers/master/en/main_classes/trainer.html#transformers.Trainer) command line arguments and the DeepSpeed
 configuration.
 
 For example, for `WarmupDecayLR`, you can use the following entry:
@@ -1239,7 +1239,7 @@ To configure pytorch AMP-like mode set:
 }
 ```
 
-and the [Trainer](docs/transformers/:version/:language/main_classes/trainer.html#transformers.Trainer) will automatically enable or disable it based on the value of
+and the [Trainer](/docs/transformers/master/en/main_classes/trainer.html#transformers.Trainer) will automatically enable or disable it based on the value of
 `args.fp16_backend`. The rest of config values are up to you.
 
 This mode gets enabled when `--fp16 --fp16_backend amp` command line args are passed.
@@ -1259,7 +1259,7 @@ You can also enable/disable this mode explicitly:
 }
 ```
 
-But then you're on your own synchronizing the [Trainer](docs/transformers/:version/:language/main_classes/trainer.html#transformers.Trainer) command line arguments and the DeepSpeed
+But then you're on your own synchronizing the [Trainer](/docs/transformers/master/en/main_classes/trainer.html#transformers.Trainer) command line arguments and the DeepSpeed
 configuration.
 
 Here is the [documentation](https://www.deepspeed.ai/docs/config-json/#fp16-training-options).
@@ -1273,7 +1273,7 @@ To configure apex AMP-like mode set:
 }
 ```
 
-and the [Trainer](docs/transformers/:version/:language/main_classes/trainer.html#transformers.Trainer) will automatically configure it based on the values of `args.fp16_backend` and
+and the [Trainer](/docs/transformers/master/en/main_classes/trainer.html#transformers.Trainer) will automatically configure it based on the values of `args.fp16_backend` and
 `args.fp16_opt_level`.
 
 This mode gets enabled when `--fp16 --fp16_backend apex --fp16_opt_level 01` command line args are passed.
@@ -1289,7 +1289,7 @@ You can also configure this mode explicitly:
 }
 ```
 
-But then you're on your own synchronizing the [Trainer](docs/transformers/:version/:language/main_classes/trainer.html#transformers.Trainer) command line arguments and the DeepSpeed
+But then you're on your own synchronizing the [Trainer](/docs/transformers/master/en/main_classes/trainer.html#transformers.Trainer) command line arguments and the DeepSpeed
 configuration.
 
 Here is the [documentation](https://www.deepspeed.ai/docs/config-json/#automatic-mixed-precision-amp-training-options).
@@ -1309,7 +1309,7 @@ To configure batch size, use:
 }
 ```
 
-and the [Trainer](docs/transformers/:version/:language/main_classes/trainer.html#transformers.Trainer) will automatically set `train_micro_batch_size_per_gpu` to the value of
+and the [Trainer](/docs/transformers/master/en/main_classes/trainer.html#transformers.Trainer) will automatically set `train_micro_batch_size_per_gpu` to the value of
 `args.per_device_train_batch_size` and `train_batch_size` to `args.world_size * args.per_device_train_batch_size * args.gradient_accumulation_steps`.
 
 You can also set the values explicitly:
@@ -1321,7 +1321,7 @@ You can also set the values explicitly:
 }
 ```
 
-But then you're on your own synchronizing the [Trainer](docs/transformers/:version/:language/main_classes/trainer.html#transformers.Trainer) command line arguments and the DeepSpeed
+But then you're on your own synchronizing the [Trainer](/docs/transformers/master/en/main_classes/trainer.html#transformers.Trainer) command line arguments and the DeepSpeed
 configuration.
 
 
@@ -1338,7 +1338,7 @@ To configure gradient accumulation set:
 }
 ```
 
-and the [Trainer](docs/transformers/:version/:language/main_classes/trainer.html#transformers.Trainer) will automatically set it to the value of `args.gradient_accumulation_steps`.
+and the [Trainer](/docs/transformers/master/en/main_classes/trainer.html#transformers.Trainer) will automatically set it to the value of `args.gradient_accumulation_steps`.
 
 You can also set the value explicitly:
 
@@ -1348,7 +1348,7 @@ You can also set the value explicitly:
 }
 ```
 
-But then you're on your own synchronizing the [Trainer](docs/transformers/:version/:language/main_classes/trainer.html#transformers.Trainer) command line arguments and the DeepSpeed
+But then you're on your own synchronizing the [Trainer](/docs/transformers/master/en/main_classes/trainer.html#transformers.Trainer) command line arguments and the DeepSpeed
 configuration.
 
 
@@ -1365,7 +1365,7 @@ To configure gradient gradient clipping set:
 }
 ```
 
-and the [Trainer](docs/transformers/:version/:language/main_classes/trainer.html#transformers.Trainer) will automatically set it to the value of `args.max_grad_norm`.
+and the [Trainer](/docs/transformers/master/en/main_classes/trainer.html#transformers.Trainer) will automatically set it to the value of `args.max_grad_norm`.
 
 You can also set the value explicitly:
 
@@ -1375,7 +1375,7 @@ You can also set the value explicitly:
 }
 ```
 
-But then you're on your own synchronizing the [Trainer](docs/transformers/:version/:language/main_classes/trainer.html#transformers.Trainer) command line arguments and the DeepSpeed
+But then you're on your own synchronizing the [Trainer](/docs/transformers/master/en/main_classes/trainer.html#transformers.Trainer) command line arguments and the DeepSpeed
 configuration.
 
 
@@ -1534,7 +1534,7 @@ As you can see this gives you a randomly initialized model.
 If you want to use a pretrained model, `model_class.from_pretrained` will activate this feature as long as
 `is_deepspeed_zero3_enabled()` returns `True`, which currently is setup by the
 class:_~transformers.TrainingArguments_ object if the passed DeepSpeed configuration file contains ZeRO-3 config
-section. Thus you must create the [TrainingArguments](docs/transformers/:version/:language/main_classes/trainer.html#transformers.TrainingArguments) object **before** calling
+section. Thus you must create the [TrainingArguments](/docs/transformers/master/en/main_classes/trainer.html#transformers.TrainingArguments) object **before** calling
 `from_pretrained`. Here is an example of a possible sequence:
 
 ```python
@@ -1552,7 +1552,7 @@ Note: If the fp16 weights of the model can't fit onto the memory of a single GPU
 For full details on this method and other related features please refer to [Constructing Massive Models](https://deepspeed.readthedocs.io/en/latest/zero3.html#constructing-massive-models).
 
 Also when loading fp16-pretrained models, you will want to tell `from_pretrained` to use
-`torch_dtype=torch.float16`. For details, please, see [from_pretrained-torch-dtype](#from_pretrained-torch-dtype).
+`torch_dtype=torch.float16`. For details, please, see [from_pretrained-torch-dtype](/docs/transformers/master/en/main_classes/deepspeed.html#from_pretrained-torch-dtype).
 
 
 #### Gathering Parameters
@@ -1586,9 +1586,9 @@ In your report please always include:
 
 1. the full Deepspeed config file in the report
 
-2. either the command line arguments if you were using the [Trainer](docs/transformers/:version/:language/main_classes/trainer.html#transformers.Trainer) or
-   [TrainingArguments](docs/transformers/:version/:language/main_classes/trainer.html#transformers.TrainingArguments) arguments if you were scripting the Trainer setup yourself. Please do not
-   dump the [TrainingArguments](docs/transformers/:version/:language/main_classes/trainer.html#transformers.TrainingArguments) as it has dozens of entries that are irrelevant.
+2. either the command line arguments if you were using the [Trainer](/docs/transformers/master/en/main_classes/trainer.html#transformers.Trainer) or
+   [TrainingArguments](/docs/transformers/master/en/main_classes/trainer.html#transformers.TrainingArguments) arguments if you were scripting the Trainer setup yourself. Please do not
+   dump the [TrainingArguments](/docs/transformers/master/en/main_classes/trainer.html#transformers.TrainingArguments) as it has dozens of entries that are irrelevant.
 
 3. Output of:
 
@@ -1643,10 +1643,10 @@ Work is being done to enable estimating how much memory is needed for a specific
 
 ### Notes
 
-- DeepSpeed works with the PyTorch [Trainer](docs/transformers/:version/:language/main_classes/trainer.html#transformers.Trainer) but not TF [TFTrainer](docs/transformers/:version/:language/main_classes/trainer.html#transformers.TFTrainer).
+- DeepSpeed works with the PyTorch [Trainer](/docs/transformers/master/en/main_classes/trainer.html#transformers.Trainer) but not TF [TFTrainer](/docs/transformers/master/en/main_classes/trainer.html#transformers.TFTrainer).
 - While DeepSpeed has a pip installable PyPI package, it is highly recommended that it gets installed from [source](https://github.com/microsoft/deepspeed#installation) to best match your hardware and also if you need to enable
   certain features, like 1-bit Adam, which aren't available in the pypi distribution.
-- You don't have to use the [Trainer](docs/transformers/:version/:language/main_classes/trainer.html#transformers.Trainer) to use DeepSpeed with 🤗 Transformers - you can use any model
+- You don't have to use the [Trainer](/docs/transformers/master/en/main_classes/trainer.html#transformers.Trainer) to use DeepSpeed with 🤗 Transformers - you can use any model
   with your own trainer, and you will have to adapt the latter according to [the DeepSpeed integration instructions](https://www.deepspeed.ai/getting-started/#writing-deepspeed-models).
 
 
@@ -1657,11 +1657,11 @@ Work is being done to enable estimating how much memory is needed for a specific
 ## Non-Trainer Deepspeed Integration
 
 The `HfDeepSpeedConfig` is used to integrate Deepspeed into the 🤗 Transformers core
-functionality, when [Trainer](docs/transformers/:version/:language/main_classes/trainer.html#transformers.Trainer) is not used.
+functionality, when [Trainer](/docs/transformers/master/en/main_classes/trainer.html#transformers.Trainer) is not used.
 
-When using [Trainer](docs/transformers/:version/:language/main_classes/trainer.html#transformers.Trainer) everything is automatically taken care of.
+When using [Trainer](/docs/transformers/master/en/main_classes/trainer.html#transformers.Trainer) everything is automatically taken care of.
 
-When not using [Trainer](docs/transformers/:version/:language/main_classes/trainer.html#transformers.Trainer), to efficiently deploy DeepSpeed stage 3, you must instantiate the
+When not using [Trainer](/docs/transformers/master/en/main_classes/trainer.html#transformers.Trainer), to efficiently deploy DeepSpeed stage 3, you must instantiate the
 `HfDeepSpeedConfig` object before instantiating the model.
 
 For example for a pretrained model:
@@ -1703,8 +1703,8 @@ A `weakref` of this object is stored in the module's globals to be able to acces
 things like the Trainer object is not available (e.g. `from_pretrained` and `_get_resized_embeddings`).
 Therefore it's important that this object remains alive while the program is still running.
 
-[Trainer](docs/transformers/:version/:language/main_classes/trainer.html#transformers.Trainer) uses the `HfTrainerDeepSpeedConfig` subclass instead. That subclass has logic to
-sync the configuration with values of [TrainingArguments](docs/transformers/:version/:language/main_classes/trainer.html#transformers.TrainingArguments) by replacing special placeholder
+[Trainer](/docs/transformers/master/en/main_classes/trainer.html#transformers.Trainer) uses the `HfTrainerDeepSpeedConfig` subclass instead. That subclass has logic to
+sync the configuration with values of [TrainingArguments](/docs/transformers/master/en/main_classes/trainer.html#transformers.TrainingArguments) by replacing special placeholder
 values: `"auto"`. Without this special logic the DeepSpeed configuration is not modified in any way.
 
 > Parameters
@@ -1750,5 +1750,5 @@ Papers:
 - [ZeRO-Offload: Democratizing Billion-Scale Model Training](https://arxiv.org/abs/2101.06840)
 - [ZeRO-Infinity: Breaking the GPU Memory Wall for Extreme Scale Deep Learning](https://arxiv.org/abs/2104.07857)
 
-Finally, please, remember that, HuggingFace [Trainer](docs/transformers/:version/:language/main_classes/trainer.html#transformers.Trainer) only integrates DeepSpeed, therefore if you
+Finally, please, remember that, HuggingFace [Trainer](/docs/transformers/master/en/main_classes/trainer.html#transformers.Trainer) only integrates DeepSpeed, therefore if you
 have any problems or questions with regards to DeepSpeed usage, please, file an issue with [DeepSpeed GitHub](https://github.com/microsoft/DeepSpeed/issues).

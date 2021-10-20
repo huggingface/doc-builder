@@ -69,19 +69,28 @@ _re_simple_ref = re.compile(r":ref:`([^`<]*)`")
 _re_ref_with_description = re.compile(r":ref:`([^`<]+\S)\s+<([^>]*)>`")
 
 
-def convert_rst_links(text, package_name):
+def convert_rst_links(text, page_info):
     """
     Convert the rst links in text to markdown.
     """
-    prefix = f"/docs/{package_name}/:version/:language/"
+    if "package_name" not in page_info:
+        raise ValueError("`page_info` must contain at least the package_name.")
+    package_name = page_info["package_name"]
+    version = page_info.get("version", "master")
+    language = page_info.get("language", "en")
+
+    prefix = f"/docs/{package_name}/{version}/{language}/"
     # Links of the form :doc:`page`
     text = _re_simple_doc.sub(rf'[\1]({prefix}\1.html)', text)
     # Links of the form :doc:`text <page>`
     text = _re_doc_with_description.sub(rf'[\1]({prefix}\2.html)', text)
+
+    prefix = f"{prefix}{page_info['page']}" if "page" in page_info else ""
     # Refs of the form :ref:`page`
-    text = _re_simple_ref.sub(r'[\1](#\1)', text)
+    text = _re_simple_ref.sub(rf'[\1]({prefix}#\1)', text)
     # Refs of the form :ref:`text <page>`
-    text = _re_ref_with_description.sub(r'[\1](#\2)', text)
+    text = _re_ref_with_description.sub(rf'[\1]({prefix}#\2)', text)
+
     # Links with a prefix
     # TODO: when it exists, use the API to deal with prefix links properly.
     prefix = f"https://github.com/huggingface/{package_name}/tree/master/"
@@ -402,11 +411,11 @@ def remove_indent(text):
     return "\n".join(lines)
 
 
-def base_rst_to_mdx(text, package_name):
+def base_rst_to_mdx(text, page_info):
     """
     Convert a text from rst to mdx, with the base operations necessary for both docstrings and rst docs.
     """
-    text = convert_rst_links(text, package_name)
+    text = convert_rst_links(text, page_info)
     text = convert_special_chars(text)
     text = convert_rst_blocks(text)
     # Convert * in lists to - to avoid the formatting conversion treat them as bold.
@@ -415,12 +424,12 @@ def base_rst_to_mdx(text, package_name):
     return remove_indent(text)
 
 
-def convert_rst_docstring_to_mdx(docstring, package_name):
+def convert_rst_docstring_to_mdx(docstring, page_info):
     """
     Convert a docstring written in rst to mdx.
     """
     text = parse_rst_docstring(docstring)
-    return base_rst_to_mdx(text, package_name)
+    return base_rst_to_mdx(text, page_info)
 
 
 def process_titles(lines):
@@ -491,7 +500,7 @@ def split_pt_tf_code_blocks(text):
     return "\n".join(new_lines)
 
 
-def convert_rst_to_mdx(rst_text, package_name):
+def convert_rst_to_mdx(rst_text, page_info):
     """
     Convert a document written in rst to mdx.
     """
@@ -519,4 +528,4 @@ def convert_rst_to_mdx(rst_text, package_name):
         new_lines.append(line)
     text = "\n".join(new_lines)
 
-    return split_pt_tf_code_blocks(base_rst_to_mdx(text, package_name))
+    return split_pt_tf_code_blocks(base_rst_to_mdx(text, page_info))
