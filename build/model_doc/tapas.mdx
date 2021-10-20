@@ -56,7 +56,7 @@ Tips:
   of the table). Note that this is something that was added after the publication of the original TAPAS paper.
   According to the authors, this usually results in a slightly better performance, and allows you to encode longer
   sequences without running out of embeddings. This is reflected in the `reset_position_index_per_cell` parameter of
-  [TapasConfig](/docs/transformers/master/en/model_doc/tapas.html#transformers.TapasConfig), which is set to `True` by default. The default versions of the models available
+  [TapasConfig](model_doc/tapas.html#transformers.TapasConfig), which is set to `True` by default. The default versions of the models available
   in the [model hub](https://huggingface.co/models?search=tapas) all use relative position embeddings. You can still
   use the ones with absolute position embeddings by passing in an additional argument `revision="no_reset"` when
   calling the `.from_pretrained()` method. Note that it's usually advised to pad the inputs on the right rather than
@@ -77,11 +77,11 @@ Tips:
 
 ## Usage: fine-tuning
 
-Here we explain how you can fine-tune [TapasForQuestionAnswering](/docs/transformers/master/en/model_doc/tapas.html#transformers.TapasForQuestionAnswering) on your own dataset.
+Here we explain how you can fine-tune [TapasForQuestionAnswering](model_doc/tapas.html#transformers.TapasForQuestionAnswering) on your own dataset.
 
 **STEP 1: Choose one of the 3 ways in which you can use TAPAS - or experiment**
 
-Basically, there are 3 different ways in which one can fine-tune [TapasForQuestionAnswering](/docs/transformers/master/en/model_doc/tapas.html#transformers.TapasForQuestionAnswering),
+Basically, there are 3 different ways in which one can fine-tune [TapasForQuestionAnswering](model_doc/tapas.html#transformers.TapasForQuestionAnswering),
 corresponding to the different datasets on which Tapas was fine-tuned:
 
 1. SQA: if you're interested in asking follow-up questions related to a table, in a conversational set-up. For example
@@ -123,8 +123,8 @@ for your environment):
 ```
 
 Of course, you don't necessarily have to follow one of these three ways in which TAPAS was fine-tuned. You can also
-experiment by defining any hyperparameters you want when initializing [TapasConfig](/docs/transformers/master/en/model_doc/tapas.html#transformers.TapasConfig), and then
-create a [TapasForQuestionAnswering](/docs/transformers/master/en/model_doc/tapas.html#transformers.TapasForQuestionAnswering) based on that configuration. For example, if you have a
+experiment by defining any hyperparameters you want when initializing [TapasConfig](model_doc/tapas.html#transformers.TapasConfig), and then
+create a [TapasForQuestionAnswering](model_doc/tapas.html#transformers.TapasForQuestionAnswering) based on that configuration. For example, if you have a
 dataset that has both conversational questions and questions that might involve aggregation, then you can do it this
 way. Here's an example:
 
@@ -170,9 +170,9 @@ meaning that WTQ and WikiSQL results could actually be improved.
 **STEP 3: Convert your data into PyTorch tensors using TapasTokenizer**
 
 Third, given that you've prepared your data in this TSV/CSV format (and corresponding CSV files containing the tabular
-data), you can then use [TapasTokenizer](/docs/transformers/master/en/model_doc/tapas.html#transformers.TapasTokenizer) to convert table-question pairs into `input_ids`,
+data), you can then use [TapasTokenizer](model_doc/tapas.html#transformers.TapasTokenizer) to convert table-question pairs into `input_ids`,
 `attention_mask`, `token_type_ids` and so on. Again, based on which of the three cases you picked above,
-[TapasForQuestionAnswering](/docs/transformers/master/en/model_doc/tapas.html#transformers.TapasForQuestionAnswering) requires different inputs to be fine-tuned:
+[TapasForQuestionAnswering](model_doc/tapas.html#transformers.TapasForQuestionAnswering) requires different inputs to be fine-tuned:
 
 | **Task**                           | **Required inputs**                                                                          |
 | Conversational                     | `input_ids`, `attention_mask`, `token_type_ids`, `labels`                            |
@@ -180,7 +180,7 @@ data), you can then use [TapasTokenizer](/docs/transformers/master/en/model_doc/
 |                                    | `numeric_values_scale`, `float_answer`                                                   |
 | Strong supervision for aggregation | `input ids`, `attention mask`, `token type ids`, `labels`, `aggregation_labels`    |
 
-[TapasTokenizer](/docs/transformers/master/en/model_doc/tapas.html#transformers.TapasTokenizer) creates the `labels`, `numeric_values` and `numeric_values_scale` based on
+[TapasTokenizer](model_doc/tapas.html#transformers.TapasTokenizer) creates the `labels`, `numeric_values` and `numeric_values_scale` based on
 the `answer_coordinates` and `answer_text` columns of the TSV file. The `float_answer` and `aggregation_labels`
 are already in the TSV file of step 2. Here's an example:
 
@@ -191,18 +191,18 @@ are already in the TSV file of step 2. Here's an example:
 >>> model_name = 'google/tapas-base'
 >>> tokenizer = TapasTokenizer.from_pretrained(model_name)
 
->>> data = &amp;lcub;'Actors': ["Brad Pitt", "Leonardo Di Caprio", "George Clooney"], 'Number of movies': ["87", "53", "69"]}
+>>> data = &lcub'Actors': ["Brad Pitt", "Leonardo Di Caprio", "George Clooney"], 'Number of movies': ["87", "53", "69"]}
 >>> queries = ["What is the name of the first actor?", "How many movies has George Clooney played in?", "What is the total number of movies?"]
 >>> answer_coordinates = [[(0, 0)], [(2, 1)], [(0, 1), (1, 1), (2, 1)]]
 >>> answer_text = [["Brad Pitt"], ["69"], ["209"]]
 >>> table = pd.DataFrame.from_dict(data)
 >>> inputs = tokenizer(table=table, queries=queries, answer_coordinates=answer_coordinates, answer_text=answer_text, padding='max_length', return_tensors='pt')
 >>> inputs
-&amp;lcub;'input_ids': tensor([[ ... ]]), 'attention_mask': tensor([[...]]), 'token_type_ids': tensor([[[...]]]),
+&lcub'input_ids': tensor([[ ... ]]), 'attention_mask': tensor([[...]]), 'token_type_ids': tensor([[[...]]]),
 'numeric_values': tensor([[ ... ]]), 'numeric_values_scale: tensor([[ ... ]]), labels: tensor([[ ... ]])}
 ```
 
-Note that [TapasTokenizer](/docs/transformers/master/en/model_doc/tapas.html#transformers.TapasTokenizer) expects the data of the table to be **text-only**. You can use
+Note that [TapasTokenizer](model_doc/tapas.html#transformers.TapasTokenizer) expects the data of the table to be **text-only**. You can use
 `.astype(str)` on a dataframe to turn it into text-only data. Of course, this only shows how to encode a single
 training example. It is advised to create a PyTorch dataset and a corresponding dataloader:
 
@@ -230,7 +230,7 @@ training example. It is advised to create a PyTorch dataset and a corresponding 
 ...                                   return_tensors="pt"
 ...         )
 ...         # remove the batch dimension which the tokenizer adds by default
-...         encoding = &amp;lcub;key: val.squeeze(0) for key, val in encoding.items()}
+...         encoding = &lcubkey: val.squeeze(0) for key, val in encoding.items()}
 ...         # add the float_answer which is also required (weak supervision for aggregation case)
 ...         encoding["float_answer"] = torch.tensor(item.float_answer) 
 ...         return encoding
@@ -247,12 +247,12 @@ Note that here, we encode each table-question pair independently. This is fine a
 conversational**. In case your dataset involves conversational questions (such as in SQA), then you should first group
 together the `queries`, `answer_coordinates` and `answer_text` per table (in the order of their `position`
 index) and batch encode each table with its questions. This will make sure that the `prev_labels` token types (see
-docs of [TapasTokenizer](/docs/transformers/master/en/model_doc/tapas.html#transformers.TapasTokenizer)) are set correctly. See [this notebook](https://github.com/NielsRogge/Transformers-Tutorials/blob/master/TAPAS/Fine_tuning_TapasForQuestionAnswering_on_SQA.ipynb)
+docs of [TapasTokenizer](model_doc/tapas.html#transformers.TapasTokenizer)) are set correctly. See [this notebook](https://github.com/NielsRogge/Transformers-Tutorials/blob/master/TAPAS/Fine_tuning_TapasForQuestionAnswering_on_SQA.ipynb)
 for more info.
 
 **STEP 4: Train (fine-tune) TapasForQuestionAnswering**
 
-You can then fine-tune [TapasForQuestionAnswering](/docs/transformers/master/en/model_doc/tapas.html#transformers.TapasForQuestionAnswering) using native PyTorch as follows (shown here for
+You can then fine-tune [TapasForQuestionAnswering](model_doc/tapas.html#transformers.TapasForQuestionAnswering) using native PyTorch as follows (shown here for
 the weak supervision for aggregation case):
 
 ```
@@ -299,10 +299,10 @@ the weak supervision for aggregation case):
 
 ## Usage: inference
 
-Here we explain how you can use [TapasForQuestionAnswering](/docs/transformers/master/en/model_doc/tapas.html#transformers.TapasForQuestionAnswering) for inference (i.e. making predictions
+Here we explain how you can use [TapasForQuestionAnswering](model_doc/tapas.html#transformers.TapasForQuestionAnswering) for inference (i.e. making predictions
 on new data). For inference, only `input_ids`, `attention_mask` and `token_type_ids` (which you can obtain using
-[TapasTokenizer](/docs/transformers/master/en/model_doc/tapas.html#transformers.TapasTokenizer)) have to be provided to the model to obtain the logits. Next, you can use the
-handy `convert_logits_to_predictions` method of [TapasTokenizer](/docs/transformers/master/en/model_doc/tapas.html#transformers.TapasTokenizer) to convert these into predicted
+[TapasTokenizer](model_doc/tapas.html#transformers.TapasTokenizer)) have to be provided to the model to obtain the logits. Next, you can use the
+handy `convert_logits_to_predictions` method of [TapasTokenizer](model_doc/tapas.html#transformers.TapasTokenizer) to convert these into predicted
 coordinates and optional aggregation indices.
 
 However, note that inference is **different** depending on whether or not the setup is conversational. In a
@@ -317,7 +317,7 @@ of that:
 >>> model = TapasForQuestionAnswering.from_pretrained(model_name)
 >>> tokenizer = TapasTokenizer.from_pretrained(model_name)
 
->>> data = &amp;lcub;'Actors': ["Brad Pitt", "Leonardo Di Caprio", "George Clooney"], 'Number of movies': ["87", "53", "69"]}
+>>> data = &lcub'Actors': ["Brad Pitt", "Leonardo Di Caprio", "George Clooney"], 'Number of movies': ["87", "53", "69"]}
 >>> queries = ["What is the name of the first actor?", "How many movies has George Clooney played in?", "What is the total number of movies?"]
 >>> table = pd.DataFrame.from_dict(data)
 >>> inputs = tokenizer(table=table, queries=queries, padding='max_length', return_tensors="pt") 
@@ -329,7 +329,7 @@ of that:
 ... )
 
 >>> # let's print out the results:
->>> id2aggregation = &amp;lcub;0: "NONE", 1: "SUM", 2: "AVERAGE", 3:"COUNT"}
+>>> id2aggregation = &lcub0: "NONE", 1: "SUM", 2: "AVERAGE", 3:"COUNT"}
 >>> aggregation_predictions_string = [id2aggregation[x] for x in predicted_aggregation_indices]
 
 >>> answers = []
@@ -371,7 +371,7 @@ pair. Again, more info can be found in [this notebook](https://github.com/NielsR
 > **class transformers.models.tapas.modeling\_tapas.TableQuestionAnsweringOutput**(loss: typing.Optional[torch.FloatTensor] = None, logits: FloatTensor = None, logits_aggregation: FloatTensor = None, hidden_states: typing.Optional[typing.Tuple[torch.FloatTensor]] = None, attentions: typing.Optional[typing.Tuple[torch.FloatTensor]] = None)
 
 
-Output type of [TapasForQuestionAnswering](/docs/transformers/master/en/model_doc/tapas.html#transformers.TapasForQuestionAnswering).
+Output type of [TapasForQuestionAnswering](model_doc/tapas.html#transformers.TapasForQuestionAnswering).
 
 > Parameters
 
@@ -397,11 +397,11 @@ Output type of [TapasForQuestionAnswering](/docs/transformers/master/en/model_do
 > **class transformers.TapasConfig**(vocab_size = 30522, hidden_size = 768, num_hidden_layers = 12, num_attention_heads = 12, intermediate_size = 3072, hidden_act = gelu, hidden_dropout_prob = 0.1, attention_probs_dropout_prob = 0.1, max_position_embeddings = 1024, type_vocab_sizes = [3, 256, 256, 2, 256, 256, 10], initializer_range = 0.02, layer_norm_eps = 1e-12, pad_token_id = 0, positive_label_weight = 10.0, num_aggregation_labels = 0, aggregation_loss_weight = 1.0, use_answer_as_supervision = None, answer_loss_importance = 1.0, use_normalized_answer_loss = False, huber_loss_delta = None, temperature = 1.0, aggregation_temperature = 1.0, use_gumbel_for_cells = False, use_gumbel_for_aggregation = False, average_approximation_function = ratio, cell_selection_preference = None, answer_loss_cutoff = None, max_num_rows = 64, max_num_columns = 32, average_logits_per_cell = False, select_one_column = True, allow_empty_column_selection = False, init_cell_selection_weights_to_zero = False, reset_position_index_per_cell = True, disable_per_token_loss = False, aggregation_labels = None, no_aggregation_label_index = None, **kwargs)
 
 
-This is the configuration class to store the configuration of a [TapasModel](/docs/transformers/master/en/model_doc/tapas.html#transformers.TapasModel). It is used to
+This is the configuration class to store the configuration of a [TapasModel](model_doc/tapas.html#transformers.TapasModel). It is used to
 instantiate a TAPAS model according to the specified arguments, defining the model architecture. Instantiating a
 configuration with the defaults will yield a similar configuration to that of the TAPAS _tapas-base-finetuned-sqa_
 architecture. Configuration objects inherit from `PreTrainedConfig` and can be used to control
-the model outputs. Read the documentation from [PretrainedConfig](/docs/transformers/master/en/main_classes/configuration.html#transformers.PretrainedConfig) for more information.
+the model outputs. Read the documentation from [PretrainedConfig](main_classes/configuration.html#transformers.PretrainedConfig) for more information.
 
 Hyperparameters additional to BERT are taken from run_task_main.py and hparam_utils.py of the original
 implementation. Original implementation available at https://github.com/google-research/tapas/tree/master.
@@ -410,7 +410,7 @@ implementation. Original implementation available at https://github.com/google-r
 
 - **vocab_size** (`int`, _optional_, defaults to 30522) --
   Vocabulary size of the TAPAS model. Defines the number of different tokens that can be represented by the
-  `inputs_ids` passed when calling [TapasModel](/docs/transformers/master/en/model_doc/tapas.html#transformers.TapasModel).
+  `inputs_ids` passed when calling [TapasModel](model_doc/tapas.html#transformers.TapasModel).
 - **hidden_size** (`int`, _optional_, defaults to 768) --
   Dimensionality of the encoder layers and the pooler layer.
 - **num_hidden_layers** (`int`, _optional_, defaults to 12) --
@@ -430,7 +430,7 @@ implementation. Original implementation available at https://github.com/google-r
   The maximum sequence length that this model might ever be used with. Typically set this to something large
   just in case (e.g., 512 or 1024 or 2048).
 - **type_vocab_sizes** (`List[int]`, _optional_, defaults to `[3, 256, 256, 2, 256, 256, 10]`) --
-  The vocabulary sizes of the `token_type_ids` passed when calling [TapasModel](/docs/transformers/master/en/model_doc/tapas.html#transformers.TapasModel).
+  The vocabulary sizes of the `token_type_ids` passed when calling [TapasModel](model_doc/tapas.html#transformers.TapasModel).
 - **initializer_range** (`float`, _optional_, defaults to 0.02) --
   The standard deviation of the truncated_normal_initializer for initializing all weight matrices.
 - **layer_norm_eps** (`float`, _optional_, defaults to 1e-12) --
@@ -484,7 +484,7 @@ implementation. Original implementation available at https://github.com/google-r
   Whether to disable any (strong or weak) supervision on cells.
 - **aggregation_labels** (`Dict[int, label]`, _optional_) --
   The aggregation labels used to aggregate the results. For example, the WTQ models have the following
-  aggregation labels: `&amp;lcub;0: "NONE", 1: "SUM", 2: "AVERAGE", 3: "COUNT"}`
+  aggregation labels: `&lcub0: "NONE", 1: "SUM", 2: "AVERAGE", 3: "COUNT"}`
 - **no_aggregation_label_index** (`int`, _optional_) --
   If the aggregation labels are defined and one of these labels represents "No aggregation", this should be
   set to its index. For example, the WTQ models have the "NONE" aggregation label at index 0, so that value
@@ -513,9 +513,9 @@ implementation. Original implementation available at https://github.com/google-r
 Construct a TAPAS tokenizer. Based on WordPiece. Flattens a table and one or more related sentences to be used by
 TAPAS models.
 
-This tokenizer inherits from [PreTrainedTokenizer](/docs/transformers/master/en/main_classes/tokenizer.html#transformers.PreTrainedTokenizer) which contains most of the main methods.
+This tokenizer inherits from [PreTrainedTokenizer](main_classes/tokenizer.html#transformers.PreTrainedTokenizer) which contains most of the main methods.
 Users should refer to this superclass for more information regarding those methods.
-[TapasTokenizer](/docs/transformers/master/en/model_doc/tapas.html#transformers.TapasTokenizer) creates several token type ids to encode tabular structure. To be more
+[TapasTokenizer](model_doc/tapas.html#transformers.TapasTokenizer) creates several token type ids to encode tabular structure. To be more
 precise, it adds 7 token type ids, in the following order: `segment_ids`, `column_ids`, `row_ids`,
 `prev_labels`, `column_ranks`, `inv_column_ranks` and `numeric_relations`:
 
@@ -536,7 +536,7 @@ precise, it adds 7 token type ids, in the following order: `segment_ids`, `colum
 - numeric_relations: indicate numeric relations between the question and the tokens of the table. 0 for all
   question tokens, special tokens and padding.
 
-[TapasTokenizer](/docs/transformers/master/en/model_doc/tapas.html#transformers.TapasTokenizer) runs end-to-end tokenization on a table and associated sentences: punctuation
+[TapasTokenizer](model_doc/tapas.html#transformers.TapasTokenizer) runs end-to-end tokenization on a table and associated sentences: punctuation
 splitting and wordpiece.
 
 > Parameters
@@ -620,7 +620,7 @@ Main method to tokenize and prepare for the model one or several sequence(s) rel
 
 - **add_special_tokens** (`bool`, _optional_, defaults to `True`) --
   Whether or not to encode the sequences with the special tokens relative to their model.
-- **padding** (`bool`, `str` or [PaddingStrategy](/docs/transformers/master/en/internal/file_utils.html#transformers.file_utils.PaddingStrategy), _optional_, defaults to `False`) --
+- **padding** (`bool`, `str` or [PaddingStrategy](internal/file_utils.html#transformers.file_utils.PaddingStrategy), _optional_, defaults to `False`) --
   Activates and controls padding. Accepts the following values:
 
   - `True` or `'longest'`: Pad to the longest sequence in the batch (or no padding if only a
@@ -650,7 +650,7 @@ Main method to tokenize and prepare for the model one or several sequence(s) rel
 - **pad_to_multiple_of** (`int`, _optional_) --
   If set will pad the sequence to a multiple of the provided value. This is especially useful to enable
   the use of Tensor Cores on NVIDIA hardware with compute capability >= 7.5 (Volta).
-- **return_tensors** (`str` or [TensorType](/docs/transformers/master/en/internal/file_utils.html#transformers.TensorType), _optional_) --
+- **return_tensors** (`str` or [TensorType](internal/file_utils.html#transformers.TensorType), _optional_) --
   If set, will return tensors instead of list of python integers. Acceptable values are:
 
   - `'tf'`: Return TensorFlow `tf.constant` objects.
@@ -662,7 +662,7 @@ Main method to tokenize and prepare for the model one or several sequence(s) rel
 > **convert\_logits\_to\_predictions**(self, data, logits, logits_agg = None, cell_classification_threshold = 0.5)
 
 
-Converts logits of [TapasForQuestionAnswering](/docs/transformers/master/en/model_doc/tapas.html#transformers.TapasForQuestionAnswering) to actual predicted answer coordinates and
+Converts logits of [TapasForQuestionAnswering](model_doc/tapas.html#transformers.TapasForQuestionAnswering) to actual predicted answer coordinates and
 optional aggregation indices.
 
 The original implementation, on which this function is based, can be found [here](https://github.com/google-research/tapas/blob/4908213eb4df7aa988573350278b44c4dbe3f71b/tapas/experiments/prediction_utils.py#L288).
@@ -671,7 +671,7 @@ The original implementation, on which this function is based, can be found [here
 
 - **data** (`dict`) --
   Dictionary mapping features to actual values. Should be created using
-  [TapasTokenizer](/docs/transformers/master/en/model_doc/tapas.html#transformers.TapasTokenizer).
+  [TapasTokenizer](model_doc/tapas.html#transformers.TapasTokenizer).
 - **logits** (`np.ndarray` of shape `(batch_size, sequence_length)`) --
   Tensor containing the logits at the token level.
 - **logits_agg** (`np.ndarray` of shape `(batch_size, num_aggregation_labels)`, _optional_) --
@@ -705,7 +705,7 @@ The original implementation, on which this function is based, can be found [here
 > **class transformers.TapasModel**(config, add_pooling_layer = True)
 
 The bare Tapas Model transformer outputting raw hidden-states without any specific head on top.
-This model inherits from [PreTrainedModel](/docs/transformers/master/en/main_classes/model.html#transformers.PreTrainedModel). Check the superclass documentation for the generic
+This model inherits from [PreTrainedModel](main_classes/model.html#transformers.PreTrainedModel). Check the superclass documentation for the generic
 methods the library implements for all its models (such as downloading or saving, resizing the input embeddings,
 pruning heads etc.)
 
@@ -715,12 +715,12 @@ general usage and behavior.
 
 > Parameters
 
-- **config** ([TapasConfig](/docs/transformers/master/en/model_doc/tapas.html#transformers.TapasConfig)) -- Model configuration class with all the parameters of the model.
+- **config** ([TapasConfig](model_doc/tapas.html#transformers.TapasConfig)) -- Model configuration class with all the parameters of the model.
   Initializing with a config file does not load the weights associated with the model, only the
-  configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model.html#transformers.PreTrainedModel.from_pretrained) method to load the model
+  configuration. Check out the [from_pretrained()](main_classes/model.html#transformers.PreTrainedModel.from_pretrained) method to load the model
   weights.
 
-  This class is a small change compared to [BertModel](/docs/transformers/master/en/model_doc/bert.html#transformers.BertModel), taking into account the additional token
+  This class is a small change compared to [BertModel](model_doc/bert.html#transformers.BertModel), taking into account the additional token
   type ids.
 
   The model can behave as an encoder (with only self-attention) as well as a decoder, in which case a layer of
@@ -733,7 +733,7 @@ general usage and behavior.
 <a id='transformers.TapasModel.forward'></a>
 > **forward**(self, input_ids = None, attention_mask = None, token_type_ids = None, position_ids = None, head_mask = None, inputs_embeds = None, encoder_hidden_states = None, encoder_attention_mask = None, output_attentions = None, output_hidden_states = None, return_dict = None)
 
-The [TapasModel](/docs/transformers/master/en/model_doc/tapas.html#transformers.TapasModel) forward method, overrides the `__call__` special method.
+The [TapasModel](model_doc/tapas.html#transformers.TapasModel) forward method, overrides the `__call__` special method.
 
 <Tip>
 
@@ -747,8 +747,8 @@ processing steps while the latter silently ignores them.
 
 - **input_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`) --
   Indices of input sequence tokens in the vocabulary. Indices can be obtained using
-  [TapasTokenizer](/docs/transformers/master/en/model_doc/tapas.html#transformers.TapasTokenizer). See [transformers.PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and
-  [transformers.PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for details.
+  [TapasTokenizer](model_doc/tapas.html#transformers.TapasTokenizer). See [transformers.PreTrainedTokenizer.encode()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and
+  [transformers.PreTrainedTokenizer.__call__()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for details.
 
   [What are input IDs?](../glossary.html#input-ids)
 - **attention_mask** (`torch.FloatTensor` of shape `(batch_size, sequence_length)`, _optional_) --
@@ -760,12 +760,12 @@ processing steps while the latter silently ignores them.
   [What are attention masks?](../glossary.html#attention-mask)
 - **token_type_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length, 7)`, _optional_) --
   Token indices that encode tabular structure. Indices can be obtained using
-  [TapasTokenizer](/docs/transformers/master/en/model_doc/tapas.html#transformers.TapasTokenizer). See this class for more info.
+  [TapasTokenizer](model_doc/tapas.html#transformers.TapasTokenizer). See this class for more info.
 
   [What are token type IDs?](../glossary.html#token-type-ids)
 - **position_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`, _optional_) --
   Indices of positions of each input sequence tokens in the position embeddings. If
-  `reset_position_index_per_cell` of [TapasConfig](/docs/transformers/master/en/model_doc/tapas.html#transformers.TapasConfig) is set to `True`, relative
+  `reset_position_index_per_cell` of [TapasConfig](model_doc/tapas.html#transformers.TapasConfig) is set to `True`, relative
   position embeddings will be used. Selected in the range `[0, config.max_position_embeddings - 1]`.
 
   [What are position IDs?](../glossary.html#position-ids)
@@ -783,14 +783,14 @@ processing steps while the latter silently ignores them.
   Whether or not to return the hidden states of all layers. See `hidden_states` under returned tensors for
   more detail.
 - **return_dict** (`bool`, _optional_) --
-  Whether or not to return a [ModelOutput](/docs/transformers/master/en/main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple.
+  Whether or not to return a [ModelOutput](main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple.
 
 
 > Returns
 
-A [BaseModelOutputWithPooling](/docs/transformers/master/en/main_classes/output.html#transformers.modeling_outputs.BaseModelOutputWithPooling) or a tuple of
+A [BaseModelOutputWithPooling](main_classes/output.html#transformers.modeling_outputs.BaseModelOutputWithPooling) or a tuple of
 `torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising
-various elements depending on the configuration ([TapasConfig](/docs/transformers/master/en/model_doc/tapas.html#transformers.TapasConfig)) and inputs.
+various elements depending on the configuration ([TapasConfig](model_doc/tapas.html#transformers.TapasConfig)) and inputs.
 
 - **last_hidden_state** (`torch.FloatTensor` of shape `(batch_size, sequence_length, hidden_size)`) -- Sequence of hidden-states at the output of the last layer of the model.
 - **pooler_output** (`torch.FloatTensor` of shape `(batch_size, hidden_size)`) -- Last layer hidden-state of the first token of the sequence (classification token) after further processing
@@ -816,7 +816,7 @@ various elements depending on the configuration ([TapasConfig](/docs/transformer
 >>> tokenizer = TapasTokenizer.from_pretrained('google/tapas-base')
 >>> model = TapasModel.from_pretrained('google/tapas-base')
 
->>> data = &amp;lcub;'Actors': ["Brad Pitt", "Leonardo Di Caprio", "George Clooney"],
+>>> data = &lcub'Actors': ["Brad Pitt", "Leonardo Di Caprio", "George Clooney"],
 ...         'Age': ["56", "45", "59"],
 ...         'Number of movies': ["87", "53", "69"]
 ... }
@@ -831,7 +831,7 @@ various elements depending on the configuration ([TapasConfig](/docs/transformer
 
 > Return type
 
-[BaseModelOutputWithPooling](/docs/transformers/master/en/main_classes/output.html#transformers.modeling_outputs.BaseModelOutputWithPooling) or `tuple(torch.FloatTensor)`
+[BaseModelOutputWithPooling](main_classes/output.html#transformers.modeling_outputs.BaseModelOutputWithPooling) or `tuple(torch.FloatTensor)`
 
 
 ## TapasForMaskedLM
@@ -840,7 +840,7 @@ various elements depending on the configuration ([TapasConfig](/docs/transformer
 > **class transformers.TapasForMaskedLM**(config)
 
 Tapas Model with a _language modeling_ head on top. 
-This model inherits from [PreTrainedModel](/docs/transformers/master/en/main_classes/model.html#transformers.PreTrainedModel). Check the superclass documentation for the generic
+This model inherits from [PreTrainedModel](main_classes/model.html#transformers.PreTrainedModel). Check the superclass documentation for the generic
 methods the library implements for all its models (such as downloading or saving, resizing the input embeddings,
 pruning heads etc.)
 
@@ -850,16 +850,16 @@ general usage and behavior.
 
 > Parameters
 
-- **config** ([TapasConfig](/docs/transformers/master/en/model_doc/tapas.html#transformers.TapasConfig)) -- Model configuration class with all the parameters of the model.
+- **config** ([TapasConfig](model_doc/tapas.html#transformers.TapasConfig)) -- Model configuration class with all the parameters of the model.
   Initializing with a config file does not load the weights associated with the model, only the
-  configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model.html#transformers.PreTrainedModel.from_pretrained) method to load the model
+  configuration. Check out the [from_pretrained()](main_classes/model.html#transformers.PreTrainedModel.from_pretrained) method to load the model
   weights.
 
 
 <a id='transformers.TapasForMaskedLM.forward'></a>
 > **forward**(self, input_ids = None, attention_mask = None, token_type_ids = None, position_ids = None, head_mask = None, inputs_embeds = None, encoder_hidden_states = None, encoder_attention_mask = None, labels = None, output_attentions = None, output_hidden_states = None, return_dict = None, **kwargs)
 
-The [TapasForMaskedLM](/docs/transformers/master/en/model_doc/tapas.html#transformers.TapasForMaskedLM) forward method, overrides the `__call__` special method.
+The [TapasForMaskedLM](model_doc/tapas.html#transformers.TapasForMaskedLM) forward method, overrides the `__call__` special method.
 
 <Tip>
 
@@ -873,8 +873,8 @@ processing steps while the latter silently ignores them.
 
 - **input_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`) --
   Indices of input sequence tokens in the vocabulary. Indices can be obtained using
-  [TapasTokenizer](/docs/transformers/master/en/model_doc/tapas.html#transformers.TapasTokenizer). See [transformers.PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and
-  [transformers.PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for details.
+  [TapasTokenizer](model_doc/tapas.html#transformers.TapasTokenizer). See [transformers.PreTrainedTokenizer.encode()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and
+  [transformers.PreTrainedTokenizer.__call__()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for details.
 
   [What are input IDs?](../glossary.html#input-ids)
 - **attention_mask** (`torch.FloatTensor` of shape `(batch_size, sequence_length)`, _optional_) --
@@ -886,12 +886,12 @@ processing steps while the latter silently ignores them.
   [What are attention masks?](../glossary.html#attention-mask)
 - **token_type_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length, 7)`, _optional_) --
   Token indices that encode tabular structure. Indices can be obtained using
-  [TapasTokenizer](/docs/transformers/master/en/model_doc/tapas.html#transformers.TapasTokenizer). See this class for more info.
+  [TapasTokenizer](model_doc/tapas.html#transformers.TapasTokenizer). See this class for more info.
 
   [What are token type IDs?](../glossary.html#token-type-ids)
 - **position_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`, _optional_) --
   Indices of positions of each input sequence tokens in the position embeddings. If
-  `reset_position_index_per_cell` of [TapasConfig](/docs/transformers/master/en/model_doc/tapas.html#transformers.TapasConfig) is set to `True`, relative
+  `reset_position_index_per_cell` of [TapasConfig](model_doc/tapas.html#transformers.TapasConfig) is set to `True`, relative
   position embeddings will be used. Selected in the range `[0, config.max_position_embeddings - 1]`.
 
   [What are position IDs?](../glossary.html#position-ids)
@@ -909,7 +909,7 @@ processing steps while the latter silently ignores them.
   Whether or not to return the hidden states of all layers. See `hidden_states` under returned tensors for
   more detail.
 - **return_dict** (`bool`, _optional_) --
-  Whether or not to return a [ModelOutput](/docs/transformers/master/en/main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple.
+  Whether or not to return a [ModelOutput](main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple.
 
 - **labels** (`torch.LongTensor` of shape `(batch_size, sequence_length)`, _optional_) --
   Labels for computing the masked language modeling loss. Indices should be in `[-100, 0, ..., config.vocab_size]` (see `input_ids` docstring) Tokens with indices set to `-100` are ignored
@@ -918,9 +918,9 @@ processing steps while the latter silently ignores them.
 
 > Returns
 
-A [MaskedLMOutput](/docs/transformers/master/en/main_classes/output.html#transformers.modeling_outputs.MaskedLMOutput) or a tuple of
+A [MaskedLMOutput](main_classes/output.html#transformers.modeling_outputs.MaskedLMOutput) or a tuple of
 `torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising
-various elements depending on the configuration ([TapasConfig](/docs/transformers/master/en/model_doc/tapas.html#transformers.TapasConfig)) and inputs.
+various elements depending on the configuration ([TapasConfig](model_doc/tapas.html#transformers.TapasConfig)) and inputs.
 
 - **loss** (`torch.FloatTensor` of shape `(1,)`, _optional_, returned when `labels` is provided) -- Masked language modeling (MLM) loss.
 - **logits** (`torch.FloatTensor` of shape `(batch_size, sequence_length, config.vocab_size)`) -- Prediction scores of the language modeling head (scores for each vocabulary token before SoftMax).
@@ -943,7 +943,7 @@ various elements depending on the configuration ([TapasConfig](/docs/transformer
 >>> tokenizer = TapasTokenizer.from_pretrained('google/tapas-base')
 >>> model = TapasForMaskedLM.from_pretrained('google/tapas-base')
 
->>> data = &amp;lcub;'Actors': ["Brad Pitt", "Leonardo Di Caprio", "George Clooney"],
+>>> data = &lcub'Actors': ["Brad Pitt", "Leonardo Di Caprio", "George Clooney"],
 ...         'Age': ["56", "45", "59"],
 ...         'Number of movies': ["87", "53", "69"]
 ... }
@@ -958,7 +958,7 @@ various elements depending on the configuration ([TapasConfig](/docs/transformer
 
 > Return type
 
-[MaskedLMOutput](/docs/transformers/master/en/main_classes/output.html#transformers.modeling_outputs.MaskedLMOutput) or `tuple(torch.FloatTensor)`
+[MaskedLMOutput](main_classes/output.html#transformers.modeling_outputs.MaskedLMOutput) or `tuple(torch.FloatTensor)`
 
 
 ## TapasForSequenceClassification
@@ -970,7 +970,7 @@ various elements depending on the configuration ([TapasConfig](/docs/transformer
 Tapas Model with a sequence classification head on top (a linear layer on top of the pooled output), e.g. for table
 entailment tasks, such as TabFact (Chen et al., 2020).
 
-This model inherits from [PreTrainedModel](/docs/transformers/master/en/main_classes/model.html#transformers.PreTrainedModel). Check the superclass documentation for the generic
+This model inherits from [PreTrainedModel](main_classes/model.html#transformers.PreTrainedModel). Check the superclass documentation for the generic
 methods the library implements for all its models (such as downloading or saving, resizing the input embeddings,
 pruning heads etc.)
 
@@ -980,16 +980,16 @@ general usage and behavior.
 
 > Parameters
 
-- **config** ([TapasConfig](/docs/transformers/master/en/model_doc/tapas.html#transformers.TapasConfig)) -- Model configuration class with all the parameters of the model.
+- **config** ([TapasConfig](model_doc/tapas.html#transformers.TapasConfig)) -- Model configuration class with all the parameters of the model.
   Initializing with a config file does not load the weights associated with the model, only the
-  configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model.html#transformers.PreTrainedModel.from_pretrained) method to load the model
+  configuration. Check out the [from_pretrained()](main_classes/model.html#transformers.PreTrainedModel.from_pretrained) method to load the model
   weights.
 
 
 <a id='transformers.TapasForSequenceClassification.forward'></a>
 > **forward**(self, input_ids = None, attention_mask = None, token_type_ids = None, position_ids = None, head_mask = None, inputs_embeds = None, labels = None, output_attentions = None, output_hidden_states = None, return_dict = None)
 
-The [TapasForSequenceClassification](/docs/transformers/master/en/model_doc/tapas.html#transformers.TapasForSequenceClassification) forward method, overrides the `__call__` special method.
+The [TapasForSequenceClassification](model_doc/tapas.html#transformers.TapasForSequenceClassification) forward method, overrides the `__call__` special method.
 
 <Tip>
 
@@ -1003,8 +1003,8 @@ processing steps while the latter silently ignores them.
 
 - **input_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`) --
   Indices of input sequence tokens in the vocabulary. Indices can be obtained using
-  [TapasTokenizer](/docs/transformers/master/en/model_doc/tapas.html#transformers.TapasTokenizer). See [transformers.PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and
-  [transformers.PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for details.
+  [TapasTokenizer](model_doc/tapas.html#transformers.TapasTokenizer). See [transformers.PreTrainedTokenizer.encode()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and
+  [transformers.PreTrainedTokenizer.__call__()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for details.
 
   [What are input IDs?](../glossary.html#input-ids)
 - **attention_mask** (`torch.FloatTensor` of shape `(batch_size, sequence_length)`, _optional_) --
@@ -1016,12 +1016,12 @@ processing steps while the latter silently ignores them.
   [What are attention masks?](../glossary.html#attention-mask)
 - **token_type_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length, 7)`, _optional_) --
   Token indices that encode tabular structure. Indices can be obtained using
-  [TapasTokenizer](/docs/transformers/master/en/model_doc/tapas.html#transformers.TapasTokenizer). See this class for more info.
+  [TapasTokenizer](model_doc/tapas.html#transformers.TapasTokenizer). See this class for more info.
 
   [What are token type IDs?](../glossary.html#token-type-ids)
 - **position_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`, _optional_) --
   Indices of positions of each input sequence tokens in the position embeddings. If
-  `reset_position_index_per_cell` of [TapasConfig](/docs/transformers/master/en/model_doc/tapas.html#transformers.TapasConfig) is set to `True`, relative
+  `reset_position_index_per_cell` of [TapasConfig](model_doc/tapas.html#transformers.TapasConfig) is set to `True`, relative
   position embeddings will be used. Selected in the range `[0, config.max_position_embeddings - 1]`.
 
   [What are position IDs?](../glossary.html#position-ids)
@@ -1039,7 +1039,7 @@ processing steps while the latter silently ignores them.
   Whether or not to return the hidden states of all layers. See `hidden_states` under returned tensors for
   more detail.
 - **return_dict** (`bool`, _optional_) --
-  Whether or not to return a [ModelOutput](/docs/transformers/master/en/main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple.
+  Whether or not to return a [ModelOutput](main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple.
 
 - **labels** (`torch.LongTensor` of shape `(batch_size,)`, _optional_) --
   Labels for computing the sequence classification/regression loss. Indices should be in `[0, ..., config.num_labels - 1]`. If `config.num_labels == 1` a regression loss is computed (Mean-Square loss),
@@ -1049,9 +1049,9 @@ processing steps while the latter silently ignores them.
 
 > Returns
 
-A [SequenceClassifierOutput](/docs/transformers/master/en/main_classes/output.html#transformers.modeling_outputs.SequenceClassifierOutput) or a tuple of
+A [SequenceClassifierOutput](main_classes/output.html#transformers.modeling_outputs.SequenceClassifierOutput) or a tuple of
 `torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising
-various elements depending on the configuration ([TapasConfig](/docs/transformers/master/en/model_doc/tapas.html#transformers.TapasConfig)) and inputs.
+various elements depending on the configuration ([TapasConfig](model_doc/tapas.html#transformers.TapasConfig)) and inputs.
 
 - **loss** (`torch.FloatTensor` of shape `(1,)`, _optional_, returned when `labels` is provided) -- Classification (or regression if config.num_labels==1) loss.
 - **logits** (`torch.FloatTensor` of shape `(batch_size, config.num_labels)`) -- Classification (or regression if config.num_labels==1) scores (before SoftMax).
@@ -1075,7 +1075,7 @@ various elements depending on the configuration ([TapasConfig](/docs/transformer
 >>> tokenizer = TapasTokenizer.from_pretrained('google/tapas-base-finetuned-tabfact')
 >>> model = TapasForSequenceClassification.from_pretrained('google/tapas-base-finetuned-tabfact')
 
->>> data = &amp;lcub;'Actors': ["Brad Pitt", "Leonardo Di Caprio", "George Clooney"],
+>>> data = &lcub'Actors': ["Brad Pitt", "Leonardo Di Caprio", "George Clooney"],
 ...         'Age': ["56", "45", "59"],
 ...         'Number of movies': ["87", "53", "69"]
 ... }
@@ -1092,7 +1092,7 @@ various elements depending on the configuration ([TapasConfig](/docs/transformer
 
 > Return type
 
-[SequenceClassifierOutput](/docs/transformers/master/en/main_classes/output.html#transformers.modeling_outputs.SequenceClassifierOutput) or `tuple(torch.FloatTensor)`
+[SequenceClassifierOutput](main_classes/output.html#transformers.modeling_outputs.SequenceClassifierOutput) or `tuple(torch.FloatTensor)`
 
 
 ## TapasForQuestionAnswering
@@ -1105,7 +1105,7 @@ Tapas Model with a cell selection head and optional aggregation head on top for 
 (linear layers on top of the hidden-states output to compute _logits_ and optional _logits_aggregation_), e.g. for
 SQA, WTQ or WikiSQL-supervised tasks.
 
-This model inherits from [PreTrainedModel](/docs/transformers/master/en/main_classes/model.html#transformers.PreTrainedModel). Check the superclass documentation for the generic
+This model inherits from [PreTrainedModel](main_classes/model.html#transformers.PreTrainedModel). Check the superclass documentation for the generic
 methods the library implements for all its models (such as downloading or saving, resizing the input embeddings,
 pruning heads etc.)
 
@@ -1115,16 +1115,16 @@ general usage and behavior.
 
 > Parameters
 
-- **config** ([TapasConfig](/docs/transformers/master/en/model_doc/tapas.html#transformers.TapasConfig)) -- Model configuration class with all the parameters of the model.
+- **config** ([TapasConfig](model_doc/tapas.html#transformers.TapasConfig)) -- Model configuration class with all the parameters of the model.
   Initializing with a config file does not load the weights associated with the model, only the
-  configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model.html#transformers.PreTrainedModel.from_pretrained) method to load the model
+  configuration. Check out the [from_pretrained()](main_classes/model.html#transformers.PreTrainedModel.from_pretrained) method to load the model
   weights.
 
 
 <a id='transformers.TapasForQuestionAnswering.forward'></a>
 > **forward**(self, input_ids = None, attention_mask = None, token_type_ids = None, position_ids = None, head_mask = None, inputs_embeds = None, table_mask = None, labels = None, aggregation_labels = None, float_answer = None, numeric_values = None, numeric_values_scale = None, output_attentions = None, output_hidden_states = None, return_dict = None)
 
-The [TapasForQuestionAnswering](/docs/transformers/master/en/model_doc/tapas.html#transformers.TapasForQuestionAnswering) forward method, overrides the `__call__` special method.
+The [TapasForQuestionAnswering](model_doc/tapas.html#transformers.TapasForQuestionAnswering) forward method, overrides the `__call__` special method.
 
 <Tip>
 
@@ -1138,8 +1138,8 @@ processing steps while the latter silently ignores them.
 
 - **input_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`) --
   Indices of input sequence tokens in the vocabulary. Indices can be obtained using
-  [TapasTokenizer](/docs/transformers/master/en/model_doc/tapas.html#transformers.TapasTokenizer). See [transformers.PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and
-  [transformers.PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for details.
+  [TapasTokenizer](model_doc/tapas.html#transformers.TapasTokenizer). See [transformers.PreTrainedTokenizer.encode()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and
+  [transformers.PreTrainedTokenizer.__call__()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for details.
 
   [What are input IDs?](../glossary.html#input-ids)
 - **attention_mask** (`torch.FloatTensor` of shape `(batch_size, sequence_length)`, _optional_) --
@@ -1151,12 +1151,12 @@ processing steps while the latter silently ignores them.
   [What are attention masks?](../glossary.html#attention-mask)
 - **token_type_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length, 7)`, _optional_) --
   Token indices that encode tabular structure. Indices can be obtained using
-  [TapasTokenizer](/docs/transformers/master/en/model_doc/tapas.html#transformers.TapasTokenizer). See this class for more info.
+  [TapasTokenizer](model_doc/tapas.html#transformers.TapasTokenizer). See this class for more info.
 
   [What are token type IDs?](../glossary.html#token-type-ids)
 - **position_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`, _optional_) --
   Indices of positions of each input sequence tokens in the position embeddings. If
-  `reset_position_index_per_cell` of [TapasConfig](/docs/transformers/master/en/model_doc/tapas.html#transformers.TapasConfig) is set to `True`, relative
+  `reset_position_index_per_cell` of [TapasConfig](model_doc/tapas.html#transformers.TapasConfig) is set to `True`, relative
   position embeddings will be used. Selected in the range `[0, config.max_position_embeddings - 1]`.
 
   [What are position IDs?](../glossary.html#position-ids)
@@ -1174,14 +1174,14 @@ processing steps while the latter silently ignores them.
   Whether or not to return the hidden states of all layers. See `hidden_states` under returned tensors for
   more detail.
 - **return_dict** (`bool`, _optional_) --
-  Whether or not to return a [ModelOutput](/docs/transformers/master/en/main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple.
+  Whether or not to return a [ModelOutput](main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple.
 
 - **table_mask** (`torch.LongTensor` of shape `(batch_size, seq_length)`, _optional_) --
   Mask for the table. Indicates which tokens belong to the table (1). Question tokens, table headers and
   padding are 0.
 - **labels** (`torch.LongTensor` of shape `(batch_size, seq_length)`, _optional_) --
   Labels per token for computing the hierarchical cell selection loss. This encodes the positions of the
-  answer appearing in the table. Can be obtained using [TapasTokenizer](/docs/transformers/master/en/model_doc/tapas.html#transformers.TapasTokenizer).
+  answer appearing in the table. Can be obtained using [TapasTokenizer](model_doc/tapas.html#transformers.TapasTokenizer).
 
   - 1 for tokens that are **part of the answer**,
   - 0 for tokens that are **not part of the answer**.
@@ -1195,18 +1195,18 @@ processing steps while the latter silently ignores them.
   required in case of weak supervision (WTQ) to calculate the aggregate mask and regression loss.
 - **numeric_values** (`torch.FloatTensor` of shape `(batch_size, seq_length)`, _optional_) --
   Numeric values of every token, NaN for tokens which are not numeric values. Can be obtained using
-  [TapasTokenizer](/docs/transformers/master/en/model_doc/tapas.html#transformers.TapasTokenizer). Only required in case of weak supervision for aggregation (WTQ) to
+  [TapasTokenizer](model_doc/tapas.html#transformers.TapasTokenizer). Only required in case of weak supervision for aggregation (WTQ) to
   calculate the regression loss.
 - **numeric_values_scale** (`torch.FloatTensor` of shape `(batch_size, seq_length)`, _optional_) --
-  Scale of the numeric values of every token. Can be obtained using [TapasTokenizer](/docs/transformers/master/en/model_doc/tapas.html#transformers.TapasTokenizer).
+  Scale of the numeric values of every token. Can be obtained using [TapasTokenizer](model_doc/tapas.html#transformers.TapasTokenizer).
   Only required in case of weak supervision for aggregation (WTQ) to calculate the regression loss.
 
 
 > Returns
 
-A [TableQuestionAnsweringOutput](/docs/transformers/master/en/model_doc/tapas.html#transformers.models.tapas.modeling_tapas.TableQuestionAnsweringOutput) or a tuple of
+A [TableQuestionAnsweringOutput](model_doc/tapas.html#transformers.models.tapas.modeling_tapas.TableQuestionAnsweringOutput) or a tuple of
 `torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising
-various elements depending on the configuration ([TapasConfig](/docs/transformers/master/en/model_doc/tapas.html#transformers.TapasConfig)) and inputs.
+various elements depending on the configuration ([TapasConfig](model_doc/tapas.html#transformers.TapasConfig)) and inputs.
 
 - **loss** (`torch.FloatTensor` of shape `(1,)`, _optional_, returned when `labels` (and possibly `answer`, `aggregation_labels`, `numeric_values` and `numeric_values_scale` are provided)) -- Total loss as the sum of the hierarchical cell selection log-likelihood loss and (optionally) the
   semi-supervised regression loss and (optionally) supervised loss for aggregations.
@@ -1228,7 +1228,7 @@ various elements depending on the configuration ([TapasConfig](/docs/transformer
 >>> tokenizer = TapasTokenizer.from_pretrained('google/tapas-base-finetuned-wtq')
 >>> model = TapasForQuestionAnswering.from_pretrained('google/tapas-base-finetuned-wtq')
 
->>> data = &amp;lcub;'Actors': ["Brad Pitt", "Leonardo Di Caprio", "George Clooney"],
+>>> data = &lcub'Actors': ["Brad Pitt", "Leonardo Di Caprio", "George Clooney"],
 ...         'Age': ["56", "45", "59"],
 ...         'Number of movies': ["87", "53", "69"]
 ... }
@@ -1244,5 +1244,5 @@ various elements depending on the configuration ([TapasConfig](/docs/transformer
 
 > Return type
 
-[TableQuestionAnsweringOutput](/docs/transformers/master/en/model_doc/tapas.html#transformers.models.tapas.modeling_tapas.TableQuestionAnsweringOutput) or `tuple(torch.FloatTensor)`
+[TableQuestionAnsweringOutput](model_doc/tapas.html#transformers.models.tapas.modeling_tapas.TableQuestionAnsweringOutput) or `tuple(torch.FloatTensor)`
 
