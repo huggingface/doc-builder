@@ -76,9 +76,14 @@ def format_signature(obj):
             param_name = f"**{param_name}"
         formatted_param = param_name
         if param.annotation != inspect._empty:
-            formatted_param += f": {get_type_name(param.annotation)}"
+            annotation = get_type_name(param.annotation)
+            annotation = annotation.replace("<", "&amp;lt;")
+            formatted_param += f": {annotation}"
         if param.default != inspect._empty:
-            formatted_param += f" = {param.default}"
+            default = param.default
+            default = repr(default)
+            default = default.replace("<", "&amp;lt;")
+            formatted_param += f" = {default}"
         params.append(formatted_param)
     return ", ".join(params)
 
