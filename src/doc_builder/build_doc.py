@@ -202,7 +202,7 @@ def generate_frontmatter_in_text(text):
         header_level = len(first_word)
         local = re.sub(r'[^a-z\s]+', '', title.lower())
         local = re.sub(r'\s{2,}', ' ', local.strip()).replace(' ','-')
-        text[idx] = f'{"#"*header_level} [{title}](#{local})'
+        text[idx] = f'<h{header_level} id="{local}">{title}</h{header_level}>'
         node = FrontmatterNode(title, local)
         if header_level == 1:
             root = node

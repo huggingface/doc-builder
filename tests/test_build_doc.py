@@ -127,29 +127,29 @@ class BuildDocTester(unittest.TestCase):
         # test canonical
         self.assertEqual(
             generate_frontmatter_in_text("# Bert\n## BertTokenizer\n### BertTokenizerMethod"),
-            "---\nlocal: bert\nsections:\n- local: berttokenizer\n  sections:\n  - local: berttokenizermethod\n    title: BertTokenizerMethod\n  title: BertTokenizer\ntitle: Bert\n---\n# [Bert](#bert)\n## [BertTokenizer](#berttokenizer)\n### [BertTokenizerMethod](#berttokenizermethod)"
+            '---\nlocal: bert\nsections:\n- local: berttokenizer\n  sections:\n  - local: berttokenizermethod\n    title: BertTokenizerMethod\n  title: BertTokenizer\ntitle: Bert\n---\n<h1 id="bert">Bert</h1>\n<h2 id="berttokenizer">BertTokenizer</h2>\n<h3 id="berttokenizermethod">BertTokenizerMethod</h3>'
         )
         
         # test h1 having h3 children (skipping h2 level)
         self.assertEqual(
             generate_frontmatter_in_text("# Bert\n### BertTokenizerMethodA\n### BertTokenizerMethodB"),
-            "---\nlocal: bert\nsections:\n- local: berttokenizermethoda\n  title: BertTokenizerMethodA\n- local: berttokenizermethodb\n  title: BertTokenizerMethodB\ntitle: Bert\n---\n# [Bert](#bert)\n### [BertTokenizerMethodA](#berttokenizermethoda)\n### [BertTokenizerMethodB](#berttokenizermethodb)"
+            '---\nlocal: bert\nsections:\n- local: berttokenizermethoda\n  title: BertTokenizerMethodA\n- local: berttokenizermethodb\n  title: BertTokenizerMethodB\ntitle: Bert\n---\n<h1 id="bert">Bert</h1>\n<h3 id="berttokenizermethoda">BertTokenizerMethodA</h3>\n<h3 id="berttokenizermethodb">BertTokenizerMethodB</h3>'
         )
         
         # skip python comments in code blocks (because markdown `#` is same as python comment `#`)
         self.assertEqual(
             generate_frontmatter_in_text("# Bert\n```\n# python comment\n```\n## BertTokenizer"),
-            "---\nlocal: bert\nsections:\n- local: berttokenizer\n  title: BertTokenizer\ntitle: Bert\n---\n# [Bert](#bert)\n```\n# python comment\n```\n## [BertTokenizer](#berttokenizer)"
+            '---\nlocal: bert\nsections:\n- local: berttokenizer\n  title: BertTokenizer\ntitle: Bert\n---\n<h1 id="bert">Bert</h1>\n```\n# python comment\n```\n<h2 id="berttokenizer">BertTokenizer</h2>'
         )
 
         # test header with multiple words
         self.assertEqual(
             generate_frontmatter_in_text("# Bert and Bart\n```\n# python comment\n```\n## BertTokenizer"),
-            "---\nlocal: bert-and-bart\nsections:\n- local: berttokenizer\n  title: BertTokenizer\ntitle: Bert and Bart\n---\n# [Bert and Bart](#bert-and-bart)\n```\n# python comment\n```\n## [BertTokenizer](#berttokenizer)"
+            '---\nlocal: bert-and-bart\nsections:\n- local: berttokenizer\n  title: BertTokenizer\ntitle: Bert and Bart\n---\n<h1 id="bert-and-bart">Bert and Bart</h1>\n```\n# python comment\n```\n<h2 id="berttokenizer">BertTokenizer</h2>'
         )
 
         # test header with HF emoji
         self.assertEqual(
             generate_frontmatter_in_text("# SomeHeader 🤗\n```\n"),
-            "---\nlocal: someheader\ntitle: SomeHeader 🤗\n---\n# [SomeHeader 🤗](#someheader)\n```\n"
+            '---\nlocal: someheader\ntitle: SomeHeader 🤗\n---\n<h1 id="someheader">SomeHeader 🤗</h1>\n```\n'
         )
