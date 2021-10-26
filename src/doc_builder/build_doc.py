@@ -198,16 +198,16 @@ def generate_frontmatter_in_text(text):
         header_search = re.search(r"^(#+)\s+(\S.*)$", line)
         if header_search is None:
             continue
-        first_word, title = header.search.groups()
+        first_word, title = header_search.groups()
         header_level = len(first_word)
         local = re.sub(r'[^a-z\s]+', '', title.lower())
-            local = re.sub(r'\s{2,}', ' ', local.strip()).replace(' ','-')
-            text[idx] = f'{"#"*header_level} [{title}](#{local})'
-            node = FrontmatterNode(title, local)
-            if header_level == 1:
-                root = node
-            else:
-                root.add_child(node, header_level)
+        local = re.sub(r'\s{2,}', ' ', local.strip()).replace(' ','-')
+        text[idx] = f'{"#"*header_level} [{title}](#{local})'
+        node = FrontmatterNode(title, local)
+        if header_level == 1:
+            root = node
+        else:
+            root.add_child(node, header_level)
 
     frontmatter = root.get_frontmatter()
     text = '\n'.join(text)
