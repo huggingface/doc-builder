@@ -141,3 +141,15 @@ class BuildDocTester(unittest.TestCase):
             generate_frontmatter_in_text("# Bert\n```\n# python comment\n```\n## BertTokenizer"),
             "---\nlocal: bert\nsections:\n- local: berttokenizer\n  title: BertTokenizer\ntitle: Bert\n---\n# [Bert](#bert)\n```\n# python comment\n```\n## [BertTokenizer](#berttokenizer)"
         )
+
+        # test header with multiple words
+        self.assertEqual(
+            generate_frontmatter_in_text("# Bert and Bart\n```\n# python comment\n```\n## BertTokenizer"),
+            "---\nlocal: bert-and-bart\nsections:\n- local: berttokenizer\n  title: BertTokenizer\ntitle: Bert and Bart\n---\n# [Bert and Bart](#bert-and-bart)\n```\n# python comment\n```\n## [BertTokenizer](#berttokenizer)"
+        )
+
+        # test header with HF emoji
+        self.assertEqual(
+            generate_frontmatter_in_text("# SomeHeader 🤗\n```\n"),
+            "---\nlocal: someheader\ntitle: SomeHeader 🤗\n---\n# [SomeHeader 🤗](#someheader)\n```\n"
+        )
