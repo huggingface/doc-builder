@@ -193,15 +193,14 @@ def generate_frontmatter_in_text(text):
     for idx, line in enumerate(text):
         if line.startswith("```"):
             is_inside_codeblock = not is_inside_codeblock
-        line = line.split()
-        if is_inside_codeblock or not line:
+        if is_inside_codeblock or is_empty_line(line):
             continue
-        first_word, rest_of_line = line[0], ' '.join(line[1:])
-        if '#' in first_word and len(set(first_word)) == 1:
-            # it is a header
-            header_level = len(first_word)
-            title = rest_of_line
-            local = re.sub(r'[^a-z\s]+', '', rest_of_line.lower())
+        header_search = re.search(r"^(#+)\s+(\S.*)$", line)
+        if header_search is None:
+            continue
+        first_word, title = header.search.groups()
+        header_level = len(first_word)
+        local = re.sub(r'[^a-z\s]+', '', title.lower())
             local = re.sub(r'\s{2,}', ' ', local.strip()).replace(' ','-')
             text[idx] = f'{"#"*header_level} [{title}](#{local})'
             node = FrontmatterNode(title, local)
