@@ -1,3 +1,38 @@
+---
+local: dpr
+sections:
+- local: overview
+  title: Overview
+- local: dprconfig
+  title: DPRConfig
+- local: dprcontextencodertokenizer
+  title: DPRContextEncoderTokenizer
+- local: dprcontextencodertokenizerfast
+  title: DPRContextEncoderTokenizerFast
+- local: dprquestionencodertokenizer
+  title: DPRQuestionEncoderTokenizer
+- local: dprquestionencodertokenizerfast
+  title: DPRQuestionEncoderTokenizerFast
+- local: dprreadertokenizer
+  title: DPRReaderTokenizer
+- local: dprreadertokenizerfast
+  title: DPRReaderTokenizerFast
+- local: dpr-specific-outputs
+  title: DPR specific outputs
+- local: dprcontextencoder
+  title: DPRContextEncoder
+- local: dprquestionencoder
+  title: DPRQuestionEncoder
+- local: dprreader
+  title: DPRReader
+- local: tfdprcontextencoder
+  title: TFDPRContextEncoder
+- local: tfdprquestionencoder
+  title: TFDPRQuestionEncoder
+- local: tfdprreader
+  title: TFDPRReader
+title: DPR
+---
 <script>
 import Tip from "../../Tip.svelte";
 import Youtube from "../../Youtube.svelte";	
@@ -16,9 +51,9 @@ an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express o
 specific language governing permissions and limitations under the License.
 -->
 
-# DPR
+# [DPR](#dpr)
 
-## Overview
+## [Overview](#overview)
 
 Dense Passage Retrieval (DPR) is a set of tools and models for state-of-the-art open-domain Q&A research. It was
 introduced in [Dense Passage Retrieval for Open-Domain Question Answering](https://arxiv.org/abs/2004.04906) by
@@ -37,26 +72,26 @@ benchmarks.*
 This model was contributed by [lhoestq](https://huggingface.co/lhoestq). The original code can be found [here](https://github.com/facebookresearch/DPR).
 
 
-## DPRConfig
+## [DPRConfig](#dprconfig)
 
 <a id='transformers.DPRConfig'></a>
-> **class transformers.DPRConfig**(vocab_size = 30522, hidden_size = 768, num_hidden_layers = 12, num_attention_heads = 12, intermediate_size = 3072, hidden_act = gelu, hidden_dropout_prob = 0.1, attention_probs_dropout_prob = 0.1, max_position_embeddings = 512, type_vocab_size = 2, initializer_range = 0.02, layer_norm_eps = 1e-12, pad_token_id = 0, gradient_checkpointing = False, position_embedding_type = absolute, projection_dim: int = 0, **kwargs)
+> **class transformers.DPRConfig**(vocab_size = 30522, hidden_size = 768, num_hidden_layers = 12, num_attention_heads = 12, intermediate_size = 3072, hidden_act = 'gelu', hidden_dropout_prob = 0.1, attention_probs_dropout_prob = 0.1, max_position_embeddings = 512, type_vocab_size = 2, initializer_range = 0.02, layer_norm_eps = 1e-12, pad_token_id = 0, position_embedding_type = 'absolute', projection_dim: int = 0, **kwargs)
 
 
-[DPRConfig](model_doc/dpr.html#transformers.DPRConfig) is the configuration class to store the configuration of a _DPRModel_.
+[DPRConfig](/docs/transformers/master/en/model_doc/dpr.html#transformers.DPRConfig) is the configuration class to store the configuration of a _DPRModel_.
 
-This is the configuration class to store the configuration of a [DPRContextEncoder](model_doc/dpr.html#transformers.DPRContextEncoder),
-[DPRQuestionEncoder](model_doc/dpr.html#transformers.DPRQuestionEncoder), or a [DPRReader](model_doc/dpr.html#transformers.DPRReader). It is used to instantiate the
+This is the configuration class to store the configuration of a [DPRContextEncoder](/docs/transformers/master/en/model_doc/dpr.html#transformers.DPRContextEncoder),
+[DPRQuestionEncoder](/docs/transformers/master/en/model_doc/dpr.html#transformers.DPRQuestionEncoder), or a [DPRReader](/docs/transformers/master/en/model_doc/dpr.html#transformers.DPRReader). It is used to instantiate the
 components of the DPR model.
 
-This class is a subclass of [BertConfig](model_doc/bert.html#transformers.BertConfig). Please check the superclass for the documentation of
+This class is a subclass of [BertConfig](/docs/transformers/master/en/model_doc/bert.html#transformers.BertConfig). Please check the superclass for the documentation of
 all kwargs.
 
 > Parameters
 
 - **vocab_size** (`int`, _optional_, defaults to 30522) --
   Vocabulary size of the DPR model. Defines the different tokens that can be represented by the _inputs_ids_
-  passed to the forward method of [BertModel](model_doc/bert.html#transformers.BertModel).
+  passed to the forward method of [BertModel](/docs/transformers/master/en/model_doc/bert.html#transformers.BertModel).
 - **hidden_size** (`int`, _optional_, defaults to 768) --
   Dimensionality of the encoder layers and the pooler layer.
 - **num_hidden_layers** (`int`, _optional_, defaults to 12) --
@@ -76,13 +111,11 @@ all kwargs.
   The maximum sequence length that this model might ever be used with. Typically set this to something large
   just in case (e.g., 512 or 1024 or 2048).
 - **type_vocab_size** (`int`, _optional_, defaults to 2) --
-  The vocabulary size of the _token_type_ids_ passed into [BertModel](model_doc/bert.html#transformers.BertModel).
+  The vocabulary size of the _token_type_ids_ passed into [BertModel](/docs/transformers/master/en/model_doc/bert.html#transformers.BertModel).
 - **initializer_range** (`float`, _optional_, defaults to 0.02) --
   The standard deviation of the truncated_normal_initializer for initializing all weight matrices.
 - **layer_norm_eps** (`float`, _optional_, defaults to 1e-12) --
   The epsilon used by the layer normalization layers.
-- **gradient_checkpointing** (`bool`, _optional_, defaults to `False`) --
-  If True, use gradient checkpointing to save memory at the expense of slower backward pass.
 - **position_embedding_type** (`str`, _optional_, defaults to `"absolute"`) --
   Type of position embedding. Choose one of `"absolute"`, `"relative_key"`,
   `"relative_key_query"`. For positional embeddings use `"absolute"`. For more information on
@@ -93,105 +126,105 @@ all kwargs.
   projection is done.
 
 
-## DPRContextEncoderTokenizer
+## [DPRContextEncoderTokenizer](#dprcontextencodertokenizer)
 
 <a id='transformers.DPRContextEncoderTokenizer'></a>
-> **class transformers.DPRContextEncoderTokenizer**(vocab_file, do_lower_case = True, do_basic_tokenize = True, never_split = None, unk_token = [UNK], sep_token = [SEP], pad_token = [PAD], cls_token = [CLS], mask_token = [MASK], tokenize_chinese_chars = True, strip_accents = None, **kwargs)
+> **class transformers.DPRContextEncoderTokenizer**(vocab_file, do_lower_case = True, do_basic_tokenize = True, never_split = None, unk_token = '[UNK]', sep_token = '[SEP]', pad_token = '[PAD]', cls_token = '[CLS]', mask_token = '[MASK]', tokenize_chinese_chars = True, strip_accents = None, **kwargs)
 
 
 Construct a DPRContextEncoder tokenizer.
 
-[DPRContextEncoderTokenizer](model_doc/dpr.html#transformers.DPRContextEncoderTokenizer) is identical to [BertTokenizer](model_doc/bert.html#transformers.BertTokenizer) and runs
+[DPRContextEncoderTokenizer](/docs/transformers/master/en/model_doc/dpr.html#transformers.DPRContextEncoderTokenizer) is identical to [BertTokenizer](/docs/transformers/master/en/model_doc/bert.html#transformers.BertTokenizer) and runs
 end-to-end tokenization: punctuation splitting and wordpiece.
 
-Refer to superclass [BertTokenizer](model_doc/bert.html#transformers.BertTokenizer) for usage examples and documentation concerning
+Refer to superclass [BertTokenizer](/docs/transformers/master/en/model_doc/bert.html#transformers.BertTokenizer) for usage examples and documentation concerning
 parameters.
 
 
-## DPRContextEncoderTokenizerFast
+## [DPRContextEncoderTokenizerFast](#dprcontextencodertokenizerfast)
 
 <a id='transformers.DPRContextEncoderTokenizerFast'></a>
-> **class transformers.DPRContextEncoderTokenizerFast**(vocab_file = None, tokenizer_file = None, do_lower_case = True, unk_token = [UNK], sep_token = [SEP], pad_token = [PAD], cls_token = [CLS], mask_token = [MASK], tokenize_chinese_chars = True, strip_accents = None, **kwargs)
+> **class transformers.DPRContextEncoderTokenizerFast**(vocab_file = None, tokenizer_file = None, do_lower_case = True, unk_token = '[UNK]', sep_token = '[SEP]', pad_token = '[PAD]', cls_token = '[CLS]', mask_token = '[MASK]', tokenize_chinese_chars = True, strip_accents = None, **kwargs)
 
 
 Construct a "fast" DPRContextEncoder tokenizer (backed by HuggingFace's _tokenizers_ library).
 
-[DPRContextEncoderTokenizerFast](model_doc/dpr.html#transformers.DPRContextEncoderTokenizerFast) is identical to [BertTokenizerFast](model_doc/bert.html#transformers.BertTokenizerFast) and
+[DPRContextEncoderTokenizerFast](/docs/transformers/master/en/model_doc/dpr.html#transformers.DPRContextEncoderTokenizerFast) is identical to [BertTokenizerFast](/docs/transformers/master/en/model_doc/bert.html#transformers.BertTokenizerFast) and
 runs end-to-end tokenization: punctuation splitting and wordpiece.
 
-Refer to superclass [BertTokenizerFast](model_doc/bert.html#transformers.BertTokenizerFast) for usage examples and documentation concerning
+Refer to superclass [BertTokenizerFast](/docs/transformers/master/en/model_doc/bert.html#transformers.BertTokenizerFast) for usage examples and documentation concerning
 parameters.
 
 
 <a id='transformers.DPRContextEncoderTokenizer'></a>
-> **class DPRContextEncoderTokenizer**(vocab_file, do_lower_case = True, do_basic_tokenize = True, never_split = None, unk_token = [UNK], sep_token = [SEP], pad_token = [PAD], cls_token = [CLS], mask_token = [MASK], tokenize_chinese_chars = True, strip_accents = None, **kwargs)
+> **class DPRContextEncoderTokenizer**(vocab_file, do_lower_case = True, do_basic_tokenize = True, never_split = None, unk_token = '[UNK]', sep_token = '[SEP]', pad_token = '[PAD]', cls_token = '[CLS]', mask_token = '[MASK]', tokenize_chinese_chars = True, strip_accents = None, **kwargs)
 
 
 Construct a DPRContextEncoder tokenizer.
 
-[DPRContextEncoderTokenizer](model_doc/dpr.html#transformers.DPRContextEncoderTokenizer) is identical to [BertTokenizer](model_doc/bert.html#transformers.BertTokenizer) and runs
+[DPRContextEncoderTokenizer](/docs/transformers/master/en/model_doc/dpr.html#transformers.DPRContextEncoderTokenizer) is identical to [BertTokenizer](/docs/transformers/master/en/model_doc/bert.html#transformers.BertTokenizer) and runs
 end-to-end tokenization: punctuation splitting and wordpiece.
 
-Refer to superclass [BertTokenizer](model_doc/bert.html#transformers.BertTokenizer) for usage examples and documentation concerning
+Refer to superclass [BertTokenizer](/docs/transformers/master/en/model_doc/bert.html#transformers.BertTokenizer) for usage examples and documentation concerning
 parameters.
 
 
-## DPRQuestionEncoderTokenizer
+## [DPRQuestionEncoderTokenizer](#dprquestionencodertokenizer)
 
 <a id='transformers.DPRQuestionEncoderTokenizer'></a>
-> **class transformers.DPRQuestionEncoderTokenizer**(vocab_file, do_lower_case = True, do_basic_tokenize = True, never_split = None, unk_token = [UNK], sep_token = [SEP], pad_token = [PAD], cls_token = [CLS], mask_token = [MASK], tokenize_chinese_chars = True, strip_accents = None, **kwargs)
+> **class transformers.DPRQuestionEncoderTokenizer**(vocab_file, do_lower_case = True, do_basic_tokenize = True, never_split = None, unk_token = '[UNK]', sep_token = '[SEP]', pad_token = '[PAD]', cls_token = '[CLS]', mask_token = '[MASK]', tokenize_chinese_chars = True, strip_accents = None, **kwargs)
 
 
 Constructs a DPRQuestionEncoder tokenizer.
 
-[DPRQuestionEncoderTokenizer](model_doc/dpr.html#transformers.DPRQuestionEncoderTokenizer) is identical to [BertTokenizer](model_doc/bert.html#transformers.BertTokenizer) and runs
+[DPRQuestionEncoderTokenizer](/docs/transformers/master/en/model_doc/dpr.html#transformers.DPRQuestionEncoderTokenizer) is identical to [BertTokenizer](/docs/transformers/master/en/model_doc/bert.html#transformers.BertTokenizer) and runs
 end-to-end tokenization: punctuation splitting and wordpiece.
 
-Refer to superclass [BertTokenizer](model_doc/bert.html#transformers.BertTokenizer) for usage examples and documentation concerning
+Refer to superclass [BertTokenizer](/docs/transformers/master/en/model_doc/bert.html#transformers.BertTokenizer) for usage examples and documentation concerning
 parameters.
 
 
-## DPRQuestionEncoderTokenizerFast
+## [DPRQuestionEncoderTokenizerFast](#dprquestionencodertokenizerfast)
 
 <a id='transformers.DPRQuestionEncoderTokenizerFast'></a>
-> **class transformers.DPRQuestionEncoderTokenizerFast**(vocab_file = None, tokenizer_file = None, do_lower_case = True, unk_token = [UNK], sep_token = [SEP], pad_token = [PAD], cls_token = [CLS], mask_token = [MASK], tokenize_chinese_chars = True, strip_accents = None, **kwargs)
+> **class transformers.DPRQuestionEncoderTokenizerFast**(vocab_file = None, tokenizer_file = None, do_lower_case = True, unk_token = '[UNK]', sep_token = '[SEP]', pad_token = '[PAD]', cls_token = '[CLS]', mask_token = '[MASK]', tokenize_chinese_chars = True, strip_accents = None, **kwargs)
 
 
 Constructs a "fast" DPRQuestionEncoder tokenizer (backed by HuggingFace's _tokenizers_ library).
 
-[DPRQuestionEncoderTokenizerFast](model_doc/dpr.html#transformers.DPRQuestionEncoderTokenizerFast) is identical to [BertTokenizerFast](model_doc/bert.html#transformers.BertTokenizerFast) and
+[DPRQuestionEncoderTokenizerFast](/docs/transformers/master/en/model_doc/dpr.html#transformers.DPRQuestionEncoderTokenizerFast) is identical to [BertTokenizerFast](/docs/transformers/master/en/model_doc/bert.html#transformers.BertTokenizerFast) and
 runs end-to-end tokenization: punctuation splitting and wordpiece.
 
-Refer to superclass [BertTokenizerFast](model_doc/bert.html#transformers.BertTokenizerFast) for usage examples and documentation concerning
+Refer to superclass [BertTokenizerFast](/docs/transformers/master/en/model_doc/bert.html#transformers.BertTokenizerFast) for usage examples and documentation concerning
 parameters.
 
 
 <a id='transformers.DPRQuestionEncoderTokenizer'></a>
-> **class DPRQuestionEncoderTokenizer**(vocab_file, do_lower_case = True, do_basic_tokenize = True, never_split = None, unk_token = [UNK], sep_token = [SEP], pad_token = [PAD], cls_token = [CLS], mask_token = [MASK], tokenize_chinese_chars = True, strip_accents = None, **kwargs)
+> **class DPRQuestionEncoderTokenizer**(vocab_file, do_lower_case = True, do_basic_tokenize = True, never_split = None, unk_token = '[UNK]', sep_token = '[SEP]', pad_token = '[PAD]', cls_token = '[CLS]', mask_token = '[MASK]', tokenize_chinese_chars = True, strip_accents = None, **kwargs)
 
 
 Constructs a DPRQuestionEncoder tokenizer.
 
-[DPRQuestionEncoderTokenizer](model_doc/dpr.html#transformers.DPRQuestionEncoderTokenizer) is identical to [BertTokenizer](model_doc/bert.html#transformers.BertTokenizer) and runs
+[DPRQuestionEncoderTokenizer](/docs/transformers/master/en/model_doc/dpr.html#transformers.DPRQuestionEncoderTokenizer) is identical to [BertTokenizer](/docs/transformers/master/en/model_doc/bert.html#transformers.BertTokenizer) and runs
 end-to-end tokenization: punctuation splitting and wordpiece.
 
-Refer to superclass [BertTokenizer](model_doc/bert.html#transformers.BertTokenizer) for usage examples and documentation concerning
+Refer to superclass [BertTokenizer](/docs/transformers/master/en/model_doc/bert.html#transformers.BertTokenizer) for usage examples and documentation concerning
 parameters.
 
 
-## DPRReaderTokenizer
+## [DPRReaderTokenizer](#dprreadertokenizer)
 
 <a id='transformers.DPRReaderTokenizer'></a>
-> **class transformers.DPRReaderTokenizer**(vocab_file, do_lower_case = True, do_basic_tokenize = True, never_split = None, unk_token = [UNK], sep_token = [SEP], pad_token = [PAD], cls_token = [CLS], mask_token = [MASK], tokenize_chinese_chars = True, strip_accents = None, **kwargs)
+> **class transformers.DPRReaderTokenizer**(vocab_file, do_lower_case = True, do_basic_tokenize = True, never_split = None, unk_token = '[UNK]', sep_token = '[SEP]', pad_token = '[PAD]', cls_token = '[CLS]', mask_token = '[MASK]', tokenize_chinese_chars = True, strip_accents = None, **kwargs)
 
 
 Construct a DPRReader tokenizer.
 
-[DPRReaderTokenizer](model_doc/dpr.html#transformers.DPRReaderTokenizer) is almost identical to [BertTokenizer](model_doc/bert.html#transformers.BertTokenizer) and runs
+[DPRReaderTokenizer](/docs/transformers/master/en/model_doc/dpr.html#transformers.DPRReaderTokenizer) is almost identical to [BertTokenizer](/docs/transformers/master/en/model_doc/bert.html#transformers.BertTokenizer) and runs
 end-to-end tokenization: punctuation splitting and wordpiece. The difference is that is has three inputs strings:
-question, titles and texts that are combined to be fed to the [DPRReader](model_doc/dpr.html#transformers.DPRReader) model.
+question, titles and texts that are combined to be fed to the [DPRReader](/docs/transformers/master/en/model_doc/dpr.html#transformers.DPRReader) model.
 
-Refer to superclass [BertTokenizer](model_doc/bert.html#transformers.BertTokenizer) for usage examples and documentation concerning
+Refer to superclass [BertTokenizer](/docs/transformers/master/en/model_doc/bert.html#transformers.BertTokenizer) for usage examples and documentation concerning
 parameters.
 
 Return a dictionary with the token ids of the input strings and other information to give to
@@ -200,7 +233,7 @@ sequence of IDs (integers), using the tokenizer and vocabulary. The resulting `i
 `(n_passages, sequence_length)` with the format:
 
 ```
-[CLS] <question token ids> [SEP] <titles ids> [SEP] <texts ids>
+[CLS] &amp;lt;question token ids> [SEP] &amp;lt;titles ids> [SEP] &amp;lt;texts ids>
 ```
 
 > Parameters
@@ -213,7 +246,7 @@ sequence of IDs (integers), using the tokenizer and vocabulary. The resulting `i
   The passages titles to be encoded. This can be a string or a list of strings if there are several passages.
 - **texts** (`str` or `List[str]`) --
   The passages texts to be encoded. This can be a string or a list of strings if there are several passages.
-- **padding** (`bool`, `str` or [PaddingStrategy](internal/file_utils.html#transformers.file_utils.PaddingStrategy), _optional_, defaults to `False`) --
+- **padding** (`bool`, `str` or [PaddingStrategy](/docs/transformers/master/en/internal/file_utils.html#transformers.file_utils.PaddingStrategy), _optional_, defaults to `False`) --
   Activates and controls padding. Accepts the following values:
 
   - `True` or `'longest'`: Pad to the longest sequence in the batch (or no padding if only a single
@@ -222,7 +255,7 @@ sequence of IDs (integers), using the tokenizer and vocabulary. The resulting `i
     maximum acceptable input length for the model if that argument is not provided.
   - `False` or `'do_not_pad'` (default): No padding (i.e., can output a batch with sequences of
     different lengths).
-- **truncation** (`bool`, `str` or [TruncationStrategy](internal/tokenization_utils.html#transformers.tokenization_utils_base.TruncationStrategy), _optional_, defaults to `False`) --
+- **truncation** (`bool`, `str` or [TruncationStrategy](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.tokenization_utils_base.TruncationStrategy), _optional_, defaults to `False`) --
   Activates and controls truncation. Accepts the following values:
 
   - `True` or `'longest_first'`: Truncate to a maximum length specified with the argument
@@ -243,7 +276,7 @@ sequence of IDs (integers), using the tokenizer and vocabulary. The resulting `i
   If left unset or set to `None`, this will use the predefined model maximum length if a maximum
   length is required by one of the truncation/padding parameters. If the model has no specific maximum
   input length (like XLNet) truncation/padding to a maximum length will be deactivated.
-- **return_tensors** (`str` or [TensorType](internal/file_utils.html#transformers.TensorType), _optional_) --
+- **return_tensors** (`str` or [TensorType](/docs/transformers/master/en/internal/file_utils.html#transformers.TensorType), _optional_) --
   If set, will return tensors instead of list of python integers. Acceptable values are:
 
   - `'tf'`: Return TensorFlow `tf.constant` objects.
@@ -267,19 +300,19 @@ A dictionary with the following keys:
 `Dict[str, List[List[int]]]`
 
 
-## DPRReaderTokenizerFast
+## [DPRReaderTokenizerFast](#dprreadertokenizerfast)
 
 <a id='transformers.DPRReaderTokenizerFast'></a>
-> **class transformers.DPRReaderTokenizerFast**(vocab_file = None, tokenizer_file = None, do_lower_case = True, unk_token = [UNK], sep_token = [SEP], pad_token = [PAD], cls_token = [CLS], mask_token = [MASK], tokenize_chinese_chars = True, strip_accents = None, **kwargs)
+> **class transformers.DPRReaderTokenizerFast**(vocab_file = None, tokenizer_file = None, do_lower_case = True, unk_token = '[UNK]', sep_token = '[SEP]', pad_token = '[PAD]', cls_token = '[CLS]', mask_token = '[MASK]', tokenize_chinese_chars = True, strip_accents = None, **kwargs)
 
 
 Constructs a "fast" DPRReader tokenizer (backed by HuggingFace's _tokenizers_ library).
 
-[DPRReaderTokenizerFast](model_doc/dpr.html#transformers.DPRReaderTokenizerFast) is almost identical to [BertTokenizerFast](model_doc/bert.html#transformers.BertTokenizerFast) and
+[DPRReaderTokenizerFast](/docs/transformers/master/en/model_doc/dpr.html#transformers.DPRReaderTokenizerFast) is almost identical to [BertTokenizerFast](/docs/transformers/master/en/model_doc/bert.html#transformers.BertTokenizerFast) and
 runs end-to-end tokenization: punctuation splitting and wordpiece. The difference is that is has three inputs
-strings: question, titles and texts that are combined to be fed to the [DPRReader](model_doc/dpr.html#transformers.DPRReader) model.
+strings: question, titles and texts that are combined to be fed to the [DPRReader](/docs/transformers/master/en/model_doc/dpr.html#transformers.DPRReader) model.
 
-Refer to superclass [BertTokenizerFast](model_doc/bert.html#transformers.BertTokenizerFast) for usage examples and documentation concerning
+Refer to superclass [BertTokenizerFast](/docs/transformers/master/en/model_doc/bert.html#transformers.BertTokenizerFast) for usage examples and documentation concerning
 parameters.
 
 
@@ -288,7 +321,7 @@ Return a dictionary with the token ids of the input strings and other informatio
 sequence of IDs (integers), using the tokenizer and vocabulary. The resulting `input_ids` is a matrix of size
 `(n_passages, sequence_length)` with the format:
 
-[CLS] <question token ids> [SEP] <titles ids> [SEP] <texts ids>
+[CLS] &amp;lt;question token ids> [SEP] &amp;lt;titles ids> [SEP] &amp;lt;texts ids>
 
 > Parameters
 
@@ -300,7 +333,7 @@ sequence of IDs (integers), using the tokenizer and vocabulary. The resulting `i
   The passages titles to be encoded. This can be a string or a list of strings if there are several passages.
 - **texts** (`str` or `List[str]`) --
   The passages texts to be encoded. This can be a string or a list of strings if there are several passages.
-- **padding** (`bool`, `str` or [PaddingStrategy](internal/file_utils.html#transformers.file_utils.PaddingStrategy), _optional_, defaults to `False`) --
+- **padding** (`bool`, `str` or [PaddingStrategy](/docs/transformers/master/en/internal/file_utils.html#transformers.file_utils.PaddingStrategy), _optional_, defaults to `False`) --
   Activates and controls padding. Accepts the following values:
 
   - `True` or `'longest'`: Pad to the longest sequence in the batch (or no padding if only a single
@@ -309,7 +342,7 @@ sequence of IDs (integers), using the tokenizer and vocabulary. The resulting `i
     maximum acceptable input length for the model if that argument is not provided.
   - `False` or `'do_not_pad'` (default): No padding (i.e., can output a batch with sequences of
     different lengths).
-- **truncation** (`bool`, `str` or [TruncationStrategy](internal/tokenization_utils.html#transformers.tokenization_utils_base.TruncationStrategy), _optional_, defaults to `False`) --
+- **truncation** (`bool`, `str` or [TruncationStrategy](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.tokenization_utils_base.TruncationStrategy), _optional_, defaults to `False`) --
   Activates and controls truncation. Accepts the following values:
 
   - `True` or `'longest_first'`: Truncate to a maximum length specified with the argument
@@ -330,7 +363,7 @@ sequence of IDs (integers), using the tokenizer and vocabulary. The resulting `i
   If left unset or set to `None`, this will use the predefined model maximum length if a maximum
   length is required by one of the truncation/padding parameters. If the model has no specific maximum
   input length (like XLNet) truncation/padding to a maximum length will be deactivated.
-- **return_tensors** (`str` or [TensorType](internal/file_utils.html#transformers.TensorType), _optional_) --
+- **return_tensors** (`str` or [TensorType](/docs/transformers/master/en/internal/file_utils.html#transformers.TensorType), _optional_) --
   If set, will return tensors instead of list of python integers. Acceptable values are:
 
   - `'tf'`: Return TensorFlow `tf.constant` objects.
@@ -355,16 +388,16 @@ A dictionary with the following keys:
 
 
 <a id='transformers.DPRReaderTokenizer'></a>
-> **class DPRReaderTokenizer**(vocab_file, do_lower_case = True, do_basic_tokenize = True, never_split = None, unk_token = [UNK], sep_token = [SEP], pad_token = [PAD], cls_token = [CLS], mask_token = [MASK], tokenize_chinese_chars = True, strip_accents = None, **kwargs)
+> **class DPRReaderTokenizer**(vocab_file, do_lower_case = True, do_basic_tokenize = True, never_split = None, unk_token = '[UNK]', sep_token = '[SEP]', pad_token = '[PAD]', cls_token = '[CLS]', mask_token = '[MASK]', tokenize_chinese_chars = True, strip_accents = None, **kwargs)
 
 
 Construct a DPRReader tokenizer.
 
-[DPRReaderTokenizer](model_doc/dpr.html#transformers.DPRReaderTokenizer) is almost identical to [BertTokenizer](model_doc/bert.html#transformers.BertTokenizer) and runs
+[DPRReaderTokenizer](/docs/transformers/master/en/model_doc/dpr.html#transformers.DPRReaderTokenizer) is almost identical to [BertTokenizer](/docs/transformers/master/en/model_doc/bert.html#transformers.BertTokenizer) and runs
 end-to-end tokenization: punctuation splitting and wordpiece. The difference is that is has three inputs strings:
-question, titles and texts that are combined to be fed to the [DPRReader](model_doc/dpr.html#transformers.DPRReader) model.
+question, titles and texts that are combined to be fed to the [DPRReader](/docs/transformers/master/en/model_doc/dpr.html#transformers.DPRReader) model.
 
-Refer to superclass [BertTokenizer](model_doc/bert.html#transformers.BertTokenizer) for usage examples and documentation concerning
+Refer to superclass [BertTokenizer](/docs/transformers/master/en/model_doc/bert.html#transformers.BertTokenizer) for usage examples and documentation concerning
 parameters.
 
 Return a dictionary with the token ids of the input strings and other information to give to
@@ -373,7 +406,7 @@ sequence of IDs (integers), using the tokenizer and vocabulary. The resulting `i
 `(n_passages, sequence_length)` with the format:
 
 ```
-[CLS] <question token ids> [SEP] <titles ids> [SEP] <texts ids>
+[CLS] &amp;lt;question token ids> [SEP] &amp;lt;titles ids> [SEP] &amp;lt;texts ids>
 ```
 
 > Parameters
@@ -386,7 +419,7 @@ sequence of IDs (integers), using the tokenizer and vocabulary. The resulting `i
   The passages titles to be encoded. This can be a string or a list of strings if there are several passages.
 - **texts** (`str` or `List[str]`) --
   The passages texts to be encoded. This can be a string or a list of strings if there are several passages.
-- **padding** (`bool`, `str` or [PaddingStrategy](internal/file_utils.html#transformers.file_utils.PaddingStrategy), _optional_, defaults to `False`) --
+- **padding** (`bool`, `str` or [PaddingStrategy](/docs/transformers/master/en/internal/file_utils.html#transformers.file_utils.PaddingStrategy), _optional_, defaults to `False`) --
   Activates and controls padding. Accepts the following values:
 
   - `True` or `'longest'`: Pad to the longest sequence in the batch (or no padding if only a single
@@ -395,7 +428,7 @@ sequence of IDs (integers), using the tokenizer and vocabulary. The resulting `i
     maximum acceptable input length for the model if that argument is not provided.
   - `False` or `'do_not_pad'` (default): No padding (i.e., can output a batch with sequences of
     different lengths).
-- **truncation** (`bool`, `str` or [TruncationStrategy](internal/tokenization_utils.html#transformers.tokenization_utils_base.TruncationStrategy), _optional_, defaults to `False`) --
+- **truncation** (`bool`, `str` or [TruncationStrategy](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.tokenization_utils_base.TruncationStrategy), _optional_, defaults to `False`) --
   Activates and controls truncation. Accepts the following values:
 
   - `True` or `'longest_first'`: Truncate to a maximum length specified with the argument
@@ -416,7 +449,7 @@ sequence of IDs (integers), using the tokenizer and vocabulary. The resulting `i
   If left unset or set to `None`, this will use the predefined model maximum length if a maximum
   length is required by one of the truncation/padding parameters. If the model has no specific maximum
   input length (like XLNet) truncation/padding to a maximum length will be deactivated.
-- **return_tensors** (`str` or [TensorType](internal/file_utils.html#transformers.TensorType), _optional_) --
+- **return_tensors** (`str` or [TensorType](/docs/transformers/master/en/internal/file_utils.html#transformers.TensorType), _optional_) --
   If set, will return tensors instead of list of python integers. Acceptable values are:
 
   - `'tf'`: Return TensorFlow `tf.constant` objects.
@@ -440,13 +473,13 @@ A dictionary with the following keys:
 `Dict[str, List[List[int]]]`
 
 
-## DPR specific outputs
+## [DPR specific outputs](#dpr-specific-outputs)
 
 <a id='transformers.models.dpr.modeling_dpr.DPRContextEncoderOutput'></a>
 > **class transformers.models.dpr.modeling\_dpr.DPRContextEncoderOutput**(pooler_output: FloatTensor, hidden_states: typing.Optional[typing.Tuple[torch.FloatTensor]] = None, attentions: typing.Optional[typing.Tuple[torch.FloatTensor]] = None)
 
 
-Class for outputs of [DPRQuestionEncoder](model_doc/dpr.html#transformers.DPRQuestionEncoder).
+Class for outputs of [DPRQuestionEncoder](/docs/transformers/master/en/model_doc/dpr.html#transformers.DPRQuestionEncoder).
 
 > Parameters
 
@@ -470,7 +503,7 @@ This output is to be used to embed contexts for nearest neighbors queries with q
 > **class transformers.models.dpr.modeling\_dpr.DPRQuestionEncoderOutput**(pooler_output: FloatTensor, hidden_states: typing.Optional[typing.Tuple[torch.FloatTensor]] = None, attentions: typing.Optional[typing.Tuple[torch.FloatTensor]] = None)
 
 
-Class for outputs of [DPRQuestionEncoder](model_doc/dpr.html#transformers.DPRQuestionEncoder).
+Class for outputs of [DPRQuestionEncoder](/docs/transformers/master/en/model_doc/dpr.html#transformers.DPRQuestionEncoder).
 
 > Parameters
 
@@ -494,7 +527,7 @@ This output is to be used to embed questions for nearest neighbors queries with 
 > **class transformers.DPRReaderOutput**(start_logits: FloatTensor, end_logits: FloatTensor = None, relevance_logits: FloatTensor = None, hidden_states: typing.Optional[typing.Tuple[torch.FloatTensor]] = None, attentions: typing.Optional[typing.Tuple[torch.FloatTensor]] = None)
 
 
-Class for outputs of [DPRQuestionEncoder](model_doc/dpr.html#transformers.DPRQuestionEncoder).
+Class for outputs of [DPRQuestionEncoder](/docs/transformers/master/en/model_doc/dpr.html#transformers.DPRQuestionEncoder).
 
 > Parameters
 
@@ -517,14 +550,14 @@ question, compared to all the other passages.
   heads.
 
 
-## DPRContextEncoder
+## [DPRContextEncoder](#dprcontextencoder)
 
 <a id='transformers.DPRContextEncoder'></a>
 > **class transformers.DPRContextEncoder**(config: DPRConfig)
 
 The bare DPRContextEncoder transformer outputting pooler outputs as context representations.
 
-This model inherits from [PreTrainedModel](main_classes/model.html#transformers.PreTrainedModel). Check the superclass documentation for the generic
+This model inherits from [PreTrainedModel](/docs/transformers/master/en/main_classes/model.html#transformers.PreTrainedModel). Check the superclass documentation for the generic
 methods the library implements for all its model (such as downloading or saving, resizing the input embeddings,
 pruning heads etc.)
 
@@ -534,16 +567,16 @@ general usage and behavior.
 
 > Parameters
 
-- **config** ([DPRConfig](model_doc/dpr.html#transformers.DPRConfig)) -- Model configuration class with all the parameters of the model.
+- **config** ([DPRConfig](/docs/transformers/master/en/model_doc/dpr.html#transformers.DPRConfig)) -- Model configuration class with all the parameters of the model.
   Initializing with a config file does not load the weights associated with the model, only the
-  configuration. Check out the [from_pretrained()](main_classes/model.html#transformers.PreTrainedModel.from_pretrained) method to load the model
+  configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model.html#transformers.PreTrainedModel.from_pretrained) method to load the model
   weights.
 
 
 <a id='transformers.DPRContextEncoder.forward'></a>
 > **forward**(self, input_ids: typing.Optional[torch.Tensor] = None, attention_mask: typing.Optional[torch.Tensor] = None, token_type_ids: typing.Optional[torch.Tensor] = None, inputs_embeds: typing.Optional[torch.Tensor] = None, output_attentions = None, output_hidden_states = None, return_dict = None)
 
-The [DPRContextEncoder](model_doc/dpr.html#transformers.DPRContextEncoder) forward method, overrides the `__call__` special method.
+The [DPRContextEncoder](/docs/transformers/master/en/model_doc/dpr.html#transformers.DPRContextEncoder) forward method, overrides the `__call__` special method.
 
 <Tip>
 
@@ -577,7 +610,7 @@ DPR is a model with absolute position embeddings so it's usually advised to pad 
 rather than the left.
 
 Indices can be obtained using `DPRTokenizer`. See
-[transformers.PreTrainedTokenizer.encode()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
+[transformers.PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
 details.
 
 [What are input IDs?](../glossary.html#input-ids)
@@ -606,14 +639,14 @@ details.
   Whether or not to return the hidden states of all layers. See `hidden_states` under returned tensors for
   more detail.
 - **return_dict** (`bool`, _optional_) --
-  Whether or not to return a [ModelOutput](main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple.
+  Whether or not to return a [ModelOutput](/docs/transformers/master/en/main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple.
 
 
 > Returns
 
-A [DPRContextEncoderOutput](model_doc/dpr.html#transformers.models.dpr.modeling_dpr.DPRContextEncoderOutput) or a tuple of
+A [DPRContextEncoderOutput](/docs/transformers/master/en/model_doc/dpr.html#transformers.models.dpr.modeling_dpr.DPRContextEncoderOutput) or a tuple of
 `torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising
-various elements depending on the configuration ([DPRConfig](model_doc/dpr.html#transformers.DPRConfig)) and inputs.
+various elements depending on the configuration ([DPRConfig](/docs/transformers/master/en/model_doc/dpr.html#transformers.DPRConfig)) and inputs.
 
 - **pooler_output:** (:obj:`torch.FloatTensor` of shape `(batch_size, embeddings_size)`) -- The DPR encoder outputs the _pooler_output_ that corresponds to the context representation. Last layer
   hidden-state of the first token of the sequence (classification token) further processed by a Linear layer.
@@ -640,17 +673,17 @@ various elements depending on the configuration ([DPRConfig](model_doc/dpr.html#
 
 > Return type
 
-[DPRContextEncoderOutput](model_doc/dpr.html#transformers.models.dpr.modeling_dpr.DPRContextEncoderOutput) or `tuple(torch.FloatTensor)`
+[DPRContextEncoderOutput](/docs/transformers/master/en/model_doc/dpr.html#transformers.models.dpr.modeling_dpr.DPRContextEncoderOutput) or `tuple(torch.FloatTensor)`
 
 
-## DPRQuestionEncoder
+## [DPRQuestionEncoder](#dprquestionencoder)
 
 <a id='transformers.DPRQuestionEncoder'></a>
 > **class transformers.DPRQuestionEncoder**(config: DPRConfig)
 
 The bare DPRQuestionEncoder transformer outputting pooler outputs as question representations.
 
-This model inherits from [PreTrainedModel](main_classes/model.html#transformers.PreTrainedModel). Check the superclass documentation for the generic
+This model inherits from [PreTrainedModel](/docs/transformers/master/en/main_classes/model.html#transformers.PreTrainedModel). Check the superclass documentation for the generic
 methods the library implements for all its model (such as downloading or saving, resizing the input embeddings,
 pruning heads etc.)
 
@@ -660,16 +693,16 @@ general usage and behavior.
 
 > Parameters
 
-- **config** ([DPRConfig](model_doc/dpr.html#transformers.DPRConfig)) -- Model configuration class with all the parameters of the model.
+- **config** ([DPRConfig](/docs/transformers/master/en/model_doc/dpr.html#transformers.DPRConfig)) -- Model configuration class with all the parameters of the model.
   Initializing with a config file does not load the weights associated with the model, only the
-  configuration. Check out the [from_pretrained()](main_classes/model.html#transformers.PreTrainedModel.from_pretrained) method to load the model
+  configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model.html#transformers.PreTrainedModel.from_pretrained) method to load the model
   weights.
 
 
 <a id='transformers.DPRQuestionEncoder.forward'></a>
 > **forward**(self, input_ids: typing.Optional[torch.Tensor] = None, attention_mask: typing.Optional[torch.Tensor] = None, token_type_ids: typing.Optional[torch.Tensor] = None, inputs_embeds: typing.Optional[torch.Tensor] = None, output_attentions = None, output_hidden_states = None, return_dict = None)
 
-The [DPRQuestionEncoder](model_doc/dpr.html#transformers.DPRQuestionEncoder) forward method, overrides the `__call__` special method.
+The [DPRQuestionEncoder](/docs/transformers/master/en/model_doc/dpr.html#transformers.DPRQuestionEncoder) forward method, overrides the `__call__` special method.
 
 <Tip>
 
@@ -703,7 +736,7 @@ DPR is a model with absolute position embeddings so it's usually advised to pad 
 rather than the left.
 
 Indices can be obtained using `DPRTokenizer`. See
-[transformers.PreTrainedTokenizer.encode()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
+[transformers.PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
 details.
 
 [What are input IDs?](../glossary.html#input-ids)
@@ -732,14 +765,14 @@ details.
   Whether or not to return the hidden states of all layers. See `hidden_states` under returned tensors for
   more detail.
 - **return_dict** (`bool`, _optional_) --
-  Whether or not to return a [ModelOutput](main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple.
+  Whether or not to return a [ModelOutput](/docs/transformers/master/en/main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple.
 
 
 > Returns
 
-A [DPRQuestionEncoderOutput](model_doc/dpr.html#transformers.models.dpr.modeling_dpr.DPRQuestionEncoderOutput) or a tuple of
+A [DPRQuestionEncoderOutput](/docs/transformers/master/en/model_doc/dpr.html#transformers.models.dpr.modeling_dpr.DPRQuestionEncoderOutput) or a tuple of
 `torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising
-various elements depending on the configuration ([DPRConfig](model_doc/dpr.html#transformers.DPRConfig)) and inputs.
+various elements depending on the configuration ([DPRConfig](/docs/transformers/master/en/model_doc/dpr.html#transformers.DPRConfig)) and inputs.
 
 - **pooler_output:** (:obj:`torch.FloatTensor` of shape `(batch_size, embeddings_size)`) -- The DPR encoder outputs the _pooler_output_ that corresponds to the question representation. Last layer
   hidden-state of the first token of the sequence (classification token) further processed by a Linear layer.
@@ -766,17 +799,17 @@ various elements depending on the configuration ([DPRConfig](model_doc/dpr.html#
 
 > Return type
 
-[DPRQuestionEncoderOutput](model_doc/dpr.html#transformers.models.dpr.modeling_dpr.DPRQuestionEncoderOutput) or `tuple(torch.FloatTensor)`
+[DPRQuestionEncoderOutput](/docs/transformers/master/en/model_doc/dpr.html#transformers.models.dpr.modeling_dpr.DPRQuestionEncoderOutput) or `tuple(torch.FloatTensor)`
 
 
-## DPRReader
+## [DPRReader](#dprreader)
 
 <a id='transformers.DPRReader'></a>
 > **class transformers.DPRReader**(config: DPRConfig)
 
 The bare DPRReader transformer outputting span predictions.
 
-This model inherits from [PreTrainedModel](main_classes/model.html#transformers.PreTrainedModel). Check the superclass documentation for the generic
+This model inherits from [PreTrainedModel](/docs/transformers/master/en/main_classes/model.html#transformers.PreTrainedModel). Check the superclass documentation for the generic
 methods the library implements for all its model (such as downloading or saving, resizing the input embeddings,
 pruning heads etc.)
 
@@ -786,16 +819,16 @@ general usage and behavior.
 
 > Parameters
 
-- **config** ([DPRConfig](model_doc/dpr.html#transformers.DPRConfig)) -- Model configuration class with all the parameters of the model.
+- **config** ([DPRConfig](/docs/transformers/master/en/model_doc/dpr.html#transformers.DPRConfig)) -- Model configuration class with all the parameters of the model.
   Initializing with a config file does not load the weights associated with the model, only the
-  configuration. Check out the [from_pretrained()](main_classes/model.html#transformers.PreTrainedModel.from_pretrained) method to load the model
+  configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model.html#transformers.PreTrainedModel.from_pretrained) method to load the model
   weights.
 
 
 <a id='transformers.DPRReader.forward'></a>
 > **forward**(self, input_ids: typing.Optional[torch.Tensor] = None, attention_mask: typing.Optional[torch.Tensor] = None, inputs_embeds: typing.Optional[torch.Tensor] = None, output_attentions: bool = None, output_hidden_states: bool = None, return_dict = None)
 
-The [DPRReader](model_doc/dpr.html#transformers.DPRReader) forward method, overrides the `__call__` special method.
+The [DPRReader](/docs/transformers/master/en/model_doc/dpr.html#transformers.DPRReader) forward method, overrides the `__call__` special method.
 
 <Tip>
 
@@ -812,12 +845,12 @@ Indices of input sequence tokens in the vocabulary. It has to be a sequence trip
 and 2) the passages titles and 3) the passages texts To match pretraining, DPR `input_ids` sequence
 should be formatted with [CLS] and [SEP] with the format:
 
-`[CLS] <question token ids> [SEP] <titles ids> [SEP] <texts ids>`
+`[CLS] &amp;lt;question token ids> [SEP] &amp;lt;titles ids> [SEP] &amp;lt;texts ids>`
 
 DPR is a model with absolute position embeddings so it's usually advised to pad the inputs on the right
 rather than the left.
 
-Indices can be obtained using [DPRReaderTokenizer](model_doc/dpr.html#transformers.DPRReaderTokenizer). See this class documentation for
+Indices can be obtained using [DPRReaderTokenizer](/docs/transformers/master/en/model_doc/dpr.html#transformers.DPRReaderTokenizer). See this class documentation for
 more details.
 
 [What are input IDs?](../glossary.html#input-ids)
@@ -839,14 +872,14 @@ more details.
   Whether or not to return the hidden states of all layers. See `hidden_states` under returned tensors for
   more detail.
 - **return_dict** (`bool`, _optional_) --
-  Whether or not to return a [ModelOutput](main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple.
+  Whether or not to return a [ModelOutput](/docs/transformers/master/en/main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple.
 
 
 > Returns
 
-A [DPRReaderOutput](model_doc/dpr.html#transformers.DPRReaderOutput) or a tuple of
+A [DPRReaderOutput](/docs/transformers/master/en/model_doc/dpr.html#transformers.DPRReaderOutput) or a tuple of
 `torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising
-various elements depending on the configuration ([DPRConfig](model_doc/dpr.html#transformers.DPRConfig)) and inputs.
+various elements depending on the configuration ([DPRConfig](/docs/transformers/master/en/model_doc/dpr.html#transformers.DPRConfig)) and inputs.
 
 - **start_logits:** (:obj:`torch.FloatTensor` of shape `(n_passages, sequence_length)`) -- Logits of the start index of the span for each passage.
 - **end_logits:** (:obj:`torch.FloatTensor` of shape `(n_passages, sequence_length)`) -- Logits of the end index of the span for each passage.
@@ -882,17 +915,17 @@ various elements depending on the configuration ([DPRConfig](model_doc/dpr.html#
 
 > Return type
 
-[DPRReaderOutput](model_doc/dpr.html#transformers.DPRReaderOutput) or `tuple(torch.FloatTensor)`
+[DPRReaderOutput](/docs/transformers/master/en/model_doc/dpr.html#transformers.DPRReaderOutput) or `tuple(torch.FloatTensor)`
 
 
-## TFDPRContextEncoder
+## [TFDPRContextEncoder](#tfdprcontextencoder)
 
 <a id='transformers.TFDPRContextEncoder'></a>
 > **class transformers.TFDPRContextEncoder**(*args, **kwargs)
 
 The bare DPRContextEncoder transformer outputting pooler outputs as context representations.
 
-This model inherits from [TFPreTrainedModel](main_classes/model.html#transformers.TFPreTrainedModel). Check the superclass documentation for the
+This model inherits from [TFPreTrainedModel](/docs/transformers/master/en/main_classes/model.html#transformers.TFPreTrainedModel). Check the superclass documentation for the
 generic methods the library implements for all its model (such as downloading or saving, resizing the input
 embeddings, pruning heads etc.)
 
@@ -917,22 +950,22 @@ the first positional argument :
 - a list of varying length with one or several input Tensors IN THE ORDER given in the docstring:
   `model([input_ids, attention_mask])` or `model([input_ids, attention_mask, token_type_ids])`
 - a dictionary with one or several input Tensors associated to the input names given in the docstring:
-  `model({"input_ids": input_ids, "token_type_ids": token_type_ids})`
+  `model(&amp;lcub;"input_ids": input_ids, "token_type_ids": token_type_ids})`
 
 </Tip>
 
 > Parameters
 
-- **config** ([DPRConfig](model_doc/dpr.html#transformers.DPRConfig)) -- Model configuration class with all the parameters of the model.
+- **config** ([DPRConfig](/docs/transformers/master/en/model_doc/dpr.html#transformers.DPRConfig)) -- Model configuration class with all the parameters of the model.
   Initializing with a config file does not load the weights associated with the model, only the
-  configuration. Check out the [from_pretrained()](main_classes/model.html#transformers.TFPreTrainedModel.from_pretrained) method to load the
+  configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model.html#transformers.TFPreTrainedModel.from_pretrained) method to load the
   model weights.
 
 
 <a id='transformers.TFDPRContextEncoder.call'></a>
 > **call**(self, input_ids = None, attention_mask: typing.Optional[tensorflow.python.framework.ops.Tensor] = None, token_type_ids: typing.Optional[tensorflow.python.framework.ops.Tensor] = None, inputs_embeds: typing.Optional[tensorflow.python.framework.ops.Tensor] = None, output_attentions = None, output_hidden_states = None, return_dict = None, training: bool = False, **kwargs)
 
-The [TFDPRContextEncoder](model_doc/dpr.html#transformers.TFDPRContextEncoder) forward method, overrides the `__call__` special method.
+The [TFDPRContextEncoder](/docs/transformers/master/en/model_doc/dpr.html#transformers.TFDPRContextEncoder) forward method, overrides the `__call__` special method.
 
 <Tip>
 
@@ -966,7 +999,7 @@ DPR is a model with absolute position embeddings so it's usually advised to pad 
 rather than the left.
 
 Indices can be obtained using `DPRTokenizer`. See
-[transformers.PreTrainedTokenizer.encode()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
+[transformers.PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
 details.
 
 [What are input IDs?](../glossary.html#input-ids)
@@ -997,7 +1030,7 @@ details.
   more detail. This argument can be used only in eager mode, in graph mode the value in the config will be
   used instead.
 - **return_dict** (`bool`, _optional_) --
-  Whether or not to return a [ModelOutput](main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple. This
+  Whether or not to return a [ModelOutput](/docs/transformers/master/en/main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple. This
   argument can be used in eager mode, in graph mode the value will always be set to True.
 - **training** (`bool`, _optional_, defaults to `False`) --
   Whether or not to use the model in training mode (some modules like dropout modules have different
@@ -1008,7 +1041,7 @@ details.
 
 A `TFDPRContextEncoderOutput` or a tuple of
 `tf.Tensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising various
-elements depending on the configuration ([DPRConfig](model_doc/dpr.html#transformers.DPRConfig)) and inputs.
+elements depending on the configuration ([DPRConfig](/docs/transformers/master/en/model_doc/dpr.html#transformers.DPRConfig)) and inputs.
 
 - **pooler_output:** (:obj:`tf.Tensor` of shape `(batch_size, embeddings_size)`) -- The DPR encoder outputs the _pooler_output_ that corresponds to the context representation. Last layer
   hidden-state of the first token of the sequence (classification token) further processed by a Linear layer.
@@ -1038,14 +1071,14 @@ elements depending on the configuration ([DPRConfig](model_doc/dpr.html#transfor
 `TFDPRContextEncoderOutput` or `tuple(tf.Tensor)`
 
 
-## TFDPRQuestionEncoder
+## [TFDPRQuestionEncoder](#tfdprquestionencoder)
 
 <a id='transformers.TFDPRQuestionEncoder'></a>
 > **class transformers.TFDPRQuestionEncoder**(*args, **kwargs)
 
 The bare DPRQuestionEncoder transformer outputting pooler outputs as question representations.
 
-This model inherits from [TFPreTrainedModel](main_classes/model.html#transformers.TFPreTrainedModel). Check the superclass documentation for the
+This model inherits from [TFPreTrainedModel](/docs/transformers/master/en/main_classes/model.html#transformers.TFPreTrainedModel). Check the superclass documentation for the
 generic methods the library implements for all its model (such as downloading or saving, resizing the input
 embeddings, pruning heads etc.)
 
@@ -1070,22 +1103,22 @@ the first positional argument :
 - a list of varying length with one or several input Tensors IN THE ORDER given in the docstring:
   `model([input_ids, attention_mask])` or `model([input_ids, attention_mask, token_type_ids])`
 - a dictionary with one or several input Tensors associated to the input names given in the docstring:
-  `model({"input_ids": input_ids, "token_type_ids": token_type_ids})`
+  `model(&amp;lcub;"input_ids": input_ids, "token_type_ids": token_type_ids})`
 
 </Tip>
 
 > Parameters
 
-- **config** ([DPRConfig](model_doc/dpr.html#transformers.DPRConfig)) -- Model configuration class with all the parameters of the model.
+- **config** ([DPRConfig](/docs/transformers/master/en/model_doc/dpr.html#transformers.DPRConfig)) -- Model configuration class with all the parameters of the model.
   Initializing with a config file does not load the weights associated with the model, only the
-  configuration. Check out the [from_pretrained()](main_classes/model.html#transformers.TFPreTrainedModel.from_pretrained) method to load the
+  configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model.html#transformers.TFPreTrainedModel.from_pretrained) method to load the
   model weights.
 
 
 <a id='transformers.TFDPRQuestionEncoder.call'></a>
 > **call**(self, input_ids = None, attention_mask: typing.Optional[tensorflow.python.framework.ops.Tensor] = None, token_type_ids: typing.Optional[tensorflow.python.framework.ops.Tensor] = None, inputs_embeds: typing.Optional[tensorflow.python.framework.ops.Tensor] = None, output_attentions = None, output_hidden_states = None, return_dict = None, training: bool = False, **kwargs)
 
-The [TFDPRQuestionEncoder](model_doc/dpr.html#transformers.TFDPRQuestionEncoder) forward method, overrides the `__call__` special method.
+The [TFDPRQuestionEncoder](/docs/transformers/master/en/model_doc/dpr.html#transformers.TFDPRQuestionEncoder) forward method, overrides the `__call__` special method.
 
 <Tip>
 
@@ -1119,7 +1152,7 @@ DPR is a model with absolute position embeddings so it's usually advised to pad 
 rather than the left.
 
 Indices can be obtained using `DPRTokenizer`. See
-[transformers.PreTrainedTokenizer.encode()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
+[transformers.PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
 details.
 
 [What are input IDs?](../glossary.html#input-ids)
@@ -1150,7 +1183,7 @@ details.
   more detail. This argument can be used only in eager mode, in graph mode the value in the config will be
   used instead.
 - **return_dict** (`bool`, _optional_) --
-  Whether or not to return a [ModelOutput](main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple. This
+  Whether or not to return a [ModelOutput](/docs/transformers/master/en/main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple. This
   argument can be used in eager mode, in graph mode the value will always be set to True.
 - **training** (`bool`, _optional_, defaults to `False`) --
   Whether or not to use the model in training mode (some modules like dropout modules have different
@@ -1161,7 +1194,7 @@ details.
 
 A `TFDPRQuestionEncoderOutput` or a tuple of
 `tf.Tensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising various
-elements depending on the configuration ([DPRConfig](model_doc/dpr.html#transformers.DPRConfig)) and inputs.
+elements depending on the configuration ([DPRConfig](/docs/transformers/master/en/model_doc/dpr.html#transformers.DPRConfig)) and inputs.
 
 - **pooler_output:** (:obj:`tf.Tensor` of shape `(batch_size, embeddings_size)`) -- The DPR encoder outputs the _pooler_output_ that corresponds to the question representation. Last layer
   hidden-state of the first token of the sequence (classification token) further processed by a Linear layer.
@@ -1191,14 +1224,14 @@ elements depending on the configuration ([DPRConfig](model_doc/dpr.html#transfor
 `TFDPRQuestionEncoderOutput` or `tuple(tf.Tensor)`
 
 
-## TFDPRReader
+## [TFDPRReader](#tfdprreader)
 
 <a id='transformers.TFDPRReader'></a>
 > **class transformers.TFDPRReader**(*args, **kwargs)
 
 The bare DPRReader transformer outputting span predictions.
 
-This model inherits from [TFPreTrainedModel](main_classes/model.html#transformers.TFPreTrainedModel). Check the superclass documentation for the
+This model inherits from [TFPreTrainedModel](/docs/transformers/master/en/main_classes/model.html#transformers.TFPreTrainedModel). Check the superclass documentation for the
 generic methods the library implements for all its model (such as downloading or saving, resizing the input
 embeddings, pruning heads etc.)
 
@@ -1223,22 +1256,22 @@ the first positional argument :
 - a list of varying length with one or several input Tensors IN THE ORDER given in the docstring:
   `model([input_ids, attention_mask])` or `model([input_ids, attention_mask, token_type_ids])`
 - a dictionary with one or several input Tensors associated to the input names given in the docstring:
-  `model({"input_ids": input_ids, "token_type_ids": token_type_ids})`
+  `model(&amp;lcub;"input_ids": input_ids, "token_type_ids": token_type_ids})`
 
 </Tip>
 
 > Parameters
 
-- **config** ([DPRConfig](model_doc/dpr.html#transformers.DPRConfig)) -- Model configuration class with all the parameters of the model.
+- **config** ([DPRConfig](/docs/transformers/master/en/model_doc/dpr.html#transformers.DPRConfig)) -- Model configuration class with all the parameters of the model.
   Initializing with a config file does not load the weights associated with the model, only the
-  configuration. Check out the [from_pretrained()](main_classes/model.html#transformers.TFPreTrainedModel.from_pretrained) method to load the
+  configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model.html#transformers.TFPreTrainedModel.from_pretrained) method to load the
   model weights.
 
 
 <a id='transformers.TFDPRReader.call'></a>
 > **call**(self, input_ids = None, attention_mask: typing.Optional[tensorflow.python.framework.ops.Tensor] = None, inputs_embeds: typing.Optional[tensorflow.python.framework.ops.Tensor] = None, output_attentions: bool = None, output_hidden_states: bool = None, return_dict = None, training: bool = False, **kwargs)
 
-The [TFDPRReader](model_doc/dpr.html#transformers.TFDPRReader) forward method, overrides the `__call__` special method.
+The [TFDPRReader](/docs/transformers/master/en/model_doc/dpr.html#transformers.TFDPRReader) forward method, overrides the `__call__` special method.
 
 <Tip>
 
@@ -1255,12 +1288,12 @@ Indices of input sequence tokens in the vocabulary. It has to be a sequence trip
 and 2) the passages titles and 3) the passages texts To match pretraining, DPR `input_ids` sequence
 should be formatted with [CLS] and [SEP] with the format:
 
-`[CLS] <question token ids> [SEP] <titles ids> [SEP] <texts ids>`
+`[CLS] &amp;lt;question token ids> [SEP] &amp;lt;titles ids> [SEP] &amp;lt;texts ids>`
 
 DPR is a model with absolute position embeddings so it's usually advised to pad the inputs on the right
 rather than the left.
 
-Indices can be obtained using [DPRReaderTokenizer](model_doc/dpr.html#transformers.DPRReaderTokenizer). See this class documentation for
+Indices can be obtained using [DPRReaderTokenizer](/docs/transformers/master/en/model_doc/dpr.html#transformers.DPRReaderTokenizer). See this class documentation for
 more details.
 - **attention_mask** (`Numpy array` or `tf.Tensor` of shape `(n_passages, sequence_length)`, _optional_) --
   Mask to avoid performing attention on padding token indices. Mask values selected in `[0, 1]`:
@@ -1278,7 +1311,7 @@ more details.
   more detail. This argument can be used only in eager mode, in graph mode the value in the config will be
   used instead.
 - **return_dict** (`bool`, _optional_) --
-  Whether or not to return a [ModelOutput](main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple. This
+  Whether or not to return a [ModelOutput](/docs/transformers/master/en/main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple. This
   argument can be used in eager mode, in graph mode the value will always be set to True.
 - **training** (`bool`, _optional_, defaults to `False`) --
   Whether or not to use the model in training mode (some modules like dropout modules have different
@@ -1289,7 +1322,7 @@ more details.
 
 A `TFDPRReaderOutput` or a tuple of
 `tf.Tensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising various
-elements depending on the configuration ([DPRConfig](model_doc/dpr.html#transformers.DPRConfig)) and inputs.
+elements depending on the configuration ([DPRConfig](/docs/transformers/master/en/model_doc/dpr.html#transformers.DPRConfig)) and inputs.
 
 - **start_logits:** (:obj:`tf.Tensor` of shape `(n_passages, sequence_length)`) -- Logits of the start index of the span for each passage.
 - **end_logits:** (:obj:`tf.Tensor` of shape `(n_passages, sequence_length)`) -- Logits of the end index of the span for each passage.

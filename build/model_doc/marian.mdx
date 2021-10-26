@@ -1,3 +1,36 @@
+---
+local: marianmt
+sections:
+- local: implementation-notes
+  title: Implementation Notes
+- local: naming
+  title: Naming
+- local: examples
+  title: Examples
+- local: multilingual-models
+  title: Multilingual Models
+- local: old-style-multilingual-models
+  title: Old Style Multi-Lingual Models
+- local: marianconfig
+  title: MarianConfig
+- local: mariantokenizer
+  title: MarianTokenizer
+- local: marianmodel
+  title: MarianModel
+- local: marianmtmodel
+  title: MarianMTModel
+- local: marianforcausallm
+  title: MarianForCausalLM
+- local: tfmarianmodel
+  title: TFMarianModel
+- local: tfmarianmtmodel
+  title: TFMarianMTModel
+- local: flaxmarianmodel
+  title: FlaxMarianModel
+- local: flaxmarianmtmodel
+  title: FlaxMarianMTModel
+title: MarianMT
+---
 <script>
 import Tip from "../../Tip.svelte";
 import Youtube from "../../Youtube.svelte";	
@@ -16,14 +49,14 @@ an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express o
 specific language governing permissions and limitations under the License.
 -->
 
-# MarianMT
+# [MarianMT](#marianmt)
 
 **Bugs:** If you see something strange, file a [Github Issue](https://github.com/huggingface/transformers/issues/new?assignees=sshleifer&labels=&template=bug-report.md&title)
 and assign @patrickvonplaten.
 
 Translations should be similar, but not identical to output in the test set linked to in each model card.
 
-## Implementation Notes
+## [Implementation Notes](#implementation-notes)
 
 - Each model is about 298 MB on disk, there are more than 1,000 models.
 - The list of supported language pairs can be found [here](https://huggingface.co/Helsinki-NLP).
@@ -31,35 +64,35 @@ Translations should be similar, but not identical to output in the test set link
 - All models are transformer encoder-decoders with 6 layers in each component. Each model's performance is documented
   in a model card.
 - The 80 opus models that require BPE preprocessing are not supported.
-- The modeling code is the same as [BartForConditionalGeneration](model_doc/bart.html#transformers.BartForConditionalGeneration) with a few minor modifications:
+- The modeling code is the same as [BartForConditionalGeneration](/docs/transformers/master/en/model_doc/bart.html#transformers.BartForConditionalGeneration) with a few minor modifications:
 
   - static (sinusoid) positional embeddings (`MarianConfig.static_position_embeddings=True`)
   - no layernorm_embedding (`MarianConfig.normalize_embedding=False`)
   - the model starts generating with `pad_token_id` (which has 0 as a token_embedding) as the prefix (Bart uses
-    `<s/>`),
+    `&amp;lt;s/>`),
 - Code to bulk convert models can be found in `convert_marian_to_pytorch.py`.
 - This model was contributed by [sshleifer](https://huggingface.co/sshleifer).
 
-## Naming
+## [Naming](#naming)
 
-- All model names use the following format: `Helsinki-NLP/opus-mt-{src}-{tgt}`
+- All model names use the following format: `Helsinki-NLP/opus-mt-&amp;lcub;src}-&amp;lcub;tgt}`
 - The language codes used to name models are inconsistent. Two digit codes can usually be found [here](https://developers.google.com/admin-sdk/directory/v1/languages), three digit codes require googling "language
-  code {code}".
-- Codes formatted like `es_AR` are usually `code_{region}`. That one is Spanish from Argentina.
+  code &amp;lcub;code}".
+- Codes formatted like `es_AR` are usually `code_&amp;lcub;region}`. That one is Spanish from Argentina.
 - The models were converted in two stages. The first 1000 models use ISO-639-2 codes to identify languages, the second
   group use a combination of ISO-639-5 codes and ISO-639-2 codes.
 
 
-## Examples
+## [Examples](#examples)
 
 - Since Marian models are smaller than many other translation models available in the library, they can be useful for
   fine-tuning experiments and integration tests.
 - [Fine-tune on GPU](https://github.com/huggingface/transformers/blob/master/examples/research_projects/seq2seq-distillation/train_distil_marian_enro_teacher.sh)
 - [Fine-tune on GPU with pytorch-lightning](https://github.com/huggingface/transformers/blob/master/examples/research_projects/seq2seq-distillation/train_distil_marian_no_teacher.sh)
 
-## Multilingual Models
+## [Multilingual Models](#multilingual-models)
 
-- All model names use the following format: `Helsinki-NLP/opus-mt-{src}-{tgt}`:
+- All model names use the following format: `Helsinki-NLP/opus-mt-&amp;lcub;src}-&amp;lcub;tgt}`:
 - If a model can output multiple languages, and you should specify a language code by prepending the desired output
   language to the `src_text`.
 - You can see a models's supported language codes in its model card, under target constituents, like in [opus-mt-en-roa](https://huggingface.co/Helsinki-NLP/opus-mt-en-roa).
@@ -98,10 +131,10 @@ model_list = HfApi().list_models()
 org = "Helsinki-NLP"
 model_ids = [x.modelId for x in model_list if x.modelId.startswith(org)]
 suffix = [x.split('/')[1] for x in model_ids]
-old_style_multi_models = [f'{org}/{s}' for s in suffix if s != s.lower()]
+old_style_multi_models = [f'&amp;lcub;org}/&amp;lcub;s}' for s in suffix if s != s.lower()]
 ```
 
-## Old Style Multi-Lingual Models
+## [Old Style Multi-Lingual Models](#old-style-multilingual-models)
 
 These are the old style multi-lingual models ported from the OPUS-MT-Train repo: and the members of each language
 group:
@@ -119,7 +152,7 @@ group:
 'Helsinki-NLP/opus-mt-fi_nb_no_nn_ru_sv_en-SAMI',
 'Helsinki-NLP/opus-mt-sv-NORWAY',
 'Helsinki-NLP/opus-mt-sv-ZH']
-GROUP_MEMBERS = {
+GROUP_MEMBERS = &amp;lcub;
 'ZH': ['cmn', 'cn', 'yue', 'ze_zh', 'zh_cn', 'zh_CN', 'zh_HK', 'zh_tw', 'zh_TW', 'zh_yue', 'zhs', 'zht', 'zh'],
 'ROMANCE': ['fr', 'fr_BE', 'fr_CA', 'fr_FR', 'wa', 'frp', 'oc', 'ca', 'rm', 'lld', 'fur', 'lij', 'lmo', 'es', 'es_AR', 'es_CL', 'es_CO', 'es_CR', 'es_DO', 'es_EC', 'es_ES', 'es_GT', 'es_HN', 'es_MX', 'es_NI', 'es_PA', 'es_PE', 'es_PR', 'es_SV', 'es_UY', 'es_VE', 'pt', 'pt_br', 'pt_BR', 'pt_PT', 'gl', 'lad', 'an', 'mwl', 'it', 'it_IT', 'co', 'nap', 'scn', 'vec', 'sc', 'ro', 'la'],
 'NORTH_EU': ['de', 'nl', 'fy', 'af', 'da', 'fo', 'is', 'no', 'nb', 'nn', 'sv'],
@@ -152,27 +185,27 @@ Example of translating english to many romance languages, using old-style 2 char
 'Y esto al español']
 ```
 
-## MarianConfig
+## [MarianConfig](#marianconfig)
 
 <a id='transformers.MarianConfig'></a>
-> **class transformers.MarianConfig**(vocab_size = 50265, max_position_embeddings = 1024, encoder_layers = 12, encoder_ffn_dim = 4096, encoder_attention_heads = 16, decoder_layers = 12, decoder_ffn_dim = 4096, decoder_attention_heads = 16, encoder_layerdrop = 0.0, decoder_layerdrop = 0.0, use_cache = True, is_encoder_decoder = True, activation_function = gelu, d_model = 1024, dropout = 0.1, attention_dropout = 0.0, activation_dropout = 0.0, init_std = 0.02, decoder_start_token_id = 58100, classifier_dropout = 0.0, scale_embedding = False, gradient_checkpointing = False, pad_token_id = 58100, eos_token_id = 0, forced_eos_token_id = 0, **kwargs)
+> **class transformers.MarianConfig**(vocab_size = 50265, max_position_embeddings = 1024, encoder_layers = 12, encoder_ffn_dim = 4096, encoder_attention_heads = 16, decoder_layers = 12, decoder_ffn_dim = 4096, decoder_attention_heads = 16, encoder_layerdrop = 0.0, decoder_layerdrop = 0.0, use_cache = True, is_encoder_decoder = True, activation_function = 'gelu', d_model = 1024, dropout = 0.1, attention_dropout = 0.0, activation_dropout = 0.0, init_std = 0.02, decoder_start_token_id = 58100, classifier_dropout = 0.0, scale_embedding = False, pad_token_id = 58100, eos_token_id = 0, forced_eos_token_id = 0, **kwargs)
 
 
-This is the configuration class to store the configuration of a [MarianModel](model_doc/marian.html#transformers.MarianModel). It is used to
+This is the configuration class to store the configuration of a [MarianModel](/docs/transformers/master/en/model_doc/marian.html#transformers.MarianModel). It is used to
 instantiate an Marian model according to the specified arguments, defining the model architecture. Instantiating a
 configuration with the defaults will yield a similar configuration to that of the Marian
 [Helsinki-NLP/opus-mt-en-de](https://huggingface.co/Helsinki-NLP/opus-mt-en-de) architecture.
 
-Configuration objects inherit from [PretrainedConfig](main_classes/configuration.html#transformers.PretrainedConfig) and can be used to control the model
-outputs. Read the documentation from [PretrainedConfig](main_classes/configuration.html#transformers.PretrainedConfig) for more information.
+Configuration objects inherit from [PretrainedConfig](/docs/transformers/master/en/main_classes/configuration.html#transformers.PretrainedConfig) and can be used to control the model
+outputs. Read the documentation from [PretrainedConfig](/docs/transformers/master/en/main_classes/configuration.html#transformers.PretrainedConfig) for more information.
 
 
 > Parameters
 
 - **vocab_size** (`int`, _optional_, defaults to 50265) --
   Vocabulary size of the Marian model. Defines the number of different tokens that can be represented by the
-  `inputs_ids` passed when calling [MarianModel](model_doc/marian.html#transformers.MarianModel) or
-  [TFMarianModel](model_doc/marian.html#transformers.TFMarianModel).
+  `inputs_ids` passed when calling [MarianModel](/docs/transformers/master/en/model_doc/marian.html#transformers.MarianModel) or
+  [TFMarianModel](/docs/transformers/master/en/model_doc/marian.html#transformers.TFMarianModel).
 - **d_model** (`int`, _optional_, defaults to 1024) --
   Dimensionality of the layers and the pooler layer.
 - **encoder_layers** (`int`, _optional_, defaults to 12) --
@@ -209,8 +242,6 @@ outputs. Read the documentation from [PretrainedConfig](main_classes/configurati
   decoder_layerdrop -- (`float`, _optional_, defaults to 0.0):
   The LayerDrop probability for the decoder. See the [LayerDrop paper](see
   https://arxiv.org/abs/1909.11556) for more details.
-- **gradient_checkpointing** (`bool`, _optional_, defaults to `False`) --
-  If True, use gradient checkpointing to save memory at the expense of slower backward pass.
 - **scale_embedding** (`bool`, _optional_, defaults to `False`) --
   Scale embeddings by diving by sqrt(d_model).
 - **use_cache** (`bool`, _optional_, defaults to `True`) --
@@ -235,15 +266,15 @@ outputs. Read the documentation from [PretrainedConfig](main_classes/configurati
 ```
 
 
-## MarianTokenizer
+## [MarianTokenizer](#mariantokenizer)
 
 <a id='transformers.MarianTokenizer'></a>
-> **class transformers.MarianTokenizer**(vocab, source_spm, target_spm, source_lang = None, target_lang = None, unk_token = &lcubunk>, eos_token = &lcub/s>, pad_token = &lcubpad>, model_max_length = 512, sp_model_kwargs: typing.Union[typing.Dict[str, typing.Any], NoneType] = None, **kwargs)
+> **class transformers.MarianTokenizer**(vocab, source_spm, target_spm, source_lang = None, target_lang = None, unk_token = '&amp;lt;unk>', eos_token = '&amp;lt;/s>', pad_token = '&amp;lt;pad>', model_max_length = 512, sp_model_kwargs: typing.Union[typing.Dict[str, typing.Any], NoneType] = None, **kwargs)
 
 
 Construct a Marian tokenizer. Based on [SentencePiece](https://github.com/google/sentencepiece).
 
-This tokenizer inherits from [PreTrainedTokenizer](main_classes/tokenizer.html#transformers.PreTrainedTokenizer) which contains most of the main methods.
+This tokenizer inherits from [PreTrainedTokenizer](/docs/transformers/master/en/main_classes/tokenizer.html#transformers.PreTrainedTokenizer) which contains most of the main methods.
 Users should refer to this superclass for more information regarding those methods.
 
 > Parameters
@@ -258,12 +289,12 @@ Users should refer to this superclass for more information regarding those metho
   A string representing the source language.
 - **target_lang** (`str`, _optional_) --
   A string representing the target language.
-- **unk_token** (`str`, _optional_, defaults to `"&lcubunk>"`) --
+- **unk_token** (`str`, _optional_, defaults to `"&amp;lt;unk>"`) --
   The unknown token. A token that is not in the vocabulary cannot be converted to an ID and is set to be this
   token instead.
-- **eos_token** (`str`, _optional_, defaults to `"&lcub/s>"`) --
+- **eos_token** (`str`, _optional_, defaults to `"&amp;lt;/s>"`) --
   The end of sequence token.
-- **pad_token** (`str`, _optional_, defaults to `"&lcubpad>"`) --
+- **pad_token** (`str`, _optional_, defaults to `"&amp;lt;pad>"`) --
   The token used for padding, for example when batching sequences of different lengths.
 - **model_max_length** (`int`, _optional_, defaults to 512) --
   The maximum sentence length the model accepts.
@@ -275,9 +306,9 @@ Users should refer to this superclass for more information regarding those metho
   - `enable_sampling`: Enable subword regularization.
   - `nbest_size`: Sampling parameters for unigram. Invalid for BPE-Dropout.
 
-    - `nbest_size = {0,1}`: No sampling is performed.
+    - `nbest_size = &amp;lcub;0,1}`: No sampling is performed.
     - `nbest_size > 1`: samples from the nbest_size results.
-    - `nbest_size&amp;lt;0`: assuming that nbest_size is infinite and samples from the all hypothesis (lattice)
+    - `nbest_size &amp;lt; 0`: assuming that nbest_size is infinite and samples from the all hypothesis (lattice)
       using forward-filtering-and-backward-sampling algorithm.
 
   - `alpha`: Smoothing parameter for unigram sampling, and dropout probability of merge operations for
@@ -307,13 +338,13 @@ Temporarily sets the tokenizer for encoding the targets. Useful for tokenizer as
 sequence-to-sequence models that need a slightly different processing for the labels.
 
 
-## MarianModel
+## [MarianModel](#marianmodel)
 
 <a id='transformers.MarianModel'></a>
 > **class transformers.MarianModel**(config: MarianConfig)
 
 The bare Marian Model outputting raw hidden-states without any specific head on top.
-This model inherits from [PreTrainedModel](main_classes/model.html#transformers.PreTrainedModel). Check the superclass documentation for the generic
+This model inherits from [PreTrainedModel](/docs/transformers/master/en/main_classes/model.html#transformers.PreTrainedModel). Check the superclass documentation for the generic
 methods the library implements for all its model (such as downloading or saving, resizing the input embeddings,
 pruning heads etc.)
 
@@ -323,16 +354,16 @@ general usage and behavior.
 
 > Parameters
 
-- **config** ([MarianConfig](model_doc/marian.html#transformers.MarianConfig)) --
+- **config** ([MarianConfig](/docs/transformers/master/en/model_doc/marian.html#transformers.MarianConfig)) --
   Model configuration class with all the parameters of the model. Initializing with a config file does not
   load the weights associated with the model, only the configuration. Check out the
-  [from_pretrained()](main_classes/model.html#transformers.PreTrainedModel.from_pretrained) method to load the model weights.
+  [from_pretrained()](/docs/transformers/master/en/main_classes/model.html#transformers.PreTrainedModel.from_pretrained) method to load the model weights.
 
 
 <a id='transformers.MarianModel.forward'></a>
 > **forward**(self, input_ids = None, attention_mask = None, decoder_input_ids = None, decoder_attention_mask = None, head_mask = None, decoder_head_mask = None, cross_attn_head_mask = None, encoder_outputs = None, past_key_values = None, inputs_embeds = None, decoder_inputs_embeds = None, use_cache = None, output_attentions = None, output_hidden_states = None, return_dict = None)
 
-The [MarianModel](model_doc/marian.html#transformers.MarianModel) forward method, overrides the `__call__` special method.
+The [MarianModel](/docs/transformers/master/en/model_doc/marian.html#transformers.MarianModel) forward method, overrides the `__call__` special method.
 
 <Tip>
 
@@ -348,8 +379,8 @@ processing steps while the latter silently ignores them.
   Indices of input sequence tokens in the vocabulary. Padding will be ignored by default should you provide
   it.
 
-  Indices can be obtained using [MarianTokenizer](model_doc/marian.html#transformers.MarianTokenizer). See
-  [transformers.PreTrainedTokenizer.encode()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
+  Indices can be obtained using [MarianTokenizer](/docs/transformers/master/en/model_doc/marian.html#transformers.MarianTokenizer). See
+  [transformers.PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
   details.
 
   [What are input IDs?](../glossary.html#input-ids)
@@ -363,8 +394,8 @@ processing steps while the latter silently ignores them.
 - **decoder_input_ids** (`torch.LongTensor` of shape `(batch_size, target_sequence_length)`, _optional_) --
   Indices of decoder input sequence tokens in the vocabulary.
 
-  Indices can be obtained using [MarianTokenizer](model_doc/marian.html#transformers.MarianTokenizer). See
-  [transformers.PreTrainedTokenizer.encode()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
+  Indices can be obtained using [MarianTokenizer](/docs/transformers/master/en/model_doc/marian.html#transformers.MarianTokenizer). See
+  [transformers.PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
   details.
 
   [What are decoder input IDs?](../glossary.html#decoder-input-ids)
@@ -428,14 +459,14 @@ processing steps while the latter silently ignores them.
   Whether or not to return the hidden states of all layers. See `hidden_states` under returned tensors for
   more detail.
 - **return_dict** (`bool`, _optional_) --
-  Whether or not to return a [ModelOutput](main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple.
+  Whether or not to return a [ModelOutput](/docs/transformers/master/en/main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple.
 
 
 > Returns
 
-A [Seq2SeqModelOutput](main_classes/output.html#transformers.modeling_outputs.Seq2SeqModelOutput) or a tuple of
+A [Seq2SeqModelOutput](/docs/transformers/master/en/main_classes/output.html#transformers.modeling_outputs.Seq2SeqModelOutput) or a tuple of
 `torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising
-various elements depending on the configuration ([MarianConfig](model_doc/marian.html#transformers.MarianConfig)) and inputs.
+various elements depending on the configuration ([MarianConfig](/docs/transformers/master/en/model_doc/marian.html#transformers.MarianConfig)) and inputs.
 
 - **last_hidden_state** (`torch.FloatTensor` of shape `(batch_size, sequence_length, hidden_size)`) -- Sequence of hidden-states at the output of the last layer of the decoder of the model.
 
@@ -478,7 +509,7 @@ various elements depending on the configuration ([MarianConfig](model_doc/marian
 >>> model = MarianModel.from_pretrained('Helsinki-NLP/opus-mt-en-de')
 
 >>> input_ids = tokenizer("Studies have been shown that owning a dog is good for you", return_tensors="pt").input_ids  # Batch size 1
->>> decoder_input_ids = tokenizer("&lcubpad> Studien haben gezeigt dass es hilfreich ist einen Hund zu besitzen",
+>>> decoder_input_ids = tokenizer("&amp;lt;pad> Studien haben gezeigt dass es hilfreich ist einen Hund zu besitzen",
 ... return_tensors="pt", add_special_tokens=False).input_ids  # Batch size 1
 >>> outputs = model(input_ids=input_ids, decoder_input_ids=decoder_input_ids)
 
@@ -487,16 +518,16 @@ various elements depending on the configuration ([MarianConfig](model_doc/marian
 
 > Return type
 
-[Seq2SeqModelOutput](main_classes/output.html#transformers.modeling_outputs.Seq2SeqModelOutput) or `tuple(torch.FloatTensor)`
+[Seq2SeqModelOutput](/docs/transformers/master/en/main_classes/output.html#transformers.modeling_outputs.Seq2SeqModelOutput) or `tuple(torch.FloatTensor)`
 
 
-## MarianMTModel
+## [MarianMTModel](#marianmtmodel)
 
 <a id='transformers.MarianMTModel'></a>
 > **class transformers.MarianMTModel**(config: MarianConfig)
 
 The Marian Model with a language modeling head. Can be used for summarization.
-This model inherits from [PreTrainedModel](main_classes/model.html#transformers.PreTrainedModel). Check the superclass documentation for the generic
+This model inherits from [PreTrainedModel](/docs/transformers/master/en/main_classes/model.html#transformers.PreTrainedModel). Check the superclass documentation for the generic
 methods the library implements for all its model (such as downloading or saving, resizing the input embeddings,
 pruning heads etc.)
 
@@ -506,16 +537,16 @@ general usage and behavior.
 
 > Parameters
 
-- **config** ([MarianConfig](model_doc/marian.html#transformers.MarianConfig)) --
+- **config** ([MarianConfig](/docs/transformers/master/en/model_doc/marian.html#transformers.MarianConfig)) --
   Model configuration class with all the parameters of the model. Initializing with a config file does not
   load the weights associated with the model, only the configuration. Check out the
-  [from_pretrained()](main_classes/model.html#transformers.PreTrainedModel.from_pretrained) method to load the model weights.
+  [from_pretrained()](/docs/transformers/master/en/main_classes/model.html#transformers.PreTrainedModel.from_pretrained) method to load the model weights.
 
 
 <a id='transformers.MarianMTModel.forward'></a>
 > **forward**(self, input_ids = None, attention_mask = None, decoder_input_ids = None, decoder_attention_mask = None, head_mask = None, decoder_head_mask = None, cross_attn_head_mask = None, encoder_outputs = None, past_key_values = None, inputs_embeds = None, decoder_inputs_embeds = None, labels = None, use_cache = None, output_attentions = None, output_hidden_states = None, return_dict = None)
 
-The [MarianMTModel](model_doc/marian.html#transformers.MarianMTModel) forward method, overrides the `__call__` special method.
+The [MarianMTModel](/docs/transformers/master/en/model_doc/marian.html#transformers.MarianMTModel) forward method, overrides the `__call__` special method.
 
 <Tip>
 
@@ -531,8 +562,8 @@ processing steps while the latter silently ignores them.
   Indices of input sequence tokens in the vocabulary. Padding will be ignored by default should you provide
   it.
 
-  Indices can be obtained using [MarianTokenizer](model_doc/marian.html#transformers.MarianTokenizer). See
-  [transformers.PreTrainedTokenizer.encode()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
+  Indices can be obtained using [MarianTokenizer](/docs/transformers/master/en/model_doc/marian.html#transformers.MarianTokenizer). See
+  [transformers.PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
   details.
 
   [What are input IDs?](../glossary.html#input-ids)
@@ -546,8 +577,8 @@ processing steps while the latter silently ignores them.
 - **decoder_input_ids** (`torch.LongTensor` of shape `(batch_size, target_sequence_length)`, _optional_) --
   Indices of decoder input sequence tokens in the vocabulary.
 
-  Indices can be obtained using [MarianTokenizer](model_doc/marian.html#transformers.MarianTokenizer). See
-  [transformers.PreTrainedTokenizer.encode()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
+  Indices can be obtained using [MarianTokenizer](/docs/transformers/master/en/model_doc/marian.html#transformers.MarianTokenizer). See
+  [transformers.PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
   details.
 
   [What are decoder input IDs?](../glossary.html#decoder-input-ids)
@@ -611,7 +642,7 @@ processing steps while the latter silently ignores them.
   Whether or not to return the hidden states of all layers. See `hidden_states` under returned tensors for
   more detail.
 - **return_dict** (`bool`, _optional_) --
-  Whether or not to return a [ModelOutput](main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple.
+  Whether or not to return a [ModelOutput](/docs/transformers/master/en/main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple.
 
 - **labels** (`torch.LongTensor` of shape `(batch_size, sequence_length)`, _optional_) --
   Labels for computing the masked language modeling loss. Indices should either be in `[0, ..., config.vocab_size]` or -100 (see `input_ids` docstring). Tokens with indices set to `-100` are ignored
@@ -620,9 +651,9 @@ processing steps while the latter silently ignores them.
 
 > Returns
 
-A [Seq2SeqLMOutput](main_classes/output.html#transformers.modeling_outputs.Seq2SeqLMOutput) or a tuple of
+A [Seq2SeqLMOutput](/docs/transformers/master/en/main_classes/output.html#transformers.modeling_outputs.Seq2SeqLMOutput) or a tuple of
 `torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising
-various elements depending on the configuration ([MarianConfig](model_doc/marian.html#transformers.MarianConfig)) and inputs.
+various elements depending on the configuration ([MarianConfig](/docs/transformers/master/en/model_doc/marian.html#transformers.MarianConfig)) and inputs.
 
 - **loss** (`torch.FloatTensor` of shape `(1,)`, _optional_, returned when `labels` is provided) -- Language modeling loss.
 - **logits** (`torch.FloatTensor` of shape `(batch_size, sequence_length, config.vocab_size)`) -- Prediction scores of the language modeling head (scores for each vocabulary token before SoftMax).
@@ -667,7 +698,7 @@ Available models are listed [here](https://huggingface.co/models?search=Helsinki
 >>> src = 'fr'  # source language
 >>> trg = 'en'  # target language
 >>> sample_text = "où est l'arrêt de bus ?"
->>> model_name = f'Helsinki-NLP/opus-mt-{src}-{trg}'
+>>> model_name = f'Helsinki-NLP/opus-mt-&amp;lcub;src}-&amp;lcub;trg}'
 
 >>> model = MarianMTModel.from_pretrained(model_name)
 >>> tokenizer = MarianTokenizer.from_pretrained(model_name)
@@ -679,10 +710,10 @@ Available models are listed [here](https://huggingface.co/models?search=Helsinki
 
 > Return type
 
-[Seq2SeqLMOutput](main_classes/output.html#transformers.modeling_outputs.Seq2SeqLMOutput) or `tuple(torch.FloatTensor)`
+[Seq2SeqLMOutput](/docs/transformers/master/en/main_classes/output.html#transformers.modeling_outputs.Seq2SeqLMOutput) or `tuple(torch.FloatTensor)`
 
 
-## MarianForCausalLM
+## [MarianForCausalLM](#marianforcausallm)
 
 <a id='transformers.MarianForCausalLM'></a>
 > **class transformers.MarianForCausalLM**(config)
@@ -697,8 +728,8 @@ Available models are listed [here](https://huggingface.co/models?search=Helsinki
   Indices of input sequence tokens in the vocabulary. Padding will be ignored by default should you
   provide it.
 
-  Indices can be obtained using [MarianTokenizer](model_doc/marian.html#transformers.MarianTokenizer). See
-  [transformers.PreTrainedTokenizer.encode()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__)
+  Indices can be obtained using [MarianTokenizer](/docs/transformers/master/en/model_doc/marian.html#transformers.MarianTokenizer). See
+  [transformers.PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__)
   for details.
 
   [What are input IDs?](../glossary.html#input-ids)
@@ -757,14 +788,14 @@ Available models are listed [here](https://huggingface.co/models?search=Helsinki
   Whether or not to return the hidden states of all layers. See `hidden_states` under returned tensors
   for more detail.
 - **return_dict** (`bool`, _optional_) --
-  Whether or not to return a [ModelOutput](main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple.
+  Whether or not to return a [ModelOutput](/docs/transformers/master/en/main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple.
 
 
 > Returns
 
-A [CausalLMOutputWithCrossAttentions](main_classes/output.html#transformers.modeling_outputs.CausalLMOutputWithCrossAttentions) or a tuple of
+A [CausalLMOutputWithCrossAttentions](/docs/transformers/master/en/main_classes/output.html#transformers.modeling_outputs.CausalLMOutputWithCrossAttentions) or a tuple of
 `torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising
-various elements depending on the configuration ([MarianConfig](model_doc/marian.html#transformers.MarianConfig)) and inputs.
+various elements depending on the configuration ([MarianConfig](/docs/transformers/master/en/model_doc/marian.html#transformers.MarianConfig)) and inputs.
 
 - **loss** (`torch.FloatTensor` of shape `(1,)`, _optional_, returned when `labels` is provided) -- Language modeling loss (for next-token prediction).
 - **logits** (`torch.FloatTensor` of shape `(batch_size, sequence_length, config.vocab_size)`) -- Prediction scores of the language modeling head (scores for each vocabulary token before SoftMax).
@@ -795,7 +826,7 @@ various elements depending on the configuration ([MarianConfig](model_doc/marian
 
 >>> tokenizer = MarianTokenizer.from_pretrained('facebook/bart-large')
 >>> model = MarianForCausalLM.from_pretrained('facebook/bart-large', add_cross_attention=False)
->>> assert model.config.is_decoder, f"{model.__class__} has to be configured as a decoder."
+>>> assert model.config.is_decoder, f"&amp;lcub;model.__class__} has to be configured as a decoder."
 >>> inputs = tokenizer("Hello, my dog is cute", return_tensors="pt")
 >>> outputs = model(**inputs)
 
@@ -804,16 +835,16 @@ various elements depending on the configuration ([MarianConfig](model_doc/marian
 
 > Return type
 
-[CausalLMOutputWithCrossAttentions](main_classes/output.html#transformers.modeling_outputs.CausalLMOutputWithCrossAttentions) or `tuple(torch.FloatTensor)`
+[CausalLMOutputWithCrossAttentions](/docs/transformers/master/en/main_classes/output.html#transformers.modeling_outputs.CausalLMOutputWithCrossAttentions) or `tuple(torch.FloatTensor)`
 
 
-## TFMarianModel
+## [TFMarianModel](#tfmarianmodel)
 
 <a id='transformers.TFMarianModel'></a>
 > **class transformers.TFMarianModel**(*args, **kwargs)
 
 The bare MARIAN Model outputting raw hidden-states without any specific head on top.
-This model inherits from [TFPreTrainedModel](main_classes/model.html#transformers.TFPreTrainedModel). Check the superclass documentation for the
+This model inherits from [TFPreTrainedModel](/docs/transformers/master/en/main_classes/model.html#transformers.TFPreTrainedModel). Check the superclass documentation for the
 generic methods the library implements for all its model (such as downloading or saving, resizing the input
 embeddings, pruning heads etc.)
 
@@ -838,22 +869,22 @@ the first positional argument :
 - a list of varying length with one or several input Tensors IN THE ORDER given in the docstring:
   `model([input_ids, attention_mask])` or `model([input_ids, attention_mask, token_type_ids])`
 - a dictionary with one or several input Tensors associated to the input names given in the docstring:
-  `model({"input_ids": input_ids, "token_type_ids": token_type_ids})`
+  `model(&amp;lcub;"input_ids": input_ids, "token_type_ids": token_type_ids})`
 
 </Tip>
 
 > Parameters
 
-- **config** ([MarianConfig](model_doc/marian.html#transformers.MarianConfig)) -- Model configuration class with all the parameters of the model.
+- **config** ([MarianConfig](/docs/transformers/master/en/model_doc/marian.html#transformers.MarianConfig)) -- Model configuration class with all the parameters of the model.
   Initializing with a config file does not load the weights associated with the model, only the
-  configuration. Check out the [from_pretrained()](main_classes/model.html#transformers.TFPreTrainedModel.from_pretrained) method to load the
+  configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model.html#transformers.TFPreTrainedModel.from_pretrained) method to load the
   model weights.
 
 
 <a id='transformers.TFMarianModel.call'></a>
 > **call**(self, input_ids = None, attention_mask = None, decoder_input_ids = None, decoder_attention_mask = None, head_mask = None, decoder_head_mask = None, cross_attn_head_mask = None, encoder_outputs: typing.Union[typing.Tuple, transformers.modeling_tf_outputs.TFBaseModelOutput, NoneType] = None, past_key_values = None, inputs_embeds = None, decoder_inputs_embeds = None, use_cache = None, output_attentions = None, output_hidden_states = None, return_dict = None, training = False, **kwargs)
 
-The [TFMarianModel](model_doc/marian.html#transformers.TFMarianModel) forward method, overrides the `__call__` special method.
+The [TFMarianModel](/docs/transformers/master/en/model_doc/marian.html#transformers.TFMarianModel) forward method, overrides the `__call__` special method.
 
 <Tip>
 
@@ -868,8 +899,8 @@ processing steps while the latter silently ignores them.
 - **input_ids** (`tf.Tensor` of shape `(batch_size, sequence_length)`) --
   Indices of input sequence tokens in the vocabulary.
 
-  Indices can be obtained using [MarianTokenizer](model_doc/marian.html#transformers.MarianTokenizer). See
-  [transformers.PreTrainedTokenizer.encode()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
+  Indices can be obtained using [MarianTokenizer](/docs/transformers/master/en/model_doc/marian.html#transformers.MarianTokenizer). See
+  [transformers.PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
   details.
 
   [What are input IDs?](../glossary.html#input-ids)
@@ -883,8 +914,8 @@ processing steps while the latter silently ignores them.
 - **decoder_input_ids** (`tf.Tensor` of shape `(batch_size, target_sequence_length)`, _optional_) --
   Indices of decoder input sequence tokens in the vocabulary.
 
-  Indices can be obtained using [MarianTokenizer](model_doc/marian.html#transformers.MarianTokenizer). See
-  [transformers.PreTrainedTokenizer.encode()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
+  Indices can be obtained using [MarianTokenizer](/docs/transformers/master/en/model_doc/marian.html#transformers.MarianTokenizer). See
+  [transformers.PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
   details.
 
   [What are decoder input IDs?](../glossary.html#decoder-input-ids)
@@ -932,7 +963,7 @@ processing steps while the latter silently ignores them.
   more detail. This argument can be used only in eager mode, in graph mode the value in the config will be
   used instead.
 - **return_dict** (`bool`, _optional_) --
-  Whether or not to return a [ModelOutput](main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple. This
+  Whether or not to return a [ModelOutput](/docs/transformers/master/en/main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple. This
   argument can be used in eager mode, in graph mode the value will always be set to True.
 - **training** (`bool`, _optional_, defaults to `False`) --
   Whether or not to use the model in training mode (some modules like dropout modules have different
@@ -940,9 +971,9 @@ processing steps while the latter silently ignores them.
 
 > Returns
 
-A [TFSeq2SeqModelOutput](main_classes/output.html#transformers.modeling_tf_outputs.TFSeq2SeqModelOutput) or a tuple of
+A [TFSeq2SeqModelOutput](/docs/transformers/master/en/main_classes/output.html#transformers.modeling_tf_outputs.TFSeq2SeqModelOutput) or a tuple of
 `tf.Tensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising various
-elements depending on the configuration ([MarianConfig](model_doc/marian.html#transformers.MarianConfig)) and inputs.
+elements depending on the configuration ([MarianConfig](/docs/transformers/master/en/model_doc/marian.html#transformers.MarianConfig)) and inputs.
 
 - **last_hidden_state** (`tf.Tensor` of shape `(batch_size, sequence_length, hidden_size)`) -- Sequence of hidden-states at the output of the last layer of the decoder of the model.
 
@@ -975,7 +1006,7 @@ elements depending on the configuration ([MarianConfig](model_doc/marian.html#tr
 
 > Return type
 
-[TFSeq2SeqModelOutput](main_classes/output.html#transformers.modeling_tf_outputs.TFSeq2SeqModelOutput) or `tuple(tf.Tensor)`
+[TFSeq2SeqModelOutput](/docs/transformers/master/en/main_classes/output.html#transformers.modeling_tf_outputs.TFSeq2SeqModelOutput) or `tuple(tf.Tensor)`
 
 > Example:
 
@@ -993,13 +1024,13 @@ elements depending on the configuration ([MarianConfig](model_doc/marian.html#tr
 ```
 
 
-## TFMarianMTModel
+## [TFMarianMTModel](#tfmarianmtmodel)
 
 <a id='transformers.TFMarianMTModel'></a>
 > **class transformers.TFMarianMTModel**(*args, **kwargs)
 
 The MARIAN Model with a language modeling head. Can be used for summarization.
-This model inherits from [TFPreTrainedModel](main_classes/model.html#transformers.TFPreTrainedModel). Check the superclass documentation for the
+This model inherits from [TFPreTrainedModel](/docs/transformers/master/en/main_classes/model.html#transformers.TFPreTrainedModel). Check the superclass documentation for the
 generic methods the library implements for all its model (such as downloading or saving, resizing the input
 embeddings, pruning heads etc.)
 
@@ -1024,22 +1055,22 @@ the first positional argument :
 - a list of varying length with one or several input Tensors IN THE ORDER given in the docstring:
   `model([input_ids, attention_mask])` or `model([input_ids, attention_mask, token_type_ids])`
 - a dictionary with one or several input Tensors associated to the input names given in the docstring:
-  `model({"input_ids": input_ids, "token_type_ids": token_type_ids})`
+  `model(&amp;lcub;"input_ids": input_ids, "token_type_ids": token_type_ids})`
 
 </Tip>
 
 > Parameters
 
-- **config** ([MarianConfig](model_doc/marian.html#transformers.MarianConfig)) -- Model configuration class with all the parameters of the model.
+- **config** ([MarianConfig](/docs/transformers/master/en/model_doc/marian.html#transformers.MarianConfig)) -- Model configuration class with all the parameters of the model.
   Initializing with a config file does not load the weights associated with the model, only the
-  configuration. Check out the [from_pretrained()](main_classes/model.html#transformers.TFPreTrainedModel.from_pretrained) method to load the
+  configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model.html#transformers.TFPreTrainedModel.from_pretrained) method to load the
   model weights.
 
 
 <a id='transformers.TFMarianMTModel.call'></a>
 > **call**(self, input_ids = None, attention_mask = None, decoder_input_ids = None, decoder_attention_mask = None, head_mask = None, decoder_head_mask = None, cross_attn_head_mask = None, encoder_outputs: typing.Optional[transformers.modeling_tf_outputs.TFBaseModelOutput] = None, past_key_values = None, inputs_embeds = None, decoder_inputs_embeds = None, use_cache = None, output_attentions = None, output_hidden_states = None, return_dict = None, labels = None, training = False, **kwargs)
 
-The [TFMarianMTModel](model_doc/marian.html#transformers.TFMarianMTModel) forward method, overrides the `__call__` special method.
+The [TFMarianMTModel](/docs/transformers/master/en/model_doc/marian.html#transformers.TFMarianMTModel) forward method, overrides the `__call__` special method.
 
 <Tip>
 
@@ -1051,15 +1082,15 @@ processing steps while the latter silently ignores them.
 
 > Parameters
 
-- **input_ids** (`tf.Tensor` of shape `({0})`) --
+- **input_ids** (`tf.Tensor` of shape `(&amp;lcub;0})`) --
   Indices of input sequence tokens in the vocabulary.
 
-  Indices can be obtained using [MarianTokenizer](model_doc/marian.html#transformers.MarianTokenizer). See
-  [transformers.PreTrainedTokenizer.encode()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
+  Indices can be obtained using [MarianTokenizer](/docs/transformers/master/en/model_doc/marian.html#transformers.MarianTokenizer). See
+  [transformers.PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
   details.
 
   [What are input IDs?](../glossary.html#input-ids)
-- **attention_mask** (`tf.Tensor` of shape `({0})`, _optional_) --
+- **attention_mask** (`tf.Tensor` of shape `(&amp;lcub;0})`, _optional_) --
   Mask to avoid performing attention on padding token indices. Mask values selected in `[0, 1]`:
 
   - 1 for tokens that are **not masked**,
@@ -1069,8 +1100,8 @@ processing steps while the latter silently ignores them.
 - **decoder_input_ids** (`tf.Tensor` of shape `(batch_size, target_sequence_length)`, _optional_) --
   Indices of decoder input sequence tokens in the vocabulary.
 
-  Indices can be obtained using [MarianTokenizer](model_doc/marian.html#transformers.MarianTokenizer). See
-  [transformers.PreTrainedTokenizer.encode()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
+  Indices can be obtained using [MarianTokenizer](/docs/transformers/master/en/model_doc/marian.html#transformers.MarianTokenizer). See
+  [transformers.PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
   details.
 
   [What are decoder input IDs?](../glossary.html#decoder-input-ids)
@@ -1118,7 +1149,7 @@ processing steps while the latter silently ignores them.
   more detail. This argument can be used only in eager mode, in graph mode the value in the config will be
   used instead.
 - **return_dict** (`bool`, _optional_) --
-  Whether or not to return a [ModelOutput](main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple. This
+  Whether or not to return a [ModelOutput](/docs/transformers/master/en/main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple. This
   argument can be used in eager mode, in graph mode the value will always be set to True.
 - **training** (`bool`, _optional_, defaults to `False`) --
   Whether or not to use the model in training mode (some modules like dropout modules have different
@@ -1131,9 +1162,9 @@ processing steps while the latter silently ignores them.
 
 > Returns
 
-A [TFSeq2SeqLMOutput](main_classes/output.html#transformers.modeling_tf_outputs.TFSeq2SeqLMOutput) or a tuple of
+A [TFSeq2SeqLMOutput](/docs/transformers/master/en/main_classes/output.html#transformers.modeling_tf_outputs.TFSeq2SeqLMOutput) or a tuple of
 `tf.Tensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising various
-elements depending on the configuration ([MarianConfig](model_doc/marian.html#transformers.MarianConfig)) and inputs.
+elements depending on the configuration ([MarianConfig](/docs/transformers/master/en/model_doc/marian.html#transformers.MarianConfig)) and inputs.
 
 - **loss** (`tf.Tensor` of shape `(n,)`, _optional_, where n is the number of non-masked labels, returned when `labels` is provided) -- Language modeling loss.
 - **logits** (`tf.Tensor` of shape `(batch_size, sequence_length, config.vocab_size)`) -- Prediction scores of the language modeling head (scores for each vocabulary token before SoftMax).
@@ -1176,7 +1207,7 @@ models are listed [here](https://huggingface.co/models?search=Helsinki-NLP).
 >>> src = 'fr'  # source language
 >>> trg = 'en'  # target language
 >>> sample_text = "où est l'arrêt de bus ?"
->>> model_name = f'Helsinki-NLP/opus-mt-{src}-{trg}'
+>>> model_name = f'Helsinki-NLP/opus-mt-&amp;lcub;src}-&amp;lcub;trg}'
 
 >>> model = TFMarianMTModel.from_pretrained(model_name)
 >>> tokenizer = MarianTokenizer.from_pretrained(model_name)
@@ -1188,16 +1219,16 @@ models are listed [here](https://huggingface.co/models?search=Helsinki-NLP).
 
 > Return type
 
-[TFSeq2SeqLMOutput](main_classes/output.html#transformers.modeling_tf_outputs.TFSeq2SeqLMOutput) or `tuple(tf.Tensor)`
+[TFSeq2SeqLMOutput](/docs/transformers/master/en/main_classes/output.html#transformers.modeling_tf_outputs.TFSeq2SeqLMOutput) or `tuple(tf.Tensor)`
 
 
-## FlaxMarianModel
+## [FlaxMarianModel](#flaxmarianmodel)
 
 <a id='transformers.FlaxMarianModel'></a>
-> **class transformers.FlaxMarianModel**(config: MarianConfig, input_shape: typing.Tuple[int] = (1, 1), seed: int = 0, dtype: dtype = &lcubclass 'jax._src.numpy.lax_numpy.float32'&rcub, **kwargs)
+> **class transformers.FlaxMarianModel**(config: MarianConfig, input_shape: typing.Tuple[int] = (1, 1), seed: int = 0, dtype: dtype = &amp;lt;class 'jax._src.numpy.lax_numpy.float32'>, **kwargs)
 
 The bare Marian Model transformer outputting raw hidden-states without any specific head on top.
-This model inherits from [FlaxPreTrainedModel](main_classes/model.html#transformers.FlaxPreTrainedModel). Check the superclass documentation for the
+This model inherits from [FlaxPreTrainedModel](/docs/transformers/master/en/main_classes/model.html#transformers.FlaxPreTrainedModel). Check the superclass documentation for the
 generic methods the library implements for all its model (such as downloading or saving, resizing the input
 embeddings, pruning heads etc.)
 
@@ -1213,9 +1244,9 @@ Finally, this model supports inherent JAX features such as:
 
 > Parameters
 
-- **config** ([MarianConfig](model_doc/marian.html#transformers.MarianConfig)) -- Model configuration class with all the parameters of the model.
+- **config** ([MarianConfig](/docs/transformers/master/en/model_doc/marian.html#transformers.MarianConfig)) -- Model configuration class with all the parameters of the model.
   Initializing with a config file does not load the weights associated with the model, only the
-  configuration. Check out the [from_pretrained()](main_classes/model.html#transformers.FlaxPreTrainedModel.from_pretrained) method to load the
+  configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model.html#transformers.FlaxPreTrainedModel.from_pretrained) method to load the
   model weights.
 
 
@@ -1238,8 +1269,8 @@ processing steps while the latter silently ignores them.
   Indices of input sequence tokens in the vocabulary. Padding will be ignored by default should you provide
   it.
 
-  Indices can be obtained using [MarianTokenizer](model_doc/marian.html#transformers.MarianTokenizer). See
-  [transformers.PreTrainedTokenizer.encode()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
+  Indices can be obtained using [MarianTokenizer](/docs/transformers/master/en/model_doc/marian.html#transformers.MarianTokenizer). See
+  [transformers.PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
   details.
 
   [What are input IDs?](../glossary.html#input-ids)
@@ -1253,8 +1284,8 @@ processing steps while the latter silently ignores them.
 - **decoder_input_ids** (`jnp.ndarray` of shape `(batch_size, target_sequence_length)`, _optional_) --
   Indices of decoder input sequence tokens in the vocabulary.
 
-  Indices can be obtained using [MarianTokenizer](model_doc/marian.html#transformers.MarianTokenizer). See
-  [transformers.PreTrainedTokenizer.encode()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
+  Indices can be obtained using [MarianTokenizer](/docs/transformers/master/en/model_doc/marian.html#transformers.MarianTokenizer). See
+  [transformers.PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
   details.
 
   [What are decoder input IDs?](../glossary.html#decoder-input-ids)
@@ -1279,13 +1310,13 @@ processing steps while the latter silently ignores them.
   Whether or not to return the hidden states of all layers. See `hidden_states` under returned tensors for
   more detail.
 - **return_dict** (`bool`, _optional_) --
-  Whether or not to return a [ModelOutput](main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple.
+  Whether or not to return a [ModelOutput](/docs/transformers/master/en/main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple.
 
 > Returns
 
-A [FlaxSeq2SeqModelOutput](main_classes/output.html#transformers.modeling_flax_outputs.FlaxSeq2SeqModelOutput) or a tuple of
+A [FlaxSeq2SeqModelOutput](/docs/transformers/master/en/main_classes/output.html#transformers.modeling_flax_outputs.FlaxSeq2SeqModelOutput) or a tuple of
 `torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising
-various elements depending on the configuration ([MarianConfig](model_doc/marian.html#transformers.MarianConfig)) and inputs.
+various elements depending on the configuration ([MarianConfig](/docs/transformers/master/en/model_doc/marian.html#transformers.MarianConfig)) and inputs.
 
 - **last_hidden_state** (`jnp.ndarray` of shape `(batch_size, sequence_length, hidden_size)`) -- Sequence of hidden-states at the output of the last layer of the decoder of the model.
 
@@ -1320,7 +1351,7 @@ various elements depending on the configuration ([MarianConfig](model_doc/marian
 
 > Return type
 
-[FlaxSeq2SeqModelOutput](main_classes/output.html#transformers.modeling_flax_outputs.FlaxSeq2SeqModelOutput) or `tuple(torch.FloatTensor)`
+[FlaxSeq2SeqModelOutput](/docs/transformers/master/en/main_classes/output.html#transformers.modeling_flax_outputs.FlaxSeq2SeqModelOutput) or `tuple(torch.FloatTensor)`
 
 > Example:
 
@@ -1337,13 +1368,13 @@ various elements depending on the configuration ([MarianConfig](model_doc/marian
 ```
 
 
-## FlaxMarianMTModel
+## [FlaxMarianMTModel](#flaxmarianmtmodel)
 
 <a id='transformers.FlaxMarianMTModel'></a>
-> **class transformers.FlaxMarianMTModel**(config: MarianConfig, input_shape: typing.Tuple[int] = (1, 1), seed: int = 0, dtype: dtype = &lcubclass 'jax._src.numpy.lax_numpy.float32'&rcub, **kwargs)
+> **class transformers.FlaxMarianMTModel**(config: MarianConfig, input_shape: typing.Tuple[int] = (1, 1), seed: int = 0, dtype: dtype = &amp;lt;class 'jax._src.numpy.lax_numpy.float32'>, **kwargs)
 
 The MARIAN Model with a language modeling head. Can be used for translation.
-This model inherits from [FlaxPreTrainedModel](main_classes/model.html#transformers.FlaxPreTrainedModel). Check the superclass documentation for the
+This model inherits from [FlaxPreTrainedModel](/docs/transformers/master/en/main_classes/model.html#transformers.FlaxPreTrainedModel). Check the superclass documentation for the
 generic methods the library implements for all its model (such as downloading or saving, resizing the input
 embeddings, pruning heads etc.)
 
@@ -1359,9 +1390,9 @@ Finally, this model supports inherent JAX features such as:
 
 > Parameters
 
-- **config** ([MarianConfig](model_doc/marian.html#transformers.MarianConfig)) -- Model configuration class with all the parameters of the model.
+- **config** ([MarianConfig](/docs/transformers/master/en/model_doc/marian.html#transformers.MarianConfig)) -- Model configuration class with all the parameters of the model.
   Initializing with a config file does not load the weights associated with the model, only the
-  configuration. Check out the [from_pretrained()](main_classes/model.html#transformers.FlaxPreTrainedModel.from_pretrained) method to load the
+  configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model.html#transformers.FlaxPreTrainedModel.from_pretrained) method to load the
   model weights.
 
 
@@ -1384,8 +1415,8 @@ processing steps while the latter silently ignores them.
   Indices of input sequence tokens in the vocabulary. Padding will be ignored by default should you provide
   it.
 
-  Indices can be obtained using [MarianTokenizer](model_doc/marian.html#transformers.MarianTokenizer). See
-  [transformers.PreTrainedTokenizer.encode()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
+  Indices can be obtained using [MarianTokenizer](/docs/transformers/master/en/model_doc/marian.html#transformers.MarianTokenizer). See
+  [transformers.PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
   details.
 
   [What are input IDs?](../glossary.html#input-ids)
@@ -1399,8 +1430,8 @@ processing steps while the latter silently ignores them.
 - **decoder_input_ids** (`jnp.ndarray` of shape `(batch_size, target_sequence_length)`, _optional_) --
   Indices of decoder input sequence tokens in the vocabulary.
 
-  Indices can be obtained using [MarianTokenizer](model_doc/marian.html#transformers.MarianTokenizer). See
-  [transformers.PreTrainedTokenizer.encode()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
+  Indices can be obtained using [MarianTokenizer](/docs/transformers/master/en/model_doc/marian.html#transformers.MarianTokenizer). See
+  [transformers.PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
   details.
 
   [What are decoder input IDs?](../glossary.html#decoder-input-ids)
@@ -1425,7 +1456,7 @@ processing steps while the latter silently ignores them.
   Whether or not to return the hidden states of all layers. See `hidden_states` under returned tensors for
   more detail.
 - **return_dict** (`bool`, _optional_) --
-  Whether or not to return a [ModelOutput](main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple.
+  Whether or not to return a [ModelOutput](/docs/transformers/master/en/main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple.
 
 > Returns
 

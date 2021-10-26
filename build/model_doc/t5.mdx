@@ -1,3 +1,38 @@
+---
+local: t
+sections:
+- local: overview
+  title: Overview
+- local: training
+  title: Training
+- local: inference
+  title: Inference
+- local: example-scripts
+  title: Example scripts
+- local: tconfig
+  title: T5Config
+- local: ttokenizer
+  title: T5Tokenizer
+- local: ttokenizerfast
+  title: T5TokenizerFast
+- local: tmodel
+  title: T5Model
+- local: tforconditionalgeneration
+  title: T5ForConditionalGeneration
+- local: tencodermodel
+  title: T5EncoderModel
+- local: tftmodel
+  title: TFT5Model
+- local: tftforconditionalgeneration
+  title: TFT5ForConditionalGeneration
+- local: tftencodermodel
+  title: TFT5EncoderModel
+- local: flaxtmodel
+  title: FlaxT5Model
+- local: flaxtforconditionalgeneration
+  title: FlaxT5ForConditionalGeneration
+title: T5
+---
 <script>
 import Tip from "../../Tip.svelte";
 import Youtube from "../../Youtube.svelte";	
@@ -16,9 +51,9 @@ an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express o
 specific language governing permissions and limitations under the License.
 -->
 
-# T5
+# [T5](#t)
 
-## Overview
+## [Overview](#overview)
 
 The T5 model was presented in [Exploring the Limits of Transfer Learning with a Unified Text-to-Text Transformer](https://arxiv.org/pdf/1910.10683.pdf) by Colin Raffel, Noam Shazeer, Adam Roberts, Katherine Lee, Sharan Narang,
 Michael Matena, Yanqi Zhou, Wei Li, Peter J. Liu.
@@ -44,7 +79,7 @@ Tips:
 
 - T5 uses relative scalar embeddings. Encoder input padding can be done on the left and on the right.
 
-- See the [training](#training), [inference](#inference) and [scripts](#scripts) sections below for all details regarding usage.
+- See the [training](/docs/transformers/master/en/model_doc/t5.html#training), [inference](/docs/transformers/master/en/model_doc/t5.html#inference) and [scripts](/docs/transformers/master/en/model_doc/t5.html#scripts) sections below for all details regarding usage.
 
 T5 comes in different sizes:
 
@@ -61,13 +96,13 @@ T5 comes in different sizes:
 Based on the original T5 model, Google has released some follow-up works:
 
 - **T5v1.1**: T5v1.1 is an improved version of T5 with some architectural tweaks, and is pre-trained on C4 only without
-  mixing in the supervised tasks. Refer to the documentation of T5v1.1 which can be found [here](t5v1.1.html).
+  mixing in the supervised tasks. Refer to the documentation of T5v1.1 which can be found [here](/docs/transformers/master/en/t5v1.1.html).
 
 - **mT5**: mT5 is a multilingual T5 model. It is pre-trained on the mC4 corpus, which includes 101 languages. Refer to
-  the documentation of mT5 which can be found [here](mt5.html).
+  the documentation of mT5 which can be found [here](/docs/transformers/master/en/mt5.html).
 
 - **byT5**: byT5 is a T5 model pre-trained on byte sequences rather than SentencePiece subword token sequences. Refer
-  to the documentation of byT5 which can be found [here](byt5.html).
+  to the documentation of byT5 which can be found [here](/docs/transformers/master/en/byt5.html).
 
 All checkpoints can be found on the [hub](https://huggingface.co/models?search=t5).
 
@@ -75,7 +110,7 @@ This model was contributed by [thomwolf](https://huggingface.co/thomwolf). The o
 
 <a id='training'></a>
 
-## Training
+## [Training](#training)
 
 T5 is an encoder-decoder model and converts all NLP problems into a text-to-text format. It is trained using teacher
 forcing. This means that for training, we always need an input sequence and a corresponding target sequence. The input
@@ -84,16 +119,16 @@ start-sequence token and fed to the decoder using the `decoder_input_ids`. In te
 sequence is then appended by the EOS token and corresponds to the `labels`. The PAD token is hereby used as the
 start-sequence token. T5 can be trained / fine-tuned both in a supervised and unsupervised fashion.
 
-One can use [T5ForConditionalGeneration](model_doc/t5.html#transformers.T5ForConditionalGeneration) (or the Tensorflow/Flax variant), which includes the
+One can use [T5ForConditionalGeneration](/docs/transformers/master/en/model_doc/t5.html#transformers.T5ForConditionalGeneration) (or the Tensorflow/Flax variant), which includes the
 language modeling head on top of the decoder.
 
 - Unsupervised denoising training
 
   In this setup, spans of the input sequence are masked by so-called sentinel tokens (*a.k.a* unique mask tokens) and
   the output sequence is formed as a concatenation of the same sentinel tokens and the *real* masked tokens. Each
-  sentinel token represents a unique mask token for this sentence and should start with `&lcubextra_id_0>`,
-  `&lcubextra_id_1>`, ... up to `&lcubextra_id_99>`. As a default, 100 sentinel tokens are available in
-  [T5Tokenizer](model_doc/t5.html#transformers.T5Tokenizer).
+  sentinel token represents a unique mask token for this sentence and should start with `&amp;lt;extra_id_0>`,
+  `&amp;lt;extra_id_1>`, ... up to `&amp;lt;extra_id_99>`. As a default, 100 sentinel tokens are available in
+  [T5Tokenizer](/docs/transformers/master/en/model_doc/mt5.html#transformers.T5Tokenizer).
 
   For instance, the sentence "The cute dog walks in the park" with the masks put on "cute dog" and "the" should be
   processed as follows:
@@ -104,8 +139,8 @@ from transformers import T5Tokenizer, T5ForConditionalGeneration
 tokenizer = T5Tokenizer.from_pretrained("t5-small")
 model = T5ForConditionalGeneration.from_pretrained("t5-small")
 
-input_ids = tokenizer('The &lcubextra_id_0> walks in &lcubextra_id_1> park', return_tensors='pt').input_ids
-labels = tokenizer('&lcubextra_id_0> cute dog &lcubextra_id_1> the &lcubextra_id_2>', return_tensors='pt').input_ids
+input_ids = tokenizer('The &amp;lt;extra_id_0> walks in &amp;lt;extra_id_1> park', return_tensors='pt').input_ids
+labels = tokenizer('&amp;lt;extra_id_0> cute dog &amp;lt;extra_id_1> the &amp;lt;extra_id_2>', return_tensors='pt').input_ids
 # the forward function automatically creates the correct decoder_input_ids
 loss = model(input_ids=input_ids, labels=labels).loss
 ```
@@ -217,9 +252,9 @@ Additional training tips:
 
 <a id='inference'></a>
 
-## Inference
+## [Inference](#inference)
 
-At inference time, it is recommended to use [generate()](main_classes/model.html#transformers.generation_utils.GenerationMixin.generate). This
+At inference time, it is recommended to use [generate()](/docs/transformers/master/en/main_classes/model.html#transformers.generation_utils.GenerationMixin.generate). This
 method takes care of encoding the input and feeding the encoded hidden states via cross-attention layers to the decoder
 and auto-regressively generates the decoder output. Check out [this blog post](https://huggingface.co/blog/how-to-generate) to know all the details about generating text with Transformers.
 There's also [this blog post](https://huggingface.co/blog/encoder-decoder#encoder-decoder) which explains how
@@ -238,7 +273,7 @@ print(tokenizer.decode(outputs[0], skip_special_tokens=True))
 ```
 
 Note that T5 uses the `pad_token_id` as the `decoder_start_token_id`, so when doing generation without using
-[generate()](main_classes/model.html#transformers.generation_utils.GenerationMixin.generate), make sure you start it with the `pad_token_id`.
+[generate()](/docs/transformers/master/en/main_classes/model.html#transformers.generation_utils.GenerationMixin.generate), make sure you start it with the `pad_token_id`.
 
 The example above only shows a single example. You can also do batched inference, like so:
 
@@ -270,7 +305,7 @@ print(tokenizer.batch_decode(output_sequences, skip_special_tokens=True))
 
 <a id='scripts'></a>
 
-## Example scripts
+## [Example scripts](#example-scripts)
 
 T5 is supported by several example scripts, both for pre-training and fine-tuning.
 
@@ -283,24 +318,24 @@ T5 is supported by several example scripts, both for pre-training and fine-tunin
   ([PyTorch](https://github.com/huggingface/transformers/tree/master/examples/pytorch/translation) and [Tensorflow](https://github.com/huggingface/transformers/tree/master/examples/tensorflow/translation)). These scripts allow
   you to easily fine-tune T5 on custom data for summarization/translation.
 
-## T5Config
+## [T5Config](#tconfig)
 
 <a id='transformers.T5Config'></a>
-> **class transformers.T5Config**(vocab_size = 32128, d_model = 512, d_kv = 64, d_ff = 2048, num_layers = 6, num_decoder_layers = None, num_heads = 8, relative_attention_num_buckets = 32, dropout_rate = 0.1, layer_norm_epsilon = 1e-06, initializer_factor = 1.0, feed_forward_proj = relu, is_encoder_decoder = True, use_cache = True, pad_token_id = 0, eos_token_id = 1, gradient_checkpointing = False, **kwargs)
+> **class transformers.T5Config**(vocab_size = 32128, d_model = 512, d_kv = 64, d_ff = 2048, num_layers = 6, num_decoder_layers = None, num_heads = 8, relative_attention_num_buckets = 32, dropout_rate = 0.1, layer_norm_epsilon = 1e-06, initializer_factor = 1.0, feed_forward_proj = 'relu', is_encoder_decoder = True, use_cache = True, pad_token_id = 0, eos_token_id = 1, **kwargs)
 
 
-This is the configuration class to store the configuration of a [T5Model](model_doc/t5.html#transformers.T5Model) or a
-[TFT5Model](model_doc/t5.html#transformers.TFT5Model). It is used to instantiate a T5 model according to the specified arguments,
+This is the configuration class to store the configuration of a [T5Model](/docs/transformers/master/en/model_doc/t5.html#transformers.T5Model) or a
+[TFT5Model](/docs/transformers/master/en/model_doc/t5.html#transformers.TFT5Model). It is used to instantiate a T5 model according to the specified arguments,
 defining the model architecture. Instantiating a configuration with the defaults will yield a similar configuration
 to that of the T5 [t5-small](https://huggingface.co/t5-small) architecture.
 
-Configuration objects inherit from [PretrainedConfig](main_classes/configuration.html#transformers.PretrainedConfig) and can be used to control the model
-outputs. Read the documentation from [PretrainedConfig](main_classes/configuration.html#transformers.PretrainedConfig) for more information.
+Configuration objects inherit from [PretrainedConfig](/docs/transformers/master/en/main_classes/configuration.html#transformers.PretrainedConfig) and can be used to control the model
+outputs. Read the documentation from [PretrainedConfig](/docs/transformers/master/en/main_classes/configuration.html#transformers.PretrainedConfig) for more information.
 
 Arguments:
 vocab_size (`int`, _optional_, defaults to 32128):
 Vocabulary size of the T5 model. Defines the number of different tokens that can be represented by the
-`inputs_ids` passed when calling [T5Model](model_doc/t5.html#transformers.T5Model) or [TFT5Model](model_doc/t5.html#transformers.TFT5Model).
+`inputs_ids` passed when calling [T5Model](/docs/transformers/master/en/model_doc/t5.html#transformers.T5Model) or [TFT5Model](/docs/transformers/master/en/model_doc/t5.html#transformers.TFT5Model).
 d_model (`int`, _optional_, defaults to 512):
 Size of the encoder layers and the pooler layer.
 d_kv (`int`, _optional_, defaults to 64):
@@ -328,19 +363,17 @@ Type of feed forward layer to be used. Should be one of `"relu"` or `"gated-gelu
 the `"gated-gelu"` feed forward projection. Original T5 uses `"relu"`.
 use_cache (`bool`, _optional_, defaults to `True`):
 Whether or not the model should return the last key/values attentions (not used by all models).
-gradient_checkpointing (`bool`, _optional_, defaults to `False`):
-If True, use gradient checkpointing to save memory at the expense of slower backward pass.
 
 
-## T5Tokenizer
+## [T5Tokenizer](#ttokenizer)
 
 <a id='transformers.T5Tokenizer'></a>
-> **class transformers.T5Tokenizer**(vocab_file, eos_token = &lcub/s>, unk_token = &lcubunk>, pad_token = &lcubpad>, extra_ids = 100, additional_special_tokens = None, sp_model_kwargs: typing.Union[typing.Dict[str, typing.Any], NoneType] = None, **kwargs)
+> **class transformers.T5Tokenizer**(vocab_file, eos_token = '&amp;lt;/s>', unk_token = '&amp;lt;unk>', pad_token = '&amp;lt;pad>', extra_ids = 100, additional_special_tokens = None, sp_model_kwargs: typing.Union[typing.Dict[str, typing.Any], NoneType] = None, **kwargs)
 
 
 Construct a T5 tokenizer. Based on [SentencePiece](https://github.com/google/sentencepiece).
 
-This tokenizer inherits from [PreTrainedTokenizer](main_classes/tokenizer.html#transformers.PreTrainedTokenizer) which contains most of the main methods.
+This tokenizer inherits from [PreTrainedTokenizer](/docs/transformers/master/en/main_classes/tokenizer.html#transformers.PreTrainedTokenizer) which contains most of the main methods.
 Users should refer to this superclass for more information regarding those methods.
 
 > Parameters
@@ -348,7 +381,7 @@ Users should refer to this superclass for more information regarding those metho
 - **vocab_file** (`str`) --
   [SentencePiece](https://github.com/google/sentencepiece) file (generally has a _.spm_ extension) that
   contains the vocabulary necessary to instantiate a tokenizer.
-- **eos_token** (`str`, _optional_, defaults to `"&lcub/s>"`) --
+- **eos_token** (`str`, _optional_, defaults to `"&amp;lt;/s>"`) --
   The end of sequence token.
 
 <Tip>
@@ -358,15 +391,15 @@ sequence. The token used is the `sep_token`.
 
 </Tip>
 
-- **unk_token** (`str`, _optional_, defaults to `"&lcubunk>"`) --
+- **unk_token** (`str`, _optional_, defaults to `"&amp;lt;unk>"`) --
   The unknown token. A token that is not in the vocabulary cannot be converted to an ID and is set to be this
   token instead.
-- **pad_token** (`str`, _optional_, defaults to `"&lcubpad>"`) --
+- **pad_token** (`str`, _optional_, defaults to `"&amp;lt;pad>"`) --
   The token used for padding, for example when batching sequences of different lengths.
 - **extra_ids** (`int`, _optional_, defaults to 100) --
   Add a number of extra ids added to the end of the vocabulary for use as sentinels. These tokens are
-  accessible as "&lcubextra_id_&lcub%d}>" where "&lcub%d}" is a number between 0 and extra_ids-1. Extra tokens are
-  indexed from the end of the vocabulary up to beginning ("&lcubextra_id_0>" is the last token in the vocabulary
+  accessible as "&amp;lt;extra_id_&amp;lcub;%d}>" where "&amp;lcub;%d}" is a number between 0 and extra_ids-1. Extra tokens are
+  indexed from the end of the vocabulary up to beginning ("&amp;lt;extra_id_0>" is the last token in the vocabulary
   like in T5 preprocessing see [here](https://github.com/google-research/text-to-text-transfer-transformer/blob/9fd7b14a769417be33bc6c850f9598764913c833/t5/data/preprocessors.py#L2117)).
 - **additional_special_tokens** (`List[str]`, _optional_) --
   Additional special tokens used by the tokenizer.
@@ -376,9 +409,9 @@ sequence. The token used is the `sep_token`.
   - `enable_sampling`: Enable subword regularization.
   - `nbest_size`: Sampling parameters for unigram. Invalid for BPE-Dropout.
 
-    - `nbest_size = {0,1}`: No sampling is performed.
+    - `nbest_size = &amp;lcub;0,1}`: No sampling is performed.
     - `nbest_size > 1`: samples from the nbest_size results.
-    - `nbest_size&amp;lt;0`: assuming that nbest_size is infinite and samples from the all hypothesis (lattice)
+    - `nbest_size &amp;lt; 0`: assuming that nbest_size is infinite and samples from the all hypothesis (lattice)
       using forward-filtering-and-backward-sampling algorithm.
 
   - `alpha`: Smoothing parameter for unigram sampling, and dropout probability of merge operations for
@@ -396,8 +429,8 @@ The _SentencePiece_ processor that is used for every conversion (string, tokens 
 Build model inputs from a sequence or a pair of sequence for sequence classification tasks by concatenating and
 adding special tokens. A sequence has the following format:
 
-- single sequence: `X &lcub/s>`
-- pair of sequences: `A &lcub/s> B &lcub/s>`
+- single sequence: `X &amp;lt;/s>`
+- pair of sequences: `A &amp;lt;/s> B &amp;lt;/s>`
 
 > Parameters
 
@@ -466,15 +499,15 @@ List of zeros.
 <a id='transformers.T5Tokenizer.save_vocabulary'></a>
 > **save\_vocabulary**(self, save_directory: str, filename_prefix: typing.Optional[str] = None)
 
-## T5TokenizerFast
+## [T5TokenizerFast](#ttokenizerfast)
 
 <a id='transformers.T5TokenizerFast'></a>
-> **class transformers.T5TokenizerFast**(vocab_file = None, tokenizer_file = None, eos_token = &lcub/s>, unk_token = &lcubunk>, pad_token = &lcubpad>, extra_ids = 100, additional_special_tokens = None, **kwargs)
+> **class transformers.T5TokenizerFast**(vocab_file = None, tokenizer_file = None, eos_token = '&amp;lt;/s>', unk_token = '&amp;lt;unk>', pad_token = '&amp;lt;pad>', extra_ids = 100, additional_special_tokens = None, **kwargs)
 
 
 Construct a "fast" T5 tokenizer (backed by HuggingFace's _tokenizers_ library). Based on [Unigram](https://huggingface.co/docs/tokenizers/python/latest/components.html?highlight=unigram#models).
 
-This tokenizer inherits from [PreTrainedTokenizerFast](main_classes/tokenizer.html#transformers.PreTrainedTokenizerFast) which contains most of the main
+This tokenizer inherits from [PreTrainedTokenizerFast](/docs/transformers/master/en/main_classes/tokenizer.html#transformers.PreTrainedTokenizerFast) which contains most of the main
 methods. Users should refer to this superclass for more information regarding those methods.
 
 > Parameters
@@ -482,7 +515,7 @@ methods. Users should refer to this superclass for more information regarding th
 - **vocab_file** (`str`) --
   [SentencePiece](https://github.com/google/sentencepiece) file (generally has a _.spm_ extension) that
   contains the vocabulary necessary to instantiate a tokenizer.
-- **eos_token** (`str`, _optional_, defaults to `"&lcub/s>"`) --
+- **eos_token** (`str`, _optional_, defaults to `"&amp;lt;/s>"`) --
   The end of sequence token.
 
 <Tip>
@@ -492,15 +525,15 @@ sequence. The token used is the `sep_token`.
 
 </Tip>
 
-- **unk_token** (`str`, _optional_, defaults to `"&lcubunk>"`) --
+- **unk_token** (`str`, _optional_, defaults to `"&amp;lt;unk>"`) --
   The unknown token. A token that is not in the vocabulary cannot be converted to an ID and is set to be this
   token instead.
-- **pad_token** (`str`, _optional_, defaults to `"&lcubpad>"`) --
+- **pad_token** (`str`, _optional_, defaults to `"&amp;lt;pad>"`) --
   The token used for padding, for example when batching sequences of different lengths.
 - **extra_ids** (`int`, _optional_, defaults to 100) --
   Add a number of extra ids added to the end of the vocabulary for use as sentinels. These tokens are
-  accessible as "&lcubextra_id_&lcub%d}>" where "&lcub%d}" is a number between 0 and extra_ids-1. Extra tokens are
-  indexed from the end of the vocabulary up to beginning ("&lcubextra_id_0>" is the last token in the vocabulary
+  accessible as "&amp;lt;extra_id_&amp;lcub;%d}>" where "&amp;lcub;%d}" is a number between 0 and extra_ids-1. Extra tokens are
+  indexed from the end of the vocabulary up to beginning ("&amp;lt;extra_id_0>" is the last token in the vocabulary
   like in T5 preprocessing see [here](https://github.com/google-research/text-to-text-transfer-transformer/blob/9fd7b14a769417be33bc6c850f9598764913c833/t5/data/preprocessors.py#L2117)).
 - **additional_special_tokens** (`List[str]`, _optional_) --
   Additional special tokens used by the tokenizer.
@@ -513,8 +546,8 @@ sequence. The token used is the `sep_token`.
 Build model inputs from a sequence or a pair of sequence for sequence classification tasks by concatenating and
 adding special tokens. A sequence has the following format:
 
-- single sequence: `X &lcub/s>`
-- pair of sequences: `A &lcub/s> B &lcub/s>`
+- single sequence: `X &amp;lt;/s>`
+- pair of sequences: `A &amp;lt;/s> B &amp;lt;/s>`
 
 > Parameters
 
@@ -556,12 +589,12 @@ List of zeros.
 
 
 <a id='transformers.T5Tokenizer'></a>
-> **class T5Tokenizer**(vocab_file, eos_token = &lcub/s>, unk_token = &lcubunk>, pad_token = &lcubpad>, extra_ids = 100, additional_special_tokens = None, sp_model_kwargs: typing.Union[typing.Dict[str, typing.Any], NoneType] = None, **kwargs)
+> **class T5Tokenizer**(vocab_file, eos_token = '&amp;lt;/s>', unk_token = '&amp;lt;unk>', pad_token = '&amp;lt;pad>', extra_ids = 100, additional_special_tokens = None, sp_model_kwargs: typing.Union[typing.Dict[str, typing.Any], NoneType] = None, **kwargs)
 
 
 Construct a T5 tokenizer. Based on [SentencePiece](https://github.com/google/sentencepiece).
 
-This tokenizer inherits from [PreTrainedTokenizer](main_classes/tokenizer.html#transformers.PreTrainedTokenizer) which contains most of the main methods.
+This tokenizer inherits from [PreTrainedTokenizer](/docs/transformers/master/en/main_classes/tokenizer.html#transformers.PreTrainedTokenizer) which contains most of the main methods.
 Users should refer to this superclass for more information regarding those methods.
 
 > Parameters
@@ -569,7 +602,7 @@ Users should refer to this superclass for more information regarding those metho
 - **vocab_file** (`str`) --
   [SentencePiece](https://github.com/google/sentencepiece) file (generally has a _.spm_ extension) that
   contains the vocabulary necessary to instantiate a tokenizer.
-- **eos_token** (`str`, _optional_, defaults to `"&lcub/s>"`) --
+- **eos_token** (`str`, _optional_, defaults to `"&amp;lt;/s>"`) --
   The end of sequence token.
 
 <Tip>
@@ -579,15 +612,15 @@ sequence. The token used is the `sep_token`.
 
 </Tip>
 
-- **unk_token** (`str`, _optional_, defaults to `"&lcubunk>"`) --
+- **unk_token** (`str`, _optional_, defaults to `"&amp;lt;unk>"`) --
   The unknown token. A token that is not in the vocabulary cannot be converted to an ID and is set to be this
   token instead.
-- **pad_token** (`str`, _optional_, defaults to `"&lcubpad>"`) --
+- **pad_token** (`str`, _optional_, defaults to `"&amp;lt;pad>"`) --
   The token used for padding, for example when batching sequences of different lengths.
 - **extra_ids** (`int`, _optional_, defaults to 100) --
   Add a number of extra ids added to the end of the vocabulary for use as sentinels. These tokens are
-  accessible as "&lcubextra_id_&lcub%d}>" where "&lcub%d}" is a number between 0 and extra_ids-1. Extra tokens are
-  indexed from the end of the vocabulary up to beginning ("&lcubextra_id_0>" is the last token in the vocabulary
+  accessible as "&amp;lt;extra_id_&amp;lcub;%d}>" where "&amp;lcub;%d}" is a number between 0 and extra_ids-1. Extra tokens are
+  indexed from the end of the vocabulary up to beginning ("&amp;lt;extra_id_0>" is the last token in the vocabulary
   like in T5 preprocessing see [here](https://github.com/google-research/text-to-text-transfer-transformer/blob/9fd7b14a769417be33bc6c850f9598764913c833/t5/data/preprocessors.py#L2117)).
 - **additional_special_tokens** (`List[str]`, _optional_) --
   Additional special tokens used by the tokenizer.
@@ -597,9 +630,9 @@ sequence. The token used is the `sep_token`.
   - `enable_sampling`: Enable subword regularization.
   - `nbest_size`: Sampling parameters for unigram. Invalid for BPE-Dropout.
 
-    - `nbest_size = {0,1}`: No sampling is performed.
+    - `nbest_size = &amp;lcub;0,1}`: No sampling is performed.
     - `nbest_size > 1`: samples from the nbest_size results.
-    - `nbest_size&amp;lt;0`: assuming that nbest_size is infinite and samples from the all hypothesis (lattice)
+    - `nbest_size &amp;lt; 0`: assuming that nbest_size is infinite and samples from the all hypothesis (lattice)
       using forward-filtering-and-backward-sampling algorithm.
 
   - `alpha`: Smoothing parameter for unigram sampling, and dropout probability of merge operations for
@@ -610,7 +643,7 @@ sp_model (`SentencePieceProcessor`):
 The _SentencePiece_ processor that is used for every conversion (string, tokens and IDs).
 
 
-## T5Model
+## [T5Model](#tmodel)
 
 <a id='transformers.T5Model'></a>
 > **class transformers.T5Model**(config: T5Config)
@@ -621,7 +654,7 @@ The T5 model was proposed in [Exploring the Limits of Transfer Learning with a U
 Michael Matena, Yanqi Zhou, Wei Li, Peter J. Liu. It's an encoder decoder transformer pre-trained in a text-to-text
 denoising generative setting.
 
-This model inherits from [PreTrainedModel](main_classes/model.html#transformers.PreTrainedModel). Check the superclass documentation for the generic
+This model inherits from [PreTrainedModel](/docs/transformers/master/en/main_classes/model.html#transformers.PreTrainedModel). Check the superclass documentation for the generic
 methods the library implements for all its model (such as downloading or saving, resizing the input embeddings,
 pruning heads etc.)
 
@@ -631,16 +664,16 @@ general usage and behavior.
 
 > Parameters
 
-- **config** ([T5Config](model_doc/t5.html#transformers.T5Config)) -- Model configuration class with all the parameters of the model.
+- **config** ([T5Config](/docs/transformers/master/en/model_doc/t5.html#transformers.T5Config)) -- Model configuration class with all the parameters of the model.
   Initializing with a config file does not load the weights associated with the model, only the
-  configuration. Check out the [from_pretrained()](main_classes/model.html#transformers.PreTrainedModel.from_pretrained) method to load the model
+  configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model.html#transformers.PreTrainedModel.from_pretrained) method to load the model
   weights.
 
 
 <a id='transformers.T5Model.forward'></a>
 > **forward**(self, input_ids = None, attention_mask = None, decoder_input_ids = None, decoder_attention_mask = None, head_mask = None, decoder_head_mask = None, cross_attn_head_mask = None, encoder_outputs = None, past_key_values = None, inputs_embeds = None, decoder_inputs_embeds = None, use_cache = None, output_attentions = None, output_hidden_states = None, return_dict = None)
 
-The [T5Model](model_doc/t5.html#transformers.T5Model) forward method, overrides the `__call__` special method.
+The [T5Model](/docs/transformers/master/en/model_doc/t5.html#transformers.T5Model) forward method, overrides the `__call__` special method.
 
 <Tip>
 
@@ -656,8 +689,8 @@ processing steps while the latter silently ignores them.
   Indices of input sequence tokens in the vocabulary. T5 is a model with relative position embeddings so you
   should be able to pad the inputs on both the right and the left.
 
-  Indices can be obtained using [T5Tokenizer](model_doc/t5.html#transformers.T5Tokenizer). See
-  [transformers.PreTrainedTokenizer.encode()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
+  Indices can be obtained using [T5Tokenizer](/docs/transformers/master/en/model_doc/mt5.html#transformers.T5Tokenizer). See
+  [transformers.PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
   detail.
 
   [What are input IDs?](../glossary.html#input-ids)
@@ -673,8 +706,8 @@ processing steps while the latter silently ignores them.
 - **decoder_input_ids** (`torch.LongTensor` of shape `(batch_size, target_sequence_length)`, _optional_) --
   Indices of decoder input sequence tokens in the vocabulary.
 
-  Indices can be obtained using [T5Tokenizer](model_doc/t5.html#transformers.T5Tokenizer). See
-  [transformers.PreTrainedTokenizer.encode()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
+  Indices can be obtained using [T5Tokenizer](/docs/transformers/master/en/model_doc/mt5.html#transformers.T5Tokenizer). See
+  [transformers.PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
   details.
 
   [What are decoder input IDs?](../glossary.html#decoder-input-ids)
@@ -741,14 +774,14 @@ processing steps while the latter silently ignores them.
   Whether or not to return the hidden states of all layers. See `hidden_states` under returned tensors for
   more detail.
 - **return_dict** (`bool`, _optional_) --
-  Whether or not to return a [ModelOutput](main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple.
+  Whether or not to return a [ModelOutput](/docs/transformers/master/en/main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple.
 
 
 > Returns
 
-A [Seq2SeqModelOutput](main_classes/output.html#transformers.modeling_outputs.Seq2SeqModelOutput) or a tuple of
+A [Seq2SeqModelOutput](/docs/transformers/master/en/main_classes/output.html#transformers.modeling_outputs.Seq2SeqModelOutput) or a tuple of
 `torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising
-various elements depending on the configuration ([T5Config](model_doc/t5.html#transformers.T5Config)) and inputs.
+various elements depending on the configuration ([T5Config](/docs/transformers/master/en/model_doc/t5.html#transformers.T5Config)) and inputs.
 
 - **last_hidden_state** (`torch.FloatTensor` of shape `(batch_size, sequence_length, hidden_size)`) -- Sequence of hidden-states at the output of the last layer of the decoder of the model.
 
@@ -800,7 +833,7 @@ various elements depending on the configuration ([T5Config](model_doc/t5.html#tr
 
 > Return type
 
-[Seq2SeqModelOutput](main_classes/output.html#transformers.modeling_outputs.Seq2SeqModelOutput) or `tuple(torch.FloatTensor)`
+[Seq2SeqModelOutput](/docs/transformers/master/en/main_classes/output.html#transformers.modeling_outputs.Seq2SeqModelOutput) or `tuple(torch.FloatTensor)`
 
 
 <a id='transformers.T5Model.parallelize'></a>
@@ -831,7 +864,7 @@ it will evenly distribute blocks across all devices.
 ```python
 # Here is an example of a device map on a machine with 4 GPUs using t5-3b, which has a total of 24 attention modules:
 model = T5ForConditionalGeneration.from_pretrained('t5-3b')
-device_map = {0: [0, 1, 2],
+device_map = &amp;lcub;0: [0, 1, 2],
 
 1: [3, 4, 5, 6, 7, 8, 9],
 2: [10, 11, 12, 13, 14, 15, 16],
@@ -851,7 +884,7 @@ Moves the model to cpu from a model parallel state.
 ```python
 # On a 4 GPU machine with t5-3b:
 model = T5ForConditionalGeneration.from_pretrained('t5-3b')
-device_map = {0: [0, 1, 2],
+device_map = &amp;lcub;0: [0, 1, 2],
 
 1: [3, 4, 5, 6, 7, 8, 9],
 2: [10, 11, 12, 13, 14, 15, 16],
@@ -861,7 +894,7 @@ model.deparallelize() # Put the model back on cpu and cleans memory by calling t
 ```
 
 
-## T5ForConditionalGeneration
+## [T5ForConditionalGeneration](#tforconditionalgeneration)
 
 <a id='transformers.T5ForConditionalGeneration'></a>
 > **class transformers.T5ForConditionalGeneration**(config)
@@ -872,7 +905,7 @@ The T5 model was proposed in [Exploring the Limits of Transfer Learning with a U
 Michael Matena, Yanqi Zhou, Wei Li, Peter J. Liu. It's an encoder decoder transformer pre-trained in a text-to-text
 denoising generative setting.
 
-This model inherits from [PreTrainedModel](main_classes/model.html#transformers.PreTrainedModel). Check the superclass documentation for the generic
+This model inherits from [PreTrainedModel](/docs/transformers/master/en/main_classes/model.html#transformers.PreTrainedModel). Check the superclass documentation for the generic
 methods the library implements for all its model (such as downloading or saving, resizing the input embeddings,
 pruning heads etc.)
 
@@ -882,16 +915,16 @@ general usage and behavior.
 
 > Parameters
 
-- **config** ([T5Config](model_doc/t5.html#transformers.T5Config)) -- Model configuration class with all the parameters of the model.
+- **config** ([T5Config](/docs/transformers/master/en/model_doc/t5.html#transformers.T5Config)) -- Model configuration class with all the parameters of the model.
   Initializing with a config file does not load the weights associated with the model, only the
-  configuration. Check out the [from_pretrained()](main_classes/model.html#transformers.PreTrainedModel.from_pretrained) method to load the model
+  configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model.html#transformers.PreTrainedModel.from_pretrained) method to load the model
   weights.
 
 
 <a id='transformers.T5ForConditionalGeneration.forward'></a>
 > **forward**(self, input_ids = None, attention_mask = None, decoder_input_ids = None, decoder_attention_mask = None, head_mask = None, decoder_head_mask = None, cross_attn_head_mask = None, encoder_outputs = None, past_key_values = None, inputs_embeds = None, decoder_inputs_embeds = None, labels = None, use_cache = None, output_attentions = None, output_hidden_states = None, return_dict = None)
 
-The [T5ForConditionalGeneration](model_doc/t5.html#transformers.T5ForConditionalGeneration) forward method, overrides the `__call__` special method.
+The [T5ForConditionalGeneration](/docs/transformers/master/en/model_doc/t5.html#transformers.T5ForConditionalGeneration) forward method, overrides the `__call__` special method.
 
 <Tip>
 
@@ -907,8 +940,8 @@ processing steps while the latter silently ignores them.
   Indices of input sequence tokens in the vocabulary. T5 is a model with relative position embeddings so you
   should be able to pad the inputs on both the right and the left.
 
-  Indices can be obtained using [T5Tokenizer](model_doc/t5.html#transformers.T5Tokenizer). See
-  [transformers.PreTrainedTokenizer.encode()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
+  Indices can be obtained using [T5Tokenizer](/docs/transformers/master/en/model_doc/mt5.html#transformers.T5Tokenizer). See
+  [transformers.PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
   detail.
 
   [What are input IDs?](../glossary.html#input-ids)
@@ -924,8 +957,8 @@ processing steps while the latter silently ignores them.
 - **decoder_input_ids** (`torch.LongTensor` of shape `(batch_size, target_sequence_length)`, _optional_) --
   Indices of decoder input sequence tokens in the vocabulary.
 
-  Indices can be obtained using [T5Tokenizer](model_doc/t5.html#transformers.T5Tokenizer). See
-  [transformers.PreTrainedTokenizer.encode()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
+  Indices can be obtained using [T5Tokenizer](/docs/transformers/master/en/model_doc/mt5.html#transformers.T5Tokenizer). See
+  [transformers.PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
   details.
 
   [What are decoder input IDs?](../glossary.html#decoder-input-ids)
@@ -992,7 +1025,7 @@ processing steps while the latter silently ignores them.
   Whether or not to return the hidden states of all layers. See `hidden_states` under returned tensors for
   more detail.
 - **return_dict** (`bool`, _optional_) --
-  Whether or not to return a [ModelOutput](main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple.
+  Whether or not to return a [ModelOutput](/docs/transformers/master/en/main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple.
 
 - **labels** (`torch.LongTensor` of shape `(batch_size,)`, _optional_) --
   Labels for computing the sequence classification/regression loss. Indices should be in `[-100, 0, ..., config.vocab_size - 1]`. All labels set to `-100` are ignored (masked), the loss is only computed for
@@ -1001,9 +1034,9 @@ processing steps while the latter silently ignores them.
 
 > Returns
 
-A [Seq2SeqLMOutput](main_classes/output.html#transformers.modeling_outputs.Seq2SeqLMOutput) or a tuple of
+A [Seq2SeqLMOutput](/docs/transformers/master/en/main_classes/output.html#transformers.modeling_outputs.Seq2SeqLMOutput) or a tuple of
 `torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising
-various elements depending on the configuration ([T5Config](model_doc/t5.html#transformers.T5Config)) and inputs.
+various elements depending on the configuration ([T5Config](/docs/transformers/master/en/model_doc/t5.html#transformers.T5Config)) and inputs.
 
 - **loss** (`torch.FloatTensor` of shape `(1,)`, _optional_, returned when `labels` is provided) -- Language modeling loss.
 - **logits** (`torch.FloatTensor` of shape `(batch_size, sequence_length, config.vocab_size)`) -- Prediction scores of the language modeling head (scores for each vocabulary token before SoftMax).
@@ -1045,8 +1078,8 @@ various elements depending on the configuration ([T5Config](model_doc/t5.html#tr
 >>> model = T5ForConditionalGeneration.from_pretrained('t5-small')
 
 >>> # training
->>> input_ids = tokenizer('The &lcubextra_id_0> walks in &lcubextra_id_1> park', return_tensors='pt').input_ids
->>> labels = tokenizer('&lcubextra_id_0> cute dog &lcubextra_id_1> the &lcubextra_id_2>', return_tensors='pt').input_ids
+>>> input_ids = tokenizer('The &amp;lt;extra_id_0> walks in &amp;lt;extra_id_1> park', return_tensors='pt').input_ids
+>>> labels = tokenizer('&amp;lt;extra_id_0> cute dog &amp;lt;extra_id_1> the &amp;lt;extra_id_2>', return_tensors='pt').input_ids
 >>> outputs = model(input_ids=input_ids, labels=labels)
 >>> loss = outputs.loss
 >>> logits = outputs.logits
@@ -1060,7 +1093,7 @@ various elements depending on the configuration ([T5Config](model_doc/t5.html#tr
 
 > Return type
 
-[Seq2SeqLMOutput](main_classes/output.html#transformers.modeling_outputs.Seq2SeqLMOutput) or `tuple(torch.FloatTensor)`
+[Seq2SeqLMOutput](/docs/transformers/master/en/main_classes/output.html#transformers.modeling_outputs.Seq2SeqLMOutput) or `tuple(torch.FloatTensor)`
 
 
 <a id='transformers.T5ForConditionalGeneration.parallelize'></a>
@@ -1091,7 +1124,7 @@ it will evenly distribute blocks across all devices.
 ```python
 # Here is an example of a device map on a machine with 4 GPUs using t5-3b, which has a total of 24 attention modules:
 model = T5ForConditionalGeneration.from_pretrained('t5-3b')
-device_map = {0: [0, 1, 2],
+device_map = &amp;lcub;0: [0, 1, 2],
 
 1: [3, 4, 5, 6, 7, 8, 9],
 2: [10, 11, 12, 13, 14, 15, 16],
@@ -1111,7 +1144,7 @@ Moves the model to cpu from a model parallel state.
 ```python
 # On a 4 GPU machine with t5-3b:
 model = T5ForConditionalGeneration.from_pretrained('t5-3b')
-device_map = {0: [0, 1, 2],
+device_map = &amp;lcub;0: [0, 1, 2],
 
 1: [3, 4, 5, 6, 7, 8, 9],
 2: [10, 11, 12, 13, 14, 15, 16],
@@ -1121,7 +1154,7 @@ model.deparallelize() # Put the model back on cpu and cleans memory by calling t
 ```
 
 
-## T5EncoderModel
+## [T5EncoderModel](#tencodermodel)
 
 <a id='transformers.T5EncoderModel'></a>
 > **class transformers.T5EncoderModel**(config: T5Config)
@@ -1132,7 +1165,7 @@ The T5 model was proposed in [Exploring the Limits of Transfer Learning with a U
 Michael Matena, Yanqi Zhou, Wei Li, Peter J. Liu. It's an encoder decoder transformer pre-trained in a text-to-text
 denoising generative setting.
 
-This model inherits from [PreTrainedModel](main_classes/model.html#transformers.PreTrainedModel). Check the superclass documentation for the generic
+This model inherits from [PreTrainedModel](/docs/transformers/master/en/main_classes/model.html#transformers.PreTrainedModel). Check the superclass documentation for the generic
 methods the library implements for all its model (such as downloading or saving, resizing the input embeddings,
 pruning heads etc.)
 
@@ -1142,16 +1175,16 @@ general usage and behavior.
 
 > Parameters
 
-- **config** ([T5Config](model_doc/t5.html#transformers.T5Config)) -- Model configuration class with all the parameters of the model.
+- **config** ([T5Config](/docs/transformers/master/en/model_doc/t5.html#transformers.T5Config)) -- Model configuration class with all the parameters of the model.
   Initializing with a config file does not load the weights associated with the model, only the
-  configuration. Check out the [from_pretrained()](main_classes/model.html#transformers.PreTrainedModel.from_pretrained) method to load the model
+  configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model.html#transformers.PreTrainedModel.from_pretrained) method to load the model
   weights.
 
 
 <a id='transformers.T5EncoderModel.forward'></a>
 > **forward**(self, input_ids = None, attention_mask = None, head_mask = None, inputs_embeds = None, output_attentions = None, output_hidden_states = None, return_dict = None)
 
-The [T5EncoderModel](model_doc/t5.html#transformers.T5EncoderModel) forward method, overrides the `__call__` special method.
+The [T5EncoderModel](/docs/transformers/master/en/model_doc/t5.html#transformers.T5EncoderModel) forward method, overrides the `__call__` special method.
 
 <Tip>
 
@@ -1167,8 +1200,8 @@ processing steps while the latter silently ignores them.
   Indices of input sequence tokens in the vocabulary. T5 is a model with relative position embeddings so you
   should be able to pad the inputs on both the right and the left.
 
-  Indices can be obtained using [T5Tokenizer](model_doc/t5.html#transformers.T5Tokenizer). See
-  [transformers.PreTrainedTokenizer.encode()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
+  Indices can be obtained using [T5Tokenizer](/docs/transformers/master/en/model_doc/mt5.html#transformers.T5Tokenizer). See
+  [transformers.PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
   detail.
 
   To know more on how to prepare `input_ids` for pretraining take a look a [T5 Training](./t5.html#training).
@@ -1196,14 +1229,14 @@ processing steps while the latter silently ignores them.
   Whether or not to return the hidden states of all layers. See `hidden_states` under returned tensors for
   more detail.
 - **return_dict** (`bool`, _optional_) --
-  Whether or not to return a [ModelOutput](main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple.
+  Whether or not to return a [ModelOutput](/docs/transformers/master/en/main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple.
 
 
 > Returns
 
-A [BaseModelOutput](main_classes/output.html#transformers.modeling_outputs.BaseModelOutput) or a tuple of
+A [BaseModelOutput](/docs/transformers/master/en/main_classes/output.html#transformers.modeling_outputs.BaseModelOutput) or a tuple of
 `torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising
-various elements depending on the configuration ([T5Config](model_doc/t5.html#transformers.T5Config)) and inputs.
+various elements depending on the configuration ([T5Config](/docs/transformers/master/en/model_doc/t5.html#transformers.T5Config)) and inputs.
 
 - **last_hidden_state** (`torch.FloatTensor` of shape `(batch_size, sequence_length, hidden_size)`) -- Sequence of hidden-states at the output of the last layer of the model.
 - **hidden_states** (`tuple(torch.FloatTensor)`, _optional_, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer)
@@ -1229,7 +1262,7 @@ various elements depending on the configuration ([T5Config](model_doc/t5.html#tr
 
 > Return type
 
-[BaseModelOutput](main_classes/output.html#transformers.modeling_outputs.BaseModelOutput) or `tuple(torch.FloatTensor)`
+[BaseModelOutput](/docs/transformers/master/en/main_classes/output.html#transformers.modeling_outputs.BaseModelOutput) or `tuple(torch.FloatTensor)`
 
 
 <a id='transformers.T5EncoderModel.parallelize'></a>
@@ -1260,7 +1293,7 @@ it will evenly distribute blocks across all devices.
 ```python
 # Here is an example of a device map on a machine with 4 GPUs using t5-3b, which has a total of 24 attention modules:
 model = T5ForConditionalGeneration.from_pretrained('t5-3b')
-device_map = {0: [0, 1, 2],
+device_map = &amp;lcub;0: [0, 1, 2],
 
 1: [3, 4, 5, 6, 7, 8, 9],
 2: [10, 11, 12, 13, 14, 15, 16],
@@ -1280,7 +1313,7 @@ Moves the model to cpu from a model parallel state.
 ```python
 # On a 4 GPU machine with t5-3b:
 model = T5ForConditionalGeneration.from_pretrained('t5-3b')
-device_map = {0: [0, 1, 2],
+device_map = &amp;lcub;0: [0, 1, 2],
 
 1: [3, 4, 5, 6, 7, 8, 9],
 2: [10, 11, 12, 13, 14, 15, 16],
@@ -1290,7 +1323,7 @@ model.deparallelize() # Put the model back on cpu and cleans memory by calling t
 ```
 
 
-## TFT5Model
+## [TFT5Model](#tftmodel)
 
 <a id='transformers.TFT5Model'></a>
 > **class transformers.TFT5Model**(*args, **kwargs)
@@ -1301,7 +1334,7 @@ The T5 model was proposed in [Exploring the Limits of Transfer Learning with a U
 Michael Matena, Yanqi Zhou, Wei Li, Peter J. Liu. It's an encoder decoder transformer pre-trained in a text-to-text
 denoising generative setting.
 
-This model inherits from [TFPreTrainedModel](main_classes/model.html#transformers.TFPreTrainedModel). Check the superclass documentation for the
+This model inherits from [TFPreTrainedModel](/docs/transformers/master/en/main_classes/model.html#transformers.TFPreTrainedModel). Check the superclass documentation for the
 generic methods the library implements for all its model (such as downloading or saving, resizing the input
 embeddings, pruning heads etc.)
 
@@ -1326,22 +1359,22 @@ the first positional argument :
 - a list of varying length with one or several input Tensors IN THE ORDER given in the docstring:
   `model([input_ids, attention_mask])` or `model([input_ids, attention_mask, token_type_ids])`
 - a dictionary with one or several input Tensors associated to the input names given in the docstring:
-  `model({"input_ids": input_ids, "token_type_ids": token_type_ids})`
+  `model(&amp;lcub;"input_ids": input_ids, "token_type_ids": token_type_ids})`
 
 </Tip>
 
 > Parameters
 
-- **config** ([T5Config](model_doc/t5.html#transformers.T5Config)) -- Model configuration class with all the parameters of the model.
+- **config** ([T5Config](/docs/transformers/master/en/model_doc/t5.html#transformers.T5Config)) -- Model configuration class with all the parameters of the model.
   Initializing with a config file does not load the weights associated with the model, only the
-  configuration. Check out the [from_pretrained()](main_classes/model.html#transformers.PreTrainedModel.from_pretrained) method to load the model
+  configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model.html#transformers.PreTrainedModel.from_pretrained) method to load the model
   weights.
 
 
 <a id='transformers.TFT5Model.call'></a>
 > **call**(self, input_ids = None, attention_mask = None, decoder_input_ids = None, decoder_attention_mask = None, head_mask = None, decoder_head_mask = None, encoder_outputs = None, past_key_values = None, inputs_embeds = None, decoder_inputs_embeds = None, use_cache = None, output_attentions = None, output_hidden_states = None, return_dict = None, training = False, **kwargs)
 
-The [TFT5Model](model_doc/t5.html#transformers.TFT5Model) forward method, overrides the `__call__` special method.
+The [TFT5Model](/docs/transformers/master/en/model_doc/t5.html#transformers.TFT5Model) forward method, overrides the `__call__` special method.
 
 <Tip>
 
@@ -1357,8 +1390,8 @@ processing steps while the latter silently ignores them.
   Indices of input sequence tokens in the vocabulary. T5 is a model with relative position embeddings so you
   should be able to pad the inputs on the right or the left.
 
-  Indices can be obtained using [BertTokenizer](model_doc/bert.html#transformers.BertTokenizer). See
-  [transformers.PreTrainedTokenizer.__call__()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) and [transformers.PreTrainedTokenizer.encode()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) for
+  Indices can be obtained using [BertTokenizer](/docs/transformers/master/en/model_doc/bert.html#transformers.BertTokenizer). See
+  [transformers.PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) and [transformers.PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) for
   details.
 
   [What are input IDs?](../glossary.html#input-ids)
@@ -1427,7 +1460,7 @@ the decoder.
   more detail. This argument can be used only in eager mode, in graph mode the value in the config will be
   used instead.
 - **return_dict** (`bool`, _optional_) --
-  Whether or not to return a [ModelOutput](main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple. This
+  Whether or not to return a [ModelOutput](/docs/transformers/master/en/main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple. This
   argument can be used in eager mode, in graph mode the value will always be set to True.
 - **training** (`bool`, _optional_, defaults to `False`) --
   Whether or not to use the model in training mode (some modules like dropout modules have different
@@ -1436,9 +1469,9 @@ the decoder.
 
 > Returns
 
-A [TFSeq2SeqModelOutput](main_classes/output.html#transformers.modeling_tf_outputs.TFSeq2SeqModelOutput) or a tuple of
+A [TFSeq2SeqModelOutput](/docs/transformers/master/en/main_classes/output.html#transformers.modeling_tf_outputs.TFSeq2SeqModelOutput) or a tuple of
 `tf.Tensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising various
-elements depending on the configuration ([T5Config](model_doc/t5.html#transformers.T5Config)) and inputs.
+elements depending on the configuration ([T5Config](/docs/transformers/master/en/model_doc/t5.html#transformers.T5Config)) and inputs.
 
 - **last_hidden_state** (`tf.Tensor` of shape `(batch_size, sequence_length, hidden_size)`) -- Sequence of hidden-states at the output of the last layer of the decoder of the model.
 
@@ -1488,10 +1521,10 @@ elements depending on the configuration ([T5Config](model_doc/t5.html#transforme
 
 > Return type
 
-[TFSeq2SeqModelOutput](main_classes/output.html#transformers.modeling_tf_outputs.TFSeq2SeqModelOutput) or `tuple(tf.Tensor)`
+[TFSeq2SeqModelOutput](/docs/transformers/master/en/main_classes/output.html#transformers.modeling_tf_outputs.TFSeq2SeqModelOutput) or `tuple(tf.Tensor)`
 
 
-## TFT5ForConditionalGeneration
+## [TFT5ForConditionalGeneration](#tftforconditionalgeneration)
 
 <a id='transformers.TFT5ForConditionalGeneration'></a>
 > **class transformers.TFT5ForConditionalGeneration**(*args, **kwargs)
@@ -1502,7 +1535,7 @@ The T5 model was proposed in [Exploring the Limits of Transfer Learning with a U
 Michael Matena, Yanqi Zhou, Wei Li, Peter J. Liu. It's an encoder decoder transformer pre-trained in a text-to-text
 denoising generative setting.
 
-This model inherits from [TFPreTrainedModel](main_classes/model.html#transformers.TFPreTrainedModel). Check the superclass documentation for the
+This model inherits from [TFPreTrainedModel](/docs/transformers/master/en/main_classes/model.html#transformers.TFPreTrainedModel). Check the superclass documentation for the
 generic methods the library implements for all its model (such as downloading or saving, resizing the input
 embeddings, pruning heads etc.)
 
@@ -1527,22 +1560,22 @@ the first positional argument :
 - a list of varying length with one or several input Tensors IN THE ORDER given in the docstring:
   `model([input_ids, attention_mask])` or `model([input_ids, attention_mask, token_type_ids])`
 - a dictionary with one or several input Tensors associated to the input names given in the docstring:
-  `model({"input_ids": input_ids, "token_type_ids": token_type_ids})`
+  `model(&amp;lcub;"input_ids": input_ids, "token_type_ids": token_type_ids})`
 
 </Tip>
 
 > Parameters
 
-- **config** ([T5Config](model_doc/t5.html#transformers.T5Config)) -- Model configuration class with all the parameters of the model.
+- **config** ([T5Config](/docs/transformers/master/en/model_doc/t5.html#transformers.T5Config)) -- Model configuration class with all the parameters of the model.
   Initializing with a config file does not load the weights associated with the model, only the
-  configuration. Check out the [from_pretrained()](main_classes/model.html#transformers.PreTrainedModel.from_pretrained) method to load the model
+  configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model.html#transformers.PreTrainedModel.from_pretrained) method to load the model
   weights.
 
 
 <a id='transformers.TFT5ForConditionalGeneration.call'></a>
 > **call**(self, input_ids = None, attention_mask = None, decoder_input_ids = None, decoder_attention_mask = None, head_mask = None, decoder_head_mask = None, encoder_outputs = None, past_key_values = None, inputs_embeds = None, decoder_inputs_embeds = None, labels = None, use_cache = None, output_attentions = None, output_hidden_states = None, return_dict = None, training = False, **kwargs)
 
-The [TFT5ForConditionalGeneration](model_doc/t5.html#transformers.TFT5ForConditionalGeneration) forward method, overrides the `__call__` special method.
+The [TFT5ForConditionalGeneration](/docs/transformers/master/en/model_doc/t5.html#transformers.TFT5ForConditionalGeneration) forward method, overrides the `__call__` special method.
 
 <Tip>
 
@@ -1558,8 +1591,8 @@ processing steps while the latter silently ignores them.
   Indices of input sequence tokens in the vocabulary. T5 is a model with relative position embeddings so you
   should be able to pad the inputs on the right or the left.
 
-  Indices can be obtained using [BertTokenizer](model_doc/bert.html#transformers.BertTokenizer). See
-  [transformers.PreTrainedTokenizer.__call__()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) and [transformers.PreTrainedTokenizer.encode()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) for
+  Indices can be obtained using [BertTokenizer](/docs/transformers/master/en/model_doc/bert.html#transformers.BertTokenizer). See
+  [transformers.PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) and [transformers.PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) for
   details.
 
   [What are input IDs?](../glossary.html#input-ids)
@@ -1628,7 +1661,7 @@ the decoder.
   more detail. This argument can be used only in eager mode, in graph mode the value in the config will be
   used instead.
 - **return_dict** (`bool`, _optional_) --
-  Whether or not to return a [ModelOutput](main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple. This
+  Whether or not to return a [ModelOutput](/docs/transformers/master/en/main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple. This
   argument can be used in eager mode, in graph mode the value will always be set to True.
 - **training** (`bool`, _optional_, defaults to `False`) --
   Whether or not to use the model in training mode (some modules like dropout modules have different
@@ -1640,9 +1673,9 @@ the decoder.
 
 > Returns
 
-A [TFSeq2SeqLMOutput](main_classes/output.html#transformers.modeling_tf_outputs.TFSeq2SeqLMOutput) or a tuple of
+A [TFSeq2SeqLMOutput](/docs/transformers/master/en/main_classes/output.html#transformers.modeling_tf_outputs.TFSeq2SeqLMOutput) or a tuple of
 `tf.Tensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising various
-elements depending on the configuration ([T5Config](model_doc/t5.html#transformers.T5Config)) and inputs.
+elements depending on the configuration ([T5Config](/docs/transformers/master/en/model_doc/t5.html#transformers.T5Config)) and inputs.
 
 - **loss** (`tf.Tensor` of shape `(n,)`, _optional_, where n is the number of non-masked labels, returned when `labels` is provided) -- Language modeling loss.
 - **logits** (`tf.Tensor` of shape `(batch_size, sequence_length, config.vocab_size)`) -- Prediction scores of the language modeling head (scores for each vocabulary token before SoftMax).
@@ -1682,8 +1715,8 @@ elements depending on the configuration ([T5Config](model_doc/t5.html#transforme
 >>> model = TFT5ForConditionalGeneration.from_pretrained('t5-small')
 
 >>> # training
->>> inputs = tokenizer('The &lcubextra_id_0> walks in &lcubextra_id_1> park', return_tensors='tf').input_ids
->>> labels = tokenizer('&lcubextra_id_0> cute dog &lcubextra_id_1> the &lcubextra_id_2>', return_tensors='tf').input_ids
+>>> inputs = tokenizer('The &amp;lt;extra_id_0> walks in &amp;lt;extra_id_1> park', return_tensors='tf').input_ids
+>>> labels = tokenizer('&amp;lt;extra_id_0> cute dog &amp;lt;extra_id_1> the &amp;lt;extra_id_2>', return_tensors='tf').input_ids
 >>> outputs = model(inputs, labels=labels)
 >>> loss = outputs.loss
 >>> logits = outputs.logits
@@ -1697,10 +1730,10 @@ elements depending on the configuration ([T5Config](model_doc/t5.html#transforme
 
 > Return type
 
-[TFSeq2SeqLMOutput](main_classes/output.html#transformers.modeling_tf_outputs.TFSeq2SeqLMOutput) or `tuple(tf.Tensor)`
+[TFSeq2SeqLMOutput](/docs/transformers/master/en/main_classes/output.html#transformers.modeling_tf_outputs.TFSeq2SeqLMOutput) or `tuple(tf.Tensor)`
 
 
-## TFT5EncoderModel
+## [TFT5EncoderModel](#tftencodermodel)
 
 <a id='transformers.TFT5EncoderModel'></a>
 > **class transformers.TFT5EncoderModel**(*args, **kwargs)
@@ -1711,7 +1744,7 @@ The T5 model was proposed in [Exploring the Limits of Transfer Learning with a U
 Michael Matena, Yanqi Zhou, Wei Li, Peter J. Liu. It's an encoder decoder transformer pre-trained in a text-to-text
 denoising generative setting.
 
-This model inherits from [TFPreTrainedModel](main_classes/model.html#transformers.TFPreTrainedModel). Check the superclass documentation for the
+This model inherits from [TFPreTrainedModel](/docs/transformers/master/en/main_classes/model.html#transformers.TFPreTrainedModel). Check the superclass documentation for the
 generic methods the library implements for all its model (such as downloading or saving, resizing the input
 embeddings, pruning heads etc.)
 
@@ -1736,22 +1769,22 @@ the first positional argument :
 - a list of varying length with one or several input Tensors IN THE ORDER given in the docstring:
   `model([input_ids, attention_mask])` or `model([input_ids, attention_mask, token_type_ids])`
 - a dictionary with one or several input Tensors associated to the input names given in the docstring:
-  `model({"input_ids": input_ids, "token_type_ids": token_type_ids})`
+  `model(&amp;lcub;"input_ids": input_ids, "token_type_ids": token_type_ids})`
 
 </Tip>
 
 > Parameters
 
-- **config** ([T5Config](model_doc/t5.html#transformers.T5Config)) -- Model configuration class with all the parameters of the model.
+- **config** ([T5Config](/docs/transformers/master/en/model_doc/t5.html#transformers.T5Config)) -- Model configuration class with all the parameters of the model.
   Initializing with a config file does not load the weights associated with the model, only the
-  configuration. Check out the [from_pretrained()](main_classes/model.html#transformers.PreTrainedModel.from_pretrained) method to load the model
+  configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model.html#transformers.PreTrainedModel.from_pretrained) method to load the model
   weights.
 
 
 <a id='transformers.TFT5EncoderModel.call'></a>
 > **call**(self, input_ids, attention_mask = None, head_mask = None, inputs_embeds = None, output_attentions = None, output_hidden_states = None, return_dict = None, training = False, **kwargs)
 
-The [TFT5EncoderModel](model_doc/t5.html#transformers.TFT5EncoderModel) forward method, overrides the `__call__` special method.
+The [TFT5EncoderModel](/docs/transformers/master/en/model_doc/t5.html#transformers.TFT5EncoderModel) forward method, overrides the `__call__` special method.
 
 <Tip>
 
@@ -1767,8 +1800,8 @@ processing steps while the latter silently ignores them.
   Indices of input sequence tokens in the vocabulary. T5 is a model with relative position embeddings so you
   should be able to pad the inputs on the right or the left.
 
-  Indices can be obtained using [T5Tokenizer](model_doc/t5.html#transformers.T5Tokenizer). See
-  [transformers.PreTrainedTokenizer.__call__()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) and [transformers.PreTrainedTokenizer.encode()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) for
+  Indices can be obtained using [T5Tokenizer](/docs/transformers/master/en/model_doc/mt5.html#transformers.T5Tokenizer). See
+  [transformers.PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) and [transformers.PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) for
   details.
 
   To know more on how to prepare `inputs` for pre-training take a look at [T5 Training](./t5.html#training).
@@ -1796,7 +1829,7 @@ processing steps while the latter silently ignores them.
   Whether or not to return the hidden states of all layers. See `hidden_states` under returned tensors for
   more detail.
 - **return_dict** (`bool`, _optional_) --
-  Whether or not to return a [ModelOutput](main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple.
+  Whether or not to return a [ModelOutput](/docs/transformers/master/en/main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple.
 - **training** (`bool`, _optional_, defaults to `False`) --
   Whether or not to use the model in training mode (some modules like dropout modules have different
   behaviors between training and evaluation).
@@ -1804,9 +1837,9 @@ processing steps while the latter silently ignores them.
 
 > Returns
 
-A [TFBaseModelOutput](main_classes/output.html#transformers.modeling_tf_outputs.TFBaseModelOutput) or a tuple of
+A [TFBaseModelOutput](/docs/transformers/master/en/main_classes/output.html#transformers.modeling_tf_outputs.TFBaseModelOutput) or a tuple of
 `tf.Tensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising various
-elements depending on the configuration ([T5Config](model_doc/t5.html#transformers.T5Config)) and inputs.
+elements depending on the configuration ([T5Config](/docs/transformers/master/en/model_doc/t5.html#transformers.T5Config)) and inputs.
 
 - **last_hidden_state** (`tf.Tensor` of shape `(batch_size, sequence_length, hidden_size)`) -- Sequence of hidden-states at the output of the last layer of the model.
 - **hidden_states** (`tuple(tf.FloatTensor)`, _optional_, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `tf.Tensor` (one for the output of the embeddings + one for the output of each layer) of
@@ -1833,13 +1866,13 @@ elements depending on the configuration ([T5Config](model_doc/t5.html#transforme
 
 > Return type
 
-[TFBaseModelOutput](main_classes/output.html#transformers.modeling_tf_outputs.TFBaseModelOutput) or `tuple(tf.Tensor)`
+[TFBaseModelOutput](/docs/transformers/master/en/main_classes/output.html#transformers.modeling_tf_outputs.TFBaseModelOutput) or `tuple(tf.Tensor)`
 
 
-## FlaxT5Model
+## [FlaxT5Model](#flaxtmodel)
 
 <a id='transformers.FlaxT5Model'></a>
-> **class transformers.FlaxT5Model**(config: T5Config, input_shape: typing.Tuple[int] = (1, 1), seed: int = 0, dtype: dtype = &lcubclass 'jax._src.numpy.lax_numpy.float32'&rcub, **kwargs)
+> **class transformers.FlaxT5Model**(config: T5Config, input_shape: typing.Tuple[int] = (1, 1), seed: int = 0, dtype: dtype = &amp;lt;class 'jax._src.numpy.lax_numpy.float32'>, **kwargs)
 
 <a id='transformers.FlaxT5PreTrainedModel.__call__'></a>
 > **\_\_call\_\_**(self, input_ids: ndarray, attention_mask: typing.Optional[jax._src.numpy.lax_numpy.ndarray] = None, decoder_input_ids: ndarray = None, decoder_attention_mask: typing.Optional[jax._src.numpy.lax_numpy.ndarray] = None, output_attentions: typing.Optional[bool] = None, output_hidden_states: typing.Optional[bool] = None, return_dict: typing.Optional[bool] = None, train: bool = False, params: dict = None, dropout_rng: PRNGKey = None)
@@ -1860,8 +1893,8 @@ processing steps while the latter silently ignores them.
   Indices of input sequence tokens in the vocabulary. T5 is a model with relative position embeddings so you
   should be able to pad the inputs on both the right and the left.
 
-  Indices can be obtained using [T5Tokenizer](model_doc/t5.html#transformers.T5Tokenizer). See
-  [transformers.PreTrainedTokenizer.encode()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
+  Indices can be obtained using [T5Tokenizer](/docs/transformers/master/en/model_doc/mt5.html#transformers.T5Tokenizer). See
+  [transformers.PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
   detail.
 
   [What are input IDs?](../glossary.html#input-ids)
@@ -1877,8 +1910,8 @@ processing steps while the latter silently ignores them.
 - **decoder_input_ids** (`jnp.ndarray` of shape `(batch_size, target_sequence_length)`, _optional_) --
   Indices of decoder input sequence tokens in the vocabulary.
 
-  Indices can be obtained using [T5Tokenizer](model_doc/t5.html#transformers.T5Tokenizer). See
-  [transformers.PreTrainedTokenizer.encode()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
+  Indices can be obtained using [T5Tokenizer](/docs/transformers/master/en/model_doc/mt5.html#transformers.T5Tokenizer). See
+  [transformers.PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
   details.
 
   [What are decoder input IDs?](../glossary.html#decoder-input-ids)
@@ -1911,14 +1944,14 @@ processing steps while the latter silently ignores them.
   Whether or not to return the hidden states of all layers. See `hidden_states` under returned tensors for
   more detail.
 - **return_dict** (`bool`, _optional_) --
-  Whether or not to return a [ModelOutput](main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple.
+  Whether or not to return a [ModelOutput](/docs/transformers/master/en/main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple.
 
 
 > Returns
 
-A [FlaxSeq2SeqLMOutput](main_classes/output.html#transformers.modeling_flax_outputs.FlaxSeq2SeqLMOutput) or a tuple of
+A [FlaxSeq2SeqLMOutput](/docs/transformers/master/en/main_classes/output.html#transformers.modeling_flax_outputs.FlaxSeq2SeqLMOutput) or a tuple of
 `torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising
-various elements depending on the configuration ([T5Config](model_doc/t5.html#transformers.T5Config)) and inputs.
+various elements depending on the configuration ([T5Config](/docs/transformers/master/en/model_doc/t5.html#transformers.T5Config)) and inputs.
 
 - **logits** (`jnp.ndarray` of shape `(batch_size, sequence_length, config.vocab_size)`) -- Prediction scores of the language modeling head (scores for each vocabulary token before SoftMax).
 - **past_key_values** (`tuple(tuple(jnp.ndarray))`, _optional_, returned when `use_cache=True` is passed or when `config.use_cache=True`) -- Tuple of `tuple(jnp.ndarray)` of length `config.n_layers`, with each tuple having 2 tensors of
@@ -1952,7 +1985,7 @@ various elements depending on the configuration ([T5Config](model_doc/t5.html#tr
 
 > Return type
 
-[FlaxSeq2SeqLMOutput](main_classes/output.html#transformers.modeling_flax_outputs.FlaxSeq2SeqLMOutput) or `tuple(torch.FloatTensor)`
+[FlaxSeq2SeqLMOutput](/docs/transformers/master/en/main_classes/output.html#transformers.modeling_flax_outputs.FlaxSeq2SeqLMOutput) or `tuple(torch.FloatTensor)`
 
 > Example:
 
@@ -1981,8 +2014,8 @@ various elements depending on the configuration ([T5Config](model_doc/t5.html#tr
   Indices of input sequence tokens in the vocabulary. T5 is a model with relative position embeddings so you
   should be able to pad the inputs on both the right and the left.
 
-  Indices can be obtained using [T5Tokenizer](model_doc/t5.html#transformers.T5Tokenizer). See
-  [transformers.PreTrainedTokenizer.encode()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
+  Indices can be obtained using [T5Tokenizer](/docs/transformers/master/en/model_doc/mt5.html#transformers.T5Tokenizer). See
+  [transformers.PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
   detail.
 
   To know more on how to prepare `input_ids` for pretraining take a look a [T5 Training](./t5.html#training).
@@ -2000,12 +2033,12 @@ various elements depending on the configuration ([T5Config](model_doc/t5.html#tr
   Whether or not to return the hidden states of all layers. See `hidden_states` under returned tensors for
   more detail.
 - **return_dict** (`bool`, _optional_) --
-  Whether or not to return a [ModelOutput](main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple.
+  Whether or not to return a [ModelOutput](/docs/transformers/master/en/main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple.
 
 
 > Returns
 
-A [FlaxBaseModelOutput](main_classes/output.html#transformers.modeling_flax_outputs.FlaxBaseModelOutput) or a tuple of
+A [FlaxBaseModelOutput](/docs/transformers/master/en/main_classes/output.html#transformers.modeling_flax_outputs.FlaxBaseModelOutput) or a tuple of
 `torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising
 various elements depending on the configuration (`T5Config'>`) and inputs.
 
@@ -2035,7 +2068,7 @@ various elements depending on the configuration (`T5Config'>`) and inputs.
 
 > Return type
 
-[FlaxBaseModelOutput](main_classes/output.html#transformers.modeling_flax_outputs.FlaxBaseModelOutput) or `tuple(torch.FloatTensor)`
+[FlaxBaseModelOutput](/docs/transformers/master/en/main_classes/output.html#transformers.modeling_flax_outputs.FlaxBaseModelOutput) or `tuple(torch.FloatTensor)`
 
 
 <a id='transformers.FlaxT5PreTrainedModel.decode'></a>
@@ -2047,8 +2080,8 @@ various elements depending on the configuration (`T5Config'>`) and inputs.
 - **decoder_input_ids** (`jnp.ndarray` of shape `(batch_size, target_sequence_length)`) --
   Indices of decoder input sequence tokens in the vocabulary.
 
-  Indices can be obtained using [T5Tokenizer](model_doc/t5.html#transformers.T5Tokenizer). See
-  [transformers.PreTrainedTokenizer.encode()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
+  Indices can be obtained using [T5Tokenizer](/docs/transformers/master/en/model_doc/mt5.html#transformers.T5Tokenizer). See
+  [transformers.PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
   details.
 
   [What are decoder input IDs?](../glossary.html#decoder-input-ids)
@@ -2081,12 +2114,12 @@ various elements depending on the configuration (`T5Config'>`) and inputs.
   Whether or not to return the hidden states of all layers. See `hidden_states` under returned tensors for
   more detail.
 - **return_dict** (`bool`, _optional_) --
-  Whether or not to return a [ModelOutput](main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple.
+  Whether or not to return a [ModelOutput](/docs/transformers/master/en/main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple.
 
 
 > Returns
 
-A [FlaxBaseModelOutputWithPastAndCrossAttentions](main_classes/output.html#transformers.modeling_flax_outputs.FlaxBaseModelOutputWithPastAndCrossAttentions) or a tuple of
+A [FlaxBaseModelOutputWithPastAndCrossAttentions](/docs/transformers/master/en/main_classes/output.html#transformers.modeling_flax_outputs.FlaxBaseModelOutputWithPastAndCrossAttentions) or a tuple of
 `torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising
 various elements depending on the configuration (`T5Config'>`) and inputs.
 
@@ -2136,13 +2169,13 @@ various elements depending on the configuration (`T5Config'>`) and inputs.
 
 > Return type
 
-[FlaxBaseModelOutputWithPastAndCrossAttentions](main_classes/output.html#transformers.modeling_flax_outputs.FlaxBaseModelOutputWithPastAndCrossAttentions) or `tuple(torch.FloatTensor)`
+[FlaxBaseModelOutputWithPastAndCrossAttentions](/docs/transformers/master/en/main_classes/output.html#transformers.modeling_flax_outputs.FlaxBaseModelOutputWithPastAndCrossAttentions) or `tuple(torch.FloatTensor)`
 
 
-## FlaxT5ForConditionalGeneration
+## [FlaxT5ForConditionalGeneration](#flaxtforconditionalgeneration)
 
 <a id='transformers.FlaxT5ForConditionalGeneration'></a>
-> **class transformers.FlaxT5ForConditionalGeneration**(config: T5Config, input_shape: typing.Tuple[int] = (1, 1), seed: int = 0, dtype: dtype = &lcubclass 'jax._src.numpy.lax_numpy.float32'&rcub, **kwargs)
+> **class transformers.FlaxT5ForConditionalGeneration**(config: T5Config, input_shape: typing.Tuple[int] = (1, 1), seed: int = 0, dtype: dtype = &amp;lt;class 'jax._src.numpy.lax_numpy.float32'>, **kwargs)
 
 <a id='transformers.FlaxT5PreTrainedModel.__call__'></a>
 > **\_\_call\_\_**(self, input_ids: ndarray, attention_mask: typing.Optional[jax._src.numpy.lax_numpy.ndarray] = None, decoder_input_ids: ndarray = None, decoder_attention_mask: typing.Optional[jax._src.numpy.lax_numpy.ndarray] = None, output_attentions: typing.Optional[bool] = None, output_hidden_states: typing.Optional[bool] = None, return_dict: typing.Optional[bool] = None, train: bool = False, params: dict = None, dropout_rng: PRNGKey = None)
@@ -2163,8 +2196,8 @@ processing steps while the latter silently ignores them.
   Indices of input sequence tokens in the vocabulary. T5 is a model with relative position embeddings so you
   should be able to pad the inputs on both the right and the left.
 
-  Indices can be obtained using [T5Tokenizer](model_doc/t5.html#transformers.T5Tokenizer). See
-  [transformers.PreTrainedTokenizer.encode()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
+  Indices can be obtained using [T5Tokenizer](/docs/transformers/master/en/model_doc/mt5.html#transformers.T5Tokenizer). See
+  [transformers.PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
   detail.
 
   [What are input IDs?](../glossary.html#input-ids)
@@ -2180,8 +2213,8 @@ processing steps while the latter silently ignores them.
 - **decoder_input_ids** (`jnp.ndarray` of shape `(batch_size, target_sequence_length)`, _optional_) --
   Indices of decoder input sequence tokens in the vocabulary.
 
-  Indices can be obtained using [T5Tokenizer](model_doc/t5.html#transformers.T5Tokenizer). See
-  [transformers.PreTrainedTokenizer.encode()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
+  Indices can be obtained using [T5Tokenizer](/docs/transformers/master/en/model_doc/mt5.html#transformers.T5Tokenizer). See
+  [transformers.PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
   details.
 
   [What are decoder input IDs?](../glossary.html#decoder-input-ids)
@@ -2214,14 +2247,14 @@ processing steps while the latter silently ignores them.
   Whether or not to return the hidden states of all layers. See `hidden_states` under returned tensors for
   more detail.
 - **return_dict** (`bool`, _optional_) --
-  Whether or not to return a [ModelOutput](main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple.
+  Whether or not to return a [ModelOutput](/docs/transformers/master/en/main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple.
 
 
 > Returns
 
-A [FlaxSeq2SeqLMOutput](main_classes/output.html#transformers.modeling_flax_outputs.FlaxSeq2SeqLMOutput) or a tuple of
+A [FlaxSeq2SeqLMOutput](/docs/transformers/master/en/main_classes/output.html#transformers.modeling_flax_outputs.FlaxSeq2SeqLMOutput) or a tuple of
 `torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising
-various elements depending on the configuration ([T5Config](model_doc/t5.html#transformers.T5Config)) and inputs.
+various elements depending on the configuration ([T5Config](/docs/transformers/master/en/model_doc/t5.html#transformers.T5Config)) and inputs.
 
 - **logits** (`jnp.ndarray` of shape `(batch_size, sequence_length, config.vocab_size)`) -- Prediction scores of the language modeling head (scores for each vocabulary token before SoftMax).
 - **past_key_values** (`tuple(tuple(jnp.ndarray))`, _optional_, returned when `use_cache=True` is passed or when `config.use_cache=True`) -- Tuple of `tuple(jnp.ndarray)` of length `config.n_layers`, with each tuple having 2 tensors of
@@ -2255,7 +2288,7 @@ various elements depending on the configuration ([T5Config](model_doc/t5.html#tr
 
 > Return type
 
-[FlaxSeq2SeqLMOutput](main_classes/output.html#transformers.modeling_flax_outputs.FlaxSeq2SeqLMOutput) or `tuple(torch.FloatTensor)`
+[FlaxSeq2SeqLMOutput](/docs/transformers/master/en/main_classes/output.html#transformers.modeling_flax_outputs.FlaxSeq2SeqLMOutput) or `tuple(torch.FloatTensor)`
 
 > Example:
 
@@ -2284,8 +2317,8 @@ various elements depending on the configuration ([T5Config](model_doc/t5.html#tr
   Indices of input sequence tokens in the vocabulary. T5 is a model with relative position embeddings so you
   should be able to pad the inputs on both the right and the left.
 
-  Indices can be obtained using [T5Tokenizer](model_doc/t5.html#transformers.T5Tokenizer). See
-  [transformers.PreTrainedTokenizer.encode()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
+  Indices can be obtained using [T5Tokenizer](/docs/transformers/master/en/model_doc/mt5.html#transformers.T5Tokenizer). See
+  [transformers.PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
   detail.
 
   To know more on how to prepare `input_ids` for pretraining take a look a [T5 Training](./t5.html#training).
@@ -2303,12 +2336,12 @@ various elements depending on the configuration ([T5Config](model_doc/t5.html#tr
   Whether or not to return the hidden states of all layers. See `hidden_states` under returned tensors for
   more detail.
 - **return_dict** (`bool`, _optional_) --
-  Whether or not to return a [ModelOutput](main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple.
+  Whether or not to return a [ModelOutput](/docs/transformers/master/en/main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple.
 
 
 > Returns
 
-A [FlaxBaseModelOutput](main_classes/output.html#transformers.modeling_flax_outputs.FlaxBaseModelOutput) or a tuple of
+A [FlaxBaseModelOutput](/docs/transformers/master/en/main_classes/output.html#transformers.modeling_flax_outputs.FlaxBaseModelOutput) or a tuple of
 `torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising
 various elements depending on the configuration (`T5Config'>`) and inputs.
 
@@ -2338,7 +2371,7 @@ various elements depending on the configuration (`T5Config'>`) and inputs.
 
 > Return type
 
-[FlaxBaseModelOutput](main_classes/output.html#transformers.modeling_flax_outputs.FlaxBaseModelOutput) or `tuple(torch.FloatTensor)`
+[FlaxBaseModelOutput](/docs/transformers/master/en/main_classes/output.html#transformers.modeling_flax_outputs.FlaxBaseModelOutput) or `tuple(torch.FloatTensor)`
 
 
 <a id='transformers.FlaxT5ForConditionalGeneration.decode'></a>
@@ -2350,8 +2383,8 @@ various elements depending on the configuration (`T5Config'>`) and inputs.
 - **decoder_input_ids** (`jnp.ndarray` of shape `(batch_size, target_sequence_length)`) --
   Indices of decoder input sequence tokens in the vocabulary.
 
-  Indices can be obtained using [T5Tokenizer](model_doc/t5.html#transformers.T5Tokenizer). See
-  [transformers.PreTrainedTokenizer.encode()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
+  Indices can be obtained using [T5Tokenizer](/docs/transformers/master/en/model_doc/mt5.html#transformers.T5Tokenizer). See
+  [transformers.PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
   details.
 
   [What are decoder input IDs?](../glossary.html#decoder-input-ids)
@@ -2384,12 +2417,12 @@ various elements depending on the configuration (`T5Config'>`) and inputs.
   Whether or not to return the hidden states of all layers. See `hidden_states` under returned tensors for
   more detail.
 - **return_dict** (`bool`, _optional_) --
-  Whether or not to return a [ModelOutput](main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple.
+  Whether or not to return a [ModelOutput](/docs/transformers/master/en/main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple.
 
 
 > Returns
 
-A [FlaxCausalLMOutputWithCrossAttentions](main_classes/output.html#transformers.modeling_flax_outputs.FlaxCausalLMOutputWithCrossAttentions) or a tuple of
+A [FlaxCausalLMOutputWithCrossAttentions](/docs/transformers/master/en/main_classes/output.html#transformers.modeling_flax_outputs.FlaxCausalLMOutputWithCrossAttentions) or a tuple of
 `torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising
 various elements depending on the configuration (`T5Config'>`) and inputs.
 
@@ -2436,5 +2469,5 @@ various elements depending on the configuration (`T5Config'>`) and inputs.
 
 > Return type
 
-[FlaxCausalLMOutputWithCrossAttentions](main_classes/output.html#transformers.modeling_flax_outputs.FlaxCausalLMOutputWithCrossAttentions) or `tuple(torch.FloatTensor)`
+[FlaxCausalLMOutputWithCrossAttentions](/docs/transformers/master/en/main_classes/output.html#transformers.modeling_flax_outputs.FlaxCausalLMOutputWithCrossAttentions) or `tuple(torch.FloatTensor)`
 

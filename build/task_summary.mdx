@@ -1,3 +1,27 @@
+---
+local: summary-of-the-tasks
+sections:
+- local: sequence-classification
+  title: Sequence Classification
+- local: extractive-question-answering
+  title: Extractive Question Answering
+- local: language-modeling
+  sections:
+  - local: masked-language-modeling
+    title: Masked Language Modeling
+  - local: causal-language-modeling
+    title: Causal Language Modeling
+  - local: text-generation
+    title: Text Generation
+  title: Language Modeling
+- local: named-entity-recognition
+  title: Named Entity Recognition
+- local: summarization
+  title: Summarization
+- local: translation
+  title: Translation
+title: Summary of the tasks
+---
 <script>
 import Tip from "../../Tip.svelte";
 import Youtube from "../../Youtube.svelte";	
@@ -16,14 +40,14 @@ an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express o
 specific language governing permissions and limitations under the License.
 -->
 
-# Summary of the tasks
+# [Summary of the tasks](#summary-of-the-tasks)
 
 This page shows the most frequent use-cases when using the library. The models available allow for many different
 configurations and a great versatility in use-cases. The most simple ones are presented here, showcasing usage for
 tasks such as question answering, sequence classification, named entity recognition and others.
 
 These examples leverage auto-models, which are classes that will instantiate a model according to a given checkpoint,
-automatically selecting the correct model architecture. Please check the [AutoModel](model_doc/auto.html#transformers.AutoModel) documentation
+automatically selecting the correct model architecture. Please check the [AutoModel](/docs/transformers/master/en/model_doc/auto.html#transformers.AutoModel) documentation
 for more information. Feel free to modify the code to be more specific and adapt it to your specific use-case.
 
 In order for a model to perform well on a task, it must be loaded from a checkpoint corresponding to that task. These
@@ -54,11 +78,11 @@ This would produce random output.
 
 </Tip>
 
-## Sequence Classification
+## [Sequence Classification](#sequence-classification)
 
 Sequence classification is the task of classifying sequences according to a given number of classes. An example of
 sequence classification is the GLUE dataset, which is entirely based on that task. If you would like to fine-tune a
-model on a GLUE sequence classification task, you may leverage the somelink, somelink, somelink or somelink scripts.
+model on a GLUE sequence classification task, you may leverage the [run_glue.py](https://github.com/huggingface/transformers/tree/master/examples/pytorch/text-classification/run_glue.py), [run_tf_glue.py](https://github.com/huggingface/transformers/tree/master/examples/tensorflow/text-classification/run_tf_glue.py), [run_tf_text_classification.py](https://github.com/huggingface/transformers/tree/master/examples/tensorflow/text-classification/run_tf_text_classification.py) or [run_xnli.py](https://github.com/huggingface/transformers/tree/master/examples/pytorch/text-classification/run_xnli.py) scripts.
 
 Here is an example of using pipelines to do sentiment analysis: identifying if a sequence is positive or negative. It
 leverages a fine-tuned model on sst2, which is a GLUE task.
@@ -71,11 +95,11 @@ This returns a label ("POSITIVE" or "NEGATIVE") alongside a score, as follows:
 >>> classifier = pipeline("sentiment-analysis")
 
 >>> result = classifier("I hate you")[0]
->>> print(f"label: {result['label']}, with score: {round(result['score'], 4)}")
+>>> print(f"label: &amp;lcub;result['label']}, with score: &amp;lcub;round(result['score'], 4)}")
 label: NEGATIVE, with score: 0.9991
 
 >>> result = classifier("I love you")[0]
->>> print(f"label: {result['label']}, with score: {round(result['score'], 4)}")
+>>> print(f"label: &amp;lcub;result['label']}, with score: &amp;lcub;round(result['score'], 4)}")
 label: POSITIVE, with score: 0.9999
 ```
 
@@ -105,7 +129,7 @@ each other. The process is the following:
 >>> sequence_1 = "Apples are especially bad for your health"
 >>> sequence_2 = "HuggingFace's headquarters are situated in Manhattan"
 
->>> # The tokenizer will automatically add any model specific separators (i.e. <CLS> and <SEP>) and tokens to
+>>> # The tokenizer will automatically add any model specific separators (i.e. &amp;lt;CLS> and &amp;lt;SEP>) and tokens to
 >>> # the sequence, as well as compute the attention masks.
 >>> paraphrase = tokenizer(sequence_0, sequence_2, return_tensors="pt")
 >>> not_paraphrase = tokenizer(sequence_0, sequence_1, return_tensors="pt")
@@ -118,13 +142,13 @@ each other. The process is the following:
 
 >>> # Should be paraphrase
 >>> for i in range(len(classes)):
-...     print(f"{classes[i]}: {int(round(paraphrase_results[i] * 100))}%")
+...     print(f"&amp;lcub;classes[i]}: &amp;lcub;int(round(paraphrase_results[i] * 100))}%")
 not paraphrase: 10%
 is paraphrase: 90%
 
 >>> # Should not be paraphrase
 >>> for i in range(len(classes)):
-...     print(f"{classes[i]}: {int(round(not_paraphrase_results[i] * 100))}%")
+...     print(f"&amp;lcub;classes[i]}: &amp;lcub;int(round(not_paraphrase_results[i] * 100))}%")
 not paraphrase: 94%
 is paraphrase: 6%
 ```
@@ -142,7 +166,7 @@ is paraphrase: 6%
 >>> sequence_1 = "Apples are especially bad for your health"
 >>> sequence_2 = "HuggingFace's headquarters are situated in Manhattan"
 
->>> # The tokenizer will automatically add any model specific separators (i.e. <CLS> and <SEP>) and tokens to
+>>> # The tokenizer will automatically add any model specific separators (i.e. &amp;lt;CLS> and &amp;lt;SEP>) and tokens to
 >>> # the sequence, as well as compute the attention masks.
 >>> paraphrase = tokenizer(sequence_0, sequence_2, return_tensors="tf")
 >>> not_paraphrase = tokenizer(sequence_0, sequence_1, return_tensors="tf")
@@ -155,19 +179,19 @@ is paraphrase: 6%
 
 >>> # Should be paraphrase
 >>> for i in range(len(classes)):
-...     print(f"{classes[i]}: {int(round(paraphrase_results[i] * 100))}%")
+...     print(f"&amp;lcub;classes[i]}: &amp;lcub;int(round(paraphrase_results[i] * 100))}%")
 not paraphrase: 10%
 is paraphrase: 90%
 
 >>> # Should not be paraphrase
 >>> for i in range(len(classes)):
-...     print(f"{classes[i]}: {int(round(not_paraphrase_results[i] * 100))}%")
+...     print(f"&amp;lcub;classes[i]}: &amp;lcub;int(round(not_paraphrase_results[i] * 100))}%")
 not paraphrase: 94%
 is paraphrase: 6%
 ```
 {/if}
 
-## Extractive Question Answering
+## [Extractive Question Answering](#extractive-question-answering)
 
 Extractive Question Answering is the task of extracting an answer from a text given a question. An example of a
 question answering dataset is the SQuAD dataset, which is entirely based on that task. If you would like to fine-tune a
@@ -196,11 +220,11 @@ positions of the extracted answer in the text.
 
 ```
 >>> result = question_answerer(question="What is extractive question answering?", context=context)
->>> print(f"Answer: '{result['answer']}', score: {round(result['score'], 4)}, start: {result['start']}, end: {result['end']}")
+>>> print(f"Answer: '&amp;lcub;result['answer']}', score: &amp;lcub;round(result['score'], 4)}, start: &amp;lcub;result['start']}, end: &amp;lcub;result['end']}")
 Answer: 'the task of extracting an answer from a text given a question', score: 0.6177, start: 34, end: 95
 
 >>> result = question_answerer(question="What is a good example of a question answering dataset?", context=context)
->>> print(f"Answer: '{result['answer']}', score: {round(result['score'], 4)}, start: {result['start']}, end: {result['end']}")
+>>> print(f"Answer: '&amp;lcub;result['answer']}', score: &amp;lcub;round(result['score'], 4)}, start: &amp;lcub;result['start']}, end: &amp;lcub;result['end']}")
 Answer: 'SQuAD dataset', score: 0.5152, start: 147, end: 160
 ```
 
@@ -253,8 +277,8 @@ Here is an example of question answering using a model and a tokenizer. The proc
 ...
 ...     answer = tokenizer.convert_tokens_to_string(tokenizer.convert_ids_to_tokens(input_ids[answer_start:answer_end]))
 ...
-...     print(f"Question: {question}")
-...     print(f"Answer: {answer}")
+...     print(f"Question: &amp;lcub;question}")
+...     print(f"Answer: &amp;lcub;answer}")
 Question: How many pretrained models are available in 🤗 Transformers?
 Answer: over 32 +
 Question: What does 🤗 Transformers provide?
@@ -298,8 +322,8 @@ Answer: tensorflow 2. 0 and pytorch
 ...
 ...     answer = tokenizer.convert_tokens_to_string(tokenizer.convert_ids_to_tokens(input_ids[answer_start:answer_end]))
 ...
-...     print(f"Question: {question}")
-...     print(f"Answer: {answer}")
+...     print(f"Question: &amp;lcub;question}")
+...     print(f"Answer: &amp;lcub;answer}")
 Question: How many pretrained models are available in 🤗 Transformers?
 Answer: over 32 +
 Question: What does 🤗 Transformers provide?
@@ -309,7 +333,7 @@ Answer: tensorflow 2. 0 and pytorch
 ```
 {/if}
 
-## Language Modeling
+## [Language Modeling](#language-modeling)
 
 Language modeling is the task of fitting a model to a corpus, which can be domain specific. All popular
 transformer-based models are trained using a variant of language modeling, e.g. BERT with masked language modeling,
@@ -319,13 +343,13 @@ Language modeling can be useful outside of pretraining as well, for example to s
 domain-specific: using a language model trained over a very large corpus, and then fine-tuning it to a news dataset or
 on scientific papers e.g. [LysandreJik/arxiv-nlp](https://huggingface.co/lysandre/arxiv-nlp).
 
-### Masked Language Modeling
+### [Masked Language Modeling](#masked-language-modeling)
 
 Masked language modeling is the task of masking tokens in a sequence with a masking token, and prompting the model to
 fill that mask with an appropriate token. This allows the model to attend to both the right context (tokens on the
 right of the mask) and the left context (tokens on the left of the mask). Such a training creates a strong basis for
 downstream tasks requiring bi-directional context, such as SQuAD (question answering, see [Lewis, Lui, Goyal et al.](https://arxiv.org/abs/1910.13461), part 4.2). If you would like to fine-tune a model on a masked language modeling
-task, you may leverage the somelink script.
+task, you may leverage the [run_mlm.py](https://github.com/huggingface/transformers/tree/master/examples/pytorch/language-modeling/run_mlm.py) script.
 
 Here is an example of using pipelines to replace a mask from a sequence:
 
@@ -339,28 +363,28 @@ This outputs the sequences with the mask filled, the confidence score, and the t
 
 ```
 >>> from pprint import pprint
->>> pprint(unmasker(f"HuggingFace is creating a {unmasker.tokenizer.mask_token} that the community uses to solve NLP tasks."))
-[{'score': 0.1793,
+>>> pprint(unmasker(f"HuggingFace is creating a &amp;lcub;unmasker.tokenizer.mask_token} that the community uses to solve NLP tasks."))
+[&amp;lcub;'score': 0.1793,
 'sequence': 'HuggingFace is creating a tool that the community uses to solve '
 'NLP tasks.',
 'token': 3944,
 'token_str': ' tool'},
-{'score': 0.1135,
+&amp;lcub;'score': 0.1135,
 'sequence': 'HuggingFace is creating a framework that the community uses to '
 'solve NLP tasks.',
 'token': 7208,
 'token_str': ' framework'},
-{'score': 0.0524,
+&amp;lcub;'score': 0.0524,
 'sequence': 'HuggingFace is creating a library that the community uses to '
 'solve NLP tasks.',
 'token': 5560,
 'token_str': ' library'},
-{'score': 0.0349,
+&amp;lcub;'score': 0.0349,
 'sequence': 'HuggingFace is creating a database that the community uses to '
 'solve NLP tasks.',
 'token': 8503,
 'token_str': ' database'},
-{'score': 0.0286,
+&amp;lcub;'score': 0.0286,
 'sequence': 'HuggingFace is creating a prototype that the community uses to '
 'solve NLP tasks.',
 'token': 17715,
@@ -388,7 +412,7 @@ Here is an example of doing masked language modeling using a model and a tokeniz
 >>> model = AutoModelForMaskedLM.from_pretrained("distilbert-base-cased")
 
 >>> sequence = "Distilled models are smaller than the models they mimic. Using them instead of the large " \
-...     f"versions would help {tokenizer.mask_token} our carbon footprint."
+...     f"versions would help &amp;lcub;tokenizer.mask_token} our carbon footprint."
 
 >>> inputs = tokenizer(sequence, return_tensors="pt")
 >>> mask_token_index = torch.where(inputs["input_ids"] == tokenizer.mask_token_id)[1]
@@ -415,7 +439,7 @@ Distilled models are smaller than the models they mimic. Using them instead of t
 >>> model = TFAutoModelForMaskedLM.from_pretrained("distilbert-base-cased")
 
 >>> sequence = "Distilled models are smaller than the models they mimic. Using them instead of the large " \
-...     f"versions would help {tokenizer.mask_token} our carbon footprint."
+...     f"versions would help &amp;lcub;tokenizer.mask_token} our carbon footprint."
 
 >>> inputs = tokenizer(sequence, return_tensors="tf")
 >>> mask_token_index = tf.where(inputs["input_ids"] == tokenizer.mask_token_id)[0, 1]
@@ -438,12 +462,12 @@ Distilled models are smaller than the models they mimic. Using them instead of t
 This prints five sequences, with the top 5 tokens predicted by the model.
 
 
-### Causal Language Modeling
+### [Causal Language Modeling](#causal-language-modeling)
 
 Causal language modeling is the task of predicting the token following a sequence of tokens. In this situation, the
 model only attends to the left context (tokens on the left of the mask). Such a training is particularly interesting
 for generation tasks. If you would like to fine-tune a model on a causal language modeling task, you may leverage the
-somelink script.
+[run_clm.py](https://github.com/huggingface/transformers/tree/master/examples/pytorch/language-modeling/run_clm.py) script.
 
 Usually, the next token is predicted by sampling from the logits of the last hidden state the model produces from the
 input sequence.
@@ -515,10 +539,10 @@ Hugging Face is based in DUMBO, New York City, and ...
 This outputs a (hopefully) coherent next token following the original sequence, which in our case is the word *is* or
 *features*.
 
-In the next section, we show how [generate()](main_classes/model.html#transformers.generation_utils.GenerationMixin.generate) can be used to
+In the next section, we show how [generate()](/docs/transformers/master/en/main_classes/model.html#transformers.generation_utils.GenerationMixin.generate) can be used to
 generate multiple tokens up to a specified length instead of one token at a time.
 
-### Text Generation
+### [Text Generation](#text-generation)
 
 In text generation (*a.k.a* *open-ended text generation*) the goal is to create a coherent portion of text that is a
 continuation from the given context. The following example shows how *GPT-2* can be used in pipelines to generate text.
@@ -530,13 +554,13 @@ As a default all models apply *Top-K* sampling when used in pipelines, as config
 
 >>> text_generator = pipeline("text-generation")
 >>> print(text_generator("As far as I am concerned, I will", max_length=50, do_sample=False))
-[{'generated_text': 'As far as I am concerned, I will be the first to admit that I am not a fan of the idea of a
+[&amp;lcub;'generated_text': 'As far as I am concerned, I will be the first to admit that I am not a fan of the idea of a
 "free market." I think that the idea of a free market is a bit of a stretch. I think that the idea'}]
 ```
 
 Here, the model generates a random text with a total maximal length of *50* tokens from context *"As far as I am
 concerned, I will"*. Behind the scenes, the pipeline object calls the method
-[generate()](main_classes/model.html#transformers.generation_utils.GenerationMixin.generate) to generate text. The default arguments for this method can be
+[generate()](/docs/transformers/master/en/main_classes/model.html#transformers.generation_utils.GenerationMixin.generate) to generate text. The default arguments for this method can be
 overridden in the pipeline, as is shown above for the arguments `max_length` and `do_sample`.
 
 Below is an example of text generation using `XLNet` and its tokenizer, which includes calling `generate` directly:
@@ -558,7 +582,7 @@ Below is an example of text generation using `XLNet` and its tokenizer, which in
 ... father initially slaps him for making such an accusation, Rasputin watches as the
 ... man is chased outside and beaten. Twenty years later, Rasputin sees a vision of
 ... the Virgin Mary, prompting him to become a priest. Rasputin quickly becomes famous,
-... with people, even a bishop, begging for his blessing. &amp;lt;eod> &lcub/s> &amp;lt;eos>"""
+... with people, even a bishop, begging for his blessing. &amp;lt;eod> &amp;lt;/s> &amp;lt;eos>"""
 
 >>> prompt = "Today the weather is really nice and I am planning on "
 >>> inputs = tokenizer(PADDING_TEXT + prompt, add_special_tokens=False, return_tensors="pt")["input_ids"]
@@ -587,7 +611,7 @@ Today the weather is really nice and I am planning ...
 ... father initially slaps him for making such an accusation, Rasputin watches as the
 ... man is chased outside and beaten. Twenty years later, Rasputin sees a vision of
 ... the Virgin Mary, prompting him to become a priest. Rasputin quickly becomes famous,
-... with people, even a bishop, begging for his blessing. &amp;lt;eod> &lcub/s> &amp;lt;eos>"""
+... with people, even a bishop, begging for his blessing. &amp;lt;eod> &amp;lt;/s> &amp;lt;eos>"""
 
 >>> prompt = "Today the weather is really nice and I am planning on "
 >>> inputs = tokenizer(PADDING_TEXT + prompt, add_special_tokens=False, return_tensors="tf")["input_ids"]
@@ -610,12 +634,12 @@ For more information on how to apply different decoding strategies for text gene
 generation blog post [here](https://huggingface.co/blog/how-to-generate).
 
 
-## Named Entity Recognition
+## [Named Entity Recognition](#named-entity-recognition)
 
 Named Entity Recognition (NER) is the task of classifying tokens according to a class, for example, identifying a token
 as a person, an organisation or a location. An example of a named entity recognition dataset is the CoNLL-2003 dataset,
 which is entirely based on that task. If you would like to fine-tune a model on an NER task, you may leverage the
-somelink script.
+[run_ner.py](https://github.com/huggingface/transformers/tree/master/examples/pytorch/token-classification/run_ner.py) script.
 
 Here is an example of using pipelines to do named entity recognition, specifically, trying to identify tokens as
 belonging to one of 9 classes:
@@ -647,18 +671,18 @@ Here are the expected results:
 ```
 >>> for entity in ner_pipe(sequence):
 ...     print(entity)
-{'entity': 'I-ORG', 'score': 0.9996, 'index': 1, 'word': 'Hu', 'start': 0, 'end': 2}
-{'entity': 'I-ORG', 'score': 0.9910, 'index': 2, 'word': '##gging', 'start': 2, 'end': 7}
-{'entity': 'I-ORG', 'score': 0.9982, 'index': 3, 'word': 'Face', 'start': 8, 'end': 12}
-{'entity': 'I-ORG', 'score': 0.9995, 'index': 4, 'word': 'Inc', 'start': 13, 'end': 16}
-{'entity': 'I-LOC', 'score': 0.9994, 'index': 11, 'word': 'New', 'start': 40, 'end': 43}
-{'entity': 'I-LOC', 'score': 0.9993, 'index': 12, 'word': 'York', 'start': 44, 'end': 48}
-{'entity': 'I-LOC', 'score': 0.9994, 'index': 13, 'word': 'City', 'start': 49, 'end': 53}
-{'entity': 'I-LOC', 'score': 0.9863, 'index': 19, 'word': 'D', 'start': 79, 'end': 80}
-{'entity': 'I-LOC', 'score': 0.9514, 'index': 20, 'word': '##UM', 'start': 80, 'end': 82}
-{'entity': 'I-LOC', 'score': 0.9337, 'index': 21, 'word': '##BO', 'start': 82, 'end': 84}
-{'entity': 'I-LOC', 'score': 0.9762, 'index': 28, 'word': 'Manhattan', 'start': 114, 'end': 123}
-{'entity': 'I-LOC', 'score': 0.9915, 'index': 29, 'word': 'Bridge', 'start': 124, 'end': 130}
+&amp;lcub;'entity': 'I-ORG', 'score': 0.9996, 'index': 1, 'word': 'Hu', 'start': 0, 'end': 2}
+&amp;lcub;'entity': 'I-ORG', 'score': 0.9910, 'index': 2, 'word': '##gging', 'start': 2, 'end': 7}
+&amp;lcub;'entity': 'I-ORG', 'score': 0.9982, 'index': 3, 'word': 'Face', 'start': 8, 'end': 12}
+&amp;lcub;'entity': 'I-ORG', 'score': 0.9995, 'index': 4, 'word': 'Inc', 'start': 13, 'end': 16}
+&amp;lcub;'entity': 'I-LOC', 'score': 0.9994, 'index': 11, 'word': 'New', 'start': 40, 'end': 43}
+&amp;lcub;'entity': 'I-LOC', 'score': 0.9993, 'index': 12, 'word': 'York', 'start': 44, 'end': 48}
+&amp;lcub;'entity': 'I-LOC', 'score': 0.9994, 'index': 13, 'word': 'City', 'start': 49, 'end': 53}
+&amp;lcub;'entity': 'I-LOC', 'score': 0.9863, 'index': 19, 'word': 'D', 'start': 79, 'end': 80}
+&amp;lcub;'entity': 'I-LOC', 'score': 0.9514, 'index': 20, 'word': '##UM', 'start': 80, 'end': 82}
+&amp;lcub;'entity': 'I-LOC', 'score': 0.9337, 'index': 21, 'word': '##BO', 'start': 82, 'end': 84}
+&amp;lcub;'entity': 'I-LOC', 'score': 0.9762, 'index': 28, 'word': 'Manhattan', 'start': 114, 'end': 123}
+&amp;lcub;'entity': 'I-LOC', 'score': 0.9915, 'index': 29, 'word': 'Bridge', 'start': 124, 'end': 130}
 ```
 
 Note how the tokens of the sequence "Hugging Face" have been identified as an organisation, and "New York City",
@@ -758,7 +782,7 @@ illustrated below:
 ('[SEP]', 'O')
 ```
 
-## Summarization
+## [Summarization](#summarization)
 
 Summarization is the task of summarizing a document or an article into a shorter text. If you would like to fine-tune a
 model on a summarization task, you may leverage the [run_summarization.py](https://github.com/huggingface/transformers/tree/master/examples/pytorch/summarization/run_summarization.py)
@@ -766,7 +790,7 @@ script.
 
 An example of a summarization dataset is the CNN / Daily Mail dataset, which consists of long news articles and was
 created for the task of summarization. If you would like to fine-tune a model on a summarization task, various
-approaches are described in this somelink.
+approaches are described in this [document](https://github.com/huggingface/transformers/tree/master/examples/pytorch/summarization/README.md).
 
 Here is an example of using the pipelines to do summarization. It leverages a Bart model that was fine-tuned on the CNN
 / Daily Mail data set.
@@ -802,7 +826,7 @@ below. This outputs the following summary:
 
 ```
 >>> print(summarizer(ARTICLE, max_length=130, min_length=30, do_sample=False))
-[{'summary_text': ' Liana Barrientos, 39, is charged with two counts of "offering a false instrument for filing in
+[&amp;lcub;'summary_text': ' Liana Barrientos, 39, is charged with two counts of "offering a false instrument for filing in
 the first degree" In total, she has been married 10 times, with nine of her marriages occurring between 1999 and
 2002 . At one time, she was married to eight men at once, prosecutors say .'}]
 ```
@@ -832,9 +856,9 @@ CNN / Daily Mail), it yields very good results.
 ... )
 
 >>> print(tokenizer.decode(outputs[0]))
-&lcubpad> prosecutors say the marriages were part of an immigration scam. if convicted, barrientos faces two criminal
+&amp;lt;pad> prosecutors say the marriages were part of an immigration scam. if convicted, barrientos faces two criminal
 counts of "offering a false instrument for filing in the first degree" she has been married 10 times, nine of them
-between 1999 and 2002.&lcub/s>
+between 1999 and 2002.&amp;lt;/s>
 ```
 {:else}
 ```
@@ -850,20 +874,20 @@ between 1999 and 2002.&lcub/s>
 ... )
 
 >>> print(tokenizer.decode(outputs[0]))
-&lcubpad> prosecutors say the marriages were part of an immigration scam. if convicted, barrientos faces two criminal
+&amp;lt;pad> prosecutors say the marriages were part of an immigration scam. if convicted, barrientos faces two criminal
 counts of "offering a false instrument for filing in the first degree" she has been married 10 times, nine of them
 between 1999 and 2002.
 ```
 {/if}
 
-## Translation
+## [Translation](#translation)
 
 Translation is the task of translating a text from one language to another. If you would like to fine-tune a model on a
 translation task, you may leverage the [run_translation.py](https://github.com/huggingface/transformers/tree/master/examples/pytorch/translation/run_translation.py) script.
 
 An example of a translation dataset is the WMT English to German dataset, which has sentences in English as the input
 data and the corresponding sentences in German as the target data. If you would like to fine-tune a model on a
-translation task, various approaches are described in this somelink.
+translation task, various approaches are described in this [document](https://github.com/huggingface/transformers/tree/master/examples/pytorch.translation/README.md).
 
 Here is an example of using the pipelines to do translation. It leverages a T5 model that was only pre-trained on a
 multi-task mixture dataset (including WMT), yet, yielding impressive translation results.
@@ -873,7 +897,7 @@ multi-task mixture dataset (including WMT), yet, yielding impressive translation
 
 >>> translator = pipeline("translation_en_to_de")
 >>> print(translator("Hugging Face is a technology company based in New York and Paris", max_length=40))
-[{'translation_text': 'Hugging Face ist ein Technologieunternehmen mit Sitz in New York und Paris.'}]
+[&amp;lcub;'translation_text': 'Hugging Face ist ein Technologieunternehmen mit Sitz in New York und Paris.'}]
 ```
 
 Because the translation pipeline depends on the `PreTrainedModel.generate()` method, we can override the default
@@ -901,7 +925,7 @@ Here is an example of doing translation using a model and a tokenizer. The proce
 >>> outputs = model.generate(inputs["input_ids"], max_length=40, num_beams=4, early_stopping=True)
 
 >>> print(tokenizer.decode(outputs[0]))
-&lcubpad> Hugging Face ist ein Technologieunternehmen mit Sitz in New York und Paris.&lcub/s>
+&amp;lt;pad> Hugging Face ist ein Technologieunternehmen mit Sitz in New York und Paris.&amp;lt;/s>
 ```
 {:else}
 ```
@@ -917,7 +941,7 @@ Here is an example of doing translation using a model and a tokenizer. The proce
 >>> outputs = model.generate(inputs["input_ids"], max_length=40, num_beams=4, early_stopping=True)
 
 >>> print(tokenizer.decode(outputs[0]))
-&lcubpad> Hugging Face ist ein Technologieunternehmen mit Sitz in New York und Paris.
+&amp;lt;pad> Hugging Face ist ein Technologieunternehmen mit Sitz in New York und Paris.
 ```
 {/if}
 

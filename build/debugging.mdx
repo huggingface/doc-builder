@@ -1,3 +1,13 @@
+---
+local: debugging
+sections:
+- local: underflow-and-overflow-detection
+  sections:
+  - local: specific-batch-absolute-mix-and-max-value-tracing
+    title: Specific batch absolute mix and max value tracing
+  title: Underflow and Overflow Detection
+title: Debugging
+---
 <script>
 import Tip from "../../Tip.svelte";
 import Youtube from "../../Youtube.svelte";	
@@ -16,9 +26,9 @@ an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express o
 specific language governing permissions and limitations under the License.
 -->
 
-# Debugging
+# [Debugging](#debugging)
 
-## Underflow and Overflow Detection
+## [Underflow and Overflow Detection](#underflow-and-overflow-detection)
 
 <Tip>
 
@@ -42,14 +52,14 @@ If you start getting `loss=NaN` or the model inhibits some other abnormal behavi
 activations or weights one needs to discover where the first underflow or overflow happens and what led to it. Luckily
 you can accomplish that easily by activating a special module that will do the detection automatically.
 
-If you're using [Trainer](main_classes/trainer.html#transformers.Trainer), you just need to add:
+If you're using [Trainer](/docs/transformers/master/en/main_classes/trainer.html#transformers.Trainer), you just need to add:
 
 ```bash
 --debug underflow_overflow
 ```
 
 to the normal command line arguments, or pass `debug="underflow_overflow"` when creating the
-[TrainingArguments](main_classes/trainer.html#transformers.TrainingArguments) object.
+[TrainingArguments](/docs/transformers/master/en/main_classes/trainer.html#transformers.TrainingArguments) object.
 
 If you're using your own training loop or another Trainer you can accomplish the same with:
 
@@ -58,7 +68,7 @@ from .debug_utils import DebugUnderflowOverflow
 debug_overflow = DebugUnderflowOverflow(model)
 ```
 
-[DebugUnderflowOverflow](internal/trainer_utils.html#transformers.debug_utils.DebugUnderflowOverflow) inserts hooks into the model that immediately after each
+[DebugUnderflowOverflow](/docs/transformers/master/en/internal/trainer_utils.html#transformers.debug_utils.DebugUnderflowOverflow) inserts hooks into the model that immediately after each
 forward call will test input and output variables and also the corresponding module's weights. As soon as `inf` or
 `nan` is detected in at least one element of the activations or weights, the program will assert and print a report
 like this (this was caught with `google/mt5-small` under fp16 mixed precision):
@@ -247,7 +257,7 @@ from .debug_utils import DebugUnderflowOverflow
 debug_overflow = DebugUnderflowOverflow(model, max_frames_to_save=100)
 ```
 
-### Specific batch absolute mix and max value tracing
+### [Specific batch absolute mix and max value tracing](#specific-batch-absolute-mix-and-max-value-tracing)
 
 The same debugging class can be used for per-batch tracing with the underflow/overflow detection feature turned off.
 

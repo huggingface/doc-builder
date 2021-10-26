@@ -1,3 +1,92 @@
+---
+local: trainer
+sections:
+- local: trainer
+  title: Trainer
+- local: seqseqtrainer
+  title: Seq2SeqTrainer
+- local: tftrainer
+  title: TFTrainer
+- local: trainingarguments
+  title: TrainingArguments
+- local: seqseqtrainingarguments
+  title: Seq2SeqTrainingArguments
+- local: tftrainingarguments
+  title: TFTrainingArguments
+- local: checkpoints
+  title: Checkpoints
+- local: logging
+  title: Logging
+- local: randomness
+  title: Randomness
+- local: trainer-integrations
+  sections:
+  - local: cuda-extension-installation-notes
+    sections:
+    - local: possible-problem
+      title: 'Possible problem #1'
+    - local: possible-problem
+      title: 'Possible problem #2'
+    - local: possible-problem
+      title: 'Possible problem #3'
+    title: CUDA Extension Installation Notes
+  - local: fairscale
+    title: FairScale
+  - local: deepspeed
+    sections:
+    - local: installation
+      title: Installation
+    - local: deployment-with-multiple-gpus
+      title: Deployment with multiple GPUs
+    - local: deployment-with-one-gpu
+      title: Deployment with one GPU
+    - local: deployment-in-notebooks
+      title: Deployment in Notebooks
+    - local: configuration
+      title: Configuration
+    - local: passing-configuration
+      title: Passing Configuration
+    - local: shared-configuration
+      title: Shared Configuration
+    - local: zero
+      sections:
+      - local: zero-config
+        title: ZeRO-2 Config
+      - local: zero-config
+        title: ZeRO-3 Config
+      title: ZeRO
+    - local: nvme-support
+      sections:
+      - local: zero-vs-zero-performance
+        title: ZeRO-2 vs ZeRO-3 Performance
+      - local: zero-example
+        title: ZeRO-2 Example
+      - local: zero-example
+        title: ZeRO-3 Example
+      title: NVMe Support
+    - local: optimizer-and-scheduler
+      sections:
+      - local: optimizer
+        title: Optimizer
+      - local: scheduler
+        title: Scheduler
+      title: Optimizer and Scheduler
+    - local: fp-precision
+      title: fp32 Precision
+    - local: automatic-mixed-precision
+      title: Automatic Mixed Precision
+    - local: batch-size
+      title: Batch Size
+    - local: gradient-accumulation
+      title: Gradient Accumulation
+    - local: gradient-clipping
+      title: Gradient Clipping
+    - local: getting-the-model-weights-out
+      title: Getting The Model Weights Out
+    title: DeepSpeed
+  title: Trainer Integrations
+title: Trainer
+---
 <script>
 import Tip from "../../Tip.svelte";
 import Youtube from "../../Youtube.svelte";	
@@ -16,18 +105,18 @@ an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express o
 specific language governing permissions and limitations under the License.
 -->
 
-# Trainer
+# [Trainer](#trainer)
 
-The [Trainer](main_classes/trainer.html#transformers.Trainer) and [TFTrainer](main_classes/trainer.html#transformers.TFTrainer) classes provide an API for feature-complete
-training in most standard use cases. It's used in most of the [example scripts](../examples.html).
+The [Trainer](/docs/transformers/master/en/main_classes/trainer.html#transformers.Trainer) and [TFTrainer](/docs/transformers/master/en/main_classes/trainer.html#transformers.TFTrainer) classes provide an API for feature-complete
+training in most standard use cases. It's used in most of the [example scripts](/docs/transformers/master/en/../examples.html).
 
-Before instantiating your [Trainer](main_classes/trainer.html#transformers.Trainer)/[TFTrainer](main_classes/trainer.html#transformers.TFTrainer), create a
-[TrainingArguments](main_classes/trainer.html#transformers.TrainingArguments)/[TFTrainingArguments](main_classes/trainer.html#transformers.TFTrainingArguments) to access all the points of
+Before instantiating your [Trainer](/docs/transformers/master/en/main_classes/trainer.html#transformers.Trainer)/[TFTrainer](/docs/transformers/master/en/main_classes/trainer.html#transformers.TFTrainer), create a
+[TrainingArguments](/docs/transformers/master/en/main_classes/trainer.html#transformers.TrainingArguments)/[TFTrainingArguments](/docs/transformers/master/en/main_classes/trainer.html#transformers.TFTrainingArguments) to access all the points of
 customization during training.
 
 The API supports distributed training on multiple GPUs/TPUs, mixed precision through [NVIDIA Apex](https://github.com/NVIDIA/apex) and Native AMP for PyTorch and `tf.keras.mixed_precision` for TensorFlow.
 
-Both [Trainer](main_classes/trainer.html#transformers.Trainer) and [TFTrainer](main_classes/trainer.html#transformers.TFTrainer) contain the basic training loop which supports
+Both [Trainer](/docs/transformers/master/en/main_classes/trainer.html#transformers.Trainer) and [TFTrainer](/docs/transformers/master/en/main_classes/trainer.html#transformers.TFTrainer) contain the basic training loop which supports
 the above features. To inject custom behavior you can subclass them and override the following methods:
 
 - **get_train_dataloader**/**get_train_tfdataset** -- Creates the training DataLoader (PyTorch) or TF Dataset.
@@ -48,19 +137,19 @@ the above features. To inject custom behavior you can subclass them and override
 
 <Tip warning={true}>
 
-The [Trainer](main_classes/trainer.html#transformers.Trainer) class is optimized for 🤗 Transformers models and can have surprising behaviors
+The [Trainer](/docs/transformers/master/en/main_classes/trainer.html#transformers.Trainer) class is optimized for 🤗 Transformers models and can have surprising behaviors
 when you use it on other models. When using it on your own model, make sure:
 
-- your model always return tuples or subclasses of [ModelOutput](main_classes/output.html#transformers.file_utils.ModelOutput).
+- your model always return tuples or subclasses of [ModelOutput](/docs/transformers/master/en/main_classes/output.html#transformers.file_utils.ModelOutput).
 - your model can compute the loss if a `labels` argument is provided and that loss is returned as the first
   element of the tuple (if your model returns tuples)
 - your model can accept multiple label arguments (use the `label_names` in your
-  [TrainingArguments](main_classes/trainer.html#transformers.TrainingArguments) to indicate their name to the [Trainer](main_classes/trainer.html#transformers.Trainer)) but none
+  [TrainingArguments](/docs/transformers/master/en/main_classes/trainer.html#transformers.TrainingArguments) to indicate their name to the [Trainer](/docs/transformers/master/en/main_classes/trainer.html#transformers.Trainer)) but none
   of them should be named `"label"`.
 
 </Tip>
 
-Here is an example of how to customize [Trainer](main_classes/trainer.html#transformers.Trainer) using a custom loss function for multi-label
+Here is an example of how to customize [Trainer](/docs/transformers/master/en/main_classes/trainer.html#transformers.Trainer) using a custom loss function for multi-label
 classification:
 
 ```python
@@ -69,21 +158,21 @@ from transformers import Trainer
 
 class MultilabelTrainer(Trainer):
 def compute_loss(self, model, inputs, return_outputs=False):
-labels = inputs.pop("labels")
+labels = inputs.get("labels")
 outputs = model(**inputs)
-logits = outputs.logits
+logits = outputs.get('logits')
 loss_fct = nn.BCEWithLogitsLoss()
 loss = loss_fct(logits.view(-1, self.model.config.num_labels),
 labels.float().view(-1, self.model.config.num_labels))
 return (loss, outputs) if return_outputs else loss
 ```
 
-Another way to customize the training loop behavior for the PyTorch [Trainer](main_classes/trainer.html#transformers.Trainer) is to use
-[callbacks](callback.html) that can inspect the training loop state (for progress reporting, logging on TensorBoard or
+Another way to customize the training loop behavior for the PyTorch [Trainer](/docs/transformers/master/en/main_classes/trainer.html#transformers.Trainer) is to use
+[callbacks](/docs/transformers/master/en/callback.html) that can inspect the training loop state (for progress reporting, logging on TensorBoard or
 other ML platforms...) and take decisions (like early stopping).
 
 
-## Trainer
+## [Trainer](#trainer)
 
 <a id='transformers.Trainer'></a>
 > **class transformers.Trainer**(model: typing.Union[transformers.modeling_utils.PreTrainedModel, torch.nn.modules.module.Module] = None, args: TrainingArguments = None, data_collator: typing.Optional[DataCollator] = None, train_dataset: typing.Optional[torch.utils.data.dataset.Dataset] = None, eval_dataset: typing.Optional[torch.utils.data.dataset.Dataset] = None, tokenizer: typing.Optional[transformers.tokenization_utils_base.PreTrainedTokenizerBase] = None, model_init: typing.Callable[[], transformers.modeling_utils.PreTrainedModel] = None, compute_metrics: typing.Union[typing.Callable[[transformers.trainer_utils.EvalPrediction], typing.Dict], NoneType] = None, callbacks: typing.Optional[typing.List[transformers.trainer_callback.TrainerCallback]] = None, optimizers: typing.Tuple[torch.optim.optimizer.Optimizer, torch.optim.lr_scheduler.LambdaLR] = (None, None))
@@ -93,25 +182,25 @@ Trainer is a simple but feature-complete training and eval loop for PyTorch, opt
 
 > Parameters
 
-- **model** ([PreTrainedModel](main_classes/model.html#transformers.PreTrainedModel) or `torch.nn.Module`, _optional_) --
+- **model** ([PreTrainedModel](/docs/transformers/master/en/main_classes/model.html#transformers.PreTrainedModel) or `torch.nn.Module`, _optional_) --
   The model to train, evaluate or use for predictions. If not provided, a `model_init` must be passed.
 
 <Tip>
 
-[Trainer](main_classes/trainer.html#transformers.Trainer) is optimized to work with the [PreTrainedModel](main_classes/model.html#transformers.PreTrainedModel)
+[Trainer](/docs/transformers/master/en/main_classes/trainer.html#transformers.Trainer) is optimized to work with the [PreTrainedModel](/docs/transformers/master/en/main_classes/model.html#transformers.PreTrainedModel)
 provided by the library. You can still use your own models defined as `torch.nn.Module` as long as
 they work the same way as the 🤗 Transformers models.
 
 </Tip>
 
-- **args** ([TrainingArguments](main_classes/trainer.html#transformers.TrainingArguments), _optional_) --
+- **args** ([TrainingArguments](/docs/transformers/master/en/main_classes/trainer.html#transformers.TrainingArguments), _optional_) --
   The arguments to tweak for training. Will default to a basic instance of
-  [TrainingArguments](main_classes/trainer.html#transformers.TrainingArguments) with the `output_dir` set to a directory named _tmp_trainer_ in
+  [TrainingArguments](/docs/transformers/master/en/main_classes/trainer.html#transformers.TrainingArguments) with the `output_dir` set to a directory named _tmp_trainer_ in
   the current directory if not provided.
 - **data_collator** (`DataCollator`, _optional_) --
   The function to use to form a batch from a list of elements of `train_dataset` or `eval_dataset`.
-  Will default to [default_data_collator()](main_classes/data_collator.html#transformers.default_data_collator) if no `tokenizer` is provided, an instance of
-  [DataCollatorWithPadding](main_classes/data_collator.html#transformers.DataCollatorWithPadding) otherwise.
+  Will default to [default_data_collator()](/docs/transformers/master/en/main_classes/data_collator.html#transformers.default_data_collator) if no `tokenizer` is provided, an instance of
+  [DataCollatorWithPadding](/docs/transformers/master/en/main_classes/data_collator.html#transformers.DataCollatorWithPadding) otherwise.
 - **train_dataset** (`torch.utils.data.Dataset` or `torch.utils.data.IterableDataset`, _optional_) --
   The dataset to use for training. If it is an `datasets.Dataset`, columns not accepted by the
   `model.forward()` method are automatically removed.
@@ -124,34 +213,34 @@ they work the same way as the 🤗 Transformers models.
 - **eval_dataset** (`torch.utils.data.Dataset`, _optional_) --
   The dataset to use for evaluation. If it is an `datasets.Dataset`, columns not accepted by the
   `model.forward()` method are automatically removed.
-- **tokenizer** ([PreTrainedTokenizerBase](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase), _optional_) --
+- **tokenizer** ([PreTrainedTokenizerBase](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase), _optional_) --
   The tokenizer used to preprocess the data. If provided, will be used to automatically pad the inputs the
   maximum length when batching inputs, and it will be saved along the model to make it easier to rerun an
   interrupted training or reuse the fine-tuned model.
 - **model_init** (`Callable[[], PreTrainedModel]`, _optional_) --
   A function that instantiates the model to be used. If provided, each call to
-  [train()](main_classes/trainer.html#transformers.Trainer.train) will start from a new instance of the model as given by this function.
+  [train()](/docs/transformers/master/en/main_classes/trainer.html#transformers.Trainer.train) will start from a new instance of the model as given by this function.
 
-  The function may have zero argument, or a single one containing the optuna/Ray Tune trial object, to be
-  able to choose different architectures according to hyper parameters (such as layer count, sizes of inner
-  layers, dropout probabilities etc).
+  The function may have zero argument, or a single one containing the optuna/Ray Tune/SigOpt trial object, to
+  be able to choose different architectures according to hyper parameters (such as layer count, sizes of
+  inner layers, dropout probabilities etc).
 - **compute_metrics** (`Callable[[EvalPrediction], Dict]`, _optional_) --
   The function that will be used to compute metrics at evaluation. Must take a
-  [EvalPrediction](internal/trainer_utils.html#transformers.EvalPrediction) and return a dictionary string to metric values.
+  [EvalPrediction](/docs/transformers/master/en/internal/trainer_utils.html#transformers.EvalPrediction) and return a dictionary string to metric values.
 - **callbacks** (List of `~transformers.TrainerCallback`, _optional_) --
   A list of callbacks to customize the training loop. Will add those to the list of default callbacks
-  detailed in [here](callback.html).
+  detailed in [here](/docs/transformers/master/en/callback.html).
 
-  If you want to remove one of the default callbacks used, use the [Trainer.remove_callback()](main_classes/trainer.html#transformers.Trainer.remove_callback) method.
+  If you want to remove one of the default callbacks used, use the [Trainer.remove_callback()](/docs/transformers/master/en/main_classes/trainer.html#transformers.Trainer.remove_callback) method.
 - **optimizers** (`Tuple[torch.optim.Optimizer, torch.optim.lr_scheduler.LambdaLR`, _optional_) -- A tuple
   containing the optimizer and the scheduler to use. Will default to an instance of
-  [AdamW](main_classes/optimizer_schedules.html#transformers.AdamW) on your model and a scheduler given by
-  [get_linear_schedule_with_warmup()](main_classes/optimizer_schedules.html#transformers.get_linear_schedule_with_warmup) controlled by `args`.
+  [AdamW](/docs/transformers/master/en/main_classes/optimizer_schedules.html#transformers.AdamW) on your model and a scheduler given by
+  [get_linear_schedule_with_warmup()](/docs/transformers/master/en/main_classes/optimizer_schedules.html#transformers.get_linear_schedule_with_warmup) controlled by `args`.
 
   Important attributes:
 
   - **model** -- Always points to the core model. If using a transformers model, it will be a
-    [PreTrainedModel](main_classes/model.html#transformers.PreTrainedModel) subclass.
+    [PreTrainedModel](/docs/transformers/master/en/main_classes/model.html#transformers.PreTrainedModel) subclass.
   - **model_wrapped** -- Always points to the most external model in case one or more other modules wrap the
     original model. This is the model that should be used for the forward pass. For example, under `DeepSpeed`,
     the inner model is wrapped in `DeepSpeed` and then again in `torch.nn.DistributedDataParallel`. If the
@@ -222,7 +311,7 @@ passed as an argument.
 
 
 <a id='transformers.Trainer.evaluate'></a>
-> **evaluate**(self, eval_dataset: typing.Optional[torch.utils.data.dataset.Dataset] = None, ignore_keys: typing.Optional[typing.List[str]] = None, metric_key_prefix: str = eval)
+> **evaluate**(self, eval_dataset: typing.Optional[torch.utils.data.dataset.Dataset] = None, ignore_keys: typing.Optional[typing.List[str]] = None, metric_key_prefix: str = 'eval')
 
 
 Run evaluation and returns metrics.
@@ -252,7 +341,7 @@ dictionary also contains the epoch number which comes from the training state.
 
 
 <a id='transformers.Trainer.evaluation_loop'></a>
-> **evaluation\_loop**(self, dataloader: DataLoader, description: str, prediction_loss_only: typing.Optional[bool] = None, ignore_keys: typing.Optional[typing.List[str]] = None, metric_key_prefix: str = eval)
+> **evaluation\_loop**(self, dataloader: DataLoader, description: str, prediction_loss_only: typing.Optional[bool] = None, ignore_keys: typing.Optional[typing.List[str]] = None, metric_key_prefix: str = 'eval')
 
 
 Prediction/evaluation loop, shared by `Trainer.evaluate()` and `Trainer.predict()`.
@@ -264,7 +353,7 @@ Works both with or without labels.
 > **floating\_point\_ops**(self, inputs: typing.Dict[str, typing.Union[torch.Tensor, typing.Any]])
 
 
-For models that inherit from [PreTrainedModel](main_classes/model.html#transformers.PreTrainedModel), uses that method to compute the number of
+For models that inherit from [PreTrainedModel](/docs/transformers/master/en/main_classes/model.html#transformers.PreTrainedModel), uses that method to compute the number of
 floating point operations for every backward + forward pass. If using another model, either implement such a
 method in the model or subclass and override this method.
 
@@ -325,19 +414,19 @@ Subclass and override this method if you want to inject some custom behavior.
 
 
 <a id='transformers.Trainer.hyperparameter_search'></a>
-> **hyperparameter\_search**(self, hp_space: typing.Union[typing.Callable[[ForwardRef('optuna.Trial')], typing.Dict[str, float]], NoneType] = None, compute_objective: typing.Union[typing.Callable[[typing.Dict[str, float]], float], NoneType] = None, n_trials: int = 20, direction: str = minimize, backend: typing.Union[ForwardRef('str'), transformers.trainer_utils.HPSearchBackend, NoneType] = None, hp_name: typing.Union[typing.Callable[[ForwardRef('optuna.Trial')], str], NoneType] = None, **kwargs)
+> **hyperparameter\_search**(self, hp_space: typing.Union[typing.Callable[[ForwardRef('optuna.Trial')], typing.Dict[str, float]], NoneType] = None, compute_objective: typing.Union[typing.Callable[[typing.Dict[str, float]], float], NoneType] = None, n_trials: int = 20, direction: str = 'minimize', backend: typing.Union[ForwardRef('str'), transformers.trainer_utils.HPSearchBackend, NoneType] = None, hp_name: typing.Union[typing.Callable[[ForwardRef('optuna.Trial')], str], NoneType] = None, **kwargs)
 
 
-Launch an hyperparameter search using `optuna` or `Ray Tune`. The optimized quantity is determined by
-`compute_objective`, which defaults to a function returning the evaluation loss when no metric is
-provided, the sum of all metrics otherwise.
+Launch an hyperparameter search using `optuna` or `Ray Tune` or `SigOpt`. The optimized quantity is
+determined by `compute_objective`, which defaults to a function returning the evaluation loss when no
+metric is provided, the sum of all metrics otherwise.
 
 <Tip warning={true}>
 
 To use this method, you need to have provided a `model_init` when initializing your
-[Trainer](main_classes/trainer.html#transformers.Trainer): we need to reinitialize the model at each new run. This is incompatible
-with the `optimizers` argument, so you need to subclass [Trainer](main_classes/trainer.html#transformers.Trainer) and override the
-method [create_optimizer_and_scheduler()](main_classes/trainer.html#transformers.Trainer.create_optimizer_and_scheduler) for custom optimizer/scheduler.
+[Trainer](/docs/transformers/master/en/main_classes/trainer.html#transformers.Trainer): we need to reinitialize the model at each new run. This is incompatible
+with the `optimizers` argument, so you need to subclass [Trainer](/docs/transformers/master/en/main_classes/trainer.html#transformers.Trainer) and override the
+method [create_optimizer_and_scheduler()](/docs/transformers/master/en/main_classes/trainer.html#transformers.Trainer.create_optimizer_and_scheduler) for custom optimizer/scheduler.
 
 </Tip>
 
@@ -346,7 +435,8 @@ method [create_optimizer_and_scheduler()](main_classes/trainer.html#transformers
 - **hp_space** (`Callable[["optuna.Trial"], Dict[str, float]]`, _optional_) --
   A function that defines the hyperparameter search space. Will default to
   `default_hp_space_optuna()` or
-  `default_hp_space_ray()` depending on your backend.
+  `default_hp_space_ray()` or
+  `default_hp_space_sigopt()` depending on your backend.
 - **compute_objective** (`Callable[[Dict[str, float]], float]`, _optional_) --
   A function computing the objective to minimize or maximize from the metrics returned by the
   `evaluate` method. Will default to `default_compute_objective()`.
@@ -357,14 +447,15 @@ method [create_optimizer_and_scheduler()](main_classes/trainer.html#transformers
   pick `"minimize"` when optimizing the validation loss, `"maximize"` when optimizing one or
   several metrics.
 - **backend(`str`** or `HPSearchBackend`, _optional_) --
-  The backend to use for hyperparameter search. Will default to optuna or Ray Tune, depending on which
-  one is installed. If both are installed, will default to optuna.
+  The backend to use for hyperparameter search. Will default to optuna or Ray Tune or SigOpt, depending
+  on which one is installed. If all are installed, will default to optuna.
   kwargs --
   Additional keyword arguments passed along to `optuna.create_study` or `ray.tune.run`. For
   more information see:
 
   - the documentation of [optuna.create_study](https://optuna.readthedocs.io/en/stable/reference/generated/optuna.study.create_study.html)
   - the documentation of [tune.run](https://docs.ray.io/en/latest/tune/api_docs/execution.html#tune-run)
+  - the documentation of [sigopt](https://app.sigopt.com/docs/endpoints/experiments/create)
 
 > Returns
 
@@ -379,7 +470,7 @@ All the information about the best run.
 > **init\_git\_repo**(self)
 
 
-Initializes a git repo in `self.args.push_to_hub_model_id`.
+Initializes a git repo in `self.args.hub_model_id`.
 
 
 <a id='transformers.Trainer.is_local_process_zero'></a>
@@ -478,7 +569,7 @@ The GPU allocated and peak memory reporting is done with `torch.cuda.memory_allo
 `torch.cuda` memory management system doesn't track any memory allocated outside of pytorch. For example, the
 very first cuda call typically loads CUDA kernels, which may take from 0.5 to 2GB of GPU memory.
 
-Note that this tracker doesn't account for memory allocations outside of [Trainer](main_classes/trainer.html#transformers.Trainer)'s
+Note that this tracker doesn't account for memory allocations outside of [Trainer](/docs/transformers/master/en/main_classes/trainer.html#transformers.Trainer)'s
 `__init__`, `train`, `evaluate` and `predict` calls.
 
 Because `evaluation` calls may happen during `train`, we can't handle nested invocations because
@@ -488,9 +579,9 @@ gets resolved it will be possible to change this class to be re-entrant. Until t
 level of `train`, `evaluate` and `predict` methods. Which means that if `eval` is called during `train`,
 it's the latter that will account for its memory usage and that of the former.
 
-This also means that if any other tool that is used along the [Trainer](main_classes/trainer.html#transformers.Trainer) calls
+This also means that if any other tool that is used along the [Trainer](/docs/transformers/master/en/main_classes/trainer.html#transformers.Trainer) calls
 `torch.cuda.reset_peak_memory_stats`, the gpu peak memory stats could be invalid. And the
-[Trainer](main_classes/trainer.html#transformers.Trainer) will disrupt the normal behavior of any such tools that rely on calling
+[Trainer](/docs/transformers/master/en/main_classes/trainer.html#transformers.Trainer) will disrupt the normal behavior of any such tools that rely on calling
 `torch.cuda.reset_peak_memory_stats` themselves.
 
 For best performance you may want to consider turning the memory profiling off for production runs.
@@ -549,7 +640,7 @@ The callback removed, if found.
 
 
 <a id='transformers.Trainer.predict'></a>
-> **predict**(self, test_dataset: Dataset, ignore_keys: typing.Optional[typing.List[str]] = None, metric_key_prefix: str = test)
+> **predict**(self, test_dataset: Dataset, ignore_keys: typing.Optional[typing.List[str]] = None, metric_key_prefix: str = 'test')
 
 
 Run prediction and returns predictions and potential metrics.
@@ -586,7 +677,7 @@ Returns: _NamedTuple_ A namedtuple with the following keys:
 
 
 <a id='transformers.Trainer.prediction_loop'></a>
-> **prediction\_loop**(self, dataloader: DataLoader, description: str, prediction_loss_only: typing.Optional[bool] = None, ignore_keys: typing.Optional[typing.List[str]] = None, metric_key_prefix: str = eval)
+> **prediction\_loop**(self, dataloader: DataLoader, description: str, prediction_loss_only: typing.Optional[bool] = None, ignore_keys: typing.Optional[typing.List[str]] = None, metric_key_prefix: str = 'eval')
 
 
 Prediction/evaluation loop, shared by `Trainer.evaluate()` and `Trainer.predict()`.
@@ -628,21 +719,24 @@ Tuple[Optional[torch.Tensor], Optional[torch.Tensor], Optional[torch.Tensor]]
 
 
 <a id='transformers.Trainer.push_to_hub'></a>
-> **push\_to\_hub**(self, commit_message: typing.Optional[str] = add model, **kwargs)
+> **push\_to\_hub**(self, commit_message: typing.Optional[str] = 'End of training', blocking: bool = True, **kwargs)
 
 
-Upload _self.model_ and _self.tokenizer_ to the 🤗 model hub on the repo _self.args.push_to_hub_model_id_.
+Upload _self.model_ and _self.tokenizer_ to the 🤗 model hub on the repo _self.args.hub_model_id_.
 
 > Parameters
 
-- **commit_message** (`str`, _optional_, defaults to `"add model"`) --
+- **commit_message** (`str`, _optional_, defaults to `"End of training"`) --
   Message to commit while pushing.
+- **blocking** (`bool`, _optional_, defaults to `True`) --
+  Whether the function should return only when the `git push` has finished.
   kwargs --
   Additional keyword arguments passed along to `create_model_card()`.
 
 > Returns
 
-The url of the commit of your model in the given repository.
+The url of the commit of your model in the given repository if `blocking=False`, a tuple with the url
+of the commit and an object to track the progress of the commit if `blocking=True`
 
 
 <a id='transformers.Trainer.remove_callback'></a>
@@ -708,8 +802,8 @@ Main training entry point.
 
 - **resume_from_checkpoint** (`str` or `bool`, _optional_) --
   If a `str`, local path to a saved checkpoint as saved by a previous instance of
-  [Trainer](main_classes/trainer.html#transformers.Trainer). If a `bool` and equals _True_, load the last checkpoint in
-  _args.output_dir_ as saved by a previous instance of [Trainer](main_classes/trainer.html#transformers.Trainer). If present,
+  [Trainer](/docs/transformers/master/en/main_classes/trainer.html#transformers.Trainer). If a `bool` and equals _True_, load the last checkpoint in
+  _args.output_dir_ as saved by a previous instance of [Trainer](/docs/transformers/master/en/main_classes/trainer.html#transformers.Trainer). If present,
   training will resume from the model/optimizer/scheduler states loaded here.
 - **trial** (`optuna.Trial` or `Dict[str, Any]`, _optional_) --
   The trial run or the hyperparameter dictionary for hyperparameter search.
@@ -747,13 +841,13 @@ The tensor with training loss on this batch.
 `torch.Tensor`
 
 
-## Seq2SeqTrainer
+## [Seq2SeqTrainer](#seqseqtrainer)
 
 <a id='transformers.Seq2SeqTrainer'></a>
 > **class transformers.Seq2SeqTrainer**(model: typing.Union[transformers.modeling_utils.PreTrainedModel, torch.nn.modules.module.Module] = None, args: TrainingArguments = None, data_collator: typing.Optional[DataCollator] = None, train_dataset: typing.Optional[torch.utils.data.dataset.Dataset] = None, eval_dataset: typing.Optional[torch.utils.data.dataset.Dataset] = None, tokenizer: typing.Optional[transformers.tokenization_utils_base.PreTrainedTokenizerBase] = None, model_init: typing.Callable[[], transformers.modeling_utils.PreTrainedModel] = None, compute_metrics: typing.Union[typing.Callable[[transformers.trainer_utils.EvalPrediction], typing.Dict], NoneType] = None, callbacks: typing.Optional[typing.List[transformers.trainer_callback.TrainerCallback]] = None, optimizers: typing.Tuple[torch.optim.optimizer.Optimizer, torch.optim.lr_scheduler.LambdaLR] = (None, None))
 
 <a id='transformers.Seq2SeqTrainer.evaluate'></a>
-> **evaluate**(self, eval_dataset: typing.Optional[torch.utils.data.dataset.Dataset] = None, ignore_keys: typing.Optional[typing.List[str]] = None, metric_key_prefix: str = eval, max_length: typing.Optional[int] = None, num_beams: typing.Optional[int] = None)
+> **evaluate**(self, eval_dataset: typing.Optional[torch.utils.data.dataset.Dataset] = None, ignore_keys: typing.Optional[typing.List[str]] = None, metric_key_prefix: str = 'eval', max_length: typing.Optional[int] = None, num_beams: typing.Optional[int] = None)
 
 
 Run evaluation and returns metrics.
@@ -788,7 +882,7 @@ dictionary also contains the epoch number which comes from the training state.
 
 
 <a id='transformers.Seq2SeqTrainer.predict'></a>
-> **predict**(self, test_dataset: Dataset, ignore_keys: typing.Optional[typing.List[str]] = None, metric_key_prefix: str = eval, max_length: typing.Optional[int] = None, num_beams: typing.Optional[int] = None)
+> **predict**(self, test_dataset: Dataset, ignore_keys: typing.Optional[typing.List[str]] = None, metric_key_prefix: str = 'eval', max_length: typing.Optional[int] = None, num_beams: typing.Optional[int] = None)
 
 
 Run prediction and returns predictions and potential metrics.
@@ -829,7 +923,7 @@ Returns: _NamedTuple_ A namedtuple with the following keys:
   contained labels).
 
 
-## TFTrainer
+## [TFTrainer](#tftrainer)
 
 <a id='transformers.TFTrainer'></a>
 > **class transformers.TFTrainer**(model: TFPreTrainedModel, args: TFTrainingArguments, train_dataset: typing.Optional[tensorflow.python.data.ops.dataset_ops.DatasetV2] = None, eval_dataset: typing.Optional[tensorflow.python.data.ops.dataset_ops.DatasetV2] = None, compute_metrics: typing.Union[typing.Callable[[transformers.trainer_utils.EvalPrediction], typing.Dict], NoneType] = None, tb_writer: typing.Optional[tensorflow.python.ops.summary_ops_v2.SummaryWriter] = None, optimizers: typing.Tuple[tensorflow.python.keras.optimizer_v2.optimizer_v2.OptimizerV2, tensorflow.python.keras.optimizer_v2.learning_rate_schedule.LearningRateSchedule] = (None, None))
@@ -839,9 +933,9 @@ TFTrainer is a simple but feature-complete training and eval loop for TensorFlow
 
 > Parameters
 
-- **model** ([TFPreTrainedModel](main_classes/model.html#transformers.TFPreTrainedModel)) --
+- **model** ([TFPreTrainedModel](/docs/transformers/master/en/main_classes/model.html#transformers.TFPreTrainedModel)) --
   The model to train, evaluate or use for predictions.
-- **args** ([TFTrainingArguments](main_classes/trainer.html#transformers.TFTrainingArguments)) --
+- **args** ([TFTrainingArguments](/docs/transformers/master/en/main_classes/trainer.html#transformers.TFTrainingArguments)) --
   The arguments to tweak training.
 - **train_dataset** (`Dataset`, _optional_) --
   The dataset to use for training. The dataset should yield tuples of `(features, labels)` where
@@ -857,15 +951,15 @@ TFTrainer is a simple but feature-complete training and eval loop for TensorFlow
   `model(features, **labels)`.
 - **compute_metrics** (`Callable[[EvalPrediction], Dict]`, _optional_) --
   The function that will be used to compute metrics at evaluation. Must take a
-  [EvalPrediction](internal/trainer_utils.html#transformers.EvalPrediction) and return a dictionary string to metric values.
+  [EvalPrediction](/docs/transformers/master/en/internal/trainer_utils.html#transformers.EvalPrediction) and return a dictionary string to metric values.
 - **tb_writer** (`tf.summary.SummaryWriter`, _optional_) --
   Object to write to TensorBoard.
 - **optimizers** (`Tuple[tf.keras.optimizers.Optimizer, tf.keras.optimizers.schedules.LearningRateSchedule]`, _optional_) --
   A tuple containing the optimizer and the scheduler to use. The optimizer default to an instance of
   `tf.keras.optimizers.Adam` if `args.weight_decay_rate` is 0 else an instance of
-  [AdamWeightDecay](main_classes/optimizer_schedules.html#transformers.AdamWeightDecay). The scheduler will default to an instance of
+  [AdamWeightDecay](/docs/transformers/master/en/main_classes/optimizer_schedules.html#transformers.AdamWeightDecay). The scheduler will default to an instance of
   `tf.keras.optimizers.schedules.PolynomialDecay` if `args.num_warmup_steps` is 0 else an
-  instance of [WarmUp](main_classes/optimizer_schedules.html#transformers.WarmUp).
+  instance of [WarmUp](/docs/transformers/master/en/main_classes/optimizer_schedules.html#transformers.WarmUp).
 
 
 <a id='transformers.TFTrainer.create_optimizer_and_scheduler'></a>
@@ -988,8 +1082,8 @@ will also return metrics, like in `evaluate()`.
 > **prediction\_loop**(self, dataset: DatasetV2, steps: int, num_examples: int, description: str, prediction_loss_only: typing.Optional[bool] = None)
 
 
-Prediction/evaluation loop, shared by [evaluate()](main_classes/trainer.html#transformers.TFTrainer.evaluate) and
-[predict()](main_classes/trainer.html#transformers.TFTrainer.predict).
+Prediction/evaluation loop, shared by [evaluate()](/docs/transformers/master/en/main_classes/trainer.html#transformers.TFTrainer.evaluate) and
+[predict()](/docs/transformers/master/en/main_classes/trainer.html#transformers.TFTrainer.predict).
 
 Works both with or without labels.
 
@@ -1082,16 +1176,16 @@ Perform a training step on features and labels.
 Subclass and override to inject some custom behavior.
 
 
-## TrainingArguments
+## [TrainingArguments](#trainingarguments)
 
 <a id='transformers.TrainingArguments'></a>
-> **class transformers.TrainingArguments**(output_dir: str, overwrite_output_dir: bool = False, do_train: bool = False, do_eval: bool = False, do_predict: bool = False, evaluation_strategy: IntervalStrategy = no, prediction_loss_only: bool = False, per_device_train_batch_size: int = 8, per_device_eval_batch_size: int = 8, per_gpu_train_batch_size: typing.Optional[int] = None, per_gpu_eval_batch_size: typing.Optional[int] = None, gradient_accumulation_steps: int = 1, eval_accumulation_steps: typing.Optional[int] = None, learning_rate: float = 5e-05, weight_decay: float = 0.0, adam_beta1: float = 0.9, adam_beta2: float = 0.999, adam_epsilon: float = 1e-08, max_grad_norm: float = 1.0, num_train_epochs: float = 3.0, max_steps: int = -1, lr_scheduler_type: SchedulerType = linear, warmup_ratio: float = 0.0, warmup_steps: int = 0, log_level: typing.Optional[str] = passive, log_level_replica: typing.Optional[str] = passive, log_on_each_node: bool = True, logging_dir: typing.Optional[str] = None, logging_strategy: IntervalStrategy = steps, logging_first_step: bool = False, logging_steps: int = 500, save_strategy: IntervalStrategy = steps, save_steps: int = 500, save_total_limit: typing.Optional[int] = None, save_on_each_node: bool = False, no_cuda: bool = False, seed: int = 42, fp16: bool = False, fp16_opt_level: str = O1, fp16_backend: str = auto, fp16_full_eval: bool = False, local_rank: int = -1, tpu_num_cores: typing.Optional[int] = None, tpu_metrics_debug: bool = False, debug: str = , dataloader_drop_last: bool = False, eval_steps: int = None, dataloader_num_workers: int = 0, past_index: int = -1, run_name: typing.Optional[str] = None, disable_tqdm: typing.Optional[bool] = None, remove_unused_columns: typing.Optional[bool] = True, label_names: typing.Optional[typing.List[str]] = None, load_best_model_at_end: typing.Optional[bool] = False, metric_for_best_model: typing.Optional[str] = None, greater_is_better: typing.Optional[bool] = None, ignore_data_skip: bool = False, sharded_ddp: str = , deepspeed: typing.Optional[str] = None, label_smoothing_factor: float = 0.0, adafactor: bool = False, group_by_length: bool = False, length_column_name: typing.Optional[str] = length, report_to: typing.Optional[typing.List[str]] = None, ddp_find_unused_parameters: typing.Optional[bool] = None, dataloader_pin_memory: bool = True, skip_memory_metrics: bool = True, use_legacy_prediction_loop: bool = False, push_to_hub: bool = False, resume_from_checkpoint: typing.Optional[str] = None, push_to_hub_model_id: str = None, push_to_hub_organization: str = None, push_to_hub_token: str = None, mp_parameters: str = )
+> **class transformers.TrainingArguments**(output_dir: str, overwrite_output_dir: bool = False, do_train: bool = False, do_eval: bool = False, do_predict: bool = False, evaluation_strategy: IntervalStrategy = 'no', prediction_loss_only: bool = False, per_device_train_batch_size: int = 8, per_device_eval_batch_size: int = 8, per_gpu_train_batch_size: typing.Optional[int] = None, per_gpu_eval_batch_size: typing.Optional[int] = None, gradient_accumulation_steps: int = 1, eval_accumulation_steps: typing.Optional[int] = None, learning_rate: float = 5e-05, weight_decay: float = 0.0, adam_beta1: float = 0.9, adam_beta2: float = 0.999, adam_epsilon: float = 1e-08, max_grad_norm: float = 1.0, num_train_epochs: float = 3.0, max_steps: int = -1, lr_scheduler_type: SchedulerType = 'linear', warmup_ratio: float = 0.0, warmup_steps: int = 0, log_level: typing.Optional[str] = 'passive', log_level_replica: typing.Optional[str] = 'passive', log_on_each_node: bool = True, logging_dir: typing.Optional[str] = None, logging_strategy: IntervalStrategy = 'steps', logging_first_step: bool = False, logging_steps: int = 500, logging_nan_inf_filter: str = True, save_strategy: IntervalStrategy = 'steps', save_steps: int = 500, save_total_limit: typing.Optional[int] = None, save_on_each_node: bool = False, no_cuda: bool = False, seed: int = 42, fp16: bool = False, fp16_opt_level: str = 'O1', fp16_backend: str = 'auto', fp16_full_eval: bool = False, local_rank: int = -1, xpu_backend: str = None, tpu_num_cores: typing.Optional[int] = None, tpu_metrics_debug: bool = False, debug: str = '', dataloader_drop_last: bool = False, eval_steps: int = None, dataloader_num_workers: int = 0, past_index: int = -1, run_name: typing.Optional[str] = None, disable_tqdm: typing.Optional[bool] = None, remove_unused_columns: typing.Optional[bool] = True, label_names: typing.Optional[typing.List[str]] = None, load_best_model_at_end: typing.Optional[bool] = False, metric_for_best_model: typing.Optional[str] = None, greater_is_better: typing.Optional[bool] = None, ignore_data_skip: bool = False, sharded_ddp: str = '', deepspeed: typing.Optional[str] = None, label_smoothing_factor: float = 0.0, adafactor: bool = False, group_by_length: bool = False, length_column_name: typing.Optional[str] = 'length', report_to: typing.Optional[typing.List[str]] = None, ddp_find_unused_parameters: typing.Optional[bool] = None, dataloader_pin_memory: bool = True, skip_memory_metrics: bool = True, use_legacy_prediction_loop: bool = False, push_to_hub: bool = False, resume_from_checkpoint: typing.Optional[str] = None, hub_model_id: str = None, hub_strategy: HubStrategy = 'every_save', hub_token: str = None, gradient_checkpointing: bool = False, push_to_hub_model_id: str = None, push_to_hub_organization: str = None, push_to_hub_token: str = None, mp_parameters: str = '')
 
 
 TrainingArguments is the subset of the arguments we use in our example scripts **which relate to the training loop
 itself**.
 
-Using [HfArgumentParser](internal/trainer_utils.html#transformers.HfArgumentParser) we can turn this class into [argparse](https://docs.python.org/3/library/argparse.html#module-argparse) arguments that can be specified on the command
+Using [HfArgumentParser](/docs/transformers/master/en/internal/trainer_utils.html#transformers.HfArgumentParser) we can turn this class into [argparse](https://docs.python.org/3/library/argparse.html#module-argparse) arguments that can be specified on the command
 line.
 
 > Parameters
@@ -1102,20 +1196,20 @@ line.
   If `True`, overwrite the content of the output directory. Use this to continue training if
   `output_dir` points to a checkpoint directory.
 - **do_train** (`bool`, _optional_, defaults to `False`) --
-  Whether to run training or not. This argument is not directly used by [Trainer](main_classes/trainer.html#transformers.Trainer), it's
+  Whether to run training or not. This argument is not directly used by [Trainer](/docs/transformers/master/en/main_classes/trainer.html#transformers.Trainer), it's
   intended to be used by your training/evaluation scripts instead. See the [example scripts](https://github.com/huggingface/transformers/tree/master/examples) for more details.
 - **do_eval** (`bool`, _optional_) --
   Whether to run evaluation on the validation set or not. Will be set to `True` if
   `evaluation_strategy` is different from `"no"`. This argument is not directly used by
-  [Trainer](main_classes/trainer.html#transformers.Trainer), it's intended to be used by your training/evaluation scripts instead. See
+  [Trainer](/docs/transformers/master/en/main_classes/trainer.html#transformers.Trainer), it's intended to be used by your training/evaluation scripts instead. See
   the [example scripts](https://github.com/huggingface/transformers/tree/master/examples) for more
   details.
 - **do_predict** (`bool`, _optional_, defaults to `False`) --
   Whether to run predictions on the test set or not. This argument is not directly used by
-  [Trainer](main_classes/trainer.html#transformers.Trainer), it's intended to be used by your training/evaluation scripts instead. See
+  [Trainer](/docs/transformers/master/en/main_classes/trainer.html#transformers.Trainer), it's intended to be used by your training/evaluation scripts instead. See
   the [example scripts](https://github.com/huggingface/transformers/tree/master/examples) for more
   details.
-- **evaluation_strategy** (`str` or [IntervalStrategy](internal/trainer_utils.html#transformers.IntervalStrategy), _optional_, defaults to `"no"`) --
+- **evaluation_strategy** (`str` or [IntervalStrategy](/docs/transformers/master/en/internal/trainer_utils.html#transformers.IntervalStrategy), _optional_, defaults to `"no"`) --
   The evaluation strategy to adopt during training. Possible values are:
 
   - `"no"`: No evaluation is done during training.
@@ -1144,16 +1238,16 @@ examples.
   left unset, the whole predictions are accumulated on GPU/TPU before being moved to the CPU (faster but
   requires more memory).
 - **learning_rate** (`float`, _optional_, defaults to 5e-5) --
-  The initial learning rate for [AdamW](main_classes/optimizer_schedules.html#transformers.AdamW) optimizer.
+  The initial learning rate for [AdamW](/docs/transformers/master/en/main_classes/optimizer_schedules.html#transformers.AdamW) optimizer.
 - **weight_decay** (`float`, _optional_, defaults to 0) --
   The weight decay to apply (if not zero) to all layers except all bias and LayerNorm weights in
-  [AdamW](main_classes/optimizer_schedules.html#transformers.AdamW) optimizer.
+  [AdamW](/docs/transformers/master/en/main_classes/optimizer_schedules.html#transformers.AdamW) optimizer.
 - **adam_beta1** (`float`, _optional_, defaults to 0.9) --
-  The beta1 hyperparameter for the [AdamW](main_classes/optimizer_schedules.html#transformers.AdamW) optimizer.
+  The beta1 hyperparameter for the [AdamW](/docs/transformers/master/en/main_classes/optimizer_schedules.html#transformers.AdamW) optimizer.
 - **adam_beta2** (`float`, _optional_, defaults to 0.999) --
-  The beta2 hyperparameter for the [AdamW](main_classes/optimizer_schedules.html#transformers.AdamW) optimizer.
+  The beta2 hyperparameter for the [AdamW](/docs/transformers/master/en/main_classes/optimizer_schedules.html#transformers.AdamW) optimizer.
 - **adam_epsilon** (`float`, _optional_, defaults to 1e-8) --
-  The epsilon hyperparameter for the [AdamW](main_classes/optimizer_schedules.html#transformers.AdamW) optimizer.
+  The epsilon hyperparameter for the [AdamW](/docs/transformers/master/en/main_classes/optimizer_schedules.html#transformers.AdamW) optimizer.
 - **max_grad_norm** (`float`, _optional_, defaults to 1.0) --
   Maximum gradient norm (for gradient clipping).
 - **num_train_epochs(`float`,** _optional_, defaults to 3.0) --
@@ -1162,8 +1256,8 @@ examples.
 - **max_steps** (`int`, _optional_, defaults to -1) --
   If set to a positive number, the total number of training steps to perform. Overrides
   `num_train_epochs`.
-- **lr_scheduler_type** (`str` or [SchedulerType](main_classes/optimizer_schedules.html#transformers.SchedulerType), _optional_, defaults to `"linear"`) --
-  The scheduler type to use. See the documentation of [SchedulerType](main_classes/optimizer_schedules.html#transformers.SchedulerType) for all possible
+- **lr_scheduler_type** (`str` or [SchedulerType](/docs/transformers/master/en/main_classes/optimizer_schedules.html#transformers.SchedulerType), _optional_, defaults to `"linear"`) --
+  The scheduler type to use. See the documentation of [SchedulerType](/docs/transformers/master/en/main_classes/optimizer_schedules.html#transformers.SchedulerType) for all possible
   values.
 - **warmup_ratio** (`float`, _optional_, defaults to 0.0) --
   Ratio of total training steps used for a linear warmup from 0 to `learning_rate`.
@@ -1182,7 +1276,7 @@ examples.
 - **logging_dir** (`str`, _optional_) --
   [TensorBoard](https://www.tensorflow.org/tensorboard) log directory. Will default to
   _output_dir/runs/**CURRENT_DATETIME_HOSTNAME**_.
-- **logging_strategy** (`str` or [IntervalStrategy](internal/trainer_utils.html#transformers.IntervalStrategy), _optional_, defaults to `"steps"`) --
+- **logging_strategy** (`str` or [IntervalStrategy](/docs/transformers/master/en/internal/trainer_utils.html#transformers.IntervalStrategy), _optional_, defaults to `"steps"`) --
   The logging strategy to adopt during training. Possible values are:
 
   - `"no"`: No logging is done during training.
@@ -1193,7 +1287,19 @@ examples.
   Whether to log and evaluate the first `global_step` or not.
 - **logging_steps** (`int`, _optional_, defaults to 500) --
   Number of update steps between two logs if `logging_strategy="steps"`.
-- **save_strategy** (`str` or [IntervalStrategy](internal/trainer_utils.html#transformers.IntervalStrategy), _optional_, defaults to `"steps"`) --
+- **logging_nan_inf_filter** (`bool`, _optional_, defaults to `True`) --
+  Whether to filter `nan` and `inf` losses for logging. If set to obj:_True_ the loss of every step
+  that is `nan` or `inf` is filtered and the average loss of the current logging window is taken
+  instead.
+
+<Tip>
+
+`logging_nan_inf_filter` only influences the logging of loss values, it does not change the
+behavior the gradient is computed or applied to the model.
+
+</Tip>
+
+- **save_strategy** (`str` or [IntervalStrategy](/docs/transformers/master/en/internal/trainer_utils.html#transformers.IntervalStrategy), _optional_, defaults to `"steps"`) --
   The checkpoint save strategy to adopt during training. Possible values are:
 
   - `"no"`: No save is done during training.
@@ -1230,6 +1336,8 @@ examples.
   can harm metric values.
 - **local_rank** (`int`, _optional_, defaults to -1) --
   Rank of the process during distributed training.
+- **xpu_backend** (`str`, _optional_) --
+  The backend to use for xpu distributed training. Must be one of `"mpi"` or `"ccl"`.
 - **tpu_num_cores** (`int`, _optional_) --
   When training on TPU, the number of TPU cores (automatically passed by launcher script).
 - **dataloader_drop_last** (`bool`, _optional_, defaults to `False`) --
@@ -1242,7 +1350,7 @@ examples.
   Number of subprocesses to use for data loading (PyTorch only). 0 means that the data will be loaded in the
   main process.
 - **past_index** (`int`, _optional_, defaults to -1) --
-  Some models like [TransformerXL](../model_doc/transformerxl.html) or [XLNet](../model_doc/xlnet.html) can
+  Some models like [TransformerXL](/docs/transformers/master/en/../model_doc/transformerxl.html) or [XLNet](/docs/transformers/master/en/../model_doc/xlnet.html) can
   make use of the past hidden states for their predictions. If this argument is set to a positive int, the
   `Trainer` will use the corresponding output (usually index 2) as the past state and feed it to the model
   at the next training step under the keyword argument `mems`.
@@ -1256,7 +1364,7 @@ examples.
   If using `datasets.Dataset` datasets, whether or not to automatically remove the columns unused by the
   model forward method.
 
-  (Note that this behavior is not implemented for [TFTrainer](main_classes/trainer.html#transformers.TFTrainer) yet.)
+  (Note that this behavior is not implemented for [TFTrainer](/docs/transformers/master/en/main_classes/trainer.html#transformers.TFTrainer) yet.)
 - **label_names** (`List[str]`, _optional_) --
   The list of keys in your dictionary of inputs that correspond to the labels.
 
@@ -1326,8 +1434,8 @@ When set to `True`, the parameters `save_strategy` needs to be the same as
 
   The options should be separated by whitespaces.
 - **adafactor** (`bool`, _optional_, defaults to `False`) --
-  Whether or not to use the [Adafactor](main_classes/optimizer_schedules.html#transformers.Adafactor) optimizer instead of
-  [AdamW](main_classes/optimizer_schedules.html#transformers.AdamW).
+  Whether or not to use the [Adafactor](/docs/transformers/master/en/main_classes/optimizer_schedules.html#transformers.Adafactor) optimizer instead of
+  [AdamW](/docs/transformers/master/en/main_classes/optimizer_schedules.html#transformers.AdamW).
 - **group_by_length** (`bool`, _optional_, defaults to `False`) --
   Whether or not to group together samples of roughly the same length in the training dataset (to minimize
   padding applied and be more efficient). Only useful if applying dynamic padding.
@@ -1351,20 +1459,40 @@ When set to `True`, the parameters `save_strategy` needs to be the same as
 - **push_to_hub** (`bool`, _optional_, defaults to `False`) --
   Whether or not to upload the trained model to the hub after training. If this is activated, and
   `output_dir` exists, it needs to be a local clone of the repository to which the
-  [Trainer](main_classes/trainer.html#transformers.Trainer) will be pushed.
+  [Trainer](/docs/transformers/master/en/main_classes/trainer.html#transformers.Trainer) will be pushed.
 - **resume_from_checkpoint** (`str`, _optional_) --
   The path to a folder with a valid checkpoint for your model. This argument is not directly used by
-  [Trainer](main_classes/trainer.html#transformers.Trainer), it's intended to be used by your training/evaluation scripts instead. See
+  [Trainer](/docs/transformers/master/en/main_classes/trainer.html#transformers.Trainer), it's intended to be used by your training/evaluation scripts instead. See
   the [example scripts](https://github.com/huggingface/transformers/tree/master/examples) for more
   details.
-- **push_to_hub_model_id** (`str`, _optional_) --
-  The name of the repository to which push the [Trainer](main_classes/trainer.html#transformers.Trainer) when `push_to_hub=True`.
-  Will default to the name of `output_dir`.
-- **push_to_hub_organization** (`str`, _optional_) --
-  The name of the organization in with to which push the [Trainer](main_classes/trainer.html#transformers.Trainer).
-- **push_to_hub_token** (`str`, _optional_) --
+- **hub_model_id** (`str`, _optional_) --
+  The name of the repository to keep in sync with the local _output_dir_. Should be the whole repository
+  name, for instance `"user_name/model"`, which allows you to push to an organization you are a member
+  of with `"organization_name/model"`.
+
+  Will default to `user_name/output_dir_name` with _output_dir_name_ being the name of
+  `output_dir`.
+- **hub_strategy** (`str` or `HubStrategy`, _optional_, defaults to `"every_save"`) --
+  Defines the scope of what is pushed to the Hub and when. Possible values are:
+
+  - `"end"`: push the model, its configuration, the tokenizer (if passed along to the
+    [Trainer](/docs/transformers/master/en/main_classes/trainer.html#transformers.Trainer)) and a draft of a model card at the end of training.
+  - `"every_save"`: push the model, its configuration, the tokenizer (if passed along to the
+    [Trainer](/docs/transformers/master/en/main_classes/trainer.html#transformers.Trainer)) and a draft of a model card each time there is a model save. The pushes
+    are asynchronous to not block training, and in case the save are very frequent, a new push is only
+    attempted if the previous one is finished. A last push is made with the final model at the end of
+    training.
+  - `"checkpoint"`: like `"every_save"` but the latest checkpoint is also pushed in a subfolder
+    named last-checkpoint, allowing you to resume training easily with
+    `trainer.train(resume_from_checkpoint="last-checkpoint")`.
+  - `"all_checkpoints"`: like `"checkpoint"` but all checkpoints are pushed like they appear in the
+    output folder (so you will get one checkpoint folder per folder in your final repository)
+
+- **hub_token** (`str`, _optional_) --
   The token to use to push the model to the Hub. Will default to the token in the cache folder obtained with
   `huggingface-cli login`.
+- **gradient_checkpointing** (`bool`, _optional_, defaults to `False`) --
+  If True, use gradient checkpointing to save memory at the expense of slower backward pass.
 
 
 <a id='transformers.TrainingArguments.get_process_log_level'></a>
@@ -1391,7 +1519,7 @@ Get number of steps used for a linear warmup.
 
 
 <a id='transformers.TrainingArguments.main_process_first'></a>
-> **main\_process\_first**(self, local = True, desc = work)
+> **main\_process\_first**(self, local = True, desc = 'work')
 
 
 A context manager for torch distributed environment where on needs to do something on the main process,
@@ -1418,7 +1546,8 @@ by the replicas.
 > **to\_dict**(self)
 
 
-Serializes this instance while replace _Enum_ by their values (for JSON serialization support).
+Serializes this instance while replace _Enum_ by their values (for JSON serialization support). It obfuscates
+the token values by removing their value.
 
 
 <a id='transformers.TrainingArguments.to_json_string'></a>
@@ -1435,16 +1564,16 @@ Serializes this instance to a JSON string.
 Sanitized serialization to use with TensorBoard’s hparams
 
 
-## Seq2SeqTrainingArguments
+## [Seq2SeqTrainingArguments](#seqseqtrainingarguments)
 
 <a id='transformers.Seq2SeqTrainingArguments'></a>
-> **class transformers.Seq2SeqTrainingArguments**(output_dir: str, overwrite_output_dir: bool = False, do_train: bool = False, do_eval: bool = False, do_predict: bool = False, evaluation_strategy: IntervalStrategy = no, prediction_loss_only: bool = False, per_device_train_batch_size: int = 8, per_device_eval_batch_size: int = 8, per_gpu_train_batch_size: typing.Optional[int] = None, per_gpu_eval_batch_size: typing.Optional[int] = None, gradient_accumulation_steps: int = 1, eval_accumulation_steps: typing.Optional[int] = None, learning_rate: float = 5e-05, weight_decay: float = 0.0, adam_beta1: float = 0.9, adam_beta2: float = 0.999, adam_epsilon: float = 1e-08, max_grad_norm: float = 1.0, num_train_epochs: float = 3.0, max_steps: int = -1, lr_scheduler_type: SchedulerType = linear, warmup_ratio: float = 0.0, warmup_steps: int = 0, log_level: typing.Optional[str] = passive, log_level_replica: typing.Optional[str] = passive, log_on_each_node: bool = True, logging_dir: typing.Optional[str] = None, logging_strategy: IntervalStrategy = steps, logging_first_step: bool = False, logging_steps: int = 500, save_strategy: IntervalStrategy = steps, save_steps: int = 500, save_total_limit: typing.Optional[int] = None, save_on_each_node: bool = False, no_cuda: bool = False, seed: int = 42, fp16: bool = False, fp16_opt_level: str = O1, fp16_backend: str = auto, fp16_full_eval: bool = False, local_rank: int = -1, tpu_num_cores: typing.Optional[int] = None, tpu_metrics_debug: bool = False, debug: str = , dataloader_drop_last: bool = False, eval_steps: int = None, dataloader_num_workers: int = 0, past_index: int = -1, run_name: typing.Optional[str] = None, disable_tqdm: typing.Optional[bool] = None, remove_unused_columns: typing.Optional[bool] = True, label_names: typing.Optional[typing.List[str]] = None, load_best_model_at_end: typing.Optional[bool] = False, metric_for_best_model: typing.Optional[str] = None, greater_is_better: typing.Optional[bool] = None, ignore_data_skip: bool = False, sharded_ddp: str = , deepspeed: typing.Optional[str] = None, label_smoothing_factor: float = 0.0, adafactor: bool = False, group_by_length: bool = False, length_column_name: typing.Optional[str] = length, report_to: typing.Optional[typing.List[str]] = None, ddp_find_unused_parameters: typing.Optional[bool] = None, dataloader_pin_memory: bool = True, skip_memory_metrics: bool = True, use_legacy_prediction_loop: bool = False, push_to_hub: bool = False, resume_from_checkpoint: typing.Optional[str] = None, push_to_hub_model_id: str = None, push_to_hub_organization: str = None, push_to_hub_token: str = None, mp_parameters: str = , sortish_sampler: bool = False, predict_with_generate: bool = False, generation_max_length: typing.Optional[int] = None, generation_num_beams: typing.Optional[int] = None)
+> **class transformers.Seq2SeqTrainingArguments**(output_dir: str, overwrite_output_dir: bool = False, do_train: bool = False, do_eval: bool = False, do_predict: bool = False, evaluation_strategy: IntervalStrategy = 'no', prediction_loss_only: bool = False, per_device_train_batch_size: int = 8, per_device_eval_batch_size: int = 8, per_gpu_train_batch_size: typing.Optional[int] = None, per_gpu_eval_batch_size: typing.Optional[int] = None, gradient_accumulation_steps: int = 1, eval_accumulation_steps: typing.Optional[int] = None, learning_rate: float = 5e-05, weight_decay: float = 0.0, adam_beta1: float = 0.9, adam_beta2: float = 0.999, adam_epsilon: float = 1e-08, max_grad_norm: float = 1.0, num_train_epochs: float = 3.0, max_steps: int = -1, lr_scheduler_type: SchedulerType = 'linear', warmup_ratio: float = 0.0, warmup_steps: int = 0, log_level: typing.Optional[str] = 'passive', log_level_replica: typing.Optional[str] = 'passive', log_on_each_node: bool = True, logging_dir: typing.Optional[str] = None, logging_strategy: IntervalStrategy = 'steps', logging_first_step: bool = False, logging_steps: int = 500, logging_nan_inf_filter: str = True, save_strategy: IntervalStrategy = 'steps', save_steps: int = 500, save_total_limit: typing.Optional[int] = None, save_on_each_node: bool = False, no_cuda: bool = False, seed: int = 42, fp16: bool = False, fp16_opt_level: str = 'O1', fp16_backend: str = 'auto', fp16_full_eval: bool = False, local_rank: int = -1, xpu_backend: str = None, tpu_num_cores: typing.Optional[int] = None, tpu_metrics_debug: bool = False, debug: str = '', dataloader_drop_last: bool = False, eval_steps: int = None, dataloader_num_workers: int = 0, past_index: int = -1, run_name: typing.Optional[str] = None, disable_tqdm: typing.Optional[bool] = None, remove_unused_columns: typing.Optional[bool] = True, label_names: typing.Optional[typing.List[str]] = None, load_best_model_at_end: typing.Optional[bool] = False, metric_for_best_model: typing.Optional[str] = None, greater_is_better: typing.Optional[bool] = None, ignore_data_skip: bool = False, sharded_ddp: str = '', deepspeed: typing.Optional[str] = None, label_smoothing_factor: float = 0.0, adafactor: bool = False, group_by_length: bool = False, length_column_name: typing.Optional[str] = 'length', report_to: typing.Optional[typing.List[str]] = None, ddp_find_unused_parameters: typing.Optional[bool] = None, dataloader_pin_memory: bool = True, skip_memory_metrics: bool = True, use_legacy_prediction_loop: bool = False, push_to_hub: bool = False, resume_from_checkpoint: typing.Optional[str] = None, hub_model_id: str = None, hub_strategy: HubStrategy = 'every_save', hub_token: str = None, gradient_checkpointing: bool = False, push_to_hub_model_id: str = None, push_to_hub_organization: str = None, push_to_hub_token: str = None, mp_parameters: str = '', sortish_sampler: bool = False, predict_with_generate: bool = False, generation_max_length: typing.Optional[int] = None, generation_num_beams: typing.Optional[int] = None)
 
 
 TrainingArguments is the subset of the arguments we use in our example scripts **which relate to the training loop
 itself**.
 
-Using [HfArgumentParser](internal/trainer_utils.html#transformers.HfArgumentParser) we can turn this class into [argparse](https://docs.python.org/3/library/argparse.html#module-argparse) arguments that can be specified on the command
+Using [HfArgumentParser](/docs/transformers/master/en/internal/trainer_utils.html#transformers.HfArgumentParser) we can turn this class into [argparse](https://docs.python.org/3/library/argparse.html#module-argparse) arguments that can be specified on the command
 line.
 
 > Parameters
@@ -1455,20 +1584,20 @@ line.
   If `True`, overwrite the content of the output directory. Use this to continue training if
   `output_dir` points to a checkpoint directory.
 - **do_train** (`bool`, _optional_, defaults to `False`) --
-  Whether to run training or not. This argument is not directly used by [Trainer](main_classes/trainer.html#transformers.Trainer), it's
+  Whether to run training or not. This argument is not directly used by [Trainer](/docs/transformers/master/en/main_classes/trainer.html#transformers.Trainer), it's
   intended to be used by your training/evaluation scripts instead. See the [example scripts](https://github.com/huggingface/transformers/tree/master/examples) for more details.
 - **do_eval** (`bool`, _optional_) --
   Whether to run evaluation on the validation set or not. Will be set to `True` if
   `evaluation_strategy` is different from `"no"`. This argument is not directly used by
-  [Trainer](main_classes/trainer.html#transformers.Trainer), it's intended to be used by your training/evaluation scripts instead. See
+  [Trainer](/docs/transformers/master/en/main_classes/trainer.html#transformers.Trainer), it's intended to be used by your training/evaluation scripts instead. See
   the [example scripts](https://github.com/huggingface/transformers/tree/master/examples) for more
   details.
 - **do_predict** (`bool`, _optional_, defaults to `False`) --
   Whether to run predictions on the test set or not. This argument is not directly used by
-  [Trainer](main_classes/trainer.html#transformers.Trainer), it's intended to be used by your training/evaluation scripts instead. See
+  [Trainer](/docs/transformers/master/en/main_classes/trainer.html#transformers.Trainer), it's intended to be used by your training/evaluation scripts instead. See
   the [example scripts](https://github.com/huggingface/transformers/tree/master/examples) for more
   details.
-- **evaluation_strategy** (`str` or [IntervalStrategy](internal/trainer_utils.html#transformers.IntervalStrategy), _optional_, defaults to `"no"`) --
+- **evaluation_strategy** (`str` or [IntervalStrategy](/docs/transformers/master/en/internal/trainer_utils.html#transformers.IntervalStrategy), _optional_, defaults to `"no"`) --
   The evaluation strategy to adopt during training. Possible values are:
 
   - `"no"`: No evaluation is done during training.
@@ -1497,16 +1626,16 @@ examples.
   left unset, the whole predictions are accumulated on GPU/TPU before being moved to the CPU (faster but
   requires more memory).
 - **learning_rate** (`float`, _optional_, defaults to 5e-5) --
-  The initial learning rate for [AdamW](main_classes/optimizer_schedules.html#transformers.AdamW) optimizer.
+  The initial learning rate for [AdamW](/docs/transformers/master/en/main_classes/optimizer_schedules.html#transformers.AdamW) optimizer.
 - **weight_decay** (`float`, _optional_, defaults to 0) --
   The weight decay to apply (if not zero) to all layers except all bias and LayerNorm weights in
-  [AdamW](main_classes/optimizer_schedules.html#transformers.AdamW) optimizer.
+  [AdamW](/docs/transformers/master/en/main_classes/optimizer_schedules.html#transformers.AdamW) optimizer.
 - **adam_beta1** (`float`, _optional_, defaults to 0.9) --
-  The beta1 hyperparameter for the [AdamW](main_classes/optimizer_schedules.html#transformers.AdamW) optimizer.
+  The beta1 hyperparameter for the [AdamW](/docs/transformers/master/en/main_classes/optimizer_schedules.html#transformers.AdamW) optimizer.
 - **adam_beta2** (`float`, _optional_, defaults to 0.999) --
-  The beta2 hyperparameter for the [AdamW](main_classes/optimizer_schedules.html#transformers.AdamW) optimizer.
+  The beta2 hyperparameter for the [AdamW](/docs/transformers/master/en/main_classes/optimizer_schedules.html#transformers.AdamW) optimizer.
 - **adam_epsilon** (`float`, _optional_, defaults to 1e-8) --
-  The epsilon hyperparameter for the [AdamW](main_classes/optimizer_schedules.html#transformers.AdamW) optimizer.
+  The epsilon hyperparameter for the [AdamW](/docs/transformers/master/en/main_classes/optimizer_schedules.html#transformers.AdamW) optimizer.
 - **max_grad_norm** (`float`, _optional_, defaults to 1.0) --
   Maximum gradient norm (for gradient clipping).
 - **num_train_epochs(`float`,** _optional_, defaults to 3.0) --
@@ -1515,8 +1644,8 @@ examples.
 - **max_steps** (`int`, _optional_, defaults to -1) --
   If set to a positive number, the total number of training steps to perform. Overrides
   `num_train_epochs`.
-- **lr_scheduler_type** (`str` or [SchedulerType](main_classes/optimizer_schedules.html#transformers.SchedulerType), _optional_, defaults to `"linear"`) --
-  The scheduler type to use. See the documentation of [SchedulerType](main_classes/optimizer_schedules.html#transformers.SchedulerType) for all possible
+- **lr_scheduler_type** (`str` or [SchedulerType](/docs/transformers/master/en/main_classes/optimizer_schedules.html#transformers.SchedulerType), _optional_, defaults to `"linear"`) --
+  The scheduler type to use. See the documentation of [SchedulerType](/docs/transformers/master/en/main_classes/optimizer_schedules.html#transformers.SchedulerType) for all possible
   values.
 - **warmup_ratio** (`float`, _optional_, defaults to 0.0) --
   Ratio of total training steps used for a linear warmup from 0 to `learning_rate`.
@@ -1535,7 +1664,7 @@ examples.
 - **logging_dir** (`str`, _optional_) --
   [TensorBoard](https://www.tensorflow.org/tensorboard) log directory. Will default to
   _output_dir/runs/**CURRENT_DATETIME_HOSTNAME**_.
-- **logging_strategy** (`str` or [IntervalStrategy](internal/trainer_utils.html#transformers.IntervalStrategy), _optional_, defaults to `"steps"`) --
+- **logging_strategy** (`str` or [IntervalStrategy](/docs/transformers/master/en/internal/trainer_utils.html#transformers.IntervalStrategy), _optional_, defaults to `"steps"`) --
   The logging strategy to adopt during training. Possible values are:
 
   - `"no"`: No logging is done during training.
@@ -1546,7 +1675,19 @@ examples.
   Whether to log and evaluate the first `global_step` or not.
 - **logging_steps** (`int`, _optional_, defaults to 500) --
   Number of update steps between two logs if `logging_strategy="steps"`.
-- **save_strategy** (`str` or [IntervalStrategy](internal/trainer_utils.html#transformers.IntervalStrategy), _optional_, defaults to `"steps"`) --
+- **logging_nan_inf_filter** (`bool`, _optional_, defaults to `True`) --
+  Whether to filter `nan` and `inf` losses for logging. If set to obj:_True_ the loss of every step
+  that is `nan` or `inf` is filtered and the average loss of the current logging window is taken
+  instead.
+
+<Tip>
+
+`logging_nan_inf_filter` only influences the logging of loss values, it does not change the
+behavior the gradient is computed or applied to the model.
+
+</Tip>
+
+- **save_strategy** (`str` or [IntervalStrategy](/docs/transformers/master/en/internal/trainer_utils.html#transformers.IntervalStrategy), _optional_, defaults to `"steps"`) --
   The checkpoint save strategy to adopt during training. Possible values are:
 
   - `"no"`: No save is done during training.
@@ -1583,6 +1724,8 @@ examples.
   can harm metric values.
 - **local_rank** (`int`, _optional_, defaults to -1) --
   Rank of the process during distributed training.
+- **xpu_backend** (`str`, _optional_) --
+  The backend to use for xpu distributed training. Must be one of `"mpi"` or `"ccl"`.
 - **tpu_num_cores** (`int`, _optional_) --
   When training on TPU, the number of TPU cores (automatically passed by launcher script).
 - **dataloader_drop_last** (`bool`, _optional_, defaults to `False`) --
@@ -1595,7 +1738,7 @@ examples.
   Number of subprocesses to use for data loading (PyTorch only). 0 means that the data will be loaded in the
   main process.
 - **past_index** (`int`, _optional_, defaults to -1) --
-  Some models like [TransformerXL](../model_doc/transformerxl.html) or [XLNet](../model_doc/xlnet.html) can
+  Some models like [TransformerXL](/docs/transformers/master/en/../model_doc/transformerxl.html) or [XLNet](/docs/transformers/master/en/../model_doc/xlnet.html) can
   make use of the past hidden states for their predictions. If this argument is set to a positive int, the
   `Trainer` will use the corresponding output (usually index 2) as the past state and feed it to the model
   at the next training step under the keyword argument `mems`.
@@ -1609,7 +1752,7 @@ examples.
   If using `datasets.Dataset` datasets, whether or not to automatically remove the columns unused by the
   model forward method.
 
-  (Note that this behavior is not implemented for [TFTrainer](main_classes/trainer.html#transformers.TFTrainer) yet.)
+  (Note that this behavior is not implemented for [TFTrainer](/docs/transformers/master/en/main_classes/trainer.html#transformers.TFTrainer) yet.)
 - **label_names** (`List[str]`, _optional_) --
   The list of keys in your dictionary of inputs that correspond to the labels.
 
@@ -1679,8 +1822,8 @@ When set to `True`, the parameters `save_strategy` needs to be the same as
 
   The options should be separated by whitespaces.
 - **adafactor** (`bool`, _optional_, defaults to `False`) --
-  Whether or not to use the [Adafactor](main_classes/optimizer_schedules.html#transformers.Adafactor) optimizer instead of
-  [AdamW](main_classes/optimizer_schedules.html#transformers.AdamW).
+  Whether or not to use the [Adafactor](/docs/transformers/master/en/main_classes/optimizer_schedules.html#transformers.Adafactor) optimizer instead of
+  [AdamW](/docs/transformers/master/en/main_classes/optimizer_schedules.html#transformers.AdamW).
 - **group_by_length** (`bool`, _optional_, defaults to `False`) --
   Whether or not to group together samples of roughly the same length in the training dataset (to minimize
   padding applied and be more efficient). Only useful if applying dynamic padding.
@@ -1704,20 +1847,40 @@ When set to `True`, the parameters `save_strategy` needs to be the same as
 - **push_to_hub** (`bool`, _optional_, defaults to `False`) --
   Whether or not to upload the trained model to the hub after training. If this is activated, and
   `output_dir` exists, it needs to be a local clone of the repository to which the
-  [Trainer](main_classes/trainer.html#transformers.Trainer) will be pushed.
+  [Trainer](/docs/transformers/master/en/main_classes/trainer.html#transformers.Trainer) will be pushed.
 - **resume_from_checkpoint** (`str`, _optional_) --
   The path to a folder with a valid checkpoint for your model. This argument is not directly used by
-  [Trainer](main_classes/trainer.html#transformers.Trainer), it's intended to be used by your training/evaluation scripts instead. See
+  [Trainer](/docs/transformers/master/en/main_classes/trainer.html#transformers.Trainer), it's intended to be used by your training/evaluation scripts instead. See
   the [example scripts](https://github.com/huggingface/transformers/tree/master/examples) for more
   details.
-- **push_to_hub_model_id** (`str`, _optional_) --
-  The name of the repository to which push the [Trainer](main_classes/trainer.html#transformers.Trainer) when `push_to_hub=True`.
-  Will default to the name of `output_dir`.
-- **push_to_hub_organization** (`str`, _optional_) --
-  The name of the organization in with to which push the [Trainer](main_classes/trainer.html#transformers.Trainer).
-- **push_to_hub_token** (`str`, _optional_) --
+- **hub_model_id** (`str`, _optional_) --
+  The name of the repository to keep in sync with the local _output_dir_. Should be the whole repository
+  name, for instance `"user_name/model"`, which allows you to push to an organization you are a member
+  of with `"organization_name/model"`.
+
+  Will default to `user_name/output_dir_name` with _output_dir_name_ being the name of
+  `output_dir`.
+- **hub_strategy** (`str` or `HubStrategy`, _optional_, defaults to `"every_save"`) --
+  Defines the scope of what is pushed to the Hub and when. Possible values are:
+
+  - `"end"`: push the model, its configuration, the tokenizer (if passed along to the
+    [Trainer](/docs/transformers/master/en/main_classes/trainer.html#transformers.Trainer)) and a draft of a model card at the end of training.
+  - `"every_save"`: push the model, its configuration, the tokenizer (if passed along to the
+    [Trainer](/docs/transformers/master/en/main_classes/trainer.html#transformers.Trainer)) and a draft of a model card each time there is a model save. The pushes
+    are asynchronous to not block training, and in case the save are very frequent, a new push is only
+    attempted if the previous one is finished. A last push is made with the final model at the end of
+    training.
+  - `"checkpoint"`: like `"every_save"` but the latest checkpoint is also pushed in a subfolder
+    named last-checkpoint, allowing you to resume training easily with
+    `trainer.train(resume_from_checkpoint="last-checkpoint")`.
+  - `"all_checkpoints"`: like `"checkpoint"` but all checkpoints are pushed like they appear in the
+    output folder (so you will get one checkpoint folder per folder in your final repository)
+
+- **hub_token** (`str`, _optional_) --
   The token to use to push the model to the Hub. Will default to the token in the cache folder obtained with
   `huggingface-cli login`.
+- **gradient_checkpointing** (`bool`, _optional_, defaults to `False`) --
+  If True, use gradient checkpointing to save memory at the expense of slower backward pass.
 
   sortish_sampler (`bool`, _optional_, defaults to `False`):
   Whether to use a _sortish sampler_ or not. Only possible if the underlying datasets are _Seq2SeqDataset_ for
@@ -1735,16 +1898,16 @@ When set to `True`, the parameters `save_strategy` needs to be the same as
   `num_beams` value of the model configuration.
 
 
-## TFTrainingArguments
+## [TFTrainingArguments](#tftrainingarguments)
 
 <a id='transformers.TFTrainingArguments'></a>
-> **class transformers.TFTrainingArguments**(output_dir: str, overwrite_output_dir: bool = False, do_train: bool = False, do_eval: bool = False, do_predict: bool = False, evaluation_strategy: IntervalStrategy = no, prediction_loss_only: bool = False, per_device_train_batch_size: int = 8, per_device_eval_batch_size: int = 8, per_gpu_train_batch_size: typing.Optional[int] = None, per_gpu_eval_batch_size: typing.Optional[int] = None, gradient_accumulation_steps: int = 1, eval_accumulation_steps: typing.Optional[int] = None, learning_rate: float = 5e-05, weight_decay: float = 0.0, adam_beta1: float = 0.9, adam_beta2: float = 0.999, adam_epsilon: float = 1e-08, max_grad_norm: float = 1.0, num_train_epochs: float = 3.0, max_steps: int = -1, lr_scheduler_type: SchedulerType = linear, warmup_ratio: float = 0.0, warmup_steps: int = 0, log_level: typing.Optional[str] = passive, log_level_replica: typing.Optional[str] = passive, log_on_each_node: bool = True, logging_dir: typing.Optional[str] = None, logging_strategy: IntervalStrategy = steps, logging_first_step: bool = False, logging_steps: int = 500, save_strategy: IntervalStrategy = steps, save_steps: int = 500, save_total_limit: typing.Optional[int] = None, save_on_each_node: bool = False, no_cuda: bool = False, seed: int = 42, fp16: bool = False, fp16_opt_level: str = O1, fp16_backend: str = auto, fp16_full_eval: bool = False, local_rank: int = -1, tpu_num_cores: typing.Optional[int] = None, tpu_metrics_debug: bool = False, debug: str = , dataloader_drop_last: bool = False, eval_steps: int = None, dataloader_num_workers: int = 0, past_index: int = -1, run_name: typing.Optional[str] = None, disable_tqdm: typing.Optional[bool] = None, remove_unused_columns: typing.Optional[bool] = True, label_names: typing.Optional[typing.List[str]] = None, load_best_model_at_end: typing.Optional[bool] = False, metric_for_best_model: typing.Optional[str] = None, greater_is_better: typing.Optional[bool] = None, ignore_data_skip: bool = False, sharded_ddp: str = , deepspeed: typing.Optional[str] = None, label_smoothing_factor: float = 0.0, adafactor: bool = False, group_by_length: bool = False, length_column_name: typing.Optional[str] = length, report_to: typing.Optional[typing.List[str]] = None, ddp_find_unused_parameters: typing.Optional[bool] = None, dataloader_pin_memory: bool = True, skip_memory_metrics: bool = True, use_legacy_prediction_loop: bool = False, push_to_hub: bool = False, resume_from_checkpoint: typing.Optional[str] = None, push_to_hub_model_id: str = None, push_to_hub_organization: str = None, push_to_hub_token: str = None, mp_parameters: str = , tpu_name: str = None, tpu_zone: str = None, gcp_project: str = None, poly_power: float = 1.0, xla: bool = False)
+> **class transformers.TFTrainingArguments**(output_dir: str, overwrite_output_dir: bool = False, do_train: bool = False, do_eval: bool = False, do_predict: bool = False, evaluation_strategy: IntervalStrategy = 'no', prediction_loss_only: bool = False, per_device_train_batch_size: int = 8, per_device_eval_batch_size: int = 8, per_gpu_train_batch_size: typing.Optional[int] = None, per_gpu_eval_batch_size: typing.Optional[int] = None, gradient_accumulation_steps: int = 1, eval_accumulation_steps: typing.Optional[int] = None, learning_rate: float = 5e-05, weight_decay: float = 0.0, adam_beta1: float = 0.9, adam_beta2: float = 0.999, adam_epsilon: float = 1e-08, max_grad_norm: float = 1.0, num_train_epochs: float = 3.0, max_steps: int = -1, lr_scheduler_type: SchedulerType = 'linear', warmup_ratio: float = 0.0, warmup_steps: int = 0, log_level: typing.Optional[str] = 'passive', log_level_replica: typing.Optional[str] = 'passive', log_on_each_node: bool = True, logging_dir: typing.Optional[str] = None, logging_strategy: IntervalStrategy = 'steps', logging_first_step: bool = False, logging_steps: int = 500, logging_nan_inf_filter: str = True, save_strategy: IntervalStrategy = 'steps', save_steps: int = 500, save_total_limit: typing.Optional[int] = None, save_on_each_node: bool = False, no_cuda: bool = False, seed: int = 42, fp16: bool = False, fp16_opt_level: str = 'O1', fp16_backend: str = 'auto', fp16_full_eval: bool = False, local_rank: int = -1, xpu_backend: str = None, tpu_num_cores: typing.Optional[int] = None, tpu_metrics_debug: bool = False, debug: str = '', dataloader_drop_last: bool = False, eval_steps: int = None, dataloader_num_workers: int = 0, past_index: int = -1, run_name: typing.Optional[str] = None, disable_tqdm: typing.Optional[bool] = None, remove_unused_columns: typing.Optional[bool] = True, label_names: typing.Optional[typing.List[str]] = None, load_best_model_at_end: typing.Optional[bool] = False, metric_for_best_model: typing.Optional[str] = None, greater_is_better: typing.Optional[bool] = None, ignore_data_skip: bool = False, sharded_ddp: str = '', deepspeed: typing.Optional[str] = None, label_smoothing_factor: float = 0.0, adafactor: bool = False, group_by_length: bool = False, length_column_name: typing.Optional[str] = 'length', report_to: typing.Optional[typing.List[str]] = None, ddp_find_unused_parameters: typing.Optional[bool] = None, dataloader_pin_memory: bool = True, skip_memory_metrics: bool = True, use_legacy_prediction_loop: bool = False, push_to_hub: bool = False, resume_from_checkpoint: typing.Optional[str] = None, hub_model_id: str = None, hub_strategy: HubStrategy = 'every_save', hub_token: str = None, gradient_checkpointing: bool = False, push_to_hub_model_id: str = None, push_to_hub_organization: str = None, push_to_hub_token: str = None, mp_parameters: str = '', tpu_name: str = None, tpu_zone: str = None, gcp_project: str = None, poly_power: float = 1.0, xla: bool = False)
 
 
 TrainingArguments is the subset of the arguments we use in our example scripts **which relate to the training loop
 itself**.
 
-Using [HfArgumentParser](internal/trainer_utils.html#transformers.HfArgumentParser) we can turn this class into [argparse](https://docs.python.org/3/library/argparse.html#module-argparse) arguments that can be specified on the command
+Using [HfArgumentParser](/docs/transformers/master/en/internal/trainer_utils.html#transformers.HfArgumentParser) we can turn this class into [argparse](https://docs.python.org/3/library/argparse.html#module-argparse) arguments that can be specified on the command
 line.
 
 > Parameters
@@ -1755,20 +1918,20 @@ line.
   If `True`, overwrite the content of the output directory. Use this to continue training if
   `output_dir` points to a checkpoint directory.
 - **do_train** (`bool`, _optional_, defaults to `False`) --
-  Whether to run training or not. This argument is not directly used by [Trainer](main_classes/trainer.html#transformers.Trainer), it's
+  Whether to run training or not. This argument is not directly used by [Trainer](/docs/transformers/master/en/main_classes/trainer.html#transformers.Trainer), it's
   intended to be used by your training/evaluation scripts instead. See the [example scripts](https://github.com/huggingface/transformers/tree/master/examples) for more details.
 - **do_eval** (`bool`, _optional_) --
   Whether to run evaluation on the validation set or not. Will be set to `True` if
   `evaluation_strategy` is different from `"no"`. This argument is not directly used by
-  [Trainer](main_classes/trainer.html#transformers.Trainer), it's intended to be used by your training/evaluation scripts instead. See
+  [Trainer](/docs/transformers/master/en/main_classes/trainer.html#transformers.Trainer), it's intended to be used by your training/evaluation scripts instead. See
   the [example scripts](https://github.com/huggingface/transformers/tree/master/examples) for more
   details.
 - **do_predict** (`bool`, _optional_, defaults to `False`) --
   Whether to run predictions on the test set or not. This argument is not directly used by
-  [Trainer](main_classes/trainer.html#transformers.Trainer), it's intended to be used by your training/evaluation scripts instead. See
+  [Trainer](/docs/transformers/master/en/main_classes/trainer.html#transformers.Trainer), it's intended to be used by your training/evaluation scripts instead. See
   the [example scripts](https://github.com/huggingface/transformers/tree/master/examples) for more
   details.
-- **evaluation_strategy** (`str` or [IntervalStrategy](internal/trainer_utils.html#transformers.IntervalStrategy), _optional_, defaults to `"no"`) --
+- **evaluation_strategy** (`str` or [IntervalStrategy](/docs/transformers/master/en/internal/trainer_utils.html#transformers.IntervalStrategy), _optional_, defaults to `"no"`) --
   The evaluation strategy to adopt during training. Possible values are:
 
   - `"no"`: No evaluation is done during training.
@@ -1815,7 +1978,7 @@ examples.
 - **logging_dir** (`str`, _optional_) --
   [TensorBoard](https://www.tensorflow.org/tensorboard) log directory. Will default to
   _runs/**CURRENT_DATETIME_HOSTNAME**_.
-- **logging_strategy** (`str` or [IntervalStrategy](internal/trainer_utils.html#transformers.IntervalStrategy), _optional_, defaults to `"steps"`) --
+- **logging_strategy** (`str` or [IntervalStrategy](/docs/transformers/master/en/internal/trainer_utils.html#transformers.IntervalStrategy), _optional_, defaults to `"steps"`) --
   The logging strategy to adopt during training. Possible values are:
 
   - `"no"`: No logging is done during training.
@@ -1826,7 +1989,7 @@ examples.
   Whether to log and evaluate the first `global_step` or not.
 - **logging_steps** (`int`, _optional_, defaults to 500) --
   Number of update steps between two logs if `logging_strategy="steps"`.
-- **save_strategy** (`str` or [IntervalStrategy](internal/trainer_utils.html#transformers.IntervalStrategy), _optional_, defaults to `"steps"`) --
+- **save_strategy** (`str` or [IntervalStrategy](/docs/transformers/master/en/internal/trainer_utils.html#transformers.IntervalStrategy), _optional_, defaults to `"steps"`) --
   The checkpoint save strategy to adopt during training. Possible values are:
 
   - `"no"`: No save is done during training.
@@ -1859,7 +2022,7 @@ examples.
 - **eval_steps** (`int`, _optional_, defaults to 1000) --
   Number of update steps before two evaluations.
 - **past_index** (`int`, _optional_, defaults to -1) --
-  Some models like [TransformerXL](../model_doc/transformerxl.html) or :doc_XLNet &lcub../model_doc/xlnet>_ can
+  Some models like [TransformerXL](/docs/transformers/master/en/../model_doc/transformerxl.html) or :doc_XLNet &amp;lt;../model_doc/xlnet>_ can
   make use of the past hidden states for their predictions. If this argument is set to a positive int, the
   `Trainer` will use the corresponding output (usually index 2) as the past state and feed it to the model
   at the next training step under the keyword argument `mems`.
@@ -1877,23 +2040,45 @@ examples.
   Whether to activate the XLA compilation or not.
 
 
-## Logging
+## [Checkpoints](#checkpoints)
 
-By default [Trainer](main_classes/trainer.html#transformers.Trainer) will use `logging.INFO` for the main process and `logging.WARNING` for
+By default, [Trainer](/docs/transformers/master/en/main_classes/trainer.html#transformers.Trainer) will save all checkpoints in the `output_dir` you set in the
+[TrainingArguments](/docs/transformers/master/en/main_classes/trainer.html#transformers.TrainingArguments) you are using. Those will go in subfolder named `checkpoint-xxx` with xxx
+being the step at which the training was at.
+
+Resuming training from a checkpoint can be done when calling [train()](/docs/transformers/master/en/main_classes/trainer.html#transformers.Trainer.train) with either:
+
+- `resume_from_checkpoint=True` which will resume training from the latest checkpoint
+- `resume_from_checkpoint=checkpoint_dir` which will resume training from the specific checkpoint in the directory
+  passed.
+
+In addition, you can easily save your checkpoints on the Model Hub when using `push_to_hub=True`. By default, all
+the models saved in intermediate checkpoints are saved in different commits, but not the optimizer state. You can adapt
+the `hub-strategy` value of your [TrainingArguments](/docs/transformers/master/en/main_classes/trainer.html#transformers.TrainingArguments) to either:
+
+- `"checkpoint"`: the latest checkpoint is also pushed in a subfolder named last-checkpoint, allowing you to
+  resume training easily with `trainer.train(resume_from_checkpoint="output_dir/last-checkpoint")`.
+- `"all_checkpoints"`: all checkpoints are pushed like they appear in the output folder (so you will get one
+  checkpoint folder per folder in your final repository)
+
+
+## [Logging](#logging)
+
+By default [Trainer](/docs/transformers/master/en/main_classes/trainer.html#transformers.Trainer) will use `logging.INFO` for the main process and `logging.WARNING` for
 the replicas if any.
 
-These defaults can be overridden to use any of the 5 `logging` levels with [TrainingArguments](main_classes/trainer.html#transformers.TrainingArguments)'s
+These defaults can be overridden to use any of the 5 `logging` levels with [TrainingArguments](/docs/transformers/master/en/main_classes/trainer.html#transformers.TrainingArguments)'s
 arguments:
 
 - `log_level` - for the main process
 - `log_level_replica` - for the replicas
 
-Further, if [TrainingArguments](main_classes/trainer.html#transformers.TrainingArguments)'s `log_on_each_node` is set to `False` only the main node will
+Further, if [TrainingArguments](/docs/transformers/master/en/main_classes/trainer.html#transformers.TrainingArguments)'s `log_on_each_node` is set to `False` only the main node will
 use the log level settings for its main process, all other nodes will use the log level settings for replicas.
 
-Note that [Trainer](main_classes/trainer.html#transformers.Trainer) is going to set `transformers`'s log level separately for each node in its
+Note that [Trainer](/docs/transformers/master/en/main_classes/trainer.html#transformers.Trainer) is going to set `transformers`'s log level separately for each node in its
 `__init__()`. So you may want to set this sooner (see the next example) if you tap into other
-`transformers` functionality before creating the [Trainer](main_classes/trainer.html#transformers.Trainer) object.
+`transformers` functionality before creating the [Trainer](/docs/transformers/master/en/main_classes/trainer.html#transformers.Trainer) object.
 
 Here is an example of how this can be used in an application:
 
@@ -1944,9 +2129,9 @@ my_app.py ... --log_level error --log_level_replica error --log_on_each_node 0
 
 
 
-## Randomness
+## [Randomness](#randomness)
 
-When resuming from a checkpoint generated by [Trainer](main_classes/trainer.html#transformers.Trainer) all efforts are made to restore the
+When resuming from a checkpoint generated by [Trainer](/docs/transformers/master/en/main_classes/trainer.html#transformers.Trainer) all efforts are made to restore the
 _python_, _numpy_ and _pytorch_ RNG states to the same states as they were at the moment of saving that checkpoint,
 which should make the "stop and resume" style of training as close as possible to non-stop training.
 
@@ -1956,11 +2141,11 @@ that make things deterministic (.e.g., `torch.backends.cudnn.deterministic`) may
 can't be done by default, but you can enable those yourself if needed.
 
 
-## Trainer Integrations
+## [Trainer Integrations](#trainer-integrations)
 
 
 
-The [Trainer](main_classes/trainer.html#transformers.Trainer) has been extended to support libraries that may dramatically improve your training
+The [Trainer](/docs/transformers/master/en/main_classes/trainer.html#transformers.Trainer) has been extended to support libraries that may dramatically improve your training
 time and fit much bigger models.
 
 Currently it supports third party solutions, [DeepSpeed](https://github.com/microsoft/DeepSpeed) and [FairScale](https://github.com/facebookresearch/fairscale/), which implement parts of the paper [ZeRO: Memory Optimizations
@@ -1970,7 +2155,7 @@ This provided support is new and experimental as of this writing.
 
 <a id='zero-install-notes'></a>
 
-### CUDA Extension Installation Notes
+### [CUDA Extension Installation Notes](#cuda-extension-installation-notes)
 
 As of this writing, both FairScale and Deepspeed require compilation of CUDA C++ code, before they can be used.
 
@@ -1989,7 +2174,7 @@ please, read the following notes first.
 In these notes we give examples for what to do when `pytorch` has been built with CUDA `10.2`. If your situation is
 different remember to adjust the version number to the one you are after.
 
-#### Possible problem #1
+#### [Possible problem #1](#possible-problem)
 
 While, Pytorch comes with its own CUDA toolkit, to build these two projects you must have an identical version of CUDA
 installed system-wide.
@@ -2008,7 +2193,7 @@ which nvcc
 If you don't have CUDA installed system-wide, install it first. You will find the instructions by using your favorite
 search engine. For example, if you're on Ubuntu you may want to search for: [ubuntu cuda 10.2 install](https://www.google.com/search?q=ubuntu+cuda+10.2+install).
 
-#### Possible problem #2
+#### [Possible problem #2](#possible-problem)
 
 Another possible common problem is that you may have more than one CUDA toolkit installed system-wide. For example you
 may have:
@@ -2054,7 +2239,7 @@ exist. `lib64` sub-directory is where the various CUDA `.so` objects, like `libc
 that your system will have it named differently, but if it is adjust it to reflect your reality.
 
 
-#### Possible problem #3
+#### [Possible problem #3](#possible-problem)
 
 Some older CUDA versions may refuse to build with newer compilers. For example, you my have `gcc-9` but it wants
 `gcc-7`.
@@ -2078,9 +2263,9 @@ should find `gcc-7` (and `g++7`) and then the build will succeed.
 
 As always make sure to edit the paths in the example to match your situation.
 
-### FairScale
+### [FairScale](#fairscale)
 
-By integrating [FairScale](https://github.com/facebookresearch/fairscale/) the [Trainer](main_classes/trainer.html#transformers.Trainer)
+By integrating [FairScale](https://github.com/facebookresearch/fairscale/) the [Trainer](/docs/transformers/master/en/main_classes/trainer.html#transformers.Trainer)
 provides support for the following features from [the ZeRO paper](https://arxiv.org/abs/1910.02054):
 
 1. Optimizer State Sharding
@@ -2109,7 +2294,7 @@ pip install transformers[fairscale]
 
 or find more details on [the FairScale's GitHub page](https://github.com/facebookresearch/fairscale/#installation).
 
-If you're still struggling with the build, first make sure to read [zero-install-notes](#zero-install-notes).
+If you're still struggling with the build, first make sure to read [zero-install-notes](/docs/transformers/master/en/main_classes/trainer.html#zero-install-notes).
 
 If it's still not resolved the build issue, here are a few more ideas.
 
@@ -2215,110 +2400,110 @@ Known caveats:
   doing this yourself: `--sharded_ddp "zero_dp_3 auto_wrap"`.
 
 
-### DeepSpeed
+### [DeepSpeed](#deepspeed)
 
 
-Moved to [deepspeed-trainer-integration](#deepspeed-trainer-integration).
+Moved to [deepspeed-trainer-integration](/docs/transformers/master/en/main_classes/trainer.html#deepspeed-trainer-integration).
 
 
-#### Installation
+#### [Installation](#installation)
 
-Moved to [deepspeed-installation](#deepspeed-installation).
-
-
-#### Deployment with multiple GPUs
-
-Moved to [deepspeed-multi-gpu](#deepspeed-multi-gpu).
+Moved to [deepspeed-installation](/docs/transformers/master/en/main_classes/trainer.html#deepspeed-installation).
 
 
-#### Deployment with one GPU
+#### [Deployment with multiple GPUs](#deployment-with-multiple-gpus)
 
-Moved to [deepspeed-one-gpu](#deepspeed-one-gpu).
-
-
-#### Deployment in Notebooks
-
-Moved to [deepspeed-notebook](#deepspeed-notebook).
+Moved to [deepspeed-multi-gpu](/docs/transformers/master/en/main_classes/trainer.html#deepspeed-multi-gpu).
 
 
-#### Configuration
+#### [Deployment with one GPU](#deployment-with-one-gpu)
 
-Moved to [deepspeed-config](#deepspeed-config).
-
-
-#### Passing Configuration
-
-Moved to [deepspeed-config-passing](#deepspeed-config-passing).
+Moved to [deepspeed-one-gpu](/docs/transformers/master/en/main_classes/trainer.html#deepspeed-one-gpu).
 
 
-#### Shared Configuration
+#### [Deployment in Notebooks](#deployment-in-notebooks)
 
-Moved to [deepspeed-config-shared](#deepspeed-config-shared).
-
-#### ZeRO
-
-Moved to [deepspeed-zero](#deepspeed-zero).
-
-##### ZeRO-2 Config
-
-Moved to [deepspeed-zero2-config](#deepspeed-zero2-config).
-
-##### ZeRO-3 Config
-
-Moved to [deepspeed-zero3-config](#deepspeed-zero3-config).
+Moved to [deepspeed-notebook](/docs/transformers/master/en/main_classes/trainer.html#deepspeed-notebook).
 
 
-#### NVMe Support
+#### [Configuration](#configuration)
 
-Moved to [deepspeed-nvme](#deepspeed-nvme).
-
-##### ZeRO-2 vs ZeRO-3 Performance
-
-Moved to [deepspeed-zero2-zero3-performance](#deepspeed-zero2-zero3-performance).
-
-##### ZeRO-2 Example
-
-Moved to [deepspeed-zero2-example](#deepspeed-zero2-example).
-
-##### ZeRO-3 Example
-
-Moved to [deepspeed-zero3-example](#deepspeed-zero3-example).
-
-#### Optimizer and Scheduler
+Moved to [deepspeed-config](/docs/transformers/master/en/main_classes/trainer.html#deepspeed-config).
 
 
+#### [Passing Configuration](#passing-configuration)
 
-##### Optimizer
-
-Moved to [deepspeed-optimizer](#deepspeed-optimizer).
-
-
-##### Scheduler
-
-Moved to [deepspeed-scheduler](#deepspeed-scheduler).
-
-#### fp32 Precision
-
-Moved to [deepspeed-fp32](#deepspeed-fp32).
-
-#### Automatic Mixed Precision
-
-Moved to [deepspeed-amp](#deepspeed-amp).
-
-#### Batch Size
-
-Moved to [deepspeed-bs](#deepspeed-bs).
-
-#### Gradient Accumulation
-
-Moved to [deepspeed-grad-acc](#deepspeed-grad-acc).
+Moved to [deepspeed-config-passing](/docs/transformers/master/en/main_classes/trainer.html#deepspeed-config-passing).
 
 
-#### Gradient Clipping
+#### [Shared Configuration](#shared-configuration)
 
-Moved to [deepspeed-grad-clip](#deepspeed-grad-clip).
+Moved to [deepspeed-config-shared](/docs/transformers/master/en/main_classes/trainer.html#deepspeed-config-shared).
+
+#### [ZeRO](#zero)
+
+Moved to [deepspeed-zero](/docs/transformers/master/en/main_classes/trainer.html#deepspeed-zero).
+
+##### [ZeRO-2 Config](#zero-config)
+
+Moved to [deepspeed-zero2-config](/docs/transformers/master/en/main_classes/trainer.html#deepspeed-zero2-config).
+
+##### [ZeRO-3 Config](#zero-config)
+
+Moved to [deepspeed-zero3-config](/docs/transformers/master/en/main_classes/trainer.html#deepspeed-zero3-config).
 
 
-#### Getting The Model Weights Out
+#### [NVMe Support](#nvme-support)
 
-Moved to [deepspeed-weight-extraction](#deepspeed-weight-extraction).
+Moved to [deepspeed-nvme](/docs/transformers/master/en/main_classes/trainer.html#deepspeed-nvme).
+
+##### [ZeRO-2 vs ZeRO-3 Performance](#zero-vs-zero-performance)
+
+Moved to [deepspeed-zero2-zero3-performance](/docs/transformers/master/en/main_classes/trainer.html#deepspeed-zero2-zero3-performance).
+
+##### [ZeRO-2 Example](#zero-example)
+
+Moved to [deepspeed-zero2-example](/docs/transformers/master/en/main_classes/trainer.html#deepspeed-zero2-example).
+
+##### [ZeRO-3 Example](#zero-example)
+
+Moved to [deepspeed-zero3-example](/docs/transformers/master/en/main_classes/trainer.html#deepspeed-zero3-example).
+
+#### [Optimizer and Scheduler](#optimizer-and-scheduler)
+
+
+
+##### [Optimizer](#optimizer)
+
+Moved to [deepspeed-optimizer](/docs/transformers/master/en/main_classes/trainer.html#deepspeed-optimizer).
+
+
+##### [Scheduler](#scheduler)
+
+Moved to [deepspeed-scheduler](/docs/transformers/master/en/main_classes/trainer.html#deepspeed-scheduler).
+
+#### [fp32 Precision](#fp-precision)
+
+Moved to [deepspeed-fp32](/docs/transformers/master/en/main_classes/trainer.html#deepspeed-fp32).
+
+#### [Automatic Mixed Precision](#automatic-mixed-precision)
+
+Moved to [deepspeed-amp](/docs/transformers/master/en/main_classes/trainer.html#deepspeed-amp).
+
+#### [Batch Size](#batch-size)
+
+Moved to [deepspeed-bs](/docs/transformers/master/en/main_classes/trainer.html#deepspeed-bs).
+
+#### [Gradient Accumulation](#gradient-accumulation)
+
+Moved to [deepspeed-grad-acc](/docs/transformers/master/en/main_classes/trainer.html#deepspeed-grad-acc).
+
+
+#### [Gradient Clipping](#gradient-clipping)
+
+Moved to [deepspeed-grad-clip](/docs/transformers/master/en/main_classes/trainer.html#deepspeed-grad-clip).
+
+
+#### [Getting The Model Weights Out](#getting-the-model-weights-out)
+
+Moved to [deepspeed-weight-extraction](/docs/transformers/master/en/main_classes/trainer.html#deepspeed-weight-extraction).

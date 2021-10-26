@@ -1,7 +1,50 @@
-# Model Parallelism
+---
+local: model-parallelism
+sections:
+- local: parallelism-overview
+  title: Parallelism overview
+- local: concepts
+  title: Concepts
+- local: data-parallel
+  title: Data Parallel
+- local: zero-data-parallel
+  title: ZeRO Data Parallel
+- local: naive-model-parallel-vertical-and-pipeline-parallel
+  title: Naive Model Parallel (Vertical) and Pipeline Parallel
+- local: tensor-parallelism
+  title: Tensor Parallelism
+- local: dppp
+  title: DP+PP
+- local: dppptp
+  title: DP+PP+TP
+- local: dppptpzero
+  title: DP+PP+TP+ZeRO
+- local: flexflow
+  title: FlexFlow
+- local: which-strategy-to-use-when
+  title: Which Strategy To Use When
+title: Model Parallelism
+---
+<!---
+Copyright 2021 The HuggingFace Team. All rights reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+# [Model Parallelism](#model-parallelism)
 
 
-## Parallelism overview
+## [Parallelism overview](#parallelism-overview)
 
 In the modern machine learning the various approaches to parallelism are used to:
 1. fit very large models onto limited hardware - e.g. t5-11b is 45GB in just model params
@@ -12,7 +55,7 @@ We will first discuss in depth various 1D parallelism techniques and their pros 
 While the main concepts most likely will apply to any other framework, this article is focused on PyTorch-based implementations.
 
 
-## Concepts
+## [Concepts](#concepts)
 
 The following is the brief description of the main concepts that will be described later in depth in this document.
 
@@ -23,11 +66,11 @@ The following is the brief description of the main concepts that will be describ
 5. Sharded DDP - is another name for the foundational ZeRO concept as used by various other implementations of ZeRO.
 
 
-## Data Parallel
+## [Data Parallel](#data-parallel)
 
 Most users with just 2 GPUs already enjoy the increased training speed up thanks to DataParallel (DP) and DistributedDataParallel (DDP) that are almost trivial to use. This is a built-in feature of Pytorch.
 
-## ZeRO Data Parallel
+## [ZeRO Data Parallel](#zero-data-parallel)
 
 ZeRO-powered data parallelism (ZeRO-DP) is described on the following diagram from this [blog post](https://www.microsoft.com/en-us/research/blog/zero-deepspeed-new-system-optimizations-enable-training-models-with-over-100-billion-parameters/)
 ![DeepSpeed-Image-1](imgs/parallelism-zero.png)
@@ -108,7 +151,7 @@ Implementations:
 - [Fairscale](https://github.com/facebookresearch/fairscale/#optimizer-state-sharding-zero) ZeRO-DP stages 1+2+3
 - [`transformers` integration](https://huggingface.co/transformers/master/main_classes/trainer.html#trainer-integrations)
 
-## Naive Model Parallel (Vertical) and Pipeline Parallel
+## [Naive Model Parallel (Vertical) and Pipeline Parallel](#naive-model-parallel-vertical-and-pipeline-parallel)
 
 Naive Model Parallel (MP) is where one spreads groups of model layers across multiple GPUs. The mechanism is relatively simple - switch the desired layers `.to()` the desired devices and now whenever the data goes in and out those layers switch the data to the same device as the layer and leave the rest unmodified.
 
@@ -177,7 +220,7 @@ Here the bubble (idle time) is further minimized by prioritizing backward passes
 According to [the same document](https://docs.aws.amazon.com/sagemaker/latest/dg/model-parallel-core-features.html), it might be able to automate the non `nn.Sequential` model conversion to pipeline. The only problem is that this is currently only available at AWS, so you can't run it on your own hardware.
 
 
-## Tensor Parallelism
+## [Tensor Parallelism](#tensor-parallelism)
 
 In Tensor Parallelism each GPU processes only a slice of a tensor and only aggregates the full tensor for operations that require the whole thing.
 
@@ -218,7 +261,7 @@ Implementations:
 
 
 
-## DP+PP
+## [DP+PP](#dppp)
 
 The following diagram from the DeepSpeed [pipeline tutorial](https://www.deepspeed.ai/tutorials/pipeline/) demonstrates how one combines DP with PP.
 
@@ -235,7 +278,7 @@ Implementations:
 🤗 Transformers status: not yet implemented
 
 
-## DP+PP+TP
+## [DP+PP+TP](#dppptp)
 
 To get an even more efficient training a 3D parallelism is used where PP is combined with TP and DP. This can be seen in the following diagram.
 
@@ -252,7 +295,7 @@ Implementations:
 🤗 Transformers status: not yet implemented, since we have no PP and TP.
 
 
-## DP+PP+TP+ZeRO
+## [DP+PP+TP+ZeRO](#dppptpzero)
 
 One of the main features of DeepSpeed is ZeRO, which is a super-scalable extension of DP. It has already been discussed in [ZeRO Data Parallel](#zero-data-parallel). Normally it's a standalone feature that doesn't require PP or TP. But it can be combined with PP and TP.
 
@@ -272,7 +315,7 @@ Implementations:
 🤗 Transformers status: not yet implemented, since we have no PP and TP.
 
 
-## FlexFlow
+## [FlexFlow](#flexflow)
 
 [FlexFlow](https://github.com/flexflow/FlexFlow) also solves the parallelization problem in a slightly different approach.
 
@@ -298,7 +341,7 @@ So the promise is very attractive - it runs a 30min simulation on the cluster of
 🤗 Transformers status: not yet integrated. We already have our models FX-trace-able via [transformers.utils.fx](https://github.com/huggingface/transformers/blob/master/src/transformers/utils/fx.py), which is a prerequisite for FlexFlow, so someone needs to figure out what needs to be done to make FlexFlow work with our models.
 
 
-## Which Strategy To Use When
+## [Which Strategy To Use When](#which-strategy-to-use-when)
 
 Here is a very rough outlook at which parallelism strategy to use when. The first on the list is typically faster.
 

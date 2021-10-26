@@ -1,25 +1,48 @@
+---
+local: utilities-for-tokenizers
+sections:
+- local: pretrainedtokenizerbase
+  title: PreTrainedTokenizerBase
+- local: specialtokensmixin
+  title: SpecialTokensMixin
+- local: enums-and-namedtuples
+  title: Enums and namedtuples
+title: Utilities for Tokenizers
+---
 <script>
 import Tip from "../../Tip.svelte";
 import Youtube from "../../Youtube.svelte";	
 export let fw: "pt" | "tf"
 </script>
 
-# Utilities for Tokenizers
+<!--Copyright 2020 The HuggingFace Team. All rights reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
+the License. You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on
+an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
+specific language governing permissions and limitations under the License.
+-->
+
+# [Utilities for Tokenizers](#utilities-for-tokenizers)
 
 This page lists all the utility functions used by the tokenizers, mainly the class
-[PreTrainedTokenizerBase](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase) that implements the common methods between
-[PreTrainedTokenizer](main_classes/tokenizer.html#transformers.PreTrainedTokenizer) and [PreTrainedTokenizerFast](main_classes/tokenizer.html#transformers.PreTrainedTokenizerFast) and the mixin
-[SpecialTokensMixin](internal/tokenization_utils.html#transformers.SpecialTokensMixin).
+[PreTrainedTokenizerBase](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase) that implements the common methods between
+[PreTrainedTokenizer](/docs/transformers/master/en/main_classes/tokenizer.html#transformers.PreTrainedTokenizer) and [PreTrainedTokenizerFast](/docs/transformers/master/en/main_classes/tokenizer.html#transformers.PreTrainedTokenizerFast) and the mixin
+[SpecialTokensMixin](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.SpecialTokensMixin).
 
 Most of those are only useful if you are studying the code of the tokenizers in the library.
 
-## PreTrainedTokenizerBase
+## [PreTrainedTokenizerBase](#pretrainedtokenizerbase)
 
 <a id='transformers.PreTrainedTokenizerBase'></a>
 > **class transformers.PreTrainedTokenizerBase**(**kwargs)
 
 
-Base class for [PreTrainedTokenizer](main_classes/tokenizer.html#transformers.PreTrainedTokenizer) and [PreTrainedTokenizerFast](main_classes/tokenizer.html#transformers.PreTrainedTokenizerFast).
+Base class for [PreTrainedTokenizer](/docs/transformers/master/en/main_classes/tokenizer.html#transformers.PreTrainedTokenizer) and [PreTrainedTokenizerFast](/docs/transformers/master/en/main_classes/tokenizer.html#transformers.PreTrainedTokenizerFast).
 
 Handles shared (mostly boiler plate) methods for those two classes.
 
@@ -38,7 +61,7 @@ Class attributes (overridden by derived classes)
 - **pretrained_init_configuration** (`Dict[str, Dict[str, Any]]`) -- A dictionary with, as keys, the
   `short-cut-names` of the pretrained models, and as associated values, a dictionary of specific arguments
   to pass to the `__init__` method of the tokenizer class for this pretrained model when loading the
-  tokenizer with the [from_pretrained()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.from_pretrained)
+  tokenizer with the [from_pretrained()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.from_pretrained)
   method.
 - **model_input_names** (`List[str]`) -- A list of inputs expected in the forward pass of the model.
 - **padding_side** (`str`) -- The default value for the side on which the model should have padding
@@ -48,7 +71,7 @@ Class attributes (overridden by derived classes)
 
 - **model_max_length** (`int`, _optional_) --
   The maximum length (in number of tokens) for the inputs to the transformer model. When the tokenizer is
-  loaded with [from_pretrained()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.from_pretrained), this
+  loaded with [from_pretrained()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.from_pretrained), this
   will be set to the value stored for the associated model in `max_model_input_sizes` (see above). If no
   value is provided, will default to VERY_LARGE_INTEGER (`int(1e30)`).
   padding_side -- (`str`, _optional_):
@@ -105,7 +128,7 @@ sequences.
 
 - **add_special_tokens** (`bool`, _optional_, defaults to `True`) --
   Whether or not to encode the sequences with the special tokens relative to their model.
-- **padding** (`bool`, `str` or [PaddingStrategy](internal/file_utils.html#transformers.file_utils.PaddingStrategy), _optional_, defaults to `False`) --
+- **padding** (`bool`, `str` or [PaddingStrategy](/docs/transformers/master/en/internal/file_utils.html#transformers.file_utils.PaddingStrategy), _optional_, defaults to `False`) --
   Activates and controls padding. Accepts the following values:
 
   - `True` or `'longest'`: Pad to the longest sequence in the batch (or no padding if only a
@@ -114,7 +137,7 @@ sequences.
     maximum acceptable input length for the model if that argument is not provided.
   - `False` or `'do_not_pad'` (default): No padding (i.e., can output a batch with sequences of
     different lengths).
-- **truncation** (`bool`, `str` or [TruncationStrategy](internal/tokenization_utils.html#transformers.tokenization_utils_base.TruncationStrategy), _optional_, defaults to `False`) --
+- **truncation** (`bool`, `str` or [TruncationStrategy](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.tokenization_utils_base.TruncationStrategy), _optional_, defaults to `False`) --
   Activates and controls truncation. Accepts the following values:
 
   - `True` or `'longest_first'`: Truncate to a maximum length specified with the argument
@@ -147,7 +170,7 @@ sequences.
 - **pad_to_multiple_of** (`int`, _optional_) --
   If set will pad the sequence to a multiple of the provided value. This is especially useful to enable
   the use of Tensor Cores on NVIDIA hardware with compute capability >= 7.5 (Volta).
-- **return_tensors** (`str` or [TensorType](internal/file_utils.html#transformers.TensorType), _optional_) --
+- **return_tensors** (`str` or [TensorType](/docs/transformers/master/en/internal/file_utils.html#transformers.TensorType), _optional_) --
   If set, will return tensors instead of list of python integers. Acceptable values are:
 
   - `'tf'`: Return TensorFlow `tf.constant` objects.
@@ -165,14 +188,16 @@ sequences.
 
   [What are attention masks?](../glossary.html#attention-mask)
 - **return_overflowing_tokens** (`bool`, _optional_, defaults to `False`) --
-  Whether or not to return overflowing token sequences.
+  Whether or not to return overflowing token sequences. If a pair of sequences of input ids (or a batch
+  of pairs) is provided with `truncation_strategy = longest_first` or `True`, an error is
+  raised instead of returning overflowing tokens.
 - **return_special_tokens_mask** (`bool`, _optional_, defaults to `False`) --
   Whether or not to return special tokens mask information.
 - **return_offsets_mapping** (`bool`, _optional_, defaults to `False`) --
   Whether or not to return `(char_start, char_end)` for each token.
 
   This is only available on fast tokenizers inheriting from
-  [PreTrainedTokenizerFast](main_classes/tokenizer.html#transformers.PreTrainedTokenizerFast), if using Python's tokenizer, this method will raise
+  [PreTrainedTokenizerFast](/docs/transformers/master/en/main_classes/tokenizer.html#transformers.PreTrainedTokenizerFast), if using Python's tokenizer, this method will raise
   `NotImplementedError`.
 - **return_length**  (`bool`, _optional_, defaults to `False`) --
   Whether or not to return the lengths of the encoded inputs.
@@ -182,7 +207,7 @@ sequences.
 
 > Returns
 
-A [BatchEncoding](main_classes/tokenizer.html#transformers.BatchEncoding) with the following fields:
+A [BatchEncoding](/docs/transformers/master/en/main_classes/tokenizer.html#transformers.BatchEncoding) with the following fields:
 
 - **input_ids** -- List of token ids to be fed to a model.
 
@@ -208,7 +233,7 @@ A [BatchEncoding](main_classes/tokenizer.html#transformers.BatchEncoding) with t
 
 > Return type
 
-[BatchEncoding](main_classes/tokenizer.html#transformers.BatchEncoding)
+[BatchEncoding](/docs/transformers/master/en/main_classes/tokenizer.html#transformers.BatchEncoding)
 
 
 <a id='transformers.PreTrainedTokenizerBase.as_target_tokenizer'></a>
@@ -266,7 +291,7 @@ This method is deprecated, `__call__` should be used instead.
 
 - **add_special_tokens** (`bool`, _optional_, defaults to `True`) --
   Whether or not to encode the sequences with the special tokens relative to their model.
-- **padding** (`bool`, `str` or [PaddingStrategy](internal/file_utils.html#transformers.file_utils.PaddingStrategy), _optional_, defaults to `False`) --
+- **padding** (`bool`, `str` or [PaddingStrategy](/docs/transformers/master/en/internal/file_utils.html#transformers.file_utils.PaddingStrategy), _optional_, defaults to `False`) --
   Activates and controls padding. Accepts the following values:
 
   - `True` or `'longest'`: Pad to the longest sequence in the batch (or no padding if only a
@@ -275,7 +300,7 @@ This method is deprecated, `__call__` should be used instead.
     maximum acceptable input length for the model if that argument is not provided.
   - `False` or `'do_not_pad'` (default): No padding (i.e., can output a batch with sequences of
     different lengths).
-- **truncation** (`bool`, `str` or [TruncationStrategy](internal/tokenization_utils.html#transformers.tokenization_utils_base.TruncationStrategy), _optional_, defaults to `False`) --
+- **truncation** (`bool`, `str` or [TruncationStrategy](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.tokenization_utils_base.TruncationStrategy), _optional_, defaults to `False`) --
   Activates and controls truncation. Accepts the following values:
 
   - `True` or `'longest_first'`: Truncate to a maximum length specified with the argument
@@ -308,7 +333,7 @@ This method is deprecated, `__call__` should be used instead.
 - **pad_to_multiple_of** (`int`, _optional_) --
   If set will pad the sequence to a multiple of the provided value. This is especially useful to enable
   the use of Tensor Cores on NVIDIA hardware with compute capability >= 7.5 (Volta).
-- **return_tensors** (`str` or [TensorType](internal/file_utils.html#transformers.TensorType), _optional_) --
+- **return_tensors** (`str` or [TensorType](/docs/transformers/master/en/internal/file_utils.html#transformers.TensorType), _optional_) --
   If set, will return tensors instead of list of python integers. Acceptable values are:
 
   - `'tf'`: Return TensorFlow `tf.constant` objects.
@@ -326,14 +351,16 @@ This method is deprecated, `__call__` should be used instead.
 
   [What are attention masks?](../glossary.html#attention-mask)
 - **return_overflowing_tokens** (`bool`, _optional_, defaults to `False`) --
-  Whether or not to return overflowing token sequences.
+  Whether or not to return overflowing token sequences. If a pair of sequences of input ids (or a batch
+  of pairs) is provided with `truncation_strategy = longest_first` or `True`, an error is
+  raised instead of returning overflowing tokens.
 - **return_special_tokens_mask** (`bool`, _optional_, defaults to `False`) --
   Whether or not to return special tokens mask information.
 - **return_offsets_mapping** (`bool`, _optional_, defaults to `False`) --
   Whether or not to return `(char_start, char_end)` for each token.
 
   This is only available on fast tokenizers inheriting from
-  [PreTrainedTokenizerFast](main_classes/tokenizer.html#transformers.PreTrainedTokenizerFast), if using Python's tokenizer, this method will raise
+  [PreTrainedTokenizerFast](/docs/transformers/master/en/main_classes/tokenizer.html#transformers.PreTrainedTokenizerFast), if using Python's tokenizer, this method will raise
   `NotImplementedError`.
 - **return_length**  (`bool`, _optional_, defaults to `False`) --
   Whether or not to return the lengths of the encoded inputs.
@@ -343,7 +370,7 @@ This method is deprecated, `__call__` should be used instead.
 
 > Returns
 
-A [BatchEncoding](main_classes/tokenizer.html#transformers.BatchEncoding) with the following fields:
+A [BatchEncoding](/docs/transformers/master/en/main_classes/tokenizer.html#transformers.BatchEncoding) with the following fields:
 
 - **input_ids** -- List of token ids to be fed to a model.
 
@@ -369,7 +396,7 @@ A [BatchEncoding](main_classes/tokenizer.html#transformers.BatchEncoding) with t
 
 > Return type
 
-[BatchEncoding](main_classes/tokenizer.html#transformers.BatchEncoding)
+[BatchEncoding](/docs/transformers/master/en/main_classes/tokenizer.html#transformers.BatchEncoding)
 
 
 <a id='transformers.PreTrainedTokenizerBase.build_inputs_with_special_tokens'></a>
@@ -506,7 +533,7 @@ Same as doing `self.convert_tokens_to_ids(self.tokenize(text))`.
 
 - **add_special_tokens** (`bool`, _optional_, defaults to `True`) --
   Whether or not to encode the sequences with the special tokens relative to their model.
-- **padding** (`bool`, `str` or [PaddingStrategy](internal/file_utils.html#transformers.file_utils.PaddingStrategy), _optional_, defaults to `False`) --
+- **padding** (`bool`, `str` or [PaddingStrategy](/docs/transformers/master/en/internal/file_utils.html#transformers.file_utils.PaddingStrategy), _optional_, defaults to `False`) --
   Activates and controls padding. Accepts the following values:
 
   - `True` or `'longest'`: Pad to the longest sequence in the batch (or no padding if only a
@@ -515,7 +542,7 @@ Same as doing `self.convert_tokens_to_ids(self.tokenize(text))`.
     maximum acceptable input length for the model if that argument is not provided.
   - `False` or `'do_not_pad'` (default): No padding (i.e., can output a batch with sequences of
     different lengths).
-- **truncation** (`bool`, `str` or [TruncationStrategy](internal/tokenization_utils.html#transformers.tokenization_utils_base.TruncationStrategy), _optional_, defaults to `False`) --
+- **truncation** (`bool`, `str` or [TruncationStrategy](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.tokenization_utils_base.TruncationStrategy), _optional_, defaults to `False`) --
   Activates and controls truncation. Accepts the following values:
 
   - `True` or `'longest_first'`: Truncate to a maximum length specified with the argument
@@ -548,7 +575,7 @@ Same as doing `self.convert_tokens_to_ids(self.tokenize(text))`.
 - **pad_to_multiple_of** (`int`, _optional_) --
   If set will pad the sequence to a multiple of the provided value. This is especially useful to enable
   the use of Tensor Cores on NVIDIA hardware with compute capability >= 7.5 (Volta).
-- **return_tensors** (`str` or [TensorType](internal/file_utils.html#transformers.TensorType), _optional_) --
+- **return_tensors** (`str` or [TensorType](/docs/transformers/master/en/internal/file_utils.html#transformers.TensorType), _optional_) --
   If set, will return tensors instead of list of python integers. Acceptable values are:
 
   - `'tf'`: Return TensorFlow `tf.constant` objects.
@@ -592,7 +619,7 @@ This method is deprecated, `__call__` should be used instead.
 
 - **add_special_tokens** (`bool`, _optional_, defaults to `True`) --
   Whether or not to encode the sequences with the special tokens relative to their model.
-- **padding** (`bool`, `str` or [PaddingStrategy](internal/file_utils.html#transformers.file_utils.PaddingStrategy), _optional_, defaults to `False`) --
+- **padding** (`bool`, `str` or [PaddingStrategy](/docs/transformers/master/en/internal/file_utils.html#transformers.file_utils.PaddingStrategy), _optional_, defaults to `False`) --
   Activates and controls padding. Accepts the following values:
 
   - `True` or `'longest'`: Pad to the longest sequence in the batch (or no padding if only a
@@ -601,7 +628,7 @@ This method is deprecated, `__call__` should be used instead.
     maximum acceptable input length for the model if that argument is not provided.
   - `False` or `'do_not_pad'` (default): No padding (i.e., can output a batch with sequences of
     different lengths).
-- **truncation** (`bool`, `str` or [TruncationStrategy](internal/tokenization_utils.html#transformers.tokenization_utils_base.TruncationStrategy), _optional_, defaults to `False`) --
+- **truncation** (`bool`, `str` or [TruncationStrategy](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.tokenization_utils_base.TruncationStrategy), _optional_, defaults to `False`) --
   Activates and controls truncation. Accepts the following values:
 
   - `True` or `'longest_first'`: Truncate to a maximum length specified with the argument
@@ -634,7 +661,7 @@ This method is deprecated, `__call__` should be used instead.
 - **pad_to_multiple_of** (`int`, _optional_) --
   If set will pad the sequence to a multiple of the provided value. This is especially useful to enable
   the use of Tensor Cores on NVIDIA hardware with compute capability >= 7.5 (Volta).
-- **return_tensors** (`str` or [TensorType](internal/file_utils.html#transformers.TensorType), _optional_) --
+- **return_tensors** (`str` or [TensorType](/docs/transformers/master/en/internal/file_utils.html#transformers.TensorType), _optional_) --
   If set, will return tensors instead of list of python integers. Acceptable values are:
 
   - `'tf'`: Return TensorFlow `tf.constant` objects.
@@ -652,14 +679,16 @@ This method is deprecated, `__call__` should be used instead.
 
   [What are attention masks?](../glossary.html#attention-mask)
 - **return_overflowing_tokens** (`bool`, _optional_, defaults to `False`) --
-  Whether or not to return overflowing token sequences.
+  Whether or not to return overflowing token sequences. If a pair of sequences of input ids (or a batch
+  of pairs) is provided with `truncation_strategy = longest_first` or `True`, an error is
+  raised instead of returning overflowing tokens.
 - **return_special_tokens_mask** (`bool`, _optional_, defaults to `False`) --
   Whether or not to return special tokens mask information.
 - **return_offsets_mapping** (`bool`, _optional_, defaults to `False`) --
   Whether or not to return `(char_start, char_end)` for each token.
 
   This is only available on fast tokenizers inheriting from
-  [PreTrainedTokenizerFast](main_classes/tokenizer.html#transformers.PreTrainedTokenizerFast), if using Python's tokenizer, this method will raise
+  [PreTrainedTokenizerFast](/docs/transformers/master/en/main_classes/tokenizer.html#transformers.PreTrainedTokenizerFast), if using Python's tokenizer, this method will raise
   `NotImplementedError`.
 - **return_length**  (`bool`, _optional_, defaults to `False`) --
   Whether or not to return the lengths of the encoded inputs.
@@ -669,7 +698,7 @@ This method is deprecated, `__call__` should be used instead.
 
 > Returns
 
-A [BatchEncoding](main_classes/tokenizer.html#transformers.BatchEncoding) with the following fields:
+A [BatchEncoding](/docs/transformers/master/en/main_classes/tokenizer.html#transformers.BatchEncoding) with the following fields:
 
 - **input_ids** -- List of token ids to be fed to a model.
 
@@ -695,14 +724,14 @@ A [BatchEncoding](main_classes/tokenizer.html#transformers.BatchEncoding) with t
 
 > Return type
 
-[BatchEncoding](main_classes/tokenizer.html#transformers.BatchEncoding)
+[BatchEncoding](/docs/transformers/master/en/main_classes/tokenizer.html#transformers.BatchEncoding)
 
 
 <a id='transformers.PreTrainedTokenizerBase.from_pretrained'></a>
 > **from\_pretrained**(pretrained_model_name_or_path: typing.Union[str, os.PathLike], *init_inputs, **kwargs)
 
 
-Instantiate a [PreTrainedTokenizerBase](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase) (or a derived class) from
+Instantiate a [PreTrainedTokenizerBase](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase) (or a derived class) from
 a predefined tokenizer.
 
 > Parameters
@@ -714,7 +743,7 @@ a predefined tokenizer.
     Valid model ids can be located at the root-level, like `bert-base-uncased`, or namespaced under a
     user or organization name, like `dbmdz/bert-base-german-cased`.
   - A path to a _directory_ containing vocabulary files required by the tokenizer, for instance saved
-    using the [save_pretrained()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.save_pretrained)
+    using the [save_pretrained()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.save_pretrained)
     method, e.g., `./my_model_directory/`.
   - (**Deprecated**, not applicable to all derived classes) A path or url to a single saved vocabulary
     file (if and only if the tokenizer only requires a single vocabulary file like Bert or XLNet), e.g.,
@@ -728,8 +757,8 @@ a predefined tokenizer.
 - **resume_download** (`bool`, _optional_, defaults to `False`) --
   Whether or not to delete incompletely received files. Attempt to resume the download if such a file
   exists.
-- **proxies** (`Dict[str, str]`, _optional_) -- A dictionary of proxy servers to use by protocol or endpoint, e.g., `&lcub'http': 'foo.bar:3128',
-  'http://hostname': 'foo.bar:4012'&rcub`. The proxies are used on each request. - **use_auth_token** (`str` or _bool_, _optional_) -- The token to use as HTTP bearer authorization for remote files. If `True`, will use the token generated when running `transformers-cli login` (stored in `~/.huggingface`). - **local_files_only** (`bool`, _optional_, defaults to `False`) --
+- **proxies** (`Dict[str, str], `optional`) -- A dictionary of proxy servers to use by protocol or endpoint, e.g., `&amp;lcub;'http': 'foo.bar:3128',
+  'http://hostname': 'foo.bar:4012'}`. The proxies are used on each request. - **use_auth_token** (`str` or _bool_, _optional_) -- The token to use as HTTP bearer authorization for remote files. If `True`, will use the token generated when running `transformers-cli login` (stored in `~/.huggingface`). - **local_files_only** (`bool`, _optional_, defaults to `False`) --
   Whether or not to only rely on local files and not to attempt to download any files.
 - **revision(`str`,** _optional_, defaults to `"main"`) --
   The specific model version to use. It can be a branch name, a tag name, or a commit id, since we use a
@@ -768,10 +797,10 @@ tokenizer = BertTokenizer.from_pretrained('./test/saved_model/')
 tokenizer = BertTokenizer.from_pretrained('./test/saved_model/my_vocab.txt')
 
 # You can link tokens to special vocabulary when instantiating
-tokenizer = BertTokenizer.from_pretrained('bert-base-uncased', unk_token='&lcubunk>')
-# You should be sure '&lcubunk>' is in the vocabulary when doing that.
-# Otherwise use tokenizer.add_special_tokens({'unk_token': '&lcubunk>'}) instead)
-assert tokenizer.unk_token == '&lcubunk>'
+tokenizer = BertTokenizer.from_pretrained('bert-base-uncased', unk_token='&amp;lt;unk>')
+# You should be sure '&amp;lt;unk>' is in the vocabulary when doing that.
+# Otherwise use tokenizer.add_special_tokens(&amp;lcub;'unk_token': '&amp;lt;unk>'}) instead)
+assert tokenizer.unk_token == '&amp;lt;unk>'
 ```
 
 
@@ -838,14 +867,14 @@ case of PyTorch tensors, you will lose the specific device of your tensors howev
 
 > Parameters
 
-- **encoded_inputs** ([BatchEncoding](main_classes/tokenizer.html#transformers.BatchEncoding), list of [BatchEncoding](main_classes/tokenizer.html#transformers.BatchEncoding), `Dict[str, List[int]]`, `Dict[str, List[List[int]]` or `List[Dict[str, List[int]]]`) --
-  Tokenized inputs. Can represent one input ([BatchEncoding](main_classes/tokenizer.html#transformers.BatchEncoding) or `Dict[str, List[int]]`) or a batch of tokenized inputs (list of [BatchEncoding](main_classes/tokenizer.html#transformers.BatchEncoding), _Dict[str,
+- **encoded_inputs** ([BatchEncoding](/docs/transformers/master/en/main_classes/tokenizer.html#transformers.BatchEncoding), list of [BatchEncoding](/docs/transformers/master/en/main_classes/tokenizer.html#transformers.BatchEncoding), `Dict[str, List[int]]`, `Dict[str, List[List[int]]` or `List[Dict[str, List[int]]]`) --
+  Tokenized inputs. Can represent one input ([BatchEncoding](/docs/transformers/master/en/main_classes/tokenizer.html#transformers.BatchEncoding) or `Dict[str, List[int]]`) or a batch of tokenized inputs (list of [BatchEncoding](/docs/transformers/master/en/main_classes/tokenizer.html#transformers.BatchEncoding), _Dict[str,
   List[List[int]]]_ or _List[Dict[str, List[int]]]_) so you can use this method during preprocessing as
   well as in a PyTorch Dataloader collate function.
 
   Instead of `List[int]` you can have tensors (numpy arrays, PyTorch tensors or TensorFlow tensors),
   see the note above for the return type.
-- **padding** (`bool`, `str` or [PaddingStrategy](internal/file_utils.html#transformers.file_utils.PaddingStrategy), _optional_, defaults to `True`) --
+- **padding** (`bool`, `str` or [PaddingStrategy](/docs/transformers/master/en/internal/file_utils.html#transformers.file_utils.PaddingStrategy), _optional_, defaults to `True`) --
   Select a strategy to pad the returned sequences (according to the model's padding side and padding
   index) among:
 
@@ -867,7 +896,7 @@ case of PyTorch tensors, you will lose the specific device of your tensors howev
   to the specific tokenizer's default, defined by the `return_outputs` attribute.
 
   [What are attention masks?](../glossary.html#attention-mask)
-- **return_tensors** (`str` or [TensorType](internal/file_utils.html#transformers.TensorType), _optional_) --
+- **return_tensors** (`str` or [TensorType](/docs/transformers/master/en/internal/file_utils.html#transformers.TensorType), _optional_) --
   If set, will return tensors instead of list of python integers. Acceptable values are:
 
   - `'tf'`: Return TensorFlow `tf.constant` objects.
@@ -883,7 +912,9 @@ case of PyTorch tensors, you will lose the specific device of your tensors howev
 
 Prepares a sequence of input id, or a pair of sequences of inputs ids so that it can be used by the model. It
 adds special tokens, truncates sequences if overflowing while taking into account the special tokens and
-manages a moving window (with user defined stride) for overflowing tokens
+manages a moving window (with user defined stride) for overflowing tokens. Please Note, for _pair_ids_
+different than _None_ and _truncation_strategy = longest_first_ or _True_, it is not possible to return
+overflowing tokens. Such a combination of arguments will raise an error.
 
 > Parameters
 
@@ -896,7 +927,7 @@ manages a moving window (with user defined stride) for overflowing tokens
 
 - **add_special_tokens** (`bool`, _optional_, defaults to `True`) --
   Whether or not to encode the sequences with the special tokens relative to their model.
-- **padding** (`bool`, `str` or [PaddingStrategy](internal/file_utils.html#transformers.file_utils.PaddingStrategy), _optional_, defaults to `False`) --
+- **padding** (`bool`, `str` or [PaddingStrategy](/docs/transformers/master/en/internal/file_utils.html#transformers.file_utils.PaddingStrategy), _optional_, defaults to `False`) --
   Activates and controls padding. Accepts the following values:
 
   - `True` or `'longest'`: Pad to the longest sequence in the batch (or no padding if only a
@@ -905,7 +936,7 @@ manages a moving window (with user defined stride) for overflowing tokens
     maximum acceptable input length for the model if that argument is not provided.
   - `False` or `'do_not_pad'` (default): No padding (i.e., can output a batch with sequences of
     different lengths).
-- **truncation** (`bool`, `str` or [TruncationStrategy](internal/tokenization_utils.html#transformers.tokenization_utils_base.TruncationStrategy), _optional_, defaults to `False`) --
+- **truncation** (`bool`, `str` or [TruncationStrategy](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.tokenization_utils_base.TruncationStrategy), _optional_, defaults to `False`) --
   Activates and controls truncation. Accepts the following values:
 
   - `True` or `'longest_first'`: Truncate to a maximum length specified with the argument
@@ -938,7 +969,7 @@ manages a moving window (with user defined stride) for overflowing tokens
 - **pad_to_multiple_of** (`int`, _optional_) --
   If set will pad the sequence to a multiple of the provided value. This is especially useful to enable
   the use of Tensor Cores on NVIDIA hardware with compute capability >= 7.5 (Volta).
-- **return_tensors** (`str` or [TensorType](internal/file_utils.html#transformers.TensorType), _optional_) --
+- **return_tensors** (`str` or [TensorType](/docs/transformers/master/en/internal/file_utils.html#transformers.TensorType), _optional_) --
   If set, will return tensors instead of list of python integers. Acceptable values are:
 
   - `'tf'`: Return TensorFlow `tf.constant` objects.
@@ -956,14 +987,16 @@ manages a moving window (with user defined stride) for overflowing tokens
 
   [What are attention masks?](../glossary.html#attention-mask)
 - **return_overflowing_tokens** (`bool`, _optional_, defaults to `False`) --
-  Whether or not to return overflowing token sequences.
+  Whether or not to return overflowing token sequences. If a pair of sequences of input ids (or a batch
+  of pairs) is provided with `truncation_strategy = longest_first` or `True`, an error is
+  raised instead of returning overflowing tokens.
 - **return_special_tokens_mask** (`bool`, _optional_, defaults to `False`) --
   Whether or not to return special tokens mask information.
 - **return_offsets_mapping** (`bool`, _optional_, defaults to `False`) --
   Whether or not to return `(char_start, char_end)` for each token.
 
   This is only available on fast tokenizers inheriting from
-  [PreTrainedTokenizerFast](main_classes/tokenizer.html#transformers.PreTrainedTokenizerFast), if using Python's tokenizer, this method will raise
+  [PreTrainedTokenizerFast](/docs/transformers/master/en/main_classes/tokenizer.html#transformers.PreTrainedTokenizerFast), if using Python's tokenizer, this method will raise
   `NotImplementedError`.
 - **return_length**  (`bool`, _optional_, defaults to `False`) --
   Whether or not to return the lengths of the encoded inputs.
@@ -973,7 +1006,7 @@ manages a moving window (with user defined stride) for overflowing tokens
 
 > Returns
 
-A [BatchEncoding](main_classes/tokenizer.html#transformers.BatchEncoding) with the following fields:
+A [BatchEncoding](/docs/transformers/master/en/main_classes/tokenizer.html#transformers.BatchEncoding) with the following fields:
 
 - **input_ids** -- List of token ids to be fed to a model.
 
@@ -999,11 +1032,11 @@ A [BatchEncoding](main_classes/tokenizer.html#transformers.BatchEncoding) with t
 
 > Return type
 
-[BatchEncoding](main_classes/tokenizer.html#transformers.BatchEncoding)
+[BatchEncoding](/docs/transformers/master/en/main_classes/tokenizer.html#transformers.BatchEncoding)
 
 
 <a id='transformers.PreTrainedTokenizerBase.prepare_seq2seq_batch'></a>
-> **prepare\_seq2seq\_batch**(self, src_texts: typing.List[str], tgt_texts: typing.Optional[typing.List[str]] = None, max_length: typing.Optional[int] = None, max_target_length: typing.Optional[int] = None, padding: str = longest, return_tensors: str = None, truncation: bool = True, **kwargs)
+> **prepare\_seq2seq\_batch**(self, src_texts: typing.List[str], tgt_texts: typing.Optional[typing.List[str]] = None, max_length: typing.Optional[int] = None, max_target_length: typing.Optional[int] = None, padding: str = 'longest', return_tensors: str = None, truncation: bool = True, **kwargs)
 
 
 Prepare model inputs for translation. For best performance, translate one sentence at a time.
@@ -1021,7 +1054,7 @@ length (like XLNet) truncation/padding to a maximum length will be deactivated.
 max_target_length (`int`, _optional_):
 Controls the maximum length of decoder inputs (target language texts or summaries) If left unset or set
 to `None`, this will use the max_length value.
-padding (`bool`, `str` or [PaddingStrategy](internal/file_utils.html#transformers.file_utils.PaddingStrategy), _optional_, defaults to `False`):
+padding (`bool`, `str` or [PaddingStrategy](/docs/transformers/master/en/internal/file_utils.html#transformers.file_utils.PaddingStrategy), _optional_, defaults to `False`):
 Activates and controls padding. Accepts the following values:
 
 - `True` or `'longest'`: Pad to the longest sequence in the batch (or no padding if only a
@@ -1030,13 +1063,13 @@ Activates and controls padding. Accepts the following values:
   maximum acceptable input length for the model if that argument is not provided.
 - `False` or `'do_not_pad'` (default): No padding (i.e., can output a batch with sequences of
   different lengths).
-return_tensors (`str` or [TensorType](internal/file_utils.html#transformers.TensorType), _optional_):
+return_tensors (`str` or [TensorType](/docs/transformers/master/en/internal/file_utils.html#transformers.TensorType), _optional_):
 If set, will return tensors instead of list of python integers. Acceptable values are:
 
 - `'tf'`: Return TensorFlow `tf.constant` objects.
 - `'pt'`: Return PyTorch `torch.Tensor` objects.
 - `'np'`: Return Numpy `np.ndarray` objects.
-truncation (`bool`, `str` or [TruncationStrategy](internal/tokenization_utils.html#transformers.tokenization_utils_base.TruncationStrategy), _optional_, defaults to `True`):
+truncation (`bool`, `str` or [TruncationStrategy](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.tokenization_utils_base.TruncationStrategy), _optional_, defaults to `True`):
 Activates and controls truncation. Accepts the following values:
 
 - `True` or `'longest_first'`: Truncate to a maximum length specified with the argument
@@ -1056,7 +1089,7 @@ Additional keyword arguments passed along to `self.__call__`.
 
 > Returns
 
-A [BatchEncoding](main_classes/tokenizer.html#transformers.BatchEncoding) with the following fields:
+A [BatchEncoding](/docs/transformers/master/en/main_classes/tokenizer.html#transformers.BatchEncoding) with the following fields:
 
 - **input_ids** -- List of token ids to be fed to the encoder.
 - **attention_mask** -- List of indices specifying which tokens should be attended to by the model.
@@ -1067,7 +1100,7 @@ Otherwise, input_ids, attention_mask will be the only keys.
 
 > Return type
 
-[BatchEncoding](main_classes/tokenizer.html#transformers.BatchEncoding)
+[BatchEncoding](/docs/transformers/master/en/main_classes/tokenizer.html#transformers.BatchEncoding)
 
 
 <a id='transformers.file_utils.PushToHubMixin.push_to_hub'></a>
@@ -1226,7 +1259,7 @@ Converts a string in a sequence of tokens, replacing unknown tokens with the `un
   Whether or not to add the special tokens associated with the corresponding model.
 - **kwargs** (additional keyword arguments, _optional_) --
   Will be passed to the underlying model specific encode method. See details in
-  [__call__()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__)
+  [__call__()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__)
 
 > Returns
 
@@ -1238,7 +1271,7 @@ The list of tokens.
 
 
 <a id='transformers.PreTrainedTokenizerBase.truncate_sequences'></a>
-> **truncate\_sequences**(self, ids: typing.List[int], pair_ids: typing.Optional[typing.List[int]] = None, num_tokens_to_remove: int = 0, truncation_strategy: typing.Union[str, transformers.tokenization_utils_base.TruncationStrategy] = longest_first, stride: int = 0)
+> **truncate\_sequences**(self, ids: typing.List[int], pair_ids: typing.Optional[typing.List[int]] = None, num_tokens_to_remove: int = 0, truncation_strategy: typing.Union[str, transformers.tokenization_utils_base.TruncationStrategy] = 'longest_first', stride: int = 0)
 
 
 Truncates a sequence pair in-place following the strategy.
@@ -1253,7 +1286,7 @@ Truncates a sequence pair in-place following the strategy.
   and `convert_tokens_to_ids` methods.
 - **num_tokens_to_remove** (`int`, _optional_, defaults to 0) --
   Number of tokens to remove using the truncation strategy.
-- **truncation_strategy** (`str` or [TruncationStrategy](internal/tokenization_utils.html#transformers.tokenization_utils_base.TruncationStrategy), _optional_, defaults to `False`) --
+- **truncation_strategy** (`str` or [TruncationStrategy](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.tokenization_utils_base.TruncationStrategy), _optional_, defaults to `False`) --
   The strategy to follow for truncation. Can be:
 
   - `'longest_first'`: Truncate to a maximum length specified with the argument `max_length` or
@@ -1275,20 +1308,21 @@ Truncates a sequence pair in-place following the strategy.
 > Returns
 
 The truncated `ids`, the truncated `pair_ids` and the
-list of overflowing tokens.
+list of overflowing tokens. Note: The _longest_first_ strategy returns empty list of overflowing_tokens if
+a pair of sequences (or a batch of pairs) is provided.
 
 > Return type
 
 `Tuple[List[int], List[int], List[int]]`
 
 
-## SpecialTokensMixin
+## [SpecialTokensMixin](#specialtokensmixin)
 
 <a id='transformers.SpecialTokensMixin'></a>
 > **class transformers.SpecialTokensMixin**(verbose = True, **kwargs)
 
 
-A mixin derived by [PreTrainedTokenizer](main_classes/tokenizer.html#transformers.PreTrainedTokenizer) and [PreTrainedTokenizerFast](main_classes/tokenizer.html#transformers.PreTrainedTokenizerFast) to
+A mixin derived by [PreTrainedTokenizer](/docs/transformers/master/en/main_classes/tokenizer.html#transformers.PreTrainedTokenizer) and [PreTrainedTokenizerFast](/docs/transformers/master/en/main_classes/tokenizer.html#transformers.PreTrainedTokenizerFast) to
 handle specific behaviors related to special tokens. In particular, this class hold the attributes which can be
 used to directly access these special tokens in a model-independent manner and allow to set and update the special
 tokens.
@@ -1327,7 +1361,7 @@ Note,None
 When adding new tokens to the vocabulary, you should make sure to also resize the token embedding matrix of
 the model so that its embedding matrix matches the tokenizer.
 
-In order to do that, please use the [resize_token_embeddings()](main_classes/model.html#transformers.PreTrainedModel.resize_token_embeddings) method.
+In order to do that, please use the [resize_token_embeddings()](/docs/transformers/master/en/main_classes/model.html#transformers.PreTrainedModel.resize_token_embeddings) method.
 
 Using `add_special_tokens` will ensure your special tokens can be used in several ways:
 
@@ -1336,8 +1370,8 @@ Using `add_special_tokens` will ensure your special tokens can be used in severa
   makes it easy to develop model-agnostic training and fine-tuning scripts.
 
 When possible, special tokens are already registered for provided pretrained models (for instance
-[BertTokenizer](model_doc/bert.html#transformers.BertTokenizer) `cls_token` is already registered to be :obj_'[CLS]'_ and XLM's one
-is also registered to be `'&lcub/s>'`).
+[BertTokenizer](/docs/transformers/master/en/model_doc/bert.html#transformers.BertTokenizer) `cls_token` is already registered to be :obj_'[CLS]'_ and XLM's one
+is also registered to be `'&amp;lt;/s>'`).
 
 > Parameters
 
@@ -1364,14 +1398,14 @@ Number of tokens added to the vocabulary.
 tokenizer = GPT2Tokenizer.from_pretrained('gpt2')
 model = GPT2Model.from_pretrained('gpt2')
 
-special_tokens_dict = {'cls_token': '<CLS>'}
+special_tokens_dict = &amp;lcub;'cls_token': '&amp;lt;CLS>'}
 
 num_added_toks = tokenizer.add_special_tokens(special_tokens_dict)
 print('We have added', num_added_toks, 'tokens')
 # Notice: resize_token_embeddings expect to receive the full size of the new vocabulary, i.e., the length of the tokenizer.
 model.resize_token_embeddings(len(tokenizer))
 
-assert tokenizer.cls_token == '<CLS>'
+assert tokenizer.cls_token == '&amp;lt;CLS>'
 ```
 
 
@@ -1386,7 +1420,7 @@ Note,None
 When adding new tokens to the vocabulary, you should make sure to also resize the token embedding matrix of
 the model so that its embedding matrix matches the tokenizer.
 
-In order to do that, please use the [resize_token_embeddings()](main_classes/model.html#transformers.PreTrainedModel.resize_token_embeddings) method.
+In order to do that, please use the [resize_token_embeddings()](/docs/transformers/master/en/main_classes/model.html#transformers.PreTrainedModel.resize_token_embeddings) method.
 
 > Parameters
 
@@ -1441,13 +1475,13 @@ The number of tokens added in the vocabulary during the operation.
 `int`
 
 
-## Enums and namedtuples
+## [Enums and namedtuples](#enums-and-namedtuples)
 
 <a id='transformers.tokenization_utils_base.TruncationStrategy'></a>
 > **class transformers.tokenization\_utils\_base.TruncationStrategy**(value, names = None, module = None, qualname = None, type = None, start = 1)
 
 
-Possible values for the `truncation` argument in [PreTrainedTokenizerBase.__call__()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__). Useful for
+Possible values for the `truncation` argument in [PreTrainedTokenizerBase.__call__()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__). Useful for
 tab-completion in an IDE.
 
 

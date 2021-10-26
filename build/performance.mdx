@@ -1,12 +1,70 @@
-# Performance and Scalability: How To Fit a Bigger Model and Train It Faster
+---
+local: performance-and-scalability-how-to-fit-a-bigger-model-and-train-it-faster
+sections:
+- local: quick-notes
+  sections:
+  - local: faster-training
+    title: Faster Training
+  - local: bigger-models
+    title: Bigger Models
+  title: Quick notes
+- local: hardware
+  sections:
+  - local: multigpu-connectivity
+    title: Multi-GPU Connectivity
+  - local: nvlink
+    title: NVlink
+  title: Hardware
+- local: software
+  sections:
+  - local: anatomy-of-models-memory
+    title: Anatomy of Model's Memory
+  - local: forward-vs-backward-execution-speed
+    title: '`forward` vs `backward` Execution Speed'
+  - local: fp
+    title: fp16
+  - local: fp-caching
+    title: fp16 caching
+  - local: gradient-checkpointing
+    title: Gradient Checkpointing
+  - local: batch-sizes
+    title: Batch sizes
+  - local: dp-vs-ddp
+    title: DP vs DDP
+  - local: dataloader
+    title: DataLoader
+  - local: faster-optimizer
+    title: Faster optimizer
+  title: Software
+- local: contribute
+  title: Contribute
+title: 'Performance and Scalability: How To Fit a Bigger Model and Train It Faster'
+---
+<!---
+Copyright 2021 The HuggingFace Team. All rights reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+# [Performance and Scalability: How To Fit a Bigger Model and Train It Faster](#performance-and-scalability-how-to-fit-a-bigger-model-and-train-it-faster)
 
 For now the software sections of this document are mainly Pytorch-specific, but the guide can be extended to other frameworks in the future.
 
-## Quick notes
+## [Quick notes](#quick-notes)
 
 This section gives brief ideas on how to make training faster and support bigger models. Later sections will expand, demonstrate and elucidate each of these.
 
-### Faster Training
+### [Faster Training](#faster-training)
 
 Hardware:
 
@@ -20,7 +78,7 @@ Software:
 - fp16 (autocast caching)
 
 
-### Bigger Models
+### [Bigger Models](#bigger-models)
 
 Hardware:
 
@@ -37,12 +95,13 @@ Software:
 - Tensor Parallelism
 - Low-memory Optimizers
 - fp16/bf16 (smaller data)
+- Gradient checkpointing
 
 
 
-## Hardware
+## [Hardware](#hardware)
 
-### Multi-GPU Connectivity
+### [Multi-GPU Connectivity](#multigpu-connectivity)
 
 If you use multiple GPUs the way cards are inter-connected can have a huge impact on the total training time.
 
@@ -87,7 +146,7 @@ Check what type of connectivity you have on your setup. Some of these will make 
 
 Depending on the type of scalability solution used, the connectivity speed could have a major or a minor impact. If the GPUs need to sync rarely, as in DDP, the impact of a slower connection will be less significant. If the GPUs need to send messages to each other often, as in ZeRO-DP, then faster connectivity becomes super important to achieve faster training.
 
-### NVlink
+### [NVlink](#nvlink)
 
 [NVLink](https://en.wikipedia.org/wiki/NVLink) is a wire-based serial multi-lane near-range communications link developed by Nvidia.
 
@@ -142,9 +201,9 @@ rm -r /tmp/test-clm; CUDA_VISIBLE_DEVICES=0,1 NCCL_P2P_DISABLE=1 python -m torch
 Hardware: 2x TITAN RTX 24GB each + NVlink with 2 NVLinks (`NV2` in `nvidia-smi topo -m`)
 Software: `pytorch-1.8-to-be` + `cuda-11.0` / `transformers==4.3.0.dev0`
 
-## Software
+## [Software](#software)
 
-### Anatomy of Model's Memory
+### [Anatomy of Model's Memory](#anatomy-of-models-memory)
 
 The components on GPU memory are the following:
 - the model weights
@@ -152,11 +211,11 @@ The components on GPU memory are the following:
 - the gradients
 - the optimizer state
 
-### `forward` vs `backward` Execution Speed
+### [`forward` vs `backward` Execution Speed](#forward-vs-backward-execution-speed)
 
 For convolutions and linear layers there are 2x flops in the backward compared to the forward, which generally translates into ~2x slower (sometimes more, because sizes in the backward tend to be more awkward). Activations are usually bandwidth-limited, and it’s typical for an activation to have to read more data in the backward than in the forward (e.g. activation forward reads once, writes once, activation backward reads twice, gradOutput and output of the forward, and writes once, gradInput).
 
-### fp16
+### [fp16](#fp)
 
 AMP = Automatic Mixed Precision
 
@@ -204,13 +263,28 @@ Some amazing tutorials to read on mixed precision:
 - @sgugger wrote a great explanation of mixed precision [here](https://docs.fast.ai/callback.fp16.html#A-little-bit-of-theory)
 - Aleksey Bilogur's [A developer-friendly guide to mixed precision training with PyTorch](https://spell.ml/blog/mixed-precision-training-with-pytorch-Xuk7YBEAACAASJam)
 
-### fp16 caching
+### [fp16 caching](#fp-caching)
 
 pytorch `autocast` which performs AMP include a caching feature, which speed things up by caching fp16-converted values. Here is the full description from this [comment](https://discuss.pytorch.org/t/autocast-and-torch-no-grad-unexpected-behaviour/93475/3):
 
 Autocast maintains a cache of the FP16 casts of model params (leaves). This helps streamline parameter reuse: if the same FP32 param is used in several different FP16list ops, like several matmuls, instead of re-casting the param to FP16 on entering each matmul, the cast will occur on the first matmul, the casted FP16 copy will be cached, and for all later matmuls the FP16 copy will be reused. The cache is maintained only within a particular outermost autocast context. When you exit the autocast context the cache is dropped. For recommended usage, in which autocast wraps the forward pass, and then you exit the context before calling backward(), this means the cache only lasts the duration of the forward pass each iteration, and will be rebuilt next iteration. (The cache of FP16-casted copies MUST be rebuilt each iteration. The FP32 params get updated by the optimizer, so the FP16 copies must be recreated, otherwise the FP16 values will be stale.)
 
-### Batch sizes
+
+### [Gradient Checkpointing](#gradient-checkpointing)
+
+One way to use significantly less GPU memory is to enabled "Gradient Checkpointing" (also known as "activation checkpointing"). When enabled, a lot of memory can be freed at the cost of small decrease in the training speed due to recomputing parts of the graph during back-propagation.
+
+This technique was first shared in the paper: [Training Deep Nets with Sublinear Memory Cost](https://arxiv.org/abs/1604.06174). The paper will also give you the exact details on the savings, but it's in the ballpark of `O(sqrt(n))`, where `n` is the number of feed-forward layers.
+
+To activate this feature in 🤗 Transformers for models that support it, use:
+
+```python
+model.gradient_checkpointing_enable()
+```
+or add `--gradient_checkpointing` to the Trainer arguments.
+
+
+### [Batch sizes](#batch-sizes)
 
 One gets the most efficient performance when batch sizes and input/output neuron counts are divisible by a certain number, which typically starts at 8, but can be much higher as well. That number varies a lot depending on the specific hardware being used and the dtype of the model.
 
@@ -222,7 +296,7 @@ https://docs.nvidia.com/deeplearning/performance/dl-performance-fully-connected/
 For parameters that are small, there is also [Dimension Quantization Effects](https://docs.nvidia.com/deeplearning/performance/dl-performance-matrix-multiplication/index.html#dim-quantization) to consider, this is where tiling happens and the right multiplier can have a significant speedup.
 
 
-### DP vs DDP
+### [DP vs DDP](#dp-vs-ddp)
 
 `DistributedDataParallel` (DDP) is typically faster than `DataParallel` (DP), but it is not always the case:
 * while DP is python threads-based, DDP is multiprocess-based - and as such it has no python threads limitations, such as GIL
@@ -308,19 +382,19 @@ Hardware: 2x TITAN RTX 24GB each + NVlink with 2 NVLinks (`NV2` in `nvidia-smi t
 Software: `pytorch-1.8-to-be` + `cuda-11.0` / `transformers==4.3.0.dev0`
 
 
-### DataLoader
+### [DataLoader](#dataloader)
 
 One of the important requirements to reach great training speed is the ability to feed the GPU at the maximum speed it can handle. By default everything happens in the main process and it might not be able to read the data from disk fast enough, and thus create a bottleneck, leading to GPU under-utilization.
 
 - `DataLoader(pin_memory=True, ...)` which ensures that the data gets preloaded into the pinned memory on CPU and typically leads to much faster transfers from CPU to GPU memory.
 -  `DataLoader(num_workers=4, ...)` - spawn several workers to pre-load data faster - during training watch the GPU utilization stats and if it's far from 100% experiment with raising the number of workers. Of course, the problem could be elsewhere so a very big number of workers won't necessarily lead to a better performance.
 
-### Faster optimizer
+### [Faster optimizer](#faster-optimizer)
 
 pytorch-nightly introduced `torch.optim._multi_tensor` which should significantly speed up the optimizers for situations with lots of small feature tensors. It should eventually become the default, but if you want to experiment with it sooner and don't mind using the bleed-edge, see: https://github.com/huggingface/transformers/issues/9965
 
 
-## Contribute
+## [Contribute](#contribute)
 
 This document is far from being complete and a lot more needs to be added, so if you have additions or corrections to make please don't hesitate to open a PR or if you aren't sure start an Issue and we can discuss the details there.
 

@@ -1,3 +1,18 @@
+---
+local: finetuning-a-pretrained-model
+sections:
+- local: preparing-the-datasets
+  title: Preparing the datasets
+- local: finetuning-in-pytorch-with-the-trainer-api
+  title: Fine-tuning in PyTorch with the Trainer API
+- local: finetuning-with-keras
+  title: Fine-tuning with Keras
+- local: finetuning-in-native-pytorch
+  title: Fine-tuning in native PyTorch
+- local: additional-resources
+  title: Additional resources
+title: Fine-tuning a pretrained model
+---
 <script>
 import Tip from "../../Tip.svelte";
 import Youtube from "../../Youtube.svelte";	
@@ -16,28 +31,28 @@ an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express o
 specific language governing permissions and limitations under the License.
 -->
 
-# Fine-tuning a pretrained model
+# [Fine-tuning a pretrained model](#finetuning-a-pretrained-model)
 
 In this tutorial, we will show you how to fine-tune a pretrained model from the Transformers library. In TensorFlow,
 models can be directly trained using Keras and the `fit` method. In PyTorch, there is no generic training loop so
-the 🤗 Transformers library provides an API with the class [Trainer](main_classes/trainer.html#transformers.Trainer) to let you fine-tune or train
+the 🤗 Transformers library provides an API with the class [Trainer](/docs/transformers/master/en/main_classes/trainer.html#transformers.Trainer) to let you fine-tune or train
 a model from scratch easily. Then we will show you how to alternatively write the whole training loop in PyTorch.
 
 Before we can fine-tune a model, we need a dataset. In this tutorial, we will show you how to fine-tune BERT on the
 [IMDB dataset](https://www.imdb.com/interfaces/): the task is to classify whether movie reviews are positive or
-negative. For examples of other tasks, refer to the [additional-resources](#additional-resources) section!
+negative. For examples of other tasks, refer to the [additional-resources](/docs/transformers/master/en/training.html#additional-resources) section!
 
 <a id='data-processing'></a>
 
-## Preparing the datasets
+## [Preparing the datasets](#preparing-the-datasets)
 
 <iframe width="560" height="315" src="https://www.youtube.com/embed/_BZearw7f0w" title="YouTube video player"
 frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope;
 picture-in-picture" allowfullscreen></iframe>
 
-We will use the [🤗 Datasets](https:/github.com/huggingface/datasets/) library to download and preprocess the IMDB
+We will use the [🤗 Datasets](https://github.com/huggingface/datasets/) library to download and preprocess the IMDB
 datasets. We will go over this part pretty quickly. Since the focus of this tutorial is on training, you should refer
-to the 🤗 Datasets [documentation](https://huggingface.co/docs/datasets/) or the [preprocessing](preprocessing.html) tutorial for
+to the 🤗 Datasets [documentation](https://huggingface.co/docs/datasets/) or the [preprocessing](/docs/transformers/master/en/preprocessing.html) tutorial for
 more information.
 
 First, we can use the `load_dataset` function to download and cache the dataset:
@@ -63,7 +78,7 @@ from transformers import AutoTokenizer
 tokenizer = AutoTokenizer.from_pretrained("bert-base-cased")
 ```
 
-As we saw in [preprocessing](preprocessing.html), we can prepare the text inputs for the model with the following command (this is an
+As we saw in [preprocessing](/docs/transformers/master/en/preprocessing.html), we can prepare the text inputs for the model with the following command (this is an
 example, not a command you can execute):
 
 ```python
@@ -99,13 +114,13 @@ them by their _full_ equivalent to train or evaluate on the full dataset.
 
 <a id='trainer'></a>
 
-## Fine-tuning in PyTorch with the Trainer API
+## [Fine-tuning in PyTorch with the Trainer API](#finetuning-in-pytorch-with-the-trainer-api)
 
 <iframe width="560" height="315" src="https://www.youtube.com/embed/nvBXf7s7vTI" title="YouTube video player"
 frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope;
 picture-in-picture" allowfullscreen></iframe>
 
-Since PyTorch does not provide a training loop, the 🤗 Transformers library provides a [Trainer](main_classes/trainer.html#transformers.Trainer)
+Since PyTorch does not provide a training loop, the 🤗 Transformers library provides a [Trainer](/docs/transformers/master/en/main_classes/trainer.html#transformers.Trainer)
 API that is optimized for 🤗 Transformers models, with a wide range of training options and with built-in features like
 logging, gradient accumulation, and mixed precision.
 
@@ -122,9 +137,9 @@ initialized. That's because we are throwing away the pretraining head of the BER
 classification head which is randomly initialized. We will fine-tune this model on our task, transferring the knowledge
 of the pretrained model to it (which is why doing this is called transfer learning).
 
-Then, to define our [Trainer](main_classes/trainer.html#transformers.Trainer), we will need to instantiate a
-[TrainingArguments](main_classes/trainer.html#transformers.TrainingArguments). This class contains all the hyperparameters we can tune for the
-[Trainer](main_classes/trainer.html#transformers.Trainer) or the flags to activate the different training options it supports. Let's begin by
+Then, to define our [Trainer](/docs/transformers/master/en/main_classes/trainer.html#transformers.Trainer), we will need to instantiate a
+[TrainingArguments](/docs/transformers/master/en/main_classes/trainer.html#transformers.TrainingArguments). This class contains all the hyperparameters we can tune for the
+[Trainer](/docs/transformers/master/en/main_classes/trainer.html#transformers.Trainer) or the flags to activate the different training options it supports. Let's begin by
 using all the defaults, the only thing we then have to provide is a directory in which the checkpoints will be saved:
 
 ```python
@@ -133,7 +148,7 @@ from transformers import TrainingArguments
 training_args = TrainingArguments("test_trainer")
 ```
 
-Then we can instantiate a [Trainer](main_classes/trainer.html#transformers.Trainer) like this:
+Then we can instantiate a [Trainer](/docs/transformers/master/en/main_classes/trainer.html#transformers.Trainer) like this:
 
 ```python
 from transformers import Trainer
@@ -152,10 +167,10 @@ trainer.train()
 which will start a training that you can follow with a progress bar, which should take a couple of minutes to complete
 (as long as you have access to a GPU). It won't actually tell you anything useful about how well (or badly) your model
 is performing however as by default, there is no evaluation during training, and we didn't tell the
-[Trainer](main_classes/trainer.html#transformers.Trainer) to compute any metrics. Let's have a look on how to do that now!
+[Trainer](/docs/transformers/master/en/main_classes/trainer.html#transformers.Trainer) to compute any metrics. Let's have a look on how to do that now!
 
-To have the [Trainer](main_classes/trainer.html#transformers.Trainer) compute and report metrics, we need to give it a `compute_metrics`
-function that takes predictions and labels (grouped in a namedtuple called [EvalPrediction](internal/trainer_utils.html#transformers.EvalPrediction)) and
+To have the [Trainer](/docs/transformers/master/en/main_classes/trainer.html#transformers.Trainer) compute and report metrics, we need to give it a `compute_metrics`
+function that takes predictions and labels (grouped in a namedtuple called [EvalPrediction](/docs/transformers/master/en/internal/trainer_utils.html#transformers.EvalPrediction)) and
 return a dictionary with string items (the metric names) and float values (the metric values).
 
 The 🤗 Datasets library provides an easy way to get the common metrics used in NLP with the `load_metric` function.
@@ -178,7 +193,7 @@ The compute function needs to receive a tuple (with logits and labels) and has t
 (the name of the metric) and float values. It will be called at the end of each evaluation phase on the whole arrays of
 predictions/labels.
 
-To check if this works on practice, let's create a new [Trainer](main_classes/trainer.html#transformers.Trainer) with our fine-tuned model:
+To check if this works on practice, let's create a new [Trainer](/docs/transformers/master/en/main_classes/trainer.html#transformers.Trainer) with our fine-tuned model:
 
 ```python
 trainer = Trainer(
@@ -202,12 +217,12 @@ from transformers import TrainingArguments
 training_args = TrainingArguments("test_trainer", evaluation_strategy="epoch")
 ```
 
-See the documentation of [TrainingArguments](main_classes/trainer.html#transformers.TrainingArguments) for more options.
+See the documentation of [TrainingArguments](/docs/transformers/master/en/main_classes/trainer.html#transformers.TrainingArguments) for more options.
 
 
 <a id='keras'></a>
 
-## Fine-tuning with Keras
+## [Fine-tuning with Keras](#finetuning-with-keras)
 
 <iframe width="560" height="315" src="https://www.youtube.com/embed/rnTGBy2ax1c" title="YouTube video player"
 frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope;
@@ -234,11 +249,11 @@ tf_eval_dataset = small_eval_dataset.remove_columns(["text"]).with_format("tenso
 Then we convert everything in big tensors and use the `tf.data.Dataset.from_tensor_slices` method:
 
 ```python
-train_features = {x: tf_train_dataset[x].to_tensor() for x in tokenizer.model_input_names}
+train_features = &amp;lcub;x: tf_train_dataset[x].to_tensor() for x in tokenizer.model_input_names}
 train_tf_dataset = tf.data.Dataset.from_tensor_slices((train_features, tf_train_dataset["label"]))
 train_tf_dataset = train_tf_dataset.shuffle(len(tf_train_dataset)).batch(8)
 
-eval_features = {x: tf_eval_dataset[x].to_tensor() for x in tokenizer.model_input_names}
+eval_features = &amp;lcub;x: tf_eval_dataset[x].to_tensor() for x in tokenizer.model_input_names}
 eval_tf_dataset = tf.data.Dataset.from_tensor_slices((eval_features, tf_eval_dataset["label"]))
 eval_tf_dataset = eval_tf_dataset.batch(8)
 ```
@@ -267,7 +282,7 @@ pytorch_model = AutoModelForSequenceClassification.from_pretrained("my_imdb_mode
 
 <a id='pytorch_native'></a>
 
-## Fine-tuning in native PyTorch
+## [Fine-tuning in native PyTorch](#finetuning-in-native-pytorch)
 
 <iframe width="560" height="315" src="https://www.youtube.com/embed/Dh9CL8fyG80" title="YouTube video player"
 frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope;
@@ -282,7 +297,7 @@ del trainer
 torch.cuda.empty_cache()
 ```
 
-Let's now see how to achieve the same results as in [trainer section](#trainer) in PyTorch. First we need to
+Let's now see how to achieve the same results as in [trainer section](/docs/transformers/master/en/training.html#trainer) in PyTorch. First we need to
 define the dataloaders, which we will use to iterate over batches. We just need to apply a bit of post-processing to
 our `tokenized_datasets` before doing that to:
 
@@ -319,7 +334,7 @@ model = AutoModelForSequenceClassification.from_pretrained("bert-base-cased", nu
 ```
 
 We are almost ready to write our training loop, the only two things are missing are an optimizer and a learning rate
-scheduler. The default optimizer used by the [Trainer](main_classes/trainer.html#transformers.Trainer) is [AdamW](main_classes/optimizer_schedules.html#transformers.AdamW):
+scheduler. The default optimizer used by the [Trainer](/docs/transformers/master/en/main_classes/trainer.html#transformers.Trainer) is [AdamW](/docs/transformers/master/en/main_classes/optimizer_schedules.html#transformers.AdamW):
 
 ```python
 from transformers import AdamW
@@ -363,7 +378,7 @@ progress_bar = tqdm(range(num_training_steps))
 model.train()
 for epoch in range(num_epochs):
 for batch in train_dataloader:
-batch = {k: v.to(device) for k, v in batch.items()}
+batch = &amp;lcub;k: v.to(device) for k, v in batch.items()}
 outputs = model(**batch)
 loss = outputs.loss
 loss.backward()
@@ -379,7 +394,7 @@ bit strange, as we are directly fine-tuning the whole model without taking any p
 this way for Transformers model (so this is not an oversight on our side). If you're not familiar with what "freezing
 the body" of the model means, forget you read this paragraph.
 
-Now to check the results, we need to write the evaluation loop. Like in the [trainer section](#trainer) we will
+Now to check the results, we need to write the evaluation loop. Like in the [trainer section](/docs/transformers/master/en/training.html#trainer) we will
 use a metric from the datasets library. Here we accumulate the predictions at each batch before computing the final
 result when the loop is finished.
 
@@ -387,7 +402,7 @@ result when the loop is finished.
 metric= load_metric("accuracy")
 model.eval()
 for batch in eval_dataloader:
-batch = {k: v.to(device) for k, v in batch.items()}
+batch = &amp;lcub;k: v.to(device) for k, v in batch.items()}
 with torch.no_grad():
 outputs = model(**batch)
 
@@ -400,7 +415,7 @@ metric.compute()
 
 <a id='additional-resources'></a>
 
-## Additional resources
+## [Additional resources](#additional-resources)
 
 To look at more fine-tuning examples you can refer to:
 

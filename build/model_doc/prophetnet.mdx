@@ -1,3 +1,26 @@
+---
+local: prophetnet
+sections:
+- local: overview
+  title: Overview
+- local: prophetnetconfig
+  title: ProphetNetConfig
+- local: prophetnettokenizer
+  title: ProphetNetTokenizer
+- local: prophetnet-specific-outputs
+  title: ProphetNet specific outputs
+- local: prophetnetmodel
+  title: ProphetNetModel
+- local: prophetnetencoder
+  title: ProphetNetEncoder
+- local: prophetnetdecoder
+  title: ProphetNetDecoder
+- local: prophetnetforconditionalgeneration
+  title: ProphetNetForConditionalGeneration
+- local: prophetnetforcausallm
+  title: ProphetNetForCausalLM
+title: ProphetNet
+---
 <script>
 import Tip from "../../Tip.svelte";
 import Youtube from "../../Youtube.svelte";	
@@ -16,12 +39,12 @@ an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express o
 specific language governing permissions and limitations under the License.
 -->
 
-# ProphetNet
+# [ProphetNet](#prophetnet)
 
 **DISCLAIMER:** If you see something strange, file a [Github Issue](https://github.com/huggingface/transformers/issues/new?assignees=&labels=&template=bug-report.md&title) and assign
 @patrickvonplaten
 
-## Overview
+## [Overview](#overview)
 
 The ProphetNet model was proposed in [ProphetNet: Predicting Future N-gram for Sequence-to-Sequence Pre-training,](https://arxiv.org/abs/2001.04063) by Yu Yan, Weizhen Qi, Yeyun Gong, Dayiheng Liu, Nan Duan, Jiusheng Chen, Ruofei
 Zhang, Ming Zhou on 13 Jan, 2020.
@@ -44,17 +67,17 @@ state-of-the-art results on all these datasets compared to the models using the 
 The Authors' code can be found [here](https://github.com/microsoft/ProphetNet).
 
 
-## ProphetNetConfig
+## [ProphetNetConfig](#prophetnetconfig)
 
 <a id='transformers.ProphetNetConfig'></a>
-> **class transformers.ProphetNetConfig**(activation_dropout = 0.1, activation_function = gelu, vocab_size = 30522, hidden_size = 1024, encoder_ffn_dim = 4096, num_encoder_layers = 12, num_encoder_attention_heads = 16, decoder_ffn_dim = 4096, num_decoder_layers = 12, num_decoder_attention_heads = 16, attention_dropout = 0.1, dropout = 0.1, max_position_embeddings = 512, init_std = 0.02, is_encoder_decoder = True, add_cross_attention = True, decoder_start_token_id = 0, ngram = 2, num_buckets = 32, relative_max_distance = 128, disable_ngram_loss = False, gradient_checkpointing = False, eps = 0.0, use_cache = True, pad_token_id = 0, bos_token_id = 1, eos_token_id = 2, **kwargs)
+> **class transformers.ProphetNetConfig**(activation_dropout = 0.1, activation_function = 'gelu', vocab_size = 30522, hidden_size = 1024, encoder_ffn_dim = 4096, num_encoder_layers = 12, num_encoder_attention_heads = 16, decoder_ffn_dim = 4096, num_decoder_layers = 12, num_decoder_attention_heads = 16, attention_dropout = 0.1, dropout = 0.1, max_position_embeddings = 512, init_std = 0.02, is_encoder_decoder = True, add_cross_attention = True, decoder_start_token_id = 0, ngram = 2, num_buckets = 32, relative_max_distance = 128, disable_ngram_loss = False, eps = 0.0, use_cache = True, pad_token_id = 0, bos_token_id = 1, eos_token_id = 2, **kwargs)
 
 
-This is the configuration class to store the configuration of a [ProphetNetModel](model_doc/prophetnet.html#transformers.ProphetNetModel). It is used
+This is the configuration class to store the configuration of a [ProphetNetModel](/docs/transformers/master/en/model_doc/prophetnet.html#transformers.ProphetNetModel). It is used
 to instantiate a ProphetNet model according to the specified arguments, defining the model architecture.
 
-Configuration objects inherit from [PretrainedConfig](main_classes/configuration.html#transformers.PretrainedConfig) and can be used to control the model
-outputs. Read the documentation from [PretrainedConfig](main_classes/configuration.html#transformers.PretrainedConfig) for more information.
+Configuration objects inherit from [PretrainedConfig](/docs/transformers/master/en/main_classes/configuration.html#transformers.PretrainedConfig) and can be used to control the model
+outputs. Read the documentation from [PretrainedConfig](/docs/transformers/master/en/main_classes/configuration.html#transformers.PretrainedConfig) for more information.
 
 > Parameters
 
@@ -65,7 +88,7 @@ outputs. Read the documentation from [PretrainedConfig](main_classes/configurati
   `"gelu"`, `"relu"`, `"silu"` and `"gelu_new"` are supported.
 - **vocab_size** (`int`, _optional_, defaults to 30522) --
   Vocabulary size of the ProphetNET model. Defines the number of different tokens that can be represented by
-  the `inputs_ids` passed when calling [ProphetNetModel](model_doc/prophetnet.html#transformers.ProphetNetModel).
+  the `inputs_ids` passed when calling [ProphetNetModel](/docs/transformers/master/en/model_doc/prophetnet.html#transformers.ProphetNetModel).
 - **hidden_size** (`int`, _optional_, defaults to 1024) --
   Dimensionality of the layers and the pooler layer.
 - **encoder_ffn_dim** (`int`, _optional_, defaults to 4096) --
@@ -115,19 +138,17 @@ outputs. Read the documentation from [PretrainedConfig](main_classes/configurati
   smoothing is performed.
 - **use_cache** (`bool`, _optional_, defaults to `True`) --
   Whether or not the model should return the last key/values attentions (not used by all models).
-- **gradient_checkpointing** (`bool`, _optional_, defaults to `False`) --
-  If True, use gradient checkpointing to save memory at the expense of slower backward pass.
 
 
-## ProphetNetTokenizer
+## [ProphetNetTokenizer](#prophetnettokenizer)
 
 <a id='transformers.ProphetNetTokenizer'></a>
-> **class transformers.ProphetNetTokenizer**(vocab_file, do_lower_case = True, do_basic_tokenize = True, never_split = None, unk_token = [UNK], sep_token = [SEP], x_sep_token = [X_SEP], pad_token = [PAD], mask_token = [MASK], tokenize_chinese_chars = True, strip_accents = None, **kwargs)
+> **class transformers.ProphetNetTokenizer**(vocab_file, do_lower_case = True, do_basic_tokenize = True, never_split = None, unk_token = '[UNK]', sep_token = '[SEP]', x_sep_token = '[X_SEP]', pad_token = '[PAD]', mask_token = '[MASK]', tokenize_chinese_chars = True, strip_accents = None, **kwargs)
 
 
 Construct a ProphetNetTokenizer. Based on WordPiece.
 
-This tokenizer inherits from [PreTrainedTokenizer](main_classes/tokenizer.html#transformers.PreTrainedTokenizer) which contains most of the main methods.
+This tokenizer inherits from [PreTrainedTokenizer](/docs/transformers/master/en/main_classes/tokenizer.html#transformers.PreTrainedTokenizer) which contains most of the main methods.
 Users should refer to this superclass for more information regarding those methods.
 
 > Parameters
@@ -150,7 +171,7 @@ Users should refer to this superclass for more information regarding those metho
   token of a sequence built with special tokens.
 - **x_sep_token** (`str`, _optional_, defaults to `"[X_SEP]"`) --
   Special second separator token, which can be generated by
-  [ProphetNetForConditionalGeneration](model_doc/prophetnet.html#transformers.ProphetNetForConditionalGeneration). It is used to separate bullet-point like
+  [ProphetNetForConditionalGeneration](/docs/transformers/master/en/model_doc/prophetnet.html#transformers.ProphetNetForConditionalGeneration). It is used to separate bullet-point like
   sentences in summarization, *e.g.*.
 - **pad_token** (`str`, _optional_, defaults to `"[PAD]"`) --
   The token used for padding, for example when batching sequences of different lengths.
@@ -256,7 +277,7 @@ A list of integers in the range [0, 1]: 1 for a special token, 0 for a sequence 
 `List[int]`
 
 
-## ProphetNet specific outputs
+## [ProphetNet specific outputs](#prophetnet-specific-outputs)
 
 <a id='transformers.models.prophetnet.modeling_prophetnet.ProphetNetSeq2SeqLMOutput'></a>
 > **class transformers.models.prophetnet.modeling\_prophetnet.ProphetNetSeq2SeqLMOutput**(loss: typing.Optional[torch.FloatTensor] = None, logits: FloatTensor = None, logits_ngram: typing.Optional[torch.FloatTensor] = None, past_key_values: typing.Optional[typing.Tuple[torch.FloatTensor]] = None, decoder_hidden_states: typing.Optional[typing.Tuple[torch.FloatTensor]] = None, decoder_ngram_hidden_states: typing.Optional[typing.Tuple[torch.FloatTensor]] = None, decoder_attentions: typing.Optional[typing.Tuple[torch.FloatTensor]] = None, decoder_ngram_attentions: typing.Optional[typing.Tuple[torch.FloatTensor]] = None, cross_attentions: typing.Optional[typing.Tuple[torch.FloatTensor]] = None, encoder_last_hidden_state: typing.Optional[torch.FloatTensor] = None, encoder_hidden_states: typing.Optional[typing.Tuple[torch.FloatTensor]] = None, encoder_attentions: typing.Optional[typing.Tuple[torch.FloatTensor]] = None)
@@ -473,17 +494,17 @@ Base class for model's outputs that may also contain a past key/values (to speed
   compute the weighted average in the
 
 
-## ProphetNetModel
+## [ProphetNetModel](#prophetnetmodel)
 
 <a id='transformers.ProphetNetModel'></a>
 > **class transformers.ProphetNetModel**(config)
 
 The bare ProphetNet Model outputting raw hidden-states without any specific head on top.
-This model inherits from [PreTrainedModel](main_classes/model.html#transformers.PreTrainedModel). Check the superclass documentation for the generic
+This model inherits from [PreTrainedModel](/docs/transformers/master/en/main_classes/model.html#transformers.PreTrainedModel). Check the superclass documentation for the generic
 methods the library implements for all its model (such as downloading or saving, resizing the input embeddings,
 pruning heads etc.)
 
-Original ProphetNet code can be found at <https://github.com/microsoft/ProphetNet> . Checkpoints were converted
+Original ProphetNet code can be found at &amp;lt;https://github.com/microsoft/ProphetNet> . Checkpoints were converted
 from original Fairseq checkpoints. For more information on the checkpoint conversion, please take a look at the
 file `convert_prophetnet_original_pytorch_checkpoint_to_pytorch.py`.
 
@@ -493,16 +514,16 @@ behavior.
 
 > Parameters
 
-- **config** ([ProphetNetConfig](model_doc/prophetnet.html#transformers.ProphetNetConfig)) -- Model configuration class with all the parameters of the model.
+- **config** ([ProphetNetConfig](/docs/transformers/master/en/model_doc/prophetnet.html#transformers.ProphetNetConfig)) -- Model configuration class with all the parameters of the model.
   Initializing with a config file does not load the weights associated with the model, only the
-  configuration. Check out the [from_pretrained()](main_classes/model.html#transformers.PreTrainedModel.from_pretrained) method to load the model
+  configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model.html#transformers.PreTrainedModel.from_pretrained) method to load the model
   weights.
 
 
 <a id='transformers.ProphetNetModel.forward'></a>
 > **forward**(self, input_ids = None, attention_mask = None, decoder_input_ids = None, decoder_attention_mask = None, head_mask = None, decoder_head_mask = None, cross_attn_head_mask = None, encoder_outputs: typing.Optional[typing.Tuple] = None, past_key_values = None, inputs_embeds = None, decoder_inputs_embeds = None, use_cache = None, output_attentions = None, output_hidden_states = None, return_dict = None)
 
-The [ProphetNetModel](model_doc/prophetnet.html#transformers.ProphetNetModel) forward method, overrides the `__call__` special method.
+The [ProphetNetModel](/docs/transformers/master/en/model_doc/prophetnet.html#transformers.ProphetNetModel) forward method, overrides the `__call__` special method.
 
 <Tip>
 
@@ -518,8 +539,8 @@ processing steps while the latter silently ignores them.
   Indices of input sequence tokens in the vocabulary. Padding will be ignored by default should you provide
   it.
 
-  Indices can be obtained using [ProphetNetTokenizer](model_doc/prophetnet.html#transformers.ProphetNetTokenizer). See
-  [transformers.PreTrainedTokenizer.encode()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
+  Indices can be obtained using [ProphetNetTokenizer](/docs/transformers/master/en/model_doc/prophetnet.html#transformers.ProphetNetTokenizer). See
+  [transformers.PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
   details.
 
   [What are input IDs?](../glossary.html#input-ids)
@@ -533,8 +554,8 @@ processing steps while the latter silently ignores them.
 - **decoder_input_ids** (`torch.LongTensor` of shape `(batch_size, target_sequence_length)`, _optional_) --
   Indices of decoder input sequence tokens in the vocabulary.
 
-  Indices can be obtained using [ProphetNetTokenizer](model_doc/prophetnet.html#transformers.ProphetNetTokenizer). See
-  [transformers.PreTrainedTokenizer.encode()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
+  Indices can be obtained using [ProphetNetTokenizer](/docs/transformers/master/en/model_doc/prophetnet.html#transformers.ProphetNetTokenizer). See
+  [transformers.PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
   details.
 
   [What are decoder input IDs?](../glossary.html#decoder-input-ids)
@@ -585,12 +606,12 @@ processing steps while the latter silently ignores them.
   Whether or not to return the hidden states of all layers. See `hidden_states` under returned tensors for
   more detail.
 - **return_dict** (`bool`, _optional_) --
-  Whether or not to return a [ModelOutput](main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple.
+  Whether or not to return a [ModelOutput](/docs/transformers/master/en/main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple.
 
 
 > Returns
 
-A [ProphetNetSeq2SeqModelOutput](model_doc/prophetnet.html#transformers.models.prophetnet.modeling_prophetnet.ProphetNetSeq2SeqModelOutput) or a tuple of
+A [ProphetNetSeq2SeqModelOutput](/docs/transformers/master/en/model_doc/prophetnet.html#transformers.models.prophetnet.modeling_prophetnet.ProphetNetSeq2SeqModelOutput) or a tuple of
 `torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising
 various elements depending on the configuration (`ProphenetConfig`) and inputs.
 
@@ -652,20 +673,20 @@ various elements depending on the configuration (`ProphenetConfig`) and inputs.
 
 > Return type
 
-[ProphetNetSeq2SeqModelOutput](model_doc/prophetnet.html#transformers.models.prophetnet.modeling_prophetnet.ProphetNetSeq2SeqModelOutput) or `tuple(torch.FloatTensor)`
+[ProphetNetSeq2SeqModelOutput](/docs/transformers/master/en/model_doc/prophetnet.html#transformers.models.prophetnet.modeling_prophetnet.ProphetNetSeq2SeqModelOutput) or `tuple(torch.FloatTensor)`
 
 
-## ProphetNetEncoder
+## [ProphetNetEncoder](#prophetnetencoder)
 
 <a id='transformers.ProphetNetEncoder'></a>
 > **class transformers.ProphetNetEncoder**(config: ProphetNetConfig, word_embeddings: Embedding = None)
 
 The standalone encoder part of the ProphetNetModel.
-This model inherits from [PreTrainedModel](main_classes/model.html#transformers.PreTrainedModel). Check the superclass documentation for the generic
+This model inherits from [PreTrainedModel](/docs/transformers/master/en/main_classes/model.html#transformers.PreTrainedModel). Check the superclass documentation for the generic
 methods the library implements for all its model (such as downloading or saving, resizing the input embeddings,
 pruning heads etc.)
 
-Original ProphetNet code can be found at <https://github.com/microsoft/ProphetNet> . Checkpoints were converted
+Original ProphetNet code can be found at &amp;lt;https://github.com/microsoft/ProphetNet> . Checkpoints were converted
 from original Fairseq checkpoints. For more information on the checkpoint conversion, please take a look at the
 file `convert_prophetnet_original_pytorch_checkpoint_to_pytorch.py`.
 
@@ -675,20 +696,20 @@ behavior.
 
 > Parameters
 
-- **config** ([ProphetNetConfig](model_doc/prophetnet.html#transformers.ProphetNetConfig)) -- Model configuration class with all the parameters of the model.
+- **config** ([ProphetNetConfig](/docs/transformers/master/en/model_doc/prophetnet.html#transformers.ProphetNetConfig)) -- Model configuration class with all the parameters of the model.
   Initializing with a config file does not load the weights associated with the model, only the
-  configuration. Check out the [from_pretrained()](main_classes/model.html#transformers.PreTrainedModel.from_pretrained) method to load the model
+  configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model.html#transformers.PreTrainedModel.from_pretrained) method to load the model
   weights.
 
   word_embeddings  (`torch.nn.Embeddings` of shape `(config.vocab_size, config.hidden_size)`, _optional_):
-  The word embedding parameters. This can be used to initialize [ProphetNetEncoder](model_doc/prophetnet.html#transformers.ProphetNetEncoder) with
+  The word embedding parameters. This can be used to initialize [ProphetNetEncoder](/docs/transformers/master/en/model_doc/prophetnet.html#transformers.ProphetNetEncoder) with
   pre-defined word embeddings instead of randomly initialized word embeddings.
 
 
 <a id='transformers.ProphetNetEncoder.forward'></a>
 > **forward**(self, input_ids = None, attention_mask = None, head_mask = None, inputs_embeds = None, output_attentions = None, output_hidden_states = None, return_dict = None)
 
-The [ProphetNetEncoder](model_doc/prophetnet.html#transformers.ProphetNetEncoder) forward method, overrides the `__call__` special method.
+The [ProphetNetEncoder](/docs/transformers/master/en/model_doc/prophetnet.html#transformers.ProphetNetEncoder) forward method, overrides the `__call__` special method.
 
 <Tip>
 
@@ -704,8 +725,8 @@ processing steps while the latter silently ignores them.
   Indices of input sequence tokens in the vocabulary. Padding will be ignored by default should you provide
   it.
 
-  Indices can be obtained using [ProphetNetTokenizer](model_doc/prophetnet.html#transformers.ProphetNetTokenizer). See
-  [transformers.PreTrainedTokenizer.encode()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
+  Indices can be obtained using [ProphetNetTokenizer](/docs/transformers/master/en/model_doc/prophetnet.html#transformers.ProphetNetTokenizer). See
+  [transformers.PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
   details.
 
   [What are input IDs?](../glossary.html#input-ids)
@@ -729,12 +750,12 @@ processing steps while the latter silently ignores them.
   Whether or not to return the hidden states of all layers. See `hidden_states` under returned tensors for
   more detail.
 - **return_dict** (`bool`, _optional_) --
-  Whether or not to return a [ModelOutput](main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple.
+  Whether or not to return a [ModelOutput](/docs/transformers/master/en/main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple.
 
 
 > Returns
 
-A [BaseModelOutput](main_classes/output.html#transformers.modeling_outputs.BaseModelOutput) or a tuple of
+A [BaseModelOutput](/docs/transformers/master/en/main_classes/output.html#transformers.modeling_outputs.BaseModelOutput) or a tuple of
 `torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising
 various elements depending on the configuration (`ProphenetConfig`) and inputs.
 
@@ -765,20 +786,20 @@ various elements depending on the configuration (`ProphenetConfig`) and inputs.
 
 > Return type
 
-[BaseModelOutput](main_classes/output.html#transformers.modeling_outputs.BaseModelOutput) or `tuple(torch.FloatTensor)`
+[BaseModelOutput](/docs/transformers/master/en/main_classes/output.html#transformers.modeling_outputs.BaseModelOutput) or `tuple(torch.FloatTensor)`
 
 
-## ProphetNetDecoder
+## [ProphetNetDecoder](#prophetnetdecoder)
 
 <a id='transformers.ProphetNetDecoder'></a>
 > **class transformers.ProphetNetDecoder**(config: ProphetNetConfig, word_embeddings: Embedding = None)
 
 The standalone decoder part of the ProphetNetModel.
-This model inherits from [PreTrainedModel](main_classes/model.html#transformers.PreTrainedModel). Check the superclass documentation for the generic
+This model inherits from [PreTrainedModel](/docs/transformers/master/en/main_classes/model.html#transformers.PreTrainedModel). Check the superclass documentation for the generic
 methods the library implements for all its model (such as downloading or saving, resizing the input embeddings,
 pruning heads etc.)
 
-Original ProphetNet code can be found at <https://github.com/microsoft/ProphetNet> . Checkpoints were converted
+Original ProphetNet code can be found at &amp;lt;https://github.com/microsoft/ProphetNet> . Checkpoints were converted
 from original Fairseq checkpoints. For more information on the checkpoint conversion, please take a look at the
 file `convert_prophetnet_original_pytorch_checkpoint_to_pytorch.py`.
 
@@ -788,20 +809,20 @@ behavior.
 
 > Parameters
 
-- **config** ([ProphetNetConfig](model_doc/prophetnet.html#transformers.ProphetNetConfig)) -- Model configuration class with all the parameters of the model.
+- **config** ([ProphetNetConfig](/docs/transformers/master/en/model_doc/prophetnet.html#transformers.ProphetNetConfig)) -- Model configuration class with all the parameters of the model.
   Initializing with a config file does not load the weights associated with the model, only the
-  configuration. Check out the [from_pretrained()](main_classes/model.html#transformers.PreTrainedModel.from_pretrained) method to load the model
+  configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model.html#transformers.PreTrainedModel.from_pretrained) method to load the model
   weights.
 
   word_embeddings  (`torch.nn.Embeddings` of shape `(config.vocab_size, config.hidden_size)`, _optional_):
-  The word embedding parameters. This can be used to initialize [ProphetNetEncoder](model_doc/prophetnet.html#transformers.ProphetNetEncoder) with
+  The word embedding parameters. This can be used to initialize [ProphetNetEncoder](/docs/transformers/master/en/model_doc/prophetnet.html#transformers.ProphetNetEncoder) with
   pre-defined word embeddings instead of randomly initialized word embeddings.
 
 
 <a id='transformers.ProphetNetDecoder.forward'></a>
 > **forward**(self, input_ids = None, attention_mask = None, encoder_hidden_states = None, encoder_attention_mask = None, head_mask = None, cross_attn_head_mask = None, past_key_values = None, inputs_embeds = None, use_cache = None, output_attentions = None, output_hidden_states = None, return_dict = None)
 
-The [ProphetNetDecoder](model_doc/prophetnet.html#transformers.ProphetNetDecoder) forward method, overrides the `__call__` special method.
+The [ProphetNetDecoder](/docs/transformers/master/en/model_doc/prophetnet.html#transformers.ProphetNetDecoder) forward method, overrides the `__call__` special method.
 
 <Tip>
 
@@ -817,8 +838,8 @@ processing steps while the latter silently ignores them.
   Indices of input sequence tokens in the vocabulary. Padding will be ignored by default should you provide
   it.
 
-  Indices can be obtained using [ProphetNetTokenizer](model_doc/prophetnet.html#transformers.ProphetNetTokenizer). See
-  [transformers.PreTrainedTokenizer.encode()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
+  Indices can be obtained using [ProphetNetTokenizer](/docs/transformers/master/en/model_doc/prophetnet.html#transformers.ProphetNetTokenizer). See
+  [transformers.PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
   details.
 
   [What are input IDs?](../glossary.html#input-ids)
@@ -842,7 +863,7 @@ processing steps while the latter silently ignores them.
   Whether or not to return the hidden states of all layers. See `hidden_states` under returned tensors for
   more detail.
 - **return_dict** (`bool`, _optional_) --
-  Whether or not to return a [ModelOutput](main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple.
+  Whether or not to return a [ModelOutput](/docs/transformers/master/en/main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple.
 
 - **encoder_hidden_states**  (`torch.FloatTensor` of shape `(batch_size, sequence_length, hidden_size)`, _optional_) --
   Sequence of hidden-states at the output of the last layer of the encoder. Used in the cross-attention if
@@ -872,7 +893,7 @@ processing steps while the latter silently ignores them.
 
 > Returns
 
-A [ProphetNetDecoderModelOutput](model_doc/prophetnet.html#transformers.models.prophetnet.modeling_prophetnet.ProphetNetDecoderModelOutput) or a tuple of
+A [ProphetNetDecoderModelOutput](/docs/transformers/master/en/model_doc/prophetnet.html#transformers.models.prophetnet.modeling_prophetnet.ProphetNetDecoderModelOutput) or a tuple of
 `torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising
 various elements depending on the configuration (`ProphenetConfig`) and inputs.
 
@@ -915,7 +936,7 @@ various elements depending on the configuration (`ProphenetConfig`) and inputs.
 
 >>> tokenizer = ProphetNetTokenizer.from_pretrained('microsoft/prophetnet-large-uncased')
 >>> model = ProphetNetDecoder.from_pretrained('microsoft/prophetnet-large-uncased', add_cross_attention=False)
->>> assert model.config.is_decoder, f"{model.__class__} has to be configured as a decoder."
+>>> assert model.config.is_decoder, f"&amp;lcub;model.__class__} has to be configured as a decoder."
 >>> inputs = tokenizer("Hello, my dog is cute", return_tensors="pt")
 >>> outputs = model(**inputs)
 
@@ -924,20 +945,20 @@ various elements depending on the configuration (`ProphenetConfig`) and inputs.
 
 > Return type
 
-[ProphetNetDecoderModelOutput](model_doc/prophetnet.html#transformers.models.prophetnet.modeling_prophetnet.ProphetNetDecoderModelOutput) or `tuple(torch.FloatTensor)`
+[ProphetNetDecoderModelOutput](/docs/transformers/master/en/model_doc/prophetnet.html#transformers.models.prophetnet.modeling_prophetnet.ProphetNetDecoderModelOutput) or `tuple(torch.FloatTensor)`
 
 
-## ProphetNetForConditionalGeneration
+## [ProphetNetForConditionalGeneration](#prophetnetforconditionalgeneration)
 
 <a id='transformers.ProphetNetForConditionalGeneration'></a>
 > **class transformers.ProphetNetForConditionalGeneration**(config: ProphetNetConfig)
 
 The ProphetNet Model with a language modeling head. Can be used for sequence generation tasks.
-This model inherits from [PreTrainedModel](main_classes/model.html#transformers.PreTrainedModel). Check the superclass documentation for the generic
+This model inherits from [PreTrainedModel](/docs/transformers/master/en/main_classes/model.html#transformers.PreTrainedModel). Check the superclass documentation for the generic
 methods the library implements for all its model (such as downloading or saving, resizing the input embeddings,
 pruning heads etc.)
 
-Original ProphetNet code can be found at <https://github.com/microsoft/ProphetNet> . Checkpoints were converted
+Original ProphetNet code can be found at &amp;lt;https://github.com/microsoft/ProphetNet> . Checkpoints were converted
 from original Fairseq checkpoints. For more information on the checkpoint conversion, please take a look at the
 file `convert_prophetnet_original_pytorch_checkpoint_to_pytorch.py`.
 
@@ -947,16 +968,16 @@ behavior.
 
 > Parameters
 
-- **config** ([ProphetNetConfig](model_doc/prophetnet.html#transformers.ProphetNetConfig)) -- Model configuration class with all the parameters of the model.
+- **config** ([ProphetNetConfig](/docs/transformers/master/en/model_doc/prophetnet.html#transformers.ProphetNetConfig)) -- Model configuration class with all the parameters of the model.
   Initializing with a config file does not load the weights associated with the model, only the
-  configuration. Check out the [from_pretrained()](main_classes/model.html#transformers.PreTrainedModel.from_pretrained) method to load the model
+  configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model.html#transformers.PreTrainedModel.from_pretrained) method to load the model
   weights.
 
 
 <a id='transformers.ProphetNetForConditionalGeneration.forward'></a>
 > **forward**(self, input_ids = None, attention_mask = None, decoder_input_ids = None, decoder_attention_mask = None, head_mask = None, decoder_head_mask = None, cross_attn_head_mask = None, encoder_outputs = None, past_key_values = None, inputs_embeds = None, decoder_inputs_embeds = None, labels = None, use_cache = None, output_attentions = None, output_hidden_states = None, return_dict = None)
 
-The [ProphetNetForConditionalGeneration](model_doc/prophetnet.html#transformers.ProphetNetForConditionalGeneration) forward method, overrides the `__call__` special method.
+The [ProphetNetForConditionalGeneration](/docs/transformers/master/en/model_doc/prophetnet.html#transformers.ProphetNetForConditionalGeneration) forward method, overrides the `__call__` special method.
 
 <Tip>
 
@@ -972,8 +993,8 @@ processing steps while the latter silently ignores them.
   Indices of input sequence tokens in the vocabulary. Padding will be ignored by default should you provide
   it.
 
-  Indices can be obtained using [ProphetNetTokenizer](model_doc/prophetnet.html#transformers.ProphetNetTokenizer). See
-  [transformers.PreTrainedTokenizer.encode()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
+  Indices can be obtained using [ProphetNetTokenizer](/docs/transformers/master/en/model_doc/prophetnet.html#transformers.ProphetNetTokenizer). See
+  [transformers.PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
   details.
 
   [What are input IDs?](../glossary.html#input-ids)
@@ -987,8 +1008,8 @@ processing steps while the latter silently ignores them.
 - **decoder_input_ids** (`torch.LongTensor` of shape `(batch_size, target_sequence_length)`, _optional_) --
   Indices of decoder input sequence tokens in the vocabulary.
 
-  Indices can be obtained using [ProphetNetTokenizer](model_doc/prophetnet.html#transformers.ProphetNetTokenizer). See
-  [transformers.PreTrainedTokenizer.encode()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
+  Indices can be obtained using [ProphetNetTokenizer](/docs/transformers/master/en/model_doc/prophetnet.html#transformers.ProphetNetTokenizer). See
+  [transformers.PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
   details.
 
   [What are decoder input IDs?](../glossary.html#decoder-input-ids)
@@ -1039,7 +1060,7 @@ processing steps while the latter silently ignores them.
   Whether or not to return the hidden states of all layers. See `hidden_states` under returned tensors for
   more detail.
 - **return_dict** (`bool`, _optional_) --
-  Whether or not to return a [ModelOutput](main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple.
+  Whether or not to return a [ModelOutput](/docs/transformers/master/en/main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple.
 
 - **labels** (`torch.LongTensor` of shape `(batch_size,)`, _optional_) --
   Labels for computing the sequence classification/regression loss. Indices should be in `[-100, 0, ..., config.vocab_size - 1]`. All labels set to `-100` are ignored (masked), the loss is only computed for
@@ -1048,7 +1069,7 @@ processing steps while the latter silently ignores them.
 
 > Returns
 
-A [ProphetNetSeq2SeqLMOutput](model_doc/prophetnet.html#transformers.models.prophetnet.modeling_prophetnet.ProphetNetSeq2SeqLMOutput) or a tuple of
+A [ProphetNetSeq2SeqLMOutput](/docs/transformers/master/en/model_doc/prophetnet.html#transformers.models.prophetnet.modeling_prophetnet.ProphetNetSeq2SeqLMOutput) or a tuple of
 `torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising
 various elements depending on the configuration (`ProphenetConfig`) and inputs.
 
@@ -1109,20 +1130,20 @@ various elements depending on the configuration (`ProphenetConfig`) and inputs.
 
 > Return type
 
-[ProphetNetSeq2SeqLMOutput](model_doc/prophetnet.html#transformers.models.prophetnet.modeling_prophetnet.ProphetNetSeq2SeqLMOutput) or `tuple(torch.FloatTensor)`
+[ProphetNetSeq2SeqLMOutput](/docs/transformers/master/en/model_doc/prophetnet.html#transformers.models.prophetnet.modeling_prophetnet.ProphetNetSeq2SeqLMOutput) or `tuple(torch.FloatTensor)`
 
 
-## ProphetNetForCausalLM
+## [ProphetNetForCausalLM](#prophetnetforcausallm)
 
 <a id='transformers.ProphetNetForCausalLM'></a>
 > **class transformers.ProphetNetForCausalLM**(config)
 
 The standalone decoder part of the ProphetNetModel with a lm head on top. The model can be used for causal language modeling.
-This model inherits from [PreTrainedModel](main_classes/model.html#transformers.PreTrainedModel). Check the superclass documentation for the generic
+This model inherits from [PreTrainedModel](/docs/transformers/master/en/main_classes/model.html#transformers.PreTrainedModel). Check the superclass documentation for the generic
 methods the library implements for all its model (such as downloading or saving, resizing the input embeddings,
 pruning heads etc.)
 
-Original ProphetNet code can be found at <https://github.com/microsoft/ProphetNet> . Checkpoints were converted
+Original ProphetNet code can be found at &amp;lt;https://github.com/microsoft/ProphetNet> . Checkpoints were converted
 from original Fairseq checkpoints. For more information on the checkpoint conversion, please take a look at the
 file `convert_prophetnet_original_pytorch_checkpoint_to_pytorch.py`.
 
@@ -1132,16 +1153,16 @@ behavior.
 
 > Parameters
 
-- **config** ([ProphetNetConfig](model_doc/prophetnet.html#transformers.ProphetNetConfig)) -- Model configuration class with all the parameters of the model.
+- **config** ([ProphetNetConfig](/docs/transformers/master/en/model_doc/prophetnet.html#transformers.ProphetNetConfig)) -- Model configuration class with all the parameters of the model.
   Initializing with a config file does not load the weights associated with the model, only the
-  configuration. Check out the [from_pretrained()](main_classes/model.html#transformers.PreTrainedModel.from_pretrained) method to load the model
+  configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model.html#transformers.PreTrainedModel.from_pretrained) method to load the model
   weights.
 
 
 <a id='transformers.ProphetNetForCausalLM.forward'></a>
 > **forward**(self, input_ids = None, attention_mask = None, encoder_hidden_states = None, encoder_attention_mask = None, head_mask = None, cross_attn_head_mask = None, past_key_values = None, inputs_embeds = None, labels = None, use_cache = None, output_attentions = None, output_hidden_states = None, return_dict = None)
 
-The [ProphetNetForCausalLM](model_doc/prophetnet.html#transformers.ProphetNetForCausalLM) forward method, overrides the `__call__` special method.
+The [ProphetNetForCausalLM](/docs/transformers/master/en/model_doc/prophetnet.html#transformers.ProphetNetForCausalLM) forward method, overrides the `__call__` special method.
 
 <Tip>
 
@@ -1157,8 +1178,8 @@ processing steps while the latter silently ignores them.
   Indices of input sequence tokens in the vocabulary. Padding will be ignored by default should you provide
   it.
 
-  Indices can be obtained using [ProphetNetTokenizer](model_doc/prophetnet.html#transformers.ProphetNetTokenizer). See
-  [transformers.PreTrainedTokenizer.encode()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
+  Indices can be obtained using [ProphetNetTokenizer](/docs/transformers/master/en/model_doc/prophetnet.html#transformers.ProphetNetTokenizer). See
+  [transformers.PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
   details.
 
   [What are input IDs?](../glossary.html#input-ids)
@@ -1182,7 +1203,7 @@ processing steps while the latter silently ignores them.
   Whether or not to return the hidden states of all layers. See `hidden_states` under returned tensors for
   more detail.
 - **return_dict** (`bool`, _optional_) --
-  Whether or not to return a [ModelOutput](main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple.
+  Whether or not to return a [ModelOutput](/docs/transformers/master/en/main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple.
 
 - **encoder_hidden_states** (`torch.FloatTensor` of shape `(batch_size, sequence_length, hidden_size)`, _optional_) --
   Sequence of hidden-states at the output of the last layer of the encoder. Used in the cross-attention if
@@ -1217,7 +1238,7 @@ processing steps while the latter silently ignores them.
 
 > Returns
 
-A [ProphetNetDecoderLMOutput](model_doc/prophetnet.html#transformers.models.prophetnet.modeling_prophetnet.ProphetNetDecoderLMOutput) or a tuple of
+A [ProphetNetDecoderLMOutput](/docs/transformers/master/en/model_doc/prophetnet.html#transformers.models.prophetnet.modeling_prophetnet.ProphetNetDecoderLMOutput) or a tuple of
 `torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising
 various elements depending on the configuration (`ProphenetConfig`) and inputs.
 
@@ -1261,7 +1282,7 @@ various elements depending on the configuration (`ProphenetConfig`) and inputs.
 
 >>> tokenizer = ProphetNetTokenizer.from_pretrained('microsoft/prophetnet-large-uncased')
 >>> model = ProphetNetForCausalLM.from_pretrained('microsoft/prophetnet-large-uncased')
->>> assert model.config.is_decoder, f"{model.__class__} has to be configured as a decoder."
+>>> assert model.config.is_decoder, f"&amp;lcub;model.__class__} has to be configured as a decoder."
 >>> inputs = tokenizer("Hello, my dog is cute", return_tensors="pt")
 >>> outputs = model(**inputs)
 
@@ -1289,5 +1310,5 @@ various elements depending on the configuration (`ProphenetConfig`) and inputs.
 
 > Return type
 
-[ProphetNetDecoderLMOutput](model_doc/prophetnet.html#transformers.models.prophetnet.modeling_prophetnet.ProphetNetDecoderLMOutput) or `tuple(torch.FloatTensor)`
+[ProphetNetDecoderLMOutput](/docs/transformers/master/en/model_doc/prophetnet.html#transformers.models.prophetnet.modeling_prophetnet.ProphetNetDecoderLMOutput) or `tuple(torch.FloatTensor)`
 

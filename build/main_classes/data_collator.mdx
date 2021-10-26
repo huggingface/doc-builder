@@ -1,3 +1,22 @@
+---
+local: data-collator
+sections:
+- local: default-data-collator
+  title: Default data collator
+- local: datacollatorwithpadding
+  title: DataCollatorWithPadding
+- local: datacollatorfortokenclassification
+  title: DataCollatorForTokenClassification
+- local: datacollatorforseqseq
+  title: DataCollatorForSeq2Seq
+- local: datacollatorforlanguagemodeling
+  title: DataCollatorForLanguageModeling
+- local: datacollatorforwholewordmask
+  title: DataCollatorForWholeWordMask
+- local: datacollatorforpermutationlanguagemodeling
+  title: DataCollatorForPermutationLanguageModeling
+title: Data Collator
+---
 <script>
 import Tip from "../../Tip.svelte";
 import Youtube from "../../Youtube.svelte";	
@@ -16,22 +35,22 @@ an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express o
 specific language governing permissions and limitations under the License.
 -->
 
-# Data Collator
+# [Data Collator](#data-collator)
 
 Data collators are objects that will form a batch by using a list of dataset elements as input. These elements are of
 the same type as the elements of `train_dataset` or `eval_dataset`.
 
 To be able to build batches, data collators may apply some processing (like padding). Some of them (like
-[DataCollatorForLanguageModeling](main_classes/data_collator.html#transformers.DataCollatorForLanguageModeling)) also apply some random data augmentation (like random masking)
+[DataCollatorForLanguageModeling](/docs/transformers/master/en/main_classes/data_collator.html#transformers.DataCollatorForLanguageModeling)) also apply some random data augmentation (like random masking)
 on the formed batch.
 
-Examples of use can be found in the [example scripts](../examples.html) or [example notebooks](../notebooks.html).
+Examples of use can be found in the [example scripts](/docs/transformers/master/en/../examples.html) or [example notebooks](/docs/transformers/master/en/../notebooks.html).
 
 
-## Default data collator
+## [Default data collator](#default-data-collator)
 
 <a id='transformers.default_data_collator'></a>
-> **transformers.default\_data\_collator**(features: typing.List[InputDataClass], return_tensors = pt)
+> **transformers.default\_data\_collator**(features: typing.List[InputDataClass], return_tensors = 'pt')
 
 
 Very simple data collator that simply collates batches of dict-like objects and performs special handling for
@@ -44,19 +63,19 @@ Does not do any additional preprocessing: property names of the input object wil
 to the model. See glue and ner for example of how it's useful.
 
 
-## DataCollatorWithPadding
+## [DataCollatorWithPadding](#datacollatorwithpadding)
 
 <a id='transformers.DataCollatorWithPadding'></a>
-> **class transformers.DataCollatorWithPadding**(tokenizer: PreTrainedTokenizerBase, padding: typing.Union[bool, str, transformers.file_utils.PaddingStrategy] = True, max_length: typing.Optional[int] = None, pad_to_multiple_of: typing.Optional[int] = None, return_tensors: str = pt)
+> **class transformers.DataCollatorWithPadding**(tokenizer: PreTrainedTokenizerBase, padding: typing.Union[bool, str, transformers.file_utils.PaddingStrategy] = True, max_length: typing.Optional[int] = None, pad_to_multiple_of: typing.Optional[int] = None, return_tensors: str = 'pt')
 
 
 Data collator that will dynamically pad the inputs received.
 
 > Parameters
 
-- **tokenizer** ([PreTrainedTokenizer](main_classes/tokenizer.html#transformers.PreTrainedTokenizer) or [PreTrainedTokenizerFast](main_classes/tokenizer.html#transformers.PreTrainedTokenizerFast)) --
+- **tokenizer** ([PreTrainedTokenizer](/docs/transformers/master/en/main_classes/tokenizer.html#transformers.PreTrainedTokenizer) or [PreTrainedTokenizerFast](/docs/transformers/master/en/main_classes/tokenizer.html#transformers.PreTrainedTokenizerFast)) --
   The tokenizer used for encoding the data.
-- **padding** (`bool`, `str` or [PaddingStrategy](internal/file_utils.html#transformers.file_utils.PaddingStrategy), _optional_, defaults to `True`) --
+- **padding** (`bool`, `str` or [PaddingStrategy](/docs/transformers/master/en/internal/file_utils.html#transformers.file_utils.PaddingStrategy), _optional_, defaults to `True`) --
   Select a strategy to pad the returned sequences (according to the model's padding side and padding index)
   among:
 
@@ -75,19 +94,19 @@ Data collator that will dynamically pad the inputs received.
   7.5 (Volta).
 
 
-## DataCollatorForTokenClassification
+## [DataCollatorForTokenClassification](#datacollatorfortokenclassification)
 
 <a id='transformers.DataCollatorForTokenClassification'></a>
-> **class transformers.DataCollatorForTokenClassification**(tokenizer: PreTrainedTokenizerBase, padding: typing.Union[bool, str, transformers.file_utils.PaddingStrategy] = True, max_length: typing.Optional[int] = None, pad_to_multiple_of: typing.Optional[int] = None, label_pad_token_id: int = -100, return_tensors: str = pt)
+> **class transformers.DataCollatorForTokenClassification**(tokenizer: PreTrainedTokenizerBase, padding: typing.Union[bool, str, transformers.file_utils.PaddingStrategy] = True, max_length: typing.Optional[int] = None, pad_to_multiple_of: typing.Optional[int] = None, label_pad_token_id: int = -100, return_tensors: str = 'pt')
 
 
 Data collator that will dynamically pad the inputs received, as well as the labels.
 
 > Parameters
 
-- **tokenizer** ([PreTrainedTokenizer](main_classes/tokenizer.html#transformers.PreTrainedTokenizer) or [PreTrainedTokenizerFast](main_classes/tokenizer.html#transformers.PreTrainedTokenizerFast)) --
+- **tokenizer** ([PreTrainedTokenizer](/docs/transformers/master/en/main_classes/tokenizer.html#transformers.PreTrainedTokenizer) or [PreTrainedTokenizerFast](/docs/transformers/master/en/main_classes/tokenizer.html#transformers.PreTrainedTokenizerFast)) --
   The tokenizer used for encoding the data.
-- **padding** (`bool`, `str` or [PaddingStrategy](internal/file_utils.html#transformers.file_utils.PaddingStrategy), _optional_, defaults to `True`) --
+- **padding** (`bool`, `str` or [PaddingStrategy](/docs/transformers/master/en/internal/file_utils.html#transformers.file_utils.PaddingStrategy), _optional_, defaults to `True`) --
   Select a strategy to pad the returned sequences (according to the model's padding side and padding index)
   among:
 
@@ -108,24 +127,24 @@ Data collator that will dynamically pad the inputs received, as well as the labe
   The id to use when padding the labels (-100 will be automatically ignore by PyTorch loss functions).
 
 
-## DataCollatorForSeq2Seq
+## [DataCollatorForSeq2Seq](#datacollatorforseqseq)
 
 <a id='transformers.DataCollatorForSeq2Seq'></a>
-> **class transformers.DataCollatorForSeq2Seq**(tokenizer: PreTrainedTokenizerBase, model: typing.Optional[typing.Any] = None, padding: typing.Union[bool, str, transformers.file_utils.PaddingStrategy] = True, max_length: typing.Optional[int] = None, pad_to_multiple_of: typing.Optional[int] = None, label_pad_token_id: int = -100, return_tensors: str = pt)
+> **class transformers.DataCollatorForSeq2Seq**(tokenizer: PreTrainedTokenizerBase, model: typing.Optional[typing.Any] = None, padding: typing.Union[bool, str, transformers.file_utils.PaddingStrategy] = True, max_length: typing.Optional[int] = None, pad_to_multiple_of: typing.Optional[int] = None, label_pad_token_id: int = -100, return_tensors: str = 'pt')
 
 
 Data collator that will dynamically pad the inputs received, as well as the labels.
 
 > Parameters
 
-- **tokenizer** ([PreTrainedTokenizer](main_classes/tokenizer.html#transformers.PreTrainedTokenizer) or [PreTrainedTokenizerFast](main_classes/tokenizer.html#transformers.PreTrainedTokenizerFast)) --
+- **tokenizer** ([PreTrainedTokenizer](/docs/transformers/master/en/main_classes/tokenizer.html#transformers.PreTrainedTokenizer) or [PreTrainedTokenizerFast](/docs/transformers/master/en/main_classes/tokenizer.html#transformers.PreTrainedTokenizerFast)) --
   The tokenizer used for encoding the data.
-- **model** ([PreTrainedModel](main_classes/model.html#transformers.PreTrainedModel)) --
+- **model** ([PreTrainedModel](/docs/transformers/master/en/main_classes/model.html#transformers.PreTrainedModel)) --
   The model that is being trained. If set and has the _prepare_decoder_input_ids_from_labels_, use it to
   prepare the _decoder_input_ids_
 
   This is useful when using _label_smoothing_ to avoid calculating loss twice.
-- **padding** (`bool`, `str` or [PaddingStrategy](internal/file_utils.html#transformers.file_utils.PaddingStrategy), _optional_, defaults to `True`) --
+- **padding** (`bool`, `str` or [PaddingStrategy](/docs/transformers/master/en/internal/file_utils.html#transformers.file_utils.PaddingStrategy), _optional_, defaults to `True`) --
   Select a strategy to pad the returned sequences (according to the model's padding side and padding index)
   among:
 
@@ -146,10 +165,10 @@ Data collator that will dynamically pad the inputs received, as well as the labe
   The id to use when padding the labels (-100 will be automatically ignored by PyTorch loss functions).
 
 
-## DataCollatorForLanguageModeling
+## [DataCollatorForLanguageModeling](#datacollatorforlanguagemodeling)
 
 <a id='transformers.DataCollatorForLanguageModeling'></a>
-> **class transformers.DataCollatorForLanguageModeling**(tokenizer: PreTrainedTokenizerBase, mlm: bool = True, mlm_probability: float = 0.15, pad_to_multiple_of: typing.Optional[int] = None, tf_experimental_compile: bool = False, return_tensors: str = pt)
+> **class transformers.DataCollatorForLanguageModeling**(tokenizer: PreTrainedTokenizerBase, mlm: bool = True, mlm_probability: float = 0.15, pad_to_multiple_of: typing.Optional[int] = None, tf_experimental_compile: bool = False, return_tensors: str = 'pt')
 
 
 Data collator used for language modeling. Inputs are dynamically padded to the maximum length of a batch if they
@@ -157,7 +176,7 @@ are not all of the same length.
 
 > Parameters
 
-- **tokenizer** ([PreTrainedTokenizer](main_classes/tokenizer.html#transformers.PreTrainedTokenizer) or [PreTrainedTokenizerFast](main_classes/tokenizer.html#transformers.PreTrainedTokenizerFast)) --
+- **tokenizer** ([PreTrainedTokenizer](/docs/transformers/master/en/main_classes/tokenizer.html#transformers.PreTrainedTokenizer) or [PreTrainedTokenizerFast](/docs/transformers/master/en/main_classes/tokenizer.html#transformers.PreTrainedTokenizerFast)) --
   The tokenizer used for encoding the data.
 - **mlm** (`bool`, _optional_, defaults to `True`) --
   Whether or not to use masked language modeling. If set to `False`, the labels are the same as the
@@ -172,7 +191,7 @@ are not all of the same length.
 
 For best performance, this data collator should be used with a dataset having items that are dictionaries or
 BatchEncoding, with the `"special_tokens_mask"` key, as returned by a
-[PreTrainedTokenizer](main_classes/tokenizer.html#transformers.PreTrainedTokenizer) or a [PreTrainedTokenizerFast](main_classes/tokenizer.html#transformers.PreTrainedTokenizerFast) with the
+[PreTrainedTokenizer](/docs/transformers/master/en/main_classes/tokenizer.html#transformers.PreTrainedTokenizer) or a [PreTrainedTokenizerFast](/docs/transformers/master/en/main_classes/tokenizer.html#transformers.PreTrainedTokenizerFast) with the
 argument `return_special_tokens_mask=True`.
 
 </Tip>
@@ -199,10 +218,10 @@ Prepare masked tokens inputs/labels for masked language modeling: 80% MASK, 10% 
 Prepare masked tokens inputs/labels for masked language modeling: 80% MASK, 10% random, 10% original.
 
 
-## DataCollatorForWholeWordMask
+## [DataCollatorForWholeWordMask](#datacollatorforwholewordmask)
 
 <a id='transformers.DataCollatorForWholeWordMask'></a>
-> **class transformers.DataCollatorForWholeWordMask**(tokenizer: PreTrainedTokenizerBase, mlm: bool = True, mlm_probability: float = 0.15, pad_to_multiple_of: typing.Optional[int] = None, tf_experimental_compile: bool = False, return_tensors: str = pt)
+> **class transformers.DataCollatorForWholeWordMask**(tokenizer: PreTrainedTokenizerBase, mlm: bool = True, mlm_probability: float = 0.15, pad_to_multiple_of: typing.Optional[int] = None, tf_experimental_compile: bool = False, return_tensors: str = 'pt')
 
 
 Data collator used for language modeling that masks entire words.
@@ -213,7 +232,7 @@ Data collator used for language modeling that masks entire words.
 <Tip>
 
 This collator relies on details of the implementation of subword tokenization by
-[BertTokenizer](model_doc/bert.html#transformers.BertTokenizer), specifically that subword tokens are prefixed with _##_. For tokenizers
+[BertTokenizer](/docs/transformers/master/en/model_doc/bert.html#transformers.BertTokenizer), specifically that subword tokens are prefixed with _##_. For tokenizers
 that do not adhere to this scheme, this collator will produce an output that is roughly equivalent to
 `.DataCollatorForLanguageModeling`.
 
@@ -244,10 +263,10 @@ Prepare masked tokens inputs/labels for masked language modeling: 80% MASK, 10% 
 'mask_labels' means we use whole word mask (wwm), we directly mask idxs according to it's ref.
 
 
-## DataCollatorForPermutationLanguageModeling
+## [DataCollatorForPermutationLanguageModeling](#datacollatorforpermutationlanguagemodeling)
 
 <a id='transformers.DataCollatorForPermutationLanguageModeling'></a>
-> **class transformers.DataCollatorForPermutationLanguageModeling**(tokenizer: PreTrainedTokenizerBase, plm_probability: float = 0.16666666666666666, max_span_length: int = 5, return_tensors: str = pt)
+> **class transformers.DataCollatorForPermutationLanguageModeling**(tokenizer: PreTrainedTokenizerBase, plm_probability: float = 0.16666666666666666, max_span_length: int = 5, return_tensors: str = 'pt')
 
 
 Data collator used for permutation language modeling.
@@ -268,7 +287,7 @@ The masked tokens to be predicted for a particular sequence are determined by th
 2. Reserve a context of length `context_length = span_length / plm_probability` to surround span to be
    masked
 3. Sample a starting point `start_index` from the interval `[cur_len, cur_len + context_length - span_length]` and mask tokens `start_index:start_index + span_length`
-4. Set `cur_len = cur_len + context_length`. If `cur_len&amp;lt;max_len` (i.e. there are tokens remaining in
+4. Set `cur_len = cur_len + context_length`. If `cur_len &amp;lt; max_len` (i.e. there are tokens remaining in
    the sequence to be processed), repeat from Step 1.
 
 
@@ -284,7 +303,7 @@ The masked tokens to be predicted for a particular sequence are determined by th
 2. Reserve a context of length `context_length = span_length / plm_probability` to surround span to be
    masked
 3. Sample a starting point `start_index` from the interval `[cur_len, cur_len + context_length - span_length]` and mask tokens `start_index:start_index + span_length`
-4. Set `cur_len = cur_len + context_length`. If `cur_len&amp;lt;max_len` (i.e. there are tokens remaining in
+4. Set `cur_len = cur_len + context_length`. If `cur_len &amp;lt; max_len` (i.e. there are tokens remaining in
    the sequence to be processed), repeat from Step 1.
 
 
@@ -300,6 +319,6 @@ The masked tokens to be predicted for a particular sequence are determined by th
 2. Reserve a context of length `context_length = span_length / plm_probability` to surround span to be
    masked
 3. Sample a starting point `start_index` from the interval `[cur_len, cur_len + context_length - span_length]` and mask tokens `start_index:start_index + span_length`
-4. Set `cur_len = cur_len + context_length`. If `cur_len&amp;lt;max_len` (i.e. there are tokens remaining in
+4. Set `cur_len = cur_len + context_length`. If `cur_len &amp;lt; max_len` (i.e. there are tokens remaining in
    the sequence to be processed), repeat from Step 1.
 

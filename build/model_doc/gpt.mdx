@@ -1,3 +1,34 @@
+---
+local: openai-gpt
+sections:
+- local: overview
+  title: Overview
+- local: openaigptconfig
+  title: OpenAIGPTConfig
+- local: openaigpttokenizer
+  title: OpenAIGPTTokenizer
+- local: openaigpttokenizerfast
+  title: OpenAIGPTTokenizerFast
+- local: openai-specific-outputs
+  title: OpenAI specific outputs
+- local: openaigptmodel
+  title: OpenAIGPTModel
+- local: openaigptlmheadmodel
+  title: OpenAIGPTLMHeadModel
+- local: openaigptdoubleheadsmodel
+  title: OpenAIGPTDoubleHeadsModel
+- local: openaigptforsequenceclassification
+  title: OpenAIGPTForSequenceClassification
+- local: tfopenaigptmodel
+  title: TFOpenAIGPTModel
+- local: tfopenaigptlmheadmodel
+  title: TFOpenAIGPTLMHeadModel
+- local: tfopenaigptdoubleheadsmodel
+  title: TFOpenAIGPTDoubleHeadsModel
+- local: tfopenaigptforsequenceclassification
+  title: TFOpenAIGPTForSequenceClassification
+title: OpenAI GPT
+---
 <script>
 import Tip from "../../Tip.svelte";
 import Youtube from "../../Youtube.svelte";	
@@ -16,9 +47,9 @@ an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express o
 specific language governing permissions and limitations under the License.
 -->
 
-# OpenAI GPT
+# [OpenAI GPT](#openai-gpt)
 
-## Overview
+## [Overview](#overview)
 
 OpenAI GPT model was proposed in [Improving Language Understanding by Generative Pre-Training](https://s3-us-west-2.amazonaws.com/openai-assets/research-covers/language-unsupervised/language_understanding_paper.pdf)
 by Alec Radford, Karthik Narasimhan, Tim Salimans and Ilya Sutskever. It's a causal (unidirectional) transformer
@@ -60,29 +91,29 @@ pip install spacy ftfy==4.4.3
 python -m spacy download en
 ```
 
-If you don't install `ftfy` and `SpaCy`, the [OpenAIGPTTokenizer](model_doc/gpt.html#transformers.OpenAIGPTTokenizer) will default to tokenize
+If you don't install `ftfy` and `SpaCy`, the [OpenAIGPTTokenizer](/docs/transformers/master/en/model_doc/gpt.html#transformers.OpenAIGPTTokenizer) will default to tokenize
 using BERT's `BasicTokenizer` followed by Byte-Pair Encoding (which should be fine for most usage, don't worry).
 
-## OpenAIGPTConfig
+## [OpenAIGPTConfig](#openaigptconfig)
 
 <a id='transformers.OpenAIGPTConfig'></a>
-> **class transformers.OpenAIGPTConfig**(vocab_size = 40478, n_positions = 512, n_ctx = 512, n_embd = 768, n_layer = 12, n_head = 12, afn = gelu, resid_pdrop = 0.1, embd_pdrop = 0.1, attn_pdrop = 0.1, layer_norm_epsilon = 1e-05, initializer_range = 0.02, predict_special_tokens = True, summary_type = cls_index, summary_use_proj = True, summary_activation = None, summary_proj_to_labels = True, summary_first_dropout = 0.1, **kwargs)
+> **class transformers.OpenAIGPTConfig**(vocab_size = 40478, n_positions = 512, n_ctx = 512, n_embd = 768, n_layer = 12, n_head = 12, afn = 'gelu', resid_pdrop = 0.1, embd_pdrop = 0.1, attn_pdrop = 0.1, layer_norm_epsilon = 1e-05, initializer_range = 0.02, predict_special_tokens = True, summary_type = 'cls_index', summary_use_proj = True, summary_activation = None, summary_proj_to_labels = True, summary_first_dropout = 0.1, **kwargs)
 
 
-This is the configuration class to store the configuration of a [OpenAIGPTModel](model_doc/gpt.html#transformers.OpenAIGPTModel) or a
-[TFOpenAIGPTModel](model_doc/gpt.html#transformers.TFOpenAIGPTModel). It is used to instantiate a GPT model according to the specified
+This is the configuration class to store the configuration of a [OpenAIGPTModel](/docs/transformers/master/en/model_doc/gpt.html#transformers.OpenAIGPTModel) or a
+[TFOpenAIGPTModel](/docs/transformers/master/en/model_doc/gpt.html#transformers.TFOpenAIGPTModel). It is used to instantiate a GPT model according to the specified
 arguments, defining the model architecture. Instantiating a configuration with the defaults will yield a similar
 configuration to that of the [GPT](https://huggingface.co/openai-gpt) architecture from OpenAI.
 
-Configuration objects inherit from [PretrainedConfig](main_classes/configuration.html#transformers.PretrainedConfig) and can be used to control the model
-outputs. Read the documentation from [PretrainedConfig](main_classes/configuration.html#transformers.PretrainedConfig) for more information.
+Configuration objects inherit from [PretrainedConfig](/docs/transformers/master/en/main_classes/configuration.html#transformers.PretrainedConfig) and can be used to control the model
+outputs. Read the documentation from [PretrainedConfig](/docs/transformers/master/en/main_classes/configuration.html#transformers.PretrainedConfig) for more information.
 
 > Parameters
 
 - **vocab_size** (`int`, _optional_, defaults to 40478) --
   Vocabulary size of the GPT-2 model. Defines the number of different tokens that can be represented by the
-  `inputs_ids` passed when calling [OpenAIGPTModel](model_doc/gpt.html#transformers.OpenAIGPTModel) or
-  [TFOpenAIGPTModel](model_doc/gpt.html#transformers.TFOpenAIGPTModel).
+  `inputs_ids` passed when calling [OpenAIGPTModel](/docs/transformers/master/en/model_doc/gpt.html#transformers.OpenAIGPTModel) or
+  [TFOpenAIGPTModel](/docs/transformers/master/en/model_doc/gpt.html#transformers.TFOpenAIGPTModel).
 - **n_positions** (`int`, _optional_, defaults to 512) --
   The maximum sequence length that this model might ever be used with. Typically set this to something large
   just in case (e.g., 512 or 1024 or 2048).
@@ -111,7 +142,7 @@ outputs. Read the documentation from [PretrainedConfig](main_classes/configurati
   Whether or not special tokens should be predicted when the model has a language modeling head.
 - **summary_type** (`str`, _optional_, defaults to `"cls_index"`) --
   Argument used when doing sequence summary, used in the models
-  [OpenAIGPTDoubleHeadsModel](model_doc/gpt.html#transformers.OpenAIGPTDoubleHeadsModel) and [OpenAIGPTDoubleHeadsModel](model_doc/gpt.html#transformers.OpenAIGPTDoubleHeadsModel).
+  [OpenAIGPTDoubleHeadsModel](/docs/transformers/master/en/model_doc/gpt.html#transformers.OpenAIGPTDoubleHeadsModel) and [OpenAIGPTDoubleHeadsModel](/docs/transformers/master/en/model_doc/gpt.html#transformers.OpenAIGPTDoubleHeadsModel).
 
   Has to be one of the following options:
 
@@ -122,22 +153,22 @@ outputs. Read the documentation from [PretrainedConfig](main_classes/configurati
   - `"attn"`: Not implemented now, use multi-head attention.
 - **summary_use_proj** (`bool`, _optional_, defaults to `True`) --
   Argument used when doing sequence summary, used in the models
-  [OpenAIGPTDoubleHeadsModel](model_doc/gpt.html#transformers.OpenAIGPTDoubleHeadsModel) and [OpenAIGPTDoubleHeadsModel](model_doc/gpt.html#transformers.OpenAIGPTDoubleHeadsModel).
+  [OpenAIGPTDoubleHeadsModel](/docs/transformers/master/en/model_doc/gpt.html#transformers.OpenAIGPTDoubleHeadsModel) and [OpenAIGPTDoubleHeadsModel](/docs/transformers/master/en/model_doc/gpt.html#transformers.OpenAIGPTDoubleHeadsModel).
 
   Whether or not to add a projection after the vector extraction.
 - **summary_activation** (`str`, _optional_) --
   Argument used when doing sequence summary, used in the models
-  [OpenAIGPTDoubleHeadsModel](model_doc/gpt.html#transformers.OpenAIGPTDoubleHeadsModel) and [OpenAIGPTDoubleHeadsModel](model_doc/gpt.html#transformers.OpenAIGPTDoubleHeadsModel).
+  [OpenAIGPTDoubleHeadsModel](/docs/transformers/master/en/model_doc/gpt.html#transformers.OpenAIGPTDoubleHeadsModel) and [OpenAIGPTDoubleHeadsModel](/docs/transformers/master/en/model_doc/gpt.html#transformers.OpenAIGPTDoubleHeadsModel).
 
   Pass `"tanh"` for a tanh activation to the output, any other value will result in no activation.
 - **summary_proj_to_labels** (`bool`, _optional_, defaults to `True`) --
   Argument used when doing sequence summary, used in the models
-  [OpenAIGPTDoubleHeadsModel](model_doc/gpt.html#transformers.OpenAIGPTDoubleHeadsModel) and [OpenAIGPTDoubleHeadsModel](model_doc/gpt.html#transformers.OpenAIGPTDoubleHeadsModel).
+  [OpenAIGPTDoubleHeadsModel](/docs/transformers/master/en/model_doc/gpt.html#transformers.OpenAIGPTDoubleHeadsModel) and [OpenAIGPTDoubleHeadsModel](/docs/transformers/master/en/model_doc/gpt.html#transformers.OpenAIGPTDoubleHeadsModel).
 
   Whether the projection outputs should have `config.num_labels` or `config.hidden_size` classes.
 - **summary_first_dropout** (`float`, _optional_, defaults to 0.1) --
   Argument used when doing sequence summary, used in the models
-  [OpenAIGPTDoubleHeadsModel](model_doc/gpt.html#transformers.OpenAIGPTDoubleHeadsModel) and [OpenAIGPTDoubleHeadsModel](model_doc/gpt.html#transformers.OpenAIGPTDoubleHeadsModel).
+  [OpenAIGPTDoubleHeadsModel](/docs/transformers/master/en/model_doc/gpt.html#transformers.OpenAIGPTDoubleHeadsModel) and [OpenAIGPTDoubleHeadsModel](/docs/transformers/master/en/model_doc/gpt.html#transformers.OpenAIGPTDoubleHeadsModel).
 
   The dropout ratio to be used after the projection and activation.
 - **use_cache** (`bool`, _optional_, defaults to `True`) --
@@ -160,10 +191,10 @@ outputs. Read the documentation from [PretrainedConfig](main_classes/configurati
 ```
 
 
-## OpenAIGPTTokenizer
+## [OpenAIGPTTokenizer](#openaigpttokenizer)
 
 <a id='transformers.OpenAIGPTTokenizer'></a>
-> **class transformers.OpenAIGPTTokenizer**(vocab_file, merges_file, unk_token = &lcubunk>, **kwargs)
+> **class transformers.OpenAIGPTTokenizer**(vocab_file, merges_file, unk_token = '&amp;lt;unk>', **kwargs)
 
 
 Construct a GPT Tokenizer. Based on Byte-Pair-Encoding with the following peculiarities:
@@ -172,7 +203,7 @@ Construct a GPT Tokenizer. Based on Byte-Pair-Encoding with the following peculi
 - uses `SpaCy` tokenizer and `ftfy` for pre-BPE tokenization if they are installed, fallback to BERT's
   `BasicTokenizer` if not.
 
-This tokenizer inherits from [PreTrainedTokenizer](main_classes/tokenizer.html#transformers.PreTrainedTokenizer) which contains most of the main methods.
+This tokenizer inherits from [PreTrainedTokenizer](/docs/transformers/master/en/main_classes/tokenizer.html#transformers.PreTrainedTokenizer) which contains most of the main methods.
 Users should refer to this superclass for more information regarding those methods.
 
 > Parameters
@@ -181,7 +212,7 @@ Users should refer to this superclass for more information regarding those metho
   Path to the vocabulary file.
 - **merges_file** (`str`) --
   Path to the merges file.
-- **unk_token** (`str`, _optional_, defaults to `"&lcubunk>"`) --
+- **unk_token** (`str`, _optional_, defaults to `"&amp;lt;unk>"`) --
   The unknown token. A token that is not in the vocabulary cannot be converted to an ID and is set to be this
   token instead.
 
@@ -189,10 +220,10 @@ Users should refer to this superclass for more information regarding those metho
 <a id='transformers.OpenAIGPTTokenizer.save_vocabulary'></a>
 > **save\_vocabulary**(self, save_directory: str, filename_prefix: typing.Optional[str] = None)
 
-## OpenAIGPTTokenizerFast
+## [OpenAIGPTTokenizerFast](#openaigpttokenizerfast)
 
 <a id='transformers.OpenAIGPTTokenizerFast'></a>
-> **class transformers.OpenAIGPTTokenizerFast**(vocab_file = None, merges_file = None, tokenizer_file = None, unk_token = &lcubunk>, **kwargs)
+> **class transformers.OpenAIGPTTokenizerFast**(vocab_file = None, merges_file = None, tokenizer_file = None, unk_token = '&amp;lt;unk>', **kwargs)
 
 
 Construct a "fast" GPT Tokenizer (backed by HuggingFace's _tokenizers_ library). Based on Byte-Pair-Encoding with
@@ -201,7 +232,7 @@ the following peculiarities:
 - lower case all inputs
 - uses BERT's BasicTokenizer for pre-BPE tokenization
 
-This tokenizer inherits from [PreTrainedTokenizerFast](main_classes/tokenizer.html#transformers.PreTrainedTokenizerFast) which contains most of the main
+This tokenizer inherits from [PreTrainedTokenizerFast](/docs/transformers/master/en/main_classes/tokenizer.html#transformers.PreTrainedTokenizerFast) which contains most of the main
 methods. Users should refer to this superclass for more information regarding those methods.
 
 > Parameters
@@ -210,13 +241,13 @@ methods. Users should refer to this superclass for more information regarding th
   Path to the vocabulary file.
 - **merges_file** (`str`) --
   Path to the merges file.
-- **unk_token** (`str`, _optional_, defaults to `"&lcubunk>"`) --
+- **unk_token** (`str`, _optional_, defaults to `"&amp;lt;unk>"`) --
   The unknown token. A token that is not in the vocabulary cannot be converted to an ID and is set to be this
   token instead.
 
 
 <a id='transformers.OpenAIGPTTokenizer'></a>
-> **class OpenAIGPTTokenizer**(vocab_file, merges_file, unk_token = &lcubunk>, **kwargs)
+> **class OpenAIGPTTokenizer**(vocab_file, merges_file, unk_token = '&amp;lt;unk>', **kwargs)
 
 
 Construct a GPT Tokenizer. Based on Byte-Pair-Encoding with the following peculiarities:
@@ -225,7 +256,7 @@ Construct a GPT Tokenizer. Based on Byte-Pair-Encoding with the following peculi
 - uses `SpaCy` tokenizer and `ftfy` for pre-BPE tokenization if they are installed, fallback to BERT's
   `BasicTokenizer` if not.
 
-This tokenizer inherits from [PreTrainedTokenizer](main_classes/tokenizer.html#transformers.PreTrainedTokenizer) which contains most of the main methods.
+This tokenizer inherits from [PreTrainedTokenizer](/docs/transformers/master/en/main_classes/tokenizer.html#transformers.PreTrainedTokenizer) which contains most of the main methods.
 Users should refer to this superclass for more information regarding those methods.
 
 > Parameters
@@ -234,12 +265,12 @@ Users should refer to this superclass for more information regarding those metho
   Path to the vocabulary file.
 - **merges_file** (`str`) --
   Path to the merges file.
-- **unk_token** (`str`, _optional_, defaults to `"&lcubunk>"`) --
+- **unk_token** (`str`, _optional_, defaults to `"&amp;lt;unk>"`) --
   The unknown token. A token that is not in the vocabulary cannot be converted to an ID and is set to be this
   token instead.
 
 
-## OpenAI specific outputs
+## [OpenAI specific outputs](#openai-specific-outputs)
 
 <a id='transformers.models.openai.modeling_openai.OpenAIGPTDoubleHeadsModelOutput'></a>
 > **class transformers.models.openai.modeling\_openai.OpenAIGPTDoubleHeadsModelOutput**(loss: typing.Optional[torch.FloatTensor] = None, mc_loss: typing.Optional[torch.FloatTensor] = None, logits: FloatTensor = None, mc_logits: FloatTensor = None, hidden_states: typing.Optional[typing.Tuple[torch.FloatTensor]] = None, attentions: typing.Optional[typing.Tuple[torch.FloatTensor]] = None)
@@ -293,14 +324,14 @@ Base class for outputs of models predicting if two sentences are consecutive or 
   heads.
 
 
-## OpenAIGPTModel
+## [OpenAIGPTModel](#openaigptmodel)
 
 <a id='transformers.OpenAIGPTModel'></a>
 > **class transformers.OpenAIGPTModel**(config)
 
 The bare OpenAI GPT transformer model outputting raw hidden-states without any specific head on top.
 
-This model inherits from [PreTrainedModel](main_classes/model.html#transformers.PreTrainedModel). Check the superclass documentation for the generic
+This model inherits from [PreTrainedModel](/docs/transformers/master/en/main_classes/model.html#transformers.PreTrainedModel). Check the superclass documentation for the generic
 methods the library implements for all its model (such as downloading or saving, resizing the input embeddings,
 pruning heads etc.)
 
@@ -310,16 +341,16 @@ general usage and behavior.
 
 > Parameters
 
-- **config** ([OpenAIGPTConfig](model_doc/gpt.html#transformers.OpenAIGPTConfig)) -- Model configuration class with all the parameters of the model.
+- **config** ([OpenAIGPTConfig](/docs/transformers/master/en/model_doc/gpt.html#transformers.OpenAIGPTConfig)) -- Model configuration class with all the parameters of the model.
   Initializing with a config file does not load the weights associated with the model, only the
-  configuration. Check out the [from_pretrained()](main_classes/model.html#transformers.PreTrainedModel.from_pretrained) method to load the model
+  configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model.html#transformers.PreTrainedModel.from_pretrained) method to load the model
   weights.
 
 
 <a id='transformers.OpenAIGPTModel.forward'></a>
 > **forward**(self, input_ids = None, attention_mask = None, token_type_ids = None, position_ids = None, head_mask = None, inputs_embeds = None, output_attentions = None, output_hidden_states = None, return_dict = None)
 
-The [OpenAIGPTModel](model_doc/gpt.html#transformers.OpenAIGPTModel) forward method, overrides the `__call__` special method.
+The [OpenAIGPTModel](/docs/transformers/master/en/model_doc/gpt.html#transformers.OpenAIGPTModel) forward method, overrides the `__call__` special method.
 
 <Tip>
 
@@ -334,8 +365,8 @@ processing steps while the latter silently ignores them.
 - **input_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`) --
   Indices of input sequence tokens in the vocabulary.
 
-  Indices can be obtained using [OpenAIGPTTokenizer](model_doc/gpt.html#transformers.OpenAIGPTTokenizer). See
-  [transformers.PreTrainedTokenizer.encode()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
+  Indices can be obtained using [OpenAIGPTTokenizer](/docs/transformers/master/en/model_doc/gpt.html#transformers.OpenAIGPTTokenizer). See
+  [transformers.PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
   details.
 
   [What are input IDs?](../glossary.html#input-ids)
@@ -374,13 +405,13 @@ processing steps while the latter silently ignores them.
   Whether or not to return the hidden states of all layers. See `hidden_states` under returned tensors for
   more detail.
 - **return_dict** (`bool`, _optional_) --
-  Whether or not to return a [ModelOutput](main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple.
+  Whether or not to return a [ModelOutput](/docs/transformers/master/en/main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple.
 
 > Returns
 
-A [BaseModelOutput](main_classes/output.html#transformers.modeling_outputs.BaseModelOutput) or a tuple of
+A [BaseModelOutput](/docs/transformers/master/en/main_classes/output.html#transformers.modeling_outputs.BaseModelOutput) or a tuple of
 `torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising
-various elements depending on the configuration ([OpenAIGPTConfig](model_doc/gpt.html#transformers.OpenAIGPTConfig)) and inputs.
+various elements depending on the configuration ([OpenAIGPTConfig](/docs/transformers/master/en/model_doc/gpt.html#transformers.OpenAIGPTConfig)) and inputs.
 
 - **last_hidden_state** (`torch.FloatTensor` of shape `(batch_size, sequence_length, hidden_size)`) -- Sequence of hidden-states at the output of the last layer of the model.
 - **hidden_states** (`tuple(torch.FloatTensor)`, _optional_, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer)
@@ -394,7 +425,7 @@ various elements depending on the configuration ([OpenAIGPTConfig](model_doc/gpt
 
 > Return type
 
-[BaseModelOutput](main_classes/output.html#transformers.modeling_outputs.BaseModelOutput) or `tuple(torch.FloatTensor)`
+[BaseModelOutput](/docs/transformers/master/en/main_classes/output.html#transformers.modeling_outputs.BaseModelOutput) or `tuple(torch.FloatTensor)`
 
 > Example:
 
@@ -412,7 +443,7 @@ various elements depending on the configuration ([OpenAIGPTConfig](model_doc/gpt
 ```
 
 
-## OpenAIGPTLMHeadModel
+## [OpenAIGPTLMHeadModel](#openaigptlmheadmodel)
 
 <a id='transformers.OpenAIGPTLMHeadModel'></a>
 > **class transformers.OpenAIGPTLMHeadModel**(config)
@@ -422,7 +453,7 @@ OpenAI GPT Model transformer with a language modeling head on top (linear layer 
 embeddings).
 
 
-This model inherits from [PreTrainedModel](main_classes/model.html#transformers.PreTrainedModel). Check the superclass documentation for the generic
+This model inherits from [PreTrainedModel](/docs/transformers/master/en/main_classes/model.html#transformers.PreTrainedModel). Check the superclass documentation for the generic
 methods the library implements for all its model (such as downloading or saving, resizing the input embeddings,
 pruning heads etc.)
 
@@ -432,16 +463,16 @@ general usage and behavior.
 
 > Parameters
 
-- **config** ([OpenAIGPTConfig](model_doc/gpt.html#transformers.OpenAIGPTConfig)) -- Model configuration class with all the parameters of the model.
+- **config** ([OpenAIGPTConfig](/docs/transformers/master/en/model_doc/gpt.html#transformers.OpenAIGPTConfig)) -- Model configuration class with all the parameters of the model.
   Initializing with a config file does not load the weights associated with the model, only the
-  configuration. Check out the [from_pretrained()](main_classes/model.html#transformers.PreTrainedModel.from_pretrained) method to load the model
+  configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model.html#transformers.PreTrainedModel.from_pretrained) method to load the model
   weights.
 
 
 <a id='transformers.OpenAIGPTLMHeadModel.forward'></a>
 > **forward**(self, input_ids = None, attention_mask = None, token_type_ids = None, position_ids = None, head_mask = None, inputs_embeds = None, labels = None, output_attentions = None, output_hidden_states = None, return_dict = None)
 
-The [OpenAIGPTLMHeadModel](model_doc/gpt.html#transformers.OpenAIGPTLMHeadModel) forward method, overrides the `__call__` special method.
+The [OpenAIGPTLMHeadModel](/docs/transformers/master/en/model_doc/gpt.html#transformers.OpenAIGPTLMHeadModel) forward method, overrides the `__call__` special method.
 
 <Tip>
 
@@ -456,8 +487,8 @@ processing steps while the latter silently ignores them.
 - **input_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`) --
   Indices of input sequence tokens in the vocabulary.
 
-  Indices can be obtained using [OpenAIGPTTokenizer](model_doc/gpt.html#transformers.OpenAIGPTTokenizer). See
-  [transformers.PreTrainedTokenizer.encode()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
+  Indices can be obtained using [OpenAIGPTTokenizer](/docs/transformers/master/en/model_doc/gpt.html#transformers.OpenAIGPTTokenizer). See
+  [transformers.PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
   details.
 
   [What are input IDs?](../glossary.html#input-ids)
@@ -496,7 +527,7 @@ processing steps while the latter silently ignores them.
   Whether or not to return the hidden states of all layers. See `hidden_states` under returned tensors for
   more detail.
 - **return_dict** (`bool`, _optional_) --
-  Whether or not to return a [ModelOutput](main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple.
+  Whether or not to return a [ModelOutput](/docs/transformers/master/en/main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple.
 
 - **labels** (`torch.LongTensor` of shape `(batch_size, sequence_length)`, _optional_) --
   Labels for language modeling. Note that the labels **are shifted** inside the model, i.e. you can set
@@ -505,9 +536,9 @@ processing steps while the latter silently ignores them.
 
 > Returns
 
-A [CausalLMOutput](main_classes/output.html#transformers.modeling_outputs.CausalLMOutput) or a tuple of
+A [CausalLMOutput](/docs/transformers/master/en/main_classes/output.html#transformers.modeling_outputs.CausalLMOutput) or a tuple of
 `torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising
-various elements depending on the configuration ([OpenAIGPTConfig](model_doc/gpt.html#transformers.OpenAIGPTConfig)) and inputs.
+various elements depending on the configuration ([OpenAIGPTConfig](/docs/transformers/master/en/model_doc/gpt.html#transformers.OpenAIGPTConfig)) and inputs.
 
 - **loss** (`torch.FloatTensor` of shape `(1,)`, _optional_, returned when `labels` is provided) -- Language modeling loss (for next-token prediction).
 - **logits** (`torch.FloatTensor` of shape `(batch_size, sequence_length, config.vocab_size)`) -- Prediction scores of the language modeling head (scores for each vocabulary token before SoftMax).
@@ -522,7 +553,7 @@ various elements depending on the configuration ([OpenAIGPTConfig](model_doc/gpt
 
 > Return type
 
-[CausalLMOutput](main_classes/output.html#transformers.modeling_outputs.CausalLMOutput) or `tuple(torch.FloatTensor)`
+[CausalLMOutput](/docs/transformers/master/en/main_classes/output.html#transformers.modeling_outputs.CausalLMOutput) or `tuple(torch.FloatTensor)`
 
 > Example:
 
@@ -540,7 +571,7 @@ various elements depending on the configuration ([OpenAIGPTConfig](model_doc/gpt
 ```
 
 
-## OpenAIGPTDoubleHeadsModel
+## [OpenAIGPTDoubleHeadsModel](#openaigptdoubleheadsmodel)
 
 <a id='transformers.OpenAIGPTDoubleHeadsModel'></a>
 > **class transformers.OpenAIGPTDoubleHeadsModel**(config)
@@ -552,7 +583,7 @@ input embeddings, the classification head takes as input the input of a specifie
 input sequence).
 
 
-This model inherits from [PreTrainedModel](main_classes/model.html#transformers.PreTrainedModel). Check the superclass documentation for the generic
+This model inherits from [PreTrainedModel](/docs/transformers/master/en/main_classes/model.html#transformers.PreTrainedModel). Check the superclass documentation for the generic
 methods the library implements for all its model (such as downloading or saving, resizing the input embeddings,
 pruning heads etc.)
 
@@ -562,16 +593,16 @@ general usage and behavior.
 
 > Parameters
 
-- **config** ([OpenAIGPTConfig](model_doc/gpt.html#transformers.OpenAIGPTConfig)) -- Model configuration class with all the parameters of the model.
+- **config** ([OpenAIGPTConfig](/docs/transformers/master/en/model_doc/gpt.html#transformers.OpenAIGPTConfig)) -- Model configuration class with all the parameters of the model.
   Initializing with a config file does not load the weights associated with the model, only the
-  configuration. Check out the [from_pretrained()](main_classes/model.html#transformers.PreTrainedModel.from_pretrained) method to load the model
+  configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model.html#transformers.PreTrainedModel.from_pretrained) method to load the model
   weights.
 
 
 <a id='transformers.OpenAIGPTDoubleHeadsModel.forward'></a>
 > **forward**(self, input_ids = None, attention_mask = None, token_type_ids = None, position_ids = None, head_mask = None, inputs_embeds = None, mc_token_ids = None, labels = None, mc_labels = None, output_attentions = None, output_hidden_states = None, return_dict = None)
 
-The [OpenAIGPTDoubleHeadsModel](model_doc/gpt.html#transformers.OpenAIGPTDoubleHeadsModel) forward method, overrides the `__call__` special method.
+The [OpenAIGPTDoubleHeadsModel](/docs/transformers/master/en/model_doc/gpt.html#transformers.OpenAIGPTDoubleHeadsModel) forward method, overrides the `__call__` special method.
 
 <Tip>
 
@@ -586,8 +617,8 @@ processing steps while the latter silently ignores them.
 - **input_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`) --
   Indices of input sequence tokens in the vocabulary.
 
-  Indices can be obtained using [OpenAIGPTTokenizer](model_doc/gpt.html#transformers.OpenAIGPTTokenizer). See
-  [transformers.PreTrainedTokenizer.encode()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
+  Indices can be obtained using [OpenAIGPTTokenizer](/docs/transformers/master/en/model_doc/gpt.html#transformers.OpenAIGPTTokenizer). See
+  [transformers.PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
   details.
 
   [What are input IDs?](../glossary.html#input-ids)
@@ -626,7 +657,7 @@ processing steps while the latter silently ignores them.
   Whether or not to return the hidden states of all layers. See `hidden_states` under returned tensors for
   more detail.
 - **return_dict** (`bool`, _optional_) --
-  Whether or not to return a [ModelOutput](main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple.
+  Whether or not to return a [ModelOutput](/docs/transformers/master/en/main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple.
 
 - **mc_token_ids** (`torch.LongTensor` of shape `(batch_size, num_choices)`, _optional_, default to index of the last token of the input) --
   Index of the classification token in each input sequence. Selected in the range `[0, input_ids.size(-1) - 1]`.
@@ -641,9 +672,9 @@ processing steps while the latter silently ignores them.
 
 > Returns
 
-A [OpenAIGPTDoubleHeadsModelOutput](model_doc/gpt.html#transformers.models.openai.modeling_openai.OpenAIGPTDoubleHeadsModelOutput) or a tuple of
+A [OpenAIGPTDoubleHeadsModelOutput](/docs/transformers/master/en/model_doc/gpt.html#transformers.models.openai.modeling_openai.OpenAIGPTDoubleHeadsModelOutput) or a tuple of
 `torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising
-various elements depending on the configuration ([OpenAIGPTConfig](model_doc/gpt.html#transformers.OpenAIGPTConfig)) and inputs.
+various elements depending on the configuration ([OpenAIGPTConfig](/docs/transformers/master/en/model_doc/gpt.html#transformers.OpenAIGPTConfig)) and inputs.
 
 - **loss** (`torch.FloatTensor` of shape `(1,)`, _optional_, returned when `labels` is provided) -- Language modeling loss.
 - **mc_loss** (`torch.FloatTensor` of shape `(1,)`, _optional_, returned when `mc_labels` is provided) -- Multiple choice classification loss.
@@ -667,7 +698,7 @@ various elements depending on the configuration ([OpenAIGPTConfig](model_doc/gpt
 
 >>> tokenizer = OpenAIGPTTokenizer.from_pretrained('openai-gpt')
 >>> model = OpenAIGPTDoubleHeadsModel.from_pretrained('openai-gpt')
->>> tokenizer.add_special_tokens({'cls_token': '[CLS]'})  # Add a [CLS] to the vocabulary (we should train it also!)
+>>> tokenizer.add_special_tokens(&amp;lcub;'cls_token': '[CLS]'})  # Add a [CLS] to the vocabulary (we should train it also!)
 >>> model.resize_token_embeddings(len(tokenizer))
 
 >>> choices = ["Hello, my dog is cute [CLS]", "Hello, my cat is cute [CLS]"]
@@ -681,17 +712,17 @@ various elements depending on the configuration ([OpenAIGPTConfig](model_doc/gpt
 
 > Return type
 
-[OpenAIGPTDoubleHeadsModelOutput](model_doc/gpt.html#transformers.models.openai.modeling_openai.OpenAIGPTDoubleHeadsModelOutput) or `tuple(torch.FloatTensor)`
+[OpenAIGPTDoubleHeadsModelOutput](/docs/transformers/master/en/model_doc/gpt.html#transformers.models.openai.modeling_openai.OpenAIGPTDoubleHeadsModelOutput) or `tuple(torch.FloatTensor)`
 
 
-## OpenAIGPTForSequenceClassification
+## [OpenAIGPTForSequenceClassification](#openaigptforsequenceclassification)
 
 <a id='transformers.OpenAIGPTForSequenceClassification'></a>
 > **class transformers.OpenAIGPTForSequenceClassification**(config)
 
 
 The Original OpenAI GPT Model transformer with a sequence classification head on top (linear layer).
-[OpenAIGPTForSequenceClassification](model_doc/gpt.html#transformers.OpenAIGPTForSequenceClassification) uses the last token in order to do the classification, as
+[OpenAIGPTForSequenceClassification](/docs/transformers/master/en/model_doc/gpt.html#transformers.OpenAIGPTForSequenceClassification) uses the last token in order to do the classification, as
 other causal models (e.g. GPT-2) do. Since it does classification on the last token, it requires to know the
 position of the last token. If a `pad_token_id` is defined in the configuration, it finds the last token that
 is not a padding token in each row. If no `pad_token_id` is defined, it simply takes the last value in each
@@ -699,7 +730,7 @@ row of the batch. Since it cannot guess the padding tokens when `inputs_embeds` 
 `input_ids`, it does the same (take the last value in each row of the batch).
 
 
-This model inherits from [PreTrainedModel](main_classes/model.html#transformers.PreTrainedModel). Check the superclass documentation for the generic
+This model inherits from [PreTrainedModel](/docs/transformers/master/en/main_classes/model.html#transformers.PreTrainedModel). Check the superclass documentation for the generic
 methods the library implements for all its model (such as downloading or saving, resizing the input embeddings,
 pruning heads etc.)
 
@@ -709,16 +740,16 @@ general usage and behavior.
 
 > Parameters
 
-- **config** ([OpenAIGPTConfig](model_doc/gpt.html#transformers.OpenAIGPTConfig)) -- Model configuration class with all the parameters of the model.
+- **config** ([OpenAIGPTConfig](/docs/transformers/master/en/model_doc/gpt.html#transformers.OpenAIGPTConfig)) -- Model configuration class with all the parameters of the model.
   Initializing with a config file does not load the weights associated with the model, only the
-  configuration. Check out the [from_pretrained()](main_classes/model.html#transformers.PreTrainedModel.from_pretrained) method to load the model
+  configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model.html#transformers.PreTrainedModel.from_pretrained) method to load the model
   weights.
 
 
 <a id='transformers.OpenAIGPTForSequenceClassification.forward'></a>
 > **forward**(self, input_ids = None, attention_mask = None, token_type_ids = None, position_ids = None, head_mask = None, inputs_embeds = None, labels = None, output_attentions = None, output_hidden_states = None, return_dict = None)
 
-The [OpenAIGPTForSequenceClassification](model_doc/gpt.html#transformers.OpenAIGPTForSequenceClassification) forward method, overrides the `__call__` special method.
+The [OpenAIGPTForSequenceClassification](/docs/transformers/master/en/model_doc/gpt.html#transformers.OpenAIGPTForSequenceClassification) forward method, overrides the `__call__` special method.
 
 <Tip>
 
@@ -733,8 +764,8 @@ processing steps while the latter silently ignores them.
 - **input_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`) --
   Indices of input sequence tokens in the vocabulary.
 
-  Indices can be obtained using [OpenAIGPTTokenizer](model_doc/gpt.html#transformers.OpenAIGPTTokenizer). See
-  [transformers.PreTrainedTokenizer.encode()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
+  Indices can be obtained using [OpenAIGPTTokenizer](/docs/transformers/master/en/model_doc/gpt.html#transformers.OpenAIGPTTokenizer). See
+  [transformers.PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
   details.
 
   [What are input IDs?](../glossary.html#input-ids)
@@ -773,7 +804,7 @@ processing steps while the latter silently ignores them.
   Whether or not to return the hidden states of all layers. See `hidden_states` under returned tensors for
   more detail.
 - **return_dict** (`bool`, _optional_) --
-  Whether or not to return a [ModelOutput](main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple.
+  Whether or not to return a [ModelOutput](/docs/transformers/master/en/main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple.
 
 - **labels** (`torch.LongTensor` of shape `(batch_size,)`, _optional_) --
   Labels for computing the sequence classification/regression loss. Indices should be in `[0, ..., config.num_labels - 1]`. If `config.num_labels == 1` a regression loss is computed (Mean-Square loss),
@@ -781,9 +812,9 @@ processing steps while the latter silently ignores them.
 
 > Returns
 
-A [SequenceClassifierOutput](main_classes/output.html#transformers.modeling_outputs.SequenceClassifierOutput) or a tuple of
+A [SequenceClassifierOutput](/docs/transformers/master/en/main_classes/output.html#transformers.modeling_outputs.SequenceClassifierOutput) or a tuple of
 `torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising
-various elements depending on the configuration ([OpenAIGPTConfig](model_doc/gpt.html#transformers.OpenAIGPTConfig)) and inputs.
+various elements depending on the configuration ([OpenAIGPTConfig](/docs/transformers/master/en/model_doc/gpt.html#transformers.OpenAIGPTConfig)) and inputs.
 
 - **loss** (`torch.FloatTensor` of shape `(1,)`, _optional_, returned when `labels` is provided) -- Classification (or regression if config.num_labels==1) loss.
 - **logits** (`torch.FloatTensor` of shape `(batch_size, config.num_labels)`) -- Classification (or regression if config.num_labels==1) scores (before SoftMax).
@@ -798,7 +829,7 @@ various elements depending on the configuration ([OpenAIGPTConfig](model_doc/gpt
 
 > Return type
 
-[SequenceClassifierOutput](main_classes/output.html#transformers.modeling_outputs.SequenceClassifierOutput) or `tuple(torch.FloatTensor)`
+[SequenceClassifierOutput](/docs/transformers/master/en/main_classes/output.html#transformers.modeling_outputs.SequenceClassifierOutput) or `tuple(torch.FloatTensor)`
 
 > Example:
 
@@ -817,14 +848,14 @@ various elements depending on the configuration ([OpenAIGPTConfig](model_doc/gpt
 ```
 
 
-## TFOpenAIGPTModel
+## [TFOpenAIGPTModel](#tfopenaigptmodel)
 
 <a id='transformers.TFOpenAIGPTModel'></a>
 > **class transformers.TFOpenAIGPTModel**(*args, **kwargs)
 
 The bare OpenAI GPT transformer model outputting raw hidden-states without any specific head on top.
 
-This model inherits from [TFPreTrainedModel](main_classes/model.html#transformers.TFPreTrainedModel). Check the superclass documentation for the
+This model inherits from [TFPreTrainedModel](/docs/transformers/master/en/main_classes/model.html#transformers.TFPreTrainedModel). Check the superclass documentation for the
 generic methods the library implements for all its model (such as downloading or saving, resizing the input
 embeddings, pruning heads etc.)
 
@@ -849,22 +880,22 @@ the first positional argument :
 - a list of varying length with one or several input Tensors IN THE ORDER given in the docstring:
   `model([input_ids, attention_mask])` or `model([input_ids, attention_mask, token_type_ids])`
 - a dictionary with one or several input Tensors associated to the input names given in the docstring:
-  `model({"input_ids": input_ids, "token_type_ids": token_type_ids})`
+  `model(&amp;lcub;"input_ids": input_ids, "token_type_ids": token_type_ids})`
 
 </Tip>
 
 > Parameters
 
-- **config** ([OpenAIGPTConfig](model_doc/gpt.html#transformers.OpenAIGPTConfig)) -- Model configuration class with all the parameters of the model.
+- **config** ([OpenAIGPTConfig](/docs/transformers/master/en/model_doc/gpt.html#transformers.OpenAIGPTConfig)) -- Model configuration class with all the parameters of the model.
   Initializing with a config file does not load the weights associated with the model, only the
-  configuration. Check out the [from_pretrained()](main_classes/model.html#transformers.PreTrainedModel.from_pretrained) method to load the model
+  configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model.html#transformers.PreTrainedModel.from_pretrained) method to load the model
   weights.
 
 
 <a id='transformers.TFOpenAIGPTModel.call'></a>
 > **call**(self, input_ids = None, attention_mask = None, token_type_ids = None, position_ids = None, head_mask = None, inputs_embeds = None, output_attentions = None, output_hidden_states = None, return_dict = None, training = False, **kwargs)
 
-The [TFOpenAIGPTModel](model_doc/gpt.html#transformers.TFOpenAIGPTModel) forward method, overrides the `__call__` special method.
+The [TFOpenAIGPTModel](/docs/transformers/master/en/model_doc/gpt.html#transformers.TFOpenAIGPTModel) forward method, overrides the `__call__` special method.
 
 <Tip>
 
@@ -879,8 +910,8 @@ processing steps while the latter silently ignores them.
 - **input_ids** (`Numpy array` or `tf.Tensor` of shape `(batch_size, sequence_length)`) --
   Indices of input sequence tokens in the vocabulary.
 
-  Indices can be obtained using [OpenAIGPTTokenizer](model_doc/gpt.html#transformers.OpenAIGPTTokenizer). See
-  [transformers.PreTrainedTokenizer.__call__()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) and [transformers.PreTrainedTokenizer.encode()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) for
+  Indices can be obtained using [OpenAIGPTTokenizer](/docs/transformers/master/en/model_doc/gpt.html#transformers.OpenAIGPTTokenizer). See
+  [transformers.PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) and [transformers.PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) for
   details.
 
   [What are input IDs?](../glossary.html#input-ids)
@@ -921,7 +952,7 @@ processing steps while the latter silently ignores them.
   more detail. This argument can be used only in eager mode, in graph mode the value in the config will be
   used instead.
 - **return_dict** (`bool`, _optional_) --
-  Whether or not to return a [ModelOutput](main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple. This
+  Whether or not to return a [ModelOutput](/docs/transformers/master/en/main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple. This
   argument can be used in eager mode, in graph mode the value will always be set to True.
 - **training** (`bool`, _optional_, defaults to `False`) --
   Whether or not to use the model in training mode (some modules like dropout modules have different
@@ -929,9 +960,9 @@ processing steps while the latter silently ignores them.
 
 > Returns
 
-A [TFBaseModelOutput](main_classes/output.html#transformers.modeling_tf_outputs.TFBaseModelOutput) or a tuple of
+A [TFBaseModelOutput](/docs/transformers/master/en/main_classes/output.html#transformers.modeling_tf_outputs.TFBaseModelOutput) or a tuple of
 `tf.Tensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising various
-elements depending on the configuration ([OpenAIGPTConfig](model_doc/gpt.html#transformers.OpenAIGPTConfig)) and inputs.
+elements depending on the configuration ([OpenAIGPTConfig](/docs/transformers/master/en/model_doc/gpt.html#transformers.OpenAIGPTConfig)) and inputs.
 
 - **last_hidden_state** (`tf.Tensor` of shape `(batch_size, sequence_length, hidden_size)`) -- Sequence of hidden-states at the output of the last layer of the model.
 - **hidden_states** (`tuple(tf.FloatTensor)`, _optional_, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `tf.Tensor` (one for the output of the embeddings + one for the output of each layer) of
@@ -945,7 +976,7 @@ elements depending on the configuration ([OpenAIGPTConfig](model_doc/gpt.html#tr
 
 > Return type
 
-[TFBaseModelOutput](main_classes/output.html#transformers.modeling_tf_outputs.TFBaseModelOutput) or `tuple(tf.Tensor)`
+[TFBaseModelOutput](/docs/transformers/master/en/main_classes/output.html#transformers.modeling_tf_outputs.TFBaseModelOutput) or `tuple(tf.Tensor)`
 
 > Example:
 
@@ -963,7 +994,7 @@ elements depending on the configuration ([OpenAIGPTConfig](model_doc/gpt.html#tr
 ```
 
 
-## TFOpenAIGPTLMHeadModel
+## [TFOpenAIGPTLMHeadModel](#tfopenaigptlmheadmodel)
 
 <a id='transformers.TFOpenAIGPTLMHeadModel'></a>
 > **class transformers.TFOpenAIGPTLMHeadModel**(*args, **kwargs)
@@ -973,7 +1004,7 @@ OpenAI GPT Model transformer with a language modeling head on top (linear layer 
 embeddings).
 
 
-This model inherits from [TFPreTrainedModel](main_classes/model.html#transformers.TFPreTrainedModel). Check the superclass documentation for the
+This model inherits from [TFPreTrainedModel](/docs/transformers/master/en/main_classes/model.html#transformers.TFPreTrainedModel). Check the superclass documentation for the
 generic methods the library implements for all its model (such as downloading or saving, resizing the input
 embeddings, pruning heads etc.)
 
@@ -998,22 +1029,22 @@ the first positional argument :
 - a list of varying length with one or several input Tensors IN THE ORDER given in the docstring:
   `model([input_ids, attention_mask])` or `model([input_ids, attention_mask, token_type_ids])`
 - a dictionary with one or several input Tensors associated to the input names given in the docstring:
-  `model({"input_ids": input_ids, "token_type_ids": token_type_ids})`
+  `model(&amp;lcub;"input_ids": input_ids, "token_type_ids": token_type_ids})`
 
 </Tip>
 
 > Parameters
 
-- **config** ([OpenAIGPTConfig](model_doc/gpt.html#transformers.OpenAIGPTConfig)) -- Model configuration class with all the parameters of the model.
+- **config** ([OpenAIGPTConfig](/docs/transformers/master/en/model_doc/gpt.html#transformers.OpenAIGPTConfig)) -- Model configuration class with all the parameters of the model.
   Initializing with a config file does not load the weights associated with the model, only the
-  configuration. Check out the [from_pretrained()](main_classes/model.html#transformers.PreTrainedModel.from_pretrained) method to load the model
+  configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model.html#transformers.PreTrainedModel.from_pretrained) method to load the model
   weights.
 
 
 <a id='transformers.TFOpenAIGPTLMHeadModel.call'></a>
 > **call**(self, input_ids = None, attention_mask = None, token_type_ids = None, position_ids = None, head_mask = None, inputs_embeds = None, output_attentions = None, output_hidden_states = None, return_dict = None, labels = None, training = False, **kwargs)
 
-The [TFOpenAIGPTLMHeadModel](model_doc/gpt.html#transformers.TFOpenAIGPTLMHeadModel) forward method, overrides the `__call__` special method.
+The [TFOpenAIGPTLMHeadModel](/docs/transformers/master/en/model_doc/gpt.html#transformers.TFOpenAIGPTLMHeadModel) forward method, overrides the `__call__` special method.
 
 <Tip>
 
@@ -1028,8 +1059,8 @@ processing steps while the latter silently ignores them.
 - **input_ids** (`Numpy array` or `tf.Tensor` of shape `(batch_size, sequence_length)`) --
   Indices of input sequence tokens in the vocabulary.
 
-  Indices can be obtained using [OpenAIGPTTokenizer](model_doc/gpt.html#transformers.OpenAIGPTTokenizer). See
-  [transformers.PreTrainedTokenizer.__call__()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) and [transformers.PreTrainedTokenizer.encode()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) for
+  Indices can be obtained using [OpenAIGPTTokenizer](/docs/transformers/master/en/model_doc/gpt.html#transformers.OpenAIGPTTokenizer). See
+  [transformers.PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) and [transformers.PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) for
   details.
 
   [What are input IDs?](../glossary.html#input-ids)
@@ -1070,7 +1101,7 @@ processing steps while the latter silently ignores them.
   more detail. This argument can be used only in eager mode, in graph mode the value in the config will be
   used instead.
 - **return_dict** (`bool`, _optional_) --
-  Whether or not to return a [ModelOutput](main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple. This
+  Whether or not to return a [ModelOutput](/docs/transformers/master/en/main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple. This
   argument can be used in eager mode, in graph mode the value will always be set to True.
 - **training** (`bool`, _optional_, defaults to `False`) --
   Whether or not to use the model in training mode (some modules like dropout modules have different
@@ -1081,9 +1112,9 @@ processing steps while the latter silently ignores them.
 
 > Returns
 
-A [TFCausalLMOutput](main_classes/output.html#transformers.modeling_tf_outputs.TFCausalLMOutput) or a tuple of
+A [TFCausalLMOutput](/docs/transformers/master/en/main_classes/output.html#transformers.modeling_tf_outputs.TFCausalLMOutput) or a tuple of
 `tf.Tensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising various
-elements depending on the configuration ([OpenAIGPTConfig](model_doc/gpt.html#transformers.OpenAIGPTConfig)) and inputs.
+elements depending on the configuration ([OpenAIGPTConfig](/docs/transformers/master/en/model_doc/gpt.html#transformers.OpenAIGPTConfig)) and inputs.
 
 - **loss** (`tf.Tensor` of shape `(n,)`, _optional_, where n is the number of non-masked labels, returned when `labels` is provided) -- Language modeling loss (for next-token prediction).
 - **logits** (`tf.Tensor` of shape `(batch_size, sequence_length, config.vocab_size)`) -- Prediction scores of the language modeling head (scores for each vocabulary token before SoftMax).
@@ -1098,7 +1129,7 @@ elements depending on the configuration ([OpenAIGPTConfig](model_doc/gpt.html#tr
 
 > Return type
 
-[TFCausalLMOutput](main_classes/output.html#transformers.modeling_tf_outputs.TFCausalLMOutput) or `tuple(tf.Tensor)`
+[TFCausalLMOutput](/docs/transformers/master/en/main_classes/output.html#transformers.modeling_tf_outputs.TFCausalLMOutput) or `tuple(tf.Tensor)`
 
 > Example:
 
@@ -1115,7 +1146,7 @@ elements depending on the configuration ([OpenAIGPTConfig](model_doc/gpt.html#tr
 ```
 
 
-## TFOpenAIGPTDoubleHeadsModel
+## [TFOpenAIGPTDoubleHeadsModel](#tfopenaigptdoubleheadsmodel)
 
 <a id='transformers.TFOpenAIGPTDoubleHeadsModel'></a>
 > **class transformers.TFOpenAIGPTDoubleHeadsModel**(*args, **kwargs)
@@ -1127,7 +1158,7 @@ input embeddings, the classification head takes as input the input of a specifie
 input sequence).
 
 
-This model inherits from [TFPreTrainedModel](main_classes/model.html#transformers.TFPreTrainedModel). Check the superclass documentation for the
+This model inherits from [TFPreTrainedModel](/docs/transformers/master/en/main_classes/model.html#transformers.TFPreTrainedModel). Check the superclass documentation for the
 generic methods the library implements for all its model (such as downloading or saving, resizing the input
 embeddings, pruning heads etc.)
 
@@ -1152,22 +1183,22 @@ the first positional argument :
 - a list of varying length with one or several input Tensors IN THE ORDER given in the docstring:
   `model([input_ids, attention_mask])` or `model([input_ids, attention_mask, token_type_ids])`
 - a dictionary with one or several input Tensors associated to the input names given in the docstring:
-  `model({"input_ids": input_ids, "token_type_ids": token_type_ids})`
+  `model(&amp;lcub;"input_ids": input_ids, "token_type_ids": token_type_ids})`
 
 </Tip>
 
 > Parameters
 
-- **config** ([OpenAIGPTConfig](model_doc/gpt.html#transformers.OpenAIGPTConfig)) -- Model configuration class with all the parameters of the model.
+- **config** ([OpenAIGPTConfig](/docs/transformers/master/en/model_doc/gpt.html#transformers.OpenAIGPTConfig)) -- Model configuration class with all the parameters of the model.
   Initializing with a config file does not load the weights associated with the model, only the
-  configuration. Check out the [from_pretrained()](main_classes/model.html#transformers.PreTrainedModel.from_pretrained) method to load the model
+  configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model.html#transformers.PreTrainedModel.from_pretrained) method to load the model
   weights.
 
 
 <a id='transformers.TFOpenAIGPTDoubleHeadsModel.call'></a>
 > **call**(self, input_ids = None, attention_mask = None, token_type_ids = None, position_ids = None, head_mask = None, inputs_embeds = None, mc_token_ids = None, output_attentions = None, output_hidden_states = None, return_dict = None, training = False, **kwargs)
 
-The [TFOpenAIGPTDoubleHeadsModel](model_doc/gpt.html#transformers.TFOpenAIGPTDoubleHeadsModel) forward method, overrides the `__call__` special method.
+The [TFOpenAIGPTDoubleHeadsModel](/docs/transformers/master/en/model_doc/gpt.html#transformers.TFOpenAIGPTDoubleHeadsModel) forward method, overrides the `__call__` special method.
 
 <Tip>
 
@@ -1182,8 +1213,8 @@ processing steps while the latter silently ignores them.
 - **input_ids** (`Numpy array` or `tf.Tensor` of shape `(batch_size, sequence_length)`) --
   Indices of input sequence tokens in the vocabulary.
 
-  Indices can be obtained using [OpenAIGPTTokenizer](model_doc/gpt.html#transformers.OpenAIGPTTokenizer). See
-  [transformers.PreTrainedTokenizer.__call__()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) and [transformers.PreTrainedTokenizer.encode()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) for
+  Indices can be obtained using [OpenAIGPTTokenizer](/docs/transformers/master/en/model_doc/gpt.html#transformers.OpenAIGPTTokenizer). See
+  [transformers.PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) and [transformers.PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) for
   details.
 
   [What are input IDs?](../glossary.html#input-ids)
@@ -1224,7 +1255,7 @@ processing steps while the latter silently ignores them.
   more detail. This argument can be used only in eager mode, in graph mode the value in the config will be
   used instead.
 - **return_dict** (`bool`, _optional_) --
-  Whether or not to return a [ModelOutput](main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple. This
+  Whether or not to return a [ModelOutput](/docs/transformers/master/en/main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple. This
   argument can be used in eager mode, in graph mode the value will always be set to True.
 - **training** (`bool`, _optional_, defaults to `False`) --
   Whether or not to use the model in training mode (some modules like dropout modules have different
@@ -1236,9 +1267,9 @@ processing steps while the latter silently ignores them.
 
 > Returns
 
-A [TFOpenAIGPTDoubleHeadsModelOutput](model_doc/gpt.html#transformers.models.openai.modeling_tf_openai.TFOpenAIGPTDoubleHeadsModelOutput) or a tuple of
+A [TFOpenAIGPTDoubleHeadsModelOutput](/docs/transformers/master/en/model_doc/gpt.html#transformers.models.openai.modeling_tf_openai.TFOpenAIGPTDoubleHeadsModelOutput) or a tuple of
 `tf.Tensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising various
-elements depending on the configuration ([OpenAIGPTConfig](model_doc/gpt.html#transformers.OpenAIGPTConfig)) and inputs.
+elements depending on the configuration ([OpenAIGPTConfig](/docs/transformers/master/en/model_doc/gpt.html#transformers.OpenAIGPTConfig)) and inputs.
 
 - **logits** (`tf.Tensor` of shape `(batch_size, num_choices, sequence_length, config.vocab_size)`) -- Prediction scores of the language modeling head (scores for each vocabulary token before SoftMax).
 - **mc_logits** (`tf.Tensor` of shape `(batch_size, num_choices)`) -- Prediction scores of the multiple choice classification head (scores for each choice before SoftMax).
@@ -1262,13 +1293,13 @@ elements depending on the configuration ([OpenAIGPTConfig](model_doc/gpt.html#tr
 >>> model = TFOpenAIGPTDoubleHeadsModel.from_pretrained('openai-gpt')
 
 >>> # Add a [CLS] to the vocabulary (we should train it also!)
->>> tokenizer.add_special_tokens({'cls_token': '[CLS]'})
+>>> tokenizer.add_special_tokens(&amp;lcub;'cls_token': '[CLS]'})
 >>> model.resize_token_embeddings(len(tokenizer))  # Update the model embeddings with the new vocabulary size
 >>> print(tokenizer.cls_token_id, len(tokenizer))  # The newly token the last token of the vocabulary
 
 >>> choices = ["Hello, my dog is cute [CLS]", "Hello, my cat is cute [CLS]"]
 >>> encoding = tokenizer(choices, return_tensors="tf")
->>> inputs = {k: tf.expand_dims(v, 0) for k, v in encoding.items()}
+>>> inputs = &amp;lcub;k: tf.expand_dims(v, 0) for k, v in encoding.items()}
 >>> inputs["mc_token_ids"]= tf.constant([inputs["input_ids"].shape[-1] - 1, inputs["input_ids"].shape[-1] - 1])[None, :]  # Batch size 1
 >>> outputs = model(inputs)
 >>> lm_prediction_scores, mc_prediction_scores = outputs[:2]
@@ -1276,10 +1307,10 @@ elements depending on the configuration ([OpenAIGPTConfig](model_doc/gpt.html#tr
 
 > Return type
 
-[TFOpenAIGPTDoubleHeadsModelOutput](model_doc/gpt.html#transformers.models.openai.modeling_tf_openai.TFOpenAIGPTDoubleHeadsModelOutput) or `tuple(tf.Tensor)`
+[TFOpenAIGPTDoubleHeadsModelOutput](/docs/transformers/master/en/model_doc/gpt.html#transformers.models.openai.modeling_tf_openai.TFOpenAIGPTDoubleHeadsModelOutput) or `tuple(tf.Tensor)`
 
 
-## TFOpenAIGPTForSequenceClassification
+## [TFOpenAIGPTForSequenceClassification](#tfopenaigptforsequenceclassification)
 
 <a id='transformers.TFOpenAIGPTForSequenceClassification'></a>
 > **class transformers.TFOpenAIGPTForSequenceClassification**(*args, **kwargs)
@@ -1287,7 +1318,7 @@ elements depending on the configuration ([OpenAIGPTConfig](model_doc/gpt.html#tr
 
 The OpenAI GPT Model transformer with a sequence classification head on top (linear layer).
 
-[TFOpenAIGPTForSequenceClassification](model_doc/gpt.html#transformers.TFOpenAIGPTForSequenceClassification) uses the last token in order to do the classification,
+[TFOpenAIGPTForSequenceClassification](/docs/transformers/master/en/model_doc/gpt.html#transformers.TFOpenAIGPTForSequenceClassification) uses the last token in order to do the classification,
 as other causal models (e.g. GPT-2) do.
 
 Since it does classification on the last token, it requires to know the position of the last token. If a
@@ -1297,7 +1328,7 @@ guess the padding tokens when `inputs_embeds` are passed instead of `input_ids`,
 the last value in each row of the batch).
 
 
-This model inherits from [TFPreTrainedModel](main_classes/model.html#transformers.TFPreTrainedModel). Check the superclass documentation for the
+This model inherits from [TFPreTrainedModel](/docs/transformers/master/en/main_classes/model.html#transformers.TFPreTrainedModel). Check the superclass documentation for the
 generic methods the library implements for all its model (such as downloading or saving, resizing the input
 embeddings, pruning heads etc.)
 
@@ -1322,22 +1353,22 @@ the first positional argument :
 - a list of varying length with one or several input Tensors IN THE ORDER given in the docstring:
   `model([input_ids, attention_mask])` or `model([input_ids, attention_mask, token_type_ids])`
 - a dictionary with one or several input Tensors associated to the input names given in the docstring:
-  `model({"input_ids": input_ids, "token_type_ids": token_type_ids})`
+  `model(&amp;lcub;"input_ids": input_ids, "token_type_ids": token_type_ids})`
 
 </Tip>
 
 > Parameters
 
-- **config** ([OpenAIGPTConfig](model_doc/gpt.html#transformers.OpenAIGPTConfig)) -- Model configuration class with all the parameters of the model.
+- **config** ([OpenAIGPTConfig](/docs/transformers/master/en/model_doc/gpt.html#transformers.OpenAIGPTConfig)) -- Model configuration class with all the parameters of the model.
   Initializing with a config file does not load the weights associated with the model, only the
-  configuration. Check out the [from_pretrained()](main_classes/model.html#transformers.PreTrainedModel.from_pretrained) method to load the model
+  configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model.html#transformers.PreTrainedModel.from_pretrained) method to load the model
   weights.
 
 
 <a id='transformers.TFOpenAIGPTForSequenceClassification.call'></a>
 > **call**(self, input_ids = None, attention_mask = None, token_type_ids = None, position_ids = None, head_mask = None, inputs_embeds = None, output_attentions = None, output_hidden_states = None, return_dict = None, labels = None, training = False, **kwargs)
 
-The [TFOpenAIGPTForSequenceClassification](model_doc/gpt.html#transformers.TFOpenAIGPTForSequenceClassification) forward method, overrides the `__call__` special method.
+The [TFOpenAIGPTForSequenceClassification](/docs/transformers/master/en/model_doc/gpt.html#transformers.TFOpenAIGPTForSequenceClassification) forward method, overrides the `__call__` special method.
 
 <Tip>
 
@@ -1352,8 +1383,8 @@ processing steps while the latter silently ignores them.
 - **input_ids** (`Numpy array` or `tf.Tensor` of shape `(batch_size, sequence_length)`) --
   Indices of input sequence tokens in the vocabulary.
 
-  Indices can be obtained using [OpenAIGPTTokenizer](model_doc/gpt.html#transformers.OpenAIGPTTokenizer). See
-  [transformers.PreTrainedTokenizer.__call__()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) and [transformers.PreTrainedTokenizer.encode()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) for
+  Indices can be obtained using [OpenAIGPTTokenizer](/docs/transformers/master/en/model_doc/gpt.html#transformers.OpenAIGPTTokenizer). See
+  [transformers.PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) and [transformers.PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) for
   details.
 
   [What are input IDs?](../glossary.html#input-ids)
@@ -1394,7 +1425,7 @@ processing steps while the latter silently ignores them.
   more detail. This argument can be used only in eager mode, in graph mode the value in the config will be
   used instead.
 - **return_dict** (`bool`, _optional_) --
-  Whether or not to return a [ModelOutput](main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple. This
+  Whether or not to return a [ModelOutput](/docs/transformers/master/en/main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple. This
   argument can be used in eager mode, in graph mode the value will always be set to True.
 - **training** (`bool`, _optional_, defaults to `False`) --
   Whether or not to use the model in training mode (some modules like dropout modules have different
@@ -1405,9 +1436,9 @@ processing steps while the latter silently ignores them.
 
 > Returns
 
-A [TFSequenceClassifierOutput](main_classes/output.html#transformers.modeling_tf_outputs.TFSequenceClassifierOutput) or a tuple of
+A [TFSequenceClassifierOutput](/docs/transformers/master/en/main_classes/output.html#transformers.modeling_tf_outputs.TFSequenceClassifierOutput) or a tuple of
 `tf.Tensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising various
-elements depending on the configuration ([OpenAIGPTConfig](model_doc/gpt.html#transformers.OpenAIGPTConfig)) and inputs.
+elements depending on the configuration ([OpenAIGPTConfig](/docs/transformers/master/en/model_doc/gpt.html#transformers.OpenAIGPTConfig)) and inputs.
 
 - **loss** (`tf.Tensor` of shape `(batch_size, )`, _optional_, returned when `labels` is provided) -- Classification (or regression if config.num_labels==1) loss.
 - **logits** (`tf.Tensor` of shape `(batch_size, config.num_labels)`) -- Classification (or regression if config.num_labels==1) scores (before SoftMax).
@@ -1422,7 +1453,7 @@ elements depending on the configuration ([OpenAIGPTConfig](model_doc/gpt.html#tr
 
 > Return type
 
-[TFSequenceClassifierOutput](main_classes/output.html#transformers.modeling_tf_outputs.TFSequenceClassifierOutput) or `tuple(tf.Tensor)`
+[TFSequenceClassifierOutput](/docs/transformers/master/en/main_classes/output.html#transformers.modeling_tf_outputs.TFSequenceClassifierOutput) or `tuple(tf.Tensor)`
 
 > Example:
 

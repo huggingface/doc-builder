@@ -1,3 +1,25 @@
+---
+local: summary-of-the-tokenizers
+sections:
+- local: introduction
+  sections:
+  - local: subword-tokenization
+    title: Subword tokenization
+  title: Introduction
+- local: bytepair-encoding-bpe
+  sections:
+  - local: bytelevel-bpe
+    sections:
+    - local: wordpiece
+      title: WordPiece
+    - local: unigram
+      title: Unigram
+    - local: sentencepiece
+      title: SentencePiece
+    title: Byte-level BPE
+  title: Byte-Pair Encoding (BPE)
+title: Summary of the tokenizers
+---
 <script>
 import Tip from "../../Tip.svelte";
 import Youtube from "../../Youtube.svelte";	
@@ -16,7 +38,7 @@ an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express o
 specific language governing permissions and limitations under the License.
 -->
 
-# Summary of the tokenizers
+# [Summary of the tokenizers](#summary-of-the-tokenizers)
 
 On this page, we will have a closer look at tokenization.
 
@@ -24,18 +46,18 @@ On this page, we will have a closer look at tokenization.
 frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope;
 picture-in-picture" allowfullscreen></iframe>
 
-As we saw in [the preprocessing tutorial](preprocessing.html), tokenizing a text is splitting it into words or
+As we saw in [the preprocessing tutorial](/docs/transformers/master/en/preprocessing.html), tokenizing a text is splitting it into words or
 subwords, which then are converted to ids through a look-up table. Converting words or subwords to ids is
 straightforward, so in this summary, we will focus on splitting a text into words or subwords (i.e. tokenizing a text).
 More specifically, we will look at the three main types of tokenizers used in 🤗 Transformers: [Byte-Pair Encoding
-(BPE)](#byte-pair-encoding), [WordPiece](#wordpiece), and [SentencePiece](#sentencepiece), and show examples
+(BPE)](/docs/transformers/master/en/tokenizer_summary.html#byte-pair-encoding), [WordPiece](/docs/transformers/master/en/tokenizer_summary.html#wordpiece), and [SentencePiece](/docs/transformers/master/en/tokenizer_summary.html#sentencepiece), and show examples
 of which tokenizer type is used by which model.
 
 Note that on each model page, you can look at the documentation of the associated tokenizer to know which tokenizer
-type was used by the pretrained model. For instance, if we look at [BertTokenizer](model_doc/bert.html#transformers.BertTokenizer), we can see
-that the model uses [WordPiece](#wordpiece).
+type was used by the pretrained model. For instance, if we look at [BertTokenizer](/docs/transformers/master/en/model_doc/bert.html#transformers.BertTokenizer), we can see
+that the model uses [WordPiece](/docs/transformers/master/en/tokenizer_summary.html#wordpiece).
 
-## Introduction
+## [Introduction](#introduction)
 
 Splitting a text into smaller chunks is a task that is harder than it looks, and there are multiple ways of doing so.
 For instance, let's look at the sentence `"Don't you love 🤗 Transformers? We sure do."`
@@ -77,7 +99,7 @@ As can be seen space and punctuation tokenization, as well as rule-based tokeniz
 punctuation tokenization and rule-based tokenization are both examples of word tokenization, which is loosely defined
 as splitting sentences into words. While it's the most intuitive way to split texts into smaller chunks, this
 tokenization method can lead to problems for massive text corpora. In this case, space and punctuation tokenization
-usually generates a very big vocabulary (the set of all unique words and tokens used). *E.g.*, [Transformer XL](model_doc/transformerxl.html) uses space and punctuation tokenization, resulting in a vocabulary size of 267,735!
+usually generates a very big vocabulary (the set of all unique words and tokens used). *E.g.*, [Transformer XL](/docs/transformers/master/en/model_doc/transformerxl.html) uses space and punctuation tokenization, resulting in a vocabulary size of 267,735!
 
 Such a big vocabulary size forces the model to have an enormous embedding matrix as the input and output layer, which
 causes both an increased memory and time complexity. In general, transformers models rarely have a vocabulary size
@@ -96,7 +118,7 @@ representation for the letter `"t"` is much harder than learning a context-indep
 both worlds, transformers models use a hybrid between word-level and character-level tokenization called **subword**
 tokenization.
 
-### Subword tokenization
+### [Subword tokenization](#subword-tokenization)
 
 <iframe width="560" height="315" src="https://www.youtube.com/embed/zHvTiHr506c" title="YouTube video player"
 frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope;
@@ -111,7 +133,7 @@ where you can form (almost) arbitrarily long complex words by stringing together
 
 Subword tokenization allows the model to have a reasonable vocabulary size while being able to learn meaningful
 context-independent representations. In addition, subword tokenization enables the model to process words it has never
-seen before, by decomposing them into known subwords. For instance, the [BertTokenizer](model_doc/bert.html#transformers.BertTokenizer) tokenizes
+seen before, by decomposing them into known subwords. For instance, the [BertTokenizer](/docs/transformers/master/en/model_doc/bert.html#transformers.BertTokenizer) tokenizes
 `"I have a new GPU!"` as follows:
 
 ```
@@ -125,7 +147,7 @@ Because we are considering the uncased model, the sentence was lowercased first.
 tokenizer splits `"gpu"` into known subwords: `["gp" and "##u"]`. `"##"` means that the rest of the token should
 be attached to the previous one, without space (for decoding or reversal of the tokenization).
 
-As another example, [XLNetTokenizer](model_doc/xlnet.html#transformers.XLNetTokenizer) tokenizes our previously exemplary text as follows:
+As another example, [XLNetTokenizer](/docs/transformers/master/en/model_doc/xlnet.html#transformers.XLNetTokenizer) tokenizes our previously exemplary text as follows:
 
 ```
 >>> from transformers import XLNetTokenizer
@@ -134,7 +156,7 @@ As another example, [XLNetTokenizer](model_doc/xlnet.html#transformers.XLNetToke
 ["▁Don", "'", "t", "▁you", "▁love", "▁", "🤗", "▁", "Transform", "ers", "?", "▁We", "▁sure", "▁do", "."]
 ```
 
-We'll get back to the meaning of those `"▁"` when we look at [SentencePiece](#sentencepiece). As one can see,
+We'll get back to the meaning of those `"▁"` when we look at [SentencePiece](/docs/transformers/master/en/tokenizer_summary.html#sentencepiece). As one can see,
 the rare word `"Transformers"` has been split into the more frequent subwords `"Transform"` and `"ers"`.
 
 Let's now look at how the different subword tokenization algorithms work. Note that all of those tokenization
@@ -143,12 +165,12 @@ on.
 
 <a id='byte-pair-encoding'></a>
 
-## Byte-Pair Encoding (BPE)
+## [Byte-Pair Encoding (BPE)](#bytepair-encoding-bpe)
 
 Byte-Pair Encoding (BPE) was introduced in [Neural Machine Translation of Rare Words with Subword Units (Sennrich et
 al., 2015)](https://arxiv.org/abs/1508.07909). BPE relies on a pre-tokenizer that splits the training data into
-words. Pretokenization can be as simple as space tokenization, e.g. [GPT-2](model_doc/gpt2.html), [Roberta](model_doc/roberta.html). More advanced pre-tokenization include rule-based tokenization, e.g. [XLM](model_doc/xlm.html),
-[FlauBERT](model_doc/flaubert.html) which uses Moses for most languages, or [GPT](model_doc/gpt.html) which uses
+words. Pretokenization can be as simple as space tokenization, e.g. [GPT-2](/docs/transformers/master/en/model_doc/gpt2.html), [Roberta](/docs/transformers/master/en/model_doc/roberta.html). More advanced pre-tokenization include rule-based tokenization, e.g. [XLM](/docs/transformers/master/en/model_doc/xlm.html),
+[FlauBERT](/docs/transformers/master/en/model_doc/flaubert.html) which uses Moses for most languages, or [GPT](/docs/transformers/master/en/model_doc/gpt.html) which uses
 Spacy and ftfy, to count the frequency of each word in the training corpus.
 
 After pre-tokenization, a set of unique words has been created and the frequency of each word it occurred in the
@@ -194,30 +216,30 @@ is represented as
 
 Assuming, that the Byte-Pair Encoding training would stop at this point, the learned merge rules would then be applied
 to new words (as long as those new words do not include symbols that were not in the base vocabulary). For instance,
-the word `"bug"` would be tokenized to `["b", "ug"]` but `"mug"` would be tokenized as `["&lcubunk>", "ug"]` since
+the word `"bug"` would be tokenized to `["b", "ug"]` but `"mug"` would be tokenized as `["&amp;lt;unk>", "ug"]` since
 the symbol `"m"` is not in the base vocabulary. In general, single letters such as `"m"` are not replaced by the
-`"&lcubunk>"` symbol because the training data usually includes at least one occurrence of each letter, but it is likely
+`"&amp;lt;unk>"` symbol because the training data usually includes at least one occurrence of each letter, but it is likely
 to happen for very special characters like emojis.
 
 As mentioned earlier, the vocabulary size, *i.e.* the base vocabulary size + the number of merges, is a hyperparameter
-to choose. For instance [GPT](model_doc/gpt.html) has a vocabulary size of 40,478 since they have 478 base characters
+to choose. For instance [GPT](/docs/transformers/master/en/model_doc/gpt.html) has a vocabulary size of 40,478 since they have 478 base characters
 and chose to stop training after 40,000 merges.
 
-### Byte-level BPE
+### [Byte-level BPE](#bytelevel-bpe)
 
 A base vocabulary that includes all possible base characters can be quite large if *e.g.* all unicode characters are
 considered as base characters. To have a better base vocabulary, [GPT-2](https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf) uses bytes
 as the base vocabulary, which is a clever trick to force the base vocabulary to be of size 256 while ensuring that
 every base character is included in the vocabulary. With some additional rules to deal with punctuation, the GPT2's
-tokenizer can tokenize every text without the need for the &lcubunk> symbol. [GPT-2](model_doc/gpt.html) has a vocabulary
+tokenizer can tokenize every text without the need for the &amp;lt;unk> symbol. [GPT-2](/docs/transformers/master/en/model_doc/gpt.html) has a vocabulary
 size of 50,257, which corresponds to the 256 bytes base tokens, a special end-of-text token and the symbols learned
 with 50,000 merges.
 
 <a id='wordpiece'></a>
 
-#### WordPiece
+#### [WordPiece](#wordpiece)
 
-WordPiece is the subword tokenization algorithm used for [BERT](model_doc/bert.html), [DistilBERT](model_doc/distilbert.html), and [Electra](model_doc/electra.html). The algorithm was outlined in [Japanese and Korean
+WordPiece is the subword tokenization algorithm used for [BERT](/docs/transformers/master/en/model_doc/bert.html), [DistilBERT](/docs/transformers/master/en/model_doc/distilbert.html), and [Electra](/docs/transformers/master/en/model_doc/electra.html). The algorithm was outlined in [Japanese and Korean
 Voice Search (Schuster et al., 2012)](https://static.googleusercontent.com/media/research.google.com/ja//pubs/archive/37842.pdf) and is very similar to
 BPE. WordPiece first initializes the vocabulary to include every character present in the training data and
 progressively learns a given number of merge rules. In contrast to BPE, WordPiece does not choose the most frequent
@@ -232,14 +254,14 @@ to make ensure it's _worth it_.
 
 <a id='unigram'></a>
 
-#### Unigram
+#### [Unigram](#unigram)
 
 Unigram is a subword tokenization algorithm introduced in [Subword Regularization: Improving Neural Network Translation
 Models with Multiple Subword Candidates (Kudo, 2018)](https://arxiv.org/pdf/1804.10959.pdf). In contrast to BPE or
 WordPiece, Unigram initializes its base vocabulary to a large number of symbols and progressively trims down each
 symbol to obtain a smaller vocabulary. The base vocabulary could for instance correspond to all pre-tokenized words and
 the most common substrings. Unigram is not used directly for any of the models in the transformers, but it's used in
-conjunction with [SentencePiece](#sentencepiece).
+conjunction with [SentencePiece](/docs/transformers/master/en/tokenizer_summary.html#sentencepiece).
 
 At each training step, the Unigram algorithm defines a loss (often defined as the log-likelihood) over the training
 data given the current vocabulary and a unigram language model. Then, for each symbol in the vocabulary, the algorithm
@@ -262,26 +284,26 @@ likely tokenization in practice, but also offers the possibility to sample a pos
 probabilities.
 
 Those probabilities are defined by the loss the tokenizer is trained on. Assuming that the training data consists of
-the words \\(x_{1}, \dots, x_{N}\\) and that the set of all possible tokenizations for a word \\(x_{i}\\) is
-defined as \\(S(x_{i})\\), then the overall loss is defined as
+the words \\(x_&amp;lcub;1}, \dots, x_&amp;lcub;N}\\) and that the set of all possible tokenizations for a word \\(x_&amp;lcub;i}\\) is
+defined as \\(S(x_&amp;lcub;i})\\), then the overall loss is defined as
 
-$$\mathcal{L} = -\sum_{i=1}^{N} \log \left ( \sum_{x \in S(x_{i})} p(x) \right )$$
+$$\mathcal&amp;lcub;L} = -\sum_&amp;lcub;i=1}^&amp;lcub;N} \log \left ( \sum_&amp;lcub;x \in S(x_&amp;lcub;i})} p(x) \right )$$
 
 <a id='sentencepiece'></a>
 
-#### SentencePiece
+#### [SentencePiece](#sentencepiece)
 
 All tokenization algorithms described so far have the same problem: It is assumed that the input text uses spaces to
 separate words. However, not all languages use spaces to separate words. One possible solution is to use language
-specific pre-tokenizers, *e.g.* [XLM](model_doc/xlm.html) uses a specific Chinese, Japanese, and Thai pre-tokenizer).
+specific pre-tokenizers, *e.g.* [XLM](/docs/transformers/master/en/model_doc/xlm.html) uses a specific Chinese, Japanese, and Thai pre-tokenizer).
 To solve this problem more generally, [SentencePiece: A simple and language independent subword tokenizer and
 detokenizer for Neural Text Processing (Kudo et al., 2018)](https://arxiv.org/pdf/1808.06226.pdf) treats the input
 as a raw input stream, thus including the space in the set of characters to use. It then uses the BPE or unigram
 algorithm to construct the appropriate vocabulary.
 
-The [XLNetTokenizer](model_doc/xlnet.html#transformers.XLNetTokenizer) uses SentencePiece for example, which is also why in the example earlier the
+The [XLNetTokenizer](/docs/transformers/master/en/model_doc/xlnet.html#transformers.XLNetTokenizer) uses SentencePiece for example, which is also why in the example earlier the
 `"▁"` character was included in the vocabulary. Decoding with SentencePiece is very easy since all tokens can just be
 concatenated and `"▁"` is replaced by a space.
 
 All transformers models in the library that use SentencePiece use it in combination with unigram. Examples of models
-using SentencePiece are [ALBERT](model_doc/albert.html), [XLNet](model_doc/xlnet.html), [Marian](model_doc/marian.html), and [T5](model_doc/t5.html).
+using SentencePiece are [ALBERT](/docs/transformers/master/en/model_doc/albert.html), [XLNet](/docs/transformers/master/en/model_doc/xlnet.html), [Marian](/docs/transformers/master/en/model_doc/marian.html), and [T5](/docs/transformers/master/en/model_doc/t5.html).

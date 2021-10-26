@@ -1,3 +1,21 @@
+---
+local: mm
+sections:
+- local: overview
+  sections:
+  - local: training-and-generation
+    title: Training and Generation
+  title: Overview
+- local: mmconfig
+  title: M2M100Config
+- local: mmtokenizer
+  title: M2M100Tokenizer
+- local: mmmodel
+  title: M2M100Model
+- local: mmforconditionalgeneration
+  title: M2M100ForConditionalGeneration
+title: M2M100
+---
 <script>
 import Tip from "../../Tip.svelte";
 import Youtube from "../../Youtube.svelte";	
@@ -16,9 +34,9 @@ an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express o
 specific language governing permissions and limitations under the License.
 -->
 
-# M2M100
+# [M2M100](#mm)
 
-## Overview
+## [Overview](#overview)
 
 The M2M100 model was proposed in [Beyond English-Centric Multilingual Machine Translation](https://arxiv.org/abs/2010.11125) by Angela Fan, Shruti Bhosale, Holger Schwenk, Zhiyi Ma, Ahmed El-Kishky,
 Siddharth Goyal, Mandeep Baines, Onur Celebi, Guillaume Wenzek, Vishrav Chaudhary, Naman Goyal, Tom Birch, Vitaliy
@@ -40,14 +58,14 @@ open-source our scripts so that others may reproduce the data, evaluation, and f
 This model was contributed by [valhalla](https://huggingface.co/valhalla).
 
 
-### Training and Generation
+### [Training and Generation](#training-and-generation)
 
 M2M100 is a multilingual encoder-decoder (seq-to-seq) model primarily intended for translation tasks. As the model is
 multilingual it expects the sequences in a certain format: A special language id token is used as prefix in both the
 source and target text. The source text format is `[lang_code] X [eos]`, where `lang_code` is source language
 id for source text and target language id for target text, with `X` being the source or target text.
 
-The [M2M100Tokenizer](model_doc/m2m_100.html#transformers.M2M100Tokenizer) depends on `sentencepiece` so be sure to install it before running the
+The [M2M100Tokenizer](/docs/transformers/master/en/model_doc/m2m_100.html#transformers.M2M100Tokenizer) depends on `sentencepiece` so be sure to install it before running the
 examples. To install `sentencepiece` run `pip install sentencepiece`.
 
 - Supervised Training
@@ -99,25 +117,25 @@ loss = model(**model_inputs, labels=labels) # forward pass
 "Life is like a box of chocolate."
 ```
 
-## M2M100Config
+## [M2M100Config](#mmconfig)
 
 <a id='transformers.M2M100Config'></a>
-> **class transformers.M2M100Config**(vocab_size = 128112, max_position_embeddings = 1024, encoder_layers = 12, encoder_ffn_dim = 4096, encoder_attention_heads = 16, decoder_layers = 12, decoder_ffn_dim = 4096, decoder_attention_heads = 16, encoder_layerdrop = 0.05, decoder_layerdrop = 0.05, use_cache = True, is_encoder_decoder = True, activation_function = relu, d_model = 1024, dropout = 0.1, attention_dropout = 0.1, activation_dropout = 0.0, init_std = 0.02, decoder_start_token_id = 2, scale_embedding = True, gradient_checkpointing = False, pad_token_id = 1, bos_token_id = 0, eos_token_id = 2, **kwargs)
+> **class transformers.M2M100Config**(vocab_size = 128112, max_position_embeddings = 1024, encoder_layers = 12, encoder_ffn_dim = 4096, encoder_attention_heads = 16, decoder_layers = 12, decoder_ffn_dim = 4096, decoder_attention_heads = 16, encoder_layerdrop = 0.05, decoder_layerdrop = 0.05, use_cache = True, is_encoder_decoder = True, activation_function = 'relu', d_model = 1024, dropout = 0.1, attention_dropout = 0.1, activation_dropout = 0.0, init_std = 0.02, decoder_start_token_id = 2, scale_embedding = True, pad_token_id = 1, bos_token_id = 0, eos_token_id = 2, **kwargs)
 
 
-This is the configuration class to store the configuration of a [M2M100Model](model_doc/m2m_100.html#transformers.M2M100Model). It is used to
+This is the configuration class to store the configuration of a [M2M100Model](/docs/transformers/master/en/model_doc/m2m_100.html#transformers.M2M100Model). It is used to
 instantiate an M2M100 model according to the specified arguments, defining the model architecture. Instantiating a
 configuration with the defaults will yield a similar configuration to that of the M2M100 [m2m100_418M](https://huggingface.co/facebook/m2m100_418M) architecture.
 
-Configuration objects inherit from [PretrainedConfig](main_classes/configuration.html#transformers.PretrainedConfig) and can be used to control the model
-outputs. Read the documentation from [PretrainedConfig](main_classes/configuration.html#transformers.PretrainedConfig) for more information.
+Configuration objects inherit from [PretrainedConfig](/docs/transformers/master/en/main_classes/configuration.html#transformers.PretrainedConfig) and can be used to control the model
+outputs. Read the documentation from [PretrainedConfig](/docs/transformers/master/en/main_classes/configuration.html#transformers.PretrainedConfig) for more information.
 
 
 > Parameters
 
 - **vocab_size** (`int`, _optional_, defaults to 50265) --
   Vocabulary size of the M2M100 model. Defines the number of different tokens that can be represented by the
-  `inputs_ids` passed when calling [M2M100Model](model_doc/m2m_100.html#transformers.M2M100Model) or
+  `inputs_ids` passed when calling [M2M100Model](/docs/transformers/master/en/model_doc/m2m_100.html#transformers.M2M100Model) or
 - **d_model** (`int`, _optional_, defaults to 1024) --
   Dimensionality of the layers and the pooler layer.
 - **encoder_layers** (`int`, _optional_, defaults to 12) --
@@ -156,8 +174,6 @@ outputs. Read the documentation from [PretrainedConfig](main_classes/configurati
   https://arxiv.org/abs/1909.11556) for more details.
 - **use_cache** (`bool`, _optional_, defaults to `True`) --
   Whether or not the model should return the last key/values attentions (not used by all models).
-- **gradient_checkpointing** (`bool`, _optional_, defaults to `False`) --
-  If True, use gradient checkpointing to save memory at the expense of slower backward pass.
 
   Example --:
 
@@ -173,15 +189,15 @@ outputs. Read the documentation from [PretrainedConfig](main_classes/configurati
   >>> configuration = model.config
 
 
-## M2M100Tokenizer
+## [M2M100Tokenizer](#mmtokenizer)
 
 <a id='transformers.M2M100Tokenizer'></a>
-> **class transformers.M2M100Tokenizer**(vocab_file, spm_file, src_lang = None, tgt_lang = None, bos_token = &lcubs>, eos_token = &lcub/s>, sep_token = &lcub/s>, pad_token = &lcubpad>, unk_token = &lcubunk>, sp_model_kwargs: typing.Union[typing.Dict[str, typing.Any], NoneType] = None, **kwargs)
+> **class transformers.M2M100Tokenizer**(vocab_file, spm_file, src_lang = None, tgt_lang = None, bos_token = '&amp;lt;s>', eos_token = '&amp;lt;/s>', sep_token = '&amp;lt;/s>', pad_token = '&amp;lt;pad>', unk_token = '&amp;lt;unk>', sp_model_kwargs: typing.Union[typing.Dict[str, typing.Any], NoneType] = None, **kwargs)
 
 
 Construct an M2M100 tokenizer. Based on [SentencePiece](https://github.com/google/sentencepiece).
 
-This tokenizer inherits from [PreTrainedTokenizer](main_classes/tokenizer.html#transformers.PreTrainedTokenizer) which contains most of the main methods.
+This tokenizer inherits from [PreTrainedTokenizer](/docs/transformers/master/en/main_classes/tokenizer.html#transformers.PreTrainedTokenizer) which contains most of the main methods.
 Users should refer to this superclass for more information regarding those methods.
 
 > Parameters
@@ -195,16 +211,16 @@ Users should refer to this superclass for more information regarding those metho
   A string representing the source language.
 - **tgt_lang** (`str`, _optional_) --
   A string representing the target language.
-- **eos_token** (`str`, _optional_, defaults to `"&lcub/s>"`) --
+- **eos_token** (`str`, _optional_, defaults to `"&amp;lt;/s>"`) --
   The end of sequence token.
-- **sep_token** (`str`, _optional_, defaults to `"&lcub/s>"`) --
+- **sep_token** (`str`, _optional_, defaults to `"&amp;lt;/s>"`) --
   The separator token, which is used when building a sequence from multiple sequences, e.g. two sequences for
   sequence classification or for a text and a question for question answering. It is also used as the last
   token of a sequence built with special tokens.
-- **unk_token** (`str`, _optional_, defaults to `"&lcubunk>"`) --
+- **unk_token** (`str`, _optional_, defaults to `"&amp;lt;unk>"`) --
   The unknown token. A token that is not in the vocabulary cannot be converted to an ID and is set to be this
   token instead.
-- **pad_token** (`str`, _optional_, defaults to `"&lcubpad>"`) --
+- **pad_token** (`str`, _optional_, defaults to `"&amp;lt;pad>"`) --
   The token used for padding, for example when batching sequences of different lengths.
 - **sp_model_kwargs** (`dict`, _optional_) --
   Will be passed to the `SentencePieceProcessor.__init__()` method. The [Python wrapper for SentencePiece](https://github.com/google/sentencepiece/tree/master/python) can be used, among other things, to set:
@@ -212,9 +228,9 @@ Users should refer to this superclass for more information regarding those metho
   - `enable_sampling`: Enable subword regularization.
   - `nbest_size`: Sampling parameters for unigram. Invalid for BPE-Dropout.
 
-    - `nbest_size = {0,1}`: No sampling is performed.
+    - `nbest_size = &amp;lcub;0,1}`: No sampling is performed.
     - `nbest_size > 1`: samples from the nbest_size results.
-    - `nbest_size&amp;lt;0`: assuming that nbest_size is infinite and samples from the all hypothesis (lattice)
+    - `nbest_size &amp;lt; 0`: assuming that nbest_size is infinite and samples from the all hypothesis (lattice)
       using forward-filtering-and-backward-sampling algorithm.
 
   - `alpha`: Smoothing parameter for unigram sampling, and dropout probability of merge operations for
@@ -313,13 +329,13 @@ The token type ids.
 <a id='transformers.M2M100Tokenizer.save_vocabulary'></a>
 > **save\_vocabulary**(self, save_directory: str, filename_prefix: typing.Optional[str] = None)
 
-## M2M100Model
+## [M2M100Model](#mmmodel)
 
 <a id='transformers.M2M100Model'></a>
 > **class transformers.M2M100Model**(config: M2M100Config)
 
 The bare M2M100 Model outputting raw hidden-states without any specific head on top.
-This model inherits from [PreTrainedModel](main_classes/model.html#transformers.PreTrainedModel). Check the superclass documentation for the generic
+This model inherits from [PreTrainedModel](/docs/transformers/master/en/main_classes/model.html#transformers.PreTrainedModel). Check the superclass documentation for the generic
 methods the library implements for all its model (such as downloading or saving, resizing the input embeddings,
 pruning heads etc.)
 
@@ -329,16 +345,16 @@ general usage and behavior.
 
 > Parameters
 
-- **config** ([M2M100Config](model_doc/m2m_100.html#transformers.M2M100Config)) --
+- **config** ([M2M100Config](/docs/transformers/master/en/model_doc/m2m_100.html#transformers.M2M100Config)) --
   Model configuration class with all the parameters of the model. Initializing with a config file does not
   load the weights associated with the model, only the configuration. Check out the
-  [from_pretrained()](main_classes/model.html#transformers.PreTrainedModel.from_pretrained) method to load the model weights.
+  [from_pretrained()](/docs/transformers/master/en/main_classes/model.html#transformers.PreTrainedModel.from_pretrained) method to load the model weights.
 
 
 <a id='transformers.M2M100Model.forward'></a>
 > **forward**(self, input_ids = None, attention_mask = None, decoder_input_ids = None, decoder_attention_mask = None, head_mask = None, decoder_head_mask = None, cross_attn_head_mask = None, encoder_outputs = None, past_key_values = None, inputs_embeds = None, decoder_inputs_embeds = None, use_cache = None, output_attentions = None, output_hidden_states = None, return_dict = None)
 
-The [M2M100Model](model_doc/m2m_100.html#transformers.M2M100Model) forward method, overrides the `__call__` special method.
+The [M2M100Model](/docs/transformers/master/en/model_doc/m2m_100.html#transformers.M2M100Model) forward method, overrides the `__call__` special method.
 
 <Tip>
 
@@ -354,8 +370,8 @@ processing steps while the latter silently ignores them.
   Indices of input sequence tokens in the vocabulary. Padding will be ignored by default should you provide
   it.
 
-  Indices can be obtained using [M2M100Tokenizer](model_doc/m2m_100.html#transformers.M2M100Tokenizer). See
-  [transformers.PreTrainedTokenizer.encode()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
+  Indices can be obtained using [M2M100Tokenizer](/docs/transformers/master/en/model_doc/m2m_100.html#transformers.M2M100Tokenizer). See
+  [transformers.PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
   details.
 
   [What are input IDs?](../glossary.html#input-ids)
@@ -369,8 +385,8 @@ processing steps while the latter silently ignores them.
 - **decoder_input_ids** (`torch.LongTensor` of shape `(batch_size, target_sequence_length)`, _optional_) --
   Indices of decoder input sequence tokens in the vocabulary.
 
-  Indices can be obtained using [M2M100Tokenizer](model_doc/m2m_100.html#transformers.M2M100Tokenizer). See
-  [transformers.PreTrainedTokenizer.encode()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
+  Indices can be obtained using [M2M100Tokenizer](/docs/transformers/master/en/model_doc/m2m_100.html#transformers.M2M100Tokenizer). See
+  [transformers.PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
   details.
 
   [What are decoder input IDs?](../glossary.html#decoder-input-ids)
@@ -433,13 +449,13 @@ processing steps while the latter silently ignores them.
   Whether or not to return the hidden states of all layers. See `hidden_states` under returned tensors for
   more detail.
 - **return_dict** (`bool`, _optional_) --
-  Whether or not to return a [ModelOutput](main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple.
+  Whether or not to return a [ModelOutput](/docs/transformers/master/en/main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple.
 
 > Returns
 
-A [Seq2SeqModelOutput](main_classes/output.html#transformers.modeling_outputs.Seq2SeqModelOutput) or a tuple of
+A [Seq2SeqModelOutput](/docs/transformers/master/en/main_classes/output.html#transformers.modeling_outputs.Seq2SeqModelOutput) or a tuple of
 `torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising
-various elements depending on the configuration ([M2M100Config](model_doc/m2m_100.html#transformers.M2M100Config)) and inputs.
+various elements depending on the configuration ([M2M100Config](/docs/transformers/master/en/model_doc/m2m_100.html#transformers.M2M100Config)) and inputs.
 
 - **last_hidden_state** (`torch.FloatTensor` of shape `(batch_size, sequence_length, hidden_size)`) -- Sequence of hidden-states at the output of the last layer of the decoder of the model.
 
@@ -474,7 +490,7 @@ various elements depending on the configuration ([M2M100Config](model_doc/m2m_10
 
 > Return type
 
-[Seq2SeqModelOutput](main_classes/output.html#transformers.modeling_outputs.Seq2SeqModelOutput) or `tuple(torch.FloatTensor)`
+[Seq2SeqModelOutput](/docs/transformers/master/en/main_classes/output.html#transformers.modeling_outputs.Seq2SeqModelOutput) or `tuple(torch.FloatTensor)`
 
 > Example:
 
@@ -492,13 +508,13 @@ various elements depending on the configuration ([M2M100Config](model_doc/m2m_10
 ```
 
 
-## M2M100ForConditionalGeneration
+## [M2M100ForConditionalGeneration](#mmforconditionalgeneration)
 
 <a id='transformers.M2M100ForConditionalGeneration'></a>
 > **class transformers.M2M100ForConditionalGeneration**(config: M2M100Config)
 
 The M2M100 Model with a language modeling head. Can be used for summarization.
-This model inherits from [PreTrainedModel](main_classes/model.html#transformers.PreTrainedModel). Check the superclass documentation for the generic
+This model inherits from [PreTrainedModel](/docs/transformers/master/en/main_classes/model.html#transformers.PreTrainedModel). Check the superclass documentation for the generic
 methods the library implements for all its model (such as downloading or saving, resizing the input embeddings,
 pruning heads etc.)
 
@@ -508,16 +524,16 @@ general usage and behavior.
 
 > Parameters
 
-- **config** ([M2M100Config](model_doc/m2m_100.html#transformers.M2M100Config)) --
+- **config** ([M2M100Config](/docs/transformers/master/en/model_doc/m2m_100.html#transformers.M2M100Config)) --
   Model configuration class with all the parameters of the model. Initializing with a config file does not
   load the weights associated with the model, only the configuration. Check out the
-  [from_pretrained()](main_classes/model.html#transformers.PreTrainedModel.from_pretrained) method to load the model weights.
+  [from_pretrained()](/docs/transformers/master/en/main_classes/model.html#transformers.PreTrainedModel.from_pretrained) method to load the model weights.
 
 
 <a id='transformers.M2M100ForConditionalGeneration.forward'></a>
 > **forward**(self, input_ids = None, attention_mask = None, decoder_input_ids = None, decoder_attention_mask = None, head_mask = None, decoder_head_mask = None, cross_attn_head_mask = None, encoder_outputs = None, past_key_values = None, inputs_embeds = None, decoder_inputs_embeds = None, labels = None, use_cache = None, output_attentions = None, output_hidden_states = None, return_dict = None)
 
-The [M2M100ForConditionalGeneration](model_doc/m2m_100.html#transformers.M2M100ForConditionalGeneration) forward method, overrides the `__call__` special method.
+The [M2M100ForConditionalGeneration](/docs/transformers/master/en/model_doc/m2m_100.html#transformers.M2M100ForConditionalGeneration) forward method, overrides the `__call__` special method.
 
 <Tip>
 
@@ -533,8 +549,8 @@ processing steps while the latter silently ignores them.
   Indices of input sequence tokens in the vocabulary. Padding will be ignored by default should you provide
   it.
 
-  Indices can be obtained using [M2M100Tokenizer](model_doc/m2m_100.html#transformers.M2M100Tokenizer). See
-  [transformers.PreTrainedTokenizer.encode()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
+  Indices can be obtained using [M2M100Tokenizer](/docs/transformers/master/en/model_doc/m2m_100.html#transformers.M2M100Tokenizer). See
+  [transformers.PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
   details.
 
   [What are input IDs?](../glossary.html#input-ids)
@@ -548,8 +564,8 @@ processing steps while the latter silently ignores them.
 - **decoder_input_ids** (`torch.LongTensor` of shape `(batch_size, target_sequence_length)`, _optional_) --
   Indices of decoder input sequence tokens in the vocabulary.
 
-  Indices can be obtained using [M2M100Tokenizer](model_doc/m2m_100.html#transformers.M2M100Tokenizer). See
-  [transformers.PreTrainedTokenizer.encode()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
+  Indices can be obtained using [M2M100Tokenizer](/docs/transformers/master/en/model_doc/m2m_100.html#transformers.M2M100Tokenizer). See
+  [transformers.PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
   details.
 
   [What are decoder input IDs?](../glossary.html#decoder-input-ids)
@@ -612,7 +628,7 @@ processing steps while the latter silently ignores them.
   Whether or not to return the hidden states of all layers. See `hidden_states` under returned tensors for
   more detail.
 - **return_dict** (`bool`, _optional_) --
-  Whether or not to return a [ModelOutput](main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple.
+  Whether or not to return a [ModelOutput](/docs/transformers/master/en/main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple.
 
 - **labels** (`torch.LongTensor` of shape `(batch_size, sequence_length)`, _optional_) --
   Labels for computing the masked language modeling loss. Indices should either be in `[0, ..., config.vocab_size]` or -100 (see `input_ids` docstring). Tokens with indices set to `-100` are ignored
@@ -621,9 +637,9 @@ processing steps while the latter silently ignores them.
 
 > Returns
 
-A [Seq2SeqLMOutput](main_classes/output.html#transformers.modeling_outputs.Seq2SeqLMOutput) or a tuple of
+A [Seq2SeqLMOutput](/docs/transformers/master/en/main_classes/output.html#transformers.modeling_outputs.Seq2SeqLMOutput) or a tuple of
 `torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising
-various elements depending on the configuration ([M2M100Config](model_doc/m2m_100.html#transformers.M2M100Config)) and inputs.
+various elements depending on the configuration ([M2M100Config](/docs/transformers/master/en/model_doc/m2m_100.html#transformers.M2M100Config)) and inputs.
 
 - **loss** (`torch.FloatTensor` of shape `(1,)`, _optional_, returned when `labels` is provided) -- Language modeling loss.
 - **logits** (`torch.FloatTensor` of shape `(batch_size, sequence_length, config.vocab_size)`) -- Prediction scores of the language modeling head (scores for each vocabulary token before SoftMax).
@@ -674,7 +690,7 @@ various elements depending on the configuration ([M2M100Config](model_doc/m2m_10
 
 > Return type
 
-[Seq2SeqLMOutput](main_classes/output.html#transformers.modeling_outputs.Seq2SeqLMOutput) or `tuple(torch.FloatTensor)`
+[Seq2SeqLMOutput](/docs/transformers/master/en/main_classes/output.html#transformers.modeling_outputs.Seq2SeqLMOutput) or `tuple(torch.FloatTensor)`
 
 > Translation example:
 

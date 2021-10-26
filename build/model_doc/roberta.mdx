@@ -1,3 +1,54 @@
+---
+local: roberta
+sections:
+- local: overview
+  title: Overview
+- local: robertaconfig
+  title: RobertaConfig
+- local: robertatokenizer
+  title: RobertaTokenizer
+- local: robertatokenizerfast
+  title: RobertaTokenizerFast
+- local: robertamodel
+  title: RobertaModel
+- local: robertaforcausallm
+  title: RobertaForCausalLM
+- local: robertaformaskedlm
+  title: RobertaForMaskedLM
+- local: robertaforsequenceclassification
+  title: RobertaForSequenceClassification
+- local: robertaformultiplechoice
+  title: RobertaForMultipleChoice
+- local: robertafortokenclassification
+  title: RobertaForTokenClassification
+- local: robertaforquestionanswering
+  title: RobertaForQuestionAnswering
+- local: tfrobertamodel
+  title: TFRobertaModel
+- local: tfrobertaformaskedlm
+  title: TFRobertaForMaskedLM
+- local: tfrobertaforsequenceclassification
+  title: TFRobertaForSequenceClassification
+- local: tfrobertaformultiplechoice
+  title: TFRobertaForMultipleChoice
+- local: tfrobertafortokenclassification
+  title: TFRobertaForTokenClassification
+- local: tfrobertaforquestionanswering
+  title: TFRobertaForQuestionAnswering
+- local: flaxrobertamodel
+  title: FlaxRobertaModel
+- local: flaxrobertaformaskedlm
+  title: FlaxRobertaForMaskedLM
+- local: flaxrobertaforsequenceclassification
+  title: FlaxRobertaForSequenceClassification
+- local: flaxrobertaformultiplechoice
+  title: FlaxRobertaForMultipleChoice
+- local: flaxrobertafortokenclassification
+  title: FlaxRobertaForTokenClassification
+- local: flaxrobertaforquestionanswering
+  title: FlaxRobertaForQuestionAnswering
+title: RoBERTa
+---
 <script>
 import Tip from "../../Tip.svelte";
 import Youtube from "../../Youtube.svelte";	
@@ -16,9 +67,9 @@ an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express o
 specific language governing permissions and limitations under the License.
 -->
 
-# RoBERTa
+# [RoBERTa](#roberta)
 
-## Overview
+## [Overview](#overview)
 
 The RoBERTa model was proposed in [RoBERTa: A Robustly Optimized BERT Pretraining Approach](https://arxiv.org/abs/1907.11692) by Yinhan Liu, Myle Ott, Naman Goyal, Jingfei Du, Mandar Joshi, Danqi Chen, Omer
 Levy, Mike Lewis, Luke Zettlemoyer, Veselin Stoyanov. It is based on Google's BERT model released in 2018.
@@ -39,32 +90,32 @@ reported improvements. We release our models and code.*
 
 Tips:
 
-- This implementation is the same as [BertModel](model_doc/bert.html#transformers.BertModel) with a tiny embeddings tweak as well as a setup
+- This implementation is the same as [BertModel](/docs/transformers/master/en/model_doc/bert.html#transformers.BertModel) with a tiny embeddings tweak as well as a setup
   for Roberta pretrained models.
 - RoBERTa has the same architecture as BERT, but uses a byte-level BPE as a tokenizer (same as GPT-2) and uses a
   different pretraining scheme.
 - RoBERTa doesn't have `token_type_ids`, you don't need to indicate which token belongs to which segment. Just
-  separate your segments with the separation token `tokenizer.sep_token` (or `&lcub/s>`)
-- [CamemBERT](camembert.html) is a wrapper around RoBERTa. Refer to this page for usage examples.
+  separate your segments with the separation token `tokenizer.sep_token` (or `&amp;lt;/s>`)
+- [CamemBERT](/docs/transformers/master/en/camembert.html) is a wrapper around RoBERTa. Refer to this page for usage examples.
 
 This model was contributed by [julien-c](https://huggingface.co/julien-c). The original code can be found [here](https://github.com/pytorch/fairseq/tree/master/examples/roberta).
 
 
-## RobertaConfig
+## [RobertaConfig](#robertaconfig)
 
 <a id='transformers.RobertaConfig'></a>
 > **class transformers.RobertaConfig**(pad_token_id = 1, bos_token_id = 0, eos_token_id = 2, **kwargs)
 
 
-This is the configuration class to store the configuration of a [RobertaModel](model_doc/roberta.html#transformers.RobertaModel) or a
-[TFRobertaModel](model_doc/roberta.html#transformers.TFRobertaModel). It is used to instantiate a RoBERTa model according to the specified
+This is the configuration class to store the configuration of a [RobertaModel](/docs/transformers/master/en/model_doc/roberta.html#transformers.RobertaModel) or a
+[TFRobertaModel](/docs/transformers/master/en/model_doc/roberta.html#transformers.TFRobertaModel). It is used to instantiate a RoBERTa model according to the specified
 arguments, defining the model architecture.
 
 
-Configuration objects inherit from [PretrainedConfig](main_classes/configuration.html#transformers.PretrainedConfig) and can be used to control the model
-outputs. Read the documentation from [PretrainedConfig](main_classes/configuration.html#transformers.PretrainedConfig) for more information.
+Configuration objects inherit from [PretrainedConfig](/docs/transformers/master/en/main_classes/configuration.html#transformers.PretrainedConfig) and can be used to control the model
+outputs. Read the documentation from [PretrainedConfig](/docs/transformers/master/en/main_classes/configuration.html#transformers.PretrainedConfig) for more information.
 
-The [RobertaConfig](model_doc/roberta.html#transformers.RobertaConfig) class directly inherits [BertConfig](model_doc/bert.html#transformers.BertConfig). It reuses the
+The [RobertaConfig](/docs/transformers/master/en/model_doc/roberta.html#transformers.RobertaConfig) class directly inherits [BertConfig](/docs/transformers/master/en/model_doc/bert.html#transformers.BertConfig). It reuses the
 same defaults. Please check the parent class for more information.
 
 > Examples:
@@ -83,10 +134,10 @@ same defaults. Please check the parent class for more information.
 ```
 
 
-## RobertaTokenizer
+## [RobertaTokenizer](#robertatokenizer)
 
 <a id='transformers.RobertaTokenizer'></a>
-> **class transformers.RobertaTokenizer**(vocab_file, merges_file, errors = replace, bos_token = &lcubs>, eos_token = &lcub/s>, sep_token = &lcub/s>, cls_token = &lcubs>, unk_token = &lcubunk>, pad_token = &lcubpad>, mask_token = &lcubmask>, add_prefix_space = False, **kwargs)
+> **class transformers.RobertaTokenizer**(vocab_file, merges_file, errors = 'replace', bos_token = '&amp;lt;s>', eos_token = '&amp;lt;/s>', sep_token = '&amp;lt;/s>', cls_token = '&amp;lt;s>', unk_token = '&amp;lt;unk>', pad_token = '&amp;lt;pad>', mask_token = '&amp;lt;mask>', add_prefix_space = False, **kwargs)
 
 
 Constructs a RoBERTa tokenizer, derived from the GPT-2 tokenizer, using byte-level Byte-Pair-Encoding.
@@ -113,7 +164,7 @@ one).
 
 </Tip>
 
-This tokenizer inherits from [PreTrainedTokenizer](main_classes/tokenizer.html#transformers.PreTrainedTokenizer) which contains most of the main methods.
+This tokenizer inherits from [PreTrainedTokenizer](/docs/transformers/master/en/main_classes/tokenizer.html#transformers.PreTrainedTokenizer) which contains most of the main methods.
 Users should refer to this superclass for more information regarding those methods.
 
 > Parameters
@@ -144,19 +195,19 @@ sequence. The token used is the `sep_token`.
 
 </Tip>
 
-- **sep_token** (`str`, _optional_, defaults to `"&lcub/s>"`) --
+- **sep_token** (`str`, _optional_, defaults to `"&amp;lt;/s>"`) --
   The separator token, which is used when building a sequence from multiple sequences, e.g. two sequences for
   sequence classification or for a text and a question for question answering. It is also used as the last
   token of a sequence built with special tokens.
-- **cls_token** (`str`, _optional_, defaults to `"&lcubs>"`) --
+- **cls_token** (`str`, _optional_, defaults to `"&amp;lt;s>"`) --
   The classifier token which is used when doing sequence classification (classification of the whole sequence
   instead of per-token classification). It is the first token of the sequence when built with special tokens.
-- **unk_token** (`str`, _optional_, defaults to `"&lcubunk>"`) --
+- **unk_token** (`str`, _optional_, defaults to `"&amp;lt;unk>"`) --
   The unknown token. A token that is not in the vocabulary cannot be converted to an ID and is set to be this
   token instead.
-- **pad_token** (`str`, _optional_, defaults to `"&lcubpad>"`) --
+- **pad_token** (`str`, _optional_, defaults to `"&amp;lt;pad>"`) --
   The token used for padding, for example when batching sequences of different lengths.
-- **mask_token** (`str`, _optional_, defaults to `"&lcubmask>"`) --
+- **mask_token** (`str`, _optional_, defaults to `"&amp;lt;mask>"`) --
   The token used for masking values. This is the token used when training this model with masked language
   modeling. This is the token which the model will try to predict.
 - **add_prefix_space** (`bool`, _optional_, defaults to `False`) --
@@ -171,8 +222,8 @@ sequence. The token used is the `sep_token`.
 Build model inputs from a sequence or a pair of sequence for sequence classification tasks by concatenating and
 adding special tokens. A RoBERTa sequence has the following format:
 
-- single sequence: `&lcubs> X &lcub/s>`
-- pair of sequences: `&lcubs> A &lcub/s>&lcub/s> B &lcub/s>`
+- single sequence: `<s> X </s>`
+- pair of sequences: `<s> A </s>&amp;lt;/s> B &amp;lt;/s>`
 
 > Parameters
 
@@ -241,10 +292,10 @@ List of zeros.
 <a id='transformers.GPT2Tokenizer.save_vocabulary'></a>
 > **save\_vocabulary**(self, save_directory: str, filename_prefix: typing.Optional[str] = None)
 
-## RobertaTokenizerFast
+## [RobertaTokenizerFast](#robertatokenizerfast)
 
 <a id='transformers.RobertaTokenizerFast'></a>
-> **class transformers.RobertaTokenizerFast**(vocab_file = None, merges_file = None, tokenizer_file = None, errors = replace, bos_token = &lcubs>, eos_token = &lcub/s>, sep_token = &lcub/s>, cls_token = &lcubs>, unk_token = &lcubunk>, pad_token = &lcubpad>, mask_token = &lcubmask>, add_prefix_space = False, **kwargs)
+> **class transformers.RobertaTokenizerFast**(vocab_file = None, merges_file = None, tokenizer_file = None, errors = 'replace', bos_token = '&amp;lt;s>', eos_token = '&amp;lt;/s>', sep_token = '&amp;lt;/s>', cls_token = '&amp;lt;s>', unk_token = '&amp;lt;unk>', pad_token = '&amp;lt;pad>', mask_token = '&amp;lt;mask>', add_prefix_space = False, **kwargs)
 
 
 Construct a "fast" RoBERTa tokenizer (backed by HuggingFace's _tokenizers_ library), derived from the GPT-2
@@ -272,7 +323,7 @@ When used with `is_split_into_words=True`, this tokenizer needs to be instantiat
 
 </Tip>
 
-This tokenizer inherits from [PreTrainedTokenizerFast](main_classes/tokenizer.html#transformers.PreTrainedTokenizerFast) which contains most of the main
+This tokenizer inherits from [PreTrainedTokenizerFast](/docs/transformers/master/en/main_classes/tokenizer.html#transformers.PreTrainedTokenizerFast) which contains most of the main
 methods. Users should refer to this superclass for more information regarding those methods.
 
 > Parameters
@@ -303,19 +354,19 @@ sequence. The token used is the `sep_token`.
 
 </Tip>
 
-- **sep_token** (`str`, _optional_, defaults to `"&lcub/s>"`) --
+- **sep_token** (`str`, _optional_, defaults to `"&amp;lt;/s>"`) --
   The separator token, which is used when building a sequence from multiple sequences, e.g. two sequences for
   sequence classification or for a text and a question for question answering. It is also used as the last
   token of a sequence built with special tokens.
-- **cls_token** (`str`, _optional_, defaults to `"&lcubs>"`) --
+- **cls_token** (`str`, _optional_, defaults to `"&amp;lt;s>"`) --
   The classifier token which is used when doing sequence classification (classification of the whole sequence
   instead of per-token classification). It is the first token of the sequence when built with special tokens.
-- **unk_token** (`str`, _optional_, defaults to `"&lcubunk>"`) --
+- **unk_token** (`str`, _optional_, defaults to `"&amp;lt;unk>"`) --
   The unknown token. A token that is not in the vocabulary cannot be converted to an ID and is set to be this
   token instead.
-- **pad_token** (`str`, _optional_, defaults to `"&lcubpad>"`) --
+- **pad_token** (`str`, _optional_, defaults to `"&amp;lt;pad>"`) --
   The token used for padding, for example when batching sequences of different lengths.
-- **mask_token** (`str`, _optional_, defaults to `"&lcubmask>"`) --
+- **mask_token** (`str`, _optional_, defaults to `"&amp;lt;mask>"`) --
   The token used for masking values. This is the token used when training this model with masked language
   modeling. This is the token which the model will try to predict.
 - **add_prefix_space** (`bool`, _optional_, defaults to `False`) --
@@ -328,14 +379,14 @@ sequence. The token used is the `sep_token`.
 <a id='transformers.RobertaTokenizerFast.build_inputs_with_special_tokens'></a>
 > **build\_inputs\_with\_special\_tokens**(self, token_ids_0, token_ids_1 = None)
 
-## RobertaModel
+## [RobertaModel](#robertamodel)
 
 <a id='transformers.RobertaModel'></a>
 > **class transformers.RobertaModel**(config, add_pooling_layer = True)
 
 The bare RoBERTa Model transformer outputting raw hidden-states without any specific head on top.
 
-This model inherits from [PreTrainedModel](main_classes/model.html#transformers.PreTrainedModel). Check the superclass documentation for the generic
+This model inherits from [PreTrainedModel](/docs/transformers/master/en/main_classes/model.html#transformers.PreTrainedModel). Check the superclass documentation for the generic
 methods the library implements for all its model (such as downloading or saving, resizing the input embeddings,
 pruning heads etc.)
 
@@ -345,9 +396,9 @@ general usage and behavior.
 
 > Parameters
 
-- **config** ([RobertaConfig](model_doc/roberta.html#transformers.RobertaConfig)) -- Model configuration class with all the parameters of the
+- **config** ([RobertaConfig](/docs/transformers/master/en/model_doc/roberta.html#transformers.RobertaConfig)) -- Model configuration class with all the parameters of the
   model. Initializing with a config file does not load the weights associated with the model, only the
-  configuration. Check out the [from_pretrained()](main_classes/model.html#transformers.PreTrainedModel.from_pretrained) method to load the model
+  configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model.html#transformers.PreTrainedModel.from_pretrained) method to load the model
   weights.
 
 
@@ -368,7 +419,7 @@ general usage and behavior.
 <a id='transformers.RobertaModel.forward'></a>
 > **forward**(self, input_ids = None, attention_mask = None, token_type_ids = None, position_ids = None, head_mask = None, inputs_embeds = None, encoder_hidden_states = None, encoder_attention_mask = None, past_key_values = None, use_cache = None, output_attentions = None, output_hidden_states = None, return_dict = None)
 
-The [RobertaModel](model_doc/roberta.html#transformers.RobertaModel) forward method, overrides the `__call__` special method.
+The [RobertaModel](/docs/transformers/master/en/model_doc/roberta.html#transformers.RobertaModel) forward method, overrides the `__call__` special method.
 
 <Tip>
 
@@ -383,8 +434,8 @@ processing steps while the latter silently ignores them.
 - **input_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`) --
   Indices of input sequence tokens in the vocabulary.
 
-  Indices can be obtained using [RobertaTokenizer](model_doc/roberta.html#transformers.RobertaTokenizer). See
-  [transformers.PreTrainedTokenizer.encode()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
+  Indices can be obtained using [RobertaTokenizer](/docs/transformers/master/en/model_doc/roberta.html#transformers.RobertaTokenizer). See
+  [transformers.PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
   details.
 
   [What are input IDs?](../glossary.html#input-ids)
@@ -423,7 +474,7 @@ processing steps while the latter silently ignores them.
   Whether or not to return the hidden states of all layers. See `hidden_states` under returned tensors for
   more detail.
 - **return_dict** (`bool`, _optional_) --
-  Whether or not to return a [ModelOutput](main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple.
+  Whether or not to return a [ModelOutput](/docs/transformers/master/en/main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple.
 
 - **encoder_hidden_states**  (`torch.FloatTensor` of shape `(batch_size, sequence_length, hidden_size)`, _optional_) --
   Sequence of hidden-states at the output of the last layer of the encoder. Used in the cross-attention if
@@ -446,9 +497,9 @@ processing steps while the latter silently ignores them.
 
 > Returns
 
-A [BaseModelOutputWithPoolingAndCrossAttentions](main_classes/output.html#transformers.modeling_outputs.BaseModelOutputWithPoolingAndCrossAttentions) or a tuple of
+A [BaseModelOutputWithPoolingAndCrossAttentions](/docs/transformers/master/en/main_classes/output.html#transformers.modeling_outputs.BaseModelOutputWithPoolingAndCrossAttentions) or a tuple of
 `torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising
-various elements depending on the configuration ([RobertaConfig](model_doc/roberta.html#transformers.RobertaConfig)) and inputs.
+various elements depending on the configuration ([RobertaConfig](/docs/transformers/master/en/model_doc/roberta.html#transformers.RobertaConfig)) and inputs.
 
 - **last_hidden_state** (`torch.FloatTensor` of shape `(batch_size, sequence_length, hidden_size)`) -- Sequence of hidden-states at the output of the last layer of the model.
 - **pooler_output** (`torch.FloatTensor` of shape `(batch_size, hidden_size)`) -- Last layer hidden-state of the first token of the sequence (classification token) after further processing
@@ -477,7 +528,7 @@ various elements depending on the configuration ([RobertaConfig](model_doc/rober
 
 > Return type
 
-[BaseModelOutputWithPoolingAndCrossAttentions](main_classes/output.html#transformers.modeling_outputs.BaseModelOutputWithPoolingAndCrossAttentions) or `tuple(torch.FloatTensor)`
+[BaseModelOutputWithPoolingAndCrossAttentions](/docs/transformers/master/en/main_classes/output.html#transformers.modeling_outputs.BaseModelOutputWithPoolingAndCrossAttentions) or `tuple(torch.FloatTensor)`
 
 > Example:
 
@@ -495,14 +546,14 @@ various elements depending on the configuration ([RobertaConfig](model_doc/rober
 ```
 
 
-## RobertaForCausalLM
+## [RobertaForCausalLM](#robertaforcausallm)
 
 <a id='transformers.RobertaForCausalLM'></a>
 > **class transformers.RobertaForCausalLM**(config)
 
 RoBERTa Model with a _language modeling_ head on top for CLM fine-tuning. 
 
-This model inherits from [PreTrainedModel](main_classes/model.html#transformers.PreTrainedModel). Check the superclass documentation for the generic
+This model inherits from [PreTrainedModel](/docs/transformers/master/en/main_classes/model.html#transformers.PreTrainedModel). Check the superclass documentation for the generic
 methods the library implements for all its model (such as downloading or saving, resizing the input embeddings,
 pruning heads etc.)
 
@@ -512,16 +563,16 @@ general usage and behavior.
 
 > Parameters
 
-- **config** ([RobertaConfig](model_doc/roberta.html#transformers.RobertaConfig)) -- Model configuration class with all the parameters of the
+- **config** ([RobertaConfig](/docs/transformers/master/en/model_doc/roberta.html#transformers.RobertaConfig)) -- Model configuration class with all the parameters of the
   model. Initializing with a config file does not load the weights associated with the model, only the
-  configuration. Check out the [from_pretrained()](main_classes/model.html#transformers.PreTrainedModel.from_pretrained) method to load the model
+  configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model.html#transformers.PreTrainedModel.from_pretrained) method to load the model
   weights.
 
 
 <a id='transformers.RobertaForCausalLM.forward'></a>
 > **forward**(self, input_ids = None, attention_mask = None, token_type_ids = None, position_ids = None, head_mask = None, inputs_embeds = None, encoder_hidden_states = None, encoder_attention_mask = None, labels = None, past_key_values = None, use_cache = None, output_attentions = None, output_hidden_states = None, return_dict = None)
 
-The [RobertaForCausalLM](model_doc/roberta.html#transformers.RobertaForCausalLM) forward method, overrides the `__call__` special method.
+The [RobertaForCausalLM](/docs/transformers/master/en/model_doc/roberta.html#transformers.RobertaForCausalLM) forward method, overrides the `__call__` special method.
 
 <Tip>
 
@@ -536,8 +587,8 @@ processing steps while the latter silently ignores them.
 - **input_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`) --
   Indices of input sequence tokens in the vocabulary.
 
-  Indices can be obtained using [RobertaTokenizer](model_doc/roberta.html#transformers.RobertaTokenizer). See
-  [transformers.PreTrainedTokenizer.encode()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
+  Indices can be obtained using [RobertaTokenizer](/docs/transformers/master/en/model_doc/roberta.html#transformers.RobertaTokenizer). See
+  [transformers.PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
   details.
 
   [What are input IDs?](../glossary.html#input-ids)
@@ -576,7 +627,7 @@ processing steps while the latter silently ignores them.
   Whether or not to return the hidden states of all layers. See `hidden_states` under returned tensors for
   more detail.
 - **return_dict** (`bool`, _optional_) --
-  Whether or not to return a [ModelOutput](main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple.
+  Whether or not to return a [ModelOutput](/docs/transformers/master/en/main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple.
 
 - **encoder_hidden_states**  (`torch.FloatTensor` of shape `(batch_size, sequence_length, hidden_size)`, _optional_) --
   Sequence of hidden-states at the output of the last layer of the encoder. Used in the cross-attention if
@@ -605,9 +656,9 @@ processing steps while the latter silently ignores them.
 
 > Returns
 
-A [CausalLMOutputWithCrossAttentions](main_classes/output.html#transformers.modeling_outputs.CausalLMOutputWithCrossAttentions) or a tuple of
+A [CausalLMOutputWithCrossAttentions](/docs/transformers/master/en/main_classes/output.html#transformers.modeling_outputs.CausalLMOutputWithCrossAttentions) or a tuple of
 `torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising
-various elements depending on the configuration ([RobertaConfig](model_doc/roberta.html#transformers.RobertaConfig)) and inputs.
+various elements depending on the configuration ([RobertaConfig](/docs/transformers/master/en/model_doc/roberta.html#transformers.RobertaConfig)) and inputs.
 
 - **loss** (`torch.FloatTensor` of shape `(1,)`, _optional_, returned when `labels` is provided) -- Language modeling loss (for next-token prediction).
 - **logits** (`torch.FloatTensor` of shape `(batch_size, sequence_length, config.vocab_size)`) -- Prediction scores of the language modeling head (scores for each vocabulary token before SoftMax).
@@ -650,17 +701,17 @@ various elements depending on the configuration ([RobertaConfig](model_doc/rober
 
 > Return type
 
-[CausalLMOutputWithCrossAttentions](main_classes/output.html#transformers.modeling_outputs.CausalLMOutputWithCrossAttentions) or `tuple(torch.FloatTensor)`
+[CausalLMOutputWithCrossAttentions](/docs/transformers/master/en/main_classes/output.html#transformers.modeling_outputs.CausalLMOutputWithCrossAttentions) or `tuple(torch.FloatTensor)`
 
 
-## RobertaForMaskedLM
+## [RobertaForMaskedLM](#robertaformaskedlm)
 
 <a id='transformers.RobertaForMaskedLM'></a>
 > **class transformers.RobertaForMaskedLM**(config)
 
 RoBERTa Model with a _language modeling_ head on top. 
 
-This model inherits from [PreTrainedModel](main_classes/model.html#transformers.PreTrainedModel). Check the superclass documentation for the generic
+This model inherits from [PreTrainedModel](/docs/transformers/master/en/main_classes/model.html#transformers.PreTrainedModel). Check the superclass documentation for the generic
 methods the library implements for all its model (such as downloading or saving, resizing the input embeddings,
 pruning heads etc.)
 
@@ -670,16 +721,16 @@ general usage and behavior.
 
 > Parameters
 
-- **config** ([RobertaConfig](model_doc/roberta.html#transformers.RobertaConfig)) -- Model configuration class with all the parameters of the
+- **config** ([RobertaConfig](/docs/transformers/master/en/model_doc/roberta.html#transformers.RobertaConfig)) -- Model configuration class with all the parameters of the
   model. Initializing with a config file does not load the weights associated with the model, only the
-  configuration. Check out the [from_pretrained()](main_classes/model.html#transformers.PreTrainedModel.from_pretrained) method to load the model
+  configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model.html#transformers.PreTrainedModel.from_pretrained) method to load the model
   weights.
 
 
 <a id='transformers.RobertaForMaskedLM.forward'></a>
 > **forward**(self, input_ids = None, attention_mask = None, token_type_ids = None, position_ids = None, head_mask = None, inputs_embeds = None, encoder_hidden_states = None, encoder_attention_mask = None, labels = None, output_attentions = None, output_hidden_states = None, return_dict = None)
 
-The [RobertaForMaskedLM](model_doc/roberta.html#transformers.RobertaForMaskedLM) forward method, overrides the `__call__` special method.
+The [RobertaForMaskedLM](/docs/transformers/master/en/model_doc/roberta.html#transformers.RobertaForMaskedLM) forward method, overrides the `__call__` special method.
 
 <Tip>
 
@@ -694,8 +745,8 @@ processing steps while the latter silently ignores them.
 - **input_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`) --
   Indices of input sequence tokens in the vocabulary.
 
-  Indices can be obtained using [RobertaTokenizer](model_doc/roberta.html#transformers.RobertaTokenizer). See
-  [transformers.PreTrainedTokenizer.encode()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
+  Indices can be obtained using [RobertaTokenizer](/docs/transformers/master/en/model_doc/roberta.html#transformers.RobertaTokenizer). See
+  [transformers.PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
   details.
 
   [What are input IDs?](../glossary.html#input-ids)
@@ -734,19 +785,19 @@ processing steps while the latter silently ignores them.
   Whether or not to return the hidden states of all layers. See `hidden_states` under returned tensors for
   more detail.
 - **return_dict** (`bool`, _optional_) --
-  Whether or not to return a [ModelOutput](main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple.
+  Whether or not to return a [ModelOutput](/docs/transformers/master/en/main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple.
 
 - **labels** (`torch.LongTensor` of shape `(batch_size, sequence_length)`, _optional_) --
   Labels for computing the masked language modeling loss. Indices should be in `[-100, 0, ..., config.vocab_size]` (see `input_ids` docstring) Tokens with indices set to `-100` are ignored
   (masked), the loss is only computed for the tokens with labels in `[0, ..., config.vocab_size]`
-- **kwargs** (`Dict[str, any]`, optional, defaults to _&lcub&rcub_) --
+- **kwargs** (`Dict[str, any]`, optional, defaults to _&amp;lcub;}_) --
   Used to hide legacy arguments that have been deprecated.
 
 > Returns
 
-A [MaskedLMOutput](main_classes/output.html#transformers.modeling_outputs.MaskedLMOutput) or a tuple of
+A [MaskedLMOutput](/docs/transformers/master/en/main_classes/output.html#transformers.modeling_outputs.MaskedLMOutput) or a tuple of
 `torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising
-various elements depending on the configuration ([RobertaConfig](model_doc/roberta.html#transformers.RobertaConfig)) and inputs.
+various elements depending on the configuration ([RobertaConfig](/docs/transformers/master/en/model_doc/roberta.html#transformers.RobertaConfig)) and inputs.
 
 - **loss** (`torch.FloatTensor` of shape `(1,)`, _optional_, returned when `labels` is provided) -- Masked language modeling (MLM) loss.
 - **logits** (`torch.FloatTensor` of shape `(batch_size, sequence_length, config.vocab_size)`) -- Prediction scores of the language modeling head (scores for each vocabulary token before SoftMax).
@@ -761,7 +812,7 @@ various elements depending on the configuration ([RobertaConfig](model_doc/rober
 
 > Return type
 
-[MaskedLMOutput](main_classes/output.html#transformers.modeling_outputs.MaskedLMOutput) or `tuple(torch.FloatTensor)`
+[MaskedLMOutput](/docs/transformers/master/en/main_classes/output.html#transformers.modeling_outputs.MaskedLMOutput) or `tuple(torch.FloatTensor)`
 
 > Example:
 
@@ -772,7 +823,7 @@ various elements depending on the configuration ([RobertaConfig](model_doc/rober
 >>> tokenizer = RobertaTokenizer.from_pretrained('roberta-base')
 >>> model = RobertaForMaskedLM.from_pretrained('roberta-base')
 
->>> inputs = tokenizer("The capital of France is &lcubmask>.", return_tensors="pt")
+>>> inputs = tokenizer("The capital of France is &amp;lt;mask>.", return_tensors="pt")
 >>> labels = tokenizer("The capital of France is Paris.", return_tensors="pt")["input_ids"]
 
 >>> outputs = model(**inputs, labels=labels)
@@ -781,7 +832,7 @@ various elements depending on the configuration ([RobertaConfig](model_doc/rober
 ```
 
 
-## RobertaForSequenceClassification
+## [RobertaForSequenceClassification](#robertaforsequenceclassification)
 
 <a id='transformers.RobertaForSequenceClassification'></a>
 > **class transformers.RobertaForSequenceClassification**(config)
@@ -791,7 +842,7 @@ RoBERTa Model transformer with a sequence classification/regression head on top 
 pooled output) e.g. for GLUE tasks.
 
 
-This model inherits from [PreTrainedModel](main_classes/model.html#transformers.PreTrainedModel). Check the superclass documentation for the generic
+This model inherits from [PreTrainedModel](/docs/transformers/master/en/main_classes/model.html#transformers.PreTrainedModel). Check the superclass documentation for the generic
 methods the library implements for all its model (such as downloading or saving, resizing the input embeddings,
 pruning heads etc.)
 
@@ -801,16 +852,16 @@ general usage and behavior.
 
 > Parameters
 
-- **config** ([RobertaConfig](model_doc/roberta.html#transformers.RobertaConfig)) -- Model configuration class with all the parameters of the
+- **config** ([RobertaConfig](/docs/transformers/master/en/model_doc/roberta.html#transformers.RobertaConfig)) -- Model configuration class with all the parameters of the
   model. Initializing with a config file does not load the weights associated with the model, only the
-  configuration. Check out the [from_pretrained()](main_classes/model.html#transformers.PreTrainedModel.from_pretrained) method to load the model
+  configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model.html#transformers.PreTrainedModel.from_pretrained) method to load the model
   weights.
 
 
 <a id='transformers.RobertaForSequenceClassification.forward'></a>
 > **forward**(self, input_ids = None, attention_mask = None, token_type_ids = None, position_ids = None, head_mask = None, inputs_embeds = None, labels = None, output_attentions = None, output_hidden_states = None, return_dict = None)
 
-The [RobertaForSequenceClassification](model_doc/roberta.html#transformers.RobertaForSequenceClassification) forward method, overrides the `__call__` special method.
+The [RobertaForSequenceClassification](/docs/transformers/master/en/model_doc/roberta.html#transformers.RobertaForSequenceClassification) forward method, overrides the `__call__` special method.
 
 <Tip>
 
@@ -825,8 +876,8 @@ processing steps while the latter silently ignores them.
 - **input_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`) --
   Indices of input sequence tokens in the vocabulary.
 
-  Indices can be obtained using [RobertaTokenizer](model_doc/roberta.html#transformers.RobertaTokenizer). See
-  [transformers.PreTrainedTokenizer.encode()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
+  Indices can be obtained using [RobertaTokenizer](/docs/transformers/master/en/model_doc/roberta.html#transformers.RobertaTokenizer). See
+  [transformers.PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
   details.
 
   [What are input IDs?](../glossary.html#input-ids)
@@ -865,7 +916,7 @@ processing steps while the latter silently ignores them.
   Whether or not to return the hidden states of all layers. See `hidden_states` under returned tensors for
   more detail.
 - **return_dict** (`bool`, _optional_) --
-  Whether or not to return a [ModelOutput](main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple.
+  Whether or not to return a [ModelOutput](/docs/transformers/master/en/main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple.
 
 - **labels** (`torch.LongTensor` of shape `(batch_size,)`, _optional_) --
   Labels for computing the sequence classification/regression loss. Indices should be in `[0, ..., config.num_labels - 1]`. If `config.num_labels == 1` a regression loss is computed (Mean-Square loss),
@@ -873,9 +924,9 @@ processing steps while the latter silently ignores them.
 
 > Returns
 
-A [SequenceClassifierOutput](main_classes/output.html#transformers.modeling_outputs.SequenceClassifierOutput) or a tuple of
+A [SequenceClassifierOutput](/docs/transformers/master/en/main_classes/output.html#transformers.modeling_outputs.SequenceClassifierOutput) or a tuple of
 `torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising
-various elements depending on the configuration ([RobertaConfig](model_doc/roberta.html#transformers.RobertaConfig)) and inputs.
+various elements depending on the configuration ([RobertaConfig](/docs/transformers/master/en/model_doc/roberta.html#transformers.RobertaConfig)) and inputs.
 
 - **loss** (`torch.FloatTensor` of shape `(1,)`, _optional_, returned when `labels` is provided) -- Classification (or regression if config.num_labels==1) loss.
 - **logits** (`torch.FloatTensor` of shape `(batch_size, config.num_labels)`) -- Classification (or regression if config.num_labels==1) scores (before SoftMax).
@@ -890,7 +941,7 @@ various elements depending on the configuration ([RobertaConfig](model_doc/rober
 
 > Return type
 
-[SequenceClassifierOutput](main_classes/output.html#transformers.modeling_outputs.SequenceClassifierOutput) or `tuple(torch.FloatTensor)`
+[SequenceClassifierOutput](/docs/transformers/master/en/main_classes/output.html#transformers.modeling_outputs.SequenceClassifierOutput) or `tuple(torch.FloatTensor)`
 
 > Example:
 
@@ -909,7 +960,7 @@ various elements depending on the configuration ([RobertaConfig](model_doc/rober
 ```
 
 
-## RobertaForMultipleChoice
+## [RobertaForMultipleChoice](#robertaformultiplechoice)
 
 <a id='transformers.RobertaForMultipleChoice'></a>
 > **class transformers.RobertaForMultipleChoice**(config)
@@ -919,7 +970,7 @@ Roberta Model with a multiple choice classification head on top (a linear layer 
 softmax) e.g. for RocStories/SWAG tasks.
 
 
-This model inherits from [PreTrainedModel](main_classes/model.html#transformers.PreTrainedModel). Check the superclass documentation for the generic
+This model inherits from [PreTrainedModel](/docs/transformers/master/en/main_classes/model.html#transformers.PreTrainedModel). Check the superclass documentation for the generic
 methods the library implements for all its model (such as downloading or saving, resizing the input embeddings,
 pruning heads etc.)
 
@@ -929,16 +980,16 @@ general usage and behavior.
 
 > Parameters
 
-- **config** ([RobertaConfig](model_doc/roberta.html#transformers.RobertaConfig)) -- Model configuration class with all the parameters of the
+- **config** ([RobertaConfig](/docs/transformers/master/en/model_doc/roberta.html#transformers.RobertaConfig)) -- Model configuration class with all the parameters of the
   model. Initializing with a config file does not load the weights associated with the model, only the
-  configuration. Check out the [from_pretrained()](main_classes/model.html#transformers.PreTrainedModel.from_pretrained) method to load the model
+  configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model.html#transformers.PreTrainedModel.from_pretrained) method to load the model
   weights.
 
 
 <a id='transformers.RobertaForMultipleChoice.forward'></a>
 > **forward**(self, input_ids = None, token_type_ids = None, attention_mask = None, labels = None, position_ids = None, head_mask = None, inputs_embeds = None, output_attentions = None, output_hidden_states = None, return_dict = None)
 
-The [RobertaForMultipleChoice](model_doc/roberta.html#transformers.RobertaForMultipleChoice) forward method, overrides the `__call__` special method.
+The [RobertaForMultipleChoice](/docs/transformers/master/en/model_doc/roberta.html#transformers.RobertaForMultipleChoice) forward method, overrides the `__call__` special method.
 
 <Tip>
 
@@ -953,8 +1004,8 @@ processing steps while the latter silently ignores them.
 - **input_ids** (`torch.LongTensor` of shape `(batch_size, num_choices, sequence_length)`) --
   Indices of input sequence tokens in the vocabulary.
 
-  Indices can be obtained using [RobertaTokenizer](model_doc/roberta.html#transformers.RobertaTokenizer). See
-  [transformers.PreTrainedTokenizer.encode()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
+  Indices can be obtained using [RobertaTokenizer](/docs/transformers/master/en/model_doc/roberta.html#transformers.RobertaTokenizer). See
+  [transformers.PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
   details.
 
   [What are input IDs?](../glossary.html#input-ids)
@@ -993,7 +1044,7 @@ processing steps while the latter silently ignores them.
   Whether or not to return the hidden states of all layers. See `hidden_states` under returned tensors for
   more detail.
 - **return_dict** (`bool`, _optional_) --
-  Whether or not to return a [ModelOutput](main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple.
+  Whether or not to return a [ModelOutput](/docs/transformers/master/en/main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple.
 
 - **labels** (`torch.LongTensor` of shape `(batch_size,)`, _optional_) --
   Labels for computing the multiple choice classification loss. Indices should be in `[0, ..., num_choices-1]` where `num_choices` is the size of the second dimension of the input tensors. (See
@@ -1001,9 +1052,9 @@ processing steps while the latter silently ignores them.
 
 > Returns
 
-A [MultipleChoiceModelOutput](main_classes/output.html#transformers.modeling_outputs.MultipleChoiceModelOutput) or a tuple of
+A [MultipleChoiceModelOutput](/docs/transformers/master/en/main_classes/output.html#transformers.modeling_outputs.MultipleChoiceModelOutput) or a tuple of
 `torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising
-various elements depending on the configuration ([RobertaConfig](model_doc/roberta.html#transformers.RobertaConfig)) and inputs.
+various elements depending on the configuration ([RobertaConfig](/docs/transformers/master/en/model_doc/roberta.html#transformers.RobertaConfig)) and inputs.
 
 - **loss** (`torch.FloatTensor` of shape _(1,)_, _optional_, returned when `labels` is provided) -- Classification loss.
 - **logits** (`torch.FloatTensor` of shape `(batch_size, num_choices)`) -- _num_choices_ is the second dimension of the input tensors. (see _input_ids_ above).
@@ -1020,7 +1071,7 @@ various elements depending on the configuration ([RobertaConfig](model_doc/rober
 
 > Return type
 
-[MultipleChoiceModelOutput](main_classes/output.html#transformers.modeling_outputs.MultipleChoiceModelOutput) or `tuple(torch.FloatTensor)`
+[MultipleChoiceModelOutput](/docs/transformers/master/en/main_classes/output.html#transformers.modeling_outputs.MultipleChoiceModelOutput) or `tuple(torch.FloatTensor)`
 
 > Example:
 
@@ -1037,7 +1088,7 @@ various elements depending on the configuration ([RobertaConfig](model_doc/rober
 >>> labels = torch.tensor(0).unsqueeze(0)  # choice0 is correct (according to Wikipedia ;)), batch size 1
 
 >>> encoding = tokenizer([prompt, prompt], [choice0, choice1], return_tensors='pt', padding=True)
->>> outputs = model(**{k: v.unsqueeze(0) for k,v in encoding.items()}, labels=labels)  # batch size is 1
+>>> outputs = model(**&amp;lcub;k: v.unsqueeze(0) for k,v in encoding.items()}, labels=labels)  # batch size is 1
 
 >>> # the linear classifier still needs to be trained
 >>> loss = outputs.loss
@@ -1045,7 +1096,7 @@ various elements depending on the configuration ([RobertaConfig](model_doc/rober
 ```
 
 
-## RobertaForTokenClassification
+## [RobertaForTokenClassification](#robertafortokenclassification)
 
 <a id='transformers.RobertaForTokenClassification'></a>
 > **class transformers.RobertaForTokenClassification**(config)
@@ -1055,7 +1106,7 @@ Roberta Model with a token classification head on top (a linear layer on top of 
 Named-Entity-Recognition (NER) tasks.
 
 
-This model inherits from [PreTrainedModel](main_classes/model.html#transformers.PreTrainedModel). Check the superclass documentation for the generic
+This model inherits from [PreTrainedModel](/docs/transformers/master/en/main_classes/model.html#transformers.PreTrainedModel). Check the superclass documentation for the generic
 methods the library implements for all its model (such as downloading or saving, resizing the input embeddings,
 pruning heads etc.)
 
@@ -1065,16 +1116,16 @@ general usage and behavior.
 
 > Parameters
 
-- **config** ([RobertaConfig](model_doc/roberta.html#transformers.RobertaConfig)) -- Model configuration class with all the parameters of the
+- **config** ([RobertaConfig](/docs/transformers/master/en/model_doc/roberta.html#transformers.RobertaConfig)) -- Model configuration class with all the parameters of the
   model. Initializing with a config file does not load the weights associated with the model, only the
-  configuration. Check out the [from_pretrained()](main_classes/model.html#transformers.PreTrainedModel.from_pretrained) method to load the model
+  configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model.html#transformers.PreTrainedModel.from_pretrained) method to load the model
   weights.
 
 
 <a id='transformers.RobertaForTokenClassification.forward'></a>
 > **forward**(self, input_ids = None, attention_mask = None, token_type_ids = None, position_ids = None, head_mask = None, inputs_embeds = None, labels = None, output_attentions = None, output_hidden_states = None, return_dict = None)
 
-The [RobertaForTokenClassification](model_doc/roberta.html#transformers.RobertaForTokenClassification) forward method, overrides the `__call__` special method.
+The [RobertaForTokenClassification](/docs/transformers/master/en/model_doc/roberta.html#transformers.RobertaForTokenClassification) forward method, overrides the `__call__` special method.
 
 <Tip>
 
@@ -1089,8 +1140,8 @@ processing steps while the latter silently ignores them.
 - **input_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`) --
   Indices of input sequence tokens in the vocabulary.
 
-  Indices can be obtained using [RobertaTokenizer](model_doc/roberta.html#transformers.RobertaTokenizer). See
-  [transformers.PreTrainedTokenizer.encode()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
+  Indices can be obtained using [RobertaTokenizer](/docs/transformers/master/en/model_doc/roberta.html#transformers.RobertaTokenizer). See
+  [transformers.PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
   details.
 
   [What are input IDs?](../glossary.html#input-ids)
@@ -1129,16 +1180,16 @@ processing steps while the latter silently ignores them.
   Whether or not to return the hidden states of all layers. See `hidden_states` under returned tensors for
   more detail.
 - **return_dict** (`bool`, _optional_) --
-  Whether or not to return a [ModelOutput](main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple.
+  Whether or not to return a [ModelOutput](/docs/transformers/master/en/main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple.
 
 - **labels** (`torch.LongTensor` of shape `(batch_size, sequence_length)`, _optional_) --
   Labels for computing the token classification loss. Indices should be in `[0, ..., config.num_labels - 1]`.
 
 > Returns
 
-A [TokenClassifierOutput](main_classes/output.html#transformers.modeling_outputs.TokenClassifierOutput) or a tuple of
+A [TokenClassifierOutput](/docs/transformers/master/en/main_classes/output.html#transformers.modeling_outputs.TokenClassifierOutput) or a tuple of
 `torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising
-various elements depending on the configuration ([RobertaConfig](model_doc/roberta.html#transformers.RobertaConfig)) and inputs.
+various elements depending on the configuration ([RobertaConfig](/docs/transformers/master/en/model_doc/roberta.html#transformers.RobertaConfig)) and inputs.
 
 - **loss** (`torch.FloatTensor` of shape `(1,)`, _optional_, returned when `labels` is provided)  -- Classification loss.
 - **logits** (`torch.FloatTensor` of shape `(batch_size, sequence_length, config.num_labels)`) -- Classification scores (before SoftMax).
@@ -1153,7 +1204,7 @@ various elements depending on the configuration ([RobertaConfig](model_doc/rober
 
 > Return type
 
-[TokenClassifierOutput](main_classes/output.html#transformers.modeling_outputs.TokenClassifierOutput) or `tuple(torch.FloatTensor)`
+[TokenClassifierOutput](/docs/transformers/master/en/main_classes/output.html#transformers.modeling_outputs.TokenClassifierOutput) or `tuple(torch.FloatTensor)`
 
 > Example:
 
@@ -1173,7 +1224,7 @@ various elements depending on the configuration ([RobertaConfig](model_doc/rober
 ```
 
 
-## RobertaForQuestionAnswering
+## [RobertaForQuestionAnswering](#robertaforquestionanswering)
 
 <a id='transformers.RobertaForQuestionAnswering'></a>
 > **class transformers.RobertaForQuestionAnswering**(config)
@@ -1183,7 +1234,7 @@ Roberta Model with a span classification head on top for extractive question-ans
 layers on top of the hidden-states output to compute _span start logits_ and _span end logits_).
 
 
-This model inherits from [PreTrainedModel](main_classes/model.html#transformers.PreTrainedModel). Check the superclass documentation for the generic
+This model inherits from [PreTrainedModel](/docs/transformers/master/en/main_classes/model.html#transformers.PreTrainedModel). Check the superclass documentation for the generic
 methods the library implements for all its model (such as downloading or saving, resizing the input embeddings,
 pruning heads etc.)
 
@@ -1193,16 +1244,16 @@ general usage and behavior.
 
 > Parameters
 
-- **config** ([RobertaConfig](model_doc/roberta.html#transformers.RobertaConfig)) -- Model configuration class with all the parameters of the
+- **config** ([RobertaConfig](/docs/transformers/master/en/model_doc/roberta.html#transformers.RobertaConfig)) -- Model configuration class with all the parameters of the
   model. Initializing with a config file does not load the weights associated with the model, only the
-  configuration. Check out the [from_pretrained()](main_classes/model.html#transformers.PreTrainedModel.from_pretrained) method to load the model
+  configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model.html#transformers.PreTrainedModel.from_pretrained) method to load the model
   weights.
 
 
 <a id='transformers.RobertaForQuestionAnswering.forward'></a>
 > **forward**(self, input_ids = None, attention_mask = None, token_type_ids = None, position_ids = None, head_mask = None, inputs_embeds = None, start_positions = None, end_positions = None, output_attentions = None, output_hidden_states = None, return_dict = None)
 
-The [RobertaForQuestionAnswering](model_doc/roberta.html#transformers.RobertaForQuestionAnswering) forward method, overrides the `__call__` special method.
+The [RobertaForQuestionAnswering](/docs/transformers/master/en/model_doc/roberta.html#transformers.RobertaForQuestionAnswering) forward method, overrides the `__call__` special method.
 
 <Tip>
 
@@ -1217,8 +1268,8 @@ processing steps while the latter silently ignores them.
 - **input_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`) --
   Indices of input sequence tokens in the vocabulary.
 
-  Indices can be obtained using [RobertaTokenizer](model_doc/roberta.html#transformers.RobertaTokenizer). See
-  [transformers.PreTrainedTokenizer.encode()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
+  Indices can be obtained using [RobertaTokenizer](/docs/transformers/master/en/model_doc/roberta.html#transformers.RobertaTokenizer). See
+  [transformers.PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
   details.
 
   [What are input IDs?](../glossary.html#input-ids)
@@ -1257,7 +1308,7 @@ processing steps while the latter silently ignores them.
   Whether or not to return the hidden states of all layers. See `hidden_states` under returned tensors for
   more detail.
 - **return_dict** (`bool`, _optional_) --
-  Whether or not to return a [ModelOutput](main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple.
+  Whether or not to return a [ModelOutput](/docs/transformers/master/en/main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple.
 
 - **start_positions** (`torch.LongTensor` of shape `(batch_size,)`, _optional_) --
   Labels for position (index) of the start of the labelled span for computing the token classification loss.
@@ -1270,9 +1321,9 @@ processing steps while the latter silently ignores them.
 
 > Returns
 
-A [QuestionAnsweringModelOutput](main_classes/output.html#transformers.modeling_outputs.QuestionAnsweringModelOutput) or a tuple of
+A [QuestionAnsweringModelOutput](/docs/transformers/master/en/main_classes/output.html#transformers.modeling_outputs.QuestionAnsweringModelOutput) or a tuple of
 `torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising
-various elements depending on the configuration ([RobertaConfig](model_doc/roberta.html#transformers.RobertaConfig)) and inputs.
+various elements depending on the configuration ([RobertaConfig](/docs/transformers/master/en/model_doc/roberta.html#transformers.RobertaConfig)) and inputs.
 
 - **loss** (`torch.FloatTensor` of shape `(1,)`, _optional_, returned when `labels` is provided) -- Total span extraction loss is the sum of a Cross-Entropy for the start and end positions.
 - **start_logits** (`torch.FloatTensor` of shape `(batch_size, sequence_length)`) -- Span-start scores (before SoftMax).
@@ -1288,7 +1339,7 @@ various elements depending on the configuration ([RobertaConfig](model_doc/rober
 
 > Return type
 
-[QuestionAnsweringModelOutput](main_classes/output.html#transformers.modeling_outputs.QuestionAnsweringModelOutput) or `tuple(torch.FloatTensor)`
+[QuestionAnsweringModelOutput](/docs/transformers/master/en/main_classes/output.html#transformers.modeling_outputs.QuestionAnsweringModelOutput) or `tuple(torch.FloatTensor)`
 
 > Example:
 
@@ -1311,14 +1362,14 @@ various elements depending on the configuration ([RobertaConfig](model_doc/rober
 ```
 
 
-## TFRobertaModel
+## [TFRobertaModel](#tfrobertamodel)
 
 <a id='transformers.TFRobertaModel'></a>
 > **class transformers.TFRobertaModel**(*args, **kwargs)
 
 The bare RoBERTa Model transformer outputting raw hidden-states without any specific head on top.
 
-This model inherits from [TFPreTrainedModel](main_classes/model.html#transformers.TFPreTrainedModel). Check the superclass documentation for the
+This model inherits from [TFPreTrainedModel](/docs/transformers/master/en/main_classes/model.html#transformers.TFPreTrainedModel). Check the superclass documentation for the
 generic methods the library implements for all its model (such as downloading or saving, resizing the input
 embeddings, pruning heads etc.)
 
@@ -1343,22 +1394,22 @@ the first positional argument :
 - a list of varying length with one or several input Tensors IN THE ORDER given in the docstring:
   `model([input_ids, attention_mask])` or `model([input_ids, attention_mask, token_type_ids])`
 - a dictionary with one or several input Tensors associated to the input names given in the docstring:
-  `model({"input_ids": input_ids, "token_type_ids": token_type_ids})`
+  `model(&amp;lcub;"input_ids": input_ids, "token_type_ids": token_type_ids})`
 
 </Tip>
 
 > Parameters
 
-- **config** ([RobertaConfig](model_doc/roberta.html#transformers.RobertaConfig)) -- Model configuration class with all the parameters of the
+- **config** ([RobertaConfig](/docs/transformers/master/en/model_doc/roberta.html#transformers.RobertaConfig)) -- Model configuration class with all the parameters of the
   model. Initializing with a config file does not load the weights associated with the model, only the
-  configuration. Check out the [from_pretrained()](main_classes/model.html#transformers.PreTrainedModel.from_pretrained) method to load the model
+  configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model.html#transformers.PreTrainedModel.from_pretrained) method to load the model
   weights.
 
 
 <a id='transformers.TFRobertaModel.call'></a>
 > **call**(self, input_ids = None, attention_mask = None, token_type_ids = None, position_ids = None, head_mask = None, inputs_embeds = None, output_attentions = None, output_hidden_states = None, return_dict = None, training = False, **kwargs)
 
-The [TFRobertaModel](model_doc/roberta.html#transformers.TFRobertaModel) forward method, overrides the `__call__` special method.
+The [TFRobertaModel](/docs/transformers/master/en/model_doc/roberta.html#transformers.TFRobertaModel) forward method, overrides the `__call__` special method.
 
 <Tip>
 
@@ -1373,8 +1424,8 @@ processing steps while the latter silently ignores them.
 - **input_ids** (`Numpy array` or `tf.Tensor` of shape `(batch_size, sequence_length)`) --
   Indices of input sequence tokens in the vocabulary.
 
-  Indices can be obtained using [RobertaTokenizer](model_doc/roberta.html#transformers.RobertaTokenizer). See
-  [transformers.PreTrainedTokenizer.__call__()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) and [transformers.PreTrainedTokenizer.encode()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) for
+  Indices can be obtained using [RobertaTokenizer](/docs/transformers/master/en/model_doc/roberta.html#transformers.RobertaTokenizer). See
+  [transformers.PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) and [transformers.PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) for
   details.
 
   [What are input IDs?](../glossary.html#input-ids)
@@ -1415,7 +1466,7 @@ processing steps while the latter silently ignores them.
   more detail. This argument can be used only in eager mode, in graph mode the value in the config will be
   used instead.
 - **return_dict** (`bool`, _optional_) --
-  Whether or not to return a [ModelOutput](main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple. This
+  Whether or not to return a [ModelOutput](/docs/transformers/master/en/main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple. This
   argument can be used in eager mode, in graph mode the value will always be set to True.
 - **training** (`bool`, _optional_, defaults to `False`) --
   Whether or not to use the model in training mode (some modules like dropout modules have different
@@ -1423,9 +1474,9 @@ processing steps while the latter silently ignores them.
 
 > Returns
 
-A [TFBaseModelOutputWithPooling](main_classes/output.html#transformers.modeling_tf_outputs.TFBaseModelOutputWithPooling) or a tuple of
+A [TFBaseModelOutputWithPooling](/docs/transformers/master/en/main_classes/output.html#transformers.modeling_tf_outputs.TFBaseModelOutputWithPooling) or a tuple of
 `tf.Tensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising various
-elements depending on the configuration ([RobertaConfig](model_doc/roberta.html#transformers.RobertaConfig)) and inputs.
+elements depending on the configuration ([RobertaConfig](/docs/transformers/master/en/model_doc/roberta.html#transformers.RobertaConfig)) and inputs.
 
 - **last_hidden_state** (`tf.Tensor` of shape `(batch_size, sequence_length, hidden_size)`) -- Sequence of hidden-states at the output of the last layer of the model.
 - **pooler_output** (`tf.Tensor` of shape `(batch_size, hidden_size)`) -- Last layer hidden-state of the first token of the sequence (classification token) further processed by a
@@ -1445,7 +1496,7 @@ elements depending on the configuration ([RobertaConfig](model_doc/roberta.html#
 
 > Return type
 
-[TFBaseModelOutputWithPooling](main_classes/output.html#transformers.modeling_tf_outputs.TFBaseModelOutputWithPooling) or `tuple(tf.Tensor)`
+[TFBaseModelOutputWithPooling](/docs/transformers/master/en/main_classes/output.html#transformers.modeling_tf_outputs.TFBaseModelOutputWithPooling) or `tuple(tf.Tensor)`
 
 > Example:
 
@@ -1463,14 +1514,14 @@ elements depending on the configuration ([RobertaConfig](model_doc/roberta.html#
 ```
 
 
-## TFRobertaForMaskedLM
+## [TFRobertaForMaskedLM](#tfrobertaformaskedlm)
 
 <a id='transformers.TFRobertaForMaskedLM'></a>
 > **class transformers.TFRobertaForMaskedLM**(*args, **kwargs)
 
 RoBERTa Model with a _language modeling_ head on top. 
 
-This model inherits from [TFPreTrainedModel](main_classes/model.html#transformers.TFPreTrainedModel). Check the superclass documentation for the
+This model inherits from [TFPreTrainedModel](/docs/transformers/master/en/main_classes/model.html#transformers.TFPreTrainedModel). Check the superclass documentation for the
 generic methods the library implements for all its model (such as downloading or saving, resizing the input
 embeddings, pruning heads etc.)
 
@@ -1495,22 +1546,22 @@ the first positional argument :
 - a list of varying length with one or several input Tensors IN THE ORDER given in the docstring:
   `model([input_ids, attention_mask])` or `model([input_ids, attention_mask, token_type_ids])`
 - a dictionary with one or several input Tensors associated to the input names given in the docstring:
-  `model({"input_ids": input_ids, "token_type_ids": token_type_ids})`
+  `model(&amp;lcub;"input_ids": input_ids, "token_type_ids": token_type_ids})`
 
 </Tip>
 
 > Parameters
 
-- **config** ([RobertaConfig](model_doc/roberta.html#transformers.RobertaConfig)) -- Model configuration class with all the parameters of the
+- **config** ([RobertaConfig](/docs/transformers/master/en/model_doc/roberta.html#transformers.RobertaConfig)) -- Model configuration class with all the parameters of the
   model. Initializing with a config file does not load the weights associated with the model, only the
-  configuration. Check out the [from_pretrained()](main_classes/model.html#transformers.PreTrainedModel.from_pretrained) method to load the model
+  configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model.html#transformers.PreTrainedModel.from_pretrained) method to load the model
   weights.
 
 
 <a id='transformers.TFRobertaForMaskedLM.call'></a>
 > **call**(self, input_ids = None, attention_mask = None, token_type_ids = None, position_ids = None, head_mask = None, inputs_embeds = None, output_attentions = None, output_hidden_states = None, return_dict = None, labels = None, training = False, **kwargs)
 
-The [TFRobertaForMaskedLM](model_doc/roberta.html#transformers.TFRobertaForMaskedLM) forward method, overrides the `__call__` special method.
+The [TFRobertaForMaskedLM](/docs/transformers/master/en/model_doc/roberta.html#transformers.TFRobertaForMaskedLM) forward method, overrides the `__call__` special method.
 
 <Tip>
 
@@ -1525,8 +1576,8 @@ processing steps while the latter silently ignores them.
 - **input_ids** (`Numpy array` or `tf.Tensor` of shape `(batch_size, sequence_length)`) --
   Indices of input sequence tokens in the vocabulary.
 
-  Indices can be obtained using [RobertaTokenizer](model_doc/roberta.html#transformers.RobertaTokenizer). See
-  [transformers.PreTrainedTokenizer.__call__()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) and [transformers.PreTrainedTokenizer.encode()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) for
+  Indices can be obtained using [RobertaTokenizer](/docs/transformers/master/en/model_doc/roberta.html#transformers.RobertaTokenizer). See
+  [transformers.PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) and [transformers.PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) for
   details.
 
   [What are input IDs?](../glossary.html#input-ids)
@@ -1567,7 +1618,7 @@ processing steps while the latter silently ignores them.
   more detail. This argument can be used only in eager mode, in graph mode the value in the config will be
   used instead.
 - **return_dict** (`bool`, _optional_) --
-  Whether or not to return a [ModelOutput](main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple. This
+  Whether or not to return a [ModelOutput](/docs/transformers/master/en/main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple. This
   argument can be used in eager mode, in graph mode the value will always be set to True.
 - **training** (`bool`, _optional_, defaults to `False`) --
   Whether or not to use the model in training mode (some modules like dropout modules have different
@@ -1579,9 +1630,9 @@ processing steps while the latter silently ignores them.
 
 > Returns
 
-A [TFMaskedLMOutput](main_classes/output.html#transformers.modeling_tf_outputs.TFMaskedLMOutput) or a tuple of
+A [TFMaskedLMOutput](/docs/transformers/master/en/main_classes/output.html#transformers.modeling_tf_outputs.TFMaskedLMOutput) or a tuple of
 `tf.Tensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising various
-elements depending on the configuration ([RobertaConfig](model_doc/roberta.html#transformers.RobertaConfig)) and inputs.
+elements depending on the configuration ([RobertaConfig](/docs/transformers/master/en/model_doc/roberta.html#transformers.RobertaConfig)) and inputs.
 
 - **loss** (`tf.Tensor` of shape `(n,)`, _optional_, where n is the number of non-masked labels, returned when `labels` is provided) -- Masked language modeling (MLM) loss.
 - **logits** (`tf.Tensor` of shape `(batch_size, sequence_length, config.vocab_size)`) -- Prediction scores of the language modeling head (scores for each vocabulary token before SoftMax).
@@ -1596,7 +1647,7 @@ elements depending on the configuration ([RobertaConfig](model_doc/roberta.html#
 
 > Return type
 
-[TFMaskedLMOutput](main_classes/output.html#transformers.modeling_tf_outputs.TFMaskedLMOutput) or `tuple(tf.Tensor)`
+[TFMaskedLMOutput](/docs/transformers/master/en/main_classes/output.html#transformers.modeling_tf_outputs.TFMaskedLMOutput) or `tuple(tf.Tensor)`
 
 > Example:
 
@@ -1616,7 +1667,7 @@ elements depending on the configuration ([RobertaConfig](model_doc/roberta.html#
 ```
 
 
-## TFRobertaForSequenceClassification
+## [TFRobertaForSequenceClassification](#tfrobertaforsequenceclassification)
 
 <a id='transformers.TFRobertaForSequenceClassification'></a>
 > **class transformers.TFRobertaForSequenceClassification**(*args, **kwargs)
@@ -1626,7 +1677,7 @@ RoBERTa Model transformer with a sequence classification/regression head on top 
 pooled output) e.g. for GLUE tasks.
 
 
-This model inherits from [TFPreTrainedModel](main_classes/model.html#transformers.TFPreTrainedModel). Check the superclass documentation for the
+This model inherits from [TFPreTrainedModel](/docs/transformers/master/en/main_classes/model.html#transformers.TFPreTrainedModel). Check the superclass documentation for the
 generic methods the library implements for all its model (such as downloading or saving, resizing the input
 embeddings, pruning heads etc.)
 
@@ -1651,22 +1702,22 @@ the first positional argument :
 - a list of varying length with one or several input Tensors IN THE ORDER given in the docstring:
   `model([input_ids, attention_mask])` or `model([input_ids, attention_mask, token_type_ids])`
 - a dictionary with one or several input Tensors associated to the input names given in the docstring:
-  `model({"input_ids": input_ids, "token_type_ids": token_type_ids})`
+  `model(&amp;lcub;"input_ids": input_ids, "token_type_ids": token_type_ids})`
 
 </Tip>
 
 > Parameters
 
-- **config** ([RobertaConfig](model_doc/roberta.html#transformers.RobertaConfig)) -- Model configuration class with all the parameters of the
+- **config** ([RobertaConfig](/docs/transformers/master/en/model_doc/roberta.html#transformers.RobertaConfig)) -- Model configuration class with all the parameters of the
   model. Initializing with a config file does not load the weights associated with the model, only the
-  configuration. Check out the [from_pretrained()](main_classes/model.html#transformers.PreTrainedModel.from_pretrained) method to load the model
+  configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model.html#transformers.PreTrainedModel.from_pretrained) method to load the model
   weights.
 
 
 <a id='transformers.TFRobertaForSequenceClassification.call'></a>
 > **call**(self, input_ids = None, attention_mask = None, token_type_ids = None, position_ids = None, head_mask = None, inputs_embeds = None, output_attentions = None, output_hidden_states = None, return_dict = None, labels = None, training = False, **kwargs)
 
-The [TFRobertaForSequenceClassification](model_doc/roberta.html#transformers.TFRobertaForSequenceClassification) forward method, overrides the `__call__` special method.
+The [TFRobertaForSequenceClassification](/docs/transformers/master/en/model_doc/roberta.html#transformers.TFRobertaForSequenceClassification) forward method, overrides the `__call__` special method.
 
 <Tip>
 
@@ -1681,8 +1732,8 @@ processing steps while the latter silently ignores them.
 - **input_ids** (`Numpy array` or `tf.Tensor` of shape `(batch_size, sequence_length)`) --
   Indices of input sequence tokens in the vocabulary.
 
-  Indices can be obtained using [RobertaTokenizer](model_doc/roberta.html#transformers.RobertaTokenizer). See
-  [transformers.PreTrainedTokenizer.__call__()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) and [transformers.PreTrainedTokenizer.encode()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) for
+  Indices can be obtained using [RobertaTokenizer](/docs/transformers/master/en/model_doc/roberta.html#transformers.RobertaTokenizer). See
+  [transformers.PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) and [transformers.PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) for
   details.
 
   [What are input IDs?](../glossary.html#input-ids)
@@ -1723,7 +1774,7 @@ processing steps while the latter silently ignores them.
   more detail. This argument can be used only in eager mode, in graph mode the value in the config will be
   used instead.
 - **return_dict** (`bool`, _optional_) --
-  Whether or not to return a [ModelOutput](main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple. This
+  Whether or not to return a [ModelOutput](/docs/transformers/master/en/main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple. This
   argument can be used in eager mode, in graph mode the value will always be set to True.
 - **training** (`bool`, _optional_, defaults to `False`) --
   Whether or not to use the model in training mode (some modules like dropout modules have different
@@ -1735,9 +1786,9 @@ processing steps while the latter silently ignores them.
 
 > Returns
 
-A [TFSequenceClassifierOutput](main_classes/output.html#transformers.modeling_tf_outputs.TFSequenceClassifierOutput) or a tuple of
+A [TFSequenceClassifierOutput](/docs/transformers/master/en/main_classes/output.html#transformers.modeling_tf_outputs.TFSequenceClassifierOutput) or a tuple of
 `tf.Tensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising various
-elements depending on the configuration ([RobertaConfig](model_doc/roberta.html#transformers.RobertaConfig)) and inputs.
+elements depending on the configuration ([RobertaConfig](/docs/transformers/master/en/model_doc/roberta.html#transformers.RobertaConfig)) and inputs.
 
 - **loss** (`tf.Tensor` of shape `(batch_size, )`, _optional_, returned when `labels` is provided) -- Classification (or regression if config.num_labels==1) loss.
 - **logits** (`tf.Tensor` of shape `(batch_size, config.num_labels)`) -- Classification (or regression if config.num_labels==1) scores (before SoftMax).
@@ -1752,7 +1803,7 @@ elements depending on the configuration ([RobertaConfig](model_doc/roberta.html#
 
 > Return type
 
-[TFSequenceClassifierOutput](main_classes/output.html#transformers.modeling_tf_outputs.TFSequenceClassifierOutput) or `tuple(tf.Tensor)`
+[TFSequenceClassifierOutput](/docs/transformers/master/en/main_classes/output.html#transformers.modeling_tf_outputs.TFSequenceClassifierOutput) or `tuple(tf.Tensor)`
 
 > Example:
 
@@ -1772,7 +1823,7 @@ elements depending on the configuration ([RobertaConfig](model_doc/roberta.html#
 ```
 
 
-## TFRobertaForMultipleChoice
+## [TFRobertaForMultipleChoice](#tfrobertaformultiplechoice)
 
 <a id='transformers.TFRobertaForMultipleChoice'></a>
 > **class transformers.TFRobertaForMultipleChoice**(*args, **kwargs)
@@ -1782,7 +1833,7 @@ Roberta Model with a multiple choice classification head on top (a linear layer 
 softmax) e.g. for RocStories/SWAG tasks.
 
 
-This model inherits from [TFPreTrainedModel](main_classes/model.html#transformers.TFPreTrainedModel). Check the superclass documentation for the
+This model inherits from [TFPreTrainedModel](/docs/transformers/master/en/main_classes/model.html#transformers.TFPreTrainedModel). Check the superclass documentation for the
 generic methods the library implements for all its model (such as downloading or saving, resizing the input
 embeddings, pruning heads etc.)
 
@@ -1807,22 +1858,22 @@ the first positional argument :
 - a list of varying length with one or several input Tensors IN THE ORDER given in the docstring:
   `model([input_ids, attention_mask])` or `model([input_ids, attention_mask, token_type_ids])`
 - a dictionary with one or several input Tensors associated to the input names given in the docstring:
-  `model({"input_ids": input_ids, "token_type_ids": token_type_ids})`
+  `model(&amp;lcub;"input_ids": input_ids, "token_type_ids": token_type_ids})`
 
 </Tip>
 
 > Parameters
 
-- **config** ([RobertaConfig](model_doc/roberta.html#transformers.RobertaConfig)) -- Model configuration class with all the parameters of the
+- **config** ([RobertaConfig](/docs/transformers/master/en/model_doc/roberta.html#transformers.RobertaConfig)) -- Model configuration class with all the parameters of the
   model. Initializing with a config file does not load the weights associated with the model, only the
-  configuration. Check out the [from_pretrained()](main_classes/model.html#transformers.PreTrainedModel.from_pretrained) method to load the model
+  configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model.html#transformers.PreTrainedModel.from_pretrained) method to load the model
   weights.
 
 
 <a id='transformers.TFRobertaForMultipleChoice.call'></a>
 > **call**(self, input_ids = None, attention_mask = None, token_type_ids = None, position_ids = None, head_mask = None, inputs_embeds = None, output_attentions = None, output_hidden_states = None, return_dict = None, labels = None, training = False, **kwargs)
 
-The [TFRobertaForMultipleChoice](model_doc/roberta.html#transformers.TFRobertaForMultipleChoice) forward method, overrides the `__call__` special method.
+The [TFRobertaForMultipleChoice](/docs/transformers/master/en/model_doc/roberta.html#transformers.TFRobertaForMultipleChoice) forward method, overrides the `__call__` special method.
 
 <Tip>
 
@@ -1837,8 +1888,8 @@ processing steps while the latter silently ignores them.
 - **input_ids** (`Numpy array` or `tf.Tensor` of shape `(batch_size, num_choices, sequence_length)`) --
   Indices of input sequence tokens in the vocabulary.
 
-  Indices can be obtained using [RobertaTokenizer](model_doc/roberta.html#transformers.RobertaTokenizer). See
-  [transformers.PreTrainedTokenizer.__call__()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) and [transformers.PreTrainedTokenizer.encode()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) for
+  Indices can be obtained using [RobertaTokenizer](/docs/transformers/master/en/model_doc/roberta.html#transformers.RobertaTokenizer). See
+  [transformers.PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) and [transformers.PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) for
   details.
 
   [What are input IDs?](../glossary.html#input-ids)
@@ -1879,7 +1930,7 @@ processing steps while the latter silently ignores them.
   more detail. This argument can be used only in eager mode, in graph mode the value in the config will be
   used instead.
 - **return_dict** (`bool`, _optional_) --
-  Whether or not to return a [ModelOutput](main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple. This
+  Whether or not to return a [ModelOutput](/docs/transformers/master/en/main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple. This
   argument can be used in eager mode, in graph mode the value will always be set to True.
 - **training** (`bool`, _optional_, defaults to `False`) --
   Whether or not to use the model in training mode (some modules like dropout modules have different
@@ -1891,9 +1942,9 @@ processing steps while the latter silently ignores them.
 
 > Returns
 
-A [TFMultipleChoiceModelOutput](main_classes/output.html#transformers.modeling_tf_outputs.TFMultipleChoiceModelOutput) or a tuple of
+A [TFMultipleChoiceModelOutput](/docs/transformers/master/en/main_classes/output.html#transformers.modeling_tf_outputs.TFMultipleChoiceModelOutput) or a tuple of
 `tf.Tensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising various
-elements depending on the configuration ([RobertaConfig](model_doc/roberta.html#transformers.RobertaConfig)) and inputs.
+elements depending on the configuration ([RobertaConfig](/docs/transformers/master/en/model_doc/roberta.html#transformers.RobertaConfig)) and inputs.
 
 - **loss** (`tf.Tensor` of shape _(batch_size, )_, _optional_, returned when `labels` is provided) -- Classification loss.
 - **logits** (`tf.Tensor` of shape `(batch_size, num_choices)`) -- _num_choices_ is the second dimension of the input tensors. (see _input_ids_ above).
@@ -1910,7 +1961,7 @@ elements depending on the configuration ([RobertaConfig](model_doc/roberta.html#
 
 > Return type
 
-[TFMultipleChoiceModelOutput](main_classes/output.html#transformers.modeling_tf_outputs.TFMultipleChoiceModelOutput) or `tuple(tf.Tensor)`
+[TFMultipleChoiceModelOutput](/docs/transformers/master/en/main_classes/output.html#transformers.modeling_tf_outputs.TFMultipleChoiceModelOutput) or `tuple(tf.Tensor)`
 
 > Example:
 
@@ -1926,7 +1977,7 @@ elements depending on the configuration ([RobertaConfig](model_doc/roberta.html#
 >>> choice1 = "It is eaten while held in the hand."
 
 >>> encoding = tokenizer([prompt, prompt], [choice0, choice1], return_tensors='tf', padding=True)
->>> inputs = {k: tf.expand_dims(v, 0) for k, v in encoding.items()}
+>>> inputs = &amp;lcub;k: tf.expand_dims(v, 0) for k, v in encoding.items()}
 >>> outputs = model(inputs)  # batch size is 1
 
 >>> # the linear classifier still needs to be trained
@@ -1934,7 +1985,7 @@ elements depending on the configuration ([RobertaConfig](model_doc/roberta.html#
 ```
 
 
-## TFRobertaForTokenClassification
+## [TFRobertaForTokenClassification](#tfrobertafortokenclassification)
 
 <a id='transformers.TFRobertaForTokenClassification'></a>
 > **class transformers.TFRobertaForTokenClassification**(*args, **kwargs)
@@ -1944,7 +1995,7 @@ RoBERTa Model with a token classification head on top (a linear layer on top of 
 Named-Entity-Recognition (NER) tasks.
 
 
-This model inherits from [TFPreTrainedModel](main_classes/model.html#transformers.TFPreTrainedModel). Check the superclass documentation for the
+This model inherits from [TFPreTrainedModel](/docs/transformers/master/en/main_classes/model.html#transformers.TFPreTrainedModel). Check the superclass documentation for the
 generic methods the library implements for all its model (such as downloading or saving, resizing the input
 embeddings, pruning heads etc.)
 
@@ -1969,22 +2020,22 @@ the first positional argument :
 - a list of varying length with one or several input Tensors IN THE ORDER given in the docstring:
   `model([input_ids, attention_mask])` or `model([input_ids, attention_mask, token_type_ids])`
 - a dictionary with one or several input Tensors associated to the input names given in the docstring:
-  `model({"input_ids": input_ids, "token_type_ids": token_type_ids})`
+  `model(&amp;lcub;"input_ids": input_ids, "token_type_ids": token_type_ids})`
 
 </Tip>
 
 > Parameters
 
-- **config** ([RobertaConfig](model_doc/roberta.html#transformers.RobertaConfig)) -- Model configuration class with all the parameters of the
+- **config** ([RobertaConfig](/docs/transformers/master/en/model_doc/roberta.html#transformers.RobertaConfig)) -- Model configuration class with all the parameters of the
   model. Initializing with a config file does not load the weights associated with the model, only the
-  configuration. Check out the [from_pretrained()](main_classes/model.html#transformers.PreTrainedModel.from_pretrained) method to load the model
+  configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model.html#transformers.PreTrainedModel.from_pretrained) method to load the model
   weights.
 
 
 <a id='transformers.TFRobertaForTokenClassification.call'></a>
 > **call**(self, input_ids = None, attention_mask = None, token_type_ids = None, position_ids = None, head_mask = None, inputs_embeds = None, output_attentions = None, output_hidden_states = None, return_dict = None, labels = None, training = False, **kwargs)
 
-The [TFRobertaForTokenClassification](model_doc/roberta.html#transformers.TFRobertaForTokenClassification) forward method, overrides the `__call__` special method.
+The [TFRobertaForTokenClassification](/docs/transformers/master/en/model_doc/roberta.html#transformers.TFRobertaForTokenClassification) forward method, overrides the `__call__` special method.
 
 <Tip>
 
@@ -1999,8 +2050,8 @@ processing steps while the latter silently ignores them.
 - **input_ids** (`Numpy array` or `tf.Tensor` of shape `(batch_size, sequence_length)`) --
   Indices of input sequence tokens in the vocabulary.
 
-  Indices can be obtained using [RobertaTokenizer](model_doc/roberta.html#transformers.RobertaTokenizer). See
-  [transformers.PreTrainedTokenizer.__call__()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) and [transformers.PreTrainedTokenizer.encode()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) for
+  Indices can be obtained using [RobertaTokenizer](/docs/transformers/master/en/model_doc/roberta.html#transformers.RobertaTokenizer). See
+  [transformers.PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) and [transformers.PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) for
   details.
 
   [What are input IDs?](../glossary.html#input-ids)
@@ -2041,7 +2092,7 @@ processing steps while the latter silently ignores them.
   more detail. This argument can be used only in eager mode, in graph mode the value in the config will be
   used instead.
 - **return_dict** (`bool`, _optional_) --
-  Whether or not to return a [ModelOutput](main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple. This
+  Whether or not to return a [ModelOutput](/docs/transformers/master/en/main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple. This
   argument can be used in eager mode, in graph mode the value will always be set to True.
 - **training** (`bool`, _optional_, defaults to `False`) --
   Whether or not to use the model in training mode (some modules like dropout modules have different
@@ -2052,9 +2103,9 @@ processing steps while the latter silently ignores them.
 
 > Returns
 
-A [TFTokenClassifierOutput](main_classes/output.html#transformers.modeling_tf_outputs.TFTokenClassifierOutput) or a tuple of
+A [TFTokenClassifierOutput](/docs/transformers/master/en/main_classes/output.html#transformers.modeling_tf_outputs.TFTokenClassifierOutput) or a tuple of
 `tf.Tensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising various
-elements depending on the configuration ([RobertaConfig](model_doc/roberta.html#transformers.RobertaConfig)) and inputs.
+elements depending on the configuration ([RobertaConfig](/docs/transformers/master/en/model_doc/roberta.html#transformers.RobertaConfig)) and inputs.
 
 - **loss** (`tf.Tensor` of shape `(n,)`, _optional_, where n is the number of unmasked labels, returned when `labels` is provided)  -- Classification loss.
 - **logits** (`tf.Tensor` of shape `(batch_size, sequence_length, config.num_labels)`) -- Classification scores (before SoftMax).
@@ -2069,7 +2120,7 @@ elements depending on the configuration ([RobertaConfig](model_doc/roberta.html#
 
 > Return type
 
-[TFTokenClassifierOutput](main_classes/output.html#transformers.modeling_tf_outputs.TFTokenClassifierOutput) or `tuple(tf.Tensor)`
+[TFTokenClassifierOutput](/docs/transformers/master/en/main_classes/output.html#transformers.modeling_tf_outputs.TFTokenClassifierOutput) or `tuple(tf.Tensor)`
 
 > Example:
 
@@ -2090,7 +2141,7 @@ elements depending on the configuration ([RobertaConfig](model_doc/roberta.html#
 ```
 
 
-## TFRobertaForQuestionAnswering
+## [TFRobertaForQuestionAnswering](#tfrobertaforquestionanswering)
 
 <a id='transformers.TFRobertaForQuestionAnswering'></a>
 > **class transformers.TFRobertaForQuestionAnswering**(*args, **kwargs)
@@ -2100,7 +2151,7 @@ RoBERTa Model with a span classification head on top for extractive question-ans
 layers on top of the hidden-states output to compute _span start logits_ and _span end logits_).
 
 
-This model inherits from [TFPreTrainedModel](main_classes/model.html#transformers.TFPreTrainedModel). Check the superclass documentation for the
+This model inherits from [TFPreTrainedModel](/docs/transformers/master/en/main_classes/model.html#transformers.TFPreTrainedModel). Check the superclass documentation for the
 generic methods the library implements for all its model (such as downloading or saving, resizing the input
 embeddings, pruning heads etc.)
 
@@ -2125,22 +2176,22 @@ the first positional argument :
 - a list of varying length with one or several input Tensors IN THE ORDER given in the docstring:
   `model([input_ids, attention_mask])` or `model([input_ids, attention_mask, token_type_ids])`
 - a dictionary with one or several input Tensors associated to the input names given in the docstring:
-  `model({"input_ids": input_ids, "token_type_ids": token_type_ids})`
+  `model(&amp;lcub;"input_ids": input_ids, "token_type_ids": token_type_ids})`
 
 </Tip>
 
 > Parameters
 
-- **config** ([RobertaConfig](model_doc/roberta.html#transformers.RobertaConfig)) -- Model configuration class with all the parameters of the
+- **config** ([RobertaConfig](/docs/transformers/master/en/model_doc/roberta.html#transformers.RobertaConfig)) -- Model configuration class with all the parameters of the
   model. Initializing with a config file does not load the weights associated with the model, only the
-  configuration. Check out the [from_pretrained()](main_classes/model.html#transformers.PreTrainedModel.from_pretrained) method to load the model
+  configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model.html#transformers.PreTrainedModel.from_pretrained) method to load the model
   weights.
 
 
 <a id='transformers.TFRobertaForQuestionAnswering.call'></a>
 > **call**(self, input_ids = None, attention_mask = None, token_type_ids = None, position_ids = None, head_mask = None, inputs_embeds = None, output_attentions = None, output_hidden_states = None, return_dict = None, start_positions = None, end_positions = None, training = False, **kwargs)
 
-The [TFRobertaForQuestionAnswering](model_doc/roberta.html#transformers.TFRobertaForQuestionAnswering) forward method, overrides the `__call__` special method.
+The [TFRobertaForQuestionAnswering](/docs/transformers/master/en/model_doc/roberta.html#transformers.TFRobertaForQuestionAnswering) forward method, overrides the `__call__` special method.
 
 <Tip>
 
@@ -2155,8 +2206,8 @@ processing steps while the latter silently ignores them.
 - **input_ids** (`Numpy array` or `tf.Tensor` of shape `(batch_size, sequence_length)`) --
   Indices of input sequence tokens in the vocabulary.
 
-  Indices can be obtained using [RobertaTokenizer](model_doc/roberta.html#transformers.RobertaTokenizer). See
-  [transformers.PreTrainedTokenizer.__call__()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) and [transformers.PreTrainedTokenizer.encode()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) for
+  Indices can be obtained using [RobertaTokenizer](/docs/transformers/master/en/model_doc/roberta.html#transformers.RobertaTokenizer). See
+  [transformers.PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) and [transformers.PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) for
   details.
 
   [What are input IDs?](../glossary.html#input-ids)
@@ -2197,7 +2248,7 @@ processing steps while the latter silently ignores them.
   more detail. This argument can be used only in eager mode, in graph mode the value in the config will be
   used instead.
 - **return_dict** (`bool`, _optional_) --
-  Whether or not to return a [ModelOutput](main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple. This
+  Whether or not to return a [ModelOutput](/docs/transformers/master/en/main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple. This
   argument can be used in eager mode, in graph mode the value will always be set to True.
 - **training** (`bool`, _optional_, defaults to `False`) --
   Whether or not to use the model in training mode (some modules like dropout modules have different
@@ -2214,9 +2265,9 @@ processing steps while the latter silently ignores them.
 
 > Returns
 
-A [TFQuestionAnsweringModelOutput](main_classes/output.html#transformers.modeling_tf_outputs.TFQuestionAnsweringModelOutput) or a tuple of
+A [TFQuestionAnsweringModelOutput](/docs/transformers/master/en/main_classes/output.html#transformers.modeling_tf_outputs.TFQuestionAnsweringModelOutput) or a tuple of
 `tf.Tensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising various
-elements depending on the configuration ([RobertaConfig](model_doc/roberta.html#transformers.RobertaConfig)) and inputs.
+elements depending on the configuration ([RobertaConfig](/docs/transformers/master/en/model_doc/roberta.html#transformers.RobertaConfig)) and inputs.
 
 - **loss** (`tf.Tensor` of shape `(batch_size, )`, _optional_, returned when `start_positions` and `end_positions` are provided) -- Total span extraction loss is the sum of a Cross-Entropy for the start and end positions.
 - **start_logits** (`tf.Tensor` of shape `(batch_size, sequence_length)`) -- Span-start scores (before SoftMax).
@@ -2232,7 +2283,7 @@ elements depending on the configuration ([RobertaConfig](model_doc/roberta.html#
 
 > Return type
 
-[TFQuestionAnsweringModelOutput](main_classes/output.html#transformers.modeling_tf_outputs.TFQuestionAnsweringModelOutput) or `tuple(tf.Tensor)`
+[TFQuestionAnsweringModelOutput](/docs/transformers/master/en/main_classes/output.html#transformers.modeling_tf_outputs.TFQuestionAnsweringModelOutput) or `tuple(tf.Tensor)`
 
 > Example:
 
@@ -2254,14 +2305,14 @@ elements depending on the configuration ([RobertaConfig](model_doc/roberta.html#
 ```
 
 
-## FlaxRobertaModel
+## [FlaxRobertaModel](#flaxrobertamodel)
 
 <a id='transformers.FlaxRobertaModel'></a>
-> **class transformers.FlaxRobertaModel**(config: RobertaConfig, input_shape: typing.Tuple = (1, 1), seed: int = 0, dtype: dtype = &lcubclass 'jax._src.numpy.lax_numpy.float32'&rcub, **kwargs)
+> **class transformers.FlaxRobertaModel**(config: RobertaConfig, input_shape: typing.Tuple = (1, 1), seed: int = 0, dtype: dtype = &amp;lt;class 'jax._src.numpy.lax_numpy.float32'>, **kwargs)
 
 The bare RoBERTa Model transformer outputting raw hidden-states without any specific head on top.
 
-This model inherits from [FlaxPreTrainedModel](main_classes/model.html#transformers.FlaxPreTrainedModel). Check the superclass documentation for the
+This model inherits from [FlaxPreTrainedModel](/docs/transformers/master/en/main_classes/model.html#transformers.FlaxPreTrainedModel). Check the superclass documentation for the
 generic methods the library implements for all its model (such as downloading, saving and converting weights from
 PyTorch models)
 
@@ -2277,9 +2328,9 @@ Finally, this model supports inherent JAX features such as:
 
 > Parameters
 
-- **config** ([RobertaConfig](model_doc/roberta.html#transformers.RobertaConfig)) -- Model configuration class with all the parameters of the
+- **config** ([RobertaConfig](/docs/transformers/master/en/model_doc/roberta.html#transformers.RobertaConfig)) -- Model configuration class with all the parameters of the
   model. Initializing with a config file does not load the weights associated with the model, only the
-  configuration. Check out the [from_pretrained()](main_classes/model.html#transformers.FlaxPreTrainedModel.from_pretrained) method to load the
+  configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model.html#transformers.FlaxPreTrainedModel.from_pretrained) method to load the
   model weights.
 
 
@@ -2301,8 +2352,8 @@ processing steps while the latter silently ignores them.
 - **input_ids** (`numpy.ndarray` of shape `(batch_size, sequence_length)`) --
   Indices of input sequence tokens in the vocabulary.
 
-  Indices can be obtained using [BertTokenizer](model_doc/bert.html#transformers.BertTokenizer). See
-  [transformers.PreTrainedTokenizer.encode()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
+  Indices can be obtained using [BertTokenizer](/docs/transformers/master/en/model_doc/bert.html#transformers.BertTokenizer). See
+  [transformers.PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
   details.
 
   [What are input IDs?](../glossary.html#input-ids)
@@ -2323,13 +2374,13 @@ processing steps while the latter silently ignores them.
 - **position_ids** (`numpy.ndarray` of shape `(batch_size, sequence_length)`, _optional_) --
   Indices of positions of each input sequence tokens in the position embeddings. Selected in the range `[0, config.max_position_embeddings - 1]`.
 - **return_dict** (`bool`, _optional_) --
-  Whether or not to return a [ModelOutput](main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple.
+  Whether or not to return a [ModelOutput](/docs/transformers/master/en/main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple.
 
 > Returns
 
-A [FlaxBaseModelOutputWithPooling](main_classes/output.html#transformers.modeling_flax_outputs.FlaxBaseModelOutputWithPooling) or a tuple of
+A [FlaxBaseModelOutputWithPooling](/docs/transformers/master/en/main_classes/output.html#transformers.modeling_flax_outputs.FlaxBaseModelOutputWithPooling) or a tuple of
 `torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising
-various elements depending on the configuration ([RobertaConfig](model_doc/roberta.html#transformers.RobertaConfig)) and inputs.
+various elements depending on the configuration ([RobertaConfig](/docs/transformers/master/en/model_doc/roberta.html#transformers.RobertaConfig)) and inputs.
 
 - **last_hidden_state** (`jnp.ndarray` of shape `(batch_size, sequence_length, hidden_size)`) -- Sequence of hidden-states at the output of the last layer of the model.
 - **pooler_output** (`jnp.ndarray` of shape `(batch_size, hidden_size)`) -- Last layer hidden-state of the first token of the sequence (classification token) further processed by a
@@ -2346,7 +2397,7 @@ various elements depending on the configuration ([RobertaConfig](model_doc/rober
 
 > Return type
 
-[FlaxBaseModelOutputWithPooling](main_classes/output.html#transformers.modeling_flax_outputs.FlaxBaseModelOutputWithPooling) or `tuple(torch.FloatTensor)`
+[FlaxBaseModelOutputWithPooling](/docs/transformers/master/en/main_classes/output.html#transformers.modeling_flax_outputs.FlaxBaseModelOutputWithPooling) or `tuple(torch.FloatTensor)`
 
 > Example:
 
@@ -2363,14 +2414,14 @@ various elements depending on the configuration ([RobertaConfig](model_doc/rober
 ```
 
 
-## FlaxRobertaForMaskedLM
+## [FlaxRobertaForMaskedLM](#flaxrobertaformaskedlm)
 
 <a id='transformers.FlaxRobertaForMaskedLM'></a>
-> **class transformers.FlaxRobertaForMaskedLM**(config: RobertaConfig, input_shape: typing.Tuple = (1, 1), seed: int = 0, dtype: dtype = &lcubclass 'jax._src.numpy.lax_numpy.float32'&rcub, **kwargs)
+> **class transformers.FlaxRobertaForMaskedLM**(config: RobertaConfig, input_shape: typing.Tuple = (1, 1), seed: int = 0, dtype: dtype = &amp;lt;class 'jax._src.numpy.lax_numpy.float32'>, **kwargs)
 
 RoBERTa Model with a _language modeling_ head on top. 
 
-This model inherits from [FlaxPreTrainedModel](main_classes/model.html#transformers.FlaxPreTrainedModel). Check the superclass documentation for the
+This model inherits from [FlaxPreTrainedModel](/docs/transformers/master/en/main_classes/model.html#transformers.FlaxPreTrainedModel). Check the superclass documentation for the
 generic methods the library implements for all its model (such as downloading, saving and converting weights from
 PyTorch models)
 
@@ -2386,9 +2437,9 @@ Finally, this model supports inherent JAX features such as:
 
 > Parameters
 
-- **config** ([RobertaConfig](model_doc/roberta.html#transformers.RobertaConfig)) -- Model configuration class with all the parameters of the
+- **config** ([RobertaConfig](/docs/transformers/master/en/model_doc/roberta.html#transformers.RobertaConfig)) -- Model configuration class with all the parameters of the
   model. Initializing with a config file does not load the weights associated with the model, only the
-  configuration. Check out the [from_pretrained()](main_classes/model.html#transformers.FlaxPreTrainedModel.from_pretrained) method to load the
+  configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model.html#transformers.FlaxPreTrainedModel.from_pretrained) method to load the
   model weights.
 
 
@@ -2410,8 +2461,8 @@ processing steps while the latter silently ignores them.
 - **input_ids** (`numpy.ndarray` of shape `(batch_size, sequence_length)`) --
   Indices of input sequence tokens in the vocabulary.
 
-  Indices can be obtained using [BertTokenizer](model_doc/bert.html#transformers.BertTokenizer). See
-  [transformers.PreTrainedTokenizer.encode()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
+  Indices can be obtained using [BertTokenizer](/docs/transformers/master/en/model_doc/bert.html#transformers.BertTokenizer). See
+  [transformers.PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
   details.
 
   [What are input IDs?](../glossary.html#input-ids)
@@ -2432,13 +2483,13 @@ processing steps while the latter silently ignores them.
 - **position_ids** (`numpy.ndarray` of shape `(batch_size, sequence_length)`, _optional_) --
   Indices of positions of each input sequence tokens in the position embeddings. Selected in the range `[0, config.max_position_embeddings - 1]`.
 - **return_dict** (`bool`, _optional_) --
-  Whether or not to return a [ModelOutput](main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple.
+  Whether or not to return a [ModelOutput](/docs/transformers/master/en/main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple.
 
 > Returns
 
-A [FlaxBaseModelOutputWithPooling](main_classes/output.html#transformers.modeling_flax_outputs.FlaxBaseModelOutputWithPooling) or a tuple of
+A [FlaxBaseModelOutputWithPooling](/docs/transformers/master/en/main_classes/output.html#transformers.modeling_flax_outputs.FlaxBaseModelOutputWithPooling) or a tuple of
 `torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising
-various elements depending on the configuration ([RobertaConfig](model_doc/roberta.html#transformers.RobertaConfig)) and inputs.
+various elements depending on the configuration ([RobertaConfig](/docs/transformers/master/en/model_doc/roberta.html#transformers.RobertaConfig)) and inputs.
 
 - **last_hidden_state** (`jnp.ndarray` of shape `(batch_size, sequence_length, hidden_size)`) -- Sequence of hidden-states at the output of the last layer of the model.
 - **pooler_output** (`jnp.ndarray` of shape `(batch_size, hidden_size)`) -- Last layer hidden-state of the first token of the sequence (classification token) further processed by a
@@ -2455,7 +2506,7 @@ various elements depending on the configuration ([RobertaConfig](model_doc/rober
 
 > Return type
 
-[FlaxBaseModelOutputWithPooling](main_classes/output.html#transformers.modeling_flax_outputs.FlaxBaseModelOutputWithPooling) or `tuple(torch.FloatTensor)`
+[FlaxBaseModelOutputWithPooling](/docs/transformers/master/en/main_classes/output.html#transformers.modeling_flax_outputs.FlaxBaseModelOutputWithPooling) or `tuple(torch.FloatTensor)`
 
 > Example:
 
@@ -2472,17 +2523,17 @@ various elements depending on the configuration ([RobertaConfig](model_doc/rober
 ```
 
 
-## FlaxRobertaForSequenceClassification
+## [FlaxRobertaForSequenceClassification](#flaxrobertaforsequenceclassification)
 
 <a id='transformers.FlaxRobertaForSequenceClassification'></a>
-> **class transformers.FlaxRobertaForSequenceClassification**(config: RobertaConfig, input_shape: typing.Tuple = (1, 1), seed: int = 0, dtype: dtype = &lcubclass 'jax._src.numpy.lax_numpy.float32'&rcub, **kwargs)
+> **class transformers.FlaxRobertaForSequenceClassification**(config: RobertaConfig, input_shape: typing.Tuple = (1, 1), seed: int = 0, dtype: dtype = &amp;lt;class 'jax._src.numpy.lax_numpy.float32'>, **kwargs)
 
 
 Roberta Model transformer with a sequence classification/regression head on top (a linear layer on top of the
 pooled output) e.g. for GLUE tasks.
 
 
-This model inherits from [FlaxPreTrainedModel](main_classes/model.html#transformers.FlaxPreTrainedModel). Check the superclass documentation for the
+This model inherits from [FlaxPreTrainedModel](/docs/transformers/master/en/main_classes/model.html#transformers.FlaxPreTrainedModel). Check the superclass documentation for the
 generic methods the library implements for all its model (such as downloading, saving and converting weights from
 PyTorch models)
 
@@ -2498,9 +2549,9 @@ Finally, this model supports inherent JAX features such as:
 
 > Parameters
 
-- **config** ([RobertaConfig](model_doc/roberta.html#transformers.RobertaConfig)) -- Model configuration class with all the parameters of the
+- **config** ([RobertaConfig](/docs/transformers/master/en/model_doc/roberta.html#transformers.RobertaConfig)) -- Model configuration class with all the parameters of the
   model. Initializing with a config file does not load the weights associated with the model, only the
-  configuration. Check out the [from_pretrained()](main_classes/model.html#transformers.FlaxPreTrainedModel.from_pretrained) method to load the
+  configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model.html#transformers.FlaxPreTrainedModel.from_pretrained) method to load the
   model weights.
 
 
@@ -2522,8 +2573,8 @@ processing steps while the latter silently ignores them.
 - **input_ids** (`numpy.ndarray` of shape `(batch_size, sequence_length)`) --
   Indices of input sequence tokens in the vocabulary.
 
-  Indices can be obtained using [BertTokenizer](model_doc/bert.html#transformers.BertTokenizer). See
-  [transformers.PreTrainedTokenizer.encode()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
+  Indices can be obtained using [BertTokenizer](/docs/transformers/master/en/model_doc/bert.html#transformers.BertTokenizer). See
+  [transformers.PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
   details.
 
   [What are input IDs?](../glossary.html#input-ids)
@@ -2544,13 +2595,13 @@ processing steps while the latter silently ignores them.
 - **position_ids** (`numpy.ndarray` of shape `(batch_size, sequence_length)`, _optional_) --
   Indices of positions of each input sequence tokens in the position embeddings. Selected in the range `[0, config.max_position_embeddings - 1]`.
 - **return_dict** (`bool`, _optional_) --
-  Whether or not to return a [ModelOutput](main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple.
+  Whether or not to return a [ModelOutput](/docs/transformers/master/en/main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple.
 
 > Returns
 
-A [FlaxSequenceClassifierOutput](main_classes/output.html#transformers.modeling_flax_outputs.FlaxSequenceClassifierOutput) or a tuple of
+A [FlaxSequenceClassifierOutput](/docs/transformers/master/en/main_classes/output.html#transformers.modeling_flax_outputs.FlaxSequenceClassifierOutput) or a tuple of
 `torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising
-various elements depending on the configuration ([RobertaConfig](model_doc/roberta.html#transformers.RobertaConfig)) and inputs.
+various elements depending on the configuration ([RobertaConfig](/docs/transformers/master/en/model_doc/roberta.html#transformers.RobertaConfig)) and inputs.
 
 - **logits** (`jnp.ndarray` of shape `(batch_size, config.num_labels)`) -- Classification (or regression if config.num_labels==1) scores (before SoftMax).
 - **hidden_states** (`tuple(jnp.ndarray)`, _optional_, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `jnp.ndarray` (one for the output of the embeddings + one for the output of each layer) of
@@ -2564,7 +2615,7 @@ various elements depending on the configuration ([RobertaConfig](model_doc/rober
 
 > Return type
 
-[FlaxSequenceClassifierOutput](main_classes/output.html#transformers.modeling_flax_outputs.FlaxSequenceClassifierOutput) or `tuple(torch.FloatTensor)`
+[FlaxSequenceClassifierOutput](/docs/transformers/master/en/main_classes/output.html#transformers.modeling_flax_outputs.FlaxSequenceClassifierOutput) or `tuple(torch.FloatTensor)`
 
 > Example:
 
@@ -2581,17 +2632,17 @@ various elements depending on the configuration ([RobertaConfig](model_doc/rober
 ```
 
 
-## FlaxRobertaForMultipleChoice
+## [FlaxRobertaForMultipleChoice](#flaxrobertaformultiplechoice)
 
 <a id='transformers.FlaxRobertaForMultipleChoice'></a>
-> **class transformers.FlaxRobertaForMultipleChoice**(config: RobertaConfig, input_shape: typing.Tuple = (1, 1), seed: int = 0, dtype: dtype = &lcubclass 'jax._src.numpy.lax_numpy.float32'&rcub, **kwargs)
+> **class transformers.FlaxRobertaForMultipleChoice**(config: RobertaConfig, input_shape: typing.Tuple = (1, 1), seed: int = 0, dtype: dtype = &amp;lt;class 'jax._src.numpy.lax_numpy.float32'>, **kwargs)
 
 
 Roberta Model with a multiple choice classification head on top (a linear layer on top of the pooled output and a
 softmax) e.g. for RocStories/SWAG tasks.
 
 
-This model inherits from [FlaxPreTrainedModel](main_classes/model.html#transformers.FlaxPreTrainedModel). Check the superclass documentation for the
+This model inherits from [FlaxPreTrainedModel](/docs/transformers/master/en/main_classes/model.html#transformers.FlaxPreTrainedModel). Check the superclass documentation for the
 generic methods the library implements for all its model (such as downloading, saving and converting weights from
 PyTorch models)
 
@@ -2607,9 +2658,9 @@ Finally, this model supports inherent JAX features such as:
 
 > Parameters
 
-- **config** ([RobertaConfig](model_doc/roberta.html#transformers.RobertaConfig)) -- Model configuration class with all the parameters of the
+- **config** ([RobertaConfig](/docs/transformers/master/en/model_doc/roberta.html#transformers.RobertaConfig)) -- Model configuration class with all the parameters of the
   model. Initializing with a config file does not load the weights associated with the model, only the
-  configuration. Check out the [from_pretrained()](main_classes/model.html#transformers.FlaxPreTrainedModel.from_pretrained) method to load the
+  configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model.html#transformers.FlaxPreTrainedModel.from_pretrained) method to load the
   model weights.
 
 
@@ -2631,8 +2682,8 @@ processing steps while the latter silently ignores them.
 - **input_ids** (`numpy.ndarray` of shape `(batch_size, num_choices, sequence_length)`) --
   Indices of input sequence tokens in the vocabulary.
 
-  Indices can be obtained using [BertTokenizer](model_doc/bert.html#transformers.BertTokenizer). See
-  [transformers.PreTrainedTokenizer.encode()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
+  Indices can be obtained using [BertTokenizer](/docs/transformers/master/en/model_doc/bert.html#transformers.BertTokenizer). See
+  [transformers.PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
   details.
 
   [What are input IDs?](../glossary.html#input-ids)
@@ -2653,13 +2704,13 @@ processing steps while the latter silently ignores them.
 - **position_ids** (`numpy.ndarray` of shape `(batch_size, num_choices, sequence_length)`, _optional_) --
   Indices of positions of each input sequence tokens in the position embeddings. Selected in the range `[0, config.max_position_embeddings - 1]`.
 - **return_dict** (`bool`, _optional_) --
-  Whether or not to return a [ModelOutput](main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple.
+  Whether or not to return a [ModelOutput](/docs/transformers/master/en/main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple.
 
 > Returns
 
-A [FlaxMultipleChoiceModelOutput](main_classes/output.html#transformers.modeling_flax_outputs.FlaxMultipleChoiceModelOutput) or a tuple of
+A [FlaxMultipleChoiceModelOutput](/docs/transformers/master/en/main_classes/output.html#transformers.modeling_flax_outputs.FlaxMultipleChoiceModelOutput) or a tuple of
 `torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising
-various elements depending on the configuration ([RobertaConfig](model_doc/roberta.html#transformers.RobertaConfig)) and inputs.
+various elements depending on the configuration ([RobertaConfig](/docs/transformers/master/en/model_doc/roberta.html#transformers.RobertaConfig)) and inputs.
 
 - **logits** (`jnp.ndarray` of shape `(batch_size, num_choices)`) -- _num_choices_ is the second dimension of the input tensors. (see _input_ids_ above).
 
@@ -2675,7 +2726,7 @@ various elements depending on the configuration ([RobertaConfig](model_doc/rober
 
 > Return type
 
-[FlaxMultipleChoiceModelOutput](main_classes/output.html#transformers.modeling_flax_outputs.FlaxMultipleChoiceModelOutput) or `tuple(torch.FloatTensor)`
+[FlaxMultipleChoiceModelOutput](/docs/transformers/master/en/main_classes/output.html#transformers.modeling_flax_outputs.FlaxMultipleChoiceModelOutput) or `tuple(torch.FloatTensor)`
 
 > Example:
 
@@ -2690,23 +2741,23 @@ various elements depending on the configuration ([RobertaConfig](model_doc/rober
 >>> choice1 = "It is eaten while held in the hand."
 
 >>> encoding = tokenizer([prompt, prompt], [choice0, choice1], return_tensors='jax', padding=True)
->>> outputs = model(**{k: v[None, :] for k,v in encoding.items()})
+>>> outputs = model(**&amp;lcub;k: v[None, :] for k,v in encoding.items()})
 
 >>> logits = outputs.logits
 ```
 
 
-## FlaxRobertaForTokenClassification
+## [FlaxRobertaForTokenClassification](#flaxrobertafortokenclassification)
 
 <a id='transformers.FlaxRobertaForTokenClassification'></a>
-> **class transformers.FlaxRobertaForTokenClassification**(config: RobertaConfig, input_shape: typing.Tuple = (1, 1), seed: int = 0, dtype: dtype = &lcubclass 'jax._src.numpy.lax_numpy.float32'&rcub, **kwargs)
+> **class transformers.FlaxRobertaForTokenClassification**(config: RobertaConfig, input_shape: typing.Tuple = (1, 1), seed: int = 0, dtype: dtype = &amp;lt;class 'jax._src.numpy.lax_numpy.float32'>, **kwargs)
 
 
 Roberta Model with a token classification head on top (a linear layer on top of the hidden-states output) e.g. for
 Named-Entity-Recognition (NER) tasks.
 
 
-This model inherits from [FlaxPreTrainedModel](main_classes/model.html#transformers.FlaxPreTrainedModel). Check the superclass documentation for the
+This model inherits from [FlaxPreTrainedModel](/docs/transformers/master/en/main_classes/model.html#transformers.FlaxPreTrainedModel). Check the superclass documentation for the
 generic methods the library implements for all its model (such as downloading, saving and converting weights from
 PyTorch models)
 
@@ -2722,9 +2773,9 @@ Finally, this model supports inherent JAX features such as:
 
 > Parameters
 
-- **config** ([RobertaConfig](model_doc/roberta.html#transformers.RobertaConfig)) -- Model configuration class with all the parameters of the
+- **config** ([RobertaConfig](/docs/transformers/master/en/model_doc/roberta.html#transformers.RobertaConfig)) -- Model configuration class with all the parameters of the
   model. Initializing with a config file does not load the weights associated with the model, only the
-  configuration. Check out the [from_pretrained()](main_classes/model.html#transformers.FlaxPreTrainedModel.from_pretrained) method to load the
+  configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model.html#transformers.FlaxPreTrainedModel.from_pretrained) method to load the
   model weights.
 
 
@@ -2746,8 +2797,8 @@ processing steps while the latter silently ignores them.
 - **input_ids** (`numpy.ndarray` of shape `(batch_size, sequence_length)`) --
   Indices of input sequence tokens in the vocabulary.
 
-  Indices can be obtained using [BertTokenizer](model_doc/bert.html#transformers.BertTokenizer). See
-  [transformers.PreTrainedTokenizer.encode()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
+  Indices can be obtained using [BertTokenizer](/docs/transformers/master/en/model_doc/bert.html#transformers.BertTokenizer). See
+  [transformers.PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
   details.
 
   [What are input IDs?](../glossary.html#input-ids)
@@ -2768,13 +2819,13 @@ processing steps while the latter silently ignores them.
 - **position_ids** (`numpy.ndarray` of shape `(batch_size, sequence_length)`, _optional_) --
   Indices of positions of each input sequence tokens in the position embeddings. Selected in the range `[0, config.max_position_embeddings - 1]`.
 - **return_dict** (`bool`, _optional_) --
-  Whether or not to return a [ModelOutput](main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple.
+  Whether or not to return a [ModelOutput](/docs/transformers/master/en/main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple.
 
 > Returns
 
-A [FlaxTokenClassifierOutput](main_classes/output.html#transformers.modeling_flax_outputs.FlaxTokenClassifierOutput) or a tuple of
+A [FlaxTokenClassifierOutput](/docs/transformers/master/en/main_classes/output.html#transformers.modeling_flax_outputs.FlaxTokenClassifierOutput) or a tuple of
 `torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising
-various elements depending on the configuration ([RobertaConfig](model_doc/roberta.html#transformers.RobertaConfig)) and inputs.
+various elements depending on the configuration ([RobertaConfig](/docs/transformers/master/en/model_doc/roberta.html#transformers.RobertaConfig)) and inputs.
 
 - **logits** (`jnp.ndarray` of shape `(batch_size, sequence_length, config.num_labels)`) -- Classification scores (before SoftMax).
 - **hidden_states** (`tuple(jnp.ndarray)`, _optional_, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `jnp.ndarray` (one for the output of the embeddings + one for the output of each layer) of
@@ -2788,7 +2839,7 @@ various elements depending on the configuration ([RobertaConfig](model_doc/rober
 
 > Return type
 
-[FlaxTokenClassifierOutput](main_classes/output.html#transformers.modeling_flax_outputs.FlaxTokenClassifierOutput) or `tuple(torch.FloatTensor)`
+[FlaxTokenClassifierOutput](/docs/transformers/master/en/main_classes/output.html#transformers.modeling_flax_outputs.FlaxTokenClassifierOutput) or `tuple(torch.FloatTensor)`
 
 > Example:
 
@@ -2805,17 +2856,17 @@ various elements depending on the configuration ([RobertaConfig](model_doc/rober
 ```
 
 
-## FlaxRobertaForQuestionAnswering
+## [FlaxRobertaForQuestionAnswering](#flaxrobertaforquestionanswering)
 
 <a id='transformers.FlaxRobertaForQuestionAnswering'></a>
-> **class transformers.FlaxRobertaForQuestionAnswering**(config: RobertaConfig, input_shape: typing.Tuple = (1, 1), seed: int = 0, dtype: dtype = &lcubclass 'jax._src.numpy.lax_numpy.float32'&rcub, **kwargs)
+> **class transformers.FlaxRobertaForQuestionAnswering**(config: RobertaConfig, input_shape: typing.Tuple = (1, 1), seed: int = 0, dtype: dtype = &amp;lt;class 'jax._src.numpy.lax_numpy.float32'>, **kwargs)
 
 
 Roberta Model with a span classification head on top for extractive question-answering tasks like SQuAD (a linear
 layers on top of the hidden-states output to compute _span start logits_ and _span end logits_).
 
 
-This model inherits from [FlaxPreTrainedModel](main_classes/model.html#transformers.FlaxPreTrainedModel). Check the superclass documentation for the
+This model inherits from [FlaxPreTrainedModel](/docs/transformers/master/en/main_classes/model.html#transformers.FlaxPreTrainedModel). Check the superclass documentation for the
 generic methods the library implements for all its model (such as downloading, saving and converting weights from
 PyTorch models)
 
@@ -2831,9 +2882,9 @@ Finally, this model supports inherent JAX features such as:
 
 > Parameters
 
-- **config** ([RobertaConfig](model_doc/roberta.html#transformers.RobertaConfig)) -- Model configuration class with all the parameters of the
+- **config** ([RobertaConfig](/docs/transformers/master/en/model_doc/roberta.html#transformers.RobertaConfig)) -- Model configuration class with all the parameters of the
   model. Initializing with a config file does not load the weights associated with the model, only the
-  configuration. Check out the [from_pretrained()](main_classes/model.html#transformers.FlaxPreTrainedModel.from_pretrained) method to load the
+  configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model.html#transformers.FlaxPreTrainedModel.from_pretrained) method to load the
   model weights.
 
 
@@ -2855,8 +2906,8 @@ processing steps while the latter silently ignores them.
 - **input_ids** (`numpy.ndarray` of shape `(batch_size, sequence_length)`) --
   Indices of input sequence tokens in the vocabulary.
 
-  Indices can be obtained using [BertTokenizer](model_doc/bert.html#transformers.BertTokenizer). See
-  [transformers.PreTrainedTokenizer.encode()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
+  Indices can be obtained using [BertTokenizer](/docs/transformers/master/en/model_doc/bert.html#transformers.BertTokenizer). See
+  [transformers.PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
   details.
 
   [What are input IDs?](../glossary.html#input-ids)
@@ -2877,13 +2928,13 @@ processing steps while the latter silently ignores them.
 - **position_ids** (`numpy.ndarray` of shape `(batch_size, sequence_length)`, _optional_) --
   Indices of positions of each input sequence tokens in the position embeddings. Selected in the range `[0, config.max_position_embeddings - 1]`.
 - **return_dict** (`bool`, _optional_) --
-  Whether or not to return a [ModelOutput](main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple.
+  Whether or not to return a [ModelOutput](/docs/transformers/master/en/main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple.
 
 > Returns
 
-A [FlaxQuestionAnsweringModelOutput](main_classes/output.html#transformers.modeling_flax_outputs.FlaxQuestionAnsweringModelOutput) or a tuple of
+A [FlaxQuestionAnsweringModelOutput](/docs/transformers/master/en/main_classes/output.html#transformers.modeling_flax_outputs.FlaxQuestionAnsweringModelOutput) or a tuple of
 `torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising
-various elements depending on the configuration ([RobertaConfig](model_doc/roberta.html#transformers.RobertaConfig)) and inputs.
+various elements depending on the configuration ([RobertaConfig](/docs/transformers/master/en/model_doc/roberta.html#transformers.RobertaConfig)) and inputs.
 
 - **start_logits** (`jnp.ndarray` of shape `(batch_size, sequence_length)`) -- Span-start scores (before SoftMax).
 - **end_logits** (`jnp.ndarray` of shape `(batch_size, sequence_length)`) -- Span-end scores (before SoftMax).
@@ -2898,7 +2949,7 @@ various elements depending on the configuration ([RobertaConfig](model_doc/rober
 
 > Return type
 
-[FlaxQuestionAnsweringModelOutput](main_classes/output.html#transformers.modeling_flax_outputs.FlaxQuestionAnsweringModelOutput) or `tuple(torch.FloatTensor)`
+[FlaxQuestionAnsweringModelOutput](/docs/transformers/master/en/main_classes/output.html#transformers.modeling_flax_outputs.FlaxQuestionAnsweringModelOutput) or `tuple(torch.FloatTensor)`
 
 > Example:
 

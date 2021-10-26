@@ -1,3 +1,16 @@
+---
+local: callbacks
+sections:
+- local: available-callbacks
+  title: Available Callbacks
+- local: trainercallback
+  title: TrainerCallback
+- local: trainerstate
+  title: TrainerState
+- local: trainercontrol
+  title: TrainerControl
+title: Callbacks
+---
 <script>
 import Tip from "../../Tip.svelte";
 import Youtube from "../../Youtube.svelte";	
@@ -16,46 +29,46 @@ an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express o
 specific language governing permissions and limitations under the License.
 -->
 
-# Callbacks
+# [Callbacks](#callbacks)
 
 Callbacks are objects that can customize the behavior of the training loop in the PyTorch
-[Trainer](main_classes/trainer.html#transformers.Trainer) (this feature is not yet implemented in TensorFlow) that can inspect the training loop
+[Trainer](/docs/transformers/master/en/main_classes/trainer.html#transformers.Trainer) (this feature is not yet implemented in TensorFlow) that can inspect the training loop
 state (for progress reporting, logging on TensorBoard or other ML platforms...) and take decisions (like early
 stopping).
 
-Callbacks are "read only" pieces of code, apart from the [TrainerControl](main_classes/callback.html#transformers.TrainerControl) object they return, they
+Callbacks are "read only" pieces of code, apart from the [TrainerControl](/docs/transformers/master/en/main_classes/callback.html#transformers.TrainerControl) object they return, they
 cannot change anything in the training loop. For customizations that require changes in the training loop, you should
-subclass [Trainer](main_classes/trainer.html#transformers.Trainer) and override the methods you need (see [trainer](trainer.html) for examples).
+subclass [Trainer](/docs/transformers/master/en/main_classes/trainer.html#transformers.Trainer) and override the methods you need (see [trainer](/docs/transformers/master/en/trainer.html) for examples).
 
-By default a [Trainer](main_classes/trainer.html#transformers.Trainer) will use the following callbacks:
+By default a [Trainer](/docs/transformers/master/en/main_classes/trainer.html#transformers.Trainer) will use the following callbacks:
 
-- [DefaultFlowCallback](main_classes/callback.html#transformers.DefaultFlowCallback) which handles the default behavior for logging, saving and evaluation.
-- [PrinterCallback](main_classes/callback.html#transformers.PrinterCallback) or [ProgressCallback](main_classes/callback.html#transformers.ProgressCallback) to display progress and print the
-  logs (the first one is used if you deactivate tqdm through the [TrainingArguments](main_classes/trainer.html#transformers.TrainingArguments), otherwise
+- [DefaultFlowCallback](/docs/transformers/master/en/main_classes/callback.html#transformers.DefaultFlowCallback) which handles the default behavior for logging, saving and evaluation.
+- [PrinterCallback](/docs/transformers/master/en/main_classes/callback.html#transformers.PrinterCallback) or [ProgressCallback](/docs/transformers/master/en/main_classes/callback.html#transformers.ProgressCallback) to display progress and print the
+  logs (the first one is used if you deactivate tqdm through the [TrainingArguments](/docs/transformers/master/en/main_classes/trainer.html#transformers.TrainingArguments), otherwise
   it's the second one).
-- [TensorBoardCallback](main_classes/callback.html#transformers.integrations.TensorBoardCallback) if tensorboard is accessible (either through PyTorch >= 1.4
+- [TensorBoardCallback](/docs/transformers/master/en/main_classes/callback.html#transformers.integrations.TensorBoardCallback) if tensorboard is accessible (either through PyTorch >= 1.4
   or tensorboardX).
-- [WandbCallback](main_classes/callback.html#transformers.integrations.WandbCallback) if [wandb](https://www.wandb.com/) is installed.
-- [CometCallback](main_classes/callback.html#transformers.integrations.CometCallback) if [comet_ml](https://www.comet.ml/site/) is installed.
-- [MLflowCallback](main_classes/callback.html#transformers.integrations.MLflowCallback) if [mlflow](https://www.mlflow.org/) is installed.
-- [AzureMLCallback](main_classes/callback.html#transformers.integrations.AzureMLCallback) if [azureml-sdk](https://pypi.org/project/azureml-sdk/) is
+- [WandbCallback](/docs/transformers/master/en/main_classes/callback.html#transformers.integrations.WandbCallback) if [wandb](https://www.wandb.com/) is installed.
+- [CometCallback](/docs/transformers/master/en/main_classes/callback.html#transformers.integrations.CometCallback) if [comet_ml](https://www.comet.ml/site/) is installed.
+- [MLflowCallback](/docs/transformers/master/en/main_classes/callback.html#transformers.integrations.MLflowCallback) if [mlflow](https://www.mlflow.org/) is installed.
+- [AzureMLCallback](/docs/transformers/master/en/main_classes/callback.html#transformers.integrations.AzureMLCallback) if [azureml-sdk](https://pypi.org/project/azureml-sdk/) is
   installed.
 
-The main class that implements callbacks is [TrainerCallback](main_classes/callback.html#transformers.TrainerCallback). It gets the
-[TrainingArguments](main_classes/trainer.html#transformers.TrainingArguments) used to instantiate the [Trainer](main_classes/trainer.html#transformers.Trainer), can access that
-Trainer's internal state via [TrainerState](main_classes/callback.html#transformers.TrainerState), and can take some actions on the training loop via
-[TrainerControl](main_classes/callback.html#transformers.TrainerControl).
+The main class that implements callbacks is [TrainerCallback](/docs/transformers/master/en/main_classes/callback.html#transformers.TrainerCallback). It gets the
+[TrainingArguments](/docs/transformers/master/en/main_classes/trainer.html#transformers.TrainingArguments) used to instantiate the [Trainer](/docs/transformers/master/en/main_classes/trainer.html#transformers.Trainer), can access that
+Trainer's internal state via [TrainerState](/docs/transformers/master/en/main_classes/callback.html#transformers.TrainerState), and can take some actions on the training loop via
+[TrainerControl](/docs/transformers/master/en/main_classes/callback.html#transformers.TrainerControl).
 
 
-## Available Callbacks
+## [Available Callbacks](#available-callbacks)
 
-Here is the list of the available [TrainerCallback](main_classes/callback.html#transformers.TrainerCallback) in the library:
+Here is the list of the available [TrainerCallback](/docs/transformers/master/en/main_classes/callback.html#transformers.TrainerCallback) in the library:
 
 <a id='transformers.integrations.CometCallback'></a>
 > **class transformers.integrations.CometCallback**()
 
 
-A [TrainerCallback](main_classes/callback.html#transformers.TrainerCallback) that sends the logs to [Comet ML](https://www.comet.ml/site/).
+A [TrainerCallback](/docs/transformers/master/en/main_classes/callback.html#transformers.TrainerCallback) that sends the logs to [Comet ML](https://www.comet.ml/site/).
 
 
 <a id='transformers.integrations.CometCallback.setup'></a>
@@ -79,7 +92,7 @@ For a number of configurable items in the environment, see [here](https://www.co
 > **class transformers.DefaultFlowCallback**()
 
 
-A [TrainerCallback](main_classes/callback.html#transformers.TrainerCallback) that handles the default flow of the training loop for logs, evaluation
+A [TrainerCallback](/docs/transformers/master/en/main_classes/callback.html#transformers.TrainerCallback) that handles the default flow of the training loop for logs, evaluation
 and checkpoints.
 
 
@@ -87,21 +100,21 @@ and checkpoints.
 > **class transformers.PrinterCallback**()
 
 
-A bare [TrainerCallback](main_classes/callback.html#transformers.TrainerCallback) that just prints the logs.
+A bare [TrainerCallback](/docs/transformers/master/en/main_classes/callback.html#transformers.TrainerCallback) that just prints the logs.
 
 
 <a id='transformers.ProgressCallback'></a>
 > **class transformers.ProgressCallback**()
 
 
-A [TrainerCallback](main_classes/callback.html#transformers.TrainerCallback) that displays the progress of training or evaluation.
+A [TrainerCallback](/docs/transformers/master/en/main_classes/callback.html#transformers.TrainerCallback) that displays the progress of training or evaluation.
 
 
 <a id='transformers.EarlyStoppingCallback'></a>
 > **class transformers.EarlyStoppingCallback**(early_stopping_patience: int = 1, early_stopping_threshold: typing.Optional[float] = 0.0)
 
 
-A [TrainerCallback](main_classes/callback.html#transformers.TrainerCallback) that handles early stopping.
+A [TrainerCallback](/docs/transformers/master/en/main_classes/callback.html#transformers.TrainerCallback) that handles early stopping.
 
 > Parameters
 
@@ -112,15 +125,15 @@ A [TrainerCallback](main_classes/callback.html#transformers.TrainerCallback) tha
   Use with TrainingArguments `metric_for_best_model` and `early_stopping_patience` to denote how
   much the specified metric must improve to satisfy early stopping conditions. `
 
-  This callback depends on [TrainingArguments](main_classes/trainer.html#transformers.TrainingArguments) argument _load_best_model_at_end_ functionality
-  to set best_metric in [TrainerState](main_classes/callback.html#transformers.TrainerState).
+  This callback depends on [TrainingArguments](/docs/transformers/master/en/main_classes/trainer.html#transformers.TrainingArguments) argument _load_best_model_at_end_ functionality
+  to set best_metric in [TrainerState](/docs/transformers/master/en/main_classes/callback.html#transformers.TrainerState).
 
 
 <a id='transformers.integrations.TensorBoardCallback'></a>
 > **class transformers.integrations.TensorBoardCallback**(tb_writer = None)
 
 
-A [TrainerCallback](main_classes/callback.html#transformers.TrainerCallback) that sends the logs to [TensorBoard](https://www.tensorflow.org/tensorboard).
+A [TrainerCallback](/docs/transformers/master/en/main_classes/callback.html#transformers.TrainerCallback) that sends the logs to [TensorBoard](https://www.tensorflow.org/tensorboard).
 
 > Parameters
 
@@ -132,7 +145,7 @@ A [TrainerCallback](main_classes/callback.html#transformers.TrainerCallback) tha
 > **class transformers.integrations.WandbCallback**()
 
 
-A [TrainerCallback](main_classes/callback.html#transformers.TrainerCallback) that sends the logs to [Weight and Biases](https://www.wandb.com/).
+A [TrainerCallback](/docs/transformers/master/en/main_classes/callback.html#transformers.TrainerCallback) that sends the logs to [Weight and Biases](https://www.wandb.com/).
 
 
 <a id='transformers.integrations.WandbCallback.setup'></a>
@@ -160,7 +173,7 @@ Whether or not to disable wandb entirely. Set _WANDB_DISABLED=true_ to disable.
 > **class transformers.integrations.MLflowCallback**()
 
 
-A [TrainerCallback](main_classes/callback.html#transformers.TrainerCallback) that sends the logs to [MLflow](https://www.mlflow.org/).
+A [TrainerCallback](/docs/transformers/master/en/main_classes/callback.html#transformers.TrainerCallback) that sends the logs to [MLflow](https://www.mlflow.org/).
 
 
 <a id='transformers.integrations.MLflowCallback.setup'></a>
@@ -174,7 +187,7 @@ HF_MLFLOW_LOG_ARTIFACTS (`str`, _optional_):
 Whether to use MLflow .log_artifact() facility to log artifacts.
 
 This only makes sense if logging to a remote server, e.g. s3 or GCS. If set to _True_ or _1_, will copy
-whatever is in [TrainingArguments](main_classes/trainer.html#transformers.TrainingArguments)'s `output_dir` to the local or remote
+whatever is in [TrainingArguments](/docs/transformers/master/en/main_classes/trainer.html#transformers.TrainingArguments)'s `output_dir` to the local or remote
 artifact storage. Using it without a remote storage will just copy the files to your artifact location.
 
 
@@ -182,10 +195,10 @@ artifact storage. Using it without a remote storage will just copy the files to 
 > **class transformers.integrations.AzureMLCallback**(azureml_run = None)
 
 
-A [TrainerCallback](main_classes/callback.html#transformers.TrainerCallback) that sends the logs to [AzureML](https://pypi.org/project/azureml-sdk/).
+A [TrainerCallback](/docs/transformers/master/en/main_classes/callback.html#transformers.TrainerCallback) that sends the logs to [AzureML](https://pypi.org/project/azureml-sdk/).
 
 
-## TrainerCallback
+## [TrainerCallback](#trainercallback)
 
 <a id='transformers.TrainerCallback'></a>
 > **class transformers.TrainerCallback**()
@@ -196,15 +209,15 @@ each of those events the following arguments are available:
 
 > Parameters
 
-- **args** ([TrainingArguments](main_classes/trainer.html#transformers.TrainingArguments)) --
-  The training arguments used to instantiate the [Trainer](main_classes/trainer.html#transformers.Trainer).
-- **state** ([TrainerState](main_classes/callback.html#transformers.TrainerState)) --
-  The current state of the [Trainer](main_classes/trainer.html#transformers.Trainer).
-- **control** ([TrainerControl](main_classes/callback.html#transformers.TrainerControl)) --
-  The object that is returned to the [Trainer](main_classes/trainer.html#transformers.Trainer) and can be used to make some decisions.
-- **model** ([PreTrainedModel](main_classes/model.html#transformers.PreTrainedModel) or `torch.nn.Module`) --
+- **args** ([TrainingArguments](/docs/transformers/master/en/main_classes/trainer.html#transformers.TrainingArguments)) --
+  The training arguments used to instantiate the [Trainer](/docs/transformers/master/en/main_classes/trainer.html#transformers.Trainer).
+- **state** ([TrainerState](/docs/transformers/master/en/main_classes/callback.html#transformers.TrainerState)) --
+  The current state of the [Trainer](/docs/transformers/master/en/main_classes/trainer.html#transformers.Trainer).
+- **control** ([TrainerControl](/docs/transformers/master/en/main_classes/callback.html#transformers.TrainerControl)) --
+  The object that is returned to the [Trainer](/docs/transformers/master/en/main_classes/trainer.html#transformers.Trainer) and can be used to make some decisions.
+- **model** ([PreTrainedModel](/docs/transformers/master/en/main_classes/model.html#transformers.PreTrainedModel) or `torch.nn.Module`) --
   The model being trained.
-- **tokenizer** ([PreTrainedTokenizer](main_classes/tokenizer.html#transformers.PreTrainedTokenizer)) --
+- **tokenizer** ([PreTrainedTokenizer](/docs/transformers/master/en/main_classes/tokenizer.html#transformers.PreTrainedTokenizer)) --
   The tokenizer used for encoding the data.
 - **optimizer** (`torch.optim.Optimizer`) --
   The optimizer used for the training steps.
@@ -267,7 +280,7 @@ Event called after an evaluation phase.
 > **on\_init\_end**(self, args: TrainingArguments, state: TrainerState, control: TrainerControl, **kwargs)
 
 
-Event called at the end of the initialization of the [Trainer](main_classes/trainer.html#transformers.Trainer).
+Event called at the end of the initialization of the [Trainer](/docs/transformers/master/en/main_classes/trainer.html#transformers.Trainer).
 
 
 <a id='transformers.TrainerCallback.on_log'></a>
@@ -328,7 +341,7 @@ Event called at the beginning of training.
 Event called at the end of training.
 
 
-Here is an example of how to register a custom callback with the PyTorch [Trainer](main_classes/trainer.html#transformers.Trainer):
+Here is an example of how to register a custom callback with the PyTorch [Trainer](/docs/transformers/master/en/main_classes/trainer.html#transformers.Trainer):
 
 ```python
 class MyCallback(TrainerCallback):
@@ -355,14 +368,14 @@ trainer.add_callback(MyCallback)
 trainer.add_callback(MyCallback())
 ```
 
-## TrainerState
+## [TrainerState](#trainerstate)
 
 <a id='transformers.TrainerState'></a>
 > **class transformers.TrainerState**(epoch: typing.Optional[float] = None, global_step: int = 0, max_steps: int = 0, num_train_epochs: int = 0, total_flos: float = 0, log_history: typing.List[typing.Dict[str, float]] = None, best_metric: typing.Optional[float] = None, best_model_checkpoint: typing.Optional[str] = None, is_local_process_zero: bool = True, is_world_process_zero: bool = True, is_hyper_param_search: bool = False, trial_name: str = None, trial_params: typing.Dict[str, typing.Union[str, float, int, bool]] = None)
 
 
-A class containing the [Trainer](main_classes/trainer.html#transformers.Trainer) inner state that will be saved along the model and optimizer
-when checkpointing and passed to the [TrainerCallback](main_classes/callback.html#transformers.TrainerCallback).
+A class containing the [Trainer](/docs/transformers/master/en/main_classes/trainer.html#transformers.Trainer) inner state that will be saved along the model and optimizer
+when checkpointing and passed to the [TrainerCallback](/docs/transformers/master/en/main_classes/callback.html#transformers.TrainerCallback).
 
 <Tip>
 
@@ -412,14 +425,14 @@ Create an instance from the content of `json_path`.
 
 Save the content of this instance in JSON format inside `json_path`.
 
-## TrainerControl
+## [TrainerControl](#trainercontrol)
 
 <a id='transformers.TrainerControl'></a>
 > **class transformers.TrainerControl**(should_training_stop: bool = False, should_epoch_stop: bool = False, should_save: bool = False, should_evaluate: bool = False, should_log: bool = False)
 
 
-A class that handles the [Trainer](main_classes/trainer.html#transformers.Trainer) control flow. This class is used by the
-[TrainerCallback](main_classes/callback.html#transformers.TrainerCallback) to activate some switches in the training loop.
+A class that handles the [Trainer](/docs/transformers/master/en/main_classes/trainer.html#transformers.Trainer) control flow. This class is used by the
+[TrainerCallback](/docs/transformers/master/en/main_classes/callback.html#transformers.TrainerCallback) to activate some switches in the training loop.
 
 > Parameters
 

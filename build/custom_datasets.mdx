@@ -1,16 +1,49 @@
+---
+local: finetuning-with-custom-datasets
+sections:
+- local: sequence-classification-with-imdb-reviews
+  sections:
+  - local: finetuning-with-trainer
+    title: Fine-tuning with Trainer
+  - local: finetuning-with-native-pytorchtensorflow
+    title: Fine-tuning with native PyTorch/TensorFlow
+  title: Sequence Classification with IMDb Reviews
+- local: token-classification-with-wnut-emerging-entities
+  title: Token Classification with W-NUT Emerging Entities
+- local: question-answering-with-squad
+  title: Question Answering with SQuAD 2.0
+- local: additional-resources
+  sections:
+  - local: using-the-datasets-metrics-library
+    title: Using the 🤗 Datasets & Metrics library
+  title: Additional Resources
+title: Fine-tuning with custom datasets
+---
 <script>
 import Tip from "../../Tip.svelte";
 import Youtube from "../../Youtube.svelte";	
 export let fw: "pt" | "tf"
 </script>
 
-# Fine-tuning with custom datasets
+<!--Copyright 2020 The HuggingFace Team. All rights reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
+the License. You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on
+an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
+specific language governing permissions and limitations under the License.
+-->
+
+# [Fine-tuning with custom datasets](#finetuning-with-custom-datasets)
 
 <Tip>
 
 The datasets used in this tutorial are available and can be more easily accessed using the [🤗 Datasets library](https://github.com/huggingface/datasets). We do not use this library to access the datasets here since this
 tutorial meant to illustrate how to work with your own data. A brief of introduction can be found at the end of the
-tutorial in the section "[datasetslib](#datasetslib)".
+tutorial in the section "[datasetslib](/docs/transformers/master/en/custom_datasets.html#datasetslib)".
 
 </Tip>
 
@@ -18,18 +51,18 @@ This tutorial will take you through several examples of using 🤗 Transformers 
 shows one of many valid workflows for using these models and is meant to be illustrative rather than definitive. We
 show examples of reading in several data formats, preprocessing the data for several types of tasks, and then preparing
 the data into PyTorch/TensorFlow `Dataset` objects which can easily be used either with
-[Trainer](main_classes/trainer.html#transformers.Trainer)/[TFTrainer](main_classes/trainer.html#transformers.TFTrainer) or with native PyTorch/TensorFlow.
+[Trainer](/docs/transformers/master/en/main_classes/trainer.html#transformers.Trainer)/[TFTrainer](/docs/transformers/master/en/main_classes/trainer.html#transformers.TFTrainer) or with native PyTorch/TensorFlow.
 
 We include several examples, each of which demonstrates a different type of common downstream task:
 
-- [seq_imdb](#seq_imdb)
-- [tok_ner](#tok_ner)
-- [qa_squad](#qa_squad)
-- [resources](#resources)
+- [seq_imdb](/docs/transformers/master/en/custom_datasets.html#seq_imdb)
+- [tok_ner](/docs/transformers/master/en/custom_datasets.html#tok_ner)
+- [qa_squad](/docs/transformers/master/en/custom_datasets.html#qa_squad)
+- [resources](/docs/transformers/master/en/custom_datasets.html#resources)
 
 <a id='seq_imdb'></a>
 
-## Sequence Classification with IMDb Reviews
+## [Sequence Classification with IMDb Reviews](#sequence-classification-with-imdb-reviews)
 
 <Tip>
 
@@ -98,7 +131,7 @@ Now, let's turn our labels and encodings into a Dataset object. In PyTorch, this
 `torch.utils.data.Dataset` object and implementing `__len__` and `__getitem__`. In TensorFlow, we pass our input
 encodings and labels to the `from_tensor_slices` constructor method. We put the data in this format so that the data
 can be easily batched such that each key in the batch encoding corresponds to a named parameter of the
-[forward()](model_doc/distilbert.html#transformers.DistilBertForSequenceClassification.forward) method of the model we will train.
+[forward()](/docs/transformers/master/en/model_doc/distilbert.html#transformers.DistilBertForSequenceClassification.forward) method of the model we will train.
 
 {#if fw === 'pt'}
 ```python
@@ -110,7 +143,7 @@ self.encodings = encodings
 self.labels = labels
 
 def __getitem__(self, idx):
-item = {key: torch.tensor(val[idx]) for key, val in self.encodings.items()}
+item = &amp;lcub;key: torch.tensor(val[idx]) for key, val in self.encodings.items()}
 item['labels'] = torch.tensor(self.labels[idx])
 return item
 
@@ -141,15 +174,15 @@ test_labels
 {/if}
 
 Now that our datasets our ready, we can fine-tune a model either with the 🤗
-[Trainer](main_classes/trainer.html#transformers.Trainer)/[TFTrainer](main_classes/trainer.html#transformers.TFTrainer) or with native PyTorch/TensorFlow. See [training](training.html).
+[Trainer](/docs/transformers/master/en/main_classes/trainer.html#transformers.Trainer)/[TFTrainer](/docs/transformers/master/en/main_classes/trainer.html#transformers.TFTrainer) or with native PyTorch/TensorFlow. See [training](/docs/transformers/master/en/training.html).
 
 <a id='ft_trainer'></a>
 
-### Fine-tuning with Trainer
+### [Fine-tuning with Trainer](#finetuning-with-trainer)
 
 The steps above prepared the datasets in the way that the trainer is expected. Now all we need to do is create a model
-to fine-tune, define the [TrainingArguments](main_classes/trainer.html#transformers.TrainingArguments)/[TFTrainingArguments](main_classes/trainer.html#transformers.TFTrainingArguments) and
-instantiate a [Trainer](main_classes/trainer.html#transformers.Trainer)/[TFTrainer](main_classes/trainer.html#transformers.TFTrainer).
+to fine-tune, define the [TrainingArguments](/docs/transformers/master/en/main_classes/trainer.html#transformers.TrainingArguments)/[TFTrainingArguments](/docs/transformers/master/en/main_classes/trainer.html#transformers.TFTrainingArguments) and
+instantiate a [Trainer](/docs/transformers/master/en/main_classes/trainer.html#transformers.Trainer)/[TFTrainer](/docs/transformers/master/en/main_classes/trainer.html#transformers.TFTrainer).
 
 {#if fw === 'pt'}
 ```python
@@ -208,7 +241,7 @@ trainer.train()
 
 <a id='ft_native'></a>
 
-### Fine-tuning with native PyTorch/TensorFlow
+### [Fine-tuning with native PyTorch/TensorFlow](#finetuning-with-native-pytorchtensorflow)
 
 We can also train use native PyTorch or TensorFlow:
 
@@ -254,7 +287,7 @@ model.fit(train_dataset.shuffle(1000).batch(16), epochs=3, batch_size=16)
 
 <a id='tok_ner'></a>
 
-## Token Classification with W-NUT Emerging Entities
+## [Token Classification with W-NUT Emerging Entities](#token-classification-with-wnut-emerging-entities)
 
 <Tip>
 
@@ -329,8 +362,8 @@ we'll use in a moment:
 
 ```python
 unique_tags = set(tag for doc in tags for tag in doc)
-tag2id = {tag: id for id, tag in enumerate(unique_tags)}
-id2tag = {id: tag for tag, id in tag2id.items()}
+tag2id = &amp;lcub;tag: id for id, tag in enumerate(unique_tags)}
+id2tag = &amp;lcub;id: tag for tag, id in tag2id.items()}
 ```
 
 To encode the tokens, we'll use a pre-trained DistilBert tokenizer. We can tell the tokenizer that we're dealing with
@@ -406,7 +439,7 @@ self.encodings = encodings
 self.labels = labels
 
 def __getitem__(self, idx):
-item = {key: torch.tensor(val[idx]) for key, val in self.encodings.items()}
+item = &amp;lcub;key: torch.tensor(val[idx]) for key, val in self.encodings.items()}
 item['labels'] = torch.tensor(self.labels[idx])
 return item
 
@@ -451,15 +484,15 @@ model = TFDistilBertForTokenClassification.from_pretrained('distilbert-base-case
 {/if}
 
 The data and model are both ready to go. You can train the model either with
-[Trainer](main_classes/trainer.html#transformers.Trainer)/[TFTrainer](main_classes/trainer.html#transformers.TFTrainer) or with native PyTorch/TensorFlow, exactly as in the
+[Trainer](/docs/transformers/master/en/main_classes/trainer.html#transformers.Trainer)/[TFTrainer](/docs/transformers/master/en/main_classes/trainer.html#transformers.TFTrainer) or with native PyTorch/TensorFlow, exactly as in the
 sequence classification example above.
 
-- [ft_trainer](#ft_trainer)
-- [ft_native](#ft_native)
+- [ft_trainer](/docs/transformers/master/en/custom_datasets.html#ft_trainer)
+- [ft_native](/docs/transformers/master/en/custom_datasets.html#ft_native)
 
 <a id='qa_squad'></a>
 
-## Question Answering with SQuAD 2.0
+## [Question Answering with SQuAD 2.0](#question-answering-with-squad)
 
 <Tip>
 
@@ -555,7 +588,7 @@ val_encodings = tokenizer(val_contexts, val_questions, truncation=True, padding=
 ```
 
 Next we need to convert our character start/end positions to token start/end positions. When using 🤗 Fast Tokenizers,
-we can use the built in [char_to_token()](main_classes/tokenizer.html#transformers.BatchEncoding.char_to_token) method.
+we can use the built in [char_to_token()](/docs/transformers/master/en/main_classes/tokenizer.html#transformers.BatchEncoding.char_to_token) method.
 
 ```python
 def add_token_positions(encodings, answers):
@@ -571,7 +604,7 @@ start_positions[-1] = tokenizer.model_max_length
 if end_positions[-1] is None:
 end_positions[-1] = tokenizer.model_max_length
 
-encodings.update({'start_positions': start_positions, 'end_positions': end_positions})
+encodings.update(&amp;lcub;'start_positions': start_positions, 'end_positions': end_positions})
 
 add_token_positions(train_encodings, train_answers)
 add_token_positions(val_encodings, val_answers)
@@ -590,7 +623,7 @@ def __init__(self, encodings):
 self.encodings = encodings
 
 def __getitem__(self, idx):
-return {key: torch.tensor(val[idx]) for key, val in self.encodings.items()}
+return &amp;lcub;key: torch.tensor(val[idx]) for key, val in self.encodings.items()}
 
 def __len__(self):
 return len(self.encodings.input_ids)
@@ -603,12 +636,12 @@ val_dataset = SquadDataset(val_encodings)
 import tensorflow as tf
 
 train_dataset = tf.data.Dataset.from_tensor_slices((
-{key: train_encodings[key] for key in ['input_ids', 'attention_mask']},
-{key: train_encodings[key] for key in ['start_positions', 'end_positions']}
+&amp;lcub;key: train_encodings[key] for key in ['input_ids', 'attention_mask']},
+&amp;lcub;key: train_encodings[key] for key in ['start_positions', 'end_positions']}
 ))
 val_dataset = tf.data.Dataset.from_tensor_slices((
-{key: val_encodings[key] for key in ['input_ids', 'attention_mask']},
-{key: val_encodings[key] for key in ['start_positions', 'end_positions']}
+&amp;lcub;key: val_encodings[key] for key in ['input_ids', 'attention_mask']},
+&amp;lcub;key: val_encodings[key] for key in ['start_positions', 'end_positions']}
 ))
 ```
 {/if}
@@ -628,12 +661,12 @@ model = TFDistilBertForQuestionAnswering.from_pretrained("distilbert-base-uncase
 {/if}
 
 The data and model are both ready to go. You can train the model with
-[Trainer](main_classes/trainer.html#transformers.Trainer)/[TFTrainer](main_classes/trainer.html#transformers.TFTrainer) exactly as in the sequence classification example
+[Trainer](/docs/transformers/master/en/main_classes/trainer.html#transformers.Trainer)/[TFTrainer](/docs/transformers/master/en/main_classes/trainer.html#transformers.TFTrainer) exactly as in the sequence classification example
 above. If using native PyTorch, replace `labels` with `start_positions` and `end_positions` in the training
 example. If using Keras's `fit`, we need to make a minor modification to handle this example since it involves
 multiple model outputs.
 
-- [ft_trainer](#ft_trainer)
+- [ft_trainer](/docs/transformers/master/en/custom_datasets.html#ft_trainer)
 
 {#if fw === 'pt'}
 ```python
@@ -682,22 +715,22 @@ model.fit(train_dataset.shuffle(1000).batch(16), epochs=3, batch_size=16)
 
 <a id='resources'></a>
 
-## Additional Resources
+## [Additional Resources](#additional-resources)
 
 - [How to train a new language model from scratch using Transformers and Tokenizers](https://huggingface.co/blog/how-to-train). Blog post showing the steps to load in Esperanto data and train a
   masked language model from scratch.
-- [Preprocessing](preprocessing.html). Docs page on data preprocessing.
-- [Training](training.html). Docs page on training and fine-tuning.
+- [Preprocessing](/docs/transformers/master/en/preprocessing.html). Docs page on data preprocessing.
+- [Training](/docs/transformers/master/en/training.html). Docs page on training and fine-tuning.
 
 <a id='datasetslib'></a>
 
-### Using the 🤗 Datasets & Metrics library
+### [Using the 🤗 Datasets & Metrics library](#using-the-datasets-metrics-library)
 
 This tutorial demonstrates how to read in datasets from various raw text formats and prepare them for training with 🤗
 Transformers so that you can do the same thing with your own custom datasets. However, we recommend users use the [🤗
 Datasets library](https://github.com/huggingface/datasets) for working with the 150+ datasets included in the [hub](https://huggingface.co/datasets), including the three datasets used in this tutorial. As a very brief overview, we
 will show how to use the Datasets library to download and prepare the IMDb dataset from the first example,
-[seq_imdb](#seq_imdb).
+[seq_imdb](/docs/transformers/master/en/custom_datasets.html#seq_imdb).
 
 Start by downloading the dataset:
 
@@ -727,14 +760,14 @@ dataset elements.
 {#if fw === 'pt'}
 ```python
 >>> train.set_format("torch", columns=["input_ids", "attention_mask", "labels"])
->>> {key: val.shape for key, val in train[0].items()})
-{'labels': torch.Size([]), 'input_ids': torch.Size([512]), 'attention_mask': torch.Size([512])}
+>>> &amp;lcub;key: val.shape for key, val in train[0].items()})
+&amp;lcub;'labels': torch.Size([]), 'input_ids': torch.Size([512]), 'attention_mask': torch.Size([512])}
 ```
 {:else}
 ```python
 >>> train.set_format("tensorflow", columns=["input_ids", "attention_mask", "labels"])
->>> {key: val.shape for key, val in train[0].items()})
-{'labels': TensorShape([]), 'input_ids': TensorShape([512]), 'attention_mask': TensorShape([512])}
+>>> &amp;lcub;key: val.shape for key, val in train[0].items()})
+&amp;lcub;'labels': TensorShape([]), 'input_ids': TensorShape([512]), 'attention_mask': TensorShape([512])}
 ```
 {/if}
 

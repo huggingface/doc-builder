@@ -1,3 +1,39 @@
+---
+local: pegasus
+sections:
+- local: overview
+  title: Overview
+- local: checkpoints
+  sections:
+  - local: examples
+    title: Examples
+  title: Checkpoints
+- local: implementation-notes
+  title: Implementation Notes
+- local: usage-example
+  title: Usage Example
+- local: pegasusconfig
+  title: PegasusConfig
+- local: pegasustokenizer
+  title: PegasusTokenizer
+- local: pegasustokenizerfast
+  title: PegasusTokenizerFast
+- local: pegasusmodel
+  title: PegasusModel
+- local: pegasusforconditionalgeneration
+  title: PegasusForConditionalGeneration
+- local: pegasusforcausallm
+  title: PegasusForCausalLM
+- local: tfpegasusmodel
+  title: TFPegasusModel
+- local: tfpegasusforconditionalgeneration
+  title: TFPegasusForConditionalGeneration
+- local: flaxpegasusmodel
+  title: FlaxPegasusModel
+- local: flaxpegasusforconditionalgeneration
+  title: FlaxPegasusForConditionalGeneration
+title: Pegasus
+---
 <script>
 import Tip from "../../Tip.svelte";
 import Youtube from "../../Youtube.svelte";	
@@ -16,13 +52,13 @@ an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express o
 specific language governing permissions and limitations under the License.
 -->
 
-# Pegasus
+# [Pegasus](#pegasus)
 
 **DISCLAIMER:** If you see something strange, file a [Github Issue](https://github.com/huggingface/transformers/issues/new?assignees=sshleifer&labels=&template=bug-report.md&title)
 and assign @patrickvonplaten.
 
 
-## Overview
+## [Overview](#overview)
 
 The Pegasus model was proposed in [PEGASUS: Pre-training with Extracted Gap-sentences for Abstractive Summarization](https://arxiv.org/pdf/1912.08777.pdf) by Jingqing Zhang, Yao Zhao, Mohammad Saleh and Peter J. Liu on Dec 18, 2019.
 
@@ -36,7 +72,7 @@ According to the abstract,
 This model was contributed by [sshleifer](https://huggingface.co/sshleifer). The Authors' code can be found [here](https://github.com/google-research/pegasus).
 
 
-## Checkpoints
+## [Checkpoints](#checkpoints)
 
 All the [checkpoints](https://huggingface.co/models?search=pegasus) are fine-tuned for summarization, besides
 _pegasus-large_, whence the other checkpoints are fine-tuned:
@@ -47,18 +83,18 @@ _pegasus-large_, whence the other checkpoints are fine-tuned:
 - Full replication results and correctly pre-processed data can be found in this [Issue](https://github.com/huggingface/transformers/issues/6844#issue-689259666).
 - [Distilled checkpoints](https://huggingface.co/models?search=distill-pegasus) are described in this [paper](https://arxiv.org/abs/2010.13002).
 
-### Examples
+### [Examples](#examples)
 
-- somelink to fine-tune pegasus
-  on the XSUM dataset. Data download instructions at somelink.
+- [Script](https://github.com/huggingface/transformers/tree/master/examples/research_projects/seq2seq-distillation/finetune_pegasus_xsum.sh) to fine-tune pegasus
+  on the XSUM dataset. Data download instructions at [examples/pytorch/summarization/](https://github.com/huggingface/transformers/tree/master/examples/pytorch/summarization/README.md).
 - FP16 is not supported (help/ideas on this appreciated!).
 - The adafactor optimizer is recommended for pegasus fine-tuning.
 
 
-## Implementation Notes
+## [Implementation Notes](#implementation-notes)
 
 - All models are transformer encoder-decoders with 16 layers in each component.
-- The implementation is completely inherited from [BartForConditionalGeneration](model_doc/bart.html#transformers.BartForConditionalGeneration)
+- The implementation is completely inherited from [BartForConditionalGeneration](/docs/transformers/master/en/model_doc/bart.html#transformers.BartForConditionalGeneration)
 - Some key configuration differences:
 
   - static, sinusoidal position embeddings
@@ -70,7 +106,7 @@ _pegasus-large_, whence the other checkpoints are fine-tuned:
   found in `convert_pegasus_tf_to_pytorch.py`.
 
 
-## Usage Example
+## [Usage Example](#usage-example)
 
 ```python
 >>> from transformers import PegasusForConditionalGeneration, PegasusTokenizer
@@ -89,26 +125,26 @@ _pegasus-large_, whence the other checkpoints are fine-tuned:
 >>> assert tgt_text[0] == "California's largest electricity provider has turned off power to hundreds of thousands of customers."
 ```
 
-## PegasusConfig
+## [PegasusConfig](#pegasusconfig)
 
 <a id='transformers.PegasusConfig'></a>
-> **class transformers.PegasusConfig**(vocab_size = 50265, max_position_embeddings = 1024, encoder_layers = 12, encoder_ffn_dim = 4096, encoder_attention_heads = 16, decoder_layers = 12, decoder_ffn_dim = 4096, decoder_attention_heads = 16, encoder_layerdrop = 0.0, decoder_layerdrop = 0.0, use_cache = True, is_encoder_decoder = True, activation_function = gelu, d_model = 1024, dropout = 0.1, attention_dropout = 0.0, activation_dropout = 0.0, init_std = 0.02, decoder_start_token_id = 0, classifier_dropout = 0.0, scale_embedding = False, gradient_checkpointing = False, pad_token_id = 0, eos_token_id = 1, forced_eos_token_id = 1, **kwargs)
+> **class transformers.PegasusConfig**(vocab_size = 50265, max_position_embeddings = 1024, encoder_layers = 12, encoder_ffn_dim = 4096, encoder_attention_heads = 16, decoder_layers = 12, decoder_ffn_dim = 4096, decoder_attention_heads = 16, encoder_layerdrop = 0.0, decoder_layerdrop = 0.0, use_cache = True, is_encoder_decoder = True, activation_function = 'gelu', d_model = 1024, dropout = 0.1, attention_dropout = 0.0, activation_dropout = 0.0, init_std = 0.02, decoder_start_token_id = 0, classifier_dropout = 0.0, scale_embedding = False, pad_token_id = 0, eos_token_id = 1, forced_eos_token_id = 1, **kwargs)
 
 
-This is the configuration class to store the configuration of a [PegasusModel](model_doc/pegasus.html#transformers.PegasusModel). It is used to
+This is the configuration class to store the configuration of a [PegasusModel](/docs/transformers/master/en/model_doc/pegasus.html#transformers.PegasusModel). It is used to
 instantiate an PEGASUS model according to the specified arguments, defining the model architecture. Instantiating a
 configuration with the defaults will yield a similar configuration to that of the PEGASUS [google/pegasus-large](https://huggingface.co/google/pegasus-large) architecture.
 
-Configuration objects inherit from [PretrainedConfig](main_classes/configuration.html#transformers.PretrainedConfig) and can be used to control the model
-outputs. Read the documentation from [PretrainedConfig](main_classes/configuration.html#transformers.PretrainedConfig) for more information.
+Configuration objects inherit from [PretrainedConfig](/docs/transformers/master/en/main_classes/configuration.html#transformers.PretrainedConfig) and can be used to control the model
+outputs. Read the documentation from [PretrainedConfig](/docs/transformers/master/en/main_classes/configuration.html#transformers.PretrainedConfig) for more information.
 
 
 > Parameters
 
 - **vocab_size** (`int`, _optional_, defaults to 50265) --
   Vocabulary size of the PEGASUS model. Defines the number of different tokens that can be represented by the
-  `inputs_ids` passed when calling [PegasusModel](model_doc/pegasus.html#transformers.PegasusModel) or
-  [TFPegasusModel](model_doc/pegasus.html#transformers.TFPegasusModel).
+  `inputs_ids` passed when calling [PegasusModel](/docs/transformers/master/en/model_doc/pegasus.html#transformers.PegasusModel) or
+  [TFPegasusModel](/docs/transformers/master/en/model_doc/pegasus.html#transformers.TFPegasusModel).
 - **d_model** (`int`, _optional_, defaults to 1024) --
   Dimensionality of the layers and the pooler layer.
 - **encoder_layers** (`int`, _optional_, defaults to 12) --
@@ -145,8 +181,6 @@ outputs. Read the documentation from [PretrainedConfig](main_classes/configurati
   decoder_layerdrop -- (`float`, _optional_, defaults to 0.0):
   The LayerDrop probability for the decoder. See the [LayerDrop paper](see
   https://arxiv.org/abs/1909.11556) for more details.
-- **gradient_checkpointing** (`bool`, _optional_, defaults to `False`) --
-  If True, use gradient checkpointing to save memory at the expense of slower backward pass.
 - **scale_embedding** (`bool`, _optional_, defaults to `False`) --
   Scale embeddings by diving by sqrt(d_model).
 - **use_cache** (`bool`, _optional_, defaults to `True`) --
@@ -171,17 +205,17 @@ outputs. Read the documentation from [PretrainedConfig](main_classes/configurati
 ```
 
 
-## PegasusTokenizer
+## [PegasusTokenizer](#pegasustokenizer)
 
 warning: `add_tokens` does not work at the moment.
 
 <a id='transformers.PegasusTokenizer'></a>
-> **class transformers.PegasusTokenizer**(vocab_file, pad_token = &lcubpad>, eos_token = &lcub/s>, unk_token = &lcubunk>, mask_token = &amp;lt;mask_2>, mask_token_sent = &amp;lt;mask_1>, additional_special_tokens = None, offset = 103, sp_model_kwargs: typing.Union[typing.Dict[str, typing.Any], NoneType] = None, **kwargs)
+> **class transformers.PegasusTokenizer**(vocab_file, pad_token = '&amp;lt;pad>', eos_token = '&amp;lt;/s>', unk_token = '&amp;lt;unk>', mask_token = '&amp;lt;mask_2>', mask_token_sent = '&amp;lt;mask_1>', additional_special_tokens = None, offset = 103, sp_model_kwargs: typing.Union[typing.Dict[str, typing.Any], NoneType] = None, **kwargs)
 
 
 Construct a PEGASUS tokenizer. Based on [SentencePiece](https://github.com/google/sentencepiece).
 
-This tokenizer inherits from [PreTrainedTokenizer](main_classes/tokenizer.html#transformers.PreTrainedTokenizer) which contains most of the main methods.
+This tokenizer inherits from [PreTrainedTokenizer](/docs/transformers/master/en/main_classes/tokenizer.html#transformers.PreTrainedTokenizer) which contains most of the main methods.
 Users should refer to this superclass for more information regarding those methods.
 
 > Parameters
@@ -189,9 +223,9 @@ Users should refer to this superclass for more information regarding those metho
 - **vocab_file** (`str`) --
   [SentencePiece](https://github.com/google/sentencepiece) file (generally has a _.spm_ extension) that
   contains the vocabulary necessary to instantiate a tokenizer.
-- **pad_token** (`str`, _optional_, defaults to `"&lcubpad>"`) --
+- **pad_token** (`str`, _optional_, defaults to `"&amp;lt;pad>"`) --
   The token used for padding, for example when batching sequences of different lengths.
-- **eos_token** (`str`, _optional_, defaults to `"&lcub/s>"`) --
+- **eos_token** (`str`, _optional_, defaults to `"&amp;lt;/s>"`) --
   The end of sequence token.
 
 <Tip>
@@ -201,22 +235,22 @@ sequence. The token used is the `sep_token`.
 
 </Tip>
 
-- **unk_token** (`str`, _optional_, defaults to `"&lcubunk>"`) --
+- **unk_token** (`str`, _optional_, defaults to `"&amp;lt;unk>"`) --
   The unknown token. A token that is not in the vocabulary cannot be converted to an ID and is set to be this
   token instead.
-- **mask_token** (`str`, _optional_, defaults to `"<mask_2>"`) --
+- **mask_token** (`str`, _optional_, defaults to `"&amp;lt;mask_2>"`) --
   The token used for masking single token values. This is the token used when training this model with masked
   language modeling (MLM). This is the token that the PEGASUS encoder will try to predict during pretraining.
   It corresponds to _[MASK2]_ in [PEGASUS: Pre-training with Extracted Gap-sentences for Abstractive
   Summarization](https://arxiv.org/pdf/1912.08777.pdf).
-- **mask_token_sent** (`str`, _optional_, defaults to `"<mask_1>"`) --
+- **mask_token_sent** (`str`, _optional_, defaults to `"&amp;lt;mask_1>"`) --
   The token used for masking whole target sentences. This is the token used when training this model with gap
   sentences generation (GSG). This is the sentence that the PEGASUS decoder will try to predict during
   pretraining. It corresponds to _[MASK1]_ in [PEGASUS: Pre-training with Extracted Gap-sentences for
   Abstractive Summarization](https://arxiv.org/pdf/1912.08777.pdf).
 - **additional_special_tokens** (`List[str]`, _optional_) --
-  Additional special tokens used by the tokenizer. If no additional_special_tokens are provided <mask_2> and
-  <unk_2, ..., unk_102> are used as additional special tokens corresponding to the [original PEGASUS
+  Additional special tokens used by the tokenizer. If no additional_special_tokens are provided &amp;lt;mask_2> and
+  &amp;lt;unk_2, ..., unk_102> are used as additional special tokens corresponding to the [original PEGASUS
   tokenizer](https://github.com/google-research/pegasus/blob/939830367bcf411193d2b5eca2f2f90f3f9260ca/pegasus/ops/pretrain_parsing_ops.cc#L66)
   that uses the tokens 2 - 104 only for pretraining
 - **sp_model_kwargs** (`dict`, _optional_) --
@@ -225,9 +259,9 @@ sequence. The token used is the `sep_token`.
   - `enable_sampling`: Enable subword regularization.
   - `nbest_size`: Sampling parameters for unigram. Invalid for BPE-Dropout.
 
-    - `nbest_size = {0,1}`: No sampling is performed.
+    - `nbest_size = &amp;lcub;0,1}`: No sampling is performed.
     - `nbest_size > 1`: samples from the nbest_size results.
-    - `nbest_size&amp;lt;0`: assuming that nbest_size is infinite and samples from the all hypothesis (lattice)
+    - `nbest_size &amp;lt; 0`: assuming that nbest_size is infinite and samples from the all hypothesis (lattice)
       using forward-filtering-and-backward-sampling algorithm.
 
   - `alpha`: Smoothing parameter for unigram sampling, and dropout probability of merge operations for
@@ -241,8 +275,8 @@ sequence. The token used is the `sep_token`.
 Build model inputs from a sequence or a pair of sequences for sequence classification tasks by concatenating
 and adding special tokens. A PEGASUS sequence has the following format, where `X` represents the sequence:
 
-- single sequence: `X &lcub/s>`
-- pair of sequences: `A B &lcub/s>` (not intended use)
+- single sequence: `X &amp;lt;/s>`
+- pair of sequences: `A B &amp;lt;/s>` (not intended use)
 
 BOS is never used. Pairs of sequences are not the expected use case, but they will be handled without a
 separator.
@@ -278,15 +312,15 @@ Get list where entries are [1] if a token is [eos] or [pad] else 0.
 
 Just EOS
 
-## PegasusTokenizerFast
+## [PegasusTokenizerFast](#pegasustokenizerfast)
 
 <a id='transformers.PegasusTokenizerFast'></a>
-> **class transformers.PegasusTokenizerFast**(vocab_file = None, tokenizer_file = None, pad_token = &lcubpad>, eos_token = &lcub/s>, unk_token = &lcubunk>, mask_token = &amp;lt;mask_2>, mask_token_sent = &amp;lt;mask_1>, additional_special_tokens = None, offset = 103, **kwargs)
+> **class transformers.PegasusTokenizerFast**(vocab_file = None, tokenizer_file = None, pad_token = '&amp;lt;pad>', eos_token = '&amp;lt;/s>', unk_token = '&amp;lt;unk>', mask_token = '&amp;lt;mask_2>', mask_token_sent = '&amp;lt;mask_1>', additional_special_tokens = None, offset = 103, **kwargs)
 
 
 Construct a "fast" PEGASUS tokenizer (backed by HuggingFace's _tokenizers_ library). Based on [Unigram](https://huggingface.co/docs/tokenizers/python/latest/components.html?highlight=unigram#models).
 
-This tokenizer inherits from [PreTrainedTokenizerFast](main_classes/tokenizer.html#transformers.PreTrainedTokenizerFast) which contains most of the main
+This tokenizer inherits from [PreTrainedTokenizerFast](/docs/transformers/master/en/main_classes/tokenizer.html#transformers.PreTrainedTokenizerFast) which contains most of the main
 methods. Users should refer to this superclass for more information regarding those methods.
 
 > Parameters
@@ -294,9 +328,9 @@ methods. Users should refer to this superclass for more information regarding th
 - **vocab_file** (`str`) --
   [SentencePiece](https://github.com/google/sentencepiece) file (generally has a _.spm_ extension) that
   contains the vocabulary necessary to instantiate a tokenizer.
-- **pad_token** (`str`, _optional_, defaults to `"&lcubpad>"`) --
+- **pad_token** (`str`, _optional_, defaults to `"&amp;lt;pad>"`) --
   The token used for padding, for example when batching sequences of different lengths.
-- **eos_token** (`str`, _optional_, defaults to `"&lcub/s>"`) --
+- **eos_token** (`str`, _optional_, defaults to `"&amp;lt;/s>"`) --
   The end of sequence token.
 
 <Tip>
@@ -306,22 +340,22 @@ sequence. The token used is the `sep_token`.
 
 </Tip>
 
-- **unk_token** (`str`, _optional_, defaults to `"&lcubunk>"`) --
+- **unk_token** (`str`, _optional_, defaults to `"&amp;lt;unk>"`) --
   The unknown token. A token that is not in the vocabulary cannot be converted to an ID and is set to be this
   token instead.
-- **mask_token** (`str`, _optional_, defaults to `"<mask_2>"`) --
+- **mask_token** (`str`, _optional_, defaults to `"&amp;lt;mask_2>"`) --
   The token used for masking single token values. This is the token used when training this model with masked
   language modeling (MLM). This is the token that the PEGASUS encoder will try to predict during pretraining.
   It corresponds to _[MASK2]_ in [PEGASUS: Pre-training with Extracted Gap-sentences for Abstractive
   Summarization](https://arxiv.org/pdf/1912.08777.pdf).
-- **mask_token_sent** (`str`, _optional_, defaults to `"<mask_1>"`) --
+- **mask_token_sent** (`str`, _optional_, defaults to `"&amp;lt;mask_1>"`) --
   The token used for masking whole target sentences. This is the token used when training this model with gap
   sentences generation (GSG). This is the sentence that the PEGASUS decoder will try to predict during
   pretraining. It corresponds to _[MASK1]_ in [PEGASUS: Pre-training with Extracted Gap-sentences for
   Abstractive Summarization](https://arxiv.org/pdf/1912.08777.pdf).
 - **additional_special_tokens** (`List[str]`, _optional_) --
-  Additional special tokens used by the tokenizer. If no additional_special_tokens are provided <mask_2> and
-  <unk_2, ..., unk_102> are used as additional special tokens corresponding to the [original PEGASUS
+  Additional special tokens used by the tokenizer. If no additional_special_tokens are provided &amp;lt;mask_2> and
+  &amp;lt;unk_2, ..., unk_102> are used as additional special tokens corresponding to the [original PEGASUS
   tokenizer](https://github.com/google-research/pegasus/blob/939830367bcf411193d2b5eca2f2f90f3f9260ca/pegasus/ops/pretrain_parsing_ops.cc#L66)
   that uses the tokens 2 - 104 only for pretraining
 
@@ -332,8 +366,8 @@ sequence. The token used is the `sep_token`.
 
 Build model inputs from a sequence by adding eos to the end. no bos token is added to the front.
 
-- single sequence: `X &lcub/s>`
-- pair of sequences: `A B &lcub/s>` (not intended use)
+- single sequence: `X &amp;lt;/s>`
+- pair of sequences: `A B &amp;lt;/s>` (not intended use)
 
 > Parameters
 
@@ -357,12 +391,12 @@ list of [input IDs](../glossary.html#input-ids) with the appropriate special tok
 Get list where entries are [1] if a token is [eos] or [pad] else 0.
 
 <a id='transformers.PegasusTokenizer'></a>
-> **class PegasusTokenizer**(vocab_file, pad_token = &lcubpad>, eos_token = &lcub/s>, unk_token = &lcubunk>, mask_token = &amp;lt;mask_2>, mask_token_sent = &amp;lt;mask_1>, additional_special_tokens = None, offset = 103, sp_model_kwargs: typing.Union[typing.Dict[str, typing.Any], NoneType] = None, **kwargs)
+> **class PegasusTokenizer**(vocab_file, pad_token = '&amp;lt;pad>', eos_token = '&amp;lt;/s>', unk_token = '&amp;lt;unk>', mask_token = '&amp;lt;mask_2>', mask_token_sent = '&amp;lt;mask_1>', additional_special_tokens = None, offset = 103, sp_model_kwargs: typing.Union[typing.Dict[str, typing.Any], NoneType] = None, **kwargs)
 
 
 Construct a PEGASUS tokenizer. Based on [SentencePiece](https://github.com/google/sentencepiece).
 
-This tokenizer inherits from [PreTrainedTokenizer](main_classes/tokenizer.html#transformers.PreTrainedTokenizer) which contains most of the main methods.
+This tokenizer inherits from [PreTrainedTokenizer](/docs/transformers/master/en/main_classes/tokenizer.html#transformers.PreTrainedTokenizer) which contains most of the main methods.
 Users should refer to this superclass for more information regarding those methods.
 
 > Parameters
@@ -370,9 +404,9 @@ Users should refer to this superclass for more information regarding those metho
 - **vocab_file** (`str`) --
   [SentencePiece](https://github.com/google/sentencepiece) file (generally has a _.spm_ extension) that
   contains the vocabulary necessary to instantiate a tokenizer.
-- **pad_token** (`str`, _optional_, defaults to `"&lcubpad>"`) --
+- **pad_token** (`str`, _optional_, defaults to `"&amp;lt;pad>"`) --
   The token used for padding, for example when batching sequences of different lengths.
-- **eos_token** (`str`, _optional_, defaults to `"&lcub/s>"`) --
+- **eos_token** (`str`, _optional_, defaults to `"&amp;lt;/s>"`) --
   The end of sequence token.
 
 <Tip>
@@ -382,22 +416,22 @@ sequence. The token used is the `sep_token`.
 
 </Tip>
 
-- **unk_token** (`str`, _optional_, defaults to `"&lcubunk>"`) --
+- **unk_token** (`str`, _optional_, defaults to `"&amp;lt;unk>"`) --
   The unknown token. A token that is not in the vocabulary cannot be converted to an ID and is set to be this
   token instead.
-- **mask_token** (`str`, _optional_, defaults to `"<mask_2>"`) --
+- **mask_token** (`str`, _optional_, defaults to `"&amp;lt;mask_2>"`) --
   The token used for masking single token values. This is the token used when training this model with masked
   language modeling (MLM). This is the token that the PEGASUS encoder will try to predict during pretraining.
   It corresponds to _[MASK2]_ in [PEGASUS: Pre-training with Extracted Gap-sentences for Abstractive
   Summarization](https://arxiv.org/pdf/1912.08777.pdf).
-- **mask_token_sent** (`str`, _optional_, defaults to `"<mask_1>"`) --
+- **mask_token_sent** (`str`, _optional_, defaults to `"&amp;lt;mask_1>"`) --
   The token used for masking whole target sentences. This is the token used when training this model with gap
   sentences generation (GSG). This is the sentence that the PEGASUS decoder will try to predict during
   pretraining. It corresponds to _[MASK1]_ in [PEGASUS: Pre-training with Extracted Gap-sentences for
   Abstractive Summarization](https://arxiv.org/pdf/1912.08777.pdf).
 - **additional_special_tokens** (`List[str]`, _optional_) --
-  Additional special tokens used by the tokenizer. If no additional_special_tokens are provided <mask_2> and
-  <unk_2, ..., unk_102> are used as additional special tokens corresponding to the [original PEGASUS
+  Additional special tokens used by the tokenizer. If no additional_special_tokens are provided &amp;lt;mask_2> and
+  &amp;lt;unk_2, ..., unk_102> are used as additional special tokens corresponding to the [original PEGASUS
   tokenizer](https://github.com/google-research/pegasus/blob/939830367bcf411193d2b5eca2f2f90f3f9260ca/pegasus/ops/pretrain_parsing_ops.cc#L66)
   that uses the tokens 2 - 104 only for pretraining
 - **sp_model_kwargs** (`dict`, _optional_) --
@@ -406,22 +440,22 @@ sequence. The token used is the `sep_token`.
   - `enable_sampling`: Enable subword regularization.
   - `nbest_size`: Sampling parameters for unigram. Invalid for BPE-Dropout.
 
-    - `nbest_size = {0,1}`: No sampling is performed.
+    - `nbest_size = &amp;lcub;0,1}`: No sampling is performed.
     - `nbest_size > 1`: samples from the nbest_size results.
-    - `nbest_size&amp;lt;0`: assuming that nbest_size is infinite and samples from the all hypothesis (lattice)
+    - `nbest_size &amp;lt; 0`: assuming that nbest_size is infinite and samples from the all hypothesis (lattice)
       using forward-filtering-and-backward-sampling algorithm.
 
   - `alpha`: Smoothing parameter for unigram sampling, and dropout probability of merge operations for
     BPE-dropout.
 
 
-## PegasusModel
+## [PegasusModel](#pegasusmodel)
 
 <a id='transformers.PegasusModel'></a>
 > **class transformers.PegasusModel**(config: PegasusConfig)
 
 The bare PEGASUS Model outputting raw hidden-states without any specific head on top.
-This model inherits from [PreTrainedModel](main_classes/model.html#transformers.PreTrainedModel). Check the superclass documentation for the generic
+This model inherits from [PreTrainedModel](/docs/transformers/master/en/main_classes/model.html#transformers.PreTrainedModel). Check the superclass documentation for the generic
 methods the library implements for all its model (such as downloading or saving, resizing the input embeddings,
 pruning heads etc.)
 
@@ -431,16 +465,16 @@ general usage and behavior.
 
 > Parameters
 
-- **config** ([PegasusConfig](model_doc/pegasus.html#transformers.PegasusConfig)) --
+- **config** ([PegasusConfig](/docs/transformers/master/en/model_doc/pegasus.html#transformers.PegasusConfig)) --
   Model configuration class with all the parameters of the model. Initializing with a config file does not
   load the weights associated with the model, only the configuration. Check out the
-  [from_pretrained()](main_classes/model.html#transformers.PreTrainedModel.from_pretrained) method to load the model weights.
+  [from_pretrained()](/docs/transformers/master/en/main_classes/model.html#transformers.PreTrainedModel.from_pretrained) method to load the model weights.
 
 
 <a id='transformers.PegasusModel.forward'></a>
 > **forward**(self, input_ids = None, attention_mask = None, decoder_input_ids = None, decoder_attention_mask = None, head_mask = None, decoder_head_mask = None, cross_attn_head_mask = None, encoder_outputs = None, past_key_values = None, inputs_embeds = None, decoder_inputs_embeds = None, use_cache = None, output_attentions = None, output_hidden_states = None, return_dict = None)
 
-The [PegasusModel](model_doc/pegasus.html#transformers.PegasusModel) forward method, overrides the `__call__` special method.
+The [PegasusModel](/docs/transformers/master/en/model_doc/pegasus.html#transformers.PegasusModel) forward method, overrides the `__call__` special method.
 
 <Tip>
 
@@ -456,8 +490,8 @@ processing steps while the latter silently ignores them.
   Indices of input sequence tokens in the vocabulary. Padding will be ignored by default should you provide
   it.
 
-  Indices can be obtained using [PegasusTokenizer](model_doc/pegasus.html#transformers.PegasusTokenizer). See
-  [transformers.PreTrainedTokenizer.encode()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
+  Indices can be obtained using [PegasusTokenizer](/docs/transformers/master/en/model_doc/pegasus.html#transformers.PegasusTokenizer). See
+  [transformers.PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
   details.
 
   [What are input IDs?](../glossary.html#input-ids)
@@ -471,8 +505,8 @@ processing steps while the latter silently ignores them.
 - **decoder_input_ids** (`torch.LongTensor` of shape `(batch_size, target_sequence_length)`, _optional_) --
   Indices of decoder input sequence tokens in the vocabulary.
 
-  Indices can be obtained using [PegasusTokenizer](model_doc/pegasus.html#transformers.PegasusTokenizer). See
-  [transformers.PreTrainedTokenizer.encode()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
+  Indices can be obtained using [PegasusTokenizer](/docs/transformers/master/en/model_doc/pegasus.html#transformers.PegasusTokenizer). See
+  [transformers.PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
   details.
 
   [What are decoder input IDs?](../glossary.html#decoder-input-ids)
@@ -536,14 +570,14 @@ processing steps while the latter silently ignores them.
   Whether or not to return the hidden states of all layers. See `hidden_states` under returned tensors for
   more detail.
 - **return_dict** (`bool`, _optional_) --
-  Whether or not to return a [ModelOutput](main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple.
+  Whether or not to return a [ModelOutput](/docs/transformers/master/en/main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple.
 
 
 > Returns
 
-A [Seq2SeqModelOutput](main_classes/output.html#transformers.modeling_outputs.Seq2SeqModelOutput) or a tuple of
+A [Seq2SeqModelOutput](/docs/transformers/master/en/main_classes/output.html#transformers.modeling_outputs.Seq2SeqModelOutput) or a tuple of
 `torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising
-various elements depending on the configuration ([PegasusConfig](model_doc/pegasus.html#transformers.PegasusConfig)) and inputs.
+various elements depending on the configuration ([PegasusConfig](/docs/transformers/master/en/model_doc/pegasus.html#transformers.PegasusConfig)) and inputs.
 
 - **last_hidden_state** (`torch.FloatTensor` of shape `(batch_size, sequence_length, hidden_size)`) -- Sequence of hidden-states at the output of the last layer of the decoder of the model.
 
@@ -594,16 +628,16 @@ various elements depending on the configuration ([PegasusConfig](model_doc/pegas
 
 > Return type
 
-[Seq2SeqModelOutput](main_classes/output.html#transformers.modeling_outputs.Seq2SeqModelOutput) or `tuple(torch.FloatTensor)`
+[Seq2SeqModelOutput](/docs/transformers/master/en/main_classes/output.html#transformers.modeling_outputs.Seq2SeqModelOutput) or `tuple(torch.FloatTensor)`
 
 
-## PegasusForConditionalGeneration
+## [PegasusForConditionalGeneration](#pegasusforconditionalgeneration)
 
 <a id='transformers.PegasusForConditionalGeneration'></a>
 > **class transformers.PegasusForConditionalGeneration**(config: PegasusConfig)
 
 The PEGASUS Model with a language modeling head. Can be used for summarization.
-This model inherits from [PreTrainedModel](main_classes/model.html#transformers.PreTrainedModel). Check the superclass documentation for the generic
+This model inherits from [PreTrainedModel](/docs/transformers/master/en/main_classes/model.html#transformers.PreTrainedModel). Check the superclass documentation for the generic
 methods the library implements for all its model (such as downloading or saving, resizing the input embeddings,
 pruning heads etc.)
 
@@ -613,16 +647,16 @@ general usage and behavior.
 
 > Parameters
 
-- **config** ([PegasusConfig](model_doc/pegasus.html#transformers.PegasusConfig)) --
+- **config** ([PegasusConfig](/docs/transformers/master/en/model_doc/pegasus.html#transformers.PegasusConfig)) --
   Model configuration class with all the parameters of the model. Initializing with a config file does not
   load the weights associated with the model, only the configuration. Check out the
-  [from_pretrained()](main_classes/model.html#transformers.PreTrainedModel.from_pretrained) method to load the model weights.
+  [from_pretrained()](/docs/transformers/master/en/main_classes/model.html#transformers.PreTrainedModel.from_pretrained) method to load the model weights.
 
 
 <a id='transformers.PegasusForConditionalGeneration.forward'></a>
 > **forward**(self, input_ids = None, attention_mask = None, decoder_input_ids = None, decoder_attention_mask = None, head_mask = None, decoder_head_mask = None, cross_attn_head_mask = None, encoder_outputs = None, past_key_values = None, inputs_embeds = None, decoder_inputs_embeds = None, labels = None, use_cache = None, output_attentions = None, output_hidden_states = None, return_dict = None)
 
-The [PegasusForConditionalGeneration](model_doc/pegasus.html#transformers.PegasusForConditionalGeneration) forward method, overrides the `__call__` special method.
+The [PegasusForConditionalGeneration](/docs/transformers/master/en/model_doc/pegasus.html#transformers.PegasusForConditionalGeneration) forward method, overrides the `__call__` special method.
 
 <Tip>
 
@@ -638,8 +672,8 @@ processing steps while the latter silently ignores them.
   Indices of input sequence tokens in the vocabulary. Padding will be ignored by default should you provide
   it.
 
-  Indices can be obtained using [PegasusTokenizer](model_doc/pegasus.html#transformers.PegasusTokenizer). See
-  [transformers.PreTrainedTokenizer.encode()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
+  Indices can be obtained using [PegasusTokenizer](/docs/transformers/master/en/model_doc/pegasus.html#transformers.PegasusTokenizer). See
+  [transformers.PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
   details.
 
   [What are input IDs?](../glossary.html#input-ids)
@@ -653,8 +687,8 @@ processing steps while the latter silently ignores them.
 - **decoder_input_ids** (`torch.LongTensor` of shape `(batch_size, target_sequence_length)`, _optional_) --
   Indices of decoder input sequence tokens in the vocabulary.
 
-  Indices can be obtained using [PegasusTokenizer](model_doc/pegasus.html#transformers.PegasusTokenizer). See
-  [transformers.PreTrainedTokenizer.encode()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
+  Indices can be obtained using [PegasusTokenizer](/docs/transformers/master/en/model_doc/pegasus.html#transformers.PegasusTokenizer). See
+  [transformers.PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
   details.
 
   [What are decoder input IDs?](../glossary.html#decoder-input-ids)
@@ -718,7 +752,7 @@ processing steps while the latter silently ignores them.
   Whether or not to return the hidden states of all layers. See `hidden_states` under returned tensors for
   more detail.
 - **return_dict** (`bool`, _optional_) --
-  Whether or not to return a [ModelOutput](main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple.
+  Whether or not to return a [ModelOutput](/docs/transformers/master/en/main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple.
 
 - **labels** (`torch.LongTensor` of shape `(batch_size, sequence_length)`, _optional_) --
   Labels for computing the masked language modeling loss. Indices should either be in `[0, ..., config.vocab_size]` or -100 (see `input_ids` docstring). Tokens with indices set to `-100` are ignored
@@ -727,9 +761,9 @@ processing steps while the latter silently ignores them.
 
 > Returns
 
-A [Seq2SeqLMOutput](main_classes/output.html#transformers.modeling_outputs.Seq2SeqLMOutput) or a tuple of
+A [Seq2SeqLMOutput](/docs/transformers/master/en/main_classes/output.html#transformers.modeling_outputs.Seq2SeqLMOutput) or a tuple of
 `torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising
-various elements depending on the configuration ([PegasusConfig](model_doc/pegasus.html#transformers.PegasusConfig)) and inputs.
+various elements depending on the configuration ([PegasusConfig](/docs/transformers/master/en/model_doc/pegasus.html#transformers.PegasusConfig)) and inputs.
 
 - **loss** (`torch.FloatTensor` of shape `(1,)`, _optional_, returned when `labels` is provided) -- Language modeling loss.
 - **logits** (`torch.FloatTensor` of shape `(batch_size, sequence_length, config.vocab_size)`) -- Prediction scores of the language modeling head (scores for each vocabulary token before SoftMax).
@@ -765,7 +799,7 @@ various elements depending on the configuration ([PegasusConfig](model_doc/pegas
 
 > Return type
 
-[Seq2SeqLMOutput](main_classes/output.html#transformers.modeling_outputs.Seq2SeqLMOutput) or `tuple(torch.FloatTensor)`
+[Seq2SeqLMOutput](/docs/transformers/master/en/main_classes/output.html#transformers.modeling_outputs.Seq2SeqLMOutput) or `tuple(torch.FloatTensor)`
 
 > Summarization example:
 
@@ -788,7 +822,7 @@ various elements depending on the configuration ([PegasusConfig](model_doc/pegas
 ```
 
 
-## PegasusForCausalLM
+## [PegasusForCausalLM](#pegasusforcausallm)
 
 <a id='transformers.PegasusForCausalLM'></a>
 > **class transformers.PegasusForCausalLM**(config)
@@ -803,8 +837,8 @@ various elements depending on the configuration ([PegasusConfig](model_doc/pegas
   Indices of input sequence tokens in the vocabulary. Padding will be ignored by default should you
   provide it.
 
-  Indices can be obtained using [PegasusTokenizer](model_doc/pegasus.html#transformers.PegasusTokenizer). See
-  [transformers.PreTrainedTokenizer.encode()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__)
+  Indices can be obtained using [PegasusTokenizer](/docs/transformers/master/en/model_doc/pegasus.html#transformers.PegasusTokenizer). See
+  [transformers.PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__)
   for details.
 
   [What are input IDs?](../glossary.html#input-ids)
@@ -863,14 +897,14 @@ various elements depending on the configuration ([PegasusConfig](model_doc/pegas
   Whether or not to return the hidden states of all layers. See `hidden_states` under returned tensors
   for more detail.
 - **return_dict** (`bool`, _optional_) --
-  Whether or not to return a [ModelOutput](main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple.
+  Whether or not to return a [ModelOutput](/docs/transformers/master/en/main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple.
 
 
 > Returns
 
-A [CausalLMOutputWithCrossAttentions](main_classes/output.html#transformers.modeling_outputs.CausalLMOutputWithCrossAttentions) or a tuple of
+A [CausalLMOutputWithCrossAttentions](/docs/transformers/master/en/main_classes/output.html#transformers.modeling_outputs.CausalLMOutputWithCrossAttentions) or a tuple of
 `torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising
-various elements depending on the configuration ([PegasusConfig](model_doc/pegasus.html#transformers.PegasusConfig)) and inputs.
+various elements depending on the configuration ([PegasusConfig](/docs/transformers/master/en/model_doc/pegasus.html#transformers.PegasusConfig)) and inputs.
 
 - **loss** (`torch.FloatTensor` of shape `(1,)`, _optional_, returned when `labels` is provided) -- Language modeling loss (for next-token prediction).
 - **logits** (`torch.FloatTensor` of shape `(batch_size, sequence_length, config.vocab_size)`) -- Prediction scores of the language modeling head (scores for each vocabulary token before SoftMax).
@@ -901,7 +935,7 @@ various elements depending on the configuration ([PegasusConfig](model_doc/pegas
 
 >>> tokenizer = PegasusTokenizer.from_pretrained('facebook/bart-large')
 >>> model = PegasusForCausalLM.from_pretrained('facebook/bart-large', add_cross_attention=False)
->>> assert model.config.is_decoder, f"{model.__class__} has to be configured as a decoder."
+>>> assert model.config.is_decoder, f"&amp;lcub;model.__class__} has to be configured as a decoder."
 >>> inputs = tokenizer("Hello, my dog is cute", return_tensors="pt")
 >>> outputs = model(**inputs)
 
@@ -910,16 +944,16 @@ various elements depending on the configuration ([PegasusConfig](model_doc/pegas
 
 > Return type
 
-[CausalLMOutputWithCrossAttentions](main_classes/output.html#transformers.modeling_outputs.CausalLMOutputWithCrossAttentions) or `tuple(torch.FloatTensor)`
+[CausalLMOutputWithCrossAttentions](/docs/transformers/master/en/main_classes/output.html#transformers.modeling_outputs.CausalLMOutputWithCrossAttentions) or `tuple(torch.FloatTensor)`
 
 
-## TFPegasusModel
+## [TFPegasusModel](#tfpegasusmodel)
 
 <a id='transformers.TFPegasusModel'></a>
 > **class transformers.TFPegasusModel**(*args, **kwargs)
 
 The bare PEGASUS Model outputting raw hidden-states without any specific head on top.
-This model inherits from [TFPreTrainedModel](main_classes/model.html#transformers.TFPreTrainedModel). Check the superclass documentation for the
+This model inherits from [TFPreTrainedModel](/docs/transformers/master/en/main_classes/model.html#transformers.TFPreTrainedModel). Check the superclass documentation for the
 generic methods the library implements for all its model (such as downloading or saving, resizing the input
 embeddings, pruning heads etc.)
 
@@ -944,22 +978,22 @@ the first positional argument :
 - a list of varying length with one or several input Tensors IN THE ORDER given in the docstring:
   `model([input_ids, attention_mask])` or `model([input_ids, attention_mask, token_type_ids])`
 - a dictionary with one or several input Tensors associated to the input names given in the docstring:
-  `model({"input_ids": input_ids, "token_type_ids": token_type_ids})`
+  `model(&amp;lcub;"input_ids": input_ids, "token_type_ids": token_type_ids})`
 
 </Tip>
 
 > Parameters
 
-- **config** ([PegasusConfig](model_doc/pegasus.html#transformers.PegasusConfig)) -- Model configuration class with all the parameters of the model.
+- **config** ([PegasusConfig](/docs/transformers/master/en/model_doc/pegasus.html#transformers.PegasusConfig)) -- Model configuration class with all the parameters of the model.
   Initializing with a config file does not load the weights associated with the model, only the
-  configuration. Check out the [from_pretrained()](main_classes/model.html#transformers.TFPreTrainedModel.from_pretrained) method to load the
+  configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model.html#transformers.TFPreTrainedModel.from_pretrained) method to load the
   model weights.
 
 
 <a id='transformers.TFPegasusModel.call'></a>
 > **call**(self, input_ids = None, attention_mask = None, decoder_input_ids = None, decoder_attention_mask = None, head_mask = None, decoder_head_mask = None, cross_attn_head_mask = None, encoder_outputs: typing.Union[typing.Tuple, transformers.modeling_tf_outputs.TFBaseModelOutput, NoneType] = None, past_key_values = None, inputs_embeds = None, decoder_inputs_embeds = None, use_cache = None, output_attentions = None, output_hidden_states = None, return_dict = None, training = False, **kwargs)
 
-The [TFPegasusModel](model_doc/pegasus.html#transformers.TFPegasusModel) forward method, overrides the `__call__` special method.
+The [TFPegasusModel](/docs/transformers/master/en/model_doc/pegasus.html#transformers.TFPegasusModel) forward method, overrides the `__call__` special method.
 
 <Tip>
 
@@ -974,8 +1008,8 @@ processing steps while the latter silently ignores them.
 - **input_ids** (`tf.Tensor` of shape `(batch_size, sequence_length)`) --
   Indices of input sequence tokens in the vocabulary.
 
-  Indices can be obtained using [PegasusTokenizer](model_doc/pegasus.html#transformers.PegasusTokenizer). See
-  [transformers.PreTrainedTokenizer.encode()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
+  Indices can be obtained using [PegasusTokenizer](/docs/transformers/master/en/model_doc/pegasus.html#transformers.PegasusTokenizer). See
+  [transformers.PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
   details.
 
   [What are input IDs?](../glossary.html#input-ids)
@@ -989,8 +1023,8 @@ processing steps while the latter silently ignores them.
 - **decoder_input_ids** (`tf.Tensor` of shape `(batch_size, target_sequence_length)`, _optional_) --
   Indices of decoder input sequence tokens in the vocabulary.
 
-  Indices can be obtained using [PegasusTokenizer](model_doc/pegasus.html#transformers.PegasusTokenizer). See
-  [transformers.PreTrainedTokenizer.encode()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
+  Indices can be obtained using [PegasusTokenizer](/docs/transformers/master/en/model_doc/pegasus.html#transformers.PegasusTokenizer). See
+  [transformers.PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
   details.
 
   [What are decoder input IDs?](../glossary.html#decoder-input-ids)
@@ -1041,7 +1075,7 @@ processing steps while the latter silently ignores them.
   more detail. This argument can be used only in eager mode, in graph mode the value in the config will be
   used instead.
 - **return_dict** (`bool`, _optional_) --
-  Whether or not to return a [ModelOutput](main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple. This
+  Whether or not to return a [ModelOutput](/docs/transformers/master/en/main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple. This
   argument can be used in eager mode, in graph mode the value will always be set to True.
 - **training** (`bool`, _optional_, defaults to `False`) --
   Whether or not to use the model in training mode (some modules like dropout modules have different
@@ -1049,9 +1083,9 @@ processing steps while the latter silently ignores them.
 
 > Returns
 
-A [TFSeq2SeqModelOutput](main_classes/output.html#transformers.modeling_tf_outputs.TFSeq2SeqModelOutput) or a tuple of
+A [TFSeq2SeqModelOutput](/docs/transformers/master/en/main_classes/output.html#transformers.modeling_tf_outputs.TFSeq2SeqModelOutput) or a tuple of
 `tf.Tensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising various
-elements depending on the configuration ([PegasusConfig](model_doc/pegasus.html#transformers.PegasusConfig)) and inputs.
+elements depending on the configuration ([PegasusConfig](/docs/transformers/master/en/model_doc/pegasus.html#transformers.PegasusConfig)) and inputs.
 
 - **last_hidden_state** (`tf.Tensor` of shape `(batch_size, sequence_length, hidden_size)`) -- Sequence of hidden-states at the output of the last layer of the decoder of the model.
 
@@ -1084,7 +1118,7 @@ elements depending on the configuration ([PegasusConfig](model_doc/pegasus.html#
 
 > Return type
 
-[TFSeq2SeqModelOutput](main_classes/output.html#transformers.modeling_tf_outputs.TFSeq2SeqModelOutput) or `tuple(tf.Tensor)`
+[TFSeq2SeqModelOutput](/docs/transformers/master/en/main_classes/output.html#transformers.modeling_tf_outputs.TFSeq2SeqModelOutput) or `tuple(tf.Tensor)`
 
 > Example:
 
@@ -1102,13 +1136,13 @@ elements depending on the configuration ([PegasusConfig](model_doc/pegasus.html#
 ```
 
 
-## TFPegasusForConditionalGeneration
+## [TFPegasusForConditionalGeneration](#tfpegasusforconditionalgeneration)
 
 <a id='transformers.TFPegasusForConditionalGeneration'></a>
 > **class transformers.TFPegasusForConditionalGeneration**(*args, **kwargs)
 
 The PEGASUS Model with a language modeling head. Can be used for summarization.
-This model inherits from [TFPreTrainedModel](main_classes/model.html#transformers.TFPreTrainedModel). Check the superclass documentation for the
+This model inherits from [TFPreTrainedModel](/docs/transformers/master/en/main_classes/model.html#transformers.TFPreTrainedModel). Check the superclass documentation for the
 generic methods the library implements for all its model (such as downloading or saving, resizing the input
 embeddings, pruning heads etc.)
 
@@ -1133,22 +1167,22 @@ the first positional argument :
 - a list of varying length with one or several input Tensors IN THE ORDER given in the docstring:
   `model([input_ids, attention_mask])` or `model([input_ids, attention_mask, token_type_ids])`
 - a dictionary with one or several input Tensors associated to the input names given in the docstring:
-  `model({"input_ids": input_ids, "token_type_ids": token_type_ids})`
+  `model(&amp;lcub;"input_ids": input_ids, "token_type_ids": token_type_ids})`
 
 </Tip>
 
 > Parameters
 
-- **config** ([PegasusConfig](model_doc/pegasus.html#transformers.PegasusConfig)) -- Model configuration class with all the parameters of the model.
+- **config** ([PegasusConfig](/docs/transformers/master/en/model_doc/pegasus.html#transformers.PegasusConfig)) -- Model configuration class with all the parameters of the model.
   Initializing with a config file does not load the weights associated with the model, only the
-  configuration. Check out the [from_pretrained()](main_classes/model.html#transformers.TFPreTrainedModel.from_pretrained) method to load the
+  configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model.html#transformers.TFPreTrainedModel.from_pretrained) method to load the
   model weights.
 
 
 <a id='transformers.TFPegasusForConditionalGeneration.call'></a>
 > **call**(self, input_ids = None, attention_mask = None, decoder_input_ids = None, decoder_attention_mask = None, head_mask = None, decoder_head_mask = None, cross_attn_head_mask = None, encoder_outputs: typing.Optional[transformers.modeling_tf_outputs.TFBaseModelOutput] = None, past_key_values = None, inputs_embeds = None, decoder_inputs_embeds = None, use_cache = None, output_attentions = None, output_hidden_states = None, return_dict = None, labels = None, training = False, **kwargs)
 
-The [TFPegasusForConditionalGeneration](model_doc/pegasus.html#transformers.TFPegasusForConditionalGeneration) forward method, overrides the `__call__` special method.
+The [TFPegasusForConditionalGeneration](/docs/transformers/master/en/model_doc/pegasus.html#transformers.TFPegasusForConditionalGeneration) forward method, overrides the `__call__` special method.
 
 <Tip>
 
@@ -1160,15 +1194,15 @@ processing steps while the latter silently ignores them.
 
 > Parameters
 
-- **input_ids** (`tf.Tensor` of shape `({0})`) --
+- **input_ids** (`tf.Tensor` of shape `(&amp;lcub;0})`) --
   Indices of input sequence tokens in the vocabulary.
 
-  Indices can be obtained using [PegasusTokenizer](model_doc/pegasus.html#transformers.PegasusTokenizer). See
-  [transformers.PreTrainedTokenizer.encode()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
+  Indices can be obtained using [PegasusTokenizer](/docs/transformers/master/en/model_doc/pegasus.html#transformers.PegasusTokenizer). See
+  [transformers.PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
   details.
 
   [What are input IDs?](../glossary.html#input-ids)
-- **attention_mask** (`tf.Tensor` of shape `({0})`, _optional_) --
+- **attention_mask** (`tf.Tensor` of shape `(&amp;lcub;0})`, _optional_) --
   Mask to avoid performing attention on padding token indices. Mask values selected in `[0, 1]`:
 
   - 1 for tokens that are **not masked**,
@@ -1178,8 +1212,8 @@ processing steps while the latter silently ignores them.
 - **decoder_input_ids** (`tf.Tensor` of shape `(batch_size, target_sequence_length)`, _optional_) --
   Indices of decoder input sequence tokens in the vocabulary.
 
-  Indices can be obtained using [PegasusTokenizer](model_doc/pegasus.html#transformers.PegasusTokenizer). See
-  [transformers.PreTrainedTokenizer.encode()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
+  Indices can be obtained using [PegasusTokenizer](/docs/transformers/master/en/model_doc/pegasus.html#transformers.PegasusTokenizer). See
+  [transformers.PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
   details.
 
   [What are decoder input IDs?](../glossary.html#decoder-input-ids)
@@ -1230,7 +1264,7 @@ processing steps while the latter silently ignores them.
   more detail. This argument can be used only in eager mode, in graph mode the value in the config will be
   used instead.
 - **return_dict** (`bool`, _optional_) --
-  Whether or not to return a [ModelOutput](main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple. This
+  Whether or not to return a [ModelOutput](/docs/transformers/master/en/main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple. This
   argument can be used in eager mode, in graph mode the value will always be set to True.
 - **training** (`bool`, _optional_, defaults to `False`) --
   Whether or not to use the model in training mode (some modules like dropout modules have different
@@ -1243,9 +1277,9 @@ processing steps while the latter silently ignores them.
 
 > Returns
 
-A [TFSeq2SeqLMOutput](main_classes/output.html#transformers.modeling_tf_outputs.TFSeq2SeqLMOutput) or a tuple of
+A [TFSeq2SeqLMOutput](/docs/transformers/master/en/main_classes/output.html#transformers.modeling_tf_outputs.TFSeq2SeqLMOutput) or a tuple of
 `tf.Tensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising various
-elements depending on the configuration ([PegasusConfig](model_doc/pegasus.html#transformers.PegasusConfig)) and inputs.
+elements depending on the configuration ([PegasusConfig](/docs/transformers/master/en/model_doc/pegasus.html#transformers.PegasusConfig)) and inputs.
 
 - **loss** (`tf.Tensor` of shape `(n,)`, _optional_, where n is the number of non-masked labels, returned when `labels` is provided) -- Language modeling loss.
 - **logits** (`tf.Tensor` of shape `(batch_size, sequence_length, config.vocab_size)`) -- Prediction scores of the language modeling head (scores for each vocabulary token before SoftMax).
@@ -1279,7 +1313,7 @@ elements depending on the configuration ([PegasusConfig](model_doc/pegasus.html#
 
 > Return type
 
-[TFSeq2SeqLMOutput](main_classes/output.html#transformers.modeling_tf_outputs.TFSeq2SeqLMOutput) or `tuple(tf.Tensor)`
+[TFSeq2SeqLMOutput](/docs/transformers/master/en/main_classes/output.html#transformers.modeling_tf_outputs.TFSeq2SeqLMOutput) or `tuple(tf.Tensor)`
 
 > Summarization example:
 
@@ -1300,4 +1334,645 @@ elements depending on the configuration ([PegasusConfig](model_doc/pegasus.html#
 >>> summary_ids = model.generate(inputs['input_ids'])
 >>> print([tokenizer.decode(g, skip_special_tokens=True, clean_up_tokenization_spaces=False) for g in summary_ids])
 ```
+
+
+## [FlaxPegasusModel](#flaxpegasusmodel)
+
+<a id='transformers.FlaxPegasusModel'></a>
+> **class transformers.FlaxPegasusModel**(config: PegasusConfig, input_shape: typing.Tuple[int] = (1, 1), seed: int = 0, dtype: dtype = &amp;lt;class 'jax._src.numpy.lax_numpy.float32'>, **kwargs)
+
+The bare Pegasus Model transformer outputting raw hidden-states without any specific head on top.
+This model inherits from [FlaxPreTrainedModel](/docs/transformers/master/en/main_classes/model.html#transformers.FlaxPreTrainedModel). Check the superclass documentation for the
+generic methods the library implements for all its model (such as downloading or saving, resizing the input
+embeddings, pruning heads etc.)
+
+This model is also a Flax Linen [flax.nn.Module](https://flax.readthedocs.io/en/latest/_autosummary/flax.nn.module.html) subclass. Use it as a regular Flax
+Module and refer to the Flax documentation for all matter related to general usage and behavior.
+
+Finally, this model supports inherent JAX features such as:
+
+- [Just-In-Time (JIT) compilation](https://jax.readthedocs.io/en/latest/jax.html#just-in-time-compilation-jit)
+- [Automatic Differentiation](https://jax.readthedocs.io/en/latest/jax.html#automatic-differentiation)
+- [Vectorization](https://jax.readthedocs.io/en/latest/jax.html#vectorization-vmap)
+- [Parallelization](https://jax.readthedocs.io/en/latest/jax.html#parallelization-pmap)
+
+> Parameters
+
+- **config** ([PegasusConfig](/docs/transformers/master/en/model_doc/pegasus.html#transformers.PegasusConfig)) -- Model configuration class with all the parameters of the model.
+  Initializing with a config file does not load the weights associated with the model, only the
+  configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model.html#transformers.FlaxPreTrainedModel.from_pretrained) method to load the
+  model weights.
+
+
+<a id='transformers.FlaxPegasusPreTrainedModel.__call__'></a>
+> **\_\_call\_\_**(self, input_ids: ndarray, attention_mask: typing.Optional[jax._src.numpy.lax_numpy.ndarray] = None, decoder_input_ids: typing.Optional[jax._src.numpy.lax_numpy.ndarray] = None, decoder_attention_mask: typing.Optional[jax._src.numpy.lax_numpy.ndarray] = None, position_ids: typing.Optional[jax._src.numpy.lax_numpy.ndarray] = None, decoder_position_ids: typing.Optional[jax._src.numpy.lax_numpy.ndarray] = None, output_attentions: typing.Optional[bool] = None, output_hidden_states: typing.Optional[bool] = None, return_dict: typing.Optional[bool] = None, train: bool = False, params: dict = None, dropout_rng: PRNGKey = None)
+
+The `FlaxPegasusPreTrainedModel` forward method, overrides the `__call__` special method.
+
+<Tip>
+
+Although the recipe for forward pass needs to be defined within this function, one should call the
+`Module` instance afterwards instead of this since the former takes care of running the pre and post
+processing steps while the latter silently ignores them.
+
+</Tip>
+
+> Parameters
+
+- **input_ids** (`jnp.ndarray` of shape `(batch_size, sequence_length)`) --
+  Indices of input sequence tokens in the vocabulary. Padding will be ignored by default should you provide
+  it.
+
+  Indices can be obtained using [PegasusTokenizer](/docs/transformers/master/en/model_doc/pegasus.html#transformers.PegasusTokenizer). See
+  [transformers.PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
+  details.
+
+  [What are input IDs?](../glossary.html#input-ids)
+- **attention_mask** (`jnp.ndarray` of shape `(batch_size, sequence_length)`, _optional_) --
+  Mask to avoid performing attention on padding token indices. Mask values selected in `[0, 1]`:
+
+  - 1 for tokens that are **not masked**,
+  - 0 for tokens that are **masked**.
+
+  [What are attention masks?](../glossary.html#attention-mask)
+- **decoder_input_ids** (`jnp.ndarray` of shape `(batch_size, target_sequence_length)`, _optional_) --
+  Indices of decoder input sequence tokens in the vocabulary.
+
+  Indices can be obtained using [PegasusTokenizer](/docs/transformers/master/en/model_doc/pegasus.html#transformers.PegasusTokenizer). See
+  [transformers.PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
+  details.
+
+  [What are decoder input IDs?](../glossary.html#decoder-input-ids)
+- **decoder_attention_mask** (`jnp.ndarray` of shape `(batch_size, target_sequence_length)`, _optional_) --
+  Default behavior: generate a tensor that ignores pad tokens in `decoder_input_ids`. Causal mask will
+  also be used by default.
+
+  If you want to change padding behavior, you should modify to your needs. See diagram 1 in [the paper](https://arxiv.org/abs/1910.13461) for more information on the default strategy.
+- **position_ids** (`numpy.ndarray` of shape `(batch_size, sequence_length)`, _optional_) --
+  Indices of positions of each input sequence tokens in the position embeddings. Selected in the range `[0, config.max_position_embeddings - 1]`.
+- **decoder_position_ids** (`numpy.ndarray` of shape `(batch_size, sequence_length)`, _optional_) --
+  Indices of positions of each decoder input sequence tokens in the position embeddings. Selected in the
+  range `[0, config.max_position_embeddings - 1]`.
+- **output_attentions** (`bool`, _optional_) --
+  Whether or not to return the attentions tensors of all attention layers. See `attentions` under returned
+  tensors for more detail.
+- **output_hidden_states** (`bool`, _optional_) --
+  Whether or not to return the hidden states of all layers. See `hidden_states` under returned tensors for
+  more detail.
+- **return_dict** (`bool`, _optional_) --
+  Whether or not to return a [ModelOutput](/docs/transformers/master/en/main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple.
+
+> Returns
+
+A [FlaxSeq2SeqModelOutput](/docs/transformers/master/en/main_classes/output.html#transformers.modeling_flax_outputs.FlaxSeq2SeqModelOutput) or a tuple of
+`torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising
+various elements depending on the configuration ([PegasusConfig](/docs/transformers/master/en/model_doc/pegasus.html#transformers.PegasusConfig)) and inputs.
+
+- **last_hidden_state** (`jnp.ndarray` of shape `(batch_size, sequence_length, hidden_size)`) -- Sequence of hidden-states at the output of the last layer of the decoder of the model.
+
+  If `past_key_values` is used only the last hidden-state of the sequences of shape `(batch_size, 1, hidden_size)` is output.
+- **past_key_values** (`tuple(tuple(jnp.ndarray))`, _optional_, returned when `use_cache=True` is passed or when `config.use_cache=True`) -- Tuple of `tuple(jnp.ndarray)` of length `config.n_layers`, with each tuple having 2 tensors of
+  shape `(batch_size, num_heads, sequence_length, embed_size_per_head)`) and 2 additional tensors of
+  shape `(batch_size, num_heads, encoder_sequence_length, embed_size_per_head)`.
+
+  Contains pre-computed hidden-states (key and values in the self-attention blocks and in the cross-attention
+  blocks) that can be used (see `past_key_values` input) to speed up sequential decoding.
+- **decoder_hidden_states** (`tuple(jnp.ndarray)`, _optional_, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `jnp.ndarray` (one for the output of the embeddings + one for the output of each layer) of
+  shape `(batch_size, sequence_length, hidden_size)`.
+
+  Hidden-states of the decoder at the output of each layer plus the initial embedding outputs.
+- **decoder_attentions** (`tuple(jnp.ndarray)`, _optional_, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `jnp.ndarray` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+
+  Attentions weights of the decoder, after the attention softmax, used to compute the weighted average in the
+  self-attention heads.
+- **cross_attentions** (`tuple(jnp.ndarray)`, _optional_, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `jnp.ndarray` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+
+  Attentions weights of the decoder's cross-attention layer, after the attention softmax, used to compute the
+  weighted average in the cross-attention heads.
+- **encoder_last_hidden_state** (`jnp.ndarray` of shape `(batch_size, sequence_length, hidden_size)`, _optional_) -- Sequence of hidden-states at the output of the last layer of the encoder of the model.
+- **encoder_hidden_states** (`tuple(jnp.ndarray)`, _optional_, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `jnp.ndarray` (one for the output of the embeddings + one for the output of each layer) of
+  shape `(batch_size, sequence_length, hidden_size)`.
+
+  Hidden-states of the encoder at the output of each layer plus the initial embedding outputs.
+- **encoder_attentions** (`tuple(jnp.ndarray)`, _optional_, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `jnp.ndarray` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+
+  Attentions weights of the encoder, after the attention softmax, used to compute the weighted average in the
+  self-attention heads.
+
+> Return type
+
+[FlaxSeq2SeqModelOutput](/docs/transformers/master/en/main_classes/output.html#transformers.modeling_flax_outputs.FlaxSeq2SeqModelOutput) or `tuple(torch.FloatTensor)`
+
+> Example:
+
+```python
+>>> from transformers import PegasusTokenizer, FlaxPegasusModel
+
+>>> tokenizer = PegasusTokenizer.from_pretrained('google/pegasus-large')
+>>> model = FlaxPegasusModel.from_pretrained('google/pegasus-large')
+
+>>> inputs = tokenizer("Hello, my dog is cute", return_tensors='jax')
+>>> outputs = model(**inputs)
+
+>>> last_hidden_states = outputs.last_hidden_state
+```
+
+
+<a id='transformers.FlaxPegasusPreTrainedModel.encode'></a>
+> **encode**(self, input_ids: ndarray, attention_mask: typing.Optional[jax._src.numpy.lax_numpy.ndarray] = None, position_ids: typing.Optional[jax._src.numpy.lax_numpy.ndarray] = None, output_attentions: typing.Optional[bool] = None, output_hidden_states: typing.Optional[bool] = None, return_dict: typing.Optional[bool] = None, train: bool = False, params: dict = None, dropout_rng: PRNGKey = None)
+
+
+> Parameters
+
+- **input_ids** (`jnp.ndarray` of shape `(batch_size, sequence_length)`) --
+  Indices of input sequence tokens in the vocabulary. Padding will be ignored by default should you provide
+  it.
+
+  Indices can be obtained using [PegasusTokenizer](/docs/transformers/master/en/model_doc/pegasus.html#transformers.PegasusTokenizer). See
+  [transformers.PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
+  details.
+
+  [What are input IDs?](../glossary.html#input-ids)
+- **attention_mask** (`jnp.ndarray` of shape `(batch_size, sequence_length)`, _optional_) --
+  Mask to avoid performing attention on padding token indices. Mask values selected in `[0, 1]`:
+
+  - 1 for tokens that are **not masked**,
+  - 0 for tokens that are **masked**.
+
+  [What are attention masks?](../glossary.html#attention-mask)
+- **position_ids** (`numpy.ndarray` of shape `(batch_size, sequence_length)`, _optional_) --
+  Indices of positions of each input sequence tokens in the position embeddings. Selected in the range `[0, config.max_position_embeddings - 1]`.
+- **output_attentions** (`bool`, _optional_) --
+  Whether or not to return the attentions tensors of all attention layers. See `attentions` under returned
+  tensors for more detail.
+- **output_hidden_states** (`bool`, _optional_) --
+  Whether or not to return the hidden states of all layers. See `hidden_states` under returned tensors for
+  more detail.
+- **return_dict** (`bool`, _optional_) --
+  Whether or not to return a [ModelOutput](/docs/transformers/master/en/main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple.
+
+
+> Returns
+
+A [FlaxBaseModelOutput](/docs/transformers/master/en/main_classes/output.html#transformers.modeling_flax_outputs.FlaxBaseModelOutput) or a tuple of
+`torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising
+various elements depending on the configuration (`PegasusConfig'>`) and inputs.
+
+- **last_hidden_state** (`jnp.ndarray` of shape `(batch_size, sequence_length, hidden_size)`) -- Sequence of hidden-states at the output of the last layer of the model.
+- **hidden_states** (`tuple(jnp.ndarray)`, _optional_, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `jnp.ndarray` (one for the output of the embeddings + one for the output of each layer) of
+  shape `(batch_size, sequence_length, hidden_size)`.
+
+  Hidden-states of the model at the output of each layer plus the initial embedding outputs.
+- **attentions** (`tuple(jnp.ndarray)`, _optional_, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `jnp.ndarray` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+
+  Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
+  heads.
+
+
+> Example:
+
+```python
+>>> from transformers import PegasusTokenizer, FlaxPegasusForConditionalGeneration
+
+>>> model = FlaxPegasusForConditionalGeneration.from_pretrained('google/pegasus-large')
+>>> tokenizer = PegasusTokenizer.from_pretrained('google/pegasus-large')
+
+>>> text = "My friends are cool but they eat too many carbs."
+>>> inputs = tokenizer(text, max_length=1024, return_tensors='np')
+>>> encoder_outputs = model.encode(**inputs)
+```
+
+> Return type
+
+[FlaxBaseModelOutput](/docs/transformers/master/en/main_classes/output.html#transformers.modeling_flax_outputs.FlaxBaseModelOutput) or `tuple(torch.FloatTensor)`
+
+
+<a id='transformers.FlaxPegasusPreTrainedModel.decode'></a>
+> **decode**(self, decoder_input_ids, encoder_outputs, encoder_attention_mask: typing.Optional[jax._src.numpy.lax_numpy.ndarray] = None, decoder_attention_mask: typing.Optional[jax._src.numpy.lax_numpy.ndarray] = None, decoder_position_ids: typing.Optional[jax._src.numpy.lax_numpy.ndarray] = None, past_key_values: dict = None, output_attentions: typing.Optional[bool] = None, output_hidden_states: typing.Optional[bool] = None, return_dict: typing.Optional[bool] = None, train: bool = False, params: dict = None, dropout_rng: PRNGKey = None)
+
+
+> Parameters
+
+- **decoder_input_ids** (`jnp.ndarray` of shape `(batch_size, target_sequence_length)`) --
+  Indices of decoder input sequence tokens in the vocabulary.
+
+  Indices can be obtained using [PegasusTokenizer](/docs/transformers/master/en/model_doc/pegasus.html#transformers.PegasusTokenizer). See
+  [transformers.PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
+  details.
+
+  [What are decoder input IDs?](../glossary.html#decoder-input-ids)
+- **encoder_outputs** (`tuple(tuple(jnp.ndarray)`) --
+  Tuple consists of (`last_hidden_state`, _optional_: `hidden_states`, _optional_:
+  `attentions`) `last_hidden_state` of shape `(batch_size, sequence_length, hidden_size)`,
+  _optional_) is a sequence of hidden-states at the output of the last layer of the encoder. Used in the
+  cross-attention of the decoder.
+- **encoder_attention_mask** (`jnp.ndarray` of shape `(batch_size, sequence_length)`, _optional_) --
+  Mask to avoid performing attention on padding token indices. Mask values selected in `[0, 1]`:
+
+  - 1 for tokens that are **not masked**,
+  - 0 for tokens that are **masked**.
+
+  [What are attention masks?](../glossary.html#attention-mask)
+- **decoder_attention_mask** (`jnp.ndarray` of shape `(batch_size, target_sequence_length)`, _optional_) --
+  Default behavior: generate a tensor that ignores pad tokens in `decoder_input_ids`. Causal mask will
+  also be used by default.
+
+  If you want to change padding behavior, you should modify to your needs. See diagram 1 in [the paper](https://arxiv.org/abs/1910.13461) for more information on the default strategy.
+- **decoder_position_ids** (`numpy.ndarray` of shape `(batch_size, sequence_length)`, _optional_) --
+  Indices of positions of each decoder input sequence tokens in the position embeddings. Selected in the
+  range `[0, config.max_position_embeddings - 1]`.
+- **past_key_values** (`Dict[str, np.ndarray]`, _optional_, returned by `init_cache` or when passing previous `past_key_values`) --
+  Dictionary of pre-computed hidden-states (key and values in the attention blocks) that can be used for fast
+  auto-regressive decoding. Pre-computed key and value hidden-states are of shape _[batch_size, max_length]_.
+- **output_attentions** (`bool`, _optional_) --
+  Whether or not to return the attentions tensors of all attention layers. See `attentions` under returned
+  tensors for more detail.
+- **output_hidden_states** (`bool`, _optional_) --
+  Whether or not to return the hidden states of all layers. See `hidden_states` under returned tensors for
+  more detail.
+- **return_dict** (`bool`, _optional_) --
+  Whether or not to return a [ModelOutput](/docs/transformers/master/en/main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple.
+
+
+> Returns
+
+A [FlaxBaseModelOutputWithPastAndCrossAttentions](/docs/transformers/master/en/main_classes/output.html#transformers.modeling_flax_outputs.FlaxBaseModelOutputWithPastAndCrossAttentions) or a tuple of
+`torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising
+various elements depending on the configuration (`PegasusConfig'>`) and inputs.
+
+- **last_hidden_state** (`jnp.ndarray` of shape `(batch_size, sequence_length, hidden_size)`) -- Sequence of hidden-states at the output of the last layer of the model.
+
+  If `past_key_values` is used only the last hidden-state of the sequences of shape `(batch_size, 1, hidden_size)` is output.
+- **past_key_values** (`tuple(tuple(jnp.ndarray))`, _optional_, returned when `use_cache=True` is passed or when `config.use_cache=True`) -- Tuple of `tuple(jnp.ndarray)` of length `config.n_layers`, with each tuple having 2 tensors of
+  shape `(batch_size, num_heads, sequence_length, embed_size_per_head)`) and optionally if
+  `config.is_encoder_decoder=True` 2 additional tensors of shape `(batch_size, num_heads, encoder_sequence_length, embed_size_per_head)`.
+
+  Contains pre-computed hidden-states (key and values in the self-attention blocks and optionally if
+  `config.is_encoder_decoder=True` in the cross-attention blocks) that can be used (see
+  `past_key_values` input) to speed up sequential decoding.
+- **hidden_states** (`tuple(jnp.ndarray)`, _optional_, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `jnp.ndarray` (one for the output of the embeddings + one for the output of each layer) of
+  shape `(batch_size, sequence_length, hidden_size)`.
+
+  Hidden-states of the model at the output of each layer plus the initial embedding outputs.
+- **attentions** (`tuple(jnp.ndarray)`, _optional_, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `jnp.ndarray` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+
+  Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
+  heads.
+- **cross_attentions** (`tuple(jnp.ndarray)`, _optional_, returned when `output_attentions=True` and `config.add_cross_attention=True` is passed or when `config.output_attentions=True`) -- Tuple of `jnp.ndarray` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+
+  Attentions weights of the decoder's cross-attention layer, after the attention softmax, used to compute the
+  weighted average in the cross-attention heads.
+
+
+> Example:
+
+```python
+>>> from transformers import PegasusTokenizer, FlaxPegasusForConditionalGeneration
+
+>>> model = FlaxPegasusForConditionalGeneration.from_pretrained('google/pegasus-large')
+>>> tokenizer = PegasusTokenizer.from_pretrained('google/pegasus-large')
+
+>>> text = "My friends are cool but they eat too many carbs."
+>>> inputs = tokenizer(text, max_length=1024, return_tensors='np')
+>>> encoder_outputs = model.encode(**inputs)
+
+>>> decoder_start_token_id = model.config.decoder_start_token_id
+>>> decoder_input_ids = jnp.ones((inputs.input_ids.shape[0], 1), dtype="i4") * decoder_start_token_id
+
+>>> outputs = model.decode(decoder_input_ids, encoder_outputs)
+>>> last_decoder_hidden_states = outputs.last_hidden_state
+```
+
+> Return type
+
+[FlaxBaseModelOutputWithPastAndCrossAttentions](/docs/transformers/master/en/main_classes/output.html#transformers.modeling_flax_outputs.FlaxBaseModelOutputWithPastAndCrossAttentions) or `tuple(torch.FloatTensor)`
+
+
+## [FlaxPegasusForConditionalGeneration](#flaxpegasusforconditionalgeneration)
+
+<a id='transformers.FlaxPegasusForConditionalGeneration'></a>
+> **class transformers.FlaxPegasusForConditionalGeneration**(config: PegasusConfig, input_shape: typing.Tuple[int] = (1, 1), seed: int = 0, dtype: dtype = &amp;lt;class 'jax._src.numpy.lax_numpy.float32'>, **kwargs)
+
+The PEGASUS Model with a language modeling head. Can be used for summarization.
+This model inherits from [FlaxPreTrainedModel](/docs/transformers/master/en/main_classes/model.html#transformers.FlaxPreTrainedModel). Check the superclass documentation for the
+generic methods the library implements for all its model (such as downloading or saving, resizing the input
+embeddings, pruning heads etc.)
+
+This model is also a Flax Linen [flax.nn.Module](https://flax.readthedocs.io/en/latest/_autosummary/flax.nn.module.html) subclass. Use it as a regular Flax
+Module and refer to the Flax documentation for all matter related to general usage and behavior.
+
+Finally, this model supports inherent JAX features such as:
+
+- [Just-In-Time (JIT) compilation](https://jax.readthedocs.io/en/latest/jax.html#just-in-time-compilation-jit)
+- [Automatic Differentiation](https://jax.readthedocs.io/en/latest/jax.html#automatic-differentiation)
+- [Vectorization](https://jax.readthedocs.io/en/latest/jax.html#vectorization-vmap)
+- [Parallelization](https://jax.readthedocs.io/en/latest/jax.html#parallelization-pmap)
+
+> Parameters
+
+- **config** ([PegasusConfig](/docs/transformers/master/en/model_doc/pegasus.html#transformers.PegasusConfig)) -- Model configuration class with all the parameters of the model.
+  Initializing with a config file does not load the weights associated with the model, only the
+  configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model.html#transformers.FlaxPreTrainedModel.from_pretrained) method to load the
+  model weights.
+
+
+<a id='transformers.FlaxPegasusPreTrainedModel.__call__'></a>
+> **\_\_call\_\_**(self, input_ids: ndarray, attention_mask: typing.Optional[jax._src.numpy.lax_numpy.ndarray] = None, decoder_input_ids: typing.Optional[jax._src.numpy.lax_numpy.ndarray] = None, decoder_attention_mask: typing.Optional[jax._src.numpy.lax_numpy.ndarray] = None, position_ids: typing.Optional[jax._src.numpy.lax_numpy.ndarray] = None, decoder_position_ids: typing.Optional[jax._src.numpy.lax_numpy.ndarray] = None, output_attentions: typing.Optional[bool] = None, output_hidden_states: typing.Optional[bool] = None, return_dict: typing.Optional[bool] = None, train: bool = False, params: dict = None, dropout_rng: PRNGKey = None)
+
+The `FlaxPegasusPreTrainedModel` forward method, overrides the `__call__` special method.
+
+<Tip>
+
+Although the recipe for forward pass needs to be defined within this function, one should call the
+`Module` instance afterwards instead of this since the former takes care of running the pre and post
+processing steps while the latter silently ignores them.
+
+</Tip>
+
+> Parameters
+
+- **input_ids** (`jnp.ndarray` of shape `(batch_size, sequence_length)`) --
+  Indices of input sequence tokens in the vocabulary. Padding will be ignored by default should you provide
+  it.
+
+  Indices can be obtained using [PegasusTokenizer](/docs/transformers/master/en/model_doc/pegasus.html#transformers.PegasusTokenizer). See
+  [transformers.PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
+  details.
+
+  [What are input IDs?](../glossary.html#input-ids)
+- **attention_mask** (`jnp.ndarray` of shape `(batch_size, sequence_length)`, _optional_) --
+  Mask to avoid performing attention on padding token indices. Mask values selected in `[0, 1]`:
+
+  - 1 for tokens that are **not masked**,
+  - 0 for tokens that are **masked**.
+
+  [What are attention masks?](../glossary.html#attention-mask)
+- **decoder_input_ids** (`jnp.ndarray` of shape `(batch_size, target_sequence_length)`, _optional_) --
+  Indices of decoder input sequence tokens in the vocabulary.
+
+  Indices can be obtained using [PegasusTokenizer](/docs/transformers/master/en/model_doc/pegasus.html#transformers.PegasusTokenizer). See
+  [transformers.PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
+  details.
+
+  [What are decoder input IDs?](../glossary.html#decoder-input-ids)
+- **decoder_attention_mask** (`jnp.ndarray` of shape `(batch_size, target_sequence_length)`, _optional_) --
+  Default behavior: generate a tensor that ignores pad tokens in `decoder_input_ids`. Causal mask will
+  also be used by default.
+
+  If you want to change padding behavior, you should modify to your needs. See diagram 1 in [the paper](https://arxiv.org/abs/1910.13461) for more information on the default strategy.
+- **position_ids** (`numpy.ndarray` of shape `(batch_size, sequence_length)`, _optional_) --
+  Indices of positions of each input sequence tokens in the position embeddings. Selected in the range `[0, config.max_position_embeddings - 1]`.
+- **decoder_position_ids** (`numpy.ndarray` of shape `(batch_size, sequence_length)`, _optional_) --
+  Indices of positions of each decoder input sequence tokens in the position embeddings. Selected in the
+  range `[0, config.max_position_embeddings - 1]`.
+- **output_attentions** (`bool`, _optional_) --
+  Whether or not to return the attentions tensors of all attention layers. See `attentions` under returned
+  tensors for more detail.
+- **output_hidden_states** (`bool`, _optional_) --
+  Whether or not to return the hidden states of all layers. See `hidden_states` under returned tensors for
+  more detail.
+- **return_dict** (`bool`, _optional_) --
+  Whether or not to return a [ModelOutput](/docs/transformers/master/en/main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple.
+
+
+> Returns
+
+A [FlaxSeq2SeqLMOutput](/docs/transformers/master/en/main_classes/output.html#transformers.modeling_flax_outputs.FlaxSeq2SeqLMOutput) or a tuple of
+`torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising
+various elements depending on the configuration ([PegasusConfig](/docs/transformers/master/en/model_doc/pegasus.html#transformers.PegasusConfig)) and inputs.
+
+- **logits** (`jnp.ndarray` of shape `(batch_size, sequence_length, config.vocab_size)`) -- Prediction scores of the language modeling head (scores for each vocabulary token before SoftMax).
+- **past_key_values** (`tuple(tuple(jnp.ndarray))`, _optional_, returned when `use_cache=True` is passed or when `config.use_cache=True`) -- Tuple of `tuple(jnp.ndarray)` of length `config.n_layers`, with each tuple having 2 tensors of
+  shape `(batch_size, num_heads, sequence_length, embed_size_per_head)`) and 2 additional tensors of
+  shape `(batch_size, num_heads, encoder_sequence_length, embed_size_per_head)`.
+
+  Contains pre-computed hidden-states (key and values in the self-attention blocks and in the cross-attention
+  blocks) that can be used (see `past_key_values` input) to speed up sequential decoding.
+- **decoder_hidden_states** (`tuple(jnp.ndarray)`, _optional_, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `jnp.ndarray` (one for the output of the embeddings + one for the output of each layer) of
+  shape `(batch_size, sequence_length, hidden_size)`.
+
+  Hidden-states of the decoder at the output of each layer plus the initial embedding outputs.
+- **decoder_attentions** (`tuple(jnp.ndarray)`, _optional_, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `jnp.ndarray` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+
+  Attentions weights of the decoder, after the attention softmax, used to compute the weighted average in the
+  self-attention heads.
+- **cross_attentions** (`tuple(jnp.ndarray)`, _optional_, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `jnp.ndarray` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+
+  Attentions weights of the decoder's cross-attention layer, after the attention softmax, used to compute the
+  weighted average in the cross-attention heads.
+- **encoder_last_hidden_state** (`jnp.ndarray` of shape `(batch_size, sequence_length, hidden_size)`, _optional_) -- Sequence of hidden-states at the output of the last layer of the encoder of the model.
+- **encoder_hidden_states** (`tuple(jnp.ndarray)`, _optional_, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `jnp.ndarray` (one for the output of the embeddings + one for the output of each layer) of
+  shape `(batch_size, sequence_length, hidden_size)`.
+
+  Hidden-states of the encoder at the output of each layer plus the initial embedding outputs.
+- **encoder_attentions** (`tuple(jnp.ndarray)`, _optional_, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `jnp.ndarray` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+
+  Attentions weights of the encoder, after the attention softmax, used to compute the weighted average in the
+  self-attention heads.
+
+
+> Return type
+
+[FlaxSeq2SeqLMOutput](/docs/transformers/master/en/main_classes/output.html#transformers.modeling_flax_outputs.FlaxSeq2SeqLMOutput) or `tuple(torch.FloatTensor)`
+
+> Summarization example:
+
+```python
+>>> from transformers import PegasusTokenizer, FlaxPegasusForConditionalGeneration
+
+>>> model = FlaxPegasusForConditionalGeneration.from_pretrained('google/pegasus-large')
+>>> tokenizer = PegasusTokenizer.from_pretrained('google/pegasus-large')
+
+>>> ARTICLE_TO_SUMMARIZE = "My friends are cool but they eat too many carbs."
+>>> inputs = tokenizer([ARTICLE_TO_SUMMARIZE], max_length=1024, return_tensors='np')
+
+>>> # Generate Summary
+>>> summary_ids = model.generate(inputs['input_ids']).sequences
+>>> print(tokenizer.batch_decode(summary_ids, skip_special_tokens=True, clean_up_tokenization_spaces=False))
+```
+
+> Mask filling example:
+
+```python
+>>> from transformers import PegasusTokenizer, FlaxPegasusForConditionalGeneration
+>>> tokenizer = PegasusTokenizer.from_pretrained('google/pegasus-large')
+>>> TXT = "My friends are &amp;lt;mask> but they eat too many carbs."
+
+>>> model = FlaxPegasusForConditionalGeneration.from_pretrained('google/pegasus-large')
+>>> input_ids = tokenizer([TXT], return_tensors='np')['input_ids']
+>>> logits = model(input_ids).logits
+
+>>> masked_index = (input_ids[0] == tokenizer.mask_token_id).nonzero().item()
+>>> probs = jax.nn.softmax(logits[0, masked_index], axis=0)
+>>> values, predictions = jax.lax.top_k(probs)
+
+>>> tokenizer.decode(predictions).split()
+```
+
+
+<a id='transformers.FlaxPegasusPreTrainedModel.encode'></a>
+> **encode**(self, input_ids: ndarray, attention_mask: typing.Optional[jax._src.numpy.lax_numpy.ndarray] = None, position_ids: typing.Optional[jax._src.numpy.lax_numpy.ndarray] = None, output_attentions: typing.Optional[bool] = None, output_hidden_states: typing.Optional[bool] = None, return_dict: typing.Optional[bool] = None, train: bool = False, params: dict = None, dropout_rng: PRNGKey = None)
+
+
+> Parameters
+
+- **input_ids** (`jnp.ndarray` of shape `(batch_size, sequence_length)`) --
+  Indices of input sequence tokens in the vocabulary. Padding will be ignored by default should you provide
+  it.
+
+  Indices can be obtained using [PegasusTokenizer](/docs/transformers/master/en/model_doc/pegasus.html#transformers.PegasusTokenizer). See
+  [transformers.PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
+  details.
+
+  [What are input IDs?](../glossary.html#input-ids)
+- **attention_mask** (`jnp.ndarray` of shape `(batch_size, sequence_length)`, _optional_) --
+  Mask to avoid performing attention on padding token indices. Mask values selected in `[0, 1]`:
+
+  - 1 for tokens that are **not masked**,
+  - 0 for tokens that are **masked**.
+
+  [What are attention masks?](../glossary.html#attention-mask)
+- **position_ids** (`numpy.ndarray` of shape `(batch_size, sequence_length)`, _optional_) --
+  Indices of positions of each input sequence tokens in the position embeddings. Selected in the range `[0, config.max_position_embeddings - 1]`.
+- **output_attentions** (`bool`, _optional_) --
+  Whether or not to return the attentions tensors of all attention layers. See `attentions` under returned
+  tensors for more detail.
+- **output_hidden_states** (`bool`, _optional_) --
+  Whether or not to return the hidden states of all layers. See `hidden_states` under returned tensors for
+  more detail.
+- **return_dict** (`bool`, _optional_) --
+  Whether or not to return a [ModelOutput](/docs/transformers/master/en/main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple.
+
+
+> Returns
+
+A [FlaxBaseModelOutput](/docs/transformers/master/en/main_classes/output.html#transformers.modeling_flax_outputs.FlaxBaseModelOutput) or a tuple of
+`torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising
+various elements depending on the configuration (`PegasusConfig'>`) and inputs.
+
+- **last_hidden_state** (`jnp.ndarray` of shape `(batch_size, sequence_length, hidden_size)`) -- Sequence of hidden-states at the output of the last layer of the model.
+- **hidden_states** (`tuple(jnp.ndarray)`, _optional_, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `jnp.ndarray` (one for the output of the embeddings + one for the output of each layer) of
+  shape `(batch_size, sequence_length, hidden_size)`.
+
+  Hidden-states of the model at the output of each layer plus the initial embedding outputs.
+- **attentions** (`tuple(jnp.ndarray)`, _optional_, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `jnp.ndarray` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+
+  Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
+  heads.
+
+
+> Example:
+
+```python
+>>> from transformers import PegasusTokenizer, FlaxPegasusForConditionalGeneration
+
+>>> model = FlaxPegasusForConditionalGeneration.from_pretrained('google/pegasus-large')
+>>> tokenizer = PegasusTokenizer.from_pretrained('google/pegasus-large')
+
+>>> text = "My friends are cool but they eat too many carbs."
+>>> inputs = tokenizer(text, max_length=1024, return_tensors='np')
+>>> encoder_outputs = model.encode(**inputs)
+```
+
+> Return type
+
+[FlaxBaseModelOutput](/docs/transformers/master/en/main_classes/output.html#transformers.modeling_flax_outputs.FlaxBaseModelOutput) or `tuple(torch.FloatTensor)`
+
+
+<a id='transformers.FlaxPegasusForConditionalGeneration.decode'></a>
+> **decode**(self, decoder_input_ids, encoder_outputs, encoder_attention_mask: typing.Optional[jax._src.numpy.lax_numpy.ndarray] = None, decoder_attention_mask: typing.Optional[jax._src.numpy.lax_numpy.ndarray] = None, decoder_position_ids: typing.Optional[jax._src.numpy.lax_numpy.ndarray] = None, past_key_values: dict = None, output_attentions: typing.Optional[bool] = None, output_hidden_states: typing.Optional[bool] = None, return_dict: typing.Optional[bool] = None, deterministic: bool = True, params: dict = None, dropout_rng: PRNGKey = None)
+
+
+> Parameters
+
+- **decoder_input_ids** (`jnp.ndarray` of shape `(batch_size, target_sequence_length)`) --
+  Indices of decoder input sequence tokens in the vocabulary.
+
+  Indices can be obtained using [PegasusTokenizer](/docs/transformers/master/en/model_doc/pegasus.html#transformers.PegasusTokenizer). See
+  [transformers.PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
+  details.
+
+  [What are decoder input IDs?](../glossary.html#decoder-input-ids)
+- **encoder_outputs** (`tuple(tuple(jnp.ndarray)`) --
+  Tuple consists of (`last_hidden_state`, _optional_: `hidden_states`, _optional_:
+  `attentions`) `last_hidden_state` of shape `(batch_size, sequence_length, hidden_size)`,
+  _optional_) is a sequence of hidden-states at the output of the last layer of the encoder. Used in the
+  cross-attention of the decoder.
+- **encoder_attention_mask** (`jnp.ndarray` of shape `(batch_size, sequence_length)`, _optional_) --
+  Mask to avoid performing attention on padding token indices. Mask values selected in `[0, 1]`:
+
+  - 1 for tokens that are **not masked**,
+  - 0 for tokens that are **masked**.
+
+  [What are attention masks?](../glossary.html#attention-mask)
+- **decoder_attention_mask** (`jnp.ndarray` of shape `(batch_size, target_sequence_length)`, _optional_) --
+  Default behavior: generate a tensor that ignores pad tokens in `decoder_input_ids`. Causal mask will
+  also be used by default.
+
+  If you want to change padding behavior, you should modify to your needs. See diagram 1 in [the paper](https://arxiv.org/abs/1910.13461) for more information on the default strategy.
+- **decoder_position_ids** (`numpy.ndarray` of shape `(batch_size, sequence_length)`, _optional_) --
+  Indices of positions of each decoder input sequence tokens in the position embeddings. Selected in the
+  range `[0, config.max_position_embeddings - 1]`.
+- **past_key_values** (`Dict[str, np.ndarray]`, _optional_, returned by `init_cache` or when passing previous `past_key_values`) --
+  Dictionary of pre-computed hidden-states (key and values in the attention blocks) that can be used for fast
+  auto-regressive decoding. Pre-computed key and value hidden-states are of shape _[batch_size, max_length]_.
+- **output_attentions** (`bool`, _optional_) --
+  Whether or not to return the attentions tensors of all attention layers. See `attentions` under returned
+  tensors for more detail.
+- **output_hidden_states** (`bool`, _optional_) --
+  Whether or not to return the hidden states of all layers. See `hidden_states` under returned tensors for
+  more detail.
+- **return_dict** (`bool`, _optional_) --
+  Whether or not to return a [ModelOutput](/docs/transformers/master/en/main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple.
+
+
+> Returns
+
+A [FlaxCausalLMOutputWithCrossAttentions](/docs/transformers/master/en/main_classes/output.html#transformers.modeling_flax_outputs.FlaxCausalLMOutputWithCrossAttentions) or a tuple of
+`torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising
+various elements depending on the configuration (`PegasusConfig'>`) and inputs.
+
+- **logits** (`jnp.ndarray` of shape `(batch_size, sequence_length, config.vocab_size)`) -- Prediction scores of the language modeling head (scores for each vocabulary token before SoftMax).
+- **hidden_states** (`tuple(jnp.ndarray)`, _optional_, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `jnp.ndarray` (one for the output of the embeddings + one for the output of each layer) of
+  shape `(batch_size, sequence_length, hidden_size)`.
+
+  Hidden-states of the model at the output of each layer plus the initial embedding outputs.
+- **attentions** (`tuple(jnp.ndarray)`, _optional_, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `jnp.ndarray` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+
+  Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
+  heads.
+- **cross_attentions** (`tuple(jnp.ndarray)`, _optional_, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `jnp.ndarray` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+
+  Cross attentions weights after the attention softmax, used to compute the weighted average in the
+  cross-attention heads.
+- **past_key_values** (`tuple(tuple(jnp.ndarray))`, _optional_, returned when `use_cache=True` is passed or when `config.use_cache=True`) -- Tuple of `jnp.ndarray` tuples of length `config.n_layers`, with each tuple containing the cached
+  key, value states of the self-attention and the cross-attention layers if model is used in encoder-decoder
+  setting. Only relevant if `config.is_decoder = True`.
+
+  Contains pre-computed hidden-states (key and values in the attention blocks) that can be used (see
+  `past_key_values` input) to speed up sequential decoding.
+
+
+> Example:
+
+```python
+>>> from transformers import PegasusTokenizer, FlaxPegasusForConditionalGeneration
+
+>>> model = FlaxPegasusForConditionalGeneration.from_pretrained('google/pegasus-large')
+>>> tokenizer = PegasusTokenizer.from_pretrained('google/pegasus-large')
+
+>>> text = "My friends are cool but they eat too many carbs."
+>>> inputs = tokenizer(text, max_length=1024, return_tensors='np')
+>>> encoder_outputs = model.encode(**inputs)
+
+>>> decoder_start_token_id = model.config.decoder_start_token_id
+>>> decoder_input_ids = jnp.ones((inputs.input_ids.shape[0], 1), dtype="i4") * decoder_start_token_id
+
+>>> outputs = model.decode(decoder_input_ids, encoder_outputs)
+>>> logits = outputs.logits
+```
+
+> Return type
+
+[FlaxCausalLMOutputWithCrossAttentions](/docs/transformers/master/en/main_classes/output.html#transformers.modeling_flax_outputs.FlaxCausalLMOutputWithCrossAttentions) or `tuple(torch.FloatTensor)`
 

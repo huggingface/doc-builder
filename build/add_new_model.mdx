@@ -1,3 +1,28 @@
+---
+local: how-to-add-a-model-to-transformers
+sections:
+- local: general-overview-of-transformers
+  sections:
+  - local: overview-of-models
+    title: Overview of models
+  - local: overview-of-tokenizers
+    title: Overview of tokenizers
+  title: General overview of 🤗 Transformers
+- local: stepbystep-recipe-to-add-a-model-to-transformers
+  sections:
+  - local: optional-theoretical-aspects-of-brandnewbert
+    title: 1. (Optional) Theoretical aspects of BrandNewBert
+  - local: next-prepare-your-environment
+    title: 2. Next prepare your environment
+  - local: run-a-pretrained-checkpoint-using-the-original-repository
+    title: 3.-4. Run a pretrained checkpoint using the original repository
+  - local: port-brandnewbert-to-transformers
+    title: 5.-14. Port BrandNewBert to 🤗 Transformers
+  - local: share-your-work
+    title: Share your work!!
+  title: Step-by-step recipe to add a model to 🤗 Transformers
+title: How to add a model to 🤗 Transformers?
+---
 <script>
 import Tip from "../../Tip.svelte";
 import Youtube from "../../Youtube.svelte";	
@@ -15,7 +40,7 @@ Unless required by applicable law or agreed to in writing, software distributed 
 an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
 -->
 
-# How to add a model to 🤗 Transformers?
+# [How to add a model to 🤗 Transformers?](#how-to-add-a-model-to-transformers)
 
 Adding a new model is often difficult and requires an in-depth knowledge of the 🤗 Transformers library and ideally also
 of the model's original repository. At Hugging Face, we are trying to empower the community more and more to add models
@@ -44,14 +69,14 @@ added models to see if those resemble the model you would like to add [here](htt
 
 To start, let's try to get a general overview of the Transformers library.
 
-## General overview of 🤗 Transformers
+## [General overview of 🤗 Transformers](#general-overview-of-transformers)
 
 First, you should get a general overview of 🤗 Transformers. 🤗 Transformers is a very opinionated library, so there is a
 chance that you don't agree with some of the library's philosophies or design choices. From our experience, however, we
 found that the fundamental design choices and philosophies of the library are crucial to efficiently scale 🤗
 Transformers while keeping maintenance costs at a reasonable level.
 
-A good first starting point to better understand the library is to read the [documentation of our philosophy](philosophy.html). As a result of our way of working, there are some choices that we try to apply to all models:
+A good first starting point to better understand the library is to read the [documentation of our philosophy](/docs/transformers/master/en/philosophy.html). As a result of our way of working, there are some choices that we try to apply to all models:
 
 -  Composition is generally favored over-abstraction
 -  Duplicating code is not always bad if it strongly improves the readability or accessibility of a model
@@ -64,10 +89,10 @@ person that will use your model, but also everybody that will read, try to under
 
 With this in mind, let's go a bit deeper into the general library design.
 
-### Overview of models
+### [Overview of models](#overview-of-models)
 
 To successfully add a model, it is important to understand the interaction between your model and its config,
-[PreTrainedModel](main_classes/model.html#transformers.PreTrainedModel), and [PretrainedConfig](main_classes/configuration.html#transformers.PretrainedConfig). For exemplary purposes, we will
+[PreTrainedModel](/docs/transformers/master/en/main_classes/model.html#transformers.PreTrainedModel), and [PretrainedConfig](/docs/transformers/master/en/main_classes/configuration.html#transformers.PretrainedConfig). For exemplary purposes, we will
 call the model to be added to 🤗 Transformers `BrandNewBert`.
 
 Let's take a look:
@@ -78,15 +103,15 @@ As you can see, we do make use of inheritance in 🤗 Transformers, but we keep 
 minimum. There are never more than two levels of abstraction for any model in the library. `BrandNewBertModel`
 inherits from `BrandNewBertPreTrainedModel` which in turn inherits from `PreTrainedModel` and
 that's it. As a general rule, we want to make sure that a new model only depends on
-[PreTrainedModel](main_classes/model.html#transformers.PreTrainedModel). The important functionalities that are automatically provided to every new
-model are [from_pretrained()](main_classes/model.html#transformers.PreTrainedModel.from_pretrained) and
-[save_pretrained()](main_classes/model.html#transformers.PreTrainedModel.save_pretrained), which are used for serialization and deserialization. All of the
+[PreTrainedModel](/docs/transformers/master/en/main_classes/model.html#transformers.PreTrainedModel). The important functionalities that are automatically provided to every new
+model are [from_pretrained()](/docs/transformers/master/en/main_classes/model.html#transformers.PreTrainedModel.from_pretrained) and
+[save_pretrained()](/docs/transformers/master/en/main_classes/model.html#transformers.PreTrainedModel.save_pretrained), which are used for serialization and deserialization. All of the
 other important functionalities, such as `BrandNewBertModel.forward` should be completely defined in the new
 `modeling_brand_new_bert.py` script. Next, we want to make sure that a model with a specific head layer, such as
 `BrandNewBertForMaskedLM` does not inherit from `BrandNewBertModel`, but rather uses `BrandNewBertModel`
 as a component that can be called in its forward pass to keep the level of abstraction low. Every new model requires a
 configuration class, called `BrandNewBertConfig`. This configuration is always stored as an attribute in
-[PreTrainedModel](main_classes/model.html#transformers.PreTrainedModel), and thus can be accessed via the `config` attribute for all classes
+[PreTrainedModel](/docs/transformers/master/en/main_classes/model.html#transformers.PreTrainedModel), and thus can be accessed via the `config` attribute for all classes
 inheriting from `BrandNewBertPreTrainedModel`:
 
 ```python
@@ -95,17 +120,17 @@ model.config  # model has access to its config
 ```
 
 Similar to the model, the configuration inherits basic serialization and deserialization functionalities from
-[PretrainedConfig](main_classes/configuration.html#transformers.PretrainedConfig). Note that the configuration and the model are always serialized into two
+[PretrainedConfig](/docs/transformers/master/en/main_classes/configuration.html#transformers.PretrainedConfig). Note that the configuration and the model are always serialized into two
 different formats - the model to a _pytorch_model.bin_ file and the configuration to a _config.json_ file. Calling
-[save_pretrained()](main_classes/model.html#transformers.PreTrainedModel.save_pretrained) will automatically call
-[save_pretrained()](main_classes/configuration.html#transformers.PretrainedConfig.save_pretrained), so that both model and configuration are saved.
+[save_pretrained()](/docs/transformers/master/en/main_classes/model.html#transformers.PreTrainedModel.save_pretrained) will automatically call
+[save_pretrained()](/docs/transformers/master/en/main_classes/configuration.html#transformers.PretrainedConfig.save_pretrained), so that both model and configuration are saved.
 
 
-### Overview of tokenizers
+### [Overview of tokenizers](#overview-of-tokenizers)
 
 Not quite ready yet :-( This section will be added soon!
 
-## Step-by-step recipe to add a model to 🤗 Transformers
+## [Step-by-step recipe to add a model to 🤗 Transformers](#stepbystep-recipe-to-add-a-model-to-transformers)
 
 Everyone has different preferences of how to port a model so it can be very helpful for you to take a look at summaries
 of how other contributors ported models to Hugging Face. Here is a list of community blog posts on how to port a model:
@@ -153,7 +178,7 @@ into the `BrandNewBert`'s code-base. This option might suit you better, if your 
 your theoretical skill, if you have trouble understanding `BrandNewBert`'s paper, or if you just enjoy programming
 much more than reading scientific papers.
 
-### 1. (Optional) Theoretical aspects of BrandNewBert
+### [1. (Optional) Theoretical aspects of BrandNewBert](#optional-theoretical-aspects-of-brandnewbert)
 
 You should take some time to read *BrandNewBert's* paper, if such descriptive work exists. There might be large
 sections of the paper that are difficult to understand. If this is the case, this is fine - don't worry! The goal is
@@ -162,7 +187,7 @@ effectively re-implement the model in 🤗 Transformers. That being said, you do
 theoretical aspects, but rather focus on the practical ones, namely:
 
 -  What type of model is *brand_new_bert*? BERT-like encoder-only model? GPT2-like decoder-only model? BART-like
-  encoder-decoder model? Look at the [model_summary](model_summary.html) if you're not familiar with the differences between those.
+  encoder-decoder model? Look at the [model_summary](/docs/transformers/master/en/model_summary.html) if you're not familiar with the differences between those.
 -  What are the applications of *brand_new_bert*? Text classification? Text generation? Seq2Seq tasks, *e.g.,*
   summarization?
 -  What is the novel feature of the model making it different from BERT/GPT-2/BART?
@@ -175,7 +200,7 @@ After you feel like you have gotten a good overview of the architecture of the m
 Hugging Face team with any questions you might have. This might include questions regarding the model's architecture,
 its attention layer, etc. We will be more than happy to help you.
 
-### 2. Next prepare your environment
+### [2. Next prepare your environment](#next-prepare-your-environment)
 
 1. Fork the [repository](https://github.com/huggingface/transformers) by clicking on the ‘Fork' button on the
    repository's page. This creates a copy of the code under your GitHub user account.
@@ -217,7 +242,7 @@ pip install -e .
 
 Now you have set up a development environment to port *brand_new_bert* to 🤗 Transformers.
 
-### 3.-4. Run a pretrained checkpoint using the original repository
+### [3.-4. Run a pretrained checkpoint using the original repository](#run-a-pretrained-checkpoint-using-the-original-repository)
 
 At first, you will work on the original *brand_new_bert* repository. Often, the original implementation is very
 “researchy”. Meaning that documentation might be lacking and the code can be difficult to understand. But this should
@@ -374,7 +399,7 @@ important. Here is some advice is to make your debugging environment as efficien
 
 The following section gives you more specific details/tips on how you can do this for *brand_new_bert*.
 
-### 5.-14. Port BrandNewBert to 🤗 Transformers
+### [5.-14. Port BrandNewBert to 🤗 Transformers](#port-brandnewbert-to-transformers)
 
 Next, you can finally start adding new code to 🤗 Transformers. Go into the clone of your 🤗 Transformers' fork:
 
@@ -588,13 +613,13 @@ statements for the shape and print out the names of the checkpoints weights. E.g
 ```python
 assert (
 model_pointer.weight.shape == pretrained_weight.shape
-), f"Pointer shape of random weight {model_pointer.shape} and array shape of checkpoint weight {pretrained_weight.shape} mismatched"
+), f"Pointer shape of random weight &amp;lcub;model_pointer.shape} and array shape of checkpoint weight &amp;lcub;pretrained_weight.shape} mismatched"
 ```
 
 Besides, you should also print out the names of both weights to make sure they match, *e.g.*
 
 ```python
-logger.info(f"Initialize PyTorch weight {layer_name} from {pretrained_weight.name}")
+logger.info(f"Initialize PyTorch weight &amp;lcub;layer_name} from &amp;lcub;pretrained_weight.name}")
 ```
 
 If either the shape or the name doesn't match, you probably assigned the wrong checkpoint weight to a randomly
@@ -721,7 +746,7 @@ It is very important to find/extract the original tokenizer file and to manage t
 Transformers' implementation of the tokenizer.
 
 To ensure that the tokenizer works correctly, it is recommended to first create a script in the original repository
-that inputs a string and returns the `input_ids`. It could look similar to this (in pseudo-code):
+that inputs a string and returns the `input_ids``. It could look similar to this (in pseudo-code):
 
 ```bash
 input_str = "This is a long example input string containing special characters .$?-, numbers 2872 234 12 and words."
@@ -769,7 +794,7 @@ this page before using your model. Hence, the documentation must be understandab
 the community to add some *Tips* to show how the model should be used. Don't hesitate to ping the Hugging Face team
 regarding the docstrings.
 
-Next, make sure that the docstring added to `src/transformers/models/brand_new_bert/modeling_brand_new_bert.py`` is
+Next, make sure that the docstring added to `src/transformers/models/brand_new_bert/modeling_brand_new_bert.py` is
 correct and included all necessary inputs and outputs. It is always to good to remind oneself that documentation should
 be treated at least as carefully as the code in 🤗 Transformers since the documentation is usually the first contact
 point of the community with the model.
@@ -822,7 +847,7 @@ Hugging Face team should have helped you already at this point, but it is worth 
 PR a nice description and eventually add comments to your code, if you want to point out certain design choices to your
 reviewer.
 
-### Share your work!!
+### [Share your work!!](#share-your-work)
 
 Now, it's time to get some credit from the community for your work! Having completed a model addition is a major
 contribution to Transformers and the whole NLP community. Your code and the ported pre-trained models will certainly be
