@@ -1,3 +1,24 @@
+---
+local: speechtext
+sections:
+- local: overview
+  title: Overview
+- local: inference
+  title: Inference
+- local: speechtextconfig
+  title: Speech2TextConfig
+- local: speechtexttokenizer
+  title: Speech2TextTokenizer
+- local: speechtextfeatureextractor
+  title: Speech2TextFeatureExtractor
+- local: speechtextprocessor
+  title: Speech2TextProcessor
+- local: speechtextmodel
+  title: Speech2TextModel
+- local: speechtextforconditionalgeneration
+  title: Speech2TextForConditionalGeneration
+title: Speech2Text
+---
 <script>
 import Tip from "../../Tip.svelte";
 import Youtube from "../../Youtube.svelte";	
@@ -16,9 +37,9 @@ an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express o
 specific language governing permissions and limitations under the License.
 -->
 
-# Speech2Text
+# [Speech2Text](#speechtext)
 
-## Overview
+## [Overview](#overview)
 
 The Speech2Text model was proposed in [fairseq S2T: Fast Speech-to-Text Modeling with fairseq](https://arxiv.org/abs/2010.05171) by Changhan Wang, Yun Tang, Xutai Ma, Anne Wu, Dmytro Okhonko, Juan Pino. It's a
 transformer-based seq2seq (encoder-decoder) model designed for end-to-end Automatic Speech Recognition (ASR) and Speech
@@ -30,7 +51,7 @@ transcripts/translations autoregressively. Speech2Text has been fine-tuned on se
 This model was contributed by [valhalla](https://huggingface.co/valhalla). The original code can be found [here](https://github.com/pytorch/fairseq/tree/master/examples/speech_to_text).
 
 
-## Inference
+## [Inference](#inference)
 
 Speech2Text is a speech model that accepts a float tensor of log-mel filter-bank features extracted from the speech
 signal. It's a transformer-based seq2seq model, so the transcripts/translations are generated autoregressively. The
@@ -63,7 +84,7 @@ be installed as follows: `apt install libsndfile1-dev`
 ...     batch["speech"] = speech
 ...     return batch
 
->>> ds = load_dataset("hf-internal-testing/librispeech_asr_dummy", "clean", split="validation")
+>>> ds = load_dataset("patrickvonplaten/librispeech_asr_dummy", "clean", split="validation")
 >>> ds = ds.map(map_to_array)
 
 >>> inputs = processor(ds["speech"][0], sampling_rate=16_000, return_tensors="pt")
@@ -94,7 +115,7 @@ be installed as follows: `apt install libsndfile1-dev`
 ...     batch["speech"] = speech
 ...     return batch
 
->>> ds = load_dataset("hf-internal-testing/librispeech_asr_dummy", "clean", split="validation")
+>>> ds = load_dataset("patrickvonplaten/librispeech_asr_dummy", "clean", split="validation")
 >>> ds = ds.map(map_to_array)
 
 >>> inputs = processor(ds["speech"][0], sampling_rate=16_000, return_tensors="pt")
@@ -106,7 +127,7 @@ be installed as follows: `apt install libsndfile1-dev`
 See the [model hub](https://huggingface.co/models?filter=speech_to_text) to look for Speech2Text checkpoints.
 
 
-## Speech2TextConfig
+## [Speech2TextConfig](#speechtextconfig)
 
 <a id='transformers.Speech2TextConfig'></a>
 > **class transformers.Speech2TextConfig**(vocab_size = 10000, encoder_layers = 12, encoder_ffn_dim = 2048, encoder_attention_heads = 4, decoder_layers = 6, decoder_ffn_dim = 2048, decoder_attention_heads = 4, encoder_layerdrop = 0.0, decoder_layerdrop = 0.0, use_cache = True, is_encoder_decoder = True, activation_function = 'relu', d_model = 256, dropout = 0.1, attention_dropout = 0.0, activation_dropout = 0.0, init_std = 0.02, decoder_start_token_id = 2, classifier_dropout = 0.0, scale_embedding = True, pad_token_id = 1, bos_token_id = 0, eos_token_id = 2, max_source_positions = 6000, max_target_positions = 1024, num_conv_layers = 2, conv_kernel_sizes = (5, 5), conv_channels = 1024, input_feat_per_channel = 80, input_channels = 1, **kwargs)
@@ -196,7 +217,7 @@ outputs. Read the documentation from [PretrainedConfig](/docs/transformers/maste
 ```
 
 
-## Speech2TextTokenizer
+## [Speech2TextTokenizer](#speechtexttokenizer)
 
 <a id='transformers.Speech2TextTokenizer'></a>
 > **class transformers.Speech2TextTokenizer**(vocab_file, spm_file, bos_token = '&amp;lt;s>', eos_token = '&amp;lt;/s>', pad_token = '&amp;lt;pad>', unk_token = '&amp;lt;unk>', do_upper_case = False, do_lower_case = False, tgt_lang = None, lang_codes = None, sp_model_kwargs: typing.Union[typing.Dict[str, typing.Any], NoneType] = None, **kwargs)
@@ -301,7 +322,7 @@ The token type ids.
 <a id='transformers.Speech2TextTokenizer.save_vocabulary'></a>
 > **save\_vocabulary**(self, save_directory: str, filename_prefix: typing.Optional[str] = None)
 
-## Speech2TextFeatureExtractor
+## [Speech2TextFeatureExtractor](#speechtextfeatureextractor)
 
 <a id='transformers.Speech2TextFeatureExtractor'></a>
 > **class transformers.Speech2TextFeatureExtractor**(feature_size = 80, sampling_rate = 16000, num_mel_bins = 80, padding_value = 0.0, do_ceptral_normalize = True, normalize_means = True, normalize_vars = True, **kwargs)
@@ -389,7 +410,7 @@ inference, to avoid subtle bugs.
   The value that is used to fill the padding values / vectors.
 
 
-## Speech2TextProcessor
+## [Speech2TextProcessor](#speechtextprocessor)
 
 <a id='transformers.Speech2TextProcessor'></a>
 > **class transformers.Speech2TextProcessor**(feature_extractor, tokenizer)
@@ -505,7 +526,7 @@ Temporarily sets the tokenizer for processing the input. Useful for encoding the
 Speech2Text.
 
 
-## Speech2TextModel
+## [Speech2TextModel](#speechtextmodel)
 
 <a id='transformers.Speech2TextModel'></a>
 > **class transformers.Speech2TextModel**(config: Speech2TextConfig)
@@ -570,7 +591,7 @@ processing steps while the latter silently ignores them.
   `past_key_values`).
 - **decoder_attention_mask** (`torch.LongTensor` of shape `(batch_size, target_sequence_length)`, _optional_) --
   Default behavior: generate a tensor that ignores pad tokens in `decoder_input_ids`. Causal mask will
-  also be used by default.
+  also be used by default. <<<<<<< HEAD
 
   If you want to change padding behavior, you should read
   `modeling_speech_to_text._prepare_decoder_inputs` and modify to your needs. See diagram 1 in [the
@@ -681,7 +702,7 @@ various elements depending on the configuration ([Speech2TextConfig](/docs/trans
 ```
 
 
-## Speech2TextForConditionalGeneration
+## [Speech2TextForConditionalGeneration](#speechtextforconditionalgeneration)
 
 <a id='transformers.Speech2TextForConditionalGeneration'></a>
 > **class transformers.Speech2TextForConditionalGeneration**(config: Speech2TextConfig)
@@ -746,7 +767,7 @@ processing steps while the latter silently ignores them.
   `past_key_values`).
 - **decoder_attention_mask** (`torch.LongTensor` of shape `(batch_size, target_sequence_length)`, _optional_) --
   Default behavior: generate a tensor that ignores pad tokens in `decoder_input_ids`. Causal mask will
-  also be used by default.
+  also be used by default. <<<<<<< HEAD
 
   If you want to change padding behavior, you should read
   `modeling_speech_to_text._prepare_decoder_inputs` and modify to your needs. See diagram 1 in [the
@@ -858,7 +879,7 @@ various elements depending on the configuration ([Speech2TextConfig](/docs/trans
 >>>     batch["speech"] = speech
 >>>     return batch
 
->>> ds = load_dataset("hf-internal-testing/librispeech_asr_dummy", "clean", split="validation")
+>>> ds = load_dataset("patrickvonplaten/librispeech_asr_dummy", "clean", split="validation")
 >>> ds = ds.map(map_to_array)
 
 >>> input_features = processor(ds["speech"][0], sampling_rate=16000, return_tensors="pt").input_features  # Batch size 1

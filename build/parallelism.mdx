@@ -1,3 +1,30 @@
+---
+local: model-parallelism
+sections:
+- local: parallelism-overview
+  title: Parallelism overview
+- local: concepts
+  title: Concepts
+- local: data-parallel
+  title: Data Parallel
+- local: zero-data-parallel
+  title: ZeRO Data Parallel
+- local: naive-model-parallel-vertical-and-pipeline-parallel
+  title: Naive Model Parallel (Vertical) and Pipeline Parallel
+- local: tensor-parallelism
+  title: Tensor Parallelism
+- local: dppp
+  title: DP+PP
+- local: dppptp
+  title: DP+PP+TP
+- local: dppptpzero
+  title: DP+PP+TP+ZeRO
+- local: flexflow
+  title: FlexFlow
+- local: which-strategy-to-use-when
+  title: Which Strategy To Use When
+title: Model Parallelism
+---
 <!---
 Copyright 2021 The HuggingFace Team. All rights reserved.
 
@@ -14,10 +41,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-# Model Parallelism
+# [Model Parallelism](#model-parallelism)
 
 
-## Parallelism overview
+## [Parallelism overview](#parallelism-overview)
 
 In the modern machine learning the various approaches to parallelism are used to:
 1. fit very large models onto limited hardware - e.g. t5-11b is 45GB in just model params
@@ -28,7 +55,7 @@ We will first discuss in depth various 1D parallelism techniques and their pros 
 While the main concepts most likely will apply to any other framework, this article is focused on PyTorch-based implementations.
 
 
-## Concepts
+## [Concepts](#concepts)
 
 The following is the brief description of the main concepts that will be described later in depth in this document.
 
@@ -39,11 +66,11 @@ The following is the brief description of the main concepts that will be describ
 5. Sharded DDP - is another name for the foundational ZeRO concept as used by various other implementations of ZeRO.
 
 
-## Data Parallel
+## [Data Parallel](#data-parallel)
 
 Most users with just 2 GPUs already enjoy the increased training speed up thanks to DataParallel (DP) and DistributedDataParallel (DDP) that are almost trivial to use. This is a built-in feature of Pytorch.
 
-## ZeRO Data Parallel
+## [ZeRO Data Parallel](#zero-data-parallel)
 
 ZeRO-powered data parallelism (ZeRO-DP) is described on the following diagram from this [blog post](https://www.microsoft.com/en-us/research/blog/zero-deepspeed-new-system-optimizations-enable-training-models-with-over-100-billion-parameters/)
 ![DeepSpeed-Image-1](imgs/parallelism-zero.png)
@@ -124,7 +151,7 @@ Implementations:
 - [Fairscale](https://github.com/facebookresearch/fairscale/#optimizer-state-sharding-zero) ZeRO-DP stages 1+2+3
 - [`transformers` integration](https://huggingface.co/transformers/master/main_classes/trainer.html#trainer-integrations)
 
-## Naive Model Parallel (Vertical) and Pipeline Parallel
+## [Naive Model Parallel (Vertical) and Pipeline Parallel](#naive-model-parallel-vertical-and-pipeline-parallel)
 
 Naive Model Parallel (MP) is where one spreads groups of model layers across multiple GPUs. The mechanism is relatively simple - switch the desired layers `.to()` the desired devices and now whenever the data goes in and out those layers switch the data to the same device as the layer and leave the rest unmodified.
 
@@ -193,7 +220,7 @@ Here the bubble (idle time) is further minimized by prioritizing backward passes
 According to [the same document](https://docs.aws.amazon.com/sagemaker/latest/dg/model-parallel-core-features.html), it might be able to automate the non `nn.Sequential` model conversion to pipeline. The only problem is that this is currently only available at AWS, so you can't run it on your own hardware.
 
 
-## Tensor Parallelism
+## [Tensor Parallelism](#tensor-parallelism)
 
 In Tensor Parallelism each GPU processes only a slice of a tensor and only aggregates the full tensor for operations that require the whole thing.
 
@@ -234,7 +261,7 @@ Implementations:
 
 
 
-## DP+PP
+## [DP+PP](#dppp)
 
 The following diagram from the DeepSpeed [pipeline tutorial](https://www.deepspeed.ai/tutorials/pipeline/) demonstrates how one combines DP with PP.
 
@@ -251,7 +278,7 @@ Implementations:
 🤗 Transformers status: not yet implemented
 
 
-## DP+PP+TP
+## [DP+PP+TP](#dppptp)
 
 To get an even more efficient training a 3D parallelism is used where PP is combined with TP and DP. This can be seen in the following diagram.
 
@@ -268,7 +295,7 @@ Implementations:
 🤗 Transformers status: not yet implemented, since we have no PP and TP.
 
 
-## DP+PP+TP+ZeRO
+## [DP+PP+TP+ZeRO](#dppptpzero)
 
 One of the main features of DeepSpeed is ZeRO, which is a super-scalable extension of DP. It has already been discussed in [ZeRO Data Parallel](#zero-data-parallel). Normally it's a standalone feature that doesn't require PP or TP. But it can be combined with PP and TP.
 
@@ -288,7 +315,7 @@ Implementations:
 🤗 Transformers status: not yet implemented, since we have no PP and TP.
 
 
-## FlexFlow
+## [FlexFlow](#flexflow)
 
 [FlexFlow](https://github.com/flexflow/FlexFlow) also solves the parallelization problem in a slightly different approach.
 
@@ -296,27 +323,12 @@ Paper: ["Beyond Data and Model Parallelism for Deep Neural Networks" by Zhihao J
 
 It performs a sort of 4D Parallelism over Sample-Operator-Attribute-Parameter.
 
-1. Sample = Data Parallelism (sample-wise parallel)
-2. Operator = Parallelize a single operation into several sub-operations
-3. Attribute = Data Parallelism (length-wise parallel)
-4. Parameter = Model Parallelism (regardless of dimension - horizontal or vertical)
+1. Sample = Data Parallelism
+2. Operator = part vertical Layer Parallelism, but it can split the layer too - more refined level
+3. Attribute = horizontal Model Parallelism (Megatron-LM style)
+4. Parameter = Sharded model params
 
-Examples:
-* Sample
-
-Let's take 10 batches of sequence length 512. If we parallelize them by sample dimension into 2 devices, we get 10 x 512 which becomes be 5 x 2 x 512.
-
-* Operator
-
-If we perform layer normalization, we compute std first and mean second, and then we can normalize data. Operator parallelism allows computing std and mean in parallel. So if we parallelize them by operator dimension into 2 devices (cuda:0, cuda:1), first we copy input data into both devices, and cuda:0 computes std, cuda:1 computes mean at the same time.
-
-* Attribute
-
-We have 10 batches of 512 length. If we parallelize them by attribute dimension into 2 devices, 10 x 512 will be 10 x 2 x 256.
-
-* Parameter
-
-It is similar with tensor model parallelism or naive layer-wise model parallelism.
+and they are working on Pipeline Parallelism. I guess ZeRO-DP is Sample+Parameter in this context.
 
 ![flex-flow-soap](imgs/parallelism-flexflow.jpeg)
 
@@ -329,9 +341,9 @@ So the promise is very attractive - it runs a 30min simulation on the cluster of
 🤗 Transformers status: not yet integrated. We already have our models FX-trace-able via [transformers.utils.fx](https://github.com/huggingface/transformers/blob/master/src/transformers/utils/fx.py), which is a prerequisite for FlexFlow, so someone needs to figure out what needs to be done to make FlexFlow work with our models.
 
 
-## Which Strategy To Use When
+## [Which Strategy To Use When](#which-strategy-to-use-when)
 
-Here is a very rough outline at which parallelism strategy to use when. The first on each list is typically faster.
+Here is a very rough outlook at which parallelism strategy to use when. The first on the list is typically faster.
 
 **⇨ Single GPU**
 
@@ -342,11 +354,7 @@ Here is a very rough outline at which parallelism strategy to use when. The firs
 * Model doesn't fit onto a single GPU:
 
     1. ZeRO + Offload CPU and optionally NVMe
-    2. as above plus Memory Centric Tiling (see below for details) if the largest layer can't fit into a single GPU
 
-* Largest Layer not fitting into a single GPU:
-
-1. ZeRO - Enable [Memory Centric Tiling](https://deepspeed.readthedocs.io/en/latest/zero3.html#memory-centric-tiling) (MCT). It allows you to run arbitrarily large layers by automatically splitting them and executing them sequentially. MCT reduces the number of parameters that are live on a GPU, but it does not affect the activation memory. As this need is very rare as of this writing a manual override of `torch.nn.Linear` needs to be done by the user.
 
 **⇨ Single Node / Multi-GPU**
 
@@ -361,14 +369,7 @@ Here is a very rough outline at which parallelism strategy to use when. The firs
     2. ZeRO
     3. TP
 
-    With very fast intra-node connectivity of NVLINK or NVSwitch all three should be mostly on par, without these PP will be faster than TP or ZeRO. The degree of TP may also make a difference. Best to experiment to find the winner on your particular setup.
-
-    TP is almost always used within a single node. That is TP size <= gpus per node.
-
-* Largest Layer not fitting into a single GPU:
-
-    1. If not using ZeRO - must use TP, as PP alone won't be able to fit.
-    2. With ZeRO see the same entry for "Single GPU" above
+    With very fast intra-node connectivity of NVLINK or NVSwitch all three should be mostly on par, without these PP will be faster than TP and ZeRO. The degree of TP may also make a difference. Best to experiment to find the winner on your particular setup.
 
 
 **⇨ Multi-Node / Multi-GPU**

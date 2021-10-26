@@ -1,3 +1,92 @@
+---
+local: trainer
+sections:
+- local: trainer
+  title: Trainer
+- local: seqseqtrainer
+  title: Seq2SeqTrainer
+- local: tftrainer
+  title: TFTrainer
+- local: trainingarguments
+  title: TrainingArguments
+- local: seqseqtrainingarguments
+  title: Seq2SeqTrainingArguments
+- local: tftrainingarguments
+  title: TFTrainingArguments
+- local: checkpoints
+  title: Checkpoints
+- local: logging
+  title: Logging
+- local: randomness
+  title: Randomness
+- local: trainer-integrations
+  sections:
+  - local: cuda-extension-installation-notes
+    sections:
+    - local: possible-problem
+      title: 'Possible problem #1'
+    - local: possible-problem
+      title: 'Possible problem #2'
+    - local: possible-problem
+      title: 'Possible problem #3'
+    title: CUDA Extension Installation Notes
+  - local: fairscale
+    title: FairScale
+  - local: deepspeed
+    sections:
+    - local: installation
+      title: Installation
+    - local: deployment-with-multiple-gpus
+      title: Deployment with multiple GPUs
+    - local: deployment-with-one-gpu
+      title: Deployment with one GPU
+    - local: deployment-in-notebooks
+      title: Deployment in Notebooks
+    - local: configuration
+      title: Configuration
+    - local: passing-configuration
+      title: Passing Configuration
+    - local: shared-configuration
+      title: Shared Configuration
+    - local: zero
+      sections:
+      - local: zero-config
+        title: ZeRO-2 Config
+      - local: zero-config
+        title: ZeRO-3 Config
+      title: ZeRO
+    - local: nvme-support
+      sections:
+      - local: zero-vs-zero-performance
+        title: ZeRO-2 vs ZeRO-3 Performance
+      - local: zero-example
+        title: ZeRO-2 Example
+      - local: zero-example
+        title: ZeRO-3 Example
+      title: NVMe Support
+    - local: optimizer-and-scheduler
+      sections:
+      - local: optimizer
+        title: Optimizer
+      - local: scheduler
+        title: Scheduler
+      title: Optimizer and Scheduler
+    - local: fp-precision
+      title: fp32 Precision
+    - local: automatic-mixed-precision
+      title: Automatic Mixed Precision
+    - local: batch-size
+      title: Batch Size
+    - local: gradient-accumulation
+      title: Gradient Accumulation
+    - local: gradient-clipping
+      title: Gradient Clipping
+    - local: getting-the-model-weights-out
+      title: Getting The Model Weights Out
+    title: DeepSpeed
+  title: Trainer Integrations
+title: Trainer
+---
 <script>
 import Tip from "../../Tip.svelte";
 import Youtube from "../../Youtube.svelte";	
@@ -16,7 +105,7 @@ an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express o
 specific language governing permissions and limitations under the License.
 -->
 
-# Trainer
+# [Trainer](#trainer)
 
 The [Trainer](/docs/transformers/master/en/main_classes/trainer.html#transformers.Trainer) and [TFTrainer](/docs/transformers/master/en/main_classes/trainer.html#transformers.TFTrainer) classes provide an API for feature-complete
 training in most standard use cases. It's used in most of the [example scripts](/docs/transformers/master/en/../examples.html).
@@ -83,7 +172,7 @@ Another way to customize the training loop behavior for the PyTorch [Trainer](/d
 other ML platforms...) and take decisions (like early stopping).
 
 
-## Trainer
+## [Trainer](#trainer)
 
 <a id='transformers.Trainer'></a>
 > **class transformers.Trainer**(model: typing.Union[transformers.modeling_utils.PreTrainedModel, torch.nn.modules.module.Module] = None, args: TrainingArguments = None, data_collator: typing.Optional[DataCollator] = None, train_dataset: typing.Optional[torch.utils.data.dataset.Dataset] = None, eval_dataset: typing.Optional[torch.utils.data.dataset.Dataset] = None, tokenizer: typing.Optional[transformers.tokenization_utils_base.PreTrainedTokenizerBase] = None, model_init: typing.Callable[[], transformers.modeling_utils.PreTrainedModel] = None, compute_metrics: typing.Union[typing.Callable[[transformers.trainer_utils.EvalPrediction], typing.Dict], NoneType] = None, callbacks: typing.Optional[typing.List[transformers.trainer_callback.TrainerCallback]] = None, optimizers: typing.Tuple[torch.optim.optimizer.Optimizer, torch.optim.lr_scheduler.LambdaLR] = (None, None))
@@ -752,7 +841,7 @@ The tensor with training loss on this batch.
 `torch.Tensor`
 
 
-## Seq2SeqTrainer
+## [Seq2SeqTrainer](#seqseqtrainer)
 
 <a id='transformers.Seq2SeqTrainer'></a>
 > **class transformers.Seq2SeqTrainer**(model: typing.Union[transformers.modeling_utils.PreTrainedModel, torch.nn.modules.module.Module] = None, args: TrainingArguments = None, data_collator: typing.Optional[DataCollator] = None, train_dataset: typing.Optional[torch.utils.data.dataset.Dataset] = None, eval_dataset: typing.Optional[torch.utils.data.dataset.Dataset] = None, tokenizer: typing.Optional[transformers.tokenization_utils_base.PreTrainedTokenizerBase] = None, model_init: typing.Callable[[], transformers.modeling_utils.PreTrainedModel] = None, compute_metrics: typing.Union[typing.Callable[[transformers.trainer_utils.EvalPrediction], typing.Dict], NoneType] = None, callbacks: typing.Optional[typing.List[transformers.trainer_callback.TrainerCallback]] = None, optimizers: typing.Tuple[torch.optim.optimizer.Optimizer, torch.optim.lr_scheduler.LambdaLR] = (None, None))
@@ -834,7 +923,7 @@ Returns: _NamedTuple_ A namedtuple with the following keys:
   contained labels).
 
 
-## TFTrainer
+## [TFTrainer](#tftrainer)
 
 <a id='transformers.TFTrainer'></a>
 > **class transformers.TFTrainer**(model: TFPreTrainedModel, args: TFTrainingArguments, train_dataset: typing.Optional[tensorflow.python.data.ops.dataset_ops.DatasetV2] = None, eval_dataset: typing.Optional[tensorflow.python.data.ops.dataset_ops.DatasetV2] = None, compute_metrics: typing.Union[typing.Callable[[transformers.trainer_utils.EvalPrediction], typing.Dict], NoneType] = None, tb_writer: typing.Optional[tensorflow.python.ops.summary_ops_v2.SummaryWriter] = None, optimizers: typing.Tuple[tensorflow.python.keras.optimizer_v2.optimizer_v2.OptimizerV2, tensorflow.python.keras.optimizer_v2.learning_rate_schedule.LearningRateSchedule] = (None, None))
@@ -1087,7 +1176,7 @@ Perform a training step on features and labels.
 Subclass and override to inject some custom behavior.
 
 
-## TrainingArguments
+## [TrainingArguments](#trainingarguments)
 
 <a id='transformers.TrainingArguments'></a>
 > **class transformers.TrainingArguments**(output_dir: str, overwrite_output_dir: bool = False, do_train: bool = False, do_eval: bool = False, do_predict: bool = False, evaluation_strategy: IntervalStrategy = 'no', prediction_loss_only: bool = False, per_device_train_batch_size: int = 8, per_device_eval_batch_size: int = 8, per_gpu_train_batch_size: typing.Optional[int] = None, per_gpu_eval_batch_size: typing.Optional[int] = None, gradient_accumulation_steps: int = 1, eval_accumulation_steps: typing.Optional[int] = None, learning_rate: float = 5e-05, weight_decay: float = 0.0, adam_beta1: float = 0.9, adam_beta2: float = 0.999, adam_epsilon: float = 1e-08, max_grad_norm: float = 1.0, num_train_epochs: float = 3.0, max_steps: int = -1, lr_scheduler_type: SchedulerType = 'linear', warmup_ratio: float = 0.0, warmup_steps: int = 0, log_level: typing.Optional[str] = 'passive', log_level_replica: typing.Optional[str] = 'passive', log_on_each_node: bool = True, logging_dir: typing.Optional[str] = None, logging_strategy: IntervalStrategy = 'steps', logging_first_step: bool = False, logging_steps: int = 500, logging_nan_inf_filter: str = True, save_strategy: IntervalStrategy = 'steps', save_steps: int = 500, save_total_limit: typing.Optional[int] = None, save_on_each_node: bool = False, no_cuda: bool = False, seed: int = 42, fp16: bool = False, fp16_opt_level: str = 'O1', fp16_backend: str = 'auto', fp16_full_eval: bool = False, local_rank: int = -1, xpu_backend: str = None, tpu_num_cores: typing.Optional[int] = None, tpu_metrics_debug: bool = False, debug: str = '', dataloader_drop_last: bool = False, eval_steps: int = None, dataloader_num_workers: int = 0, past_index: int = -1, run_name: typing.Optional[str] = None, disable_tqdm: typing.Optional[bool] = None, remove_unused_columns: typing.Optional[bool] = True, label_names: typing.Optional[typing.List[str]] = None, load_best_model_at_end: typing.Optional[bool] = False, metric_for_best_model: typing.Optional[str] = None, greater_is_better: typing.Optional[bool] = None, ignore_data_skip: bool = False, sharded_ddp: str = '', deepspeed: typing.Optional[str] = None, label_smoothing_factor: float = 0.0, adafactor: bool = False, group_by_length: bool = False, length_column_name: typing.Optional[str] = 'length', report_to: typing.Optional[typing.List[str]] = None, ddp_find_unused_parameters: typing.Optional[bool] = None, dataloader_pin_memory: bool = True, skip_memory_metrics: bool = True, use_legacy_prediction_loop: bool = False, push_to_hub: bool = False, resume_from_checkpoint: typing.Optional[str] = None, hub_model_id: str = None, hub_strategy: HubStrategy = 'every_save', hub_token: str = None, gradient_checkpointing: bool = False, push_to_hub_model_id: str = None, push_to_hub_organization: str = None, push_to_hub_token: str = None, mp_parameters: str = '')
@@ -1377,13 +1466,12 @@ When set to `True`, the parameters `save_strategy` needs to be the same as
   the [example scripts](https://github.com/huggingface/transformers/tree/master/examples) for more
   details.
 - **hub_model_id** (`str`, _optional_) --
-  The name of the repository to keep in sync with the local _output_dir_. It can be a simple model ID in
-  which case the model will be pushed in your namespace. Otherwise it should be the whole repository name,
-  for instance `"user_name/model"`, which allows you to push to an organization you are a member of with
-  `"organization_name/model"`. Will default to `user_name/output_dir_name` with _output_dir_name_
-  being the name of `output_dir`.
+  The name of the repository to keep in sync with the local _output_dir_. Should be the whole repository
+  name, for instance `"user_name/model"`, which allows you to push to an organization you are a member
+  of with `"organization_name/model"`.
 
-  Will default to to the name of `output_dir`.
+  Will default to `user_name/output_dir_name` with _output_dir_name_ being the name of
+  `output_dir`.
 - **hub_strategy** (`str` or `HubStrategy`, _optional_, defaults to `"every_save"`) --
   Defines the scope of what is pushed to the Hub and when. Possible values are:
 
@@ -1476,7 +1564,7 @@ Serializes this instance to a JSON string.
 Sanitized serialization to use with TensorBoard’s hparams
 
 
-## Seq2SeqTrainingArguments
+## [Seq2SeqTrainingArguments](#seqseqtrainingarguments)
 
 <a id='transformers.Seq2SeqTrainingArguments'></a>
 > **class transformers.Seq2SeqTrainingArguments**(output_dir: str, overwrite_output_dir: bool = False, do_train: bool = False, do_eval: bool = False, do_predict: bool = False, evaluation_strategy: IntervalStrategy = 'no', prediction_loss_only: bool = False, per_device_train_batch_size: int = 8, per_device_eval_batch_size: int = 8, per_gpu_train_batch_size: typing.Optional[int] = None, per_gpu_eval_batch_size: typing.Optional[int] = None, gradient_accumulation_steps: int = 1, eval_accumulation_steps: typing.Optional[int] = None, learning_rate: float = 5e-05, weight_decay: float = 0.0, adam_beta1: float = 0.9, adam_beta2: float = 0.999, adam_epsilon: float = 1e-08, max_grad_norm: float = 1.0, num_train_epochs: float = 3.0, max_steps: int = -1, lr_scheduler_type: SchedulerType = 'linear', warmup_ratio: float = 0.0, warmup_steps: int = 0, log_level: typing.Optional[str] = 'passive', log_level_replica: typing.Optional[str] = 'passive', log_on_each_node: bool = True, logging_dir: typing.Optional[str] = None, logging_strategy: IntervalStrategy = 'steps', logging_first_step: bool = False, logging_steps: int = 500, logging_nan_inf_filter: str = True, save_strategy: IntervalStrategy = 'steps', save_steps: int = 500, save_total_limit: typing.Optional[int] = None, save_on_each_node: bool = False, no_cuda: bool = False, seed: int = 42, fp16: bool = False, fp16_opt_level: str = 'O1', fp16_backend: str = 'auto', fp16_full_eval: bool = False, local_rank: int = -1, xpu_backend: str = None, tpu_num_cores: typing.Optional[int] = None, tpu_metrics_debug: bool = False, debug: str = '', dataloader_drop_last: bool = False, eval_steps: int = None, dataloader_num_workers: int = 0, past_index: int = -1, run_name: typing.Optional[str] = None, disable_tqdm: typing.Optional[bool] = None, remove_unused_columns: typing.Optional[bool] = True, label_names: typing.Optional[typing.List[str]] = None, load_best_model_at_end: typing.Optional[bool] = False, metric_for_best_model: typing.Optional[str] = None, greater_is_better: typing.Optional[bool] = None, ignore_data_skip: bool = False, sharded_ddp: str = '', deepspeed: typing.Optional[str] = None, label_smoothing_factor: float = 0.0, adafactor: bool = False, group_by_length: bool = False, length_column_name: typing.Optional[str] = 'length', report_to: typing.Optional[typing.List[str]] = None, ddp_find_unused_parameters: typing.Optional[bool] = None, dataloader_pin_memory: bool = True, skip_memory_metrics: bool = True, use_legacy_prediction_loop: bool = False, push_to_hub: bool = False, resume_from_checkpoint: typing.Optional[str] = None, hub_model_id: str = None, hub_strategy: HubStrategy = 'every_save', hub_token: str = None, gradient_checkpointing: bool = False, push_to_hub_model_id: str = None, push_to_hub_organization: str = None, push_to_hub_token: str = None, mp_parameters: str = '', sortish_sampler: bool = False, predict_with_generate: bool = False, generation_max_length: typing.Optional[int] = None, generation_num_beams: typing.Optional[int] = None)
@@ -1766,13 +1854,12 @@ When set to `True`, the parameters `save_strategy` needs to be the same as
   the [example scripts](https://github.com/huggingface/transformers/tree/master/examples) for more
   details.
 - **hub_model_id** (`str`, _optional_) --
-  The name of the repository to keep in sync with the local _output_dir_. It can be a simple model ID in
-  which case the model will be pushed in your namespace. Otherwise it should be the whole repository name,
-  for instance `"user_name/model"`, which allows you to push to an organization you are a member of with
-  `"organization_name/model"`. Will default to `user_name/output_dir_name` with _output_dir_name_
-  being the name of `output_dir`.
+  The name of the repository to keep in sync with the local _output_dir_. Should be the whole repository
+  name, for instance `"user_name/model"`, which allows you to push to an organization you are a member
+  of with `"organization_name/model"`.
 
-  Will default to to the name of `output_dir`.
+  Will default to `user_name/output_dir_name` with _output_dir_name_ being the name of
+  `output_dir`.
 - **hub_strategy** (`str` or `HubStrategy`, _optional_, defaults to `"every_save"`) --
   Defines the scope of what is pushed to the Hub and when. Possible values are:
 
@@ -1811,7 +1898,7 @@ When set to `True`, the parameters `save_strategy` needs to be the same as
   `num_beams` value of the model configuration.
 
 
-## TFTrainingArguments
+## [TFTrainingArguments](#tftrainingarguments)
 
 <a id='transformers.TFTrainingArguments'></a>
 > **class transformers.TFTrainingArguments**(output_dir: str, overwrite_output_dir: bool = False, do_train: bool = False, do_eval: bool = False, do_predict: bool = False, evaluation_strategy: IntervalStrategy = 'no', prediction_loss_only: bool = False, per_device_train_batch_size: int = 8, per_device_eval_batch_size: int = 8, per_gpu_train_batch_size: typing.Optional[int] = None, per_gpu_eval_batch_size: typing.Optional[int] = None, gradient_accumulation_steps: int = 1, eval_accumulation_steps: typing.Optional[int] = None, learning_rate: float = 5e-05, weight_decay: float = 0.0, adam_beta1: float = 0.9, adam_beta2: float = 0.999, adam_epsilon: float = 1e-08, max_grad_norm: float = 1.0, num_train_epochs: float = 3.0, max_steps: int = -1, lr_scheduler_type: SchedulerType = 'linear', warmup_ratio: float = 0.0, warmup_steps: int = 0, log_level: typing.Optional[str] = 'passive', log_level_replica: typing.Optional[str] = 'passive', log_on_each_node: bool = True, logging_dir: typing.Optional[str] = None, logging_strategy: IntervalStrategy = 'steps', logging_first_step: bool = False, logging_steps: int = 500, logging_nan_inf_filter: str = True, save_strategy: IntervalStrategy = 'steps', save_steps: int = 500, save_total_limit: typing.Optional[int] = None, save_on_each_node: bool = False, no_cuda: bool = False, seed: int = 42, fp16: bool = False, fp16_opt_level: str = 'O1', fp16_backend: str = 'auto', fp16_full_eval: bool = False, local_rank: int = -1, xpu_backend: str = None, tpu_num_cores: typing.Optional[int] = None, tpu_metrics_debug: bool = False, debug: str = '', dataloader_drop_last: bool = False, eval_steps: int = None, dataloader_num_workers: int = 0, past_index: int = -1, run_name: typing.Optional[str] = None, disable_tqdm: typing.Optional[bool] = None, remove_unused_columns: typing.Optional[bool] = True, label_names: typing.Optional[typing.List[str]] = None, load_best_model_at_end: typing.Optional[bool] = False, metric_for_best_model: typing.Optional[str] = None, greater_is_better: typing.Optional[bool] = None, ignore_data_skip: bool = False, sharded_ddp: str = '', deepspeed: typing.Optional[str] = None, label_smoothing_factor: float = 0.0, adafactor: bool = False, group_by_length: bool = False, length_column_name: typing.Optional[str] = 'length', report_to: typing.Optional[typing.List[str]] = None, ddp_find_unused_parameters: typing.Optional[bool] = None, dataloader_pin_memory: bool = True, skip_memory_metrics: bool = True, use_legacy_prediction_loop: bool = False, push_to_hub: bool = False, resume_from_checkpoint: typing.Optional[str] = None, hub_model_id: str = None, hub_strategy: HubStrategy = 'every_save', hub_token: str = None, gradient_checkpointing: bool = False, push_to_hub_model_id: str = None, push_to_hub_organization: str = None, push_to_hub_token: str = None, mp_parameters: str = '', tpu_name: str = None, tpu_zone: str = None, gcp_project: str = None, poly_power: float = 1.0, xla: bool = False)
@@ -1953,7 +2040,7 @@ examples.
   Whether to activate the XLA compilation or not.
 
 
-## Checkpoints
+## [Checkpoints](#checkpoints)
 
 By default, [Trainer](/docs/transformers/master/en/main_classes/trainer.html#transformers.Trainer) will save all checkpoints in the `output_dir` you set in the
 [TrainingArguments](/docs/transformers/master/en/main_classes/trainer.html#transformers.TrainingArguments) you are using. Those will go in subfolder named `checkpoint-xxx` with xxx
@@ -1975,7 +2062,7 @@ the `hub-strategy` value of your [TrainingArguments](/docs/transformers/master/e
   checkpoint folder per folder in your final repository)
 
 
-## Logging
+## [Logging](#logging)
 
 By default [Trainer](/docs/transformers/master/en/main_classes/trainer.html#transformers.Trainer) will use `logging.INFO` for the main process and `logging.WARNING` for
 the replicas if any.
@@ -2042,7 +2129,7 @@ my_app.py ... --log_level error --log_level_replica error --log_on_each_node 0
 
 
 
-## Randomness
+## [Randomness](#randomness)
 
 When resuming from a checkpoint generated by [Trainer](/docs/transformers/master/en/main_classes/trainer.html#transformers.Trainer) all efforts are made to restore the
 _python_, _numpy_ and _pytorch_ RNG states to the same states as they were at the moment of saving that checkpoint,
@@ -2054,7 +2141,7 @@ that make things deterministic (.e.g., `torch.backends.cudnn.deterministic`) may
 can't be done by default, but you can enable those yourself if needed.
 
 
-## Trainer Integrations
+## [Trainer Integrations](#trainer-integrations)
 
 
 
@@ -2068,7 +2155,7 @@ This provided support is new and experimental as of this writing.
 
 <a id='zero-install-notes'></a>
 
-### CUDA Extension Installation Notes
+### [CUDA Extension Installation Notes](#cuda-extension-installation-notes)
 
 As of this writing, both FairScale and Deepspeed require compilation of CUDA C++ code, before they can be used.
 
@@ -2087,7 +2174,7 @@ please, read the following notes first.
 In these notes we give examples for what to do when `pytorch` has been built with CUDA `10.2`. If your situation is
 different remember to adjust the version number to the one you are after.
 
-#### Possible problem #1
+#### [Possible problem #1](#possible-problem)
 
 While, Pytorch comes with its own CUDA toolkit, to build these two projects you must have an identical version of CUDA
 installed system-wide.
@@ -2106,7 +2193,7 @@ which nvcc
 If you don't have CUDA installed system-wide, install it first. You will find the instructions by using your favorite
 search engine. For example, if you're on Ubuntu you may want to search for: [ubuntu cuda 10.2 install](https://www.google.com/search?q=ubuntu+cuda+10.2+install).
 
-#### Possible problem #2
+#### [Possible problem #2](#possible-problem)
 
 Another possible common problem is that you may have more than one CUDA toolkit installed system-wide. For example you
 may have:
@@ -2152,7 +2239,7 @@ exist. `lib64` sub-directory is where the various CUDA `.so` objects, like `libc
 that your system will have it named differently, but if it is adjust it to reflect your reality.
 
 
-#### Possible problem #3
+#### [Possible problem #3](#possible-problem)
 
 Some older CUDA versions may refuse to build with newer compilers. For example, you my have `gcc-9` but it wants
 `gcc-7`.
@@ -2176,7 +2263,7 @@ should find `gcc-7` (and `g++7`) and then the build will succeed.
 
 As always make sure to edit the paths in the example to match your situation.
 
-### FairScale
+### [FairScale](#fairscale)
 
 By integrating [FairScale](https://github.com/facebookresearch/fairscale/) the [Trainer](/docs/transformers/master/en/main_classes/trainer.html#transformers.Trainer)
 provides support for the following features from [the ZeRO paper](https://arxiv.org/abs/1910.02054):
@@ -2313,110 +2400,110 @@ Known caveats:
   doing this yourself: `--sharded_ddp "zero_dp_3 auto_wrap"`.
 
 
-### DeepSpeed
+### [DeepSpeed](#deepspeed)
 
 
 Moved to [deepspeed-trainer-integration](/docs/transformers/master/en/main_classes/trainer.html#deepspeed-trainer-integration).
 
 
-#### Installation
+#### [Installation](#installation)
 
 Moved to [deepspeed-installation](/docs/transformers/master/en/main_classes/trainer.html#deepspeed-installation).
 
 
-#### Deployment with multiple GPUs
+#### [Deployment with multiple GPUs](#deployment-with-multiple-gpus)
 
 Moved to [deepspeed-multi-gpu](/docs/transformers/master/en/main_classes/trainer.html#deepspeed-multi-gpu).
 
 
-#### Deployment with one GPU
+#### [Deployment with one GPU](#deployment-with-one-gpu)
 
 Moved to [deepspeed-one-gpu](/docs/transformers/master/en/main_classes/trainer.html#deepspeed-one-gpu).
 
 
-#### Deployment in Notebooks
+#### [Deployment in Notebooks](#deployment-in-notebooks)
 
 Moved to [deepspeed-notebook](/docs/transformers/master/en/main_classes/trainer.html#deepspeed-notebook).
 
 
-#### Configuration
+#### [Configuration](#configuration)
 
 Moved to [deepspeed-config](/docs/transformers/master/en/main_classes/trainer.html#deepspeed-config).
 
 
-#### Passing Configuration
+#### [Passing Configuration](#passing-configuration)
 
 Moved to [deepspeed-config-passing](/docs/transformers/master/en/main_classes/trainer.html#deepspeed-config-passing).
 
 
-#### Shared Configuration
+#### [Shared Configuration](#shared-configuration)
 
 Moved to [deepspeed-config-shared](/docs/transformers/master/en/main_classes/trainer.html#deepspeed-config-shared).
 
-#### ZeRO
+#### [ZeRO](#zero)
 
 Moved to [deepspeed-zero](/docs/transformers/master/en/main_classes/trainer.html#deepspeed-zero).
 
-##### ZeRO-2 Config
+##### [ZeRO-2 Config](#zero-config)
 
 Moved to [deepspeed-zero2-config](/docs/transformers/master/en/main_classes/trainer.html#deepspeed-zero2-config).
 
-##### ZeRO-3 Config
+##### [ZeRO-3 Config](#zero-config)
 
 Moved to [deepspeed-zero3-config](/docs/transformers/master/en/main_classes/trainer.html#deepspeed-zero3-config).
 
 
-#### NVMe Support
+#### [NVMe Support](#nvme-support)
 
 Moved to [deepspeed-nvme](/docs/transformers/master/en/main_classes/trainer.html#deepspeed-nvme).
 
-##### ZeRO-2 vs ZeRO-3 Performance
+##### [ZeRO-2 vs ZeRO-3 Performance](#zero-vs-zero-performance)
 
 Moved to [deepspeed-zero2-zero3-performance](/docs/transformers/master/en/main_classes/trainer.html#deepspeed-zero2-zero3-performance).
 
-##### ZeRO-2 Example
+##### [ZeRO-2 Example](#zero-example)
 
 Moved to [deepspeed-zero2-example](/docs/transformers/master/en/main_classes/trainer.html#deepspeed-zero2-example).
 
-##### ZeRO-3 Example
+##### [ZeRO-3 Example](#zero-example)
 
 Moved to [deepspeed-zero3-example](/docs/transformers/master/en/main_classes/trainer.html#deepspeed-zero3-example).
 
-#### Optimizer and Scheduler
+#### [Optimizer and Scheduler](#optimizer-and-scheduler)
 
 
 
-##### Optimizer
+##### [Optimizer](#optimizer)
 
 Moved to [deepspeed-optimizer](/docs/transformers/master/en/main_classes/trainer.html#deepspeed-optimizer).
 
 
-##### Scheduler
+##### [Scheduler](#scheduler)
 
 Moved to [deepspeed-scheduler](/docs/transformers/master/en/main_classes/trainer.html#deepspeed-scheduler).
 
-#### fp32 Precision
+#### [fp32 Precision](#fp-precision)
 
 Moved to [deepspeed-fp32](/docs/transformers/master/en/main_classes/trainer.html#deepspeed-fp32).
 
-#### Automatic Mixed Precision
+#### [Automatic Mixed Precision](#automatic-mixed-precision)
 
 Moved to [deepspeed-amp](/docs/transformers/master/en/main_classes/trainer.html#deepspeed-amp).
 
-#### Batch Size
+#### [Batch Size](#batch-size)
 
 Moved to [deepspeed-bs](/docs/transformers/master/en/main_classes/trainer.html#deepspeed-bs).
 
-#### Gradient Accumulation
+#### [Gradient Accumulation](#gradient-accumulation)
 
 Moved to [deepspeed-grad-acc](/docs/transformers/master/en/main_classes/trainer.html#deepspeed-grad-acc).
 
 
-#### Gradient Clipping
+#### [Gradient Clipping](#gradient-clipping)
 
 Moved to [deepspeed-grad-clip](/docs/transformers/master/en/main_classes/trainer.html#deepspeed-grad-clip).
 
 
-#### Getting The Model Weights Out
+#### [Getting The Model Weights Out](#getting-the-model-weights-out)
 
 Moved to [deepspeed-weight-extraction](/docs/transformers/master/en/main_classes/trainer.html#deepspeed-weight-extraction).

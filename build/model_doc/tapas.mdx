@@ -1,10 +1,35 @@
+---
+local: tapas
+sections:
+- local: overview
+  title: Overview
+- local: usage-finetuning
+  title: 'Usage: fine-tuning'
+- local: usage-inference
+  title: 'Usage: inference'
+- local: tapas-specific-outputs
+  title: Tapas specific outputs
+- local: tapasconfig
+  title: TapasConfig
+- local: tapastokenizer
+  title: TapasTokenizer
+- local: tapasmodel
+  title: TapasModel
+- local: tapasformaskedlm
+  title: TapasForMaskedLM
+- local: tapasforsequenceclassification
+  title: TapasForSequenceClassification
+- local: tapasforquestionanswering
+  title: TapasForQuestionAnswering
+title: TAPAS
+---
 <script>
 import Tip from "../../Tip.svelte";
 import Youtube from "../../Youtube.svelte";	
 export let fw: "pt" | "tf"
 </script>
 
-# TAPAS
+# [TAPAS](#tapas)
 
 <Tip>
 
@@ -13,7 +38,7 @@ breaking changes to fix them in the future.
 
 </Tip>
 
-## Overview
+## [Overview](#overview)
 
 The TAPAS model was proposed in [TAPAS: Weakly Supervised Table Parsing via Pre-training](https://www.aclweb.org/anthology/2020.acl-main.398) by Jonathan Herzig, Paweł Krzysztof Nowak, Thomas Müller,
 Francesco Piccinno and Julian Martin Eisenschlos. It's a BERT-based model specifically designed (and pre-trained) for
@@ -75,7 +100,7 @@ Tips:
   with a causal language modeling (CLM) objective are better in that regard.
 
 
-## Usage: fine-tuning
+## [Usage: fine-tuning](#usage-finetuning)
 
 Here we explain how you can fine-tune [TapasForQuestionAnswering](/docs/transformers/master/en/model_doc/tapas.html#transformers.TapasForQuestionAnswering) on your own dataset.
 
@@ -297,7 +322,7 @@ the weak supervision for aggregation case):
 ...         optimizer.step()
 ```
 
-## Usage: inference
+## [Usage: inference](#usage-inference)
 
 Here we explain how you can use [TapasForQuestionAnswering](/docs/transformers/master/en/model_doc/tapas.html#transformers.TapasForQuestionAnswering) for inference (i.e. making predictions
 on new data). For inference, only `input_ids`, `attention_mask` and `token_type_ids` (which you can obtain using
@@ -365,7 +390,7 @@ that the `prev_labels` token types can be overwritten by the predicted `labels` 
 pair. Again, more info can be found in [this notebook](https://github.com/NielsRogge/Transformers-Tutorials/blob/master/TAPAS/Fine_tuning_TapasForQuestionAnswering_on_SQA.ipynb).
 
 
-## Tapas specific outputs
+## [Tapas specific outputs](#tapas-specific-outputs)
 
 <a id='transformers.models.tapas.modeling_tapas.TableQuestionAnsweringOutput'></a>
 > **class transformers.models.tapas.modeling\_tapas.TableQuestionAnsweringOutput**(loss: typing.Optional[torch.FloatTensor] = None, logits: FloatTensor = None, logits_aggregation: FloatTensor = None, hidden_states: typing.Optional[typing.Tuple[torch.FloatTensor]] = None, attentions: typing.Optional[typing.Tuple[torch.FloatTensor]] = None)
@@ -391,7 +416,7 @@ Output type of [TapasForQuestionAnswering](/docs/transformers/master/en/model_do
   weighted average in the self-attention heads.
 
 
-## TapasConfig
+## [TapasConfig](#tapasconfig)
 
 <a id='transformers.TapasConfig'></a>
 > **class transformers.TapasConfig**(vocab_size = 30522, hidden_size = 768, num_hidden_layers = 12, num_attention_heads = 12, intermediate_size = 3072, hidden_act = 'gelu', hidden_dropout_prob = 0.1, attention_probs_dropout_prob = 0.1, max_position_embeddings = 1024, type_vocab_sizes = [3, 256, 256, 2, 256, 256, 10], initializer_range = 0.02, layer_norm_eps = 1e-12, pad_token_id = 0, positive_label_weight = 10.0, num_aggregation_labels = 0, aggregation_loss_weight = 1.0, use_answer_as_supervision = None, answer_loss_importance = 1.0, use_normalized_answer_loss = False, huber_loss_delta = None, temperature = 1.0, aggregation_temperature = 1.0, use_gumbel_for_cells = False, use_gumbel_for_aggregation = False, average_approximation_function = 'ratio', cell_selection_preference = None, answer_loss_cutoff = None, max_num_rows = 64, max_num_columns = 32, average_logits_per_cell = False, select_one_column = True, allow_empty_column_selection = False, init_cell_selection_weights_to_zero = False, reset_position_index_per_cell = True, disable_per_token_loss = False, aggregation_labels = None, no_aggregation_label_index = None, **kwargs)
@@ -504,7 +529,7 @@ implementation. Original implementation available at https://github.com/google-r
 ```
 
 
-## TapasTokenizer
+## [TapasTokenizer](#tapastokenizer)
 
 <a id='transformers.TapasTokenizer'></a>
 > **class transformers.TapasTokenizer**(vocab_file, do_lower_case = True, do_basic_tokenize = True, never_split = None, unk_token = '[UNK]', sep_token = '[SEP]', pad_token = '[PAD]', cls_token = '[CLS]', mask_token = '[MASK]', empty_token = '[EMPTY]', tokenize_chinese_chars = True, strip_accents = None, cell_trim_length: int = -1, max_column_id: int = None, max_row_id: int = None, strip_column_names: bool = False, update_answer_coordinates: bool = False, min_question_length = None, max_question_length = None, model_max_length: int = 512, additional_special_tokens: typing.Optional[typing.List[str]] = None, **kwargs)
@@ -699,7 +724,7 @@ The original implementation, on which this function is based, can be found [here
 <a id='transformers.TapasTokenizer.save_vocabulary'></a>
 > **save\_vocabulary**(self, save_directory: str, filename_prefix: typing.Optional[str] = None)
 
-## TapasModel
+## [TapasModel](#tapasmodel)
 
 <a id='transformers.TapasModel'></a>
 > **class transformers.TapasModel**(config, add_pooling_layer = True)
@@ -834,7 +859,7 @@ various elements depending on the configuration ([TapasConfig](/docs/transformer
 [BaseModelOutputWithPooling](/docs/transformers/master/en/main_classes/output.html#transformers.modeling_outputs.BaseModelOutputWithPooling) or `tuple(torch.FloatTensor)`
 
 
-## TapasForMaskedLM
+## [TapasForMaskedLM](#tapasformaskedlm)
 
 <a id='transformers.TapasForMaskedLM'></a>
 > **class transformers.TapasForMaskedLM**(config)
@@ -961,7 +986,7 @@ various elements depending on the configuration ([TapasConfig](/docs/transformer
 [MaskedLMOutput](/docs/transformers/master/en/main_classes/output.html#transformers.modeling_outputs.MaskedLMOutput) or `tuple(torch.FloatTensor)`
 
 
-## TapasForSequenceClassification
+## [TapasForSequenceClassification](#tapasforsequenceclassification)
 
 <a id='transformers.TapasForSequenceClassification'></a>
 > **class transformers.TapasForSequenceClassification**(config)
@@ -1095,7 +1120,7 @@ various elements depending on the configuration ([TapasConfig](/docs/transformer
 [SequenceClassifierOutput](/docs/transformers/master/en/main_classes/output.html#transformers.modeling_outputs.SequenceClassifierOutput) or `tuple(torch.FloatTensor)`
 
 
-## TapasForQuestionAnswering
+## [TapasForQuestionAnswering](#tapasforquestionanswering)
 
 <a id='transformers.TapasForQuestionAnswering'></a>
 > **class transformers.TapasForQuestionAnswering**(config: TapasConfig)

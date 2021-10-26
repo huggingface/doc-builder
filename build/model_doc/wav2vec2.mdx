@@ -1,3 +1,38 @@
+---
+local: wavvec
+sections:
+- local: overview
+  title: Overview
+- local: wavvecconfig
+  title: Wav2Vec2Config
+- local: wavvecctctokenizer
+  title: Wav2Vec2CTCTokenizer
+- local: wavvecfeatureextractor
+  title: Wav2Vec2FeatureExtractor
+- local: wavvecprocessor
+  title: Wav2Vec2Processor
+- local: wavvec-specific-outputs
+  title: Wav2Vec2 specific outputs
+- local: wavvecmodel
+  title: Wav2Vec2Model
+- local: wavvecforctc
+  title: Wav2Vec2ForCTC
+- local: wavvecforsequenceclassification
+  title: Wav2Vec2ForSequenceClassification
+- local: wavvecforpretraining
+  title: Wav2Vec2ForPreTraining
+- local: tfwavvecmodel
+  title: TFWav2Vec2Model
+- local: tfwavvecforctc
+  title: TFWav2Vec2ForCTC
+- local: flaxwavvecmodel
+  title: FlaxWav2Vec2Model
+- local: flaxwavvecforctc
+  title: FlaxWav2Vec2ForCTC
+- local: flaxwavvecforpretraining
+  title: FlaxWav2Vec2ForPreTraining
+title: Wav2Vec2
+---
 <script>
 import Tip from "../../Tip.svelte";
 import Youtube from "../../Youtube.svelte";	
@@ -16,9 +51,9 @@ an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express o
 specific language governing permissions and limitations under the License.
 -->
 
-# Wav2Vec2
+# [Wav2Vec2](#wavvec)
 
-## Overview
+## [Overview](#overview)
 
 The Wav2Vec2 model was proposed in [wav2vec 2.0: A Framework for Self-Supervised Learning of Speech Representations](https://arxiv.org/abs/2006.11477) by Alexei Baevski, Henry Zhou, Abdelrahman Mohamed, Michael Auli.
 
@@ -42,10 +77,10 @@ Tips:
 This model was contributed by [patrickvonplaten](https://huggingface.co/patrickvonplaten).
 
 
-## Wav2Vec2Config
+## [Wav2Vec2Config](#wavvecconfig)
 
 <a id='transformers.Wav2Vec2Config'></a>
-> **class transformers.Wav2Vec2Config**(vocab_size = 32, hidden_size = 768, num_hidden_layers = 12, num_attention_heads = 12, intermediate_size = 3072, hidden_act = 'gelu', hidden_dropout = 0.1, activation_dropout = 0.1, attention_dropout = 0.1, feat_proj_dropout = 0.0, feat_quantizer_dropout = 0.0, final_dropout = 0.1, layerdrop = 0.1, initializer_range = 0.02, layer_norm_eps = 1e-05, feat_extract_norm = 'group', feat_extract_activation = 'gelu', conv_dim = (512, 512, 512, 512, 512, 512, 512), conv_stride = (5, 2, 2, 2, 2, 2, 2), conv_kernel = (10, 3, 3, 3, 3, 2, 2), conv_bias = False, num_conv_pos_embeddings = 128, num_conv_pos_embedding_groups = 16, do_stable_layer_norm = False, apply_spec_augment = True, mask_time_prob = 0.05, mask_time_length = 10, mask_feature_prob = 0.0, mask_feature_length = 10, num_codevectors_per_group = 320, num_codevector_groups = 2, contrastive_logits_temperature = 0.1, num_negatives = 100, codevector_dim = 256, proj_codevector_dim = 256, diversity_loss_weight = 0.1, ctc_loss_reduction = 'sum', ctc_zero_infinity = False, use_weighted_layer_sum = False, classifier_proj_size = 256, pad_token_id = 0, bos_token_id = 1, eos_token_id = 2, **kwargs)
+> **class transformers.Wav2Vec2Config**(vocab_size = 32, hidden_size = 768, num_hidden_layers = 12, num_attention_heads = 12, intermediate_size = 3072, hidden_act = 'gelu', hidden_dropout = 0.1, activation_dropout = 0.1, attention_dropout = 0.1, feat_proj_dropout = 0.1, feat_quantizer_dropout = 0.0, final_dropout = 0.1, layerdrop = 0.1, initializer_range = 0.02, layer_norm_eps = 1e-05, feat_extract_norm = 'group', feat_extract_activation = 'gelu', conv_dim = (512, 512, 512, 512, 512, 512, 512), conv_stride = (5, 2, 2, 2, 2, 2, 2), conv_kernel = (10, 3, 3, 3, 3, 2, 2), conv_bias = False, num_conv_pos_embeddings = 128, num_conv_pos_embedding_groups = 16, do_stable_layer_norm = False, apply_spec_augment = True, mask_time_prob = 0.05, mask_time_length = 10, mask_feature_prob = 0.0, mask_feature_length = 10, num_codevectors_per_group = 320, num_codevector_groups = 2, contrastive_logits_temperature = 0.1, num_negatives = 100, codevector_dim = 256, proj_codevector_dim = 256, diversity_loss_weight = 0.1, ctc_loss_reduction = 'sum', ctc_zero_infinity = False, use_weighted_layer_sum = False, classifier_proj_size = 256, pad_token_id = 0, bos_token_id = 1, eos_token_id = 2, **kwargs)
 
 
 This is the configuration class to store the configuration of a [Wav2Vec2Model](/docs/transformers/master/en/model_doc/wav2vec2.html#transformers.Wav2Vec2Model). It is used to
@@ -75,12 +110,10 @@ outputs. Read the documentation from [PretrainedConfig](/docs/transformers/maste
 - **hidden_act** (`str` or `function`, _optional_, defaults to `"gelu"`) --
   The non-linear activation function (function or string) in the encoder and pooler. If string,
   `"gelu"`, `"relu"`, `"selu"` and `"gelu_new"` are supported.
-- **hidden_dropout** (`float`, _optional_, defaults to 0.1) --
-  The dropout probability for all fully connected layers in the embeddings, encoder, and pooler.
-- **attention_dropout** (`float`, _optional_, defaults to 0.1) --
+- **hidden_dropout_prob** (`float`, _optional_, defaults to 0.1) --
+  The dropout probabilitiy for all fully connected layers in the embeddings, encoder, and pooler.
+- **attention_probs_dropout_prob** (`float`, _optional_, defaults to 0.1) --
   The dropout ratio for the attention probabilities.
-- **final_dropout** (`float`, _optional_, defaults to 0.1) --
-  The dropout probability for the final projection layer of [Wav2Vec2ForCTC](/docs/transformers/master/en/model_doc/wav2vec2.html#transformers.Wav2Vec2ForCTC).
 - **initializer_range** (`float`, _optional_, defaults to 0.02) --
   The standard deviation of the truncated_normal_initializer for initializing all weight matrices.
 - **layer_norm_eps** (`float`, _optional_, defaults to 1e-12) --
@@ -89,8 +122,8 @@ outputs. Read the documentation from [PretrainedConfig](/docs/transformers/maste
   The norm to be applied to 1D convolutional layers in feature extractor. One of `"group"` for group
   normalization of only the first 1D convolutional layer or `"layer"` for layer normalization of all 1D
   convolutional layers.
-- **feat_proj_dropout** (`float`, _optional_, defaults to 0.0) --
-  The dropout probability for output of the feature extractor.
+- **feat_extract_dropout** (`float`, _optional_, defaults to 0.0) --
+  The dropout probabilitiy for all 1D convolutional layers in feature extractor.
 - **feat_extract_activation** (`str, `optional`, defaults to `"gelu"`) --
   The non-linear activation function (function or string) in the 1D convolutional layers of the feature
   extractor. If string, `"gelu"`, `"relu"`, `"selu"` and `"gelu_new"` are supported.
@@ -175,7 +208,7 @@ outputs. Read the documentation from [PretrainedConfig](/docs/transformers/maste
 ```
 
 
-## Wav2Vec2CTCTokenizer
+## [Wav2Vec2CTCTokenizer](#wavvecctctokenizer)
 
 <a id='transformers.Wav2Vec2CTCTokenizer'></a>
 > **class transformers.Wav2Vec2CTCTokenizer**(vocab_file, bos_token = '&amp;lt;s>', eos_token = '&amp;lt;/s>', unk_token = '&amp;lt;unk>', pad_token = '&amp;lt;pad>', word_delimiter_token = '|', do_lower_case = False, **kwargs)
@@ -339,7 +372,7 @@ A [BatchEncoding](/docs/transformers/master/en/main_classes/tokenizer.html#trans
 <a id='transformers.Wav2Vec2CTCTokenizer.save_vocabulary'></a>
 > **save\_vocabulary**(self, save_directory: str, filename_prefix: typing.Optional[str] = None)
 
-## Wav2Vec2FeatureExtractor
+## [Wav2Vec2FeatureExtractor](#wavvecfeatureextractor)
 
 <a id='transformers.Wav2Vec2FeatureExtractor'></a>
 > **class transformers.Wav2Vec2FeatureExtractor**(feature_size = 1, sampling_rate = 16000, padding_value = 0.0, return_attention_mask = False, do_normalize = True, **kwargs)
@@ -436,7 +469,7 @@ passed for batched inference.
 - **padding_value** (`float`, defaults to 0.0) --
 
 
-## Wav2Vec2Processor
+## [Wav2Vec2Processor](#wavvecprocessor)
 
 <a id='transformers.Wav2Vec2Processor'></a>
 > **class transformers.Wav2Vec2Processor**(feature_extractor, tokenizer)
@@ -562,7 +595,7 @@ Temporarily sets the tokenizer for processing the input. Useful for encoding the
 Wav2Vec2.
 
 
-## Wav2Vec2 specific outputs
+## [Wav2Vec2 specific outputs](#wavvec-specific-outputs)
 
 <a id='transformers.models.wav2vec2.modeling_wav2vec2.Wav2Vec2BaseModelOutput'></a>
 > **class transformers.models.wav2vec2.modeling\_wav2vec2.Wav2Vec2BaseModelOutput**(last_hidden_state: FloatTensor = None, extract_features: FloatTensor = None, hidden_states: typing.Optional[typing.Tuple[torch.FloatTensor]] = None, attentions: typing.Optional[typing.Tuple[torch.FloatTensor]] = None)
@@ -589,14 +622,14 @@ Output type of `Wav2Vec2BaseModelOutput`, with potential hidden states and atten
 
 
 <a id='transformers.models.wav2vec2.modeling_wav2vec2.Wav2Vec2ForPreTrainingOutput'></a>
-> **class transformers.models.wav2vec2.modeling\_wav2vec2.Wav2Vec2ForPreTrainingOutput**(loss: typing.Optional[torch.FloatTensor] = None, projected_states: FloatTensor = None, projected_quantized_states: FloatTensor = None, codevector_perplexity: FloatTensor = None, hidden_states: typing.Optional[typing.Tuple[torch.FloatTensor]] = None, attentions: typing.Optional[typing.Tuple[torch.FloatTensor]] = None, contrastive_loss: typing.Optional[torch.FloatTensor] = None, diversity_loss: typing.Optional[torch.FloatTensor] = None)
+> **class transformers.models.wav2vec2.modeling\_wav2vec2.Wav2Vec2ForPreTrainingOutput**(loss: typing.Optional[torch.FloatTensor] = None, projected_states: FloatTensor = None, projected_quantized_states: FloatTensor = None, codevector_perplexity: FloatTensor = None, hidden_states: typing.Optional[typing.Tuple[torch.FloatTensor]] = None, attentions: typing.Optional[typing.Tuple[torch.FloatTensor]] = None)
 
 
 Output type of `Wav2Vec2ForPreTrainingOutput`, with potential hidden states and attentions.
 
 > Parameters
 
-- **loss** (_optional_, returned when `sample_negative_indices` are passed, `torch.FloatTensor` of shape `(1,)`) --
+- **loss** (_optional_, returned when model is in train mode, `torch.FloatTensor` of shape `(1,)`) --
   Total loss as the sum of the contrastive loss (L_m) and the diversity loss (L_d) as stated in the [official
   paper](https://arxiv.org/pdf/2006.11477.pdf) . (classification) loss.
 - **projected_states** (`torch.FloatTensor` of shape `(batch_size, sequence_length, config.proj_codevector_dim)`) --
@@ -615,10 +648,6 @@ Output type of `Wav2Vec2ForPreTrainingOutput`, with potential hidden states and 
 
   Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
   heads.
-- **contrastive_loss** (_optional_, returned when `sample_negative_indices` are passed, `torch.FloatTensor` of shape `(1,)`) --
-  The contrastive loss (L_m) as stated in the [official paper](https://arxiv.org/pdf/2006.11477.pdf) .
-- **diversity_loss** (_optional_, returned when `sample_negative_indices` are passed, `torch.FloatTensor` of shape `(1,)`) --
-  The diversity loss (L_d) as stated in the [official paper](https://arxiv.org/pdf/2006.11477.pdf) .
 
 
 <a id='transformers.models.wav2vec2.modeling_flax_wav2vec2.FlaxWav2Vec2BaseModelOutput'></a>
@@ -684,7 +713,7 @@ attentions.
 
 "Returns a new object replacing the specified fields with new values.
 
-## Wav2Vec2Model
+## [Wav2Vec2Model](#wavvecmodel)
 
 <a id='transformers.Wav2Vec2Model'></a>
 > **class transformers.Wav2Vec2Model**(config: Wav2Vec2Config)
@@ -756,14 +785,15 @@ slightly different results depending on whether `input_values` is padded or not.
 - **return_dict** (`bool`, _optional_) --
   Whether or not to return a [ModelOutput](/docs/transformers/master/en/main_classes/output.html#transformers.file_utils.ModelOutput) instead of a plain tuple.
 
+
+
 > Returns
 
-A [Wav2Vec2BaseModelOutput](/docs/transformers/master/en/model_doc/wav2vec2.html#transformers.models.wav2vec2.modeling_wav2vec2.Wav2Vec2BaseModelOutput) or a tuple of
+A [BaseModelOutput](/docs/transformers/master/en/main_classes/output.html#transformers.modeling_outputs.BaseModelOutput) or a tuple of
 `torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising
 various elements depending on the configuration ([Wav2Vec2Config](/docs/transformers/master/en/model_doc/wav2vec2.html#transformers.Wav2Vec2Config)) and inputs.
 
 - **last_hidden_state** (`torch.FloatTensor` of shape `(batch_size, sequence_length, hidden_size)`) -- Sequence of hidden-states at the output of the last layer of the model.
-- **extract_features** (`torch.FloatTensor` of shape `(batch_size, sequence_length, conv_dim[-1])`) -- Sequence of extracted feature vectors of the last convolutional layer of the model.
 - **hidden_states** (`tuple(torch.FloatTensor)`, _optional_, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer)
   of shape `(batch_size, sequence_length, hidden_size)`.
 
@@ -773,31 +803,35 @@ various elements depending on the configuration ([Wav2Vec2Config](/docs/transfor
   Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
   heads.
 
-> Return type
-
-[Wav2Vec2BaseModelOutput](/docs/transformers/master/en/model_doc/wav2vec2.html#transformers.models.wav2vec2.modeling_wav2vec2.Wav2Vec2BaseModelOutput) or `tuple(torch.FloatTensor)`
 
 > Example:
 
 ```python
 >>> from transformers import Wav2Vec2Processor, Wav2Vec2Model
 >>> from datasets import load_dataset
+>>> import soundfile as sf
 
->>> dataset = load_dataset("hf-internal-testing/librispeech_asr_demo", "clean", split="validation")
->>> sampling_rate = dataset.features["audio"].sampling_rate
+>>> processor = Wav2Vec2Processor.from_pretrained("facebook/wav2vec2-base-960h")
+>>> model = Wav2Vec2Model.from_pretrained("facebook/wav2vec2-base-960h")
 
->>> processor = Wav2Vec2Processor.from_pretrained('facebook/wav2vec2-base-960h')
->>> model = Wav2Vec2Model.from_pretrained('facebook/wav2vec2-base-960h')
+>>> def map_to_array(batch):
+>>>     speech, _ = sf.read(batch["file"])
+>>>     batch["speech"] = speech
+>>>     return batch
 
->>> # audio file is decoded on the fly
->>> inputs = processor(dataset[0]["audio"]["array"], sampling_rate=sampling_rate, return_tensors="pt")
->>> outputs = model(**inputs)
+>>> ds = load_dataset("patrickvonplaten/librispeech_asr_dummy", "clean", split="validation")
+>>> ds = ds.map(map_to_array)
 
->>> last_hidden_states = outputs.last_hidden_state
+>>> input_values = processor(ds["speech"][0], return_tensors="pt").input_values  # Batch size 1
+>>> hidden_states = model(input_values).last_hidden_state
 ```
 
+> Return type
 
-## Wav2Vec2ForCTC
+[BaseModelOutput](/docs/transformers/master/en/main_classes/output.html#transformers.modeling_outputs.BaseModelOutput) or `tuple(torch.FloatTensor)`
+
+
+## [Wav2Vec2ForCTC](#wavvecforctc)
 
 <a id='transformers.Wav2Vec2ForCTC'></a>
 > **class transformers.Wav2Vec2ForCTC**(config)
@@ -873,6 +907,7 @@ slightly different results depending on whether `input_values` is padded or not.
   Labels for connectionist temporal classification. Note that `target_length` has to be smaller or equal to
   the sequence length of the output logits. Indices are selected in `[-100, 0, ..., config.vocab_size - 1]`. All labels set to `-100` are ignored (masked), the loss is only computed for labels in `[0, ..., config.vocab_size - 1]`.
 
+
 > Returns
 
 A [CausalLMOutput](/docs/transformers/master/en/main_classes/output.html#transformers.modeling_outputs.CausalLMOutput) or a tuple of
@@ -890,40 +925,48 @@ various elements depending on the configuration ([Wav2Vec2Config](/docs/transfor
   Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
   heads.
 
-> Return type
-
-[CausalLMOutput](/docs/transformers/master/en/main_classes/output.html#transformers.modeling_outputs.CausalLMOutput) or `tuple(torch.FloatTensor)`
 
 > Example:
 
 ```python
+>>> import torch
 >>> from transformers import Wav2Vec2Processor, Wav2Vec2ForCTC
 >>> from datasets import load_dataset
->>> import torch
+>>> import soundfile as sf
 
->>> dataset = load_dataset("hf-internal-testing/librispeech_asr_demo", "clean", split="validation")
->>> sampling_rate = dataset.features["audio"].sampling_rate
+>>> processor = Wav2Vec2Processor.from_pretrained("facebook/wav2vec2-base-960h")
+>>> model = Wav2Vec2ForCTC.from_pretrained("facebook/wav2vec2-base-960h")
 
->>> processor = Wav2Vec2Processor.from_pretrained('facebook/wav2vec2-base-960h')
->>> model = Wav2Vec2ForCTC.from_pretrained('facebook/wav2vec2-base-960h')
+>>> def map_to_array(batch):
+>>>     speech, _ = sf.read(batch["file"])
+>>>     batch["speech"] = speech
+>>>     return batch
 
->>> # audio file is decoded on the fly
->>> inputs = processor(dataset[0]["audio"]["array"], sampling_rate=sampling_rate, return_tensors="pt")
->>> logits = model(**inputs).logits
+>>> ds = load_dataset("patrickvonplaten/librispeech_asr_dummy", "clean", split="validation")
+>>> ds = ds.map(map_to_array)
+
+>>> input_values = processor(ds["speech"][0], return_tensors="pt").input_values  # Batch size 1
+>>> logits = model(input_values).logits
 >>> predicted_ids = torch.argmax(logits, dim=-1)
 
->>> # transcribe speech
->>> transcription = processor.batch_decode(predicted_ids)
+>>> transcription = processor.decode(predicted_ids[0])
 
 >>> # compute loss
->>> with processor.as_target_processor():
-...     inputs["labels"] = processor(dataset[0]["text"], return_tensors="pt").input_ids
+>>> target_transcription = "A MAN SAID TO THE UNIVERSE SIR I EXIST"
 
->>> loss = model(**inputs).loss
+>>> # wrap processor as target processor to encode labels
+>>> with processor.as_target_processor():
+>>>     labels = processor(target_transcription, return_tensors="pt").input_ids
+
+>>> loss = model(input_values, labels=labels).loss
 ```
 
+> Return type
 
-## Wav2Vec2ForSequenceClassification
+[CausalLMOutput](/docs/transformers/master/en/main_classes/output.html#transformers.modeling_outputs.CausalLMOutput) or `tuple(torch.FloatTensor)`
+
+
+## [Wav2Vec2ForSequenceClassification](#wavvecforsequenceclassification)
 
 <a id='transformers.Wav2Vec2ForSequenceClassification'></a>
 > **class transformers.Wav2Vec2ForSequenceClassification**(config)
@@ -1002,6 +1045,7 @@ slightly different results depending on whether `input_values` is padded or not.
   Labels for computing the sequence classification/regression loss. Indices should be in `[0, ..., config.num_labels - 1]`. If `config.num_labels == 1` a regression loss is computed (Mean-Square loss),
   If `config.num_labels > 1` a classification loss is computed (Cross-Entropy).
 
+
 > Returns
 
 A [SequenceClassifierOutput](/docs/transformers/master/en/main_classes/output.html#transformers.modeling_outputs.SequenceClassifierOutput) or a tuple of
@@ -1019,37 +1063,36 @@ various elements depending on the configuration ([Wav2Vec2Config](/docs/transfor
   Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
   heads.
 
-> Return type
-
-[SequenceClassifierOutput](/docs/transformers/master/en/main_classes/output.html#transformers.modeling_outputs.SequenceClassifierOutput) or `tuple(torch.FloatTensor)`
 
 > Example:
 
 ```python
+>>> import torch
 >>> from transformers import Wav2Vec2FeatureExtractor, Wav2Vec2ForSequenceClassification
 >>> from datasets import load_dataset
->>> import torch
 
->>> dataset = load_dataset("hf-internal-testing/librispeech_asr_demo", "clean", split="validation")
->>> sampling_rate = dataset.features["audio"].sampling_rate
+>>> processor = Wav2Vec2FeatureExtractor.from_pretrained("superb/wav2vec2-base-superb-ks")
+>>> model = Wav2Vec2ForSequenceClassification.from_pretrained("superb/wav2vec2-base-superb-ks")
 
->>> feature_extractor = Wav2Vec2FeatureExtractor.from_pretrained('('superb/wav2vec2-base-superb-ks',)')
->>> model = Wav2Vec2ForSequenceClassification.from_pretrained('('superb/wav2vec2-base-superb-ks',)')
+>>> ds = load_dataset("anton-l/superb_dummy", "ks", split="test")
 
->>> # audio file is decoded on the fly
->>> inputs = feature_extractor(dataset[0]["audio"]["array"], return_tensors="pt")
->>> logits = model(**inputs).logits
+>>> input_values = processor(ds["speech"][4], return_tensors="pt").input_values  # Batch size 1
+>>> logits = model(input_values).logits
 >>> predicted_class_ids = torch.argmax(logits, dim=-1)
->>> predicted_label = model.config.id2label[predicted_class_ids]
 
->>> # compute loss - target_label is e.g. "down"
->>> target_label = model.config.id2label[0]
->>> inputs["labels"] = torch.tensor([model.config.label2id[target_label]])
->>> loss = model(**inputs).loss
+>>> # compute loss
+>>> target_label = "down"
+>>> labels = torch.tensor([model.config.label2id[target_label]])
+
+>>> loss = model(input_values, labels=labels).loss
 ```
 
+> Return type
 
-## Wav2Vec2ForPreTraining
+[SequenceClassifierOutput](/docs/transformers/master/en/main_classes/output.html#transformers.modeling_outputs.SequenceClassifierOutput) or `tuple(torch.FloatTensor)`
+
+
+## [Wav2Vec2ForPreTraining](#wavvecforpretraining)
 
 <a id='transformers.Wav2Vec2ForPreTraining'></a>
 > **class transformers.Wav2Vec2ForPreTraining**(config: Wav2Vec2Config)
@@ -1073,7 +1116,7 @@ behavior.
 
 
 <a id='transformers.Wav2Vec2ForPreTraining.forward'></a>
-> **forward**(self, input_values, attention_mask = None, mask_time_indices = None, sampled_negative_indices = None, output_attentions = None, output_hidden_states = None, return_dict = None)
+> **forward**(self, input_values, attention_mask = None, mask_time_indices = None, output_attentions = None, output_hidden_states = None, return_dict = None)
 
 The [Wav2Vec2ForPreTraining](/docs/transformers/master/en/model_doc/wav2vec2.html#transformers.Wav2Vec2ForPreTraining) forward method, overrides the `__call__` special method.
 
@@ -1124,9 +1167,6 @@ slightly different results depending on whether `input_values` is padded or not.
 - **mask_time_indices** (`torch.BoolTensor` of shape `(batch_size, sequence_length)`, _optional_) --
   Indices to mask extracted features for contrastive loss. When in training mode, model learns to predict
   masked extracted features in _config.proj_codevector_dim_ space.
-- **sampled_negative_indices** (`torch.BoolTensor` of shape `(batch_size, sequence_length, num_negatives)`, _optional_) --
-  Indices indicating which quantized target vectors are used as negative sampled vectors in contrastive loss.
-  Required input for pre-training.
 
 
 > Returns
@@ -1135,7 +1175,7 @@ A [Wav2Vec2ForPreTrainingOutput](/docs/transformers/master/en/model_doc/wav2vec2
 `torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising
 various elements depending on the configuration ([Wav2Vec2Config](/docs/transformers/master/en/model_doc/wav2vec2.html#transformers.Wav2Vec2Config)) and inputs.
 
-- **loss** (_optional_, returned when `sample_negative_indices` are passed, `torch.FloatTensor` of shape `(1,)`) -- Total loss as the sum of the contrastive loss (L_m) and the diversity loss (L_d) as stated in the [official
+- **loss** (_optional_, returned when model is in train mode, `torch.FloatTensor` of shape `(1,)`) -- Total loss as the sum of the contrastive loss (L_m) and the diversity loss (L_d) as stated in the [official
   paper](https://arxiv.org/pdf/2006.11477.pdf) . (classification) loss.
 - **projected_states** (`torch.FloatTensor` of shape `(batch_size, sequence_length, config.proj_codevector_dim)`) -- Hidden-states of the model projected to _config.proj_codevector_dim_ that can be used to predict the masked
   projected quantized states.
@@ -1149,8 +1189,6 @@ various elements depending on the configuration ([Wav2Vec2Config](/docs/transfor
 
   Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
   heads.
-- **contrastive_loss** (_optional_, returned when `sample_negative_indices` are passed, `torch.FloatTensor` of shape `(1,)`) -- The contrastive loss (L_m) as stated in the [official paper](https://arxiv.org/pdf/2006.11477.pdf) .
-- **diversity_loss** (_optional_, returned when `sample_negative_indices` are passed, `torch.FloatTensor` of shape `(1,)`) -- The diversity loss (L_d) as stated in the [official paper](https://arxiv.org/pdf/2006.11477.pdf) .
 
 
 > Example:
@@ -1172,7 +1210,7 @@ various elements depending on the configuration ([Wav2Vec2Config](/docs/transfor
 ...     return batch
 
 
->>> ds = load_dataset("hf-internal-testing/librispeech_asr_dummy", "clean", split="validation")
+>>> ds = load_dataset("patrickvonplaten/librispeech_asr_dummy", "clean", split="validation")
 >>> ds = ds.map(map_to_array)
 
 >>> input_values = feature_extractor(ds["speech"][0], return_tensors="pt").input_values  # Batch size 1
@@ -1203,7 +1241,7 @@ various elements depending on the configuration ([Wav2Vec2Config](/docs/transfor
 [Wav2Vec2ForPreTrainingOutput](/docs/transformers/master/en/model_doc/wav2vec2.html#transformers.models.wav2vec2.modeling_wav2vec2.Wav2Vec2ForPreTrainingOutput) or `tuple(torch.FloatTensor)`
 
 
-## TFWav2Vec2Model
+## [TFWav2Vec2Model](#tfwavvecmodel)
 
 <a id='transformers.TFWav2Vec2Model'></a>
 > **class transformers.TFWav2Vec2Model**(*args, **kwargs)
@@ -1347,7 +1385,7 @@ elements depending on the configuration ([Wav2Vec2Config](/docs/transformers/mas
 >>>     batch["speech"] = speech
 >>>     return batch
 
->>> ds = load_dataset("hf-internal-testing/librispeech_asr_dummy", "clean", split="validation")
+>>> ds = load_dataset("patrickvonplaten/librispeech_asr_dummy", "clean", split="validation")
 >>> ds = ds.map(map_to_array)
 
 >>> input_values = processor(ds["speech"][0], return_tensors="tf").input_values  # Batch size 1
@@ -1359,7 +1397,7 @@ elements depending on the configuration ([Wav2Vec2Config](/docs/transformers/mas
 [TFBaseModelOutput](/docs/transformers/master/en/main_classes/output.html#transformers.modeling_tf_outputs.TFBaseModelOutput) or `tuple(tf.Tensor)`
 
 
-## TFWav2Vec2ForCTC
+## [TFWav2Vec2ForCTC](#tfwavvecforctc)
 
 <a id='transformers.TFWav2Vec2ForCTC'></a>
 > **class transformers.TFWav2Vec2ForCTC**(*args, **kwargs)
@@ -1508,7 +1546,7 @@ elements depending on the configuration ([Wav2Vec2Config](/docs/transformers/mas
 >>>     batch["speech"] = speech
 >>>     return batch
 
->>> ds = load_dataset("hf-internal-testing/librispeech_asr_dummy", "clean", split="validation")
+>>> ds = load_dataset("patrickvonplaten/librispeech_asr_dummy", "clean", split="validation")
 >>> ds = ds.map(map_to_array)
 
 >>> input_values = processor(ds["speech"][0], return_tensors="tf").input_values # Batch size 1
@@ -1532,7 +1570,7 @@ elements depending on the configuration ([Wav2Vec2Config](/docs/transformers/mas
 [TFCausalLMOutput](/docs/transformers/master/en/main_classes/output.html#transformers.modeling_tf_outputs.TFCausalLMOutput) or `tuple(tf.Tensor)`
 
 
-## FlaxWav2Vec2Model
+## [FlaxWav2Vec2Model](#flaxwavvecmodel)
 
 <a id='transformers.FlaxWav2Vec2Model'></a>
 > **class transformers.FlaxWav2Vec2Model**(config: Wav2Vec2Config, input_shape: typing.Tuple = (1, 1024), seed: int = 0, dtype: dtype = &amp;lt;class 'jax._src.numpy.lax_numpy.float32'>, **kwargs)
@@ -1646,7 +1684,7 @@ various elements depending on the configuration (`Wav2Vec2Config'>`) and inputs.
 >>>     batch["speech"] = speech
 >>>     return batch
 
->>> ds = load_dataset("hf-internal-testing/librispeech_asr_dummy", "clean", split="validation")
+>>> ds = load_dataset("patrickvonplaten/librispeech_asr_dummy", "clean", split="validation")
 >>> ds = ds.map(map_to_array)
 
 >>> input_values = processor(ds["speech"][0], sampling_rate=16_000, return_tensors="np").input_values  # Batch size 1
@@ -1654,7 +1692,7 @@ various elements depending on the configuration (`Wav2Vec2Config'>`) and inputs.
 ```
 
 
-## FlaxWav2Vec2ForCTC
+## [FlaxWav2Vec2ForCTC](#flaxwavvecforctc)
 
 <a id='transformers.FlaxWav2Vec2ForCTC'></a>
 > **class transformers.FlaxWav2Vec2ForCTC**(config: Wav2Vec2Config, input_shape: typing.Tuple = (1, 1024), seed: int = 0, dtype: dtype = &amp;lt;class 'jax._src.numpy.lax_numpy.float32'>, **kwargs)
@@ -1767,7 +1805,7 @@ various elements depending on the configuration (`Wav2Vec2Config'>`) and inputs.
 >>>     batch["speech"] = speech
 >>>     return batch
 
->>> ds = load_dataset("hf-internal-testing/librispeech_asr_dummy", "clean", split="validation")
+>>> ds = load_dataset("patrickvonplaten/librispeech_asr_dummy", "clean", split="validation")
 >>> ds = ds.map(map_to_array)
 
 >>> input_values = processor(ds["speech"][0], sampling_rate=16_000, return_tensors="np").input_values  # Batch size 1
@@ -1779,7 +1817,7 @@ various elements depending on the configuration (`Wav2Vec2Config'>`) and inputs.
 ```
 
 
-## FlaxWav2Vec2ForPreTraining
+## [FlaxWav2Vec2ForPreTraining](#flaxwavvecforpretraining)
 
 <a id='transformers.FlaxWav2Vec2ForPreTraining'></a>
 > **class transformers.FlaxWav2Vec2ForPreTraining**(config: Wav2Vec2Config, input_shape: typing.Tuple = (1, 1024), seed: int = 0, dtype: dtype = &amp;lt;class 'jax._src.numpy.lax_numpy.float32'>, **kwargs)
@@ -1902,7 +1940,7 @@ various elements depending on the configuration (`Wav2Vec2Config'>`) and inputs.
 ...     return batch
 
 
->>> ds = load_dataset("hf-internal-testing/librispeech_asr_dummy", "clean", split="validation")
+>>> ds = load_dataset("patrickvonplaten/librispeech_asr_dummy", "clean", split="validation")
 >>> ds = ds.map(map_to_array)
 
 >>> input_values = feature_extractor(ds["speech"][0], return_tensors="np").input_values  # Batch size 1

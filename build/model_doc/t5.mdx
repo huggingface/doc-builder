@@ -1,3 +1,38 @@
+---
+local: t
+sections:
+- local: overview
+  title: Overview
+- local: training
+  title: Training
+- local: inference
+  title: Inference
+- local: example-scripts
+  title: Example scripts
+- local: tconfig
+  title: T5Config
+- local: ttokenizer
+  title: T5Tokenizer
+- local: ttokenizerfast
+  title: T5TokenizerFast
+- local: tmodel
+  title: T5Model
+- local: tforconditionalgeneration
+  title: T5ForConditionalGeneration
+- local: tencodermodel
+  title: T5EncoderModel
+- local: tftmodel
+  title: TFT5Model
+- local: tftforconditionalgeneration
+  title: TFT5ForConditionalGeneration
+- local: tftencodermodel
+  title: TFT5EncoderModel
+- local: flaxtmodel
+  title: FlaxT5Model
+- local: flaxtforconditionalgeneration
+  title: FlaxT5ForConditionalGeneration
+title: T5
+---
 <script>
 import Tip from "../../Tip.svelte";
 import Youtube from "../../Youtube.svelte";	
@@ -16,9 +51,9 @@ an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express o
 specific language governing permissions and limitations under the License.
 -->
 
-# T5
+# [T5](#t)
 
-## Overview
+## [Overview](#overview)
 
 The T5 model was presented in [Exploring the Limits of Transfer Learning with a Unified Text-to-Text Transformer](https://arxiv.org/pdf/1910.10683.pdf) by Colin Raffel, Noam Shazeer, Adam Roberts, Katherine Lee, Sharan Narang,
 Michael Matena, Yanqi Zhou, Wei Li, Peter J. Liu.
@@ -75,7 +110,7 @@ This model was contributed by [thomwolf](https://huggingface.co/thomwolf). The o
 
 <a id='training'></a>
 
-## Training
+## [Training](#training)
 
 T5 is an encoder-decoder model and converts all NLP problems into a text-to-text format. It is trained using teacher
 forcing. This means that for training, we always need an input sequence and a corresponding target sequence. The input
@@ -93,7 +128,7 @@ language modeling head on top of the decoder.
   the output sequence is formed as a concatenation of the same sentinel tokens and the *real* masked tokens. Each
   sentinel token represents a unique mask token for this sentence and should start with `&amp;lt;extra_id_0>`,
   `&amp;lt;extra_id_1>`, ... up to `&amp;lt;extra_id_99>`. As a default, 100 sentinel tokens are available in
-  [T5Tokenizer](/docs/transformers/master/en/model_doc/t5.html#transformers.T5Tokenizer).
+  [T5Tokenizer](/docs/transformers/master/en/model_doc/mt5.html#transformers.T5Tokenizer).
 
   For instance, the sentence "The cute dog walks in the park" with the masks put on "cute dog" and "the" should be
   processed as follows:
@@ -217,7 +252,7 @@ Additional training tips:
 
 <a id='inference'></a>
 
-## Inference
+## [Inference](#inference)
 
 At inference time, it is recommended to use [generate()](/docs/transformers/master/en/main_classes/model.html#transformers.generation_utils.GenerationMixin.generate). This
 method takes care of encoding the input and feeding the encoded hidden states via cross-attention layers to the decoder
@@ -270,7 +305,7 @@ print(tokenizer.batch_decode(output_sequences, skip_special_tokens=True))
 
 <a id='scripts'></a>
 
-## Example scripts
+## [Example scripts](#example-scripts)
 
 T5 is supported by several example scripts, both for pre-training and fine-tuning.
 
@@ -283,7 +318,7 @@ T5 is supported by several example scripts, both for pre-training and fine-tunin
   ([PyTorch](https://github.com/huggingface/transformers/tree/master/examples/pytorch/translation) and [Tensorflow](https://github.com/huggingface/transformers/tree/master/examples/tensorflow/translation)). These scripts allow
   you to easily fine-tune T5 on custom data for summarization/translation.
 
-## T5Config
+## [T5Config](#tconfig)
 
 <a id='transformers.T5Config'></a>
 > **class transformers.T5Config**(vocab_size = 32128, d_model = 512, d_kv = 64, d_ff = 2048, num_layers = 6, num_decoder_layers = None, num_heads = 8, relative_attention_num_buckets = 32, dropout_rate = 0.1, layer_norm_epsilon = 1e-06, initializer_factor = 1.0, feed_forward_proj = 'relu', is_encoder_decoder = True, use_cache = True, pad_token_id = 0, eos_token_id = 1, **kwargs)
@@ -330,7 +365,7 @@ use_cache (`bool`, _optional_, defaults to `True`):
 Whether or not the model should return the last key/values attentions (not used by all models).
 
 
-## T5Tokenizer
+## [T5Tokenizer](#ttokenizer)
 
 <a id='transformers.T5Tokenizer'></a>
 > **class transformers.T5Tokenizer**(vocab_file, eos_token = '&amp;lt;/s>', unk_token = '&amp;lt;unk>', pad_token = '&amp;lt;pad>', extra_ids = 100, additional_special_tokens = None, sp_model_kwargs: typing.Union[typing.Dict[str, typing.Any], NoneType] = None, **kwargs)
@@ -464,7 +499,7 @@ List of zeros.
 <a id='transformers.T5Tokenizer.save_vocabulary'></a>
 > **save\_vocabulary**(self, save_directory: str, filename_prefix: typing.Optional[str] = None)
 
-## T5TokenizerFast
+## [T5TokenizerFast](#ttokenizerfast)
 
 <a id='transformers.T5TokenizerFast'></a>
 > **class transformers.T5TokenizerFast**(vocab_file = None, tokenizer_file = None, eos_token = '&amp;lt;/s>', unk_token = '&amp;lt;unk>', pad_token = '&amp;lt;pad>', extra_ids = 100, additional_special_tokens = None, **kwargs)
@@ -608,7 +643,7 @@ sp_model (`SentencePieceProcessor`):
 The _SentencePiece_ processor that is used for every conversion (string, tokens and IDs).
 
 
-## T5Model
+## [T5Model](#tmodel)
 
 <a id='transformers.T5Model'></a>
 > **class transformers.T5Model**(config: T5Config)
@@ -654,7 +689,7 @@ processing steps while the latter silently ignores them.
   Indices of input sequence tokens in the vocabulary. T5 is a model with relative position embeddings so you
   should be able to pad the inputs on both the right and the left.
 
-  Indices can be obtained using [T5Tokenizer](/docs/transformers/master/en/model_doc/t5.html#transformers.T5Tokenizer). See
+  Indices can be obtained using [T5Tokenizer](/docs/transformers/master/en/model_doc/mt5.html#transformers.T5Tokenizer). See
   [transformers.PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
   detail.
 
@@ -671,7 +706,7 @@ processing steps while the latter silently ignores them.
 - **decoder_input_ids** (`torch.LongTensor` of shape `(batch_size, target_sequence_length)`, _optional_) --
   Indices of decoder input sequence tokens in the vocabulary.
 
-  Indices can be obtained using [T5Tokenizer](/docs/transformers/master/en/model_doc/t5.html#transformers.T5Tokenizer). See
+  Indices can be obtained using [T5Tokenizer](/docs/transformers/master/en/model_doc/mt5.html#transformers.T5Tokenizer). See
   [transformers.PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
   details.
 
@@ -859,7 +894,7 @@ model.deparallelize() # Put the model back on cpu and cleans memory by calling t
 ```
 
 
-## T5ForConditionalGeneration
+## [T5ForConditionalGeneration](#tforconditionalgeneration)
 
 <a id='transformers.T5ForConditionalGeneration'></a>
 > **class transformers.T5ForConditionalGeneration**(config)
@@ -905,7 +940,7 @@ processing steps while the latter silently ignores them.
   Indices of input sequence tokens in the vocabulary. T5 is a model with relative position embeddings so you
   should be able to pad the inputs on both the right and the left.
 
-  Indices can be obtained using [T5Tokenizer](/docs/transformers/master/en/model_doc/t5.html#transformers.T5Tokenizer). See
+  Indices can be obtained using [T5Tokenizer](/docs/transformers/master/en/model_doc/mt5.html#transformers.T5Tokenizer). See
   [transformers.PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
   detail.
 
@@ -922,7 +957,7 @@ processing steps while the latter silently ignores them.
 - **decoder_input_ids** (`torch.LongTensor` of shape `(batch_size, target_sequence_length)`, _optional_) --
   Indices of decoder input sequence tokens in the vocabulary.
 
-  Indices can be obtained using [T5Tokenizer](/docs/transformers/master/en/model_doc/t5.html#transformers.T5Tokenizer). See
+  Indices can be obtained using [T5Tokenizer](/docs/transformers/master/en/model_doc/mt5.html#transformers.T5Tokenizer). See
   [transformers.PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
   details.
 
@@ -1119,7 +1154,7 @@ model.deparallelize() # Put the model back on cpu and cleans memory by calling t
 ```
 
 
-## T5EncoderModel
+## [T5EncoderModel](#tencodermodel)
 
 <a id='transformers.T5EncoderModel'></a>
 > **class transformers.T5EncoderModel**(config: T5Config)
@@ -1165,7 +1200,7 @@ processing steps while the latter silently ignores them.
   Indices of input sequence tokens in the vocabulary. T5 is a model with relative position embeddings so you
   should be able to pad the inputs on both the right and the left.
 
-  Indices can be obtained using [T5Tokenizer](/docs/transformers/master/en/model_doc/t5.html#transformers.T5Tokenizer). See
+  Indices can be obtained using [T5Tokenizer](/docs/transformers/master/en/model_doc/mt5.html#transformers.T5Tokenizer). See
   [transformers.PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
   detail.
 
@@ -1288,7 +1323,7 @@ model.deparallelize() # Put the model back on cpu and cleans memory by calling t
 ```
 
 
-## TFT5Model
+## [TFT5Model](#tftmodel)
 
 <a id='transformers.TFT5Model'></a>
 > **class transformers.TFT5Model**(*args, **kwargs)
@@ -1489,7 +1524,7 @@ elements depending on the configuration ([T5Config](/docs/transformers/master/en
 [TFSeq2SeqModelOutput](/docs/transformers/master/en/main_classes/output.html#transformers.modeling_tf_outputs.TFSeq2SeqModelOutput) or `tuple(tf.Tensor)`
 
 
-## TFT5ForConditionalGeneration
+## [TFT5ForConditionalGeneration](#tftforconditionalgeneration)
 
 <a id='transformers.TFT5ForConditionalGeneration'></a>
 > **class transformers.TFT5ForConditionalGeneration**(*args, **kwargs)
@@ -1698,7 +1733,7 @@ elements depending on the configuration ([T5Config](/docs/transformers/master/en
 [TFSeq2SeqLMOutput](/docs/transformers/master/en/main_classes/output.html#transformers.modeling_tf_outputs.TFSeq2SeqLMOutput) or `tuple(tf.Tensor)`
 
 
-## TFT5EncoderModel
+## [TFT5EncoderModel](#tftencodermodel)
 
 <a id='transformers.TFT5EncoderModel'></a>
 > **class transformers.TFT5EncoderModel**(*args, **kwargs)
@@ -1765,7 +1800,7 @@ processing steps while the latter silently ignores them.
   Indices of input sequence tokens in the vocabulary. T5 is a model with relative position embeddings so you
   should be able to pad the inputs on the right or the left.
 
-  Indices can be obtained using [T5Tokenizer](/docs/transformers/master/en/model_doc/t5.html#transformers.T5Tokenizer). See
+  Indices can be obtained using [T5Tokenizer](/docs/transformers/master/en/model_doc/mt5.html#transformers.T5Tokenizer). See
   [transformers.PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) and [transformers.PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) for
   details.
 
@@ -1834,7 +1869,7 @@ elements depending on the configuration ([T5Config](/docs/transformers/master/en
 [TFBaseModelOutput](/docs/transformers/master/en/main_classes/output.html#transformers.modeling_tf_outputs.TFBaseModelOutput) or `tuple(tf.Tensor)`
 
 
-## FlaxT5Model
+## [FlaxT5Model](#flaxtmodel)
 
 <a id='transformers.FlaxT5Model'></a>
 > **class transformers.FlaxT5Model**(config: T5Config, input_shape: typing.Tuple[int] = (1, 1), seed: int = 0, dtype: dtype = &amp;lt;class 'jax._src.numpy.lax_numpy.float32'>, **kwargs)
@@ -1858,7 +1893,7 @@ processing steps while the latter silently ignores them.
   Indices of input sequence tokens in the vocabulary. T5 is a model with relative position embeddings so you
   should be able to pad the inputs on both the right and the left.
 
-  Indices can be obtained using [T5Tokenizer](/docs/transformers/master/en/model_doc/t5.html#transformers.T5Tokenizer). See
+  Indices can be obtained using [T5Tokenizer](/docs/transformers/master/en/model_doc/mt5.html#transformers.T5Tokenizer). See
   [transformers.PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
   detail.
 
@@ -1875,7 +1910,7 @@ processing steps while the latter silently ignores them.
 - **decoder_input_ids** (`jnp.ndarray` of shape `(batch_size, target_sequence_length)`, _optional_) --
   Indices of decoder input sequence tokens in the vocabulary.
 
-  Indices can be obtained using [T5Tokenizer](/docs/transformers/master/en/model_doc/t5.html#transformers.T5Tokenizer). See
+  Indices can be obtained using [T5Tokenizer](/docs/transformers/master/en/model_doc/mt5.html#transformers.T5Tokenizer). See
   [transformers.PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
   details.
 
@@ -1979,7 +2014,7 @@ various elements depending on the configuration ([T5Config](/docs/transformers/m
   Indices of input sequence tokens in the vocabulary. T5 is a model with relative position embeddings so you
   should be able to pad the inputs on both the right and the left.
 
-  Indices can be obtained using [T5Tokenizer](/docs/transformers/master/en/model_doc/t5.html#transformers.T5Tokenizer). See
+  Indices can be obtained using [T5Tokenizer](/docs/transformers/master/en/model_doc/mt5.html#transformers.T5Tokenizer). See
   [transformers.PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
   detail.
 
@@ -2045,7 +2080,7 @@ various elements depending on the configuration (`T5Config'>`) and inputs.
 - **decoder_input_ids** (`jnp.ndarray` of shape `(batch_size, target_sequence_length)`) --
   Indices of decoder input sequence tokens in the vocabulary.
 
-  Indices can be obtained using [T5Tokenizer](/docs/transformers/master/en/model_doc/t5.html#transformers.T5Tokenizer). See
+  Indices can be obtained using [T5Tokenizer](/docs/transformers/master/en/model_doc/mt5.html#transformers.T5Tokenizer). See
   [transformers.PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
   details.
 
@@ -2137,7 +2172,7 @@ various elements depending on the configuration (`T5Config'>`) and inputs.
 [FlaxBaseModelOutputWithPastAndCrossAttentions](/docs/transformers/master/en/main_classes/output.html#transformers.modeling_flax_outputs.FlaxBaseModelOutputWithPastAndCrossAttentions) or `tuple(torch.FloatTensor)`
 
 
-## FlaxT5ForConditionalGeneration
+## [FlaxT5ForConditionalGeneration](#flaxtforconditionalgeneration)
 
 <a id='transformers.FlaxT5ForConditionalGeneration'></a>
 > **class transformers.FlaxT5ForConditionalGeneration**(config: T5Config, input_shape: typing.Tuple[int] = (1, 1), seed: int = 0, dtype: dtype = &amp;lt;class 'jax._src.numpy.lax_numpy.float32'>, **kwargs)
@@ -2161,7 +2196,7 @@ processing steps while the latter silently ignores them.
   Indices of input sequence tokens in the vocabulary. T5 is a model with relative position embeddings so you
   should be able to pad the inputs on both the right and the left.
 
-  Indices can be obtained using [T5Tokenizer](/docs/transformers/master/en/model_doc/t5.html#transformers.T5Tokenizer). See
+  Indices can be obtained using [T5Tokenizer](/docs/transformers/master/en/model_doc/mt5.html#transformers.T5Tokenizer). See
   [transformers.PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
   detail.
 
@@ -2178,7 +2213,7 @@ processing steps while the latter silently ignores them.
 - **decoder_input_ids** (`jnp.ndarray` of shape `(batch_size, target_sequence_length)`, _optional_) --
   Indices of decoder input sequence tokens in the vocabulary.
 
-  Indices can be obtained using [T5Tokenizer](/docs/transformers/master/en/model_doc/t5.html#transformers.T5Tokenizer). See
+  Indices can be obtained using [T5Tokenizer](/docs/transformers/master/en/model_doc/mt5.html#transformers.T5Tokenizer). See
   [transformers.PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
   details.
 
@@ -2282,7 +2317,7 @@ various elements depending on the configuration ([T5Config](/docs/transformers/m
   Indices of input sequence tokens in the vocabulary. T5 is a model with relative position embeddings so you
   should be able to pad the inputs on both the right and the left.
 
-  Indices can be obtained using [T5Tokenizer](/docs/transformers/master/en/model_doc/t5.html#transformers.T5Tokenizer). See
+  Indices can be obtained using [T5Tokenizer](/docs/transformers/master/en/model_doc/mt5.html#transformers.T5Tokenizer). See
   [transformers.PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
   detail.
 
@@ -2348,7 +2383,7 @@ various elements depending on the configuration (`T5Config'>`) and inputs.
 - **decoder_input_ids** (`jnp.ndarray` of shape `(batch_size, target_sequence_length)`) --
   Indices of decoder input sequence tokens in the vocabulary.
 
-  Indices can be obtained using [T5Tokenizer](/docs/transformers/master/en/model_doc/t5.html#transformers.T5Tokenizer). See
+  Indices can be obtained using [T5Tokenizer](/docs/transformers/master/en/model_doc/mt5.html#transformers.T5Tokenizer). See
   [transformers.PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.__call__) for
   details.
 

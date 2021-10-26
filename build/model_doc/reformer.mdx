@@ -1,3 +1,34 @@
+---
+local: reformer
+sections:
+- local: overview
+  title: Overview
+- local: axial-positional-encodings
+  title: Axial Positional Encodings
+- local: lsh-self-attention
+  title: LSH Self Attention
+- local: local-self-attention
+  title: Local Self Attention
+- local: training
+  title: Training
+- local: reformerconfig
+  title: ReformerConfig
+- local: reformertokenizer
+  title: ReformerTokenizer
+- local: reformertokenizerfast
+  title: ReformerTokenizerFast
+- local: reformermodel
+  title: ReformerModel
+- local: reformermodelwithlmhead
+  title: ReformerModelWithLMHead
+- local: reformerformaskedlm
+  title: ReformerForMaskedLM
+- local: reformerforsequenceclassification
+  title: ReformerForSequenceClassification
+- local: reformerforquestionanswering
+  title: ReformerForQuestionAnswering
+title: Reformer
+---
 <script>
 import Tip from "../../Tip.svelte";
 import Youtube from "../../Youtube.svelte";	
@@ -16,11 +47,11 @@ an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express o
 specific language governing permissions and limitations under the License.
 -->
 
-# Reformer
+# [Reformer](#reformer)
 
 **DISCLAIMER:** This model is still a work in progress, if you see something strange, file a [Github Issue](https://github.com/huggingface/transformers/issues/new?assignees=&labels=&template=bug-report.md&title).
 
-## Overview
+## [Overview](#overview)
 
 The Reformer model was proposed in the paper [Reformer: The Efficient Transformer](https://arxiv.org/abs/2001.04451.pdf) by Nikita Kitaev, Łukasz Kaiser, Anselm Levskaya.
 
@@ -37,7 +68,7 @@ while being much more memory-efficient and much faster on long sequences.*
 This model was contributed by [patrickvonplaten](https://huggingface.co/patrickvonplaten). The Authors' code can be
 found [here](https://github.com/google/trax/tree/master/trax/models/reformer).
 
-## Axial Positional Encodings
+## [Axial Positional Encodings](#axial-positional-encodings)
 
 Axial Positional Encodings were first implemented in Google's [trax library](https://github.com/google/trax/blob/4d99ad4965bab1deba227539758d59f0df0fef48/trax/layers/research/position_encodings.py#L29)
 and developed by the authors of this model's paper. In models that are treating very long input sequences, the
@@ -81,7 +112,7 @@ product has to be equal to `config.max_embedding_size`, which during training ha
 length_ of the `input_ids`.
 
 
-## LSH Self Attention
+## [LSH Self Attention](#lsh-self-attention)
 
 In Locality sensitive hashing (LSH) self attention the key and query projection weights are tied. Therefore, the key
 query embedding vectors are also tied. LSH self attention uses the locality sensitive hashing mechanism proposed in
@@ -114,7 +145,7 @@ Using LSH self attention, the memory and time complexity of the query-key matmul
 and time bottleneck in a transformer model, with \\(n_s\\) being the sequence length.
 
 
-## Local Self Attention
+## [Local Self Attention](#local-self-attention)
 
 Local self attention is essentially a "normal" self attention layer with key, query and value projections, but is
 chunked so that in each chunk of length `config.local_chunk_length` the query embedding vectors only attends to
@@ -126,7 +157,7 @@ Using Local self attention, the memory and time complexity of the query-key matm
 and time bottleneck in a transformer model, with \\(n_s\\) being the sequence length.
 
 
-## Training
+## [Training](#training)
 
 During training, we must ensure that the sequence length is set to a value that can be divided by the least common
 multiple of `config.lsh_chunk_length` and `config.local_chunk_length` and that the parameters of the Axial
@@ -140,7 +171,7 @@ input_ids = tokenizer.encode('This is a sentence from the training data', return
 loss = model(input_ids, labels=input_ids)[0]
 ```
 
-## ReformerConfig
+## [ReformerConfig](#reformerconfig)
 
 <a id='transformers.ReformerConfig'></a>
 > **class transformers.ReformerConfig**(attention_head_size = 64, attn_layers = ['local', 'lsh', 'local', 'lsh', 'local', 'lsh'], axial_norm_std = 1.0, axial_pos_embds = True, axial_pos_shape = [64, 64], axial_pos_embds_dim = [64, 192], chunk_size_lm_head = 0, eos_token_id = 2, feed_forward_size = 512, hash_seed = None, hidden_act = 'relu', hidden_dropout_prob = 0.05, hidden_size = 256, initializer_range = 0.02, is_decoder = False, layer_norm_eps = 1e-12, local_num_chunks_before = 1, local_num_chunks_after = 0, local_attention_probs_dropout_prob = 0.05, local_attn_chunk_length = 64, lsh_attn_chunk_length = 64, lsh_attention_probs_dropout_prob = 0.0, lsh_num_chunks_before = 1, lsh_num_chunks_after = 0, max_position_embeddings = 4096, num_attention_heads = 12, num_buckets = None, num_hashes = 1, pad_token_id = 0, vocab_size = 320, tie_word_embeddings = False, use_cache = True, classifier_dropout = None, **kwargs)
@@ -273,7 +304,7 @@ outputs. Read the documentation from [PretrainedConfig](/docs/transformers/maste
 ```
 
 
-## ReformerTokenizer
+## [ReformerTokenizer](#reformertokenizer)
 
 <a id='transformers.ReformerTokenizer'></a>
 > **class transformers.ReformerTokenizer**(vocab_file, eos_token = '&amp;lt;/s>', unk_token = '&amp;lt;unk>', additional_special_tokens = [], sp_model_kwargs: typing.Union[typing.Dict[str, typing.Any], NoneType] = None, **kwargs)
@@ -324,7 +355,7 @@ sequence. The token used is the `sep_token`.
 <a id='transformers.ReformerTokenizer.save_vocabulary'></a>
 > **save\_vocabulary**(self, save_directory: str, filename_prefix: typing.Optional[str] = None)
 
-## ReformerTokenizerFast
+## [ReformerTokenizerFast](#reformertokenizerfast)
 
 <a id='transformers.ReformerTokenizerFast'></a>
 > **class transformers.ReformerTokenizerFast**(vocab_file = None, tokenizer_file = None, eos_token = '&amp;lt;/s>', unk_token = '&amp;lt;unk>', additional_special_tokens = [], **kwargs)
@@ -405,7 +436,7 @@ sequence. The token used is the `sep_token`.
     BPE-dropout.
 
 
-## ReformerModel
+## [ReformerModel](#reformermodel)
 
 <a id='transformers.ReformerModel'></a>
 > **class transformers.ReformerModel**(config)
@@ -545,7 +576,7 @@ various elements depending on the configuration ([ReformerConfig](/docs/transfor
 ```
 
 
-## ReformerModelWithLMHead
+## [ReformerModelWithLMHead](#reformermodelwithlmhead)
 
 <a id='transformers.ReformerModelWithLMHead'></a>
 > **class transformers.ReformerModelWithLMHead**(config)
@@ -681,7 +712,7 @@ various elements depending on the configuration ([ReformerConfig](/docs/transfor
 ```
 
 
-## ReformerForMaskedLM
+## [ReformerForMaskedLM](#reformerformaskedlm)
 
 <a id='transformers.ReformerForMaskedLM'></a>
 > **class transformers.ReformerForMaskedLM**(config)
@@ -819,7 +850,7 @@ various elements depending on the configuration ([ReformerConfig](/docs/transfor
 ```
 
 
-## ReformerForSequenceClassification
+## [ReformerForSequenceClassification](#reformerforsequenceclassification)
 
 <a id='transformers.ReformerForSequenceClassification'></a>
 > **class transformers.ReformerForSequenceClassification**(config)
@@ -959,7 +990,7 @@ various elements depending on the configuration ([ReformerConfig](/docs/transfor
 ```
 
 
-## ReformerForQuestionAnswering
+## [ReformerForQuestionAnswering](#reformerforquestionanswering)
 
 <a id='transformers.ReformerForQuestionAnswering'></a>
 > **class transformers.ReformerForQuestionAnswering**(config)

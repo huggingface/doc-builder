@@ -1,3 +1,88 @@
+---
+local: auto-classes
+sections:
+- local: autoconfig
+  title: AutoConfig
+- local: autotokenizer
+  title: AutoTokenizer
+- local: autofeatureextractor
+  title: AutoFeatureExtractor
+- local: automodel
+  title: AutoModel
+- local: automodelforpretraining
+  title: AutoModelForPreTraining
+- local: automodelforcausallm
+  title: AutoModelForCausalLM
+- local: automodelformaskedlm
+  title: AutoModelForMaskedLM
+- local: automodelforseqseqlm
+  title: AutoModelForSeq2SeqLM
+- local: automodelforsequenceclassification
+  title: AutoModelForSequenceClassification
+- local: automodelformultiplechoice
+  title: AutoModelForMultipleChoice
+- local: automodelfornextsentenceprediction
+  title: AutoModelForNextSentencePrediction
+- local: automodelfortokenclassification
+  title: AutoModelForTokenClassification
+- local: automodelforquestionanswering
+  title: AutoModelForQuestionAnswering
+- local: automodelfortablequestionanswering
+  title: AutoModelForTableQuestionAnswering
+- local: automodelforimageclassification
+  title: AutoModelForImageClassification
+- local: automodelforaudioclassification
+  title: AutoModelForAudioClassification
+- local: automodelforctc
+  title: AutoModelForCTC
+- local: automodelforspeechseqseq
+  title: AutoModelForSpeechSeq2Seq
+- local: automodelforobjectdetection
+  title: AutoModelForObjectDetection
+- local: automodelforimagesegmentation
+  title: AutoModelForImageSegmentation
+- local: tfautomodel
+  title: TFAutoModel
+- local: tfautomodelforpretraining
+  title: TFAutoModelForPreTraining
+- local: tfautomodelforcausallm
+  title: TFAutoModelForCausalLM
+- local: tfautomodelformaskedlm
+  title: TFAutoModelForMaskedLM
+- local: tfautomodelforseqseqlm
+  title: TFAutoModelForSeq2SeqLM
+- local: tfautomodelforsequenceclassification
+  title: TFAutoModelForSequenceClassification
+- local: tfautomodelformultiplechoice
+  title: TFAutoModelForMultipleChoice
+- local: tfautomodelfortokenclassification
+  title: TFAutoModelForTokenClassification
+- local: tfautomodelforquestionanswering
+  title: TFAutoModelForQuestionAnswering
+- local: flaxautomodel
+  title: FlaxAutoModel
+- local: flaxautomodelforcausallm
+  title: FlaxAutoModelForCausalLM
+- local: flaxautomodelforpretraining
+  title: FlaxAutoModelForPreTraining
+- local: flaxautomodelformaskedlm
+  title: FlaxAutoModelForMaskedLM
+- local: flaxautomodelforseqseqlm
+  title: FlaxAutoModelForSeq2SeqLM
+- local: flaxautomodelforsequenceclassification
+  title: FlaxAutoModelForSequenceClassification
+- local: flaxautomodelforquestionanswering
+  title: FlaxAutoModelForQuestionAnswering
+- local: flaxautomodelfortokenclassification
+  title: FlaxAutoModelForTokenClassification
+- local: flaxautomodelformultiplechoice
+  title: FlaxAutoModelForMultipleChoice
+- local: flaxautomodelfornextsentenceprediction
+  title: FlaxAutoModelForNextSentencePrediction
+- local: flaxautomodelforimageclassification
+  title: FlaxAutoModelForImageClassification
+title: Auto Classes
+---
 <script>
 import Tip from "../../Tip.svelte";
 import Youtube from "../../Youtube.svelte";	
@@ -16,7 +101,7 @@ an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express o
 specific language governing permissions and limitations under the License.
 -->
 
-# Auto Classes
+# [Auto Classes](#auto-classes)
 
 In many cases, the architecture you want to use can be guessed from the name or the path of the pretrained model you
 are supplying to the `from_pretrained()` method. AutoClasses are here to do this job for you so that you
@@ -32,35 +117,10 @@ model = AutoModel.from_pretrained('bert-base-cased')
 
 will create a model that is an instance of [BertModel](/docs/transformers/master/en/model_doc/bert.html#transformers.BertModel).
 
-There is one class of `AutoModel` for each task, and for each backend (PyTorch, TensorFlow, or Flax).
+There is one class of `AutoModel` for each task, and for each backend (PyTorch or TensorFlow).
 
-## Extending the Auto Classes
 
-Each of the auto classes has a method to be extended with your custom classes. For instance, if you have defined a
-custom class of model `NewModel`, make sure you have a `NewModelConfig` then you can add those to the auto
-classes like this:
-
-```
-from transformers import AutoConfig, AutoModel
-
-AutoConfig.register("new-model", NewModelConfig)
-AutoModel.register(NewModelConfig, NewModel)
-```
-
-You will then be able to use the auto classes like you would usually do!
-
-<Tip warning={true}>
-
-If your `NewModelConfig` is a subclass of `PretrainedConfig`, make sure its
-`model_type` attribute is set to the same key you use when registering the config (here `"new-model"`).
-
-Likewise, if your `NewModel` is a subclass of [PreTrainedModel](/docs/transformers/master/en/main_classes/model.html#transformers.PreTrainedModel), make sure its
-`config_class` attribute is set to the same class you use when registering the model (here
-`NewModelConfig`).
-
-</Tip>
-
-## AutoConfig
+## [AutoConfig](#autoconfig)
 
 <a id='transformers.AutoConfig'></a>
 > **class transformers.AutoConfig**()
@@ -135,8 +195,6 @@ that is loaded, or when it's missing, by falling back to using pattern matching 
 - **retribert** -- [RetriBertConfig](/docs/transformers/master/en/model_doc/retribert.html#transformers.RetriBertConfig) (RetriBERT model)
 - **roberta** -- [RobertaConfig](/docs/transformers/master/en/model_doc/roberta.html#transformers.RobertaConfig) (RoBERTa model)
 - **roformer** -- [RoFormerConfig](/docs/transformers/master/en/model_doc/roformer.html#transformers.RoFormerConfig) (RoFormer model)
-- **sew** -- [SEWConfig](/docs/transformers/master/en/model_doc/sew.html#transformers.SEWConfig) (SEW model)
-- **sew-d** -- [SEWDConfig](/docs/transformers/master/en/model_doc/sew_d.html#transformers.SEWDConfig) (SEW-D model)
 - **speech-encoder-decoder** -- [SpeechEncoderDecoderConfig](/docs/transformers/master/en/model_doc/speechencoderdecoder.html#transformers.SpeechEncoderDecoderConfig) (Speech Encoder decoder model)
 - **speech_to_text** -- [Speech2TextConfig](/docs/transformers/master/en/model_doc/speech_to_text.html#transformers.Speech2TextConfig) (Speech2Text model)
 - **speech_to_text_2** -- [Speech2Text2Config](/docs/transformers/master/en/model_doc/speech_to_text_2.html#transformers.Speech2Text2Config) (Speech2Text2 model)
@@ -145,8 +203,6 @@ that is loaded, or when it's missing, by falling back to using pattern matching 
 - **t5** -- [T5Config](/docs/transformers/master/en/model_doc/t5.html#transformers.T5Config) (T5 model)
 - **tapas** -- [TapasConfig](/docs/transformers/master/en/model_doc/tapas.html#transformers.TapasConfig) (TAPAS model)
 - **transfo-xl** -- [TransfoXLConfig](/docs/transformers/master/en/model_doc/transformerxl.html#transformers.TransfoXLConfig) (Transformer-XL model)
-- **trocr** -- [TrOCRConfig](/docs/transformers/master/en/model_doc/trocr.html#transformers.TrOCRConfig) (TrOCR model)
-- **vision-encoder-decoder** -- [VisionEncoderDecoderConfig](/docs/transformers/master/en/model_doc/visionencoderdecoder.html#transformers.VisionEncoderDecoderConfig) (Vision Encoder decoder model)
 - **visual_bert** -- [VisualBertConfig](/docs/transformers/master/en/model_doc/visual_bert.html#transformers.VisualBertConfig) (VisualBert model)
 - **vit** -- [ViTConfig](/docs/transformers/master/en/model_doc/vit.html#transformers.ViTConfig) (ViT model)
 - **wav2vec2** -- [Wav2Vec2Config](/docs/transformers/master/en/model_doc/wav2vec2.html#transformers.Wav2Vec2Config) (Wav2Vec2 model)
@@ -223,19 +279,7 @@ True
 ```
 
 
-<a id='transformers.AutoConfig.register'></a>
-> **register**(model_type, config)
-
-
-Register a new configuration for this class.
-
-> Parameters
-
-- **model_type** (`str`) -- The model type like "bert" or "gpt".
-- **config** ([PretrainedConfig](/docs/transformers/master/en/main_classes/configuration.html#transformers.PretrainedConfig)) -- The config to register.
-
-
-## AutoTokenizer
+## [AutoTokenizer](#autotokenizer)
 
 <a id='transformers.AutoTokenizer'></a>
 > **class transformers.AutoTokenizer**()
@@ -260,7 +304,6 @@ missing, by falling back to using pattern matching on `pretrained_model_name_or_
 - **albert** -- [AlbertTokenizer](/docs/transformers/master/en/model_doc/albert.html#transformers.AlbertTokenizer) or [AlbertTokenizerFast](/docs/transformers/master/en/model_doc/albert.html#transformers.AlbertTokenizerFast) (ALBERT model)
 - **bart** -- [BartTokenizer](/docs/transformers/master/en/model_doc/bart.html#transformers.BartTokenizer) or [BartTokenizerFast](/docs/transformers/master/en/model_doc/bart.html#transformers.BartTokenizerFast) (BART model)
 - **barthez** -- [BarthezTokenizer](/docs/transformers/master/en/model_doc/barthez.html#transformers.BarthezTokenizer) or [BarthezTokenizerFast](/docs/transformers/master/en/model_doc/barthez.html#transformers.BarthezTokenizerFast) (BARThez model)
-- **bartpho** -- [BartphoTokenizer](/docs/transformers/master/en/model_doc/bartpho.html#transformers.BartphoTokenizer) (BARTpho model)
 - **bert** -- [BertTokenizer](/docs/transformers/master/en/model_doc/bert.html#transformers.BertTokenizer) or [BertTokenizerFast](/docs/transformers/master/en/model_doc/bert.html#transformers.BertTokenizerFast) (BERT model)
 - **bert-generation** -- [BertGenerationTokenizer](/docs/transformers/master/en/model_doc/bertgeneration.html#transformers.BertGenerationTokenizer) (Bert Generation model)
 - **bert-japanese** -- [BertJapaneseTokenizer](/docs/transformers/master/en/model_doc/bert_japanese.html#transformers.BertJapaneseTokenizer) (BertJapanese model)
@@ -301,7 +344,7 @@ missing, by falling back to using pattern matching on `pretrained_model_name_or_
 - **mbart50** -- [MBart50Tokenizer](/docs/transformers/master/en/model_doc/mbart.html#transformers.MBart50Tokenizer) or [MBart50TokenizerFast](/docs/transformers/master/en/model_doc/mbart.html#transformers.MBart50TokenizerFast) (mBART-50 model)
 - **mobilebert** -- [MobileBertTokenizer](/docs/transformers/master/en/model_doc/mobilebert.html#transformers.MobileBertTokenizer) or [MobileBertTokenizerFast](/docs/transformers/master/en/model_doc/mobilebert.html#transformers.MobileBertTokenizerFast) (MobileBERT model)
 - **mpnet** -- [MPNetTokenizer](/docs/transformers/master/en/model_doc/mpnet.html#transformers.MPNetTokenizer) or [MPNetTokenizerFast](/docs/transformers/master/en/model_doc/mpnet.html#transformers.MPNetTokenizerFast) (MPNet model)
-- **mt5** -- [MT5Tokenizer](/docs/transformers/master/en/model_doc/t5.html#transformers.T5Tokenizer) or [MT5TokenizerFast](/docs/transformers/master/en/model_doc/t5.html#transformers.T5TokenizerFast) (mT5 model)
+- **mt5** -- [MT5Tokenizer](/docs/transformers/master/en/model_doc/mt5.html#transformers.T5Tokenizer) or [MT5TokenizerFast](/docs/transformers/master/en/model_doc/mt5.html#transformers.T5TokenizerFast) (mT5 model)
 - **openai-gpt** -- [OpenAIGPTTokenizer](/docs/transformers/master/en/model_doc/gpt.html#transformers.OpenAIGPTTokenizer) or [OpenAIGPTTokenizerFast](/docs/transformers/master/en/model_doc/gpt.html#transformers.OpenAIGPTTokenizerFast) (OpenAI GPT model)
 - **pegasus** -- [PegasusTokenizer](/docs/transformers/master/en/model_doc/pegasus.html#transformers.PegasusTokenizer) or [PegasusTokenizerFast](/docs/transformers/master/en/model_doc/pegasus.html#transformers.PegasusTokenizerFast) (Pegasus model)
 - **phobert** -- [PhobertTokenizer](/docs/transformers/master/en/model_doc/phobert.html#transformers.PhobertTokenizer) (PhoBERT model)
@@ -316,7 +359,7 @@ missing, by falling back to using pattern matching on `pretrained_model_name_or_
 - **speech_to_text_2** -- [Speech2Text2Tokenizer](/docs/transformers/master/en/model_doc/speech_to_text_2.html#transformers.Speech2Text2Tokenizer) (Speech2Text2 model)
 - **splinter** -- [SplinterTokenizer](/docs/transformers/master/en/model_doc/splinter.html#transformers.SplinterTokenizer) or [SplinterTokenizerFast](/docs/transformers/master/en/model_doc/splinter.html#transformers.SplinterTokenizerFast) (Splinter model)
 - **squeezebert** -- [SqueezeBertTokenizer](/docs/transformers/master/en/model_doc/squeezebert.html#transformers.SqueezeBertTokenizer) or [SqueezeBertTokenizerFast](/docs/transformers/master/en/model_doc/squeezebert.html#transformers.SqueezeBertTokenizerFast) (SqueezeBERT model)
-- **t5** -- [T5Tokenizer](/docs/transformers/master/en/model_doc/t5.html#transformers.T5Tokenizer) or [T5TokenizerFast](/docs/transformers/master/en/model_doc/t5.html#transformers.T5TokenizerFast) (T5 model)
+- **t5** -- [T5Tokenizer](/docs/transformers/master/en/model_doc/mt5.html#transformers.T5Tokenizer) or [T5TokenizerFast](/docs/transformers/master/en/model_doc/mt5.html#transformers.T5TokenizerFast) (T5 model)
 - **tapas** -- [TapasTokenizer](/docs/transformers/master/en/model_doc/tapas.html#transformers.TapasTokenizer) (TAPAS model)
 - **transfo-xl** -- [TransfoXLTokenizer](/docs/transformers/master/en/model_doc/transformerxl.html#transformers.TransfoXLTokenizer) (Transformer-XL model)
 - **wav2vec2** -- [Wav2Vec2CTCTokenizer](/docs/transformers/master/en/model_doc/wav2vec2.html#transformers.Wav2Vec2CTCTokenizer) (Wav2Vec2 model)
@@ -385,24 +428,7 @@ Will be passed to the Tokenizer `__init__()` method. Can be used to set special 
 ```
 
 
-<a id='transformers.AutoTokenizer.register'></a>
-> **register**(config_class, slow_tokenizer_class = None, fast_tokenizer_class = None)
-
-
-Register a new tokenizer in this mapping.
-
-
-> Parameters
-
-- **config_class** ([PretrainedConfig](/docs/transformers/master/en/main_classes/configuration.html#transformers.PretrainedConfig)) --
-  The configuration corresponding to the model to register.
-- **slow_tokenizer_class** (`PretrainedTokenizer`, _optional_) --
-  The slow tokenizer to register.
-- **slow_tokenizer_class** (`PretrainedTokenizerFast`, _optional_) --
-  The fast tokenizer to register.
-
-
-## AutoFeatureExtractor
+## [AutoFeatureExtractor](#autofeatureextractor)
 
 <a id='transformers.AutoFeatureExtractor'></a>
 > **class transformers.AutoFeatureExtractor**()
@@ -493,7 +519,7 @@ Passing `use_auth_token=True` is required when you want to use a private model.
 ```
 
 
-## AutoModel
+## [AutoModel](#automodel)
 
 <a id='transformers.AutoModel'></a>
 > **class transformers.AutoModel**(*args, **kwargs)
@@ -573,8 +599,6 @@ weights.
   - [RetriBertConfig](/docs/transformers/master/en/model_doc/retribert.html#transformers.RetriBertConfig) configuration class: [RetriBertModel](/docs/transformers/master/en/model_doc/retribert.html#transformers.RetriBertModel) (RetriBERT model)
   - [RoFormerConfig](/docs/transformers/master/en/model_doc/roformer.html#transformers.RoFormerConfig) configuration class: [RoFormerModel](/docs/transformers/master/en/model_doc/roformer.html#transformers.RoFormerModel) (RoFormer model)
   - [RobertaConfig](/docs/transformers/master/en/model_doc/roberta.html#transformers.RobertaConfig) configuration class: [RobertaModel](/docs/transformers/master/en/model_doc/roberta.html#transformers.RobertaModel) (RoBERTa model)
-  - [SEWConfig](/docs/transformers/master/en/model_doc/sew.html#transformers.SEWConfig) configuration class: [SEWModel](/docs/transformers/master/en/model_doc/sew.html#transformers.SEWModel) (SEW model)
-  - [SEWDConfig](/docs/transformers/master/en/model_doc/sew_d.html#transformers.SEWDConfig) configuration class: [SEWDModel](/docs/transformers/master/en/model_doc/sew_d.html#transformers.SEWDModel) (SEW-D model)
   - [Speech2TextConfig](/docs/transformers/master/en/model_doc/speech_to_text.html#transformers.Speech2TextConfig) configuration class: [Speech2TextModel](/docs/transformers/master/en/model_doc/speech_to_text.html#transformers.Speech2TextModel) (Speech2Text model)
   - [SplinterConfig](/docs/transformers/master/en/model_doc/splinter.html#transformers.SplinterConfig) configuration class: [SplinterModel](/docs/transformers/master/en/model_doc/splinter.html#transformers.SplinterModel) (Splinter model)
   - [SqueezeBertConfig](/docs/transformers/master/en/model_doc/squeezebert.html#transformers.SqueezeBertConfig) configuration class: [SqueezeBertModel](/docs/transformers/master/en/model_doc/squeezebert.html#transformers.SqueezeBertModel) (SqueezeBERT model)
@@ -660,8 +684,6 @@ by falling back to using pattern matching on `pretrained_model_name_or_path`:
 - **retribert** -- [RetriBertModel](/docs/transformers/master/en/model_doc/retribert.html#transformers.RetriBertModel) (RetriBERT model)
 - **roberta** -- [RobertaModel](/docs/transformers/master/en/model_doc/roberta.html#transformers.RobertaModel) (RoBERTa model)
 - **roformer** -- [RoFormerModel](/docs/transformers/master/en/model_doc/roformer.html#transformers.RoFormerModel) (RoFormer model)
-- **sew** -- [SEWModel](/docs/transformers/master/en/model_doc/sew.html#transformers.SEWModel) (SEW model)
-- **sew-d** -- [SEWDModel](/docs/transformers/master/en/model_doc/sew_d.html#transformers.SEWDModel) (SEW-D model)
 - **speech_to_text** -- [Speech2TextModel](/docs/transformers/master/en/model_doc/speech_to_text.html#transformers.Speech2TextModel) (Speech2Text model)
 - **splinter** -- [SplinterModel](/docs/transformers/master/en/model_doc/splinter.html#transformers.SplinterModel) (Splinter model)
 - **squeezebert** -- [SqueezeBertModel](/docs/transformers/master/en/model_doc/squeezebert.html#transformers.SqueezeBertModel) (SqueezeBERT model)
@@ -724,9 +746,8 @@ deactivated). To train the model, you should first set it back in training mode 
 - **resume_download** (`bool`, _optional_, defaults to `False`) --
   Whether or not to delete incompletely received files. Will attempt to resume the download if such a
   file exists.
-- **proxies** (`Dict[str, str]`, _optional_) --
-  A dictionary of proxy servers to use by protocol or endpoint, e.g., `&amp;lcub;'http': 'foo.bar:3128', 'http://hostname': 'foo.bar:4012'}`. The proxies are used on each request.
-- **output_loading_info(`bool`,** _optional_, defaults to `False`) --
+- **proxies** (`Dict[str, str], `optional`) -- A dictionary of proxy servers to use by protocol or endpoint, e.g., `&amp;lcub;'http': 'foo.bar:3128',
+  'http://hostname': 'foo.bar:4012'}`. The proxies are used on each request. - **output_loading_info(`bool`,** _optional_, defaults to `False`) --
   Whether ot not to also return a dictionary containing missing keys, unexpected keys and error messages.
 - **local_files_only(`bool`,** _optional_, defaults to `False`) --
   Whether or not to only look at local files (e.g., not try downloading the model).
@@ -771,7 +792,7 @@ True
 ```
 
 
-## AutoModelForPreTraining
+## [AutoModelForPreTraining](#automodelforpretraining)
 
 <a id='transformers.AutoModelForPreTraining'></a>
 > **class transformers.AutoModelForPreTraining**(*args, **kwargs)
@@ -938,9 +959,8 @@ deactivated). To train the model, you should first set it back in training mode 
 - **resume_download** (`bool`, _optional_, defaults to `False`) --
   Whether or not to delete incompletely received files. Will attempt to resume the download if such a
   file exists.
-- **proxies** (`Dict[str, str]`, _optional_) --
-  A dictionary of proxy servers to use by protocol or endpoint, e.g., `&amp;lcub;'http': 'foo.bar:3128', 'http://hostname': 'foo.bar:4012'}`. The proxies are used on each request.
-- **output_loading_info(`bool`,** _optional_, defaults to `False`) --
+- **proxies** (`Dict[str, str], `optional`) -- A dictionary of proxy servers to use by protocol or endpoint, e.g., `&amp;lcub;'http': 'foo.bar:3128',
+  'http://hostname': 'foo.bar:4012'}`. The proxies are used on each request. - **output_loading_info(`bool`,** _optional_, defaults to `False`) --
   Whether ot not to also return a dictionary containing missing keys, unexpected keys and error messages.
 - **local_files_only(`bool`,** _optional_, defaults to `False`) --
   Whether or not to only look at local files (e.g., not try downloading the model).
@@ -985,7 +1005,7 @@ True
 ```
 
 
-## AutoModelForCausalLM
+## [AutoModelForCausalLM](#automodelforcausallm)
 
 <a id='transformers.AutoModelForCausalLM'></a>
 > **class transformers.AutoModelForCausalLM**(*args, **kwargs)
@@ -1037,7 +1057,6 @@ weights.
   - [RoFormerConfig](/docs/transformers/master/en/model_doc/roformer.html#transformers.RoFormerConfig) configuration class: [RoFormerForCausalLM](/docs/transformers/master/en/model_doc/roformer.html#transformers.RoFormerForCausalLM) (RoFormer model)
   - [RobertaConfig](/docs/transformers/master/en/model_doc/roberta.html#transformers.RobertaConfig) configuration class: [RobertaForCausalLM](/docs/transformers/master/en/model_doc/roberta.html#transformers.RobertaForCausalLM) (RoBERTa model)
   - [Speech2Text2Config](/docs/transformers/master/en/model_doc/speech_to_text_2.html#transformers.Speech2Text2Config) configuration class: [Speech2Text2ForCausalLM](/docs/transformers/master/en/model_doc/speech_to_text_2.html#transformers.Speech2Text2ForCausalLM) (Speech2Text2 model)
-  - [TrOCRConfig](/docs/transformers/master/en/model_doc/trocr.html#transformers.TrOCRConfig) configuration class: [TrOCRForCausalLM](/docs/transformers/master/en/model_doc/trocr.html#transformers.TrOCRForCausalLM) (TrOCR model)
   - [TransfoXLConfig](/docs/transformers/master/en/model_doc/transformerxl.html#transformers.TransfoXLConfig) configuration class: [TransfoXLLMHeadModel](/docs/transformers/master/en/model_doc/transformerxl.html#transformers.TransfoXLLMHeadModel) (Transformer-XL model)
   - [XLMConfig](/docs/transformers/master/en/model_doc/xlm.html#transformers.XLMConfig) configuration class: [XLMWithLMHeadModel](/docs/transformers/master/en/model_doc/xlm.html#transformers.XLMWithLMHeadModel) (XLM model)
   - [XLMProphetNetConfig](/docs/transformers/master/en/model_doc/xlmprophetnet.html#transformers.XLMProphetNetConfig) configuration class: [XLMProphetNetForCausalLM](/docs/transformers/master/en/model_doc/xlmprophetnet.html#transformers.XLMProphetNetForCausalLM) (XLMProphetNet model)
@@ -1088,7 +1107,6 @@ by falling back to using pattern matching on `pretrained_model_name_or_path`:
 - **roformer** -- [RoFormerForCausalLM](/docs/transformers/master/en/model_doc/roformer.html#transformers.RoFormerForCausalLM) (RoFormer model)
 - **speech_to_text_2** -- [Speech2Text2ForCausalLM](/docs/transformers/master/en/model_doc/speech_to_text_2.html#transformers.Speech2Text2ForCausalLM) (Speech2Text2 model)
 - **transfo-xl** -- [TransfoXLLMHeadModel](/docs/transformers/master/en/model_doc/transformerxl.html#transformers.TransfoXLLMHeadModel) (Transformer-XL model)
-- **trocr** -- [TrOCRForCausalLM](/docs/transformers/master/en/model_doc/trocr.html#transformers.TrOCRForCausalLM) (TrOCR model)
 - **xlm** -- [XLMWithLMHeadModel](/docs/transformers/master/en/model_doc/xlm.html#transformers.XLMWithLMHeadModel) (XLM model)
 - **xlm-prophetnet** -- [XLMProphetNetForCausalLM](/docs/transformers/master/en/model_doc/xlmprophetnet.html#transformers.XLMProphetNetForCausalLM) (XLMProphetNet model)
 - **xlm-roberta** -- [XLMRobertaForCausalLM](/docs/transformers/master/en/model_doc/xlmroberta.html#transformers.XLMRobertaForCausalLM) (XLM-RoBERTa model)
@@ -1142,9 +1160,8 @@ deactivated). To train the model, you should first set it back in training mode 
 - **resume_download** (`bool`, _optional_, defaults to `False`) --
   Whether or not to delete incompletely received files. Will attempt to resume the download if such a
   file exists.
-- **proxies** (`Dict[str, str]`, _optional_) --
-  A dictionary of proxy servers to use by protocol or endpoint, e.g., `&amp;lcub;'http': 'foo.bar:3128', 'http://hostname': 'foo.bar:4012'}`. The proxies are used on each request.
-- **output_loading_info(`bool`,** _optional_, defaults to `False`) --
+- **proxies** (`Dict[str, str], `optional`) -- A dictionary of proxy servers to use by protocol or endpoint, e.g., `&amp;lcub;'http': 'foo.bar:3128',
+  'http://hostname': 'foo.bar:4012'}`. The proxies are used on each request. - **output_loading_info(`bool`,** _optional_, defaults to `False`) --
   Whether ot not to also return a dictionary containing missing keys, unexpected keys and error messages.
 - **local_files_only(`bool`,** _optional_, defaults to `False`) --
   Whether or not to only look at local files (e.g., not try downloading the model).
@@ -1189,7 +1206,7 @@ True
 ```
 
 
-## AutoModelForMaskedLM
+## [AutoModelForMaskedLM](#automodelformaskedlm)
 
 <a id='transformers.AutoModelForMaskedLM'></a>
 > **class transformers.AutoModelForMaskedLM**(*args, **kwargs)
@@ -1346,9 +1363,8 @@ deactivated). To train the model, you should first set it back in training mode 
 - **resume_download** (`bool`, _optional_, defaults to `False`) --
   Whether or not to delete incompletely received files. Will attempt to resume the download if such a
   file exists.
-- **proxies** (`Dict[str, str]`, _optional_) --
-  A dictionary of proxy servers to use by protocol or endpoint, e.g., `&amp;lcub;'http': 'foo.bar:3128', 'http://hostname': 'foo.bar:4012'}`. The proxies are used on each request.
-- **output_loading_info(`bool`,** _optional_, defaults to `False`) --
+- **proxies** (`Dict[str, str], `optional`) -- A dictionary of proxy servers to use by protocol or endpoint, e.g., `&amp;lcub;'http': 'foo.bar:3128',
+  'http://hostname': 'foo.bar:4012'}`. The proxies are used on each request. - **output_loading_info(`bool`,** _optional_, defaults to `False`) --
   Whether ot not to also return a dictionary containing missing keys, unexpected keys and error messages.
 - **local_files_only(`bool`,** _optional_, defaults to `False`) --
   Whether or not to only look at local files (e.g., not try downloading the model).
@@ -1393,7 +1409,7 @@ True
 ```
 
 
-## AutoModelForSeq2SeqLM
+## [AutoModelForSeq2SeqLM](#automodelforseqseqlm)
 
 <a id='transformers.AutoModelForSeq2SeqLM'></a>
 > **class transformers.AutoModelForSeq2SeqLM**(*args, **kwargs)
@@ -1522,9 +1538,8 @@ deactivated). To train the model, you should first set it back in training mode 
 - **resume_download** (`bool`, _optional_, defaults to `False`) --
   Whether or not to delete incompletely received files. Will attempt to resume the download if such a
   file exists.
-- **proxies** (`Dict[str, str]`, _optional_) --
-  A dictionary of proxy servers to use by protocol or endpoint, e.g., `&amp;lcub;'http': 'foo.bar:3128', 'http://hostname': 'foo.bar:4012'}`. The proxies are used on each request.
-- **output_loading_info(`bool`,** _optional_, defaults to `False`) --
+- **proxies** (`Dict[str, str], `optional`) -- A dictionary of proxy servers to use by protocol or endpoint, e.g., `&amp;lcub;'http': 'foo.bar:3128',
+  'http://hostname': 'foo.bar:4012'}`. The proxies are used on each request. - **output_loading_info(`bool`,** _optional_, defaults to `False`) --
   Whether ot not to also return a dictionary containing missing keys, unexpected keys and error messages.
 - **local_files_only(`bool`,** _optional_, defaults to `False`) --
   Whether or not to only look at local files (e.g., not try downloading the model).
@@ -1569,7 +1584,7 @@ True
 ```
 
 
-## AutoModelForSequenceClassification
+## [AutoModelForSequenceClassification](#automodelforsequenceclassification)
 
 <a id='transformers.AutoModelForSequenceClassification'></a>
 > **class transformers.AutoModelForSequenceClassification**(*args, **kwargs)
@@ -1746,9 +1761,8 @@ deactivated). To train the model, you should first set it back in training mode 
 - **resume_download** (`bool`, _optional_, defaults to `False`) --
   Whether or not to delete incompletely received files. Will attempt to resume the download if such a
   file exists.
-- **proxies** (`Dict[str, str]`, _optional_) --
-  A dictionary of proxy servers to use by protocol or endpoint, e.g., `&amp;lcub;'http': 'foo.bar:3128', 'http://hostname': 'foo.bar:4012'}`. The proxies are used on each request.
-- **output_loading_info(`bool`,** _optional_, defaults to `False`) --
+- **proxies** (`Dict[str, str], `optional`) -- A dictionary of proxy servers to use by protocol or endpoint, e.g., `&amp;lcub;'http': 'foo.bar:3128',
+  'http://hostname': 'foo.bar:4012'}`. The proxies are used on each request. - **output_loading_info(`bool`,** _optional_, defaults to `False`) --
   Whether ot not to also return a dictionary containing missing keys, unexpected keys and error messages.
 - **local_files_only(`bool`,** _optional_, defaults to `False`) --
   Whether or not to only look at local files (e.g., not try downloading the model).
@@ -1793,7 +1807,7 @@ True
 ```
 
 
-## AutoModelForMultipleChoice
+## [AutoModelForMultipleChoice](#automodelformultiplechoice)
 
 <a id='transformers.AutoModelForMultipleChoice'></a>
 > **class transformers.AutoModelForMultipleChoice**(*args, **kwargs)
@@ -1938,9 +1952,8 @@ deactivated). To train the model, you should first set it back in training mode 
 - **resume_download** (`bool`, _optional_, defaults to `False`) --
   Whether or not to delete incompletely received files. Will attempt to resume the download if such a
   file exists.
-- **proxies** (`Dict[str, str]`, _optional_) --
-  A dictionary of proxy servers to use by protocol or endpoint, e.g., `&amp;lcub;'http': 'foo.bar:3128', 'http://hostname': 'foo.bar:4012'}`. The proxies are used on each request.
-- **output_loading_info(`bool`,** _optional_, defaults to `False`) --
+- **proxies** (`Dict[str, str], `optional`) -- A dictionary of proxy servers to use by protocol or endpoint, e.g., `&amp;lcub;'http': 'foo.bar:3128',
+  'http://hostname': 'foo.bar:4012'}`. The proxies are used on each request. - **output_loading_info(`bool`,** _optional_, defaults to `False`) --
   Whether ot not to also return a dictionary containing missing keys, unexpected keys and error messages.
 - **local_files_only(`bool`,** _optional_, defaults to `False`) --
   Whether or not to only look at local files (e.g., not try downloading the model).
@@ -1985,7 +1998,7 @@ True
 ```
 
 
-## AutoModelForNextSentencePrediction
+## [AutoModelForNextSentencePrediction](#automodelfornextsentenceprediction)
 
 <a id='transformers.AutoModelForNextSentencePrediction'></a>
 > **class transformers.AutoModelForNextSentencePrediction**(*args, **kwargs)
@@ -2092,9 +2105,8 @@ deactivated). To train the model, you should first set it back in training mode 
 - **resume_download** (`bool`, _optional_, defaults to `False`) --
   Whether or not to delete incompletely received files. Will attempt to resume the download if such a
   file exists.
-- **proxies** (`Dict[str, str]`, _optional_) --
-  A dictionary of proxy servers to use by protocol or endpoint, e.g., `&amp;lcub;'http': 'foo.bar:3128', 'http://hostname': 'foo.bar:4012'}`. The proxies are used on each request.
-- **output_loading_info(`bool`,** _optional_, defaults to `False`) --
+- **proxies** (`Dict[str, str], `optional`) -- A dictionary of proxy servers to use by protocol or endpoint, e.g., `&amp;lcub;'http': 'foo.bar:3128',
+  'http://hostname': 'foo.bar:4012'}`. The proxies are used on each request. - **output_loading_info(`bool`,** _optional_, defaults to `False`) --
   Whether ot not to also return a dictionary containing missing keys, unexpected keys and error messages.
 - **local_files_only(`bool`,** _optional_, defaults to `False`) --
   Whether or not to only look at local files (e.g., not try downloading the model).
@@ -2139,7 +2151,7 @@ True
 ```
 
 
-## AutoModelForTokenClassification
+## [AutoModelForTokenClassification](#automodelfortokenclassification)
 
 <a id='transformers.AutoModelForTokenClassification'></a>
 > **class transformers.AutoModelForTokenClassification**(*args, **kwargs)
@@ -2294,9 +2306,8 @@ deactivated). To train the model, you should first set it back in training mode 
 - **resume_download** (`bool`, _optional_, defaults to `False`) --
   Whether or not to delete incompletely received files. Will attempt to resume the download if such a
   file exists.
-- **proxies** (`Dict[str, str]`, _optional_) --
-  A dictionary of proxy servers to use by protocol or endpoint, e.g., `&amp;lcub;'http': 'foo.bar:3128', 'http://hostname': 'foo.bar:4012'}`. The proxies are used on each request.
-- **output_loading_info(`bool`,** _optional_, defaults to `False`) --
+- **proxies** (`Dict[str, str], `optional`) -- A dictionary of proxy servers to use by protocol or endpoint, e.g., `&amp;lcub;'http': 'foo.bar:3128',
+  'http://hostname': 'foo.bar:4012'}`. The proxies are used on each request. - **output_loading_info(`bool`,** _optional_, defaults to `False`) --
   Whether ot not to also return a dictionary containing missing keys, unexpected keys and error messages.
 - **local_files_only(`bool`,** _optional_, defaults to `False`) --
   Whether or not to only look at local files (e.g., not try downloading the model).
@@ -2341,7 +2352,7 @@ True
 ```
 
 
-## AutoModelForQuestionAnswering
+## [AutoModelForQuestionAnswering](#automodelforquestionanswering)
 
 <a id='transformers.AutoModelForQuestionAnswering'></a>
 > **class transformers.AutoModelForQuestionAnswering**(*args, **kwargs)
@@ -2506,9 +2517,8 @@ deactivated). To train the model, you should first set it back in training mode 
 - **resume_download** (`bool`, _optional_, defaults to `False`) --
   Whether or not to delete incompletely received files. Will attempt to resume the download if such a
   file exists.
-- **proxies** (`Dict[str, str]`, _optional_) --
-  A dictionary of proxy servers to use by protocol or endpoint, e.g., `&amp;lcub;'http': 'foo.bar:3128', 'http://hostname': 'foo.bar:4012'}`. The proxies are used on each request.
-- **output_loading_info(`bool`,** _optional_, defaults to `False`) --
+- **proxies** (`Dict[str, str], `optional`) -- A dictionary of proxy servers to use by protocol or endpoint, e.g., `&amp;lcub;'http': 'foo.bar:3128',
+  'http://hostname': 'foo.bar:4012'}`. The proxies are used on each request. - **output_loading_info(`bool`,** _optional_, defaults to `False`) --
   Whether ot not to also return a dictionary containing missing keys, unexpected keys and error messages.
 - **local_files_only(`bool`,** _optional_, defaults to `False`) --
   Whether or not to only look at local files (e.g., not try downloading the model).
@@ -2553,7 +2563,7 @@ True
 ```
 
 
-## AutoModelForTableQuestionAnswering
+## [AutoModelForTableQuestionAnswering](#automodelfortablequestionanswering)
 
 <a id='transformers.AutoModelForTableQuestionAnswering'></a>
 > **class transformers.AutoModelForTableQuestionAnswering**(*args, **kwargs)
@@ -2654,9 +2664,8 @@ deactivated). To train the model, you should first set it back in training mode 
 - **resume_download** (`bool`, _optional_, defaults to `False`) --
   Whether or not to delete incompletely received files. Will attempt to resume the download if such a
   file exists.
-- **proxies** (`Dict[str, str]`, _optional_) --
-  A dictionary of proxy servers to use by protocol or endpoint, e.g., `&amp;lcub;'http': 'foo.bar:3128', 'http://hostname': 'foo.bar:4012'}`. The proxies are used on each request.
-- **output_loading_info(`bool`,** _optional_, defaults to `False`) --
+- **proxies** (`Dict[str, str], `optional`) -- A dictionary of proxy servers to use by protocol or endpoint, e.g., `&amp;lcub;'http': 'foo.bar:3128',
+  'http://hostname': 'foo.bar:4012'}`. The proxies are used on each request. - **output_loading_info(`bool`,** _optional_, defaults to `False`) --
   Whether ot not to also return a dictionary containing missing keys, unexpected keys and error messages.
 - **local_files_only(`bool`,** _optional_, defaults to `False`) --
   Whether or not to only look at local files (e.g., not try downloading the model).
@@ -2701,7 +2710,7 @@ True
 ```
 
 
-## AutoModelForImageClassification
+## [AutoModelForImageClassification](#automodelforimageclassification)
 
 <a id='transformers.AutoModelForImageClassification'></a>
 > **class transformers.AutoModelForImageClassification**(*args, **kwargs)
@@ -2806,9 +2815,8 @@ deactivated). To train the model, you should first set it back in training mode 
 - **resume_download** (`bool`, _optional_, defaults to `False`) --
   Whether or not to delete incompletely received files. Will attempt to resume the download if such a
   file exists.
-- **proxies** (`Dict[str, str]`, _optional_) --
-  A dictionary of proxy servers to use by protocol or endpoint, e.g., `&amp;lcub;'http': 'foo.bar:3128', 'http://hostname': 'foo.bar:4012'}`. The proxies are used on each request.
-- **output_loading_info(`bool`,** _optional_, defaults to `False`) --
+- **proxies** (`Dict[str, str], `optional`) -- A dictionary of proxy servers to use by protocol or endpoint, e.g., `&amp;lcub;'http': 'foo.bar:3128',
+  'http://hostname': 'foo.bar:4012'}`. The proxies are used on each request. - **output_loading_info(`bool`,** _optional_, defaults to `False`) --
   Whether ot not to also return a dictionary containing missing keys, unexpected keys and error messages.
 - **local_files_only(`bool`,** _optional_, defaults to `False`) --
   Whether or not to only look at local files (e.g., not try downloading the model).
@@ -2853,7 +2861,7 @@ True
 ```
 
 
-## AutoModelForAudioClassification
+## [AutoModelForAudioClassification](#automodelforaudioclassification)
 
 <a id='transformers.AutoModelForAudioClassification'></a>
 > **class transformers.AutoModelForAudioClassification**(*args, **kwargs)
@@ -2883,8 +2891,6 @@ weights.
   The model class to instantiate is selected based on the configuration class:
 
   - [HubertConfig](/docs/transformers/master/en/model_doc/hubert.html#transformers.HubertConfig) configuration class: [HubertForSequenceClassification](/docs/transformers/master/en/model_doc/hubert.html#transformers.HubertForSequenceClassification) (Hubert model)
-  - [SEWConfig](/docs/transformers/master/en/model_doc/sew.html#transformers.SEWConfig) configuration class: [SEWForSequenceClassification](/docs/transformers/master/en/model_doc/sew.html#transformers.SEWForSequenceClassification) (SEW model)
-  - [SEWDConfig](/docs/transformers/master/en/model_doc/sew_d.html#transformers.SEWDConfig) configuration class: [SEWDForSequenceClassification](/docs/transformers/master/en/model_doc/sew_d.html#transformers.SEWDForSequenceClassification) (SEW-D model)
   - [Wav2Vec2Config](/docs/transformers/master/en/model_doc/wav2vec2.html#transformers.Wav2Vec2Config) configuration class: [Wav2Vec2ForSequenceClassification](/docs/transformers/master/en/model_doc/wav2vec2.html#transformers.Wav2Vec2ForSequenceClassification) (Wav2Vec2 model)
 
 > Examples:
@@ -2908,8 +2914,6 @@ passed as an argument or loaded from `pretrained_model_name_or_path` if possible
 by falling back to using pattern matching on `pretrained_model_name_or_path`:
 
 - **hubert** -- [HubertForSequenceClassification](/docs/transformers/master/en/model_doc/hubert.html#transformers.HubertForSequenceClassification) (Hubert model)
-- **sew** -- [SEWForSequenceClassification](/docs/transformers/master/en/model_doc/sew.html#transformers.SEWForSequenceClassification) (SEW model)
-- **sew-d** -- [SEWDForSequenceClassification](/docs/transformers/master/en/model_doc/sew_d.html#transformers.SEWDForSequenceClassification) (SEW-D model)
 - **wav2vec2** -- [Wav2Vec2ForSequenceClassification](/docs/transformers/master/en/model_doc/wav2vec2.html#transformers.Wav2Vec2ForSequenceClassification) (Wav2Vec2 model)
 
 The model is set in evaluation mode by default using `model.eval()` (so for instance, dropout modules are
@@ -2960,9 +2964,8 @@ deactivated). To train the model, you should first set it back in training mode 
 - **resume_download** (`bool`, _optional_, defaults to `False`) --
   Whether or not to delete incompletely received files. Will attempt to resume the download if such a
   file exists.
-- **proxies** (`Dict[str, str]`, _optional_) --
-  A dictionary of proxy servers to use by protocol or endpoint, e.g., `&amp;lcub;'http': 'foo.bar:3128', 'http://hostname': 'foo.bar:4012'}`. The proxies are used on each request.
-- **output_loading_info(`bool`,** _optional_, defaults to `False`) --
+- **proxies** (`Dict[str, str], `optional`) -- A dictionary of proxy servers to use by protocol or endpoint, e.g., `&amp;lcub;'http': 'foo.bar:3128',
+  'http://hostname': 'foo.bar:4012'}`. The proxies are used on each request. - **output_loading_info(`bool`,** _optional_, defaults to `False`) --
   Whether ot not to also return a dictionary containing missing keys, unexpected keys and error messages.
 - **local_files_only(`bool`,** _optional_, defaults to `False`) --
   Whether or not to only look at local files (e.g., not try downloading the model).
@@ -3007,7 +3010,7 @@ True
 ```
 
 
-## AutoModelForCTC
+## [AutoModelForCTC](#automodelforctc)
 
 <a id='transformers.AutoModelForCTC'></a>
 > **class transformers.AutoModelForCTC**(*args, **kwargs)
@@ -3037,8 +3040,6 @@ weights.
   The model class to instantiate is selected based on the configuration class:
 
   - [HubertConfig](/docs/transformers/master/en/model_doc/hubert.html#transformers.HubertConfig) configuration class: [HubertForCTC](/docs/transformers/master/en/model_doc/hubert.html#transformers.HubertForCTC) (Hubert model)
-  - [SEWConfig](/docs/transformers/master/en/model_doc/sew.html#transformers.SEWConfig) configuration class: [SEWForCTC](/docs/transformers/master/en/model_doc/sew.html#transformers.SEWForCTC) (SEW model)
-  - [SEWDConfig](/docs/transformers/master/en/model_doc/sew_d.html#transformers.SEWDConfig) configuration class: [SEWDForCTC](/docs/transformers/master/en/model_doc/sew_d.html#transformers.SEWDForCTC) (SEW-D model)
   - [Wav2Vec2Config](/docs/transformers/master/en/model_doc/wav2vec2.html#transformers.Wav2Vec2Config) configuration class: [Wav2Vec2ForCTC](/docs/transformers/master/en/model_doc/wav2vec2.html#transformers.Wav2Vec2ForCTC) (Wav2Vec2 model)
 
 > Examples:
@@ -3062,8 +3063,6 @@ passed as an argument or loaded from `pretrained_model_name_or_path` if possible
 by falling back to using pattern matching on `pretrained_model_name_or_path`:
 
 - **hubert** -- [HubertForCTC](/docs/transformers/master/en/model_doc/hubert.html#transformers.HubertForCTC) (Hubert model)
-- **sew** -- [SEWForCTC](/docs/transformers/master/en/model_doc/sew.html#transformers.SEWForCTC) (SEW model)
-- **sew-d** -- [SEWDForCTC](/docs/transformers/master/en/model_doc/sew_d.html#transformers.SEWDForCTC) (SEW-D model)
 - **wav2vec2** -- [Wav2Vec2ForCTC](/docs/transformers/master/en/model_doc/wav2vec2.html#transformers.Wav2Vec2ForCTC) (Wav2Vec2 model)
 
 The model is set in evaluation mode by default using `model.eval()` (so for instance, dropout modules are
@@ -3114,9 +3113,8 @@ deactivated). To train the model, you should first set it back in training mode 
 - **resume_download** (`bool`, _optional_, defaults to `False`) --
   Whether or not to delete incompletely received files. Will attempt to resume the download if such a
   file exists.
-- **proxies** (`Dict[str, str]`, _optional_) --
-  A dictionary of proxy servers to use by protocol or endpoint, e.g., `&amp;lcub;'http': 'foo.bar:3128', 'http://hostname': 'foo.bar:4012'}`. The proxies are used on each request.
-- **output_loading_info(`bool`,** _optional_, defaults to `False`) --
+- **proxies** (`Dict[str, str], `optional`) -- A dictionary of proxy servers to use by protocol or endpoint, e.g., `&amp;lcub;'http': 'foo.bar:3128',
+  'http://hostname': 'foo.bar:4012'}`. The proxies are used on each request. - **output_loading_info(`bool`,** _optional_, defaults to `False`) --
   Whether ot not to also return a dictionary containing missing keys, unexpected keys and error messages.
 - **local_files_only(`bool`,** _optional_, defaults to `False`) --
   Whether or not to only look at local files (e.g., not try downloading the model).
@@ -3161,7 +3159,7 @@ True
 ```
 
 
-## AutoModelForSpeechSeq2Seq
+## [AutoModelForSpeechSeq2Seq](#automodelforspeechseqseq)
 
 <a id='transformers.AutoModelForSpeechSeq2Seq'></a>
 > **class transformers.AutoModelForSpeechSeq2Seq**(*args, **kwargs)
@@ -3264,9 +3262,8 @@ deactivated). To train the model, you should first set it back in training mode 
 - **resume_download** (`bool`, _optional_, defaults to `False`) --
   Whether or not to delete incompletely received files. Will attempt to resume the download if such a
   file exists.
-- **proxies** (`Dict[str, str]`, _optional_) --
-  A dictionary of proxy servers to use by protocol or endpoint, e.g., `&amp;lcub;'http': 'foo.bar:3128', 'http://hostname': 'foo.bar:4012'}`. The proxies are used on each request.
-- **output_loading_info(`bool`,** _optional_, defaults to `False`) --
+- **proxies** (`Dict[str, str], `optional`) -- A dictionary of proxy servers to use by protocol or endpoint, e.g., `&amp;lcub;'http': 'foo.bar:3128',
+  'http://hostname': 'foo.bar:4012'}`. The proxies are used on each request. - **output_loading_info(`bool`,** _optional_, defaults to `False`) --
   Whether ot not to also return a dictionary containing missing keys, unexpected keys and error messages.
 - **local_files_only(`bool`,** _optional_, defaults to `False`) --
   Whether or not to only look at local files (e.g., not try downloading the model).
@@ -3311,7 +3308,7 @@ True
 ```
 
 
-## AutoModelForObjectDetection
+## [AutoModelForObjectDetection](#automodelforobjectdetection)
 
 <a id='transformers.AutoModelForObjectDetection'></a>
 > **class transformers.AutoModelForObjectDetection**(*args, **kwargs)
@@ -3412,9 +3409,8 @@ deactivated). To train the model, you should first set it back in training mode 
 - **resume_download** (`bool`, _optional_, defaults to `False`) --
   Whether or not to delete incompletely received files. Will attempt to resume the download if such a
   file exists.
-- **proxies** (`Dict[str, str]`, _optional_) --
-  A dictionary of proxy servers to use by protocol or endpoint, e.g., `&amp;lcub;'http': 'foo.bar:3128', 'http://hostname': 'foo.bar:4012'}`. The proxies are used on each request.
-- **output_loading_info(`bool`,** _optional_, defaults to `False`) --
+- **proxies** (`Dict[str, str], `optional`) -- A dictionary of proxy servers to use by protocol or endpoint, e.g., `&amp;lcub;'http': 'foo.bar:3128',
+  'http://hostname': 'foo.bar:4012'}`. The proxies are used on each request. - **output_loading_info(`bool`,** _optional_, defaults to `False`) --
   Whether ot not to also return a dictionary containing missing keys, unexpected keys and error messages.
 - **local_files_only(`bool`,** _optional_, defaults to `False`) --
   Whether or not to only look at local files (e.g., not try downloading the model).
@@ -3459,7 +3455,7 @@ True
 ```
 
 
-## AutoModelForImageSegmentation
+## [AutoModelForImageSegmentation](#automodelforimagesegmentation)
 
 <a id='transformers.AutoModelForImageSegmentation'></a>
 > **class transformers.AutoModelForImageSegmentation**(*args, **kwargs)
@@ -3560,9 +3556,8 @@ deactivated). To train the model, you should first set it back in training mode 
 - **resume_download** (`bool`, _optional_, defaults to `False`) --
   Whether or not to delete incompletely received files. Will attempt to resume the download if such a
   file exists.
-- **proxies** (`Dict[str, str]`, _optional_) --
-  A dictionary of proxy servers to use by protocol or endpoint, e.g., `&amp;lcub;'http': 'foo.bar:3128', 'http://hostname': 'foo.bar:4012'}`. The proxies are used on each request.
-- **output_loading_info(`bool`,** _optional_, defaults to `False`) --
+- **proxies** (`Dict[str, str], `optional`) -- A dictionary of proxy servers to use by protocol or endpoint, e.g., `&amp;lcub;'http': 'foo.bar:3128',
+  'http://hostname': 'foo.bar:4012'}`. The proxies are used on each request. - **output_loading_info(`bool`,** _optional_, defaults to `False`) --
   Whether ot not to also return a dictionary containing missing keys, unexpected keys and error messages.
 - **local_files_only(`bool`,** _optional_, defaults to `False`) --
   Whether or not to only look at local files (e.g., not try downloading the model).
@@ -3607,7 +3602,7 @@ True
 ```
 
 
-## TFAutoModel
+## [TFAutoModel](#tfautomodel)
 
 <a id='transformers.TFAutoModel'></a>
 > **class transformers.TFAutoModel**(*args, **kwargs)
@@ -3771,9 +3766,8 @@ by falling back to using pattern matching on `pretrained_model_name_or_path`:
 - **resume_download** (`bool`, _optional_, defaults to `False`) --
   Whether or not to delete incompletely received files. Will attempt to resume the download if such a
   file exists.
-- **proxies** (`Dict[str, str]`, _optional_) --
-  A dictionary of proxy servers to use by protocol or endpoint, e.g., `&amp;lcub;'http': 'foo.bar:3128', 'http://hostname': 'foo.bar:4012'}`. The proxies are used on each request.
-- **output_loading_info(`bool`,** _optional_, defaults to `False`) --
+- **proxies** (`Dict[str, str], `optional`) -- A dictionary of proxy servers to use by protocol or endpoint, e.g., `&amp;lcub;'http': 'foo.bar:3128',
+  'http://hostname': 'foo.bar:4012'}`. The proxies are used on each request. - **output_loading_info(`bool`,** _optional_, defaults to `False`) --
   Whether ot not to also return a dictionary containing missing keys, unexpected keys and error messages.
 - **local_files_only(`bool`,** _optional_, defaults to `False`) --
   Whether or not to only look at local files (e.g., not try downloading the model).
@@ -3818,7 +3812,7 @@ True
 ```
 
 
-## TFAutoModelForPreTraining
+## [TFAutoModelForPreTraining](#tfautomodelforpretraining)
 
 <a id='transformers.TFAutoModelForPreTraining'></a>
 > **class transformers.TFAutoModelForPreTraining**(*args, **kwargs)
@@ -3950,9 +3944,8 @@ by falling back to using pattern matching on `pretrained_model_name_or_path`:
 - **resume_download** (`bool`, _optional_, defaults to `False`) --
   Whether or not to delete incompletely received files. Will attempt to resume the download if such a
   file exists.
-- **proxies** (`Dict[str, str]`, _optional_) --
-  A dictionary of proxy servers to use by protocol or endpoint, e.g., `&amp;lcub;'http': 'foo.bar:3128', 'http://hostname': 'foo.bar:4012'}`. The proxies are used on each request.
-- **output_loading_info(`bool`,** _optional_, defaults to `False`) --
+- **proxies** (`Dict[str, str], `optional`) -- A dictionary of proxy servers to use by protocol or endpoint, e.g., `&amp;lcub;'http': 'foo.bar:3128',
+  'http://hostname': 'foo.bar:4012'}`. The proxies are used on each request. - **output_loading_info(`bool`,** _optional_, defaults to `False`) --
   Whether ot not to also return a dictionary containing missing keys, unexpected keys and error messages.
 - **local_files_only(`bool`,** _optional_, defaults to `False`) --
   Whether or not to only look at local files (e.g., not try downloading the model).
@@ -3997,7 +3990,7 @@ True
 ```
 
 
-## TFAutoModelForCausalLM
+## [TFAutoModelForCausalLM](#tfautomodelforcausallm)
 
 <a id='transformers.TFAutoModelForCausalLM'></a>
 > **class transformers.TFAutoModelForCausalLM**(*args, **kwargs)
@@ -4032,7 +4025,6 @@ weights.
   - [OpenAIGPTConfig](/docs/transformers/master/en/model_doc/gpt.html#transformers.OpenAIGPTConfig) configuration class: [TFOpenAIGPTLMHeadModel](/docs/transformers/master/en/model_doc/gpt.html#transformers.TFOpenAIGPTLMHeadModel) (OpenAI GPT model)
   - [RemBertConfig](/docs/transformers/master/en/model_doc/rembert.html#transformers.RemBertConfig) configuration class: [TFRemBertForCausalLM](/docs/transformers/master/en/model_doc/rembert.html#transformers.TFRemBertForCausalLM) (RemBERT model)
   - [RoFormerConfig](/docs/transformers/master/en/model_doc/roformer.html#transformers.RoFormerConfig) configuration class: [TFRoFormerForCausalLM](/docs/transformers/master/en/model_doc/roformer.html#transformers.TFRoFormerForCausalLM) (RoFormer model)
-  - [RobertaConfig](/docs/transformers/master/en/model_doc/roberta.html#transformers.RobertaConfig) configuration class: [TFRobertaForCausalLM](/docs/transformers/master/en/model_doc/roberta.html#transformers.TFRobertaForCausalLM) (RoBERTa model)
   - [TransfoXLConfig](/docs/transformers/master/en/model_doc/transformerxl.html#transformers.TransfoXLConfig) configuration class: [TFTransfoXLLMHeadModel](/docs/transformers/master/en/model_doc/transformerxl.html#transformers.TFTransfoXLLMHeadModel) (Transformer-XL model)
   - [XLMConfig](/docs/transformers/master/en/model_doc/xlm.html#transformers.XLMConfig) configuration class: [TFXLMWithLMHeadModel](/docs/transformers/master/en/model_doc/xlm.html#transformers.TFXLMWithLMHeadModel) (XLM model)
   - [XLNetConfig](/docs/transformers/master/en/model_doc/xlnet.html#transformers.XLNetConfig) configuration class: [TFXLNetLMHeadModel](/docs/transformers/master/en/model_doc/xlnet.html#transformers.TFXLNetLMHeadModel) (XLNet model)
@@ -4062,7 +4054,6 @@ by falling back to using pattern matching on `pretrained_model_name_or_path`:
 - **gpt2** -- [TFGPT2LMHeadModel](/docs/transformers/master/en/model_doc/gpt2.html#transformers.TFGPT2LMHeadModel) (OpenAI GPT-2 model)
 - **openai-gpt** -- [TFOpenAIGPTLMHeadModel](/docs/transformers/master/en/model_doc/gpt.html#transformers.TFOpenAIGPTLMHeadModel) (OpenAI GPT model)
 - **rembert** -- [TFRemBertForCausalLM](/docs/transformers/master/en/model_doc/rembert.html#transformers.TFRemBertForCausalLM) (RemBERT model)
-- **roberta** -- [TFRobertaForCausalLM](/docs/transformers/master/en/model_doc/roberta.html#transformers.TFRobertaForCausalLM) (RoBERTa model)
 - **roformer** -- [TFRoFormerForCausalLM](/docs/transformers/master/en/model_doc/roformer.html#transformers.TFRoFormerForCausalLM) (RoFormer model)
 - **transfo-xl** -- [TFTransfoXLLMHeadModel](/docs/transformers/master/en/model_doc/transformerxl.html#transformers.TFTransfoXLLMHeadModel) (Transformer-XL model)
 - **xlm** -- [TFXLMWithLMHeadModel](/docs/transformers/master/en/model_doc/xlm.html#transformers.TFXLMWithLMHeadModel) (XLM model)
@@ -4107,9 +4098,8 @@ by falling back to using pattern matching on `pretrained_model_name_or_path`:
 - **resume_download** (`bool`, _optional_, defaults to `False`) --
   Whether or not to delete incompletely received files. Will attempt to resume the download if such a
   file exists.
-- **proxies** (`Dict[str, str]`, _optional_) --
-  A dictionary of proxy servers to use by protocol or endpoint, e.g., `&amp;lcub;'http': 'foo.bar:3128', 'http://hostname': 'foo.bar:4012'}`. The proxies are used on each request.
-- **output_loading_info(`bool`,** _optional_, defaults to `False`) --
+- **proxies** (`Dict[str, str], `optional`) -- A dictionary of proxy servers to use by protocol or endpoint, e.g., `&amp;lcub;'http': 'foo.bar:3128',
+  'http://hostname': 'foo.bar:4012'}`. The proxies are used on each request. - **output_loading_info(`bool`,** _optional_, defaults to `False`) --
   Whether ot not to also return a dictionary containing missing keys, unexpected keys and error messages.
 - **local_files_only(`bool`,** _optional_, defaults to `False`) --
   Whether or not to only look at local files (e.g., not try downloading the model).
@@ -4154,7 +4144,7 @@ True
 ```
 
 
-## TFAutoModelForMaskedLM
+## [TFAutoModelForMaskedLM](#tfautomodelformaskedlm)
 
 <a id='transformers.TFAutoModelForMaskedLM'></a>
 > **class transformers.TFAutoModelForMaskedLM**(*args, **kwargs)
@@ -4282,9 +4272,8 @@ by falling back to using pattern matching on `pretrained_model_name_or_path`:
 - **resume_download** (`bool`, _optional_, defaults to `False`) --
   Whether or not to delete incompletely received files. Will attempt to resume the download if such a
   file exists.
-- **proxies** (`Dict[str, str]`, _optional_) --
-  A dictionary of proxy servers to use by protocol or endpoint, e.g., `&amp;lcub;'http': 'foo.bar:3128', 'http://hostname': 'foo.bar:4012'}`. The proxies are used on each request.
-- **output_loading_info(`bool`,** _optional_, defaults to `False`) --
+- **proxies** (`Dict[str, str], `optional`) -- A dictionary of proxy servers to use by protocol or endpoint, e.g., `&amp;lcub;'http': 'foo.bar:3128',
+  'http://hostname': 'foo.bar:4012'}`. The proxies are used on each request. - **output_loading_info(`bool`,** _optional_, defaults to `False`) --
   Whether ot not to also return a dictionary containing missing keys, unexpected keys and error messages.
 - **local_files_only(`bool`,** _optional_, defaults to `False`) --
   Whether or not to only look at local files (e.g., not try downloading the model).
@@ -4329,7 +4318,7 @@ True
 ```
 
 
-## TFAutoModelForSeq2SeqLM
+## [TFAutoModelForSeq2SeqLM](#tfautomodelforseqseqlm)
 
 <a id='transformers.TFAutoModelForSeq2SeqLM'></a>
 > **class transformers.TFAutoModelForSeq2SeqLM**(*args, **kwargs)
@@ -4361,7 +4350,6 @@ weights.
   - [BartConfig](/docs/transformers/master/en/model_doc/bart.html#transformers.BartConfig) configuration class: [TFBartForConditionalGeneration](/docs/transformers/master/en/model_doc/bart.html#transformers.TFBartForConditionalGeneration) (BART model)
   - [BlenderbotConfig](/docs/transformers/master/en/model_doc/blenderbot.html#transformers.BlenderbotConfig) configuration class: [TFBlenderbotForConditionalGeneration](/docs/transformers/master/en/model_doc/blenderbot.html#transformers.TFBlenderbotForConditionalGeneration) (Blenderbot model)
   - [BlenderbotSmallConfig](/docs/transformers/master/en/model_doc/blenderbot_small.html#transformers.BlenderbotSmallConfig) configuration class: [TFBlenderbotSmallForConditionalGeneration](/docs/transformers/master/en/model_doc/blenderbot_small.html#transformers.TFBlenderbotSmallForConditionalGeneration) (BlenderbotSmall model)
-  - [EncoderDecoderConfig](/docs/transformers/master/en/model_doc/encoderdecoder.html#transformers.EncoderDecoderConfig) configuration class: [TFEncoderDecoderModel](/docs/transformers/master/en/model_doc/encoderdecoder.html#transformers.TFEncoderDecoderModel) (Encoder decoder model)
   - [LEDConfig](/docs/transformers/master/en/model_doc/led.html#transformers.LEDConfig) configuration class: [TFLEDForConditionalGeneration](/docs/transformers/master/en/model_doc/led.html#transformers.TFLEDForConditionalGeneration) (LED model)
   - [MBartConfig](/docs/transformers/master/en/model_doc/mbart.html#transformers.MBartConfig) configuration class: [TFMBartForConditionalGeneration](/docs/transformers/master/en/model_doc/mbart.html#transformers.TFMBartForConditionalGeneration) (mBART model)
   - [MT5Config](/docs/transformers/master/en/model_doc/mt5.html#transformers.MT5Config) configuration class: [TFMT5ForConditionalGeneration](/docs/transformers/master/en/model_doc/mt5.html#transformers.TFMT5ForConditionalGeneration) (mT5 model)
@@ -4392,7 +4380,6 @@ by falling back to using pattern matching on `pretrained_model_name_or_path`:
 - **bart** -- [TFBartForConditionalGeneration](/docs/transformers/master/en/model_doc/bart.html#transformers.TFBartForConditionalGeneration) (BART model)
 - **blenderbot** -- [TFBlenderbotForConditionalGeneration](/docs/transformers/master/en/model_doc/blenderbot.html#transformers.TFBlenderbotForConditionalGeneration) (Blenderbot model)
 - **blenderbot-small** -- [TFBlenderbotSmallForConditionalGeneration](/docs/transformers/master/en/model_doc/blenderbot_small.html#transformers.TFBlenderbotSmallForConditionalGeneration) (BlenderbotSmall model)
-- **encoder-decoder** -- [TFEncoderDecoderModel](/docs/transformers/master/en/model_doc/encoderdecoder.html#transformers.TFEncoderDecoderModel) (Encoder decoder model)
 - **led** -- [TFLEDForConditionalGeneration](/docs/transformers/master/en/model_doc/led.html#transformers.TFLEDForConditionalGeneration) (LED model)
 - **marian** -- [TFMarianMTModel](/docs/transformers/master/en/model_doc/marian.html#transformers.TFMarianMTModel) (Marian model)
 - **mbart** -- [TFMBartForConditionalGeneration](/docs/transformers/master/en/model_doc/mbart.html#transformers.TFMBartForConditionalGeneration) (mBART model)
@@ -4439,9 +4426,8 @@ by falling back to using pattern matching on `pretrained_model_name_or_path`:
 - **resume_download** (`bool`, _optional_, defaults to `False`) --
   Whether or not to delete incompletely received files. Will attempt to resume the download if such a
   file exists.
-- **proxies** (`Dict[str, str]`, _optional_) --
-  A dictionary of proxy servers to use by protocol or endpoint, e.g., `&amp;lcub;'http': 'foo.bar:3128', 'http://hostname': 'foo.bar:4012'}`. The proxies are used on each request.
-- **output_loading_info(`bool`,** _optional_, defaults to `False`) --
+- **proxies** (`Dict[str, str], `optional`) -- A dictionary of proxy servers to use by protocol or endpoint, e.g., `&amp;lcub;'http': 'foo.bar:3128',
+  'http://hostname': 'foo.bar:4012'}`. The proxies are used on each request. - **output_loading_info(`bool`,** _optional_, defaults to `False`) --
   Whether ot not to also return a dictionary containing missing keys, unexpected keys and error messages.
 - **local_files_only(`bool`,** _optional_, defaults to `False`) --
   Whether or not to only look at local files (e.g., not try downloading the model).
@@ -4486,7 +4472,7 @@ True
 ```
 
 
-## TFAutoModelForSequenceClassification
+## [TFAutoModelForSequenceClassification](#tfautomodelforsequenceclassification)
 
 <a id='transformers.TFAutoModelForSequenceClassification'></a>
 > **class transformers.TFAutoModelForSequenceClassification**(*args, **kwargs)
@@ -4624,9 +4610,8 @@ by falling back to using pattern matching on `pretrained_model_name_or_path`:
 - **resume_download** (`bool`, _optional_, defaults to `False`) --
   Whether or not to delete incompletely received files. Will attempt to resume the download if such a
   file exists.
-- **proxies** (`Dict[str, str]`, _optional_) --
-  A dictionary of proxy servers to use by protocol or endpoint, e.g., `&amp;lcub;'http': 'foo.bar:3128', 'http://hostname': 'foo.bar:4012'}`. The proxies are used on each request.
-- **output_loading_info(`bool`,** _optional_, defaults to `False`) --
+- **proxies** (`Dict[str, str], `optional`) -- A dictionary of proxy servers to use by protocol or endpoint, e.g., `&amp;lcub;'http': 'foo.bar:3128',
+  'http://hostname': 'foo.bar:4012'}`. The proxies are used on each request. - **output_loading_info(`bool`,** _optional_, defaults to `False`) --
   Whether ot not to also return a dictionary containing missing keys, unexpected keys and error messages.
 - **local_files_only(`bool`,** _optional_, defaults to `False`) --
   Whether or not to only look at local files (e.g., not try downloading the model).
@@ -4671,7 +4656,7 @@ True
 ```
 
 
-## TFAutoModelForMultipleChoice
+## [TFAutoModelForMultipleChoice](#tfautomodelformultiplechoice)
 
 <a id='transformers.TFAutoModelForMultipleChoice'></a>
 > **class transformers.TFAutoModelForMultipleChoice**(*args, **kwargs)
@@ -4795,9 +4780,8 @@ by falling back to using pattern matching on `pretrained_model_name_or_path`:
 - **resume_download** (`bool`, _optional_, defaults to `False`) --
   Whether or not to delete incompletely received files. Will attempt to resume the download if such a
   file exists.
-- **proxies** (`Dict[str, str]`, _optional_) --
-  A dictionary of proxy servers to use by protocol or endpoint, e.g., `&amp;lcub;'http': 'foo.bar:3128', 'http://hostname': 'foo.bar:4012'}`. The proxies are used on each request.
-- **output_loading_info(`bool`,** _optional_, defaults to `False`) --
+- **proxies** (`Dict[str, str], `optional`) -- A dictionary of proxy servers to use by protocol or endpoint, e.g., `&amp;lcub;'http': 'foo.bar:3128',
+  'http://hostname': 'foo.bar:4012'}`. The proxies are used on each request. - **output_loading_info(`bool`,** _optional_, defaults to `False`) --
   Whether ot not to also return a dictionary containing missing keys, unexpected keys and error messages.
 - **local_files_only(`bool`,** _optional_, defaults to `False`) --
   Whether or not to only look at local files (e.g., not try downloading the model).
@@ -4842,7 +4826,7 @@ True
 ```
 
 
-## TFAutoModelForTokenClassification
+## [TFAutoModelForTokenClassification](#tfautomodelfortokenclassification)
 
 <a id='transformers.TFAutoModelForTokenClassification'></a>
 > **class transformers.TFAutoModelForTokenClassification**(*args, **kwargs)
@@ -4972,9 +4956,8 @@ by falling back to using pattern matching on `pretrained_model_name_or_path`:
 - **resume_download** (`bool`, _optional_, defaults to `False`) --
   Whether or not to delete incompletely received files. Will attempt to resume the download if such a
   file exists.
-- **proxies** (`Dict[str, str]`, _optional_) --
-  A dictionary of proxy servers to use by protocol or endpoint, e.g., `&amp;lcub;'http': 'foo.bar:3128', 'http://hostname': 'foo.bar:4012'}`. The proxies are used on each request.
-- **output_loading_info(`bool`,** _optional_, defaults to `False`) --
+- **proxies** (`Dict[str, str], `optional`) -- A dictionary of proxy servers to use by protocol or endpoint, e.g., `&amp;lcub;'http': 'foo.bar:3128',
+  'http://hostname': 'foo.bar:4012'}`. The proxies are used on each request. - **output_loading_info(`bool`,** _optional_, defaults to `False`) --
   Whether ot not to also return a dictionary containing missing keys, unexpected keys and error messages.
 - **local_files_only(`bool`,** _optional_, defaults to `False`) --
   Whether or not to only look at local files (e.g., not try downloading the model).
@@ -5019,7 +5002,7 @@ True
 ```
 
 
-## TFAutoModelForQuestionAnswering
+## [TFAutoModelForQuestionAnswering](#tfautomodelforquestionanswering)
 
 <a id='transformers.TFAutoModelForQuestionAnswering'></a>
 > **class transformers.TFAutoModelForQuestionAnswering**(*args, **kwargs)
@@ -5147,9 +5130,8 @@ by falling back to using pattern matching on `pretrained_model_name_or_path`:
 - **resume_download** (`bool`, _optional_, defaults to `False`) --
   Whether or not to delete incompletely received files. Will attempt to resume the download if such a
   file exists.
-- **proxies** (`Dict[str, str]`, _optional_) --
-  A dictionary of proxy servers to use by protocol or endpoint, e.g., `&amp;lcub;'http': 'foo.bar:3128', 'http://hostname': 'foo.bar:4012'}`. The proxies are used on each request.
-- **output_loading_info(`bool`,** _optional_, defaults to `False`) --
+- **proxies** (`Dict[str, str], `optional`) -- A dictionary of proxy servers to use by protocol or endpoint, e.g., `&amp;lcub;'http': 'foo.bar:3128',
+  'http://hostname': 'foo.bar:4012'}`. The proxies are used on each request. - **output_loading_info(`bool`,** _optional_, defaults to `False`) --
   Whether ot not to also return a dictionary containing missing keys, unexpected keys and error messages.
 - **local_files_only(`bool`,** _optional_, defaults to `False`) --
   Whether or not to only look at local files (e.g., not try downloading the model).
@@ -5194,7 +5176,7 @@ True
 ```
 
 
-## FlaxAutoModel
+## [FlaxAutoModel](#flaxautomodel)
 
 <a id='transformers.FlaxAutoModel'></a>
 > **class transformers.FlaxAutoModel**(*args, **kwargs)
@@ -5320,9 +5302,8 @@ by falling back to using pattern matching on `pretrained_model_name_or_path`:
 - **resume_download** (`bool`, _optional_, defaults to `False`) --
   Whether or not to delete incompletely received files. Will attempt to resume the download if such a
   file exists.
-- **proxies** (`Dict[str, str]`, _optional_) --
-  A dictionary of proxy servers to use by protocol or endpoint, e.g., `&amp;lcub;'http': 'foo.bar:3128', 'http://hostname': 'foo.bar:4012'}`. The proxies are used on each request.
-- **output_loading_info(`bool`,** _optional_, defaults to `False`) --
+- **proxies** (`Dict[str, str], `optional`) -- A dictionary of proxy servers to use by protocol or endpoint, e.g., `&amp;lcub;'http': 'foo.bar:3128',
+  'http://hostname': 'foo.bar:4012'}`. The proxies are used on each request. - **output_loading_info(`bool`,** _optional_, defaults to `False`) --
   Whether ot not to also return a dictionary containing missing keys, unexpected keys and error messages.
 - **local_files_only(`bool`,** _optional_, defaults to `False`) --
   Whether or not to only look at local files (e.g., not try downloading the model).
@@ -5367,7 +5348,7 @@ True
 ```
 
 
-## FlaxAutoModelForCausalLM
+## [FlaxAutoModelForCausalLM](#flaxautomodelforcausallm)
 
 <a id='transformers.FlaxAutoModelForCausalLM'></a>
 > **class transformers.FlaxAutoModelForCausalLM**(*args, **kwargs)
@@ -5461,9 +5442,8 @@ by falling back to using pattern matching on `pretrained_model_name_or_path`:
 - **resume_download** (`bool`, _optional_, defaults to `False`) --
   Whether or not to delete incompletely received files. Will attempt to resume the download if such a
   file exists.
-- **proxies** (`Dict[str, str]`, _optional_) --
-  A dictionary of proxy servers to use by protocol or endpoint, e.g., `&amp;lcub;'http': 'foo.bar:3128', 'http://hostname': 'foo.bar:4012'}`. The proxies are used on each request.
-- **output_loading_info(`bool`,** _optional_, defaults to `False`) --
+- **proxies** (`Dict[str, str], `optional`) -- A dictionary of proxy servers to use by protocol or endpoint, e.g., `&amp;lcub;'http': 'foo.bar:3128',
+  'http://hostname': 'foo.bar:4012'}`. The proxies are used on each request. - **output_loading_info(`bool`,** _optional_, defaults to `False`) --
   Whether ot not to also return a dictionary containing missing keys, unexpected keys and error messages.
 - **local_files_only(`bool`,** _optional_, defaults to `False`) --
   Whether or not to only look at local files (e.g., not try downloading the model).
@@ -5508,7 +5488,7 @@ True
 ```
 
 
-## FlaxAutoModelForPreTraining
+## [FlaxAutoModelForPreTraining](#flaxautomodelforpretraining)
 
 <a id='transformers.FlaxAutoModelForPreTraining'></a>
 > **class transformers.FlaxAutoModelForPreTraining**(*args, **kwargs)
@@ -5618,9 +5598,8 @@ by falling back to using pattern matching on `pretrained_model_name_or_path`:
 - **resume_download** (`bool`, _optional_, defaults to `False`) --
   Whether or not to delete incompletely received files. Will attempt to resume the download if such a
   file exists.
-- **proxies** (`Dict[str, str]`, _optional_) --
-  A dictionary of proxy servers to use by protocol or endpoint, e.g., `&amp;lcub;'http': 'foo.bar:3128', 'http://hostname': 'foo.bar:4012'}`. The proxies are used on each request.
-- **output_loading_info(`bool`,** _optional_, defaults to `False`) --
+- **proxies** (`Dict[str, str], `optional`) -- A dictionary of proxy servers to use by protocol or endpoint, e.g., `&amp;lcub;'http': 'foo.bar:3128',
+  'http://hostname': 'foo.bar:4012'}`. The proxies are used on each request. - **output_loading_info(`bool`,** _optional_, defaults to `False`) --
   Whether ot not to also return a dictionary containing missing keys, unexpected keys and error messages.
 - **local_files_only(`bool`,** _optional_, defaults to `False`) --
   Whether or not to only look at local files (e.g., not try downloading the model).
@@ -5665,7 +5644,7 @@ True
 ```
 
 
-## FlaxAutoModelForMaskedLM
+## [FlaxAutoModelForMaskedLM](#flaxautomodelformaskedlm)
 
 <a id='transformers.FlaxAutoModelForMaskedLM'></a>
 > **class transformers.FlaxAutoModelForMaskedLM**(*args, **kwargs)
@@ -5771,9 +5750,8 @@ by falling back to using pattern matching on `pretrained_model_name_or_path`:
 - **resume_download** (`bool`, _optional_, defaults to `False`) --
   Whether or not to delete incompletely received files. Will attempt to resume the download if such a
   file exists.
-- **proxies** (`Dict[str, str]`, _optional_) --
-  A dictionary of proxy servers to use by protocol or endpoint, e.g., `&amp;lcub;'http': 'foo.bar:3128', 'http://hostname': 'foo.bar:4012'}`. The proxies are used on each request.
-- **output_loading_info(`bool`,** _optional_, defaults to `False`) --
+- **proxies** (`Dict[str, str], `optional`) -- A dictionary of proxy servers to use by protocol or endpoint, e.g., `&amp;lcub;'http': 'foo.bar:3128',
+  'http://hostname': 'foo.bar:4012'}`. The proxies are used on each request. - **output_loading_info(`bool`,** _optional_, defaults to `False`) --
   Whether ot not to also return a dictionary containing missing keys, unexpected keys and error messages.
 - **local_files_only(`bool`,** _optional_, defaults to `False`) --
   Whether or not to only look at local files (e.g., not try downloading the model).
@@ -5818,7 +5796,7 @@ True
 ```
 
 
-## FlaxAutoModelForSeq2SeqLM
+## [FlaxAutoModelForSeq2SeqLM](#flaxautomodelforseqseqlm)
 
 <a id='transformers.FlaxAutoModelForSeq2SeqLM'></a>
 > **class transformers.FlaxAutoModelForSeq2SeqLM**(*args, **kwargs)
@@ -5922,9 +5900,8 @@ by falling back to using pattern matching on `pretrained_model_name_or_path`:
 - **resume_download** (`bool`, _optional_, defaults to `False`) --
   Whether or not to delete incompletely received files. Will attempt to resume the download if such a
   file exists.
-- **proxies** (`Dict[str, str]`, _optional_) --
-  A dictionary of proxy servers to use by protocol or endpoint, e.g., `&amp;lcub;'http': 'foo.bar:3128', 'http://hostname': 'foo.bar:4012'}`. The proxies are used on each request.
-- **output_loading_info(`bool`,** _optional_, defaults to `False`) --
+- **proxies** (`Dict[str, str], `optional`) -- A dictionary of proxy servers to use by protocol or endpoint, e.g., `&amp;lcub;'http': 'foo.bar:3128',
+  'http://hostname': 'foo.bar:4012'}`. The proxies are used on each request. - **output_loading_info(`bool`,** _optional_, defaults to `False`) --
   Whether ot not to also return a dictionary containing missing keys, unexpected keys and error messages.
 - **local_files_only(`bool`,** _optional_, defaults to `False`) --
   Whether or not to only look at local files (e.g., not try downloading the model).
@@ -5969,7 +5946,7 @@ True
 ```
 
 
-## FlaxAutoModelForSequenceClassification
+## [FlaxAutoModelForSequenceClassification](#flaxautomodelforsequenceclassification)
 
 <a id='transformers.FlaxAutoModelForSequenceClassification'></a>
 > **class transformers.FlaxAutoModelForSequenceClassification**(*args, **kwargs)
@@ -6075,9 +6052,8 @@ by falling back to using pattern matching on `pretrained_model_name_or_path`:
 - **resume_download** (`bool`, _optional_, defaults to `False`) --
   Whether or not to delete incompletely received files. Will attempt to resume the download if such a
   file exists.
-- **proxies** (`Dict[str, str]`, _optional_) --
-  A dictionary of proxy servers to use by protocol or endpoint, e.g., `&amp;lcub;'http': 'foo.bar:3128', 'http://hostname': 'foo.bar:4012'}`. The proxies are used on each request.
-- **output_loading_info(`bool`,** _optional_, defaults to `False`) --
+- **proxies** (`Dict[str, str], `optional`) -- A dictionary of proxy servers to use by protocol or endpoint, e.g., `&amp;lcub;'http': 'foo.bar:3128',
+  'http://hostname': 'foo.bar:4012'}`. The proxies are used on each request. - **output_loading_info(`bool`,** _optional_, defaults to `False`) --
   Whether ot not to also return a dictionary containing missing keys, unexpected keys and error messages.
 - **local_files_only(`bool`,** _optional_, defaults to `False`) --
   Whether or not to only look at local files (e.g., not try downloading the model).
@@ -6122,7 +6098,7 @@ True
 ```
 
 
-## FlaxAutoModelForQuestionAnswering
+## [FlaxAutoModelForQuestionAnswering](#flaxautomodelforquestionanswering)
 
 <a id='transformers.FlaxAutoModelForQuestionAnswering'></a>
 > **class transformers.FlaxAutoModelForQuestionAnswering**(*args, **kwargs)
@@ -6228,9 +6204,8 @@ by falling back to using pattern matching on `pretrained_model_name_or_path`:
 - **resume_download** (`bool`, _optional_, defaults to `False`) --
   Whether or not to delete incompletely received files. Will attempt to resume the download if such a
   file exists.
-- **proxies** (`Dict[str, str]`, _optional_) --
-  A dictionary of proxy servers to use by protocol or endpoint, e.g., `&amp;lcub;'http': 'foo.bar:3128', 'http://hostname': 'foo.bar:4012'}`. The proxies are used on each request.
-- **output_loading_info(`bool`,** _optional_, defaults to `False`) --
+- **proxies** (`Dict[str, str], `optional`) -- A dictionary of proxy servers to use by protocol or endpoint, e.g., `&amp;lcub;'http': 'foo.bar:3128',
+  'http://hostname': 'foo.bar:4012'}`. The proxies are used on each request. - **output_loading_info(`bool`,** _optional_, defaults to `False`) --
   Whether ot not to also return a dictionary containing missing keys, unexpected keys and error messages.
 - **local_files_only(`bool`,** _optional_, defaults to `False`) --
   Whether or not to only look at local files (e.g., not try downloading the model).
@@ -6275,7 +6250,7 @@ True
 ```
 
 
-## FlaxAutoModelForTokenClassification
+## [FlaxAutoModelForTokenClassification](#flaxautomodelfortokenclassification)
 
 <a id='transformers.FlaxAutoModelForTokenClassification'></a>
 > **class transformers.FlaxAutoModelForTokenClassification**(*args, **kwargs)
@@ -6377,9 +6352,8 @@ by falling back to using pattern matching on `pretrained_model_name_or_path`:
 - **resume_download** (`bool`, _optional_, defaults to `False`) --
   Whether or not to delete incompletely received files. Will attempt to resume the download if such a
   file exists.
-- **proxies** (`Dict[str, str]`, _optional_) --
-  A dictionary of proxy servers to use by protocol or endpoint, e.g., `&amp;lcub;'http': 'foo.bar:3128', 'http://hostname': 'foo.bar:4012'}`. The proxies are used on each request.
-- **output_loading_info(`bool`,** _optional_, defaults to `False`) --
+- **proxies** (`Dict[str, str], `optional`) -- A dictionary of proxy servers to use by protocol or endpoint, e.g., `&amp;lcub;'http': 'foo.bar:3128',
+  'http://hostname': 'foo.bar:4012'}`. The proxies are used on each request. - **output_loading_info(`bool`,** _optional_, defaults to `False`) --
   Whether ot not to also return a dictionary containing missing keys, unexpected keys and error messages.
 - **local_files_only(`bool`,** _optional_, defaults to `False`) --
   Whether or not to only look at local files (e.g., not try downloading the model).
@@ -6424,7 +6398,7 @@ True
 ```
 
 
-## FlaxAutoModelForMultipleChoice
+## [FlaxAutoModelForMultipleChoice](#flaxautomodelformultiplechoice)
 
 <a id='transformers.FlaxAutoModelForMultipleChoice'></a>
 > **class transformers.FlaxAutoModelForMultipleChoice**(*args, **kwargs)
@@ -6526,9 +6500,8 @@ by falling back to using pattern matching on `pretrained_model_name_or_path`:
 - **resume_download** (`bool`, _optional_, defaults to `False`) --
   Whether or not to delete incompletely received files. Will attempt to resume the download if such a
   file exists.
-- **proxies** (`Dict[str, str]`, _optional_) --
-  A dictionary of proxy servers to use by protocol or endpoint, e.g., `&amp;lcub;'http': 'foo.bar:3128', 'http://hostname': 'foo.bar:4012'}`. The proxies are used on each request.
-- **output_loading_info(`bool`,** _optional_, defaults to `False`) --
+- **proxies** (`Dict[str, str], `optional`) -- A dictionary of proxy servers to use by protocol or endpoint, e.g., `&amp;lcub;'http': 'foo.bar:3128',
+  'http://hostname': 'foo.bar:4012'}`. The proxies are used on each request. - **output_loading_info(`bool`,** _optional_, defaults to `False`) --
   Whether ot not to also return a dictionary containing missing keys, unexpected keys and error messages.
 - **local_files_only(`bool`,** _optional_, defaults to `False`) --
   Whether or not to only look at local files (e.g., not try downloading the model).
@@ -6573,7 +6546,7 @@ True
 ```
 
 
-## FlaxAutoModelForNextSentencePrediction
+## [FlaxAutoModelForNextSentencePrediction](#flaxautomodelfornextsentenceprediction)
 
 <a id='transformers.FlaxAutoModelForNextSentencePrediction'></a>
 > **class transformers.FlaxAutoModelForNextSentencePrediction**(*args, **kwargs)
@@ -6665,9 +6638,8 @@ by falling back to using pattern matching on `pretrained_model_name_or_path`:
 - **resume_download** (`bool`, _optional_, defaults to `False`) --
   Whether or not to delete incompletely received files. Will attempt to resume the download if such a
   file exists.
-- **proxies** (`Dict[str, str]`, _optional_) --
-  A dictionary of proxy servers to use by protocol or endpoint, e.g., `&amp;lcub;'http': 'foo.bar:3128', 'http://hostname': 'foo.bar:4012'}`. The proxies are used on each request.
-- **output_loading_info(`bool`,** _optional_, defaults to `False`) --
+- **proxies** (`Dict[str, str], `optional`) -- A dictionary of proxy servers to use by protocol or endpoint, e.g., `&amp;lcub;'http': 'foo.bar:3128',
+  'http://hostname': 'foo.bar:4012'}`. The proxies are used on each request. - **output_loading_info(`bool`,** _optional_, defaults to `False`) --
   Whether ot not to also return a dictionary containing missing keys, unexpected keys and error messages.
 - **local_files_only(`bool`,** _optional_, defaults to `False`) --
   Whether or not to only look at local files (e.g., not try downloading the model).
@@ -6712,7 +6684,7 @@ True
 ```
 
 
-## FlaxAutoModelForImageClassification
+## [FlaxAutoModelForImageClassification](#flaxautomodelforimageclassification)
 
 <a id='transformers.FlaxAutoModelForImageClassification'></a>
 > **class transformers.FlaxAutoModelForImageClassification**(*args, **kwargs)
@@ -6806,9 +6778,8 @@ by falling back to using pattern matching on `pretrained_model_name_or_path`:
 - **resume_download** (`bool`, _optional_, defaults to `False`) --
   Whether or not to delete incompletely received files. Will attempt to resume the download if such a
   file exists.
-- **proxies** (`Dict[str, str]`, _optional_) --
-  A dictionary of proxy servers to use by protocol or endpoint, e.g., `&amp;lcub;'http': 'foo.bar:3128', 'http://hostname': 'foo.bar:4012'}`. The proxies are used on each request.
-- **output_loading_info(`bool`,** _optional_, defaults to `False`) --
+- **proxies** (`Dict[str, str], `optional`) -- A dictionary of proxy servers to use by protocol or endpoint, e.g., `&amp;lcub;'http': 'foo.bar:3128',
+  'http://hostname': 'foo.bar:4012'}`. The proxies are used on each request. - **output_loading_info(`bool`,** _optional_, defaults to `False`) --
   Whether ot not to also return a dictionary containing missing keys, unexpected keys and error messages.
 - **local_files_only(`bool`,** _optional_, defaults to `False`) --
   Whether or not to only look at local files (e.g., not try downloading the model).

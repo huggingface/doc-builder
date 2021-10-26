@@ -1,3 +1,36 @@
+---
+local: marianmt
+sections:
+- local: implementation-notes
+  title: Implementation Notes
+- local: naming
+  title: Naming
+- local: examples
+  title: Examples
+- local: multilingual-models
+  title: Multilingual Models
+- local: old-style-multilingual-models
+  title: Old Style Multi-Lingual Models
+- local: marianconfig
+  title: MarianConfig
+- local: mariantokenizer
+  title: MarianTokenizer
+- local: marianmodel
+  title: MarianModel
+- local: marianmtmodel
+  title: MarianMTModel
+- local: marianforcausallm
+  title: MarianForCausalLM
+- local: tfmarianmodel
+  title: TFMarianModel
+- local: tfmarianmtmodel
+  title: TFMarianMTModel
+- local: flaxmarianmodel
+  title: FlaxMarianModel
+- local: flaxmarianmtmodel
+  title: FlaxMarianMTModel
+title: MarianMT
+---
 <script>
 import Tip from "../../Tip.svelte";
 import Youtube from "../../Youtube.svelte";	
@@ -16,14 +49,14 @@ an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express o
 specific language governing permissions and limitations under the License.
 -->
 
-# MarianMT
+# [MarianMT](#marianmt)
 
 **Bugs:** If you see something strange, file a [Github Issue](https://github.com/huggingface/transformers/issues/new?assignees=sshleifer&labels=&template=bug-report.md&title)
 and assign @patrickvonplaten.
 
 Translations should be similar, but not identical to output in the test set linked to in each model card.
 
-## Implementation Notes
+## [Implementation Notes](#implementation-notes)
 
 - Each model is about 298 MB on disk, there are more than 1,000 models.
 - The list of supported language pairs can be found [here](https://huggingface.co/Helsinki-NLP).
@@ -40,7 +73,7 @@ Translations should be similar, but not identical to output in the test set link
 - Code to bulk convert models can be found in `convert_marian_to_pytorch.py`.
 - This model was contributed by [sshleifer](https://huggingface.co/sshleifer).
 
-## Naming
+## [Naming](#naming)
 
 - All model names use the following format: `Helsinki-NLP/opus-mt-&amp;lcub;src}-&amp;lcub;tgt}`
 - The language codes used to name models are inconsistent. Two digit codes can usually be found [here](https://developers.google.com/admin-sdk/directory/v1/languages), three digit codes require googling "language
@@ -50,14 +83,14 @@ Translations should be similar, but not identical to output in the test set link
   group use a combination of ISO-639-5 codes and ISO-639-2 codes.
 
 
-## Examples
+## [Examples](#examples)
 
 - Since Marian models are smaller than many other translation models available in the library, they can be useful for
   fine-tuning experiments and integration tests.
 - [Fine-tune on GPU](https://github.com/huggingface/transformers/blob/master/examples/research_projects/seq2seq-distillation/train_distil_marian_enro_teacher.sh)
 - [Fine-tune on GPU with pytorch-lightning](https://github.com/huggingface/transformers/blob/master/examples/research_projects/seq2seq-distillation/train_distil_marian_no_teacher.sh)
 
-## Multilingual Models
+## [Multilingual Models](#multilingual-models)
 
 - All model names use the following format: `Helsinki-NLP/opus-mt-&amp;lcub;src}-&amp;lcub;tgt}`:
 - If a model can output multiple languages, and you should specify a language code by prepending the desired output
@@ -101,7 +134,7 @@ suffix = [x.split('/')[1] for x in model_ids]
 old_style_multi_models = [f'&amp;lcub;org}/&amp;lcub;s}' for s in suffix if s != s.lower()]
 ```
 
-## Old Style Multi-Lingual Models
+## [Old Style Multi-Lingual Models](#old-style-multilingual-models)
 
 These are the old style multi-lingual models ported from the OPUS-MT-Train repo: and the members of each language
 group:
@@ -152,7 +185,7 @@ Example of translating english to many romance languages, using old-style 2 char
 'Y esto al español']
 ```
 
-## MarianConfig
+## [MarianConfig](#marianconfig)
 
 <a id='transformers.MarianConfig'></a>
 > **class transformers.MarianConfig**(vocab_size = 50265, max_position_embeddings = 1024, encoder_layers = 12, encoder_ffn_dim = 4096, encoder_attention_heads = 16, decoder_layers = 12, decoder_ffn_dim = 4096, decoder_attention_heads = 16, encoder_layerdrop = 0.0, decoder_layerdrop = 0.0, use_cache = True, is_encoder_decoder = True, activation_function = 'gelu', d_model = 1024, dropout = 0.1, attention_dropout = 0.0, activation_dropout = 0.0, init_std = 0.02, decoder_start_token_id = 58100, classifier_dropout = 0.0, scale_embedding = False, pad_token_id = 58100, eos_token_id = 0, forced_eos_token_id = 0, **kwargs)
@@ -233,7 +266,7 @@ outputs. Read the documentation from [PretrainedConfig](/docs/transformers/maste
 ```
 
 
-## MarianTokenizer
+## [MarianTokenizer](#mariantokenizer)
 
 <a id='transformers.MarianTokenizer'></a>
 > **class transformers.MarianTokenizer**(vocab, source_spm, target_spm, source_lang = None, target_lang = None, unk_token = '&amp;lt;unk>', eos_token = '&amp;lt;/s>', pad_token = '&amp;lt;pad>', model_max_length = 512, sp_model_kwargs: typing.Union[typing.Dict[str, typing.Any], NoneType] = None, **kwargs)
@@ -305,7 +338,7 @@ Temporarily sets the tokenizer for encoding the targets. Useful for tokenizer as
 sequence-to-sequence models that need a slightly different processing for the labels.
 
 
-## MarianModel
+## [MarianModel](#marianmodel)
 
 <a id='transformers.MarianModel'></a>
 > **class transformers.MarianModel**(config: MarianConfig)
@@ -488,7 +521,7 @@ various elements depending on the configuration ([MarianConfig](/docs/transforme
 [Seq2SeqModelOutput](/docs/transformers/master/en/main_classes/output.html#transformers.modeling_outputs.Seq2SeqModelOutput) or `tuple(torch.FloatTensor)`
 
 
-## MarianMTModel
+## [MarianMTModel](#marianmtmodel)
 
 <a id='transformers.MarianMTModel'></a>
 > **class transformers.MarianMTModel**(config: MarianConfig)
@@ -680,7 +713,7 @@ Available models are listed [here](https://huggingface.co/models?search=Helsinki
 [Seq2SeqLMOutput](/docs/transformers/master/en/main_classes/output.html#transformers.modeling_outputs.Seq2SeqLMOutput) or `tuple(torch.FloatTensor)`
 
 
-## MarianForCausalLM
+## [MarianForCausalLM](#marianforcausallm)
 
 <a id='transformers.MarianForCausalLM'></a>
 > **class transformers.MarianForCausalLM**(config)
@@ -805,7 +838,7 @@ various elements depending on the configuration ([MarianConfig](/docs/transforme
 [CausalLMOutputWithCrossAttentions](/docs/transformers/master/en/main_classes/output.html#transformers.modeling_outputs.CausalLMOutputWithCrossAttentions) or `tuple(torch.FloatTensor)`
 
 
-## TFMarianModel
+## [TFMarianModel](#tfmarianmodel)
 
 <a id='transformers.TFMarianModel'></a>
 > **class transformers.TFMarianModel**(*args, **kwargs)
@@ -991,7 +1024,7 @@ elements depending on the configuration ([MarianConfig](/docs/transformers/maste
 ```
 
 
-## TFMarianMTModel
+## [TFMarianMTModel](#tfmarianmtmodel)
 
 <a id='transformers.TFMarianMTModel'></a>
 > **class transformers.TFMarianMTModel**(*args, **kwargs)
@@ -1189,7 +1222,7 @@ models are listed [here](https://huggingface.co/models?search=Helsinki-NLP).
 [TFSeq2SeqLMOutput](/docs/transformers/master/en/main_classes/output.html#transformers.modeling_tf_outputs.TFSeq2SeqLMOutput) or `tuple(tf.Tensor)`
 
 
-## FlaxMarianModel
+## [FlaxMarianModel](#flaxmarianmodel)
 
 <a id='transformers.FlaxMarianModel'></a>
 > **class transformers.FlaxMarianModel**(config: MarianConfig, input_shape: typing.Tuple[int] = (1, 1), seed: int = 0, dtype: dtype = &amp;lt;class 'jax._src.numpy.lax_numpy.float32'>, **kwargs)
@@ -1335,7 +1368,7 @@ various elements depending on the configuration ([MarianConfig](/docs/transforme
 ```
 
 
-## FlaxMarianMTModel
+## [FlaxMarianMTModel](#flaxmarianmtmodel)
 
 <a id='transformers.FlaxMarianMTModel'></a>
 > **class transformers.FlaxMarianMTModel**(config: MarianConfig, input_shape: typing.Tuple[int] = (1, 1), seed: int = 0, dtype: dtype = &amp;lt;class 'jax._src.numpy.lax_numpy.float32'>, **kwargs)

@@ -1,3 +1,39 @@
+---
+local: pegasus
+sections:
+- local: overview
+  title: Overview
+- local: checkpoints
+  sections:
+  - local: examples
+    title: Examples
+  title: Checkpoints
+- local: implementation-notes
+  title: Implementation Notes
+- local: usage-example
+  title: Usage Example
+- local: pegasusconfig
+  title: PegasusConfig
+- local: pegasustokenizer
+  title: PegasusTokenizer
+- local: pegasustokenizerfast
+  title: PegasusTokenizerFast
+- local: pegasusmodel
+  title: PegasusModel
+- local: pegasusforconditionalgeneration
+  title: PegasusForConditionalGeneration
+- local: pegasusforcausallm
+  title: PegasusForCausalLM
+- local: tfpegasusmodel
+  title: TFPegasusModel
+- local: tfpegasusforconditionalgeneration
+  title: TFPegasusForConditionalGeneration
+- local: flaxpegasusmodel
+  title: FlaxPegasusModel
+- local: flaxpegasusforconditionalgeneration
+  title: FlaxPegasusForConditionalGeneration
+title: Pegasus
+---
 <script>
 import Tip from "../../Tip.svelte";
 import Youtube from "../../Youtube.svelte";	
@@ -16,13 +52,13 @@ an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express o
 specific language governing permissions and limitations under the License.
 -->
 
-# Pegasus
+# [Pegasus](#pegasus)
 
 **DISCLAIMER:** If you see something strange, file a [Github Issue](https://github.com/huggingface/transformers/issues/new?assignees=sshleifer&labels=&template=bug-report.md&title)
 and assign @patrickvonplaten.
 
 
-## Overview
+## [Overview](#overview)
 
 The Pegasus model was proposed in [PEGASUS: Pre-training with Extracted Gap-sentences for Abstractive Summarization](https://arxiv.org/pdf/1912.08777.pdf) by Jingqing Zhang, Yao Zhao, Mohammad Saleh and Peter J. Liu on Dec 18, 2019.
 
@@ -36,7 +72,7 @@ According to the abstract,
 This model was contributed by [sshleifer](https://huggingface.co/sshleifer). The Authors' code can be found [here](https://github.com/google-research/pegasus).
 
 
-## Checkpoints
+## [Checkpoints](#checkpoints)
 
 All the [checkpoints](https://huggingface.co/models?search=pegasus) are fine-tuned for summarization, besides
 _pegasus-large_, whence the other checkpoints are fine-tuned:
@@ -47,7 +83,7 @@ _pegasus-large_, whence the other checkpoints are fine-tuned:
 - Full replication results and correctly pre-processed data can be found in this [Issue](https://github.com/huggingface/transformers/issues/6844#issue-689259666).
 - [Distilled checkpoints](https://huggingface.co/models?search=distill-pegasus) are described in this [paper](https://arxiv.org/abs/2010.13002).
 
-### Examples
+### [Examples](#examples)
 
 - [Script](https://github.com/huggingface/transformers/tree/master/examples/research_projects/seq2seq-distillation/finetune_pegasus_xsum.sh) to fine-tune pegasus
   on the XSUM dataset. Data download instructions at [examples/pytorch/summarization/](https://github.com/huggingface/transformers/tree/master/examples/pytorch/summarization/README.md).
@@ -55,7 +91,7 @@ _pegasus-large_, whence the other checkpoints are fine-tuned:
 - The adafactor optimizer is recommended for pegasus fine-tuning.
 
 
-## Implementation Notes
+## [Implementation Notes](#implementation-notes)
 
 - All models are transformer encoder-decoders with 16 layers in each component.
 - The implementation is completely inherited from [BartForConditionalGeneration](/docs/transformers/master/en/model_doc/bart.html#transformers.BartForConditionalGeneration)
@@ -70,7 +106,7 @@ _pegasus-large_, whence the other checkpoints are fine-tuned:
   found in `convert_pegasus_tf_to_pytorch.py`.
 
 
-## Usage Example
+## [Usage Example](#usage-example)
 
 ```python
 >>> from transformers import PegasusForConditionalGeneration, PegasusTokenizer
@@ -89,7 +125,7 @@ _pegasus-large_, whence the other checkpoints are fine-tuned:
 >>> assert tgt_text[0] == "California's largest electricity provider has turned off power to hundreds of thousands of customers."
 ```
 
-## PegasusConfig
+## [PegasusConfig](#pegasusconfig)
 
 <a id='transformers.PegasusConfig'></a>
 > **class transformers.PegasusConfig**(vocab_size = 50265, max_position_embeddings = 1024, encoder_layers = 12, encoder_ffn_dim = 4096, encoder_attention_heads = 16, decoder_layers = 12, decoder_ffn_dim = 4096, decoder_attention_heads = 16, encoder_layerdrop = 0.0, decoder_layerdrop = 0.0, use_cache = True, is_encoder_decoder = True, activation_function = 'gelu', d_model = 1024, dropout = 0.1, attention_dropout = 0.0, activation_dropout = 0.0, init_std = 0.02, decoder_start_token_id = 0, classifier_dropout = 0.0, scale_embedding = False, pad_token_id = 0, eos_token_id = 1, forced_eos_token_id = 1, **kwargs)
@@ -169,7 +205,7 @@ outputs. Read the documentation from [PretrainedConfig](/docs/transformers/maste
 ```
 
 
-## PegasusTokenizer
+## [PegasusTokenizer](#pegasustokenizer)
 
 warning: `add_tokens` does not work at the moment.
 
@@ -276,7 +312,7 @@ Get list where entries are [1] if a token is [eos] or [pad] else 0.
 
 Just EOS
 
-## PegasusTokenizerFast
+## [PegasusTokenizerFast](#pegasustokenizerfast)
 
 <a id='transformers.PegasusTokenizerFast'></a>
 > **class transformers.PegasusTokenizerFast**(vocab_file = None, tokenizer_file = None, pad_token = '&amp;lt;pad>', eos_token = '&amp;lt;/s>', unk_token = '&amp;lt;unk>', mask_token = '&amp;lt;mask_2>', mask_token_sent = '&amp;lt;mask_1>', additional_special_tokens = None, offset = 103, **kwargs)
@@ -413,7 +449,7 @@ sequence. The token used is the `sep_token`.
     BPE-dropout.
 
 
-## PegasusModel
+## [PegasusModel](#pegasusmodel)
 
 <a id='transformers.PegasusModel'></a>
 > **class transformers.PegasusModel**(config: PegasusConfig)
@@ -595,7 +631,7 @@ various elements depending on the configuration ([PegasusConfig](/docs/transform
 [Seq2SeqModelOutput](/docs/transformers/master/en/main_classes/output.html#transformers.modeling_outputs.Seq2SeqModelOutput) or `tuple(torch.FloatTensor)`
 
 
-## PegasusForConditionalGeneration
+## [PegasusForConditionalGeneration](#pegasusforconditionalgeneration)
 
 <a id='transformers.PegasusForConditionalGeneration'></a>
 > **class transformers.PegasusForConditionalGeneration**(config: PegasusConfig)
@@ -786,7 +822,7 @@ various elements depending on the configuration ([PegasusConfig](/docs/transform
 ```
 
 
-## PegasusForCausalLM
+## [PegasusForCausalLM](#pegasusforcausallm)
 
 <a id='transformers.PegasusForCausalLM'></a>
 > **class transformers.PegasusForCausalLM**(config)
@@ -911,7 +947,7 @@ various elements depending on the configuration ([PegasusConfig](/docs/transform
 [CausalLMOutputWithCrossAttentions](/docs/transformers/master/en/main_classes/output.html#transformers.modeling_outputs.CausalLMOutputWithCrossAttentions) or `tuple(torch.FloatTensor)`
 
 
-## TFPegasusModel
+## [TFPegasusModel](#tfpegasusmodel)
 
 <a id='transformers.TFPegasusModel'></a>
 > **class transformers.TFPegasusModel**(*args, **kwargs)
@@ -1100,7 +1136,7 @@ elements depending on the configuration ([PegasusConfig](/docs/transformers/mast
 ```
 
 
-## TFPegasusForConditionalGeneration
+## [TFPegasusForConditionalGeneration](#tfpegasusforconditionalgeneration)
 
 <a id='transformers.TFPegasusForConditionalGeneration'></a>
 > **class transformers.TFPegasusForConditionalGeneration**(*args, **kwargs)
@@ -1300,7 +1336,7 @@ elements depending on the configuration ([PegasusConfig](/docs/transformers/mast
 ```
 
 
-## FlaxPegasusModel
+## [FlaxPegasusModel](#flaxpegasusmodel)
 
 <a id='transformers.FlaxPegasusModel'></a>
 > **class transformers.FlaxPegasusModel**(config: PegasusConfig, input_shape: typing.Tuple[int] = (1, 1), seed: int = 0, dtype: dtype = &amp;lt;class 'jax._src.numpy.lax_numpy.float32'>, **kwargs)
@@ -1612,7 +1648,7 @@ various elements depending on the configuration (`PegasusConfig'>`) and inputs.
 [FlaxBaseModelOutputWithPastAndCrossAttentions](/docs/transformers/master/en/main_classes/output.html#transformers.modeling_flax_outputs.FlaxBaseModelOutputWithPastAndCrossAttentions) or `tuple(torch.FloatTensor)`
 
 
-## FlaxPegasusForConditionalGeneration
+## [FlaxPegasusForConditionalGeneration](#flaxpegasusforconditionalgeneration)
 
 <a id='transformers.FlaxPegasusForConditionalGeneration'></a>
 > **class transformers.FlaxPegasusForConditionalGeneration**(config: PegasusConfig, input_shape: typing.Tuple[int] = (1, 1), seed: int = 0, dtype: dtype = &amp;lt;class 'jax._src.numpy.lax_numpy.float32'>, **kwargs)

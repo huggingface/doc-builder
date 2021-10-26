@@ -1,3 +1,27 @@
+---
+local: utilities-for-generation
+sections:
+- local: generate-outputs
+  sections:
+  - local: greedysearchoutput
+    title: GreedySearchOutput
+  - local: sampleoutput
+    title: SampleOutput
+  - local: beamsearchoutput
+    title: BeamSearchOutput
+  - local: beamsampleoutput
+    title: BeamSampleOutput
+  title: Generate Outputs
+- local: logitsprocessor
+  title: LogitsProcessor
+- local: stoppingcriteria
+  title: StoppingCriteria
+- local: beamsearch
+  title: BeamSearch
+- local: utilities
+  title: Utilities
+title: Utilities for Generation
+---
 <script>
 import Tip from "../../Tip.svelte";
 import Youtube from "../../Youtube.svelte";	
@@ -16,7 +40,7 @@ an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express o
 specific language governing permissions and limitations under the License.
 -->
 
-# Utilities for Generation
+# [Utilities for Generation](#utilities-for-generation)
 
 This page lists all the utility functions used by [generate()](/docs/transformers/master/en/main_classes/model.html#transformers.generation_utils.GenerationMixin.generate),
 [greedy_search()](/docs/transformers/master/en/main_classes/model.html#transformers.generation_utils.GenerationMixin.greedy_search),
@@ -27,7 +51,7 @@ This page lists all the utility functions used by [generate()](/docs/transformer
 
 Most of those are only useful if you are studying the code of the generate methods in the library.
 
-## Generate Outputs
+## [Generate Outputs](#generate-outputs)
 
 The output of [generate()](/docs/transformers/master/en/main_classes/model.html#transformers.generation_utils.GenerationMixin.generate) is an instance of a subclass of
 [ModelOutput](/docs/transformers/master/en/main_classes/output.html#transformers.file_utils.ModelOutput). This output is a data structure containing all the information returned
@@ -75,7 +99,7 @@ values. Here, for instance, it has two keys that are `sequences` and `scores`.
 We document here all output types.
 
 
-### GreedySearchOutput
+### [GreedySearchOutput](#greedysearchoutput)
 
 <a id='transformers.generation_utils.GreedySearchDecoderOnlyOutput'></a>
 > **class transformers.generation\_utils.GreedySearchDecoderOnlyOutput**(sequences: LongTensor = None, scores: typing.Optional[typing.Tuple[torch.FloatTensor]] = None, attentions: typing.Optional[typing.Tuple[typing.Tuple[torch.FloatTensor]]] = None, hidden_states: typing.Optional[typing.Tuple[typing.Tuple[torch.FloatTensor]]] = None)
@@ -152,7 +176,7 @@ Flax Base class for outputs of decoder-only generation models using greedy searc
 
 "Returns a new object replacing the specified fields with new values.
 
-### SampleOutput
+### [SampleOutput](#sampleoutput)
 
 <a id='transformers.generation_utils.SampleDecoderOnlyOutput'></a>
 > **class transformers.generation\_utils.SampleDecoderOnlyOutput**(sequences: LongTensor = None, scores: typing.Optional[typing.Tuple[torch.FloatTensor]] = None, attentions: typing.Optional[typing.Tuple[typing.Tuple[torch.FloatTensor]]] = None, hidden_states: typing.Optional[typing.Tuple[typing.Tuple[torch.FloatTensor]]] = None)
@@ -230,7 +254,7 @@ Flax Base class for outputs of decoder-only generation models using sampling.
 
 "Returns a new object replacing the specified fields with new values.
 
-### BeamSearchOutput
+### [BeamSearchOutput](#beamsearchoutput)
 
 <a id='transformers.generation_utils.BeamSearchDecoderOnlyOutput'></a>
 > **class transformers.generation\_utils.BeamSearchDecoderOnlyOutput**(sequences: LongTensor = None, sequences_scores: typing.Optional[torch.FloatTensor] = None, scores: typing.Optional[typing.Tuple[torch.FloatTensor]] = None, attentions: typing.Optional[typing.Tuple[typing.Tuple[torch.FloatTensor]]] = None, hidden_states: typing.Optional[typing.Tuple[typing.Tuple[torch.FloatTensor]]] = None)
@@ -295,7 +319,7 @@ attributes (respectively the decoder_attentions and the decoder_hidden_states at
   `torch.FloatTensor` of shape `(batch_size*num_beams*num_return_sequences, generated_length, hidden_size)`.
 
 
-### BeamSampleOutput
+### [BeamSampleOutput](#beamsampleoutput)
 
 <a id='transformers.generation_utils.BeamSampleDecoderOnlyOutput'></a>
 > **class transformers.generation\_utils.BeamSampleDecoderOnlyOutput**(sequences: LongTensor = None, sequences_scores: typing.Optional[torch.FloatTensor] = None, scores: typing.Optional[typing.Tuple[torch.FloatTensor]] = None, attentions: typing.Optional[typing.Tuple[typing.Tuple[torch.FloatTensor]]] = None, hidden_states: typing.Optional[typing.Tuple[typing.Tuple[torch.FloatTensor]]] = None)
@@ -359,7 +383,7 @@ encoder_hidden_states attributes (respectively the decoder_attentions and the de
   `torch.FloatTensor` of shape `(batch_size*num_beams, generated_length, hidden_size)`.
 
 
-## LogitsProcessor
+## [LogitsProcessor](#logitsprocessor)
 
 A [LogitsProcessor](/docs/transformers/master/en/internal/generation_utils.html#transformers.LogitsProcessor) can be used to modify the prediction scores of a language model head for
 generation.
@@ -898,7 +922,7 @@ prob_cut_off.
 <a id='transformers.FlaxMinLengthLogitsProcessor.__call__'></a>
 > **\_\_call\_\_**(self, input_ids: ndarray, scores: ndarray, cur_len: int)
 
-## StoppingCriteria
+## [StoppingCriteria](#stoppingcriteria)
 
 A [StoppingCriteria](/docs/transformers/master/en/internal/generation_utils.html#transformers.StoppingCriteria) can be used to change when to stop generation (other than EOS token).
 
@@ -1043,7 +1067,7 @@ time will start being counted when you initialize this function. You can overrid
 
 
 
-## BeamSearch
+## [BeamSearch](#beamsearch)
 
 <a id='transformers.BeamScorer'></a>
 > **class transformers.BeamScorer**()
@@ -1173,7 +1197,7 @@ Reference for the diverse beam search algorithm and implementation [Ashwin Kalya
 <a id='transformers.BeamSearchScorer.finalize'></a>
 > **finalize**(self, input_ids: LongTensor, final_beam_scores: FloatTensor, final_beam_tokens: LongTensor, final_beam_indices: LongTensor, max_length: int, pad_token_id: typing.Optional[int] = None, eos_token_id: typing.Optional[int] = None)
 
-## Utilities
+## [Utilities](#utilities)
 
 <a id='transformers.top_k_top_p_filtering'></a>
 > **transformers.top\_k\_top\_p\_filtering**(logits: FloatTensor, top_k: int = 0, top_p: float = 1.0, filter_value: float = -inf, min_tokens_to_keep: int = 1)

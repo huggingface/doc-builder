@@ -1,3 +1,25 @@
+---
+local: summary-of-the-tokenizers
+sections:
+- local: introduction
+  sections:
+  - local: subword-tokenization
+    title: Subword tokenization
+  title: Introduction
+- local: bytepair-encoding-bpe
+  sections:
+  - local: bytelevel-bpe
+    sections:
+    - local: wordpiece
+      title: WordPiece
+    - local: unigram
+      title: Unigram
+    - local: sentencepiece
+      title: SentencePiece
+    title: Byte-level BPE
+  title: Byte-Pair Encoding (BPE)
+title: Summary of the tokenizers
+---
 <script>
 import Tip from "../../Tip.svelte";
 import Youtube from "../../Youtube.svelte";	
@@ -16,7 +38,7 @@ an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express o
 specific language governing permissions and limitations under the License.
 -->
 
-# Summary of the tokenizers
+# [Summary of the tokenizers](#summary-of-the-tokenizers)
 
 On this page, we will have a closer look at tokenization.
 
@@ -35,7 +57,7 @@ Note that on each model page, you can look at the documentation of the associate
 type was used by the pretrained model. For instance, if we look at [BertTokenizer](/docs/transformers/master/en/model_doc/bert.html#transformers.BertTokenizer), we can see
 that the model uses [WordPiece](/docs/transformers/master/en/tokenizer_summary.html#wordpiece).
 
-## Introduction
+## [Introduction](#introduction)
 
 Splitting a text into smaller chunks is a task that is harder than it looks, and there are multiple ways of doing so.
 For instance, let's look at the sentence `"Don't you love 🤗 Transformers? We sure do."`
@@ -96,7 +118,7 @@ representation for the letter `"t"` is much harder than learning a context-indep
 both worlds, transformers models use a hybrid between word-level and character-level tokenization called **subword**
 tokenization.
 
-### Subword tokenization
+### [Subword tokenization](#subword-tokenization)
 
 <iframe width="560" height="315" src="https://www.youtube.com/embed/zHvTiHr506c" title="YouTube video player"
 frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope;
@@ -143,7 +165,7 @@ on.
 
 <a id='byte-pair-encoding'></a>
 
-## Byte-Pair Encoding (BPE)
+## [Byte-Pair Encoding (BPE)](#bytepair-encoding-bpe)
 
 Byte-Pair Encoding (BPE) was introduced in [Neural Machine Translation of Rare Words with Subword Units (Sennrich et
 al., 2015)](https://arxiv.org/abs/1508.07909). BPE relies on a pre-tokenizer that splits the training data into
@@ -203,7 +225,7 @@ As mentioned earlier, the vocabulary size, *i.e.* the base vocabulary size + the
 to choose. For instance [GPT](/docs/transformers/master/en/model_doc/gpt.html) has a vocabulary size of 40,478 since they have 478 base characters
 and chose to stop training after 40,000 merges.
 
-### Byte-level BPE
+### [Byte-level BPE](#bytelevel-bpe)
 
 A base vocabulary that includes all possible base characters can be quite large if *e.g.* all unicode characters are
 considered as base characters. To have a better base vocabulary, [GPT-2](https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf) uses bytes
@@ -215,7 +237,7 @@ with 50,000 merges.
 
 <a id='wordpiece'></a>
 
-#### WordPiece
+#### [WordPiece](#wordpiece)
 
 WordPiece is the subword tokenization algorithm used for [BERT](/docs/transformers/master/en/model_doc/bert.html), [DistilBERT](/docs/transformers/master/en/model_doc/distilbert.html), and [Electra](/docs/transformers/master/en/model_doc/electra.html). The algorithm was outlined in [Japanese and Korean
 Voice Search (Schuster et al., 2012)](https://static.googleusercontent.com/media/research.google.com/ja//pubs/archive/37842.pdf) and is very similar to
@@ -232,7 +254,7 @@ to make ensure it's _worth it_.
 
 <a id='unigram'></a>
 
-#### Unigram
+#### [Unigram](#unigram)
 
 Unigram is a subword tokenization algorithm introduced in [Subword Regularization: Improving Neural Network Translation
 Models with Multiple Subword Candidates (Kudo, 2018)](https://arxiv.org/pdf/1804.10959.pdf). In contrast to BPE or
@@ -269,7 +291,7 @@ $$\mathcal&amp;lcub;L} = -\sum_&amp;lcub;i=1}^&amp;lcub;N} \log \left ( \sum_&am
 
 <a id='sentencepiece'></a>
 
-#### SentencePiece
+#### [SentencePiece](#sentencepiece)
 
 All tokenization algorithms described so far have the same problem: It is assumed that the input text uses spaces to
 separate words. However, not all languages use spaces to separate words. One possible solution is to use language

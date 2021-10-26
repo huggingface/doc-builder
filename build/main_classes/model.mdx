@@ -1,3 +1,25 @@
+---
+local: models
+sections:
+- local: pretrainedmodel
+  sections:
+  - local: model-instantiation-dtype
+    title: Model Instantiation dtype
+  title: PreTrainedModel
+- local: moduleutilsmixin
+  title: ModuleUtilsMixin
+- local: tfpretrainedmodel
+  title: TFPreTrainedModel
+- local: tfmodelutilsmixin
+  title: TFModelUtilsMixin
+- local: flaxpretrainedmodel
+  title: FlaxPreTrainedModel
+- local: generation
+  title: Generation
+- local: pushing-to-the-hub
+  title: Pushing to the Hub
+title: Models
+---
 <script>
 import Tip from "../../Tip.svelte";
 import Youtube from "../../Youtube.svelte";	
@@ -16,7 +38,7 @@ an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express o
 specific language governing permissions and limitations under the License.
 -->
 
-# Models
+# [Models](#models)
 
 The base classes [PreTrainedModel](/docs/transformers/master/en/main_classes/model.html#transformers.PreTrainedModel), [TFPreTrainedModel](/docs/transformers/master/en/main_classes/model.html#transformers.TFPreTrainedModel), and
 [FlaxPreTrainedModel](/docs/transformers/master/en/main_classes/model.html#transformers.FlaxPreTrainedModel) implement the common methods for loading/saving a model either from a local
@@ -36,7 +58,7 @@ for text generation, [GenerationMixin](/docs/transformers/master/en/main_classes
 [FlaxGenerationMixin](/docs/transformers/master/en/main_classes/model.html#transformers.generation_flax_utils.FlaxGenerationMixin) (for the Flax/JAX models).
 
 
-## PreTrainedModel
+## [PreTrainedModel](#pretrainedmodel)
 
 <a id='transformers.PreTrainedModel'></a>
 > **class transformers.PreTrainedModel**(config: PretrainedConfig, *inputs, **kwargs)
@@ -210,9 +232,8 @@ weights. In this case though, you should check if using
 - **resume_download** (`bool`, _optional_, defaults to `False`) --
   Whether or not to delete incompletely received files. Will attempt to resume the download if such a
   file exists.
-- **proxies** (`Dict[str, str]`, _optional_) --
-  A dictionary of proxy servers to use by protocol or endpoint, e.g., `&amp;lcub;'http': 'foo.bar:3128', 'http://hostname': 'foo.bar:4012'}`. The proxies are used on each request.
-- **output_loading_info(`bool`,** _optional_, defaults to `False`) --
+- **proxies** (`Dict[str, str], `optional`) -- A dictionary of proxy servers to use by protocol or endpoint, e.g., `&amp;lcub;'http': 'foo.bar:3128',
+  'http://hostname': 'foo.bar:4012'}`. The proxies are used on each request. - **output_loading_info(`bool`,** _optional_, defaults to `False`) --
   Whether ot not to also return a dictionary containing missing keys, unexpected keys and error messages.
 - **local_files_only(`bool`,** _optional_, defaults to `False`) --
   Whether or not to only look at local files (i.e., do not try to download the model).
@@ -321,7 +342,7 @@ A torch module mapping hidden states to vocabulary.
 
 
 <a id='transformers.PreTrainedModel.gradient_checkpointing_disable'></a>
-> **gradient\_checkpointing\_disable**(self)
+> **gradient\_checkpointing\_disable**(self, flag: bool = True)
 
 
 Deactivates gradient checkpointing for the current model.
@@ -331,7 +352,7 @@ activations".
 
 
 <a id='transformers.PreTrainedModel.gradient_checkpointing_enable'></a>
-> **gradient\_checkpointing\_enable**(self)
+> **gradient\_checkpointing\_enable**(self, flag: bool = True)
 
 
 Activates gradient checkpointing for the current model.
@@ -385,7 +406,7 @@ Pointer to the input tokens Embeddings Module of the model.
 
 
 <a id='transformers.PreTrainedModel.save_pretrained'></a>
-> **save\_pretrained**(self, save_directory: typing.Union[str, os.PathLike], save_config: bool = True, state_dict: typing.Optional[dict] = None, save_function: typing.Callable = &amp;lt;function save at 0x7f12aecbbef0>, push_to_hub: bool = False, **kwargs)
+> **save\_pretrained**(self, save_directory: typing.Union[str, os.PathLike], save_config: bool = True, state_dict: typing.Optional[dict] = None, save_function: typing.Callable = &amp;lt;function save at 0x156b3a3a0>, push_to_hub: bool = False, **kwargs)
 
 
 Save a model and its configuration file to a directory, so that it can be re-loaded using the
@@ -445,7 +466,7 @@ the weights instead.
 
 <a id='from_pretrained-torch-dtype'></a>
 
-### Model Instantiation dtype
+### [Model Instantiation dtype](#model-instantiation-dtype)
 
 Under Pytorch a model normally gets instantiated with `torch.float32` format. This can be an issue if one tries to
 load a model whose weights are in fp16, since it'd require twice as much memory. To overcome this limitation, you can
@@ -473,7 +494,7 @@ Due to Pytorch design, this functionality is only available for floating dtypes.
 
 
 
-## ModuleUtilsMixin
+## [ModuleUtilsMixin](#moduleutilsmixin)
 
 <a id='transformers.modeling_utils.ModuleUtilsMixin'></a>
 > **class transformers.modeling\_utils.ModuleUtilsMixin**()
@@ -541,7 +562,7 @@ The number of floating-point operations.
 
 
 <a id='transformers.modeling_utils.ModuleUtilsMixin.get_extended_attention_mask'></a>
-> **get\_extended\_attention\_mask**(self, attention_mask: Tensor, input_shape: typing.Tuple[int], device: &amp;lt;property object at 0x7f111e57aa10>)
+> **get\_extended\_attention\_mask**(self, attention_mask: Tensor, input_shape: typing.Tuple[int], device: &amp;lt;property object at 0x157c58130>)
 
 
 Makes broadcastable attention and causal masks so that future and masked tokens are ignored.
@@ -630,7 +651,7 @@ Reset the `mem_rss_diff` attribute of each module (see
 [add_memory_hooks()](/docs/transformers/master/en/main_classes/model.html#transformers.modeling_utils.ModuleUtilsMixin.add_memory_hooks)).
 
 
-## TFPreTrainedModel
+## [TFPreTrainedModel](#tfpretrainedmodel)
 
 <a id='transformers.TFPreTrainedModel'></a>
 > **class transformers.TFPreTrainedModel**(*args, **kwargs)
@@ -714,14 +735,6 @@ model.push_to_hub("my-finetuned-bert", organization="huggingface")
 # Make a change to an existing repo that has been cloned locally in _my-finetuned-bert_.
 model.push_to_hub("my-finetuned-bert", repo_url="https://huggingface.co/sgugger/my-finetuned-bert")
 ```
-
-
-<a id='transformers.TFPreTrainedModel.compile'></a>
-> **compile**(self, optimizer = 'rmsprop', loss = 'passthrough', metrics = None, loss_weights = None, weighted_metrics = None, run_eagerly = None, steps_per_execution = None, **kwargs)
-
-
-This is a thin wrapper that sets the model's loss output head as the loss if the user does not specify a loss
-function themselves.
 
 
 <a id='transformers.TFPreTrainedModel.from_pretrained'></a>
@@ -1061,21 +1074,7 @@ Set model's output embeddings
   The new weights mapping hidden states to vocabulary.
 
 
-<a id='transformers.TFPreTrainedModel.test_step'></a>
-> **test\_step**(self, data)
-
-
-A modification of Keras's default test_step that cleans up the printed metrics when we use a dummy loss.
-
-
-<a id='transformers.TFPreTrainedModel.train_step'></a>
-> **train\_step**(self, data)
-
-
-A modification of Keras's default train_step that cleans up the printed metrics when we use a dummy loss.
-
-
-## TFModelUtilsMixin
+## [TFModelUtilsMixin](#tfmodelutilsmixin)
 
 <a id='transformers.modeling_tf_utils.TFModelUtilsMixin'></a>
 > **class transformers.modeling\_tf\_utils.TFModelUtilsMixin**()
@@ -1104,7 +1103,7 @@ The number of parameters.
 `int`
 
 
-## FlaxPreTrainedModel
+## [FlaxPreTrainedModel](#flaxpretrainedmodel)
 
 <a id='transformers.FlaxPreTrainedModel'></a>
 > **class transformers.FlaxPreTrainedModel**(config: PretrainedConfig, module: Module, input_shape: typing.Tuple = (1, 1), seed: int = 0, dtype: dtype = &amp;lt;class 'jax._src.numpy.lax_numpy.float32'>)
@@ -1245,9 +1244,8 @@ standard cache should not be used.
 - **resume_download** (`bool`, _optional_, defaults to `False`) --
   Whether or not to delete incompletely received files. Will attempt to resume the download if such a
   file exists.
-- **proxies** (`Dict[str, str]`, _optional_) --
-  A dictionary of proxy servers to use by protocol or endpoint, e.g., `&amp;lcub;'http': 'foo.bar:3128', 'http://hostname': 'foo.bar:4012'}`. The proxies are used on each request.
-- **local_files_only(`bool`,** _optional_, defaults to `False`) --
+- **proxies** (`Dict[str, str], `optional`) -- A dictionary of proxy servers to use by protocol or endpoint, e.g., `&amp;lcub;'http': 'foo.bar:3128',
+  'http://hostname': 'foo.bar:4012'}`. The proxies are used on each request. - **local_files_only(`bool`,** _optional_, defaults to `False`) --
   Whether or not to only look at local files (i.e., do not try to download the model).
 - **revision(`str`,** _optional_, defaults to `"main"`) --
   The specific model version to use. It can be a branch name, a tag name, or a commit id, since we use a
@@ -1308,7 +1306,7 @@ Additional key word arguments passed along to the
 [push_to_hub()](/docs/transformers/master/en/main_classes/model.html#transformers.file_utils.PushToHubMixin.push_to_hub) method.
 
 
-## Generation
+## [Generation](#generation)
 
 <a id='transformers.generation_utils.GenerationMixin'></a>
 > **class transformers.generation\_utils.GenerationMixin**()
@@ -2286,7 +2284,7 @@ Most of these parameters are explained in more detail in [this blog post](https:
 ```
 
 
-## Pushing to the Hub
+## [Pushing to the Hub](#pushing-to-the-hub)
 
 <a id='transformers.file_utils.PushToHubMixin'></a>
 > **class transformers.file\_utils.PushToHubMixin**()

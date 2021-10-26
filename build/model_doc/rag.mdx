@@ -1,3 +1,30 @@
+---
+local: rag
+sections:
+- local: overview
+  title: Overview
+- local: ragconfig
+  title: RagConfig
+- local: ragtokenizer
+  title: RagTokenizer
+- local: rag-specific-outputs
+  title: Rag specific outputs
+- local: ragretriever
+  title: RagRetriever
+- local: ragmodel
+  title: RagModel
+- local: ragsequenceforgeneration
+  title: RagSequenceForGeneration
+- local: ragtokenforgeneration
+  title: RagTokenForGeneration
+- local: tfragmodel
+  title: TFRagModel
+- local: tfragsequenceforgeneration
+  title: TFRagSequenceForGeneration
+- local: tfragtokenforgeneration
+  title: TFRagTokenForGeneration
+title: RAG
+---
 <script>
 import Tip from "../../Tip.svelte";
 import Youtube from "../../Youtube.svelte";	
@@ -16,9 +43,9 @@ an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express o
 specific language governing permissions and limitations under the License.
 -->
 
-# RAG
+# [RAG](#rag)
 
-## Overview
+## [Overview](#overview)
 
 Retrieval-augmented generation ("RAG") models combine the powers of pretrained dense retrieval (DPR) and
 sequence-to-sequence models. RAG models retrieve documents, pass them to a seq2seq model, then marginalize to generate
@@ -49,7 +76,7 @@ parametric-only seq2seq baseline.*
 This model was contributed by [ola13](https://huggingface.co/ola13).
 
 
-## RagConfig
+## [RagConfig](#ragconfig)
 
 <a id='transformers.RagConfig'></a>
 > **class transformers.RagConfig**(vocab_size = None, is_encoder_decoder = True, prefix = None, bos_token_id = None, pad_token_id = None, eos_token_id = None, decoder_start_token_id = None, title_sep = ' / ', doc_sep = ' // ', n_docs = 5, max_combined_length = 300, retrieval_vector_size = 768, retrieval_batch_size = 8, dataset = 'wiki_dpr', dataset_split = 'train', index_name = 'compressed', index_path = None, passages_path = None, use_dummy_dataset = False, reduce_loss = False, label_smoothing = 0.0, do_deduplication = True, exclude_bos_score = False, do_marginalize = False, output_retrieved = False, use_cache = True, forced_eos_token_id = None, **kwargs)
@@ -146,7 +173,7 @@ Dictionary of all the attributes that make up this configuration instance,
 `Dict[str, any]`
 
 
-## RagTokenizer
+## [RagTokenizer](#ragtokenizer)
 
 <a id='transformers.RagTokenizer'></a>
 > **class transformers.RagTokenizer**(question_encoder, generator)
@@ -159,7 +186,7 @@ Temporarily sets the tokenizer for encoding the targets. Useful for tokenizer as
 sequence-to-sequence models that need a slightly different processing for the labels.
 
 
-## Rag specific outputs
+## [Rag specific outputs](#rag-specific-outputs)
 
 <a id='transformers.models.rag.modeling_rag.RetrievAugLMMarginOutput'></a>
 > **class transformers.models.rag.modeling\_rag.RetrievAugLMMarginOutput**(loss: typing.Optional[torch.FloatTensor] = None, logits: FloatTensor = None, doc_scores: FloatTensor = None, past_key_values: typing.Optional[typing.List[torch.FloatTensor]] = None, retrieved_doc_embeds: typing.Optional[torch.FloatTensor] = None, retrieved_doc_ids: typing.Optional[torch.LongTensor] = None, context_input_ids: typing.Optional[torch.LongTensor] = None, context_attention_mask: typing.Optional[torch.LongTensor] = None, question_encoder_last_hidden_state: typing.Optional[torch.FloatTensor] = None, question_enc_hidden_states: typing.Optional[typing.Tuple[torch.FloatTensor]] = None, question_enc_attentions: typing.Optional[typing.Tuple[torch.FloatTensor]] = None, generator_enc_last_hidden_state: typing.Optional[torch.FloatTensor] = None, generator_enc_hidden_states: typing.Optional[typing.Tuple[torch.FloatTensor]] = None, generator_enc_attentions: typing.Optional[typing.Tuple[torch.FloatTensor]] = None, generator_dec_hidden_states: typing.Optional[typing.Tuple[torch.FloatTensor]] = None, generator_dec_attentions: typing.Optional[typing.Tuple[torch.FloatTensor]] = None, generator_cross_attentions: typing.Optional[typing.Tuple[torch.FloatTensor]] = None)
@@ -303,7 +330,7 @@ Base class for retriever augmented marginalized models outputs.
   weighted average in the cross-attention heads.
 
 
-## RagRetriever
+## [RagRetriever](#ragretriever)
 
 <a id='transformers.RagRetriever'></a>
 > **class transformers.RagRetriever**(config, question_encoder_tokenizer, generator_tokenizer, index = None, init_retrieval = True)
@@ -410,7 +437,7 @@ A tuple with the following objects:
 `Tuple[np.ndarray, np.ndarray, List[dict]]`
 
 
-## RagModel
+## [RagModel](#ragmodel)
 
 <a id='transformers.RagModel'></a>
 > **class transformers.RagModel**(config: typing.Optional[transformers.configuration_utils.PretrainedConfig] = None, question_encoder: typing.Optional[transformers.modeling_utils.PreTrainedModel] = None, generator: typing.Optional[transformers.modeling_utils.PreTrainedModel] = None, retriever: typing.Optional = None, **kwargs)
@@ -613,7 +640,7 @@ various elements depending on the configuration ([RagConfig](/docs/transformers/
 [RetrievAugLMOutput](/docs/transformers/master/en/model_doc/rag.html#transformers.models.rag.modeling_rag.RetrievAugLMOutput) or `tuple(torch.FloatTensor)`
 
 
-## RagSequenceForGeneration
+## [RagSequenceForGeneration](#ragsequenceforgeneration)
 
 <a id='transformers.RagSequenceForGeneration'></a>
 > **class transformers.RagSequenceForGeneration**(config: typing.Optional[transformers.configuration_utils.PretrainedConfig] = None, question_encoder: typing.Optional[transformers.modeling_utils.PreTrainedModel] = None, generator: typing.Optional[transformers.modeling_utils.PreTrainedModel] = None, retriever: typing.Optional = None, **kwargs)
@@ -906,7 +933,7 @@ batches finished early due to the `eos_token_id`.
 `torch.LongTensor` of shape `(batch_size * num_return_sequences, sequence_length)`
 
 
-## RagTokenForGeneration
+## [RagTokenForGeneration](#ragtokenforgeneration)
 
 <a id='transformers.RagTokenForGeneration'></a>
 > **class transformers.RagTokenForGeneration**(config: typing.Optional[transformers.configuration_utils.PretrainedConfig] = None, question_encoder: typing.Optional[transformers.modeling_utils.PreTrainedModel] = None, generator: typing.Optional[transformers.modeling_utils.PreTrainedModel] = None, retriever: typing.Optional = None, **kwargs)
@@ -1252,7 +1279,7 @@ batches finished early due to the `eos_token_id`.
 `torch.LongTensor` of shape `(batch_size * num_return_sequences, sequence_length)`
 
 
-## TFRagModel
+## [TFRagModel](#tfragmodel)
 
 <a id='transformers.TFRagModel'></a>
 > **class transformers.TFRagModel**(*args, **kwargs)
@@ -1454,7 +1481,7 @@ elements depending on the configuration ([RagConfig](/docs/transformers/master/e
 `TFRetrievAugLMOutput` or `tuple(tf.Tensor)`
 
 
-## TFRagSequenceForGeneration
+## [TFRagSequenceForGeneration](#tfragsequenceforgeneration)
 
 <a id='transformers.TFRagSequenceForGeneration'></a>
 > **class transformers.TFRagSequenceForGeneration**(*args, **kwargs)
@@ -1740,7 +1767,7 @@ batches finished early due to the `eos_token_id`.
 `tf.Tensor` of shape `(batch_size * num_return_sequences, sequence_length)`
 
 
-## TFRagTokenForGeneration
+## [TFRagTokenForGeneration](#tfragtokenforgeneration)
 
 <a id='transformers.TFRagTokenForGeneration'></a>
 > **class transformers.TFRagTokenForGeneration**(*args, **kwargs)

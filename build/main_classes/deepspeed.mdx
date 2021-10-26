@@ -1,3 +1,79 @@
+---
+local: deepspeed-integration
+sections:
+- local: trainer-deepspeed-integration
+  sections:
+  - local: installation
+    title: Installation
+  - local: deployment-with-multiple-gpus
+    title: Deployment with multiple GPUs
+  - local: deployment-with-one-gpu
+    title: Deployment with one GPU
+  - local: deployment-in-notebooks
+    title: Deployment in Notebooks
+  - local: configuration
+    title: Configuration
+  - local: passing-configuration
+    title: Passing Configuration
+  - local: shared-configuration
+    title: Shared Configuration
+  - local: zero
+    sections:
+    - local: zero-config
+      title: ZeRO-2 Config
+    - local: zero-config
+      title: ZeRO-3 Config
+    title: ZeRO
+  - local: nvme-support
+    sections:
+    - local: zero-vs-zero-performance
+      title: ZeRO-2 vs ZeRO-3 Performance
+    - local: zero-example
+      title: ZeRO-2 Example
+    - local: zero-example
+      title: ZeRO-3 Example
+    title: NVMe Support
+  - local: optimizer-and-scheduler
+    sections:
+    - local: optimizer
+      title: Optimizer
+    - local: scheduler
+      title: Scheduler
+    title: Optimizer and Scheduler
+  - local: fp-precision
+    title: fp32 Precision
+  - local: automatic-mixed-precision
+    title: Automatic Mixed Precision
+  - local: batch-size
+    title: Batch Size
+  - local: gradient-accumulation
+    title: Gradient Accumulation
+  - local: gradient-clipping
+    title: Gradient Clipping
+  - local: getting-the-model-weights-out
+    title: Getting The Model Weights Out
+  - local: zero-and-infinity-nuances
+    sections:
+    - local: constructing-massive-models
+      title: Constructing Massive Models
+    - local: gathering-parameters
+      title: Gathering Parameters
+    title: ZeRO-3 and Infinity Nuances
+  - local: filing-issues
+    title: Filing Issues
+  - local: troubleshooting
+    title: Troubleshooting
+  - local: notes
+    title: Notes
+  title: Trainer Deepspeed Integration
+- local: nontrainer-deepspeed-integration
+  title: Non-Trainer Deepspeed Integration
+- local: hfdeepspeedconfig
+  title: HfDeepSpeedConfig
+- local: main-deepspeed-resources
+  title: Main DeepSpeed Resources
+title: DeepSpeed Integration
+---
 <script>
 import Tip from "../../Tip.svelte";
 import Youtube from "../../Youtube.svelte";	
@@ -16,7 +92,7 @@ an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express o
 specific language governing permissions and limitations under the License.
 -->
 
-# DeepSpeed Integration
+# [DeepSpeed Integration](#deepspeed-integration)
 
 
 [DeepSpeed](https://github.com/microsoft/DeepSpeed) implements everything described in the [ZeRO paper](https://arxiv.org/abs/1910.02054). Currently it provides full support for:
@@ -54,12 +130,12 @@ won't be possible on a single GPU.
 <a id='deepspeed-trainer-integration'></a>
 
 
-## Trainer Deepspeed Integration
+## [Trainer Deepspeed Integration](#trainer-deepspeed-integration)
 
 
 <a id='deepspeed-installation'></a>
 
-### Installation
+### [Installation](#installation)
 
 Install the library via pypi:
 
@@ -155,7 +231,7 @@ If after trying everything suggested you still encounter build issues, please, p
 
 <a id='deepspeed-multi-gpu'></a>
 
-### Deployment with multiple GPUs
+### [Deployment with multiple GPUs](#deployment-with-multiple-gpus)
 
 To deploy this feature with multiple GPUs adjust the [Trainer](/docs/transformers/master/en/main_classes/trainer.html#transformers.Trainer) command line arguments as
 following:
@@ -207,7 +283,7 @@ For some practical usage examples, please, see this [post](https://github.com/hu
 
 <a id='deepspeed-one-gpu'></a>
 
-### Deployment with one GPU
+### [Deployment with one GPU](#deployment-with-one-gpu)
 
 To deploy DeepSpeed with one GPU adjust the [Trainer](/docs/transformers/master/en/main_classes/trainer.html#transformers.Trainer) command line arguments as following:
 
@@ -279,7 +355,7 @@ In this example, we tell DeepSpeed to use GPU 1 (second gpu).
 
 <a id='deepspeed-notebook'></a>
 
-### Deployment in Notebooks
+### [Deployment in Notebooks](#deployment-in-notebooks)
 
 The problem with running notebook cells as a script is that there is no normal `deepspeed` launcher to rely on, so
 under certain setups we have to emulate it.
@@ -402,7 +478,7 @@ completes.
 
 <a id='deepspeed-config'></a>
 
-### Configuration
+### [Configuration](#configuration)
 
 For the complete guide to the DeepSpeed configuration options that can be used in its configuration file please refer
 to the [following documentation](https://www.deepspeed.ai/docs/config-json/).
@@ -490,7 +566,7 @@ to the console, so you can see exactly what was the final configuration passed t
 
 <a id='deepspeed-config-passing'></a>
 
-### Passing Configuration
+### [Passing Configuration](#passing-configuration)
 
 As discussed in this document normally the DeepSpeed configuration is passed as a path to a json file, but if you're
 not using the command line interface to configure the training, and instead instantiate the
@@ -513,7 +589,7 @@ TrainingArguments(..., deespeed=ds_config_dict)
 
 <a id='deepspeed-config-shared'></a>
 
-### Shared Configuration
+### [Shared Configuration](#shared-configuration)
 
 
 <Tip warning={true}>
@@ -551,7 +627,7 @@ Do note that some values, such as `scheduler.params.total_num_steps` are calcula
 
 <a id='deepspeed-zero'></a>
 
-### ZeRO
+### [ZeRO](#zero)
 
 [Zero Redundancy Optimizer (ZeRO)](https://www.deepspeed.ai/tutorials/zero/) is the workhorse of DeepSpeed. It
 support 3 different levels (stages) of optimization. The first one is not quite interesting for scalability purposes,
@@ -573,7 +649,7 @@ going to use.
 
 <a id='deepspeed-zero2-config'></a>
 
-#### ZeRO-2 Config
+#### [ZeRO-2 Config](#zero-config)
 
 The following is an example configuration for ZeRO stage 2:
 
@@ -611,7 +687,7 @@ The following is an example configuration for ZeRO stage 2:
 
 <a id='deepspeed-zero3-config'></a>
 
-#### ZeRO-3 Config
+#### [ZeRO-3 Config](#zero-config)
 
 The following is an example configuration for ZeRO stage 3:
 
@@ -700,7 +776,7 @@ default value in the following cases:
 
 <a id='deepspeed-nvme'></a>
 
-### NVMe Support
+### [NVMe Support](#nvme-support)
 
 ZeRO-Infinity allows for training incredibly large models by extending GPU and CPU memory with NVMe memory. Thanks to
 smart partitioning and tiling algorithms each GPU needs to send and receive very small amounts of data during
@@ -765,7 +841,7 @@ In order to figure out the optimal `aio` configuration block you must run a benc
 
 <a id='deepspeed-zero2-zero3-performance'></a>
 
-#### ZeRO-2 vs ZeRO-3 Performance
+#### [ZeRO-2 vs ZeRO-3 Performance](#zero-vs-zero-performance)
 
 ZeRO-3 is likely to be slower than ZeRO-2 if everything else is configured the same because the former has to gather
 model weights in addition to what ZeRO-2 does. If ZeRO-2 meets your needs and you don't need to scale beyond a few GPUs
@@ -785,7 +861,7 @@ these help you to trade scalability for speed depending on your needs.
 
 <a id='deepspeed-zero2-example'></a>
 
-#### ZeRO-2 Example
+#### [ZeRO-2 Example](#zero-example)
 
 Here is a full ZeRO-2 auto-configuration file `ds_config_zero2.json`:
 
@@ -896,7 +972,7 @@ values look like, but we highly recommend using the one with multiple `auto` set
 
 <a id='deepspeed-zero3-example'></a>
 
-#### ZeRO-3 Example
+#### [ZeRO-3 Example](#zero-example)
 
 Here is a full ZeRO-3 auto-configuration file `ds_config_zero3.json`:
 
@@ -1020,7 +1096,7 @@ values look like, but we highly recommend using the one with multiple `auto` set
 }
 ```
 
-### Optimizer and Scheduler
+### [Optimizer and Scheduler](#optimizer-and-scheduler)
 
 As long as you don't enable `offload_optimizer` you can mix and match DeepSpeed and HuggingFace schedulers and
 optimizers, with the exception of using the combination of HuggingFace scheduler and DeepSpeed optimizer:
@@ -1037,7 +1113,7 @@ GPU implementation (except LAMB).
 
 <a id='deepspeed-optimizer'></a>
 
-#### Optimizer
+#### [Optimizer](#optimizer)
 
 
 DeepSpeed's main optimizers are Adam, AdamW, OneBitAdam, and Lamb. These have been thoroughly tested with ZeRO and are
@@ -1108,7 +1184,7 @@ config values. e.g. for Adam you will want `weight_decay` around `0.01`.
 
 <a id='deepspeed-scheduler'></a>
 
-#### Scheduler
+#### [Scheduler](#scheduler)
 
 DeepSpeed supports `LRRangeTest`, `OneCycle`, `WarmupLR` and `WarmupDecayLR` learning rate schedulers. The full
 documentation is [here](https://www.deepspeed.ai/docs/config-json/#scheduler-parameters).
@@ -1192,7 +1268,7 @@ and ``total_num_steps`, `warmup_max_lr`, `warmup_num_steps` and `total_num_steps
 
 <a id='deepspeed-fp32'></a>
 
-### fp32 Precision
+### [fp32 Precision](#fp-precision)
 
 Deepspeed supports the full fp32 and the fp16 mixed precision.
 
@@ -1220,7 +1296,7 @@ instructions on how to disable this automatic conversion if for some reason you 
 
 <a id='deepspeed-amp'></a>
 
-### Automatic Mixed Precision
+### [Automatic Mixed Precision](#automatic-mixed-precision)
 
 You can use automatic mixed precision with either a pytorch-like AMP way or the apex-like way:
 
@@ -1298,7 +1374,7 @@ Here is the [documentation](https://www.deepspeed.ai/docs/config-json/#automatic
 
 <a id='deepspeed-bs'></a>
 
-### Batch Size
+### [Batch Size](#batch-size)
 
 To configure batch size, use:
 
@@ -1328,7 +1404,7 @@ configuration.
 
 <a id='deepspeed-grad-acc'></a>
 
-### Gradient Accumulation
+### [Gradient Accumulation](#gradient-accumulation)
 
 To configure gradient accumulation set:
 
@@ -1355,7 +1431,7 @@ configuration.
 
 <a id='deepspeed-grad-clip'></a>
 
-### Gradient Clipping
+### [Gradient Clipping](#gradient-clipping)
 
 To configure gradient gradient clipping set:
 
@@ -1382,7 +1458,7 @@ configuration.
 
 <a id='deepspeed-weight-extraction'></a>
 
-### Getting The Model Weights Out
+### [Getting The Model Weights Out](#getting-the-model-weights-out)
 
 As long as you continue training and resuming using DeepSpeed you don't need to worry about anything. DeepSpeed stores
 fp32 master weights in its custom checkpoint optimizer files, which are `global_step*/*optim_states.pt` (this is glob
@@ -1504,7 +1580,7 @@ example will contain `global_step1`.
 Note: currently the script requires 2x general RAM of the final fp32 model weights.
 
 
-### ZeRO-3 and Infinity Nuances
+### [ZeRO-3 and Infinity Nuances](#zero-and-infinity-nuances)
 
 ZeRO-3 is quite different from ZeRO-2 because of its param sharding feature.
 
@@ -1515,7 +1591,7 @@ circumstances you may find the following information to be needed.
 
 
 
-#### Constructing Massive Models
+#### [Constructing Massive Models](#constructing-massive-models)
 
 DeepSpeed/ZeRO-3 can handle models with Trillions of parameters which may not fit onto the existing RAM. In such cases,
 but also if you want the initialization to happen much faster, initialize the model using _deepspeed.zero.Init()_
@@ -1555,7 +1631,7 @@ Also when loading fp16-pretrained models, you will want to tell `from_pretrained
 `torch_dtype=torch.float16`. For details, please, see [from_pretrained-torch-dtype](/docs/transformers/master/en/main_classes/deepspeed.html#from_pretrained-torch-dtype).
 
 
-#### Gathering Parameters
+#### [Gathering Parameters](#gathering-parameters)
 
 Under ZeRO-3 on multiple GPUs no single GPU has all the parameters unless it's the parameters for the currently
 executing layer. So if you need to access all parameters from all layers at once there is a specific method to do it.
@@ -1578,7 +1654,7 @@ larger multi-dimensional shape, this means that the parameter is partitioned and
 
 
 
-### Filing Issues
+### [Filing Issues](#filing-issues)
 
 Here is how to file an issue so that we could quickly get to the bottom of the issue and help you to unblock your work.
 
@@ -1624,7 +1700,7 @@ Things to consider:
 
 
 
-### Troubleshooting
+### [Troubleshooting](#troubleshooting)
 
 - `deepspeed` process gets killed at startup without a traceback
 
@@ -1641,7 +1717,7 @@ Work is being done to enable estimating how much memory is needed for a specific
 
 
 
-### Notes
+### [Notes](#notes)
 
 - DeepSpeed works with the PyTorch [Trainer](/docs/transformers/master/en/main_classes/trainer.html#transformers.Trainer) but not TF [TFTrainer](/docs/transformers/master/en/main_classes/trainer.html#transformers.TFTrainer).
 - While DeepSpeed has a pip installable PyPI package, it is highly recommended that it gets installed from [source](https://github.com/microsoft/deepspeed#installation) to best match your hardware and also if you need to enable
@@ -1654,7 +1730,7 @@ Work is being done to enable estimating how much memory is needed for a specific
 
 <a id='deepspeed-non-trainer-integration'></a>
 
-## Non-Trainer Deepspeed Integration
+## [Non-Trainer Deepspeed Integration](#nontrainer-deepspeed-integration)
 
 The `HfDeepSpeedConfig` is used to integrate Deepspeed into the 🤗 Transformers core
 functionality, when [Trainer](/docs/transformers/master/en/main_classes/trainer.html#transformers.Trainer) is not used.
@@ -1691,7 +1767,7 @@ model = AutoModel.from_config(config)
 engine = deepspeed.initialize(model=model, config_params=ds_config, ...)
 ```
 
-## HfDeepSpeedConfig
+## [HfDeepSpeedConfig](#hfdeepspeedconfig)
 
 <a id='transformers.deepspeed.HfDeepSpeedConfig'></a>
 > **class transformers.deepspeed.HfDeepSpeedConfig**(config_file_or_dict)
@@ -1737,7 +1813,7 @@ isn't set).
 
 
 
-## Main DeepSpeed Resources
+## [Main DeepSpeed Resources](#main-deepspeed-resources)
 
 - [Project's github](https://github.com/microsoft/deepspeed)
 - [Usage docs](https://www.deepspeed.ai/getting-started/)

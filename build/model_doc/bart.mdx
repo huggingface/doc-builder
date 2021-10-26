@@ -1,3 +1,45 @@
+---
+local: bart
+sections:
+- local: overview
+  sections:
+  - local: examples
+    title: Examples
+  title: Overview
+- local: implementation-notes
+  title: Implementation Notes
+- local: mask-filling
+  title: Mask Filling
+- local: bartconfig
+  title: BartConfig
+- local: barttokenizer
+  title: BartTokenizer
+- local: barttokenizerfast
+  title: BartTokenizerFast
+- local: bartmodel
+  title: BartModel
+- local: bartforconditionalgeneration
+  title: BartForConditionalGeneration
+- local: bartforsequenceclassification
+  title: BartForSequenceClassification
+- local: bartforquestionanswering
+  title: BartForQuestionAnswering
+- local: bartforcausallm
+  title: BartForCausalLM
+- local: tfbartmodel
+  title: TFBartModel
+- local: tfbartforconditionalgeneration
+  title: TFBartForConditionalGeneration
+- local: flaxbartmodel
+  title: FlaxBartModel
+- local: flaxbartforconditionalgeneration
+  title: FlaxBartForConditionalGeneration
+- local: flaxbartforsequenceclassification
+  title: FlaxBartForSequenceClassification
+- local: flaxbartforquestionanswering
+  title: FlaxBartForQuestionAnswering
+title: BART
+---
 <script>
 import Tip from "../../Tip.svelte";
 import Youtube from "../../Youtube.svelte";	
@@ -16,12 +58,12 @@ an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express o
 specific language governing permissions and limitations under the License.
 -->
 
-# BART
+# [BART](#bart)
 
 **DISCLAIMER:** If you see something strange, file a [Github Issue](https://github.com/huggingface/transformers/issues/new?assignees=&labels=&template=bug-report.md&title) and assign
 @patrickvonplaten
 
-## Overview
+## [Overview](#overview)
 
 The Bart model was proposed in [BART: Denoising Sequence-to-Sequence Pre-training for Natural Language Generation,
 Translation, and Comprehension](https://arxiv.org/abs/1910.13461) by Mike Lewis, Yinhan Liu, Naman Goyal, Marjan
@@ -41,7 +83,7 @@ According to the abstract,
 This model was contributed by [sshleifer](https://huggingface.co/sshleifer). The Authors' code can be found [here](https://github.com/pytorch/fairseq/tree/master/examples/bart).
 
 
-### Examples
+### [Examples](#examples)
 
 - Examples and scripts for fine-tuning BART and other models for sequence to sequence tasks can be found in
   [examples/pytorch/summarization/](https://github.com/huggingface/transformers/tree/master/examples/pytorch/summarization/README.md).
@@ -50,7 +92,7 @@ This model was contributed by [sshleifer](https://huggingface.co/sshleifer). The
 - [Distilled checkpoints](https://huggingface.co/models?search=distilbart) are described in this [paper](https://arxiv.org/abs/2010.13002).
 
 
-## Implementation Notes
+## [Implementation Notes](#implementation-notes)
 
 - Bart doesn't use `token_type_ids` for sequence classification. Use [BartTokenizer](/docs/transformers/master/en/model_doc/bart.html#transformers.BartTokenizer) or
   [encode()](/docs/transformers/master/en/internal/tokenization_utils.html#transformers.PreTrainedTokenizerBase.encode) to get the proper splitting.
@@ -64,7 +106,7 @@ This model was contributed by [sshleifer](https://huggingface.co/sshleifer). The
 - Models that load the _facebook/bart-large-cnn_ weights will not have a `mask_token_id`, or be able to perform
   mask-filling tasks.
 
-## Mask Filling
+## [Mask Filling](#mask-filling)
 
 The `facebook/bart-base` and `facebook/bart-large` checkpoints can be used to fill multi-token masks.
 
@@ -78,7 +120,7 @@ generated_ids = model.generate(batch['input_ids'])
 assert tok.batch_decode(generated_ids, skip_special_tokens=True) == ['UN Chief Says There Is No Plan to Stop Chemical Weapons in Syria']
 ```
 
-## BartConfig
+## [BartConfig](#bartconfig)
 
 <a id='transformers.BartConfig'></a>
 > **class transformers.BartConfig**(vocab_size = 50265, max_position_embeddings = 1024, encoder_layers = 12, encoder_ffn_dim = 4096, encoder_attention_heads = 16, decoder_layers = 12, decoder_ffn_dim = 4096, decoder_attention_heads = 16, encoder_layerdrop = 0.0, decoder_layerdrop = 0.0, activation_function = 'gelu', d_model = 1024, dropout = 0.1, attention_dropout = 0.0, activation_dropout = 0.0, init_std = 0.02, classifier_dropout = 0.0, scale_embedding = False, use_cache = True, num_labels = 3, pad_token_id = 1, bos_token_id = 0, eos_token_id = 2, is_encoder_decoder = True, decoder_start_token_id = 2, forced_eos_token_id = 2, **kwargs)
@@ -160,7 +202,7 @@ outputs. Read the documentation from [PretrainedConfig](/docs/transformers/maste
 ```
 
 
-## BartTokenizer
+## [BartTokenizer](#barttokenizer)
 
 <a id='transformers.BartTokenizer'></a>
 > **class transformers.BartTokenizer**(vocab_file, merges_file, errors = 'replace', bos_token = '&amp;lt;s>', eos_token = '&amp;lt;/s>', sep_token = '&amp;lt;/s>', cls_token = '&amp;lt;s>', unk_token = '&amp;lt;unk>', pad_token = '&amp;lt;pad>', mask_token = '&amp;lt;mask>', add_prefix_space = False, **kwargs)
@@ -173,7 +215,7 @@ Construct a BART tokenizer.
 parameters and other methods.
 
 
-## BartTokenizerFast
+## [BartTokenizerFast](#barttokenizerfast)
 
 <a id='transformers.BartTokenizerFast'></a>
 > **class transformers.BartTokenizerFast**(vocab_file = None, merges_file = None, tokenizer_file = None, errors = 'replace', bos_token = '&amp;lt;s>', eos_token = '&amp;lt;/s>', sep_token = '&amp;lt;/s>', cls_token = '&amp;lt;s>', unk_token = '&amp;lt;unk>', pad_token = '&amp;lt;pad>', mask_token = '&amp;lt;mask>', add_prefix_space = False, **kwargs)
@@ -197,7 +239,7 @@ Construct a BART tokenizer.
 parameters and other methods.
 
 
-## BartModel
+## [BartModel](#bartmodel)
 
 <a id='transformers.BartModel'></a>
 > **class transformers.BartModel**(config: BartConfig)
@@ -385,7 +427,7 @@ various elements depending on the configuration ([BartConfig](/docs/transformers
 ```
 
 
-## BartForConditionalGeneration
+## [BartForConditionalGeneration](#bartforconditionalgeneration)
 
 <a id='transformers.BartForConditionalGeneration'></a>
 > **class transformers.BartForConditionalGeneration**(config: BartConfig)
@@ -597,7 +639,7 @@ various elements depending on the configuration ([BartConfig](/docs/transformers
 ```
 
 
-## BartForSequenceClassification
+## [BartForSequenceClassification](#bartforsequenceclassification)
 
 <a id='transformers.BartForSequenceClassification'></a>
 > **class transformers.BartForSequenceClassification**(config: BartConfig, **kwargs)
@@ -791,7 +833,7 @@ various elements depending on the configuration ([BartConfig](/docs/transformers
 ```
 
 
-## BartForQuestionAnswering
+## [BartForQuestionAnswering](#bartforquestionanswering)
 
 <a id='transformers.BartForQuestionAnswering'></a>
 > **class transformers.BartForQuestionAnswering**(config)
@@ -996,7 +1038,7 @@ various elements depending on the configuration ([BartConfig](/docs/transformers
 ```
 
 
-## BartForCausalLM
+## [BartForCausalLM](#bartforcausallm)
 
 <a id='transformers.BartForCausalLM'></a>
 > **class transformers.BartForCausalLM**(config)
@@ -1121,7 +1163,7 @@ various elements depending on the configuration ([BartConfig](/docs/transformers
 [CausalLMOutputWithCrossAttentions](/docs/transformers/master/en/main_classes/output.html#transformers.modeling_outputs.CausalLMOutputWithCrossAttentions) or `tuple(torch.FloatTensor)`
 
 
-## TFBartModel
+## [TFBartModel](#tfbartmodel)
 
 <a id='transformers.TFBartModel'></a>
 > **class transformers.TFBartModel**(*args, **kwargs)
@@ -1311,7 +1353,7 @@ elements depending on the configuration ([BartConfig](/docs/transformers/master/
 ```
 
 
-## TFBartForConditionalGeneration
+## [TFBartForConditionalGeneration](#tfbartforconditionalgeneration)
 
 <a id='transformers.TFBartForConditionalGeneration'></a>
 > **class transformers.TFBartForConditionalGeneration**(*args, **kwargs)
@@ -1522,7 +1564,7 @@ elements depending on the configuration ([BartConfig](/docs/transformers/master/
 ```
 
 
-## FlaxBartModel
+## [FlaxBartModel](#flaxbartmodel)
 
 <a id='transformers.FlaxBartModel'></a>
 > **class transformers.FlaxBartModel**(config: BartConfig, input_shape: typing.Tuple[int] = (1, 1), seed: int = 0, dtype: dtype = &amp;lt;class 'jax._src.numpy.lax_numpy.float32'>, **kwargs)
@@ -1842,7 +1884,7 @@ various elements depending on the configuration (`BartConfig'>`) and inputs.
 [FlaxBaseModelOutputWithPastAndCrossAttentions](/docs/transformers/master/en/main_classes/output.html#transformers.modeling_flax_outputs.FlaxBaseModelOutputWithPastAndCrossAttentions) or `tuple(torch.FloatTensor)`
 
 
-## FlaxBartForConditionalGeneration
+## [FlaxBartForConditionalGeneration](#flaxbartforconditionalgeneration)
 
 <a id='transformers.FlaxBartForConditionalGeneration'></a>
 > **class transformers.FlaxBartForConditionalGeneration**(config: BartConfig, input_shape: typing.Tuple[int] = (1, 1), seed: int = 0, dtype: dtype = &amp;lt;class 'jax._src.numpy.lax_numpy.float32'>, **kwargs)
@@ -2179,7 +2221,7 @@ various elements depending on the configuration (`BartConfig'>`) and inputs.
 [FlaxCausalLMOutputWithCrossAttentions](/docs/transformers/master/en/main_classes/output.html#transformers.modeling_flax_outputs.FlaxCausalLMOutputWithCrossAttentions) or `tuple(torch.FloatTensor)`
 
 
-## FlaxBartForSequenceClassification
+## [FlaxBartForSequenceClassification](#flaxbartforsequenceclassification)
 
 <a id='transformers.FlaxBartForSequenceClassification'></a>
 > **class transformers.FlaxBartForSequenceClassification**(config: BartConfig, input_shape: typing.Tuple[int] = (1, 1), seed: int = 0, dtype: dtype = &amp;lt;class 'jax._src.numpy.lax_numpy.float32'>, **kwargs)
@@ -2500,7 +2542,7 @@ various elements depending on the configuration (`BartConfig'>`) and inputs.
 [FlaxBaseModelOutputWithPastAndCrossAttentions](/docs/transformers/master/en/main_classes/output.html#transformers.modeling_flax_outputs.FlaxBaseModelOutputWithPastAndCrossAttentions) or `tuple(torch.FloatTensor)`
 
 
-## FlaxBartForQuestionAnswering
+## [FlaxBartForQuestionAnswering](#flaxbartforquestionanswering)
 
 <a id='transformers.FlaxBartForQuestionAnswering'></a>
 > **class transformers.FlaxBartForQuestionAnswering**(config: BartConfig, input_shape: typing.Tuple[int] = (1, 1), seed: int = 0, dtype: dtype = &amp;lt;class 'jax._src.numpy.lax_numpy.float32'>, **kwargs)
