@@ -8,6 +8,7 @@ from tqdm import tqdm
 
 from .autodoc import autodoc, find_object_in_package, get_shortest_path
 from .convert_rst_to_mdx import convert_rst_to_mdx, find_indent, is_empty_line
+from .frontmatter_node import FrontmatterNode
 
 
 _re_autodoc = re.compile("^\s*\[\[autodoc\]\]\s+(\S+)\s*$")
@@ -179,6 +180,59 @@ def resolve_links(doc_folder, package, mapping, page_info):
             writer.write(content)
 
 
+def generate_frontmatter_in_text(text):
+    """
+    Adds frontmatter & turns markdown headers into markdown headers with hash links.
+    
+    Args:
+    - **text** (`str`) -- The text in which to convert the links.
+    """
+    text = text.split('\n')
+    root = None
+    is_inside_codeblock = False
+    for idx, line in enumerate(text):
+        if line.startswith("```"):
+            is_inside_codeblock = not is_inside_codeblock
+        line = line.split()
+        if is_inside_codeblock or not line:
+            continue
+        first_word, rest_of_line = line[0], ' '.join(line[1:])
+        if '#' in first_word and len(set(first_word)) == 1:
+            # it is a header
+            header_level = len(first_word)
+            title = rest_of_line
+            local = re.sub(r'[^a-z-]+', '', rest_of_line.lower().replace(' ', '-'))
+            text[idx] = f'{"#"*header_level} [{title}](#{local})'
+            node = FrontmatterNode(title, local)
+            if header_level == 1:
+                root = node
+            else:
+                root.add_child(node, header_level)
+
+    frontmatter = root.get_frontmatter()
+    text = '\n'.join(text)
+    text = frontmatter + text
+    return text
+
+
+def generate_frontmatter(doc_folder):
+    """
+    Adds frontmatter & turns markdown headers into markdown headers with hash links for all files in a folder.
+    
+    Args:
+    - **doc_folder** (`str` or `os.PathLike`) -- The folder in which to look for files.
+    """
+    doc_folder = Path(doc_folder)
+    all_files = list(doc_folder.glob("**/*.mdx"))
+    for file in tqdm(all_files, desc="Generating frontmatter"):
+        # utf-8-sig is needed to correctly open community.md file
+        with open(file, "r", encoding="utf-8-sig") as reader:
+            content = reader.read()
+        content = generate_frontmatter_in_text(content)
+        with open(file, "w", encoding="utf-8") as writer:
+            writer.write(content)
+
+
 def build_doc(package_name, doc_folder, output_dir, clean=True, version="master", language="en"):
     """
     Build the documentation of a package.
@@ -199,3 +253,4 @@ def build_doc(package_name, doc_folder, output_dir, clean=True, version="master"
     package = importlib.import_module(package_name)
     anchors_mapping = build_mdx_files(package, doc_folder, output_dir, page_info)
     resolve_links(output_dir, package, anchors_mapping, page_info)
+    generate_frontmatter(output_dir)

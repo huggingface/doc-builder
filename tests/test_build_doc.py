@@ -9,7 +9,8 @@ sys.path.append("src")
 from doc_builder.build_doc import (
     _re_autodoc,
     _re_list_item,
-    resolve_links_in_text
+    resolve_links_in_text,
+    generate_frontmatter_in_text
 )
 
 
@@ -120,4 +121,23 @@ class BuildDocTester(unittest.TestCase):
                 "Link to [transformers.BertModel](/docs/transformers/v4.10.0/fr/model_doc/bert.html#transformers.BertModel), "
                 "[transformers.BertModel.forward()](/docs/transformers/v4.10.0/fr/model_doc/bert.html#transformers.BertModel.forward)."
             ),
+        )
+
+    def test_generate_frontmatter_in_text(self):
+        # test canonical
+        self.assertEqual(
+            generate_frontmatter_in_text("# Bert\n## BertTokenizer\n### BertTokenizerMethod"),
+            "---\nlocal: bert\nsections:\n- local: berttokenizer\n  sections:\n  - local: berttokenizermethod\n    title: BertTokenizerMethod\n  title: BertTokenizer\ntitle: Bert\n---\n# [Bert](#bert)\n## [BertTokenizer](#berttokenizer)\n### [BertTokenizerMethod](#berttokenizermethod)"
+        )
+        
+        # test h1 having h3 children (skipping h2 level)
+        self.assertEqual(
+            generate_frontmatter_in_text("# Bert\n### BertTokenizerMethodA\n### BertTokenizerMethodB"),
+            "---\nlocal: bert\nsections:\n- local: berttokenizermethoda\n  title: BertTokenizerMethodA\n- local: berttokenizermethodb\n  title: BertTokenizerMethodB\ntitle: Bert\n---\n# [Bert](#bert)\n### [BertTokenizerMethodA](#berttokenizermethoda)\n### [BertTokenizerMethodB](#berttokenizermethodb)"
+        )
+        
+        # skip python comments in code blocks (because markdown `#` is same as python comment `#`)
+        self.assertEqual(
+            generate_frontmatter_in_text("# Bert\n```\n# python comment\n```\n## BertTokenizer"),
+            "---\nlocal: bert\nsections:\n- local: berttokenizer\n  title: BertTokenizer\ntitle: Bert\n---\n# [Bert](#bert)\n```\n# python comment\n```\n## [BertTokenizer](#berttokenizer)"
         )
