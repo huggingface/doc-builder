@@ -362,12 +362,12 @@ text
 print(1 + 1)
 ```
 
-> Example:
+<exampletitle>Example:</exampletitle>
 
-```python
+<example>```python
 example code
 ```
-
+</example>
 <Tip>
 
 This is a note.
@@ -442,19 +442,21 @@ End of the arg section.
         expected_conversion = """
 docstring
 
-> Parameters
+<parameters>
 
 - **a** (:obj:`str` or :obj:`bool`) -- some parameter
 - **b** (:obj:`str` or :obj:`bool`) --
         Another parameter with the description below
 
-> Returns
+</parameters>
+
+<returns>
 
  some result
 
-> Return type
+</returns>
 
-    :obj:`str` or :obj:`bool`
+<returntype>    :obj:`str` or :obj:`bool`</returntype>
 
 Example::
 

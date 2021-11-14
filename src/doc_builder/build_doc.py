@@ -6,7 +6,7 @@ from pathlib import Path
 
 from tqdm import tqdm
 
-from .autodoc import autodoc, find_object_in_package, get_shortest_path
+from .autodoc import autodoc, find_object_in_package, get_shortest_path, remove_example_tags
 from .convert_rst_to_mdx import convert_rst_to_mdx, find_indent, is_empty_line
 from .frontmatter_node import FrontmatterNode
 
@@ -59,6 +59,8 @@ def resolve_autodoc(content, package, return_anchors=False, page_info=None):
             idx += 1
 
     new_content = "\n".join(new_lines)
+    new_content = remove_example_tags(new_content)
+
     return (new_content, anchors) if return_anchors else new_content
 
 
