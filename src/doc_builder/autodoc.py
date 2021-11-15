@@ -1,4 +1,3 @@
-from collections import defaultdict
 import inspect
 import json
 import re
@@ -133,17 +132,20 @@ def parse_object_doc(object_doc):
         nonlocal object_doc
         re_match = regex.search(object_doc)
         object_doc = regex.sub("", object_doc)
-        return re_match.group(1).strip() if re_match else ""
+        if re_match:
+            match = re_match.group(1).strip()
+            return match if len(match) else None
+        return None
 
     object_doc = _re_returns.sub(lambda m: closure1(m, 'returns'), object_doc)
     object_doc = _re_parameters.sub(lambda m: closure1(m, 'parameters'), object_doc)
 
-    return defaultdict(str, **{ 
+    return { 
         "parameters": closure2(_re_parameters),
         "returns": closure2(_re_returns),
         "returntype": closure2(_re_returntype),
         "description": object_doc,
-    })
+    }
 
 
 _re_parametername = re.compile(r'\*\*(.*)\*\*', re.DOTALL)
@@ -158,32 +160,35 @@ def get_signature_component(name, signature, object_doc):
     - **signature** (`List(Dict(str,str))`) -- The signature of the object.
     - **object_doc** (`str`) -- The docstring of the the object.
     """
-    parsed_obj_doc = parse_object_doc(object_doc) if object_doc is not None else defaultdict(str)
+    parsed_obj_doc = parse_object_doc(object_doc)
     description = parsed_obj_doc["description"]
     parameters = parsed_obj_doc["parameters"]
     return_description = parsed_obj_doc["returns"]
     returntype = parsed_obj_doc["returntype"]
     returns = {"type": returntype, "description": return_description}
-    parameters = parameters.split('\n')
 
-    params_description = []
-    # greedy algorithm to find parameter name & its description
-    param_name = None
-    param_description = []
-    def greedyHelper():
-        nonlocal param_name, param_description, params_description
-        if param_name:
-            param_description = re.sub(' +', ' ', ' '.join(param_description))
-            params_description.append({"name":param_name, "description": param_description})
-    for line in parameters:
-        param_name_ = _re_parametername.search(line)
-        if param_name_:
-            greedyHelper()
-            param_name = param_name_.group(1)
-            param_description = [line]
-        else:
-            param_description.append(line)
-    greedyHelper()
+    if parameters:
+        parameters = parameters.split('\n')
+        params_description = []
+        # greedy algorithm to find parameter name & its description
+        param_name = None
+        param_description = []
+        def greedyHelper():
+            nonlocal param_name, param_description, params_description
+            if param_name:
+                param_description = re.sub(' +', ' ', ' '.join(param_description))
+                params_description.append({"name":param_name, "description": param_description})
+        for line in parameters:
+            param_name_ = _re_parametername.search(line)
+            if param_name_:
+                greedyHelper()
+                param_name = param_name_.group(1)
+                param_description = [line]
+            else:
+                param_description.append(line)
+        greedyHelper()
+    else:
+        params_description = None
 
     svelte_str = f'<Docstring hydrate-props={{{{name: "{name}", parameters:{json.dumps(signature)}, parametersDescription:{json.dumps(params_description)}, returns:{json.dumps(returns)} }}}} />'
     return svelte_str + f'\n{description}'
@@ -234,13 +239,12 @@ def document_object(object_name, package, page_info, full_name=True):
     documentation = f"<a id='{anchor_name}'></a>\n" if anchor_name is not None else ""
     signature_name = prefix+name
     signature = format_signature(obj)
-    object_doc = None
     if getattr(obj, "__doc__", None) is not None and len(obj.__doc__) > 0:
         object_doc = convert_rst_docstring_to_mdx(obj.__doc__, page_info)
         if is_rst_docstring(object_doc):
             object_doc = convert_rst_docstring_to_mdx(obj.__doc__, page_info)
-    component = get_signature_component(signature_name, signature, object_doc)
-    documentation += "\n" + component + "\n"
+        component = get_signature_component(signature_name, signature, object_doc)
+        documentation += "\n" + component + "\n"
     return documentation
 
 

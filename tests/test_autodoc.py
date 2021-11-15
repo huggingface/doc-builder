@@ -150,18 +150,32 @@ List of [input IDs](../glossary.html#input-ids) with the appropriate special tok
         expected_signature_component = '<Docstring hydrate-props={{name: "class transformers.BertweetTokenizer", parameters:[{"name": "vocab_file", "val": ""}, {"name": "normalization", "val": " = False"}, {"name": "bos_token", "val": " = \'&amp;lt;s>\'"}], parametersDescription:[{"name": "vocab_file", "description": "- **vocab_file** (`str`) -- Path to the vocabulary file."}, {"name": "merges_file", "description": "- **merges_file** (`str`) -- Path to the merges file."}, {"name": "normalization", "description": "- **normalization** (`bool`, _optional_, defaults to `False`) -- Whether or not to apply a normalization preprocess. <Tip> When building a sequence using special tokens, this is not the token that is used for the beginning of sequence. The token used is the `cls_token`. </Tip>"}], returns:{"type": "`List[int]`", "description": "List of [input IDs](../glossary.html#input-ids) with the appropriate special tokens."} }} />\nConstructs a BERTweet tokenizer, using Byte-Pair-Encoding.\n\nThis tokenizer inherits from [`~transformers.PreTrainedTokenizer`] which contains most of the main methods.\nUsers should refer to this superclass for more information regarding those methods.\n\n\n\n\n'
         self.assertEqual(get_signature_component(name, signature, object_doc), expected_signature_component)
 
+        name = "class transformers.BertweetTokenizer"
+        signature = [
+            {'name': 'vocab_file', 'val': ''}, 
+            {'name': 'normalization', 'val': ' = False'}, 
+            {'name': 'bos_token', 'val': " = '&amp;lt;s>'"},
+        ]
+        object_doc_without_params_and_return = """Constructs a BERTweet tokenizer, using Byte-Pair-Encoding.
+
+This tokenizer inherits from [`~transformers.PreTrainedTokenizer`] which contains most of the main methods.
+Users should refer to this superclass for more information regarding those methods.
+"""
+        expected_signature_component = '<Docstring hydrate-props={{name: "class transformers.BertweetTokenizer", parameters:[{"name": "vocab_file", "val": ""}, {"name": "normalization", "val": " = False"}, {"name": "bos_token", "val": " = \'&amp;lt;s>\'"}], parametersDescription:null, returns:{"type": null, "description": null} }} />\nConstructs a BERTweet tokenizer, using Byte-Pair-Encoding.\n\nThis tokenizer inherits from [`~transformers.PreTrainedTokenizer`] which contains most of the main methods.\nUsers should refer to this superclass for more information regarding those methods.\n'
+        self.assertEqual(get_signature_component(name, signature, object_doc_without_params_and_return), expected_signature_component)
+
     def test_document_object(self):
         page_info = {"package_name": "transformers"}
+
         # Might need some tweaking if the documentation of those objects change.
         self.assertEqual(
             document_object("is_torch_available", transformers, page_info),
-            '<a id=\'transformers.is_torch_available\'></a>\n\n<Docstring hydrate-props={{name: "transformers.is\\_torch\\_available", parameters:[], parametersDescription:[], returns:{"type": "", "description": ""} }} />\n\n'
+            "<a id='transformers.is_torch_available'></a>\n"
         )
-        
 
         model_output_doc = """<a id='transformers.file_utils.ModelOutput'></a>
 
-<Docstring hydrate-props={{name: "class transformers.file\_utils.ModelOutput", parameters:"", parametersDescription:[], returns:{"type": "", "description": ""} }} />
+<Docstring hydrate-props={{name: "class transformers.file\_utils.ModelOutput", parameters:"", parametersDescription:null, returns:{"type": null, "description": null} }} />
 
 Base class for all model outputs as dataclass. Has a `__getitem__` that allows indexing by integer or slice (like
 a tuple) or strings (like a dictionary) that will ignore the `None` attributes. Otherwise behaves like a regular
