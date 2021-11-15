@@ -90,12 +90,10 @@ def format_signature(obj):
         param_type_val = ""
         if param.annotation != inspect._empty:
             annotation = get_type_name(param.annotation)
-            annotation = annotation.replace("<", "&amp;lt;")
             param_type_val += f": {annotation}"
         if param.default != inspect._empty:
             default = param.default
             default = repr(default)
-            default = default.replace("<", "&amp;lt;")
             param_type_val += f" = {default}"
         params.append({'name':param_name, 'val':param_type_val})
     return params
@@ -168,6 +166,7 @@ def get_signature_component(name, signature, object_doc):
     returns = {"type": returntype, "description": return_description}
 
     if parameters:
+        parameters = parameters.replace('&amp;lt;', '<')
         parameters = parameters.split('\n')
         params_description = []
         # greedy algorithm to find parameter name & its description
