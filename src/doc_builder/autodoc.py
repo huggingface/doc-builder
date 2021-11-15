@@ -115,7 +115,7 @@ def parse_object_doc(object_doc):
     """
     def closure1(match, tag):
         """
-        This closure ...
+        This closure find whether parameters and/or returns sections has example code block inside it
         """
         match_str = match.group(1)
         examples_inside = _re_example_tags.search(match_str)
@@ -127,7 +127,7 @@ def parse_object_doc(object_doc):
 
     def closure2(regex):
         """
-        This closure ... 
+        This closure matches given regex & removes the matched group from object_doc
         """
         nonlocal object_doc
         re_match = regex.search(object_doc)
