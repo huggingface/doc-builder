@@ -4,7 +4,7 @@ import unittest
 import transformers
 
 from typing import List, Optional, Union
-from transformers import BertModel, BertTokenizer
+from transformers import BertModel, BertTokenizer, BertTokenizerFast
 from transformers.file_utils import PushToHubMixin
 
 # To find the doc_builder package.
@@ -97,6 +97,10 @@ method to convert it to a tuple before.
                 "create_token_type_ids_from_sequences",
                 "get_special_tokens_mask",
             ],
+        )
+        self.assertListEqual(
+            find_documented_methods(BertTokenizerFast),
+            ["build_inputs_with_special_tokens", "create_token_type_ids_from_sequences"],
         )
     
     def test_autodoc_return_anchors(self):
