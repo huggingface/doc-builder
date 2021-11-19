@@ -487,8 +487,8 @@ def split_pt_tf_code_blocks(text):
                     code_lines["common"].append(lines[idx])
                 idx += 1
             if len(code_lines["pytorch"]) > 0 or len(code_lines["tensorflow"]) > 0:
-                block_lines = ["{#if fw === 'pt'}"] + code_lines["common"].copy() + code_lines["pytorch"] + ["```"]
-                block_lines += ["{:else}"] + code_lines["common"].copy() + code_lines["tensorflow"] + ["```", "{/if}"]
+                block_lines = code_lines["common"].copy() + code_lines["pytorch"]
+                block_lines += ["===PT-TF-SPLIT==="] + code_lines["tensorflow"] + ["```"]
                 new_lines.extend(block_lines)
             else:
                 block_lines = code_lines["common"] + ["```"]
