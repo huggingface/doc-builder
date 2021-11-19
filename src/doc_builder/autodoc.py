@@ -95,7 +95,7 @@ def format_signature(obj):
             default = param.default
             default = repr(default)
             param_type_val += f" = {default}"
-        params.append({'name':param_name, 'val':param_type_val})
+        params.append({'name': param_name, 'val': param_type_val})
     return params
 
 
