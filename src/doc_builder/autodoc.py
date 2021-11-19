@@ -111,7 +111,7 @@ def parse_object_doc(object_doc):
     (description, parameters, returns, returntype).
     Retusn the parsed result as `Dict(str, str)`.
     """
-    def closure1(match, tag):
+    def inside_example_finder_closure(match, tag):
         """
         This closure find whether parameters and/or returns sections has example code block inside it
         """
@@ -123,25 +123,30 @@ def parse_object_doc(object_doc):
             return f'<{tag}>{match_str}'
         return f'<{tag}>{match_str}</{tag}>'
 
-    def closure2(regex):
+    def regex_closure(object_doc, regex):
         """
         This closure matches given regex & removes the matched group from object_doc
         """
-        nonlocal object_doc
         re_match = regex.search(object_doc)
         object_doc = regex.sub("", object_doc)
+        match = None
         if re_match:
-            match = re_match.group(1).strip()
-            return match if len(match) else None
-        return None
+            _match = re_match.group(1).strip()
+            if len(_match):
+                match = _match
+        return object_doc, match
 
-    object_doc = _re_returns.sub(lambda m: closure1(m, 'returns'), object_doc)
-    object_doc = _re_parameters.sub(lambda m: closure1(m, 'parameters'), object_doc)
+    object_doc = _re_returns.sub(lambda m: inside_example_finder_closure(m, 'returns'), object_doc)
+    object_doc = _re_parameters.sub(lambda m: inside_example_finder_closure(m, 'parameters'), object_doc)
+
+    object_doc, parameters = regex_closure(object_doc, _re_parameters)
+    object_doc, returns = regex_closure(object_doc, _re_returns)
+    object_doc, returntype = regex_closure(object_doc, _re_returntype)
 
     return { 
-        "parameters": closure2(_re_parameters),
-        "returns": closure2(_re_returns),
-        "returntype": closure2(_re_returntype),
+        "parameters": parameters,
+        "returns": returns,
+        "returntype": returntype,
         "description": object_doc,
     }
 
@@ -149,12 +154,13 @@ def parse_object_doc(object_doc):
 _re_parametername = re.compile(r'\*\*(.*)\*\*', re.DOTALL)
 
 
-def get_signature_component(name, signature, object_doc):
+def get_signature_component(name, anchor_name, signature, object_doc):
     """
     Returns the svelte `Docstring` component string. 
     
     Args:
     - **name** (`str`) -- The name of the function or class to document.
+    - **anchor_name** (`str`) -- The anchor name of the function or class to document that will be used for hash links.
     - **signature** (`List(Dict(str,str))`) -- The signature of the object.
     - **object_doc** (`str`) -- The docstring of the the object.
     """
@@ -163,7 +169,6 @@ def get_signature_component(name, signature, object_doc):
     parameters = parsed_obj_doc["parameters"]
     return_description = parsed_obj_doc["returns"]
     returntype = parsed_obj_doc["returntype"]
-    returns = {"type": returntype, "description": return_description}
 
     if parameters:
         parameters = parameters.replace('&amp;lt;', '<')
@@ -172,25 +177,31 @@ def get_signature_component(name, signature, object_doc):
         # greedy algorithm to find parameter name & its description
         param_name = None
         param_description = []
-        def greedyHelper():
-            nonlocal param_name, param_description, params_description
-            if param_name:
-                param_description = re.sub(' +', ' ', ' '.join(param_description))
-                params_description.append({"name":param_name, "description": param_description})
         for line in parameters:
             param_name_ = _re_parametername.search(line)
             if param_name_:
-                greedyHelper()
+                if param_name:
+                    param_description = re.sub(' +', ' ', ' '.join(param_description))
+                    params_description.append({"name":param_name, "description": param_description, "anchorName": f'{anchor_name}.{param_name}'})
                 param_name = param_name_.group(1)
                 param_description = [line]
             else:
                 param_description.append(line)
-        greedyHelper()
+        if param_name:
+            param_description = re.sub(' +', ' ', ' '.join(param_description))
+            params_description.append({"name":param_name, "description": param_description, "anchorName": f'{anchor_name}.{param_name}'})
     else:
         params_description = None
-
-    svelte_str = f'<Docstring hydrate-props={{{{name: "{name}", parameters:{json.dumps(signature)}, parametersDescription:{json.dumps(params_description)}, returns:{json.dumps(returns)} }}}} />'
-    return svelte_str + f'\n{description}'
+    anchor_name = anchor_name if anchor_name else None
+    svelte_str = '<docstring>'
+    svelte_str += f'<name>"{name}"</name>'
+    svelte_str += f'<anchor>{json.dumps(anchor_name)}</anchor>'
+    svelte_str += f'<parameters>{json.dumps(signature)}</parameters>'
+    if params_description: svelte_str += f'<paramsdesc>{json.dumps(params_description)}</paramsdesc>'
+    if returntype: svelte_str += f'<rettype>{returntype}</rettype>'
+    if return_description: svelte_str += f'<retdesc>{return_description}</retdesc>'
+    svelte_str += '</docstring>'
+    return svelte_str + f'\n{description}\n'
 
 
 # Re pattern to catch :obj:`xx`, :class:`xx`, :func:`xx` or :meth:`xx`.
@@ -235,14 +246,14 @@ def document_object(object_name, package, page_info, full_name=True):
     name = name.replace("_", "\_")
     
     prefix = "class " if isinstance(obj, type) else ""
-    documentation = f"<a id='{anchor_name}'></a>\n" if anchor_name is not None else ""
+    documentation = ""
     signature_name = prefix+name
     signature = format_signature(obj)
     if getattr(obj, "__doc__", None) is not None and len(obj.__doc__) > 0:
         object_doc = convert_rst_docstring_to_mdx(obj.__doc__, page_info)
         if is_rst_docstring(object_doc):
             object_doc = convert_rst_docstring_to_mdx(obj.__doc__, page_info)
-        component = get_signature_component(signature_name, signature, object_doc)
+        component = get_signature_component(signature_name, anchor_name, signature, object_doc)
         documentation += "\n" + component + "\n"
     return documentation
 
