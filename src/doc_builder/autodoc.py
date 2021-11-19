@@ -154,13 +154,13 @@ def parse_object_doc(object_doc):
 _re_parametername = re.compile(r'\*\*(.*)\*\*', re.DOTALL)
 
 
-def get_signature_component(name, anchor_name, signature, object_doc):
+def get_signature_component(name, anchor, signature, object_doc):
     """
     Returns the svelte `Docstring` component string. 
     
     Args:
     - **name** (`str`) -- The name of the function or class to document.
-    - **anchor_name** (`str`) -- The anchor name of the function or class to document that will be used for hash links.
+    - **anchor** (`str`) -- The anchor name of the function or class that will be used for hash links.
     - **signature** (`List(Dict(str,str))`) -- The signature of the object.
     - **object_doc** (`str`) -- The docstring of the the object.
     """
@@ -182,25 +182,27 @@ def get_signature_component(name, anchor_name, signature, object_doc):
             if param_name_:
                 if param_name:
                     param_description = re.sub(' +', ' ', ' '.join(param_description))
-                    params_description.append({"name":param_name, "description": param_description, "anchorName": f'{anchor_name}.{param_name}'})
+                    params_description.append({"name":param_name, "description": param_description, "anchor": f'{anchor}.{param_name}'})
                 param_name = param_name_.group(1)
                 param_description = [line]
             else:
                 param_description.append(line)
         if param_name:
             param_description = re.sub(' +', ' ', ' '.join(param_description))
-            params_description.append({"name":param_name, "description": param_description, "anchorName": f'{anchor_name}.{param_name}'})
+            params_description.append({"name":param_name, "description": param_description, "anchor": f'{anchor}.{param_name}'})
     else:
         params_description = None
-    anchor_name = anchor_name if anchor_name else None
+    anchor = anchor if anchor else None
+
     svelte_str = '<docstring>'
     svelte_str += f'<name>"{name}"</name>'
-    svelte_str += f'<anchor>{json.dumps(anchor_name)}</anchor>'
+    svelte_str += f'<anchor>"{anchor}"</anchor>'
     svelte_str += f'<parameters>{json.dumps(signature)}</parameters>'
     if params_description: svelte_str += f'<paramsdesc>{json.dumps(params_description)}</paramsdesc>'
     if returntype: svelte_str += f'<rettype>{returntype}</rettype>'
     if return_description: svelte_str += f'<retdesc>{return_description}</retdesc>'
     svelte_str += '</docstring>'
+
     return svelte_str + f'\n{description}\n'
 
 

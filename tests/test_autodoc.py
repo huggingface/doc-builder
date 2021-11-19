@@ -114,7 +114,7 @@ import transformers
 
     def test_get_signature_component(self):
         name = "class transformers.BertweetTokenizer"
-        anchor_name = "transformers.BertweetTokenizer"
+        anchor = "transformers.BertweetTokenizer"
         signature = [
             {'name': 'vocab_file', 'val': ''}, 
             {'name': 'normalization', 'val': ' = False'}, 
@@ -148,11 +148,11 @@ List of [input IDs](../glossary.html#input-ids) with the appropriate special tok
 </returns>
 
 <returntype>            `List[int]`</returntype>"""
-        expected_signature_component = '<docstring><name>"class transformers.BertweetTokenizer"</name><anchor>"transformers.BertweetTokenizer"</anchor><parameters>[{"name": "vocab_file", "val": ""}, {"name": "normalization", "val": " = False"}, {"name": "bos_token", "val": " = \'&amp;lt;s>\'"}]</parameters><paramsdesc>[{"name": "vocab_file", "description": "- **vocab_file** (`str`) -- Path to the vocabulary file.", "anchorName": "transformers.BertweetTokenizer.vocab_file"}, {"name": "merges_file", "description": "- **merges_file** (`str`) -- Path to the merges file.", "anchorName": "transformers.BertweetTokenizer.merges_file"}, {"name": "normalization", "description": "- **normalization** (`bool`, _optional_, defaults to `False`) -- Whether or not to apply a normalization preprocess. <Tip> When building a sequence using special tokens, this is not the token that is used for the beginning of sequence. The token used is the `cls_token`. </Tip>", "anchorName": "transformers.BertweetTokenizer.normalization"}]</paramsdesc><rettype>`List[int]`</rettype><retdesc>List of [input IDs](../glossary.html#input-ids) with the appropriate special tokens.</retdesc></docstring>\nConstructs a BERTweet tokenizer, using Byte-Pair-Encoding.\n\nThis tokenizer inherits from [`~transformers.PreTrainedTokenizer`] which contains most of the main methods.\nUsers should refer to this superclass for more information regarding those methods.\n\n\n\n\n\n'
-        self.assertEqual(get_signature_component(name, anchor_name, signature, object_doc), expected_signature_component)
+        expected_signature_component = '<docstring><name>"class transformers.BertweetTokenizer"</name><anchor>"transformers.BertweetTokenizer"</anchor><parameters>[{"name": "vocab_file", "val": ""}, {"name": "normalization", "val": " = False"}, {"name": "bos_token", "val": " = \'&amp;lt;s>\'"}]</parameters><paramsdesc>[{"name": "vocab_file", "description": "- **vocab_file** (`str`) -- Path to the vocabulary file.", "anchor": "transformers.BertweetTokenizer.vocab_file"}, {"name": "merges_file", "description": "- **merges_file** (`str`) -- Path to the merges file.", "anchor": "transformers.BertweetTokenizer.merges_file"}, {"name": "normalization", "description": "- **normalization** (`bool`, _optional_, defaults to `False`) -- Whether or not to apply a normalization preprocess. <Tip> When building a sequence using special tokens, this is not the token that is used for the beginning of sequence. The token used is the `cls_token`. </Tip>", "anchor": "transformers.BertweetTokenizer.normalization"}]</paramsdesc><rettype>`List[int]`</rettype><retdesc>List of [input IDs](../glossary.html#input-ids) with the appropriate special tokens.</retdesc></docstring>\nConstructs a BERTweet tokenizer, using Byte-Pair-Encoding.\n\nThis tokenizer inherits from [`~transformers.PreTrainedTokenizer`] which contains most of the main methods.\nUsers should refer to this superclass for more information regarding those methods.\n\n\n\n\n\n'
+        self.assertEqual(get_signature_component(name, anchor, signature, object_doc), expected_signature_component)
 
         name = "class transformers.BertweetTokenizer"
-        anchor_name = "transformers.BertweetTokenizer"
+        anchor = "transformers.BertweetTokenizer"
         signature = [
             {'name': 'vocab_file', 'val': ''}, 
             {'name': 'normalization', 'val': ' = False'}, 
@@ -164,7 +164,7 @@ This tokenizer inherits from [`~transformers.PreTrainedTokenizer`] which contain
 Users should refer to this superclass for more information regarding those methods.
 """
         expected_signature_component = '<docstring><name>"class transformers.BertweetTokenizer"</name><anchor>"transformers.BertweetTokenizer"</anchor><parameters>[{"name": "vocab_file", "val": ""}, {"name": "normalization", "val": " = False"}, {"name": "bos_token", "val": " = \'&amp;lt;s>\'"}]</parameters></docstring>\nConstructs a BERTweet tokenizer, using Byte-Pair-Encoding.\n\nThis tokenizer inherits from [`~transformers.PreTrainedTokenizer`] which contains most of the main methods.\nUsers should refer to this superclass for more information regarding those methods.\n\n'
-        self.assertEqual(get_signature_component(name, anchor_name, signature, object_doc_without_params_and_return), expected_signature_component)
+        self.assertEqual(get_signature_component(name, anchor, signature, object_doc_without_params_and_return), expected_signature_component)
 
     def test_document_object(self):
         page_info = {"package_name": "transformers"}
