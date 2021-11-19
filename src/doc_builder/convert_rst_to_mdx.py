@@ -241,6 +241,8 @@ def convert_rst_blocks(text):
                     if target is None:
                         raise ValueError("Image source not defined.")
                     options["src"] = target
+                # Adapt path
+                options["src"] = options["src"].replace("/imgs/", "/transformers/_images/")
                 html_code = " ".join([f'{key}="{value}"' for key, value in options.items()])
                 new_lines.append(f"<img {html_code}/>\n")
                     
