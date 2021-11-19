@@ -512,6 +512,8 @@ def convert_rst_to_mdx(rst_text, page_info):
         '	import Youtube from "./Youtube.svelte";',
         '	import Docstring from "./Docstring.svelte";',
         '	import CodeBlock from "./CodeBlock.svelte";',
+        '	import CodeBlockFw from "./CodeBlockFw.svelte";',
+        '	import IconCopyLink from "./IconCopyLink.svelte";',
         "	",
         '	export let fw: "pt" | "tf"',
         "</script>",
