@@ -178,7 +178,7 @@ def get_signature_component(name, anchor, signature, object_doc):
         param_description = []
         for line in parameters:
             param_name_ = _re_parametername.search(line)
-            if param_name_:
+            if param_name_ is not None:
                 if param_name:
                     param_description = re.sub(' +', ' ', ' '.join(param_description))
                     params_description.append({"name":param_name, "description": param_description, "anchor": f'{anchor}.{param_name}'})
