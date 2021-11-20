@@ -214,10 +214,10 @@ def generate_frontmatter_in_text(text):
             continue
         first_word, title = header_search.groups()
         header_level = len(first_word)
-        search_local = re.search(r'\[\[(.*)]]', title)
+        serach_local = re.search(r'\[\[(.*)]]', title)
         if serach_local:
             # id/local already exists
-            local = search_local.group(1)
+            local = serach_local.group(1)
             title = re.sub(r'\[\[(.*)]]', "", title)
         else:
             # create id/local
