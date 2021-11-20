@@ -80,9 +80,8 @@ def format_signature(obj):
 
     for idx, param in enumerate(signature.parameters.values()):
         param_name = param.name
-        if idx == 0:
-            if param_name in ("self", "cls"):
-                continue
+        if idx == 0 and param_name in ("self", "cls"):
+            continue
         if param.kind == inspect._ParameterKind.VAR_POSITIONAL:
             param_name = f"*{param_name}"
         elif param.kind == inspect._ParameterKind.VAR_KEYWORD:
