@@ -173,10 +173,10 @@ def convert_rst_blocks(text):
             if _re_block_info.search(lines[idx]) is not None:
                 block_info = _re_block_info.search(lines[idx]).groups()[0]
         elif _re_example.search(lines[idx]) is not None:
-            block_type = "code-block"
+            block_type = "code-block-example"
             block_info = "python"
             example_name = _re_example.search(lines[idx]).groups()[0]
-            new_lines.append(f"> {example_name}:\n")
+            new_lines.append(f"<exampletitle>{example_name}:</exampletitle>\n")
         elif lines[idx].strip() == "..":
             block_type = "comment"
         elif lines[idx].strip() == "::":
@@ -203,6 +203,9 @@ def convert_rst_blocks(text):
             if block_type in ["code", "code-block"]:
                 prefix = "```" if block_info is None else f"```{block_info}"
                 new_lines.append(f"{prefix}\n{block_content.strip()}\n```\n")
+            elif block_type  == "code-block-example":
+                prefix = f"<example>```{block_info}"
+                new_lines.append(f"{prefix}\n{block_content.strip()}\n```\n</example>")
             elif block_type == "note":
                 new_lines.append(f"<Tip>\n\n{block_content.strip()}\n\n</Tip>\n")
             elif block_type == "warning":
@@ -299,7 +302,8 @@ def parse_rst_docstring(docstring):
         # Parameters section
         if _re_args.search(lines[idx]) is not None:
             # Title of the section. TODO: change this when we have the proper syntax.
-            lines[idx] = "> Parameters\n"
+            lines[idx] = "<parameters>\n"
+            idx_start = idx
             # Find the next nonempty line
             idx += 1
             while is_empty_line(lines[idx]):
@@ -312,11 +316,13 @@ def parse_rst_docstring(docstring):
                 idx += 1
                 while idx < len(lines) and (is_empty_line(lines[idx]) or find_indent(lines[idx]) > param_indent):
                     idx += 1
-        
+            lines.insert(idx, "</parameters>\n")
+            idx += 1
+
         # Returns section
         elif _re_returns.search(lines[idx]) is not None:
             # Title of the section. TODO: change this when we have the proper syntax.
-            lines[idx] = "> Returns\n"
+            lines[idx] = "<returns>\n"
             # Find the next nonempty line
             idx += 1
             while is_empty_line(lines[idx]):
@@ -328,11 +334,13 @@ def parse_rst_docstring(docstring):
             idx += 1
             while idx < len(lines) and (is_empty_line(lines[idx]) or find_indent(lines[idx]) >= return_indent):
                 idx += 1
+            lines.insert(idx, "</returns>\n")
+            idx += 1
             
             # Return block finished, we insert the return type if one was specified
             if return_type is not None:
                 # TODO: change this when we have the proper syntax
-                lines[idx - 1] += f"\n> Return type\n\n{return_type}\n"
+                lines[idx - 1] += f"\n<returntype>{return_type}</returntype>\n"
         
         else:
             idx += 1

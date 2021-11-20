@@ -6,7 +6,7 @@ from pathlib import Path
 
 from tqdm import tqdm
 
-from .autodoc import autodoc, find_object_in_package, get_shortest_path
+from .autodoc import autodoc, find_object_in_package, get_shortest_path, remove_example_tags
 from .convert_md_to_mdx import convert_md_to_mdx
 from .convert_rst_to_mdx import convert_rst_to_mdx, find_indent, is_empty_line
 from .frontmatter_node import FrontmatterNode
@@ -27,6 +27,8 @@ def resolve_autodoc(content, package, return_anchors=False, page_info=None):
       generated.
     - **page_info** (`Dict[str, str]`, *optional*) -- Some information about the page.
     """
+    idx_last_heading = None
+    is_inside_codeblock = False
     lines = content.split("\n")
     new_lines = []
     if return_anchors:
@@ -52,14 +54,24 @@ def resolve_autodoc(content, package, return_anchors=False, page_info=None):
                 methods = None
             doc = autodoc(object_name, package, methods=methods, return_anchors=return_anchors, page_info=page_info)
             if return_anchors:
+                if len(doc[1]) and idx_last_heading is not None:
+                    object_anchor = doc[1][0]
+                    new_lines[idx_last_heading] += f'[[{object_anchor}]]'
+                    idx_last_heading = None
                 anchors.extend(doc[1])
                 doc = doc[0]
             new_lines.append(doc)
         else:
             new_lines.append(lines[idx])
+            if lines[idx].startswith('```'):
+                is_inside_codeblock = not is_inside_codeblock
+            if lines[idx].startswith('#') and not is_inside_codeblock:
+                idx_last_heading = len(new_lines)-1
             idx += 1
 
     new_content = "\n".join(new_lines)
+    new_content = remove_example_tags(new_content)
+
     return (new_content, anchors) if return_anchors else new_content
 
 
@@ -114,7 +126,7 @@ def build_mdx_files(package, doc_folder, output_dir, page_info):
             shutil.copy(file, dest_file)
             
         if new_anchors is not None:
-            page_name = str(file.with_suffix(".html").relative_to(doc_folder))
+            page_name = str(file.with_suffix("").relative_to(doc_folder))
             anchor_mapping.update({anchor: page_name for anchor in new_anchors})
     
     return anchor_mapping
@@ -202,8 +214,15 @@ def generate_frontmatter_in_text(text):
             continue
         first_word, title = header_search.groups()
         header_level = len(first_word)
-        local = re.sub(r'[^a-z\s]+', '', title.lower())
-        local = re.sub(r'\s{2,}', ' ', local.strip()).replace(' ','-')
+        serach_local = re.search(r'\[\[(.*)]]', title)
+        if serach_local:
+            # id/local already exists
+            local = serach_local.group(1)
+            title = re.sub(r'\[\[(.*)]]', "", title)
+        else:
+            # create id/local
+            local = re.sub(r'[^a-z\s]+', '', title.lower())
+            local = re.sub(r'\s{2,}', ' ', local.strip()).replace(' ','-')
         text[idx] = f'<h{header_level} id="{local}">{title}</h{header_level}>'
         node = FrontmatterNode(title, local)
         if header_level == 1:

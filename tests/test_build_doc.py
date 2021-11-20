@@ -153,3 +153,9 @@ class BuildDocTester(unittest.TestCase):
             generate_frontmatter_in_text("# SomeHeader 🤗\n```\n"),
             '---\nlocal: someheader\ntitle: SomeHeader 🤗\n---\n<h1 id="someheader">SomeHeader 🤗</h1>\n```\n'
         )
+
+        # test headers with exisitng ids
+        self.assertEqual(
+            generate_frontmatter_in_text("# Bert[[id1]]\n## BertTokenizer[[id2]]\n### BertTokenizerMethod"),
+            '---\nlocal: id1\nsections:\n- local: id2\n  sections:\n  - local: berttokenizermethod\n    title: BertTokenizerMethod\n  title: BertTokenizer\ntitle: Bert\n---\n<h1 id="id1">Bert</h1>\n<h2 id="id2">BertTokenizer</h2>\n<h3 id="berttokenizermethod">BertTokenizerMethod</h3>'
+        )
