@@ -80,9 +80,8 @@ def format_signature(obj):
 
     for idx, param in enumerate(signature.parameters.values()):
         param_name = param.name
-        if idx == 0:
-            if param_name in ("self", "cls"):
-                continue
+        if idx == 0 and param_name in ("self", "cls"):
+            continue
         if param.kind == inspect._ParameterKind.VAR_POSITIONAL:
             param_name = f"*{param_name}"
         elif param.kind == inspect._ParameterKind.VAR_KEYWORD:
@@ -179,7 +178,7 @@ def get_signature_component(name, anchor, signature, object_doc):
         param_description = []
         for line in parameters:
             param_name_ = _re_parametername.search(line)
-            if param_name_:
+            if param_name_ is not None:
                 if param_name:
                     param_description = re.sub(' +', ' ', ' '.join(param_description))
                     params_description.append({"name":param_name, "description": param_description, "anchor": f'{anchor}.{param_name}'})
@@ -198,9 +197,12 @@ def get_signature_component(name, anchor, signature, object_doc):
     svelte_str += f'<name>"{name}"</name>'
     svelte_str += f'<anchor>"{anchor}"</anchor>'
     svelte_str += f'<parameters>{json.dumps(signature)}</parameters>'
-    if params_description: svelte_str += f'<paramsdesc>{json.dumps(params_description)}</paramsdesc>'
-    if returntype: svelte_str += f'<rettype>{returntype}</rettype>'
-    if return_description: svelte_str += f'<retdesc>{return_description}</retdesc>'
+    if params_description:
+        svelte_str += f'<paramsdesc>{json.dumps(params_description)}</paramsdesc>'
+    if returntype:
+        svelte_str += f'<rettype>{returntype}</rettype>'
+    if return_description:
+        svelte_str += f'<retdesc>{return_description}</retdesc>'
     svelte_str += '</docstring>'
 
     return svelte_str + f'\n{description}\n'
