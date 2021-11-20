@@ -1,5 +1,5 @@
-import importlib
 import inspect
+import json
 import re
 
 from .convert_rst_to_mdx import convert_rst_docstring_to_mdx
@@ -22,6 +22,13 @@ def find_object_in_package(object_name, package):
         if module is None:
             return
     return module
+
+
+def remove_example_tags(text):
+    tags = ['<exampletitle>', '</exampletitle>', '<example>', '</example>']
+    for tag in tags:
+        text = text.replace(tag, "")
+    return text
 
 
 def get_shortest_path(obj, package):
@@ -60,7 +67,9 @@ def get_type_name(typ):
 
 def format_signature(obj):
     """
-    Retrieves and properly formats the signature of a class, function or method.
+    Retrieves the signature of a class, function or method.
+    Returns `List(Dict(str, str))` (i.e. [{'do_lower_case', ' = True'}, ...])
+    where `key` of `Dict` is f'{param_name}' & `value` of `Dict` is f': {annotation}  = {default}'
     """
     try:
         signature = inspect.signature(obj)
@@ -68,24 +77,135 @@ def format_signature(obj):
         # TODO: This fails for ModelOutput. Check if this is normal.
         return ""
     params = []
-    for param in signature.parameters.values():
+
+    for idx, param in enumerate(signature.parameters.values()):
         param_name = param.name
+        if idx == 0 and param_name in ("self", "cls"):
+            continue
         if param.kind == inspect._ParameterKind.VAR_POSITIONAL:
             param_name = f"*{param_name}"
         elif param.kind == inspect._ParameterKind.VAR_KEYWORD:
             param_name = f"**{param_name}"
-        formatted_param = param_name
+        param_type_val = ""
         if param.annotation != inspect._empty:
             annotation = get_type_name(param.annotation)
-            annotation = annotation.replace("<", "&amp;lt;")
-            formatted_param += f": {annotation}"
+            param_type_val += f": {annotation}"
         if param.default != inspect._empty:
             default = param.default
             default = repr(default)
-            default = default.replace("<", "&amp;lt;")
-            formatted_param += f" = {default}"
-        params.append(formatted_param)
-    return ", ".join(params)
+            param_type_val += f" = {default}"
+        params.append({'name': param_name, 'val': param_type_val})
+    return params
+
+
+_re_parameters = re.compile(r"<parameters>(.*)</parameters>", re.DOTALL)
+_re_returns = re.compile(r"<returns>(.*)</returns>", re.DOTALL)
+_re_returntype = re.compile(r"<returntype>(.*)</returntype>", re.DOTALL)
+_re_example_tags = re.compile(r"(<exampletitle>|<example>)")
+
+
+def parse_object_doc(object_doc):
+    """
+    Retrieves & parses the object_doc str into its separate sections 
+    (description, parameters, returns, returntype).
+    Retusn the parsed result as `Dict(str, str)`.
+    """
+    def inside_example_finder_closure(match, tag):
+        """
+        This closure find whether parameters and/or returns sections has example code block inside it
+        """
+        match_str = match.group(1)
+        examples_inside = _re_example_tags.search(match_str)
+        if examples_inside:
+            example_tag = examples_inside.group(1)
+            match_str = match_str.replace(example_tag, f'</{tag}>{example_tag}', 1)
+            return f'<{tag}>{match_str}'
+        return f'<{tag}>{match_str}</{tag}>'
+
+    def regex_closure(object_doc, regex):
+        """
+        This closure matches given regex & removes the matched group from object_doc
+        """
+        re_match = regex.search(object_doc)
+        object_doc = regex.sub("", object_doc)
+        match = None
+        if re_match:
+            _match = re_match.group(1).strip()
+            if len(_match):
+                match = _match
+        return object_doc, match
+
+    object_doc = _re_returns.sub(lambda m: inside_example_finder_closure(m, 'returns'), object_doc)
+    object_doc = _re_parameters.sub(lambda m: inside_example_finder_closure(m, 'parameters'), object_doc)
+
+    object_doc, parameters = regex_closure(object_doc, _re_parameters)
+    object_doc, returns = regex_closure(object_doc, _re_returns)
+    object_doc, returntype = regex_closure(object_doc, _re_returntype)
+
+    return { 
+        "parameters": parameters,
+        "returns": returns,
+        "returntype": returntype,
+        "description": object_doc,
+    }
+
+
+_re_parametername = re.compile(r'\*\*(.*)\*\*', re.DOTALL)
+
+
+def get_signature_component(name, anchor, signature, object_doc):
+    """
+    Returns the svelte `Docstring` component string. 
+    
+    Args:
+    - **name** (`str`) -- The name of the function or class to document.
+    - **anchor** (`str`) -- The anchor name of the function or class that will be used for hash links.
+    - **signature** (`List(Dict(str,str))`) -- The signature of the object.
+    - **object_doc** (`str`) -- The docstring of the the object.
+    """
+    parsed_obj_doc = parse_object_doc(object_doc)
+    description = parsed_obj_doc["description"]
+    parameters = parsed_obj_doc["parameters"]
+    return_description = parsed_obj_doc["returns"]
+    returntype = parsed_obj_doc["returntype"]
+
+    if parameters:
+        parameters = parameters.replace('&amp;lt;', '<')
+        parameters = parameters.split('\n')
+        params_description = []
+        # greedy algorithm to find parameter name & its description
+        param_name = None
+        param_description = []
+        for line in parameters:
+            param_name_ = _re_parametername.search(line)
+            if param_name_ is not None:
+                if param_name:
+                    param_description = re.sub(' +', ' ', ' '.join(param_description))
+                    params_description.append({"name":param_name, "description": param_description, "anchor": f'{anchor}.{param_name}'})
+                param_name = param_name_.group(1)
+                param_description = [line]
+            else:
+                param_description.append(line)
+        if param_name:
+            param_description = re.sub(' +', ' ', ' '.join(param_description))
+            params_description.append({"name":param_name, "description": param_description, "anchor": f'{anchor}.{param_name}'})
+    else:
+        params_description = None
+    anchor = anchor if anchor else None
+
+    svelte_str = '<docstring>'
+    svelte_str += f'<name>"{name}"</name>'
+    svelte_str += f'<anchor>"{anchor}"</anchor>'
+    svelte_str += f'<parameters>{json.dumps(signature)}</parameters>'
+    if params_description:
+        svelte_str += f'<paramsdesc>{json.dumps(params_description)}</paramsdesc>'
+    if returntype:
+        svelte_str += f'<rettype>{returntype}</rettype>'
+    if return_description:
+        svelte_str += f'<retdesc>{return_description}</retdesc>'
+    svelte_str += '</docstring>'
+
+    return svelte_str + f'\n{description}\n'
 
 
 # Re pattern to catch :obj:`xx`, :class:`xx`, :func:`xx` or :meth:`xx`.
@@ -130,14 +250,15 @@ def document_object(object_name, package, page_info, full_name=True):
     name = name.replace("_", "\_")
     
     prefix = "class " if isinstance(obj, type) else ""
-    documentation = f"<a id='{anchor_name}'></a>\n" if anchor_name is not None else ""
-    documentation += f"> **{prefix}{name}**({format_signature(obj)})\n"
+    documentation = ""
+    signature_name = prefix+name
+    signature = format_signature(obj)
     if getattr(obj, "__doc__", None) is not None and len(obj.__doc__) > 0:
         object_doc = convert_rst_docstring_to_mdx(obj.__doc__, page_info)
         if is_rst_docstring(object_doc):
             object_doc = convert_rst_docstring_to_mdx(obj.__doc__, page_info)
-        documentation += "\n" + object_doc + "\n"
-    
+        component = get_signature_component(signature_name, anchor_name, signature, object_doc)
+        documentation += "\n" + component + "\n"
     return documentation
 
 
@@ -199,8 +320,9 @@ def autodoc(object_name, package, methods=None, return_anchors=False, page_info=
             method_doc = document_object(
                 object_name=f"{object_name}.{method}", package=package, page_info=page_info, full_name=False
             )
-            documentation += "\n" + method_doc
+            documentation += '\n<div class="docstring">' + method_doc + "</div>"
             if return_anchors:
                 anchors.append(f"{anchors[0]}.{method}")
+    documentation = '<div class="docstring">\n' + documentation + "</div>\n"
     
     return (documentation, anchors) if return_anchors else documentation
