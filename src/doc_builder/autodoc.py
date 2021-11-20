@@ -197,9 +197,12 @@ def get_signature_component(name, anchor, signature, object_doc):
     svelte_str += f'<name>"{name}"</name>'
     svelte_str += f'<anchor>"{anchor}"</anchor>'
     svelte_str += f'<parameters>{json.dumps(signature)}</parameters>'
-    if params_description: svelte_str += f'<paramsdesc>{json.dumps(params_description)}</paramsdesc>'
-    if returntype: svelte_str += f'<rettype>{returntype}</rettype>'
-    if return_description: svelte_str += f'<retdesc>{return_description}</retdesc>'
+    if params_description:
+        svelte_str += f'<paramsdesc>{json.dumps(params_description)}</paramsdesc>'
+    if returntype:
+        svelte_str += f'<rettype>{returntype}</rettype>'
+    if return_description:
+        svelte_str += f'<retdesc>{return_description}</retdesc>'
     svelte_str += '</docstring>'
 
     return svelte_str + f'\n{description}\n'
