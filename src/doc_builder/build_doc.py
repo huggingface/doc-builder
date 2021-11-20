@@ -215,7 +215,7 @@ def generate_frontmatter_in_text(text):
         search_local = re.search(r'\[\[(.*)]]', title)
         if serach_local:
             # id/local already exists
-            local = serach_local.group(1)
+            local = search_local.group(1)
             title = re.sub(r'\[\[(.*)]]', "", title)
         else:
             # create id/local
