@@ -7,6 +7,7 @@ from pathlib import Path
 from tqdm import tqdm
 
 from .autodoc import autodoc, find_object_in_package, get_shortest_path, remove_example_tags
+from .convert_md_to_mdx import convert_md_to_mdx
 from .convert_rst_to_mdx import convert_rst_to_mdx, find_indent, is_empty_line
 from .frontmatter_node import FrontmatterNode
 
@@ -99,8 +100,9 @@ def build_mdx_files(package, doc_folder, output_dir, page_info):
             dest_file = output_dir / (file.with_suffix(".mdx").relative_to(doc_folder))
             page_info["page"] = file.with_suffix(".html").relative_to(doc_folder)
             os.makedirs(dest_file.parent, exist_ok=True)
-            with open(file, "r", encoding="utf-8") as reader:
+            with open(file, "r", encoding="utf-8-sig") as reader:
                 content = reader.read()
+            content = convert_md_to_mdx(content)
             content, new_anchors = resolve_autodoc(content, package, return_anchors=True, page_info=page_info)
             with open(dest_file, "w", encoding="utf-8") as writer:
                 writer.write(content)

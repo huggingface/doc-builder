@@ -266,7 +266,7 @@ def find_documented_methods(clas):
     the exact same way in a superclass.
     """
     public_attrs = {a: getattr(clas, a) for a in dir(clas) if not a.startswith("_")}
-    public_methods = {a: m for a, m in public_attrs.items() if callable(m)}
+    public_methods = {a: m for a, m in public_attrs.items() if callable(m) and not isinstance(m, type)}
     documented_methods = {a: m for a, m in public_methods.items() if getattr(m, "__doc__", None) is not None and len(m.__doc__) > 0}
     
     superclasses = clas.mro()[1:]
