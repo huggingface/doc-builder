@@ -278,8 +278,10 @@ third line``.
         self.assertEqual(convert_special_chars("<source></source>"), "<source></source>")
 
         longer_test = """<script>
-import Tip from "../../Tip.svelte";
-import Youtube from "../../Youtube.svelte";	
+import Tip from "./Tip.svelte";
+import Youtube from "./Youtube.svelte";	
+import Docstring from "./Docstring.svelte";	
+import CodeBlock from "./CodeBlock.svelte";	
 export let fw: "pt" | "tf"
 </script>"""
         self.assertEqual(convert_special_chars(longer_test), longer_test)
