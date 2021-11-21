@@ -2,6 +2,7 @@ import inspect
 import json
 import re
 
+from .convert_md_to_mdx import convert_md_docstring_to_mdx
 from .convert_rst_to_mdx import convert_rst_docstring_to_mdx
 
 
@@ -198,11 +199,11 @@ def get_signature_component(name, anchor, signature, object_doc, source_link):
     svelte_str += f'<anchor>"{anchor}"</anchor>'
     svelte_str += f'<source>"{source_link}"</source>'
     svelte_str += f'<parameters>{json.dumps(signature)}</parameters>'
-    if params_description:
+    if params_description is not None:
         svelte_str += f'<paramsdesc>{json.dumps(params_description)}</paramsdesc>'
-    if returntype:
+    if returntype is not None:
         svelte_str += f'<rettype>{returntype}</rettype>'
-    if return_description:
+    if return_description is not None:
         svelte_str += f'<retdesc>{return_description}</retdesc>'
     svelte_str += '</docstring>'
 
@@ -267,10 +268,11 @@ def document_object(object_name, package, page_info, full_name=True):
     signature_name = prefix+name
     signature = format_signature(obj)
     if getattr(obj, "__doc__", None) is not None and len(obj.__doc__) > 0:
-        object_doc = convert_rst_docstring_to_mdx(obj.__doc__, page_info)
-        # TODO: figure out the conversion of MD docstrings.
-        # if is_rst_docstring(object_doc):
-        #     object_doc = convert_rst_docstring_to_mdx(obj.__doc__, page_info)
+        object_doc = obj.__doc__
+        if is_rst_docstring(object_doc):
+            object_doc = convert_rst_docstring_to_mdx(obj.__doc__, page_info)
+        else:
+            object_doc = convert_md_docstring_to_mdx(obj.__doc__)
         source_link = get_source_link(obj, page_info)
         component = get_signature_component(signature_name, anchor_name, signature, object_doc, source_link)
         documentation += "\n" + component + "\n"
