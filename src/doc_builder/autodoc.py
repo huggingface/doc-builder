@@ -153,7 +153,7 @@ def parse_object_doc(object_doc):
 _re_parametername = re.compile(r'\*\*(.*)\*\*', re.DOTALL)
 
 
-def get_signature_component(name, anchor, signature, object_doc):
+def get_signature_component(name, anchor, signature, object_doc, source_link):
     """
     Returns the svelte `Docstring` component string. 
     
@@ -196,6 +196,7 @@ def get_signature_component(name, anchor, signature, object_doc):
     svelte_str = '<docstring>'
     svelte_str += f'<name>"{name}"</name>'
     svelte_str += f'<anchor>"{anchor}"</anchor>'
+    svelte_str += f'<source>"{source_link}"</source>'
     svelte_str += f'<parameters>{json.dumps(signature)}</parameters>'
     if params_description:
         svelte_str += f'<paramsdesc>{json.dumps(params_description)}</paramsdesc>'
@@ -223,6 +224,18 @@ def is_rst_docstring(docstring):
     if _re_double_backquotes.search(docstring) is not None:
         return True
     return False
+
+
+def get_source_link(obj, page_info):
+    """
+    Returns the link to the source code of an object on GitHub.
+    """
+    package_name = page_info["package_name"]
+    version = page_info.get("version", "master")
+    base_link = f"https://github.com/huggingface/{package_name}/blob/{version}/src/"
+    module = obj.__module__.replace(".", "/")
+    line_number = inspect.getsourcelines(obj)[1]
+    return f"{base_link}{module}.py#L{line_number}"
 
 
 def document_object(object_name, package, page_info, full_name=True):
@@ -255,9 +268,11 @@ def document_object(object_name, package, page_info, full_name=True):
     signature = format_signature(obj)
     if getattr(obj, "__doc__", None) is not None and len(obj.__doc__) > 0:
         object_doc = convert_rst_docstring_to_mdx(obj.__doc__, page_info)
-        if is_rst_docstring(object_doc):
-            object_doc = convert_rst_docstring_to_mdx(obj.__doc__, page_info)
-        component = get_signature_component(signature_name, anchor_name, signature, object_doc)
+        # TODO: figure out the conversion of MD docstrings.
+        # if is_rst_docstring(object_doc):
+        #     object_doc = convert_rst_docstring_to_mdx(obj.__doc__, page_info)
+        source_link = get_source_link(obj, page_info)
+        component = get_signature_component(signature_name, anchor_name, signature, object_doc, source_link)
         documentation += "\n" + component + "\n"
     return documentation
 

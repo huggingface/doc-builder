@@ -1,4 +1,5 @@
 import sys
+import inspect
 import unittest
 
 import transformers
@@ -18,13 +19,19 @@ from doc_builder.autodoc import (
     format_signature,
     parse_object_doc,
     get_signature_component,
+    get_source_link,
     get_shortest_path,
     get_type_name,
     remove_example_tags,
 )
 
 
+# This is dynamic since the Transformers library is not frozen.
+TEST_LINE_NUMBER = inspect.getsourcelines(transformers.file_utils.ModelOutput)[1]
+
 class AutodocTester(unittest.TestCase):
+    test_source_link = f"https://github.com/huggingface/transformers/blob/master/src/transformers/file_utils.py#L{TEST_LINE_NUMBER}"
+
     def test_find_object_in_package(self):
         self.assertEqual(find_object_in_package("BertModel", transformers), BertModel)
         self.assertEqual(find_object_in_package("transformers.BertModel", transformers), BertModel)
@@ -148,8 +155,9 @@ List of [input IDs](../glossary.html#input-ids) with the appropriate special tok
 </returns>
 
 <returntype>            `List[int]`</returntype>"""
-        expected_signature_component = '<docstring><name>"class transformers.BertweetTokenizer"</name><anchor>"transformers.BertweetTokenizer"</anchor><parameters>[{"name": "vocab_file", "val": ""}, {"name": "normalization", "val": " = False"}, {"name": "bos_token", "val": " = \'&amp;lt;s>\'"}]</parameters><paramsdesc>[{"name": "vocab_file", "description": "- **vocab_file** (`str`) -- Path to the vocabulary file.", "anchor": "transformers.BertweetTokenizer.vocab_file"}, {"name": "merges_file", "description": "- **merges_file** (`str`) -- Path to the merges file.", "anchor": "transformers.BertweetTokenizer.merges_file"}, {"name": "normalization", "description": "- **normalization** (`bool`, _optional_, defaults to `False`) -- Whether or not to apply a normalization preprocess. <Tip> When building a sequence using special tokens, this is not the token that is used for the beginning of sequence. The token used is the `cls_token`. </Tip>", "anchor": "transformers.BertweetTokenizer.normalization"}]</paramsdesc><rettype>`List[int]`</rettype><retdesc>List of [input IDs](../glossary.html#input-ids) with the appropriate special tokens.</retdesc></docstring>\nConstructs a BERTweet tokenizer, using Byte-Pair-Encoding.\n\nThis tokenizer inherits from [`~transformers.PreTrainedTokenizer`] which contains most of the main methods.\nUsers should refer to this superclass for more information regarding those methods.\n\n\n\n\n\n'
-        self.assertEqual(get_signature_component(name, anchor, signature, object_doc), expected_signature_component)
+        source_link = "test_link"
+        expected_signature_component = '<docstring><name>"class transformers.BertweetTokenizer"</name><anchor>"transformers.BertweetTokenizer"</anchor><source>"test_link"</source><parameters>[{"name": "vocab_file", "val": ""}, {"name": "normalization", "val": " = False"}, {"name": "bos_token", "val": " = \'&amp;lt;s>\'"}]</parameters><paramsdesc>[{"name": "vocab_file", "description": "- **vocab_file** (`str`) -- Path to the vocabulary file.", "anchor": "transformers.BertweetTokenizer.vocab_file"}, {"name": "merges_file", "description": "- **merges_file** (`str`) -- Path to the merges file.", "anchor": "transformers.BertweetTokenizer.merges_file"}, {"name": "normalization", "description": "- **normalization** (`bool`, _optional_, defaults to `False`) -- Whether or not to apply a normalization preprocess. <Tip> When building a sequence using special tokens, this is not the token that is used for the beginning of sequence. The token used is the `cls_token`. </Tip>", "anchor": "transformers.BertweetTokenizer.normalization"}]</paramsdesc><rettype>`List[int]`</rettype><retdesc>List of [input IDs](../glossary.html#input-ids) with the appropriate special tokens.</retdesc></docstring>\nConstructs a BERTweet tokenizer, using Byte-Pair-Encoding.\n\nThis tokenizer inherits from [`~transformers.PreTrainedTokenizer`] which contains most of the main methods.\nUsers should refer to this superclass for more information regarding those methods.\n\n\n\n\n\n'
+        self.assertEqual(get_signature_component(name, anchor, signature, object_doc, source_link), expected_signature_component)
 
         name = "class transformers.BertweetTokenizer"
         anchor = "transformers.BertweetTokenizer"
@@ -163,14 +171,20 @@ List of [input IDs](../glossary.html#input-ids) with the appropriate special tok
 This tokenizer inherits from [`~transformers.PreTrainedTokenizer`] which contains most of the main methods.
 Users should refer to this superclass for more information regarding those methods.
 """
-        expected_signature_component = '<docstring><name>"class transformers.BertweetTokenizer"</name><anchor>"transformers.BertweetTokenizer"</anchor><parameters>[{"name": "vocab_file", "val": ""}, {"name": "normalization", "val": " = False"}, {"name": "bos_token", "val": " = \'&amp;lt;s>\'"}]</parameters></docstring>\nConstructs a BERTweet tokenizer, using Byte-Pair-Encoding.\n\nThis tokenizer inherits from [`~transformers.PreTrainedTokenizer`] which contains most of the main methods.\nUsers should refer to this superclass for more information regarding those methods.\n\n'
-        self.assertEqual(get_signature_component(name, anchor, signature, object_doc_without_params_and_return), expected_signature_component)
+        expected_signature_component = '<docstring><name>"class transformers.BertweetTokenizer"</name><anchor>"transformers.BertweetTokenizer"</anchor><source>"test_link"</source><parameters>[{"name": "vocab_file", "val": ""}, {"name": "normalization", "val": " = False"}, {"name": "bos_token", "val": " = \'&amp;lt;s>\'"}]</parameters></docstring>\nConstructs a BERTweet tokenizer, using Byte-Pair-Encoding.\n\nThis tokenizer inherits from [`~transformers.PreTrainedTokenizer`] which contains most of the main methods.\nUsers should refer to this superclass for more information regarding those methods.\n\n'
+        self.assertEqual(get_signature_component(name, anchor, signature, object_doc_without_params_and_return, source_link), expected_signature_component)
+
+    def test_get_source_link(self):
+        page_info = {"package_name": "transformers"}
+        self.assertEqual(get_source_link(transformers.file_utils.ModelOutput, page_info), self.test_source_link)
 
     def test_document_object(self):
         page_info = {"package_name": "transformers"}
 
         model_output_doc = """
-<docstring><name>"class transformers.file\_utils.ModelOutput"</name><anchor>"transformers.file_utils.ModelOutput"</anchor><parameters>""</parameters></docstring>
+<docstring><name>"class transformers.file\_utils.ModelOutput"</name><anchor>"transformers.file_utils.ModelOutput"</anchor><source>"""
+        model_output_doc += f'"{self.test_source_link}"'
+        model_output_doc += """</source><parameters>""</parameters></docstring>
 
 Base class for all model outputs as dataclass. Has a `__getitem__` that allows indexing by integer or slice (like
 a tuple) or strings (like a dictionary) that will ignore the `None` attributes. Otherwise behaves like a regular
