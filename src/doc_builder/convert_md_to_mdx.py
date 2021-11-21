@@ -1,5 +1,6 @@
 import re
 
+from .convert_rst_to_mdx import parse_rst_docstring
 
 def convert_md_to_mdx(md_text):
     """
@@ -29,3 +30,11 @@ def convert_special_chars(text):
     text = re.sub(r"(^|[^<])<([^(<|!)]|$)", r"\1&amp;lt;\2", text)
     text = text.replace("LTHTML", "<")
     return text
+
+
+def convert_md_docstring_to_mdx(docstring):
+    """
+    Convert a docstring written in Markdown to mdx.
+    """
+    text = parse_rst_docstring(docstring)
+    return convert_special_chars(text)

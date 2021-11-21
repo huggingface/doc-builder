@@ -86,7 +86,7 @@ def convert_rst_links(text, page_info):
     text = _re_doc_with_description.sub(rf'[\1]({prefix}\2)', text)
 
     if "page" in page_info:
-        page = page_info['page']
+        page = str(page_info['page'])
         if page.endswith(".html"):
             page = page[:-5]
         prefix = f"{prefix}{page}"
