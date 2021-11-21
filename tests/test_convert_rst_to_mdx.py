@@ -203,11 +203,11 @@ third line``.
 
         self.assertEqual(
             convert_rst_links("This is a link to an inner page :doc:`page`.", page_info),
-            "This is a link to an inner page [page](/docs/transformers/master/en/page.html).",
+            "This is a link to an inner page [page](/docs/transformers/master/en/page).",
         )
         self.assertEqual(
             convert_rst_links("This is a link to an inner page :doc:`page name <page ref>`.", page_info),
-            "This is a link to an inner page [page name](/docs/transformers/master/en/page ref.html).",
+            "This is a link to an inner page [page name](/docs/transformers/master/en/page ref).",
         )
 
         self.assertEqual(
@@ -222,11 +222,11 @@ third line``.
         page_info["page"] = "model_doc/bert.html"
         self.assertEqual(
             convert_rst_links("This is a link to an inner section :ref:`section`.", page_info),
-            "This is a link to an inner section [section](/docs/transformers/master/en/model_doc/bert.html#section).",
+            "This is a link to an inner section [section](/docs/transformers/master/en/model_doc/bert#section).",
         )
         self.assertEqual(
             convert_rst_links("This is a link to an inner section :ref:`section name <section ref>`.", page_info),
-            "This is a link to an inner section [section name](/docs/transformers/master/en/model_doc/bert.html#section ref).",
+            "This is a link to an inner section [section name](/docs/transformers/master/en/model_doc/bert#section ref).",
         )
     
     def test_convert_rst_links_with_version_and_lang(self):
@@ -234,11 +234,11 @@ third line``.
 
         self.assertEqual(
             convert_rst_links("This is a link to an inner page :doc:`page`.", page_info),
-            "This is a link to an inner page [page](/docs/transformers/v4.10.0/fr/page.html).",
+            "This is a link to an inner page [page](/docs/transformers/v4.10.0/fr/page).",
         )
         self.assertEqual(
             convert_rst_links("This is a link to an inner page :doc:`page name <page ref>`.", page_info),
-            "This is a link to an inner page [page name](/docs/transformers/v4.10.0/fr/page ref.html).",
+            "This is a link to an inner page [page name](/docs/transformers/v4.10.0/fr/page ref).",
         )
 
         self.assertEqual(
@@ -253,11 +253,15 @@ third line``.
         page_info["page"] = "model_doc/bert.html"
         self.assertEqual(
             convert_rst_links("This is a link to an inner section :ref:`section`.", page_info),
-            "This is a link to an inner section [section](/docs/transformers/v4.10.0/fr/model_doc/bert.html#section).",
+            "This is a link to an inner section [section](/docs/transformers/v4.10.0/fr/model_doc/bert#section).",
         )
         self.assertEqual(
             convert_rst_links("This is a link to an inner section :ref:`section name <section ref>`.", page_info),
-            "This is a link to an inner section [section name](/docs/transformers/v4.10.0/fr/model_doc/bert.html#section ref).",
+            "This is a link to an inner section [section name](/docs/transformers/v4.10.0/fr/model_doc/bert#section ref).",
+        )
+        self.assertEqual(
+            convert_rst_links("`What are input IDs? <../glossary.html#input-ids>`__", page_info),
+            "[What are input IDs?](../glossary#input-ids)",
         )
 
     def test_is_empty_line(self):

@@ -81,11 +81,17 @@ def convert_rst_links(text, page_info):
 
     prefix = f"/docs/{package_name}/{version}/{language}/"
     # Links of the form :doc:`page`
-    text = _re_simple_doc.sub(rf'[\1]({prefix}\1.html)', text)
+    text = _re_simple_doc.sub(rf'[\1]({prefix}\1)', text)
     # Links of the form :doc:`text <page>`
-    text = _re_doc_with_description.sub(rf'[\1]({prefix}\2.html)', text)
+    text = _re_doc_with_description.sub(rf'[\1]({prefix}\2)', text)
 
-    prefix = f"{prefix}{page_info['page']}" if "page" in page_info else ""
+    if "page" in page_info:
+        page = page_info['page']
+        if page.endswith(".html"):
+            page = page[:-5]
+        prefix = f"{prefix}{page}"
+    else:
+        prefix = ""
     # Refs of the form :ref:`page`
     text = _re_simple_ref.sub(rf'[\1]({prefix}#\1)', text)
     # Refs of the form :ref:`text <page>`
@@ -97,6 +103,9 @@ def convert_rst_links(text, page_info):
     text = _re_prefix_links.sub(fr'[\1]({prefix}\2)', text)
     # Other links
     text = _re_links.sub(r"[\1](\2)", text)
+    # Relative links or Transformers links need to remove the .html
+    if "(https://https://huggingface.co/" in text or re.search("\(\.+/", text) is not None:
+        text = text.replace(".html", "")
     return text
 
 
