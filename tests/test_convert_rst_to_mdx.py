@@ -552,17 +552,12 @@ bli
         expected = """
 bla
 
-{#if fw === 'pt'}
 ```py
 common_code
 pytorch_code
-```
-{:else}
-```py
-common_code
+===PT-TF-SPLIT===
 tf_code
 ```
-{/if}
 
 bli
 """
