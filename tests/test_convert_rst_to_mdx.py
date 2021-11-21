@@ -399,7 +399,7 @@ This is a note.
 
 [[autodoc]] transformers.create_optimizer
 
-<img alt="Alternative text" src="/imgs/warmup_cosine_schedule.png"/>
+<img alt="Alternative text" src="/transformers/_images/warmup_cosine_schedule.png"/>
 
 $$formula$$
 """
