@@ -376,6 +376,8 @@ def remove_indent(text):
     current_indents = []
     # List of new indents to remember for nested lists
     new_indents = []
+    is_inside_code = False
+    code_indent = 0
     for idx, line in enumerate(lines):
         # Line is an item in a list.
         if _re_list.search(line) is not None:
@@ -410,6 +412,16 @@ def remove_indent(text):
         # Deal with empty lines separately
         elif is_empty_line(line):
             lines[idx] = ""
+
+        # Code blocks
+        elif line.lstrip().startswith("```"):
+            is_inside_code = not is_inside_code
+            if is_inside_code:
+                code_indent = find_indent(line)
+            lines[idx] = line[code_indent:]
+        elif is_inside_code:
+            lines[idx] = line[code_indent:]
+
         else:
             indent = find_indent(line)
             if len(current_indents) > 0 and indent > current_indents[-1]:

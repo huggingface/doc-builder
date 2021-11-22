@@ -525,8 +525,29 @@ Now we are out of the list.
     - all
 """
 
+        example3 = """
+  Lala
+  
+  ```python
+  def function(x):
+      return x
+  ```
+  
+  Loulou
+"""
+        expected3 = """
+Lala
+
+```python
+def function(x):
+    return x
+```
+
+Loulou
+"""
         self.assertEqual(remove_indent(example1), expected1)
         self.assertEqual(remove_indent(example2), expected2)
+        self.assertEqual(remove_indent(example3), expected3)
     
     def test_process_titles(self):
         self.assertListEqual(
