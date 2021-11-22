@@ -323,7 +323,11 @@ def parse_rst_docstring(docstring):
             param_indent = find_indent(lines[idx])
             while idx < len(lines) and find_indent(lines[idx]) == param_indent:
                 intro, doc = split_arg_line(lines[idx])
-                lines[idx] = re.sub(r"^\s*(\S+)(\s)", r"- **\1**\2", intro) + " --" + doc
+                # Line starting with a > after indent indicate a "section title" in the parameters.
+                if intro.lstrip().startswith(">"):
+                    lines[idx] = intro.lstrip()
+                else:
+                    lines[idx] = re.sub(r"^\s*(\S+)(\s)", r"- **\1**\2", intro) + " --" + doc
                 idx += 1
                 while idx < len(lines) and (is_empty_line(lines[idx]) or find_indent(lines[idx]) > param_indent):
                     idx += 1

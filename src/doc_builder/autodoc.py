@@ -170,37 +170,67 @@ def get_signature_component(name, anchor, signature, object_doc, source_link):
     return_description = parsed_obj_doc["returns"]
     returntype = parsed_obj_doc["returntype"]
 
+    svelte_str = '<docstring>'
+    svelte_str += f'<name>"{name}"</name>'
+    svelte_str += f'<anchor>"{anchor if len(anchor) > 0 else None}"</anchor>'
+    svelte_str += f'<source>"{source_link}"</source>'
+    svelte_str += f'<parameters>{json.dumps(signature)}</parameters>'
+    
+    param_group_tag = "paramsdesc"
+    param_group_count = 0
     if parameters:
         parameters = parameters.replace('&amp;lt;', '<')
         parameters = parameters.split('\n')
-        params_description = []
-        # greedy algorithm to find parameter name & its description
+
+        # Greedy algorithm to find parameter name & its description
         param_name = None
         param_description = []
+        params_description = []
         for line in parameters:
             param_name_ = _re_parametername.search(line)
-            if param_name_ is not None:
-                if param_name:
+            # New parameter group!
+            if line.startswith("> "):
+                # Close previous param description
+                if param_name is not None:
                     param_description = re.sub(' +', ' ', ' '.join(param_description))
                     params_description.append({"name":param_name, "description": param_description, "anchor": f'{anchor}.{param_name}'})
+                # Add curent param group to the svelte component
+                svelte_str += f'<{param_group_tag}>{json.dumps(params_description)}</{param_group_tag}>'
+                
+                param_name = None
+                param_description = []
+                params_description = []
+                
+                
+                param_group_count += 1
+                # Add the param group title
+                title_tag = f"paramsdesc{param_group_count}title"
+                svelte_str += f"<{title_tag}>{line[1:].lstrip()}</{title_tag}>"
+                # Update param group tag
+                param_group_tag = f"paramdesc{param_group_count}"
+            
+            # New paramater!
+            elif param_name_ is not None:
+                # Close potential previous param description
+                if param_name is not None:
+                    param_description = re.sub(' +', ' ', ' '.join(param_description))
+                    params_description.append({"name":param_name, "description": param_description, "anchor": f'{anchor}.{param_name}'})
+                # Prepare new parameter.
                 param_name = param_name_.group(1)
                 param_description = [line]
             else:
                 param_description.append(line)
-        if param_name:
+                
+        # Close potential previous param description
+        if param_name is not None:
             param_description = re.sub(' +', ' ', ' '.join(param_description))
             params_description.append({"name":param_name, "description": param_description, "anchor": f'{anchor}.{param_name}'})
+        # Add param group to the svelte component
+        if len(params_description) > 0:
+            svelte_str += f'<{param_group_tag}>{json.dumps(params_description)}</{param_group_tag}>'
     else:
         params_description = None
-    anchor = anchor if anchor else None
 
-    svelte_str = '<docstring>'
-    svelte_str += f'<name>"{name}"</name>'
-    svelte_str += f'<anchor>"{anchor}"</anchor>'
-    svelte_str += f'<source>"{source_link}"</source>'
-    svelte_str += f'<parameters>{json.dumps(signature)}</parameters>'
-    if params_description is not None:
-        svelte_str += f'<paramsdesc>{json.dumps(params_description)}</paramsdesc>'
     if returntype is not None:
         svelte_str += f'<rettype>{returntype}</rettype>'
     if return_description is not None:
