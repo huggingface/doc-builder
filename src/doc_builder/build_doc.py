@@ -194,7 +194,7 @@ def resolve_links(doc_folder, package, mapping, page_info):
             writer.write(content)
 
 
-def generate_frontmatter_in_text(text):
+def generate_frontmatter_in_text(text, file_name=None):
     """
     Adds frontmatter & turns markdown headers into markdown headers with hash links.
     
@@ -228,6 +228,11 @@ def generate_frontmatter_in_text(text):
         if header_level == 1:
             root = node
         else:
+            if root is None:
+                raise ValueError(
+                    f"{file_name} does not contain a level 1 header (more commonly known as title) before the first "
+                    " second (or more) level header. Make sure to include one!"
+                )
             root.add_child(node, header_level)
 
     frontmatter = root.get_frontmatter()
@@ -245,12 +250,12 @@ def generate_frontmatter(doc_folder):
     """
     doc_folder = Path(doc_folder)
     all_files = list(doc_folder.glob("**/*.mdx"))
-    for file in tqdm(all_files, desc="Generating frontmatter"):
+    for file_name in tqdm(all_files, desc="Generating frontmatter"):
         # utf-8-sig is needed to correctly open community.md file
-        with open(file, "r", encoding="utf-8-sig") as reader:
+        with open(file_name, "r", encoding="utf-8-sig") as reader:
             content = reader.read()
-        content = generate_frontmatter_in_text(content)
-        with open(file, "w", encoding="utf-8") as writer:
+        content = generate_frontmatter_in_text(content, file_name=file_name)
+        with open(file_name, "w", encoding="utf-8") as writer:
             writer.write(content)
 
 
