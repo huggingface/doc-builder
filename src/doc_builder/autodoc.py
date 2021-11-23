@@ -172,7 +172,7 @@ def get_signature_component(name, anchor, signature, object_doc, source_link):
 
     svelte_str = '<docstring>'
     svelte_str += f'<name>"{name}"</name>'
-    svelte_str += f'<anchor>"{anchor if len(anchor) > 0 else None}"</anchor>'
+    svelte_str += f'<anchor>"{anchor if (anchor is not None and len(anchor) > 0) else None}"</anchor>'
     svelte_str += f'<source>"{source_link}"</source>'
     svelte_str += f'<parameters>{json.dumps(signature)}</parameters>'
     
