@@ -19,9 +19,13 @@ def find_object_in_package(object_name, package):
         path_splits = path_splits[1:]
     module = package
     for split in path_splits:
+        previous_module = module
         module = getattr(module, split, None)
         if module is None:
-            return
+            previous_module = {k: getattr(previous_module, k, None) for k in dir(previous_module)}
+            module = getattr(previous_module, split, None)
+            if module is None:
+                return
     return module
 
 
@@ -172,7 +176,7 @@ def get_signature_component(name, anchor, signature, object_doc, source_link):
 
     svelte_str = '<docstring>'
     svelte_str += f'<name>"{name}"</name>'
-    svelte_str += f'<anchor>"{anchor if len(anchor) > 0 else None}"</anchor>'
+    svelte_str += f'<anchor>"{anchor if anchor is not None and len(anchor) > 0 else None}"</anchor>'
     svelte_str += f'<source>"{source_link}"</source>'
     svelte_str += f'<parameters>{json.dumps(signature)}</parameters>'
     
