@@ -37,7 +37,7 @@ if __name__ == "__main__":
         if "dev" in version:
             version = "master"
         else:
-            version = "v" + str(version)
+            version = f"v{version}"
     else:
         version = args.version
 
