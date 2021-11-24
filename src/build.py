@@ -18,7 +18,7 @@ if __name__ == "__main__":
     module = importlib.import_module(args.library_name)
     version = module.__version__
 
-    output_path = f"../build/{args.library_name}/v{version}/{args.language}"
+    output_path = f"./build/{args.library_name}/v{version}/{args.language}"
 
     print("Building docs for", args.library_name, args.path_to_docs, output_path)
     build_doc(args.library_name, args.path_to_docs, output_path)
