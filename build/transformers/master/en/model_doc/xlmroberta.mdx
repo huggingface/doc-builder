@@ -1,0 +1,1374 @@
+---
+local: xlmroberta
+sections:
+- local: overview
+  title: Overview
+- local: transformers.XLMRobertaConfig
+  title: XLMRobertaConfig
+- local: transformers.XLMRobertaTokenizer
+  title: XLMRobertaTokenizer
+- local: transformers.XLMRobertaTokenizerFast
+  title: XLMRobertaTokenizerFast
+- local: transformers.XLMRobertaModel
+  title: XLMRobertaModel
+- local: transformers.XLMRobertaForCausalLM
+  title: XLMRobertaForCausalLM
+- local: transformers.XLMRobertaForMaskedLM
+  title: XLMRobertaForMaskedLM
+- local: transformers.XLMRobertaForSequenceClassification
+  title: XLMRobertaForSequenceClassification
+- local: transformers.XLMRobertaForMultipleChoice
+  title: XLMRobertaForMultipleChoice
+- local: transformers.XLMRobertaForTokenClassification
+  title: XLMRobertaForTokenClassification
+- local: transformers.XLMRobertaForQuestionAnswering
+  title: XLMRobertaForQuestionAnswering
+- local: transformers.TFXLMRobertaModel
+  title: TFXLMRobertaModel
+- local: transformers.TFXLMRobertaForMaskedLM
+  title: TFXLMRobertaForMaskedLM
+- local: transformers.TFXLMRobertaForSequenceClassification
+  title: TFXLMRobertaForSequenceClassification
+- local: transformers.TFXLMRobertaForMultipleChoice
+  title: TFXLMRobertaForMultipleChoice
+- local: transformers.TFXLMRobertaForTokenClassification
+  title: TFXLMRobertaForTokenClassification
+- local: transformers.TFXLMRobertaForQuestionAnswering
+  title: TFXLMRobertaForQuestionAnswering
+title: XLM-RoBERTa
+---
+<script>
+import Tip from "./Tip.svelte";
+import Youtube from "./Youtube.svelte";
+import Docstring from "./Docstring.svelte";
+import CodeBlock from "./CodeBlock.svelte";
+import CodeBlockFw from "./CodeBlockFw.svelte";
+import IconCopyLink from "./IconCopyLink.svelte";
+
+export let fw: "pt" | "tf"
+</script>
+
+<!--Copyright 2020 The HuggingFace Team. All rights reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
+the License. You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on
+an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
+specific language governing permissions and limitations under the License.
+-->
+
+<h1 id="xlmroberta">XLM-RoBERTa</h1>
+
+<h2 id="overview">Overview</h2>
+
+The XLM-RoBERTa model was proposed in [Unsupervised Cross-lingual Representation Learning at Scale](https://arxiv.org/abs/1911.02116) by Alexis Conneau, Kartikay Khandelwal, Naman Goyal, Vishrav Chaudhary, Guillaume
+Wenzek, Francisco Guzmán, Edouard Grave, Myle Ott, Luke Zettlemoyer and Veselin Stoyanov. It is based on Facebook's
+RoBERTa model released in 2019. It is a large multi-lingual language model, trained on 2.5TB of filtered CommonCrawl
+data.
+
+The abstract from the paper is the following:
+
+*This paper shows that pretraining multilingual language models at scale leads to significant performance gains for a
+wide range of cross-lingual transfer tasks. We train a Transformer-based masked language model on one hundred
+languages, using more than two terabytes of filtered CommonCrawl data. Our model, dubbed XLM-R, significantly
+outperforms multilingual BERT (mBERT) on a variety of cross-lingual benchmarks, including +13.8% average accuracy on
+XNLI, +12.3% average F1 score on MLQA, and +2.1% average F1 score on NER. XLM-R performs particularly well on
+low-resource languages, improving 11.8% in XNLI accuracy for Swahili and 9.2% for Urdu over the previous XLM model. We
+also present a detailed empirical evaluation of the key factors that are required to achieve these gains, including the
+trade-offs between (1) positive transfer and capacity dilution and (2) the performance of high and low resource
+languages at scale. Finally, we show, for the first time, the possibility of multilingual modeling without sacrificing
+per-language performance; XLM-Ris very competitive with strong monolingual models on the GLUE and XNLI benchmarks. We
+will make XLM-R code, data, and models publicly available.*
+
+Tips:
+
+- XLM-RoBERTa is a multilingual model trained on 100 different languages. Unlike some XLM multilingual models, it does
+  not require `lang` tensors to understand which language is used, and should be able to determine the correct
+  language from the input ids.
+- This implementation is the same as RoBERTa. Refer to the [documentation of RoBERTa](/docs/transformers/master/en/roberta) for usage examples
+  as well as the information relative to the inputs and outputs.
+
+This model was contributed by [stefan-it](https://huggingface.co/stefan-it). The original code can be found [here](https://github.com/pytorch/fairseq/tree/master/examples/xlmr).
+
+
+<h2 id="transformers.XLMRobertaConfig">XLMRobertaConfig</h2>
+
+<div class="docstring">
+
+<docstring><name>"class transformers.XLMRobertaConfig"</name><anchor>"transformers.XLMRobertaConfig"</anchor><source>"https://github.com/huggingface/transformers/blob/master/src/transformers/models/xlm_roberta/configuration_xlm_roberta.py#L37"</source><parameters>[{"name": "pad_token_id", "val": " = 1"}, {"name": "bos_token_id", "val": " = 0"}, {"name": "eos_token_id", "val": " = 2"}, {"name": "**kwargs", "val": ""}]</parameters></docstring>
+
+This class overrides [RobertaConfig](/docs/transformers/master/en/model_doc/roberta#transformers.RobertaConfig). Please check the superclass for the appropriate
+documentation alongside usage examples.
+
+
+</div>
+
+<h2 id="transformers.XLMRobertaTokenizer">XLMRobertaTokenizer</h2>
+
+<div class="docstring">
+
+<docstring><name>"class transformers.XLMRobertaTokenizer"</name><anchor>"transformers.XLMRobertaTokenizer"</anchor><source>"https://github.com/huggingface/transformers/blob/master/src/transformers/models/xlm_roberta/tokenization_xlm_roberta.py#L55"</source><parameters>[{"name": "vocab_file", "val": ""}, {"name": "bos_token", "val": " = '<s>'"}, {"name": "eos_token", "val": " = '</s>'"}, {"name": "sep_token", "val": " = '</s>'"}, {"name": "cls_token", "val": " = '<s>'"}, {"name": "unk_token", "val": " = '<unk>'"}, {"name": "pad_token", "val": " = '<pad>'"}, {"name": "mask_token", "val": " = '<mask>'"}, {"name": "sp_model_kwargs", "val": ": typing.Union[typing.Dict[str, typing.Any], NoneType] = None"}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>[{"name": "vocab_file", "description": "- **vocab_file** (`str`) -- Path to the vocabulary file.", "anchor": "transformers.XLMRobertaTokenizer.vocab_file"}, {"name": "bos_token", "description": "- **bos_token** (`str`, _optional_, defaults to `\"<s>\"`) -- The beginning of sequence token that was used during pretraining. Can be used a sequence classifier token. <Tip> When building a sequence using special tokens, this is not the token that is used for the beginning of sequence. The token used is the `cls_token`. </Tip> ", "anchor": "transformers.XLMRobertaTokenizer.bos_token"}, {"name": "eos_token", "description": "- **eos_token** (`str`, _optional_, defaults to `\"</s>\"`) -- The end of sequence token. <Tip> When building a sequence using special tokens, this is not the token that is used for the end of sequence. The token used is the `sep_token`. </Tip> ", "anchor": "transformers.XLMRobertaTokenizer.eos_token"}, {"name": "sep_token", "description": "- **sep_token** (`str`, _optional_, defaults to `\"</s>\"`) -- The separator token, which is used when building a sequence from multiple sequences, e.g. two sequences for sequence classification or for a text and a question for question answering. It is also used as the last token of a sequence built with special tokens.", "anchor": "transformers.XLMRobertaTokenizer.sep_token"}, {"name": "cls_token", "description": "- **cls_token** (`str`, _optional_, defaults to `\"<s>\"`) -- The classifier token which is used when doing sequence classification (classification of the whole sequence instead of per-token classification). It is the first token of the sequence when built with special tokens.", "anchor": "transformers.XLMRobertaTokenizer.cls_token"}, {"name": "unk_token", "description": "- **unk_token** (`str`, _optional_, defaults to `\"<unk>\"`) -- The unknown token. A token that is not in the vocabulary cannot be converted to an ID and is set to be this token instead.", "anchor": "transformers.XLMRobertaTokenizer.unk_token"}, {"name": "pad_token", "description": "- **pad_token** (`str`, _optional_, defaults to `\"<pad>\"`) -- The token used for padding, for example when batching sequences of different lengths.", "anchor": "transformers.XLMRobertaTokenizer.pad_token"}, {"name": "mask_token", "description": "- **mask_token** (`str`, _optional_, defaults to `\"<mask>\"`) -- The token used for masking values. This is the token used when training this model with masked language modeling. This is the token which the model will try to predict.", "anchor": "transformers.XLMRobertaTokenizer.mask_token"}, {"name": "additional_special_tokens", "description": "- **additional_special_tokens** (`List[str]`, _optional_, defaults to `[\"<s>NOTUSED\", \"</s>NOTUSED\"]`) -- Additional special tokens used by the tokenizer.", "anchor": "transformers.XLMRobertaTokenizer.additional_special_tokens"}, {"name": "sp_model_kwargs", "description": "- **sp_model_kwargs** (`dict`, _optional_) -- Will be passed to the `SentencePieceProcessor.__init__()` method. The [Python wrapper for SentencePiece](https://github.com/google/sentencepiece/tree/master/python) can be used, among other things, to set: - `enable_sampling`: Enable subword regularization. - `nbest_size`: Sampling parameters for unigram. Invalid for BPE-Dropout. - `nbest_size = &amp;lcub;0,1}`: No sampling is performed. - `nbest_size > 1`: samples from the nbest_size results. - `nbest_size < 0`: assuming that nbest_size is infinite and samples from the all hypothesis (lattice) using forward-filtering-and-backward-sampling algorithm. - `alpha`: Smoothing parameter for unigram sampling, and dropout probability of merge operations for BPE-dropout.", "anchor": "transformers.XLMRobertaTokenizer.sp_model_kwargs"}]</paramsdesc></docstring>
+
+Adapted from [RobertaTokenizer](/docs/transformers/master/en/model_doc/roberta#transformers.RobertaTokenizer) and [XLNetTokenizer](/docs/transformers/master/en/model_doc/xlnet#transformers.XLNetTokenizer). Based on
+[SentencePiece](https://github.com/google/sentencepiece).
+
+This tokenizer inherits from [PreTrainedTokenizer](/docs/transformers/master/en/main_classes/tokenizer#transformers.PreTrainedTokenizer) which contains most of the main methods.
+Users should refer to this superclass for more information regarding those methods.
+
+
+
+Attributes:
+sp_model (`SentencePieceProcessor`):
+The _SentencePiece_ processor that is used for every conversion (string, tokens and IDs).
+
+
+
+<div class="docstring">
+<docstring><name>"build\_inputs\_with\_special\_tokens"</name><anchor>"transformers.XLMRobertaTokenizer.build_inputs_with_special_tokens"</anchor><source>"https://github.com/huggingface/transformers/blob/master/src/transformers/models/xlm_roberta/tokenization_xlm_roberta.py#L187"</source><parameters>[{"name": "token_ids_0", "val": ": typing.List[int]"}, {"name": "token_ids_1", "val": ": typing.Optional[typing.List[int]] = None"}]</parameters><paramsdesc>[{"name": "token_ids_0", "description": "- **token_ids_0** (`List[int]`) -- List of IDs to which the special tokens will be added.", "anchor": "transformers.XLMRobertaTokenizer.build_inputs_with_special_tokens.token_ids_0"}, {"name": "token_ids_1", "description": "- **token_ids_1** (`List[int]`, _optional_) -- Optional second list of IDs for sequence pairs.", "anchor": "transformers.XLMRobertaTokenizer.build_inputs_with_special_tokens.token_ids_1"}]</paramsdesc><rettype>`List[int]`</rettype><retdesc>List of [input IDs](../glossary#input-ids) with the appropriate special tokens.</retdesc></docstring>
+
+Build model inputs from a sequence or a pair of sequence for sequence classification tasks by concatenating and
+adding special tokens. An XLM-RoBERTa sequence has the following format:
+
+- single sequence: `<s> X </s>`
+- pair of sequences: `<s> A </s>&amp;lt;/s> B &amp;lt;/s>`
+
+
+
+
+
+
+
+
+</div>
+<div class="docstring">
+<docstring><name>"get\_special\_tokens\_mask"</name><anchor>"transformers.XLMRobertaTokenizer.get_special_tokens_mask"</anchor><source>"https://github.com/huggingface/transformers/blob/master/src/transformers/models/xlm_roberta/tokenization_xlm_roberta.py#L213"</source><parameters>[{"name": "token_ids_0", "val": ": typing.List[int]"}, {"name": "token_ids_1", "val": ": typing.Optional[typing.List[int]] = None"}, {"name": "already_has_special_tokens", "val": ": bool = False"}]</parameters><paramsdesc>[{"name": "token_ids_0", "description": "- **token_ids_0** (`List[int]`) -- List of IDs.", "anchor": "transformers.XLMRobertaTokenizer.get_special_tokens_mask.token_ids_0"}, {"name": "token_ids_1", "description": "- **token_ids_1** (`List[int]`, _optional_) -- Optional second list of IDs for sequence pairs.", "anchor": "transformers.XLMRobertaTokenizer.get_special_tokens_mask.token_ids_1"}, {"name": "already_has_special_tokens", "description": "- **already_has_special_tokens** (`bool`, _optional_, defaults to `False`) -- Whether or not the token list is already formatted with special tokens for the model.", "anchor": "transformers.XLMRobertaTokenizer.get_special_tokens_mask.already_has_special_tokens"}]</paramsdesc><rettype>`List[int]`</rettype><retdesc>A list of integers in the range [0, 1]: 1 for a special token, 0 for a sequence token.</retdesc></docstring>
+
+Retrieve sequence ids from a token list that has no special tokens added. This method is called when adding
+special tokens using the tokenizer `prepare_for_model` method.
+
+
+
+
+
+
+
+
+</div>
+<div class="docstring">
+<docstring><name>"create\_token\_type\_ids\_from\_sequences"</name><anchor>"transformers.XLMRobertaTokenizer.create_token_type_ids_from_sequences"</anchor><source>"https://github.com/huggingface/transformers/blob/master/src/transformers/models/xlm_roberta/tokenization_xlm_roberta.py#L241"</source><parameters>[{"name": "token_ids_0", "val": ": typing.List[int]"}, {"name": "token_ids_1", "val": ": typing.Optional[typing.List[int]] = None"}]</parameters><paramsdesc>[{"name": "token_ids_0", "description": "- **token_ids_0** (`List[int]`) -- List of IDs.", "anchor": "transformers.XLMRobertaTokenizer.create_token_type_ids_from_sequences.token_ids_0"}, {"name": "token_ids_1", "description": "- **token_ids_1** (`List[int]`, _optional_) -- Optional second list of IDs for sequence pairs.", "anchor": "transformers.XLMRobertaTokenizer.create_token_type_ids_from_sequences.token_ids_1"}]</paramsdesc><rettype>`List[int]`</rettype><retdesc>List of zeros.</retdesc></docstring>
+
+Create a mask from the two sequences passed to be used in a sequence-pair classification task. XLM-RoBERTa does
+not make use of token type ids, therefore a list of zeros is returned.
+
+
+
+
+
+
+
+
+</div>
+<div class="docstring"></div></div>
+
+<h2 id="transformers.XLMRobertaTokenizerFast">XLMRobertaTokenizerFast</h2>
+
+<div class="docstring">
+
+<docstring><name>"class transformers.XLMRobertaTokenizerFast"</name><anchor>"transformers.XLMRobertaTokenizerFast"</anchor><source>"https://github.com/huggingface/transformers/blob/master/src/transformers/models/xlm_roberta/tokenization_xlm_roberta_fast.py#L67"</source><parameters>[{"name": "vocab_file", "val": " = None"}, {"name": "tokenizer_file", "val": " = None"}, {"name": "bos_token", "val": " = '<s>'"}, {"name": "eos_token", "val": " = '</s>'"}, {"name": "sep_token", "val": " = '</s>'"}, {"name": "cls_token", "val": " = '<s>'"}, {"name": "unk_token", "val": " = '<unk>'"}, {"name": "pad_token", "val": " = '<pad>'"}, {"name": "mask_token", "val": " = '<mask>'"}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>[{"name": "vocab_file", "description": "- **vocab_file** (`str`) -- Path to the vocabulary file.", "anchor": "transformers.XLMRobertaTokenizerFast.vocab_file"}, {"name": "bos_token", "description": "- **bos_token** (`str`, _optional_, defaults to `\"<s>\"`) -- The beginning of sequence token that was used during pretraining. Can be used a sequence classifier token. <Tip> When building a sequence using special tokens, this is not the token that is used for the beginning of sequence. The token used is the `cls_token`. </Tip> ", "anchor": "transformers.XLMRobertaTokenizerFast.bos_token"}, {"name": "eos_token", "description": "- **eos_token** (`str`, _optional_, defaults to `\"</s>\"`) -- The end of sequence token. <Tip> When building a sequence using special tokens, this is not the token that is used for the end of sequence. The token used is the `sep_token`. </Tip> ", "anchor": "transformers.XLMRobertaTokenizerFast.eos_token"}, {"name": "sep_token", "description": "- **sep_token** (`str`, _optional_, defaults to `\"</s>\"`) -- The separator token, which is used when building a sequence from multiple sequences, e.g. two sequences for sequence classification or for a text and a question for question answering. It is also used as the last token of a sequence built with special tokens.", "anchor": "transformers.XLMRobertaTokenizerFast.sep_token"}, {"name": "cls_token", "description": "- **cls_token** (`str`, _optional_, defaults to `\"<s>\"`) -- The classifier token which is used when doing sequence classification (classification of the whole sequence instead of per-token classification). It is the first token of the sequence when built with special tokens.", "anchor": "transformers.XLMRobertaTokenizerFast.cls_token"}, {"name": "unk_token", "description": "- **unk_token** (`str`, _optional_, defaults to `\"<unk>\"`) -- The unknown token. A token that is not in the vocabulary cannot be converted to an ID and is set to be this token instead.", "anchor": "transformers.XLMRobertaTokenizerFast.unk_token"}, {"name": "pad_token", "description": "- **pad_token** (`str`, _optional_, defaults to `\"<pad>\"`) -- The token used for padding, for example when batching sequences of different lengths.", "anchor": "transformers.XLMRobertaTokenizerFast.pad_token"}, {"name": "mask_token", "description": "- **mask_token** (`str`, _optional_, defaults to `\"<mask>\"`) -- The token used for masking values. This is the token used when training this model with masked language modeling. This is the token which the model will try to predict.", "anchor": "transformers.XLMRobertaTokenizerFast.mask_token"}, {"name": "additional_special_tokens", "description": "- **additional_special_tokens** (`List[str]`, _optional_, defaults to `[\"<s>NOTUSED\", \"</s>NOTUSED\"]`) -- Additional special tokens used by the tokenizer.", "anchor": "transformers.XLMRobertaTokenizerFast.additional_special_tokens"}]</paramsdesc></docstring>
+
+Construct a "fast" XLM-RoBERTa tokenizer (backed by HuggingFace's _tokenizers_ library). Adapted from
+[RobertaTokenizer](/docs/transformers/master/en/model_doc/roberta#transformers.RobertaTokenizer) and [XLNetTokenizer](/docs/transformers/master/en/model_doc/xlnet#transformers.XLNetTokenizer). Based on [BPE](https://huggingface.co/docs/tokenizers/python/latest/components.html?highlight=BPE#models).
+
+This tokenizer inherits from [PreTrainedTokenizerFast](/docs/transformers/master/en/main_classes/tokenizer#transformers.PreTrainedTokenizerFast) which contains most of the main
+methods. Users should refer to this superclass for more information regarding those methods.
+
+
+
+
+
+<div class="docstring">
+<docstring><name>"build\_inputs\_with\_special\_tokens"</name><anchor>"transformers.XLMRobertaTokenizerFast.build_inputs_with_special_tokens"</anchor><source>"https://github.com/huggingface/transformers/blob/master/src/transformers/models/xlm_roberta/tokenization_xlm_roberta_fast.py#L150"</source><parameters>[{"name": "token_ids_0", "val": ": typing.List[int]"}, {"name": "token_ids_1", "val": ": typing.Optional[typing.List[int]] = None"}]</parameters><paramsdesc>[{"name": "token_ids_0", "description": "- **token_ids_0** (`List[int]`) -- List of IDs to which the special tokens will be added.", "anchor": "transformers.XLMRobertaTokenizerFast.build_inputs_with_special_tokens.token_ids_0"}, {"name": "token_ids_1", "description": "- **token_ids_1** (`List[int]`, _optional_) -- Optional second list of IDs for sequence pairs.", "anchor": "transformers.XLMRobertaTokenizerFast.build_inputs_with_special_tokens.token_ids_1"}]</paramsdesc><rettype>`List[int]`</rettype><retdesc>List of [input IDs](../glossary#input-ids) with the appropriate special tokens.</retdesc></docstring>
+
+Build model inputs from a sequence or a pair of sequence for sequence classification tasks by concatenating and
+adding special tokens. An XLM-RoBERTa sequence has the following format:
+
+- single sequence: `<s> X </s>`
+- pair of sequences: `<s> A </s>&amp;lt;/s> B &amp;lt;/s>`
+
+
+
+
+
+
+
+
+</div>
+<div class="docstring">
+<docstring><name>"create\_token\_type\_ids\_from\_sequences"</name><anchor>"transformers.XLMRobertaTokenizerFast.create_token_type_ids_from_sequences"</anchor><source>"https://github.com/huggingface/transformers/blob/master/src/transformers/models/xlm_roberta/tokenization_xlm_roberta_fast.py#L176"</source><parameters>[{"name": "token_ids_0", "val": ": typing.List[int]"}, {"name": "token_ids_1", "val": ": typing.Optional[typing.List[int]] = None"}]</parameters><paramsdesc>[{"name": "token_ids_0", "description": "- **token_ids_0** (`List[int]`) -- List of IDs.", "anchor": "transformers.XLMRobertaTokenizerFast.create_token_type_ids_from_sequences.token_ids_0"}, {"name": "token_ids_1", "description": "- **token_ids_1** (`List[int]`, _optional_) -- Optional second list of IDs for sequence pairs.", "anchor": "transformers.XLMRobertaTokenizerFast.create_token_type_ids_from_sequences.token_ids_1"}]</paramsdesc><rettype>`List[int]`</rettype><retdesc>List of zeros.</retdesc></docstring>
+
+Create a mask from the two sequences passed to be used in a sequence-pair classification task. XLM-RoBERTa does
+not make use of token type ids, therefore a list of zeros is returned.
+
+
+
+
+
+
+
+
+</div></div>
+
+<h2 id="transformers.XLMRobertaModel">XLMRobertaModel</h2>
+
+<div class="docstring">
+
+<docstring><name>"class transformers.XLMRobertaModel"</name><anchor>"transformers.XLMRobertaModel"</anchor><source>"https://github.com/huggingface/transformers/blob/master/src/transformers/models/xlm_roberta/modeling_xlm_roberta.py#L67"</source><parameters>[{"name": "config", "val": ""}, {"name": "add_pooling_layer", "val": " = True"}]</parameters><paramsdesc>[{"name": "config", "description": "- **config** ([XLMRobertaConfig](/docs/transformers/master/en/model_doc/xlmroberta#transformers.XLMRobertaConfig)) -- Model configuration class with all the parameters of the model. Initializing with a config file does not load the weights associated with the model, only the configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel.from_pretrained) method to load the model weights.", "anchor": "transformers.XLMRobertaModel.config"}]</paramsdesc></docstring>
+The bare XLM-RoBERTa Model transformer outputting raw hidden-states without any specific head on top.
+
+This model inherits from [PreTrainedModel](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel). Check the superclass documentation for the generic
+methods the library implements for all its model (such as downloading or saving, resizing the input embeddings,
+pruning heads etc.)
+
+This model is also a PyTorch [torch.nn.Module](https://pytorch.org/docs/stable/nn.html#torch.nn.Module)
+subclass. Use it as a regular PyTorch Module and refer to the PyTorch documentation for all matter related to
+general usage and behavior.
+
+
+
+This class overrides [RobertaModel](/docs/transformers/master/en/model_doc/roberta#transformers.RobertaModel). Please check the superclass for the appropriate
+documentation alongside usage examples.
+
+
+
+<div class="docstring">
+<docstring><name>"forward"</name><anchor>"transformers.RobertaModel.forward"</anchor><source>"https://github.com/huggingface/transformers/blob/master/src/transformers/models/roberta/modeling_roberta.py#L743"</source><parameters>[{"name": "input_ids", "val": " = None"}, {"name": "attention_mask", "val": " = None"}, {"name": "token_type_ids", "val": " = None"}, {"name": "position_ids", "val": " = None"}, {"name": "head_mask", "val": " = None"}, {"name": "inputs_embeds", "val": " = None"}, {"name": "encoder_hidden_states", "val": " = None"}, {"name": "encoder_attention_mask", "val": " = None"}, {"name": "past_key_values", "val": " = None"}, {"name": "use_cache", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "return_dict", "val": " = None"}]</parameters><paramsdesc>[{"name": "input_ids", "description": "- **input_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`) -- Indices of input sequence tokens in the vocabulary. Indices can be obtained using [RobertaTokenizer](/docs/transformers/master/en/model_doc/roberta#transformers.RobertaTokenizer). See [transformers.PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.__call__) for details. [What are input IDs?](../glossary#input-ids)", "anchor": "transformers.RobertaModel.forward.input_ids"}, {"name": "attention_mask", "description": "- **attention_mask** (`torch.FloatTensor` of shape `(batch_size, sequence_length)`, _optional_) -- Mask to avoid performing attention on padding token indices. Mask values selected in `[0, 1]`: ", "anchor": "transformers.RobertaModel.forward.attention_mask"}, {"name": "not masked", "description": " - 1 for tokens that are **not masked**,", "anchor": "transformers.RobertaModel.forward.not masked"}, {"name": "masked", "description": " - 0 for tokens that are **masked**. [What are attention masks?](../glossary#attention-mask)", "anchor": "transformers.RobertaModel.forward.masked"}, {"name": "token_type_ids", "description": "- **token_type_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`, _optional_) -- Segment token indices to indicate first and second portions of the inputs. Indices are selected in `[0, 1]`: - 0 corresponds to a _sentence A_ token, - 1 corresponds to a _sentence B_ token. [What are token type IDs?](../glossary#token-type-ids)", "anchor": "transformers.RobertaModel.forward.token_type_ids"}, {"name": "position_ids", "description": "- **position_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`, _optional_) -- Indices of positions of each input sequence tokens in the position embeddings. Selected in the range `[0, config.max_position_embeddings - 1]`. [What are position IDs?](../glossary#position-ids)", "anchor": "transformers.RobertaModel.forward.position_ids"}, {"name": "head_mask", "description": "- **head_mask** (`torch.FloatTensor` of shape `(num_heads,)` or `(num_layers, num_heads)`, _optional_) -- Mask to nullify selected heads of the self-attention modules. Mask values selected in `[0, 1]`: ", "anchor": "transformers.RobertaModel.forward.head_mask"}, {"name": "not masked", "description": " - 1 indicates the head is **not masked**,", "anchor": "transformers.RobertaModel.forward.not masked"}, {"name": "masked", "description": " - 0 indicates the head is **masked**. ", "anchor": "transformers.RobertaModel.forward.masked"}, {"name": "inputs_embeds", "description": "- **inputs_embeds** (`torch.FloatTensor` of shape `(batch_size, sequence_length, hidden_size)`, _optional_) -- Optionally, instead of passing `input_ids` you can choose to directly pass an embedded representation. This is useful if you want more control over how to convert `input_ids` indices into associated vectors than the model's internal embedding lookup matrix.", "anchor": "transformers.RobertaModel.forward.inputs_embeds"}, {"name": "output_attentions", "description": "- **output_attentions** (`bool`, _optional_) -- Whether or not to return the attentions tensors of all attention layers. See `attentions` under returned tensors for more detail.", "anchor": "transformers.RobertaModel.forward.output_attentions"}, {"name": "output_hidden_states", "description": "- **output_hidden_states** (`bool`, _optional_) -- Whether or not to return the hidden states of all layers. See `hidden_states` under returned tensors for more detail.", "anchor": "transformers.RobertaModel.forward.output_hidden_states"}, {"name": "return_dict", "description": "- **return_dict** (`bool`, _optional_) -- Whether or not to return a [ModelOutput](/docs/transformers/master/en/main_classes/output#transformers.file_utils.ModelOutput) instead of a plain tuple. ", "anchor": "transformers.RobertaModel.forward.return_dict"}, {"name": "encoder_hidden_states", "description": "- **encoder_hidden_states** (`torch.FloatTensor` of shape `(batch_size, sequence_length, hidden_size)`, _optional_) -- Sequence of hidden-states at the output of the last layer of the encoder. Used in the cross-attention if the model is configured as a decoder.", "anchor": "transformers.RobertaModel.forward.encoder_hidden_states"}, {"name": "encoder_attention_mask", "description": "- **encoder_attention_mask** (`torch.FloatTensor` of shape `(batch_size, sequence_length)`, _optional_) -- Mask to avoid performing attention on the padding token indices of the encoder input. This mask is used in the cross-attention if the model is configured as a decoder. Mask values selected in `[0, 1]`: ", "anchor": "transformers.RobertaModel.forward.encoder_attention_mask"}, {"name": "not masked", "description": " - 1 for tokens that are **not masked**,", "anchor": "transformers.RobertaModel.forward.not masked"}, {"name": "masked", "description": " - 0 for tokens that are **masked**.", "anchor": "transformers.RobertaModel.forward.masked"}, {"name": "past_key_values", "description": "- **past_key_values** (`tuple(tuple(torch.FloatTensor))` of length `config.n_layers` with each tuple having 4 tensors of shape `(batch_size, num_heads, sequence_length - 1, embed_size_per_head)`) -- Contains precomputed key and value hidden states of the attention blocks. Can be used to speed up decoding. If `past_key_values` are used, the user can optionally input only the last `decoder_input_ids` (those that don't have their past key value states given to this model) of shape `(batch_size, 1)` instead of all `decoder_input_ids` of shape `(batch_size, sequence_length)`.", "anchor": "transformers.RobertaModel.forward.past_key_values"}, {"name": "use_cache", "description": "- **use_cache** (`bool`, _optional_) -- If set to `True`, `past_key_values` key value states are returned and can be used to speed up decoding (see `past_key_values`).", "anchor": "transformers.RobertaModel.forward.use_cache"}]</paramsdesc><rettype>[BaseModelOutputWithPoolingAndCrossAttentions](/docs/transformers/master/en/main_classes/output#transformers.modeling_outputs.BaseModelOutputWithPoolingAndCrossAttentions) or `tuple(torch.FloatTensor)`</rettype><retdesc>A [BaseModelOutputWithPoolingAndCrossAttentions](/docs/transformers/master/en/main_classes/output#transformers.modeling_outputs.BaseModelOutputWithPoolingAndCrossAttentions) or a tuple of
+`torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising
+various elements depending on the configuration ([RobertaConfig](/docs/transformers/master/en/model_doc/roberta#transformers.RobertaConfig)) and inputs.
+
+- **last_hidden_state** (`torch.FloatTensor` of shape `(batch_size, sequence_length, hidden_size)`) -- Sequence of hidden-states at the output of the last layer of the model.
+- **pooler_output** (`torch.FloatTensor` of shape `(batch_size, hidden_size)`) -- Last layer hidden-state of the first token of the sequence (classification token) after further processing
+  through the layers used for the auxiliary pretraining task. E.g. for BERT-family of models, this returns
+  the classification token after processing through a linear layer and a tanh activation function. The linear
+  layer weights are trained from the next sentence prediction (classification) objective during pretraining.
+- **hidden_states** (`tuple(torch.FloatTensor)`, _optional_, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer)
+  of shape `(batch_size, sequence_length, hidden_size)`.
+
+  Hidden-states of the model at the output of each layer plus the initial embedding outputs.
+- **attentions** (`tuple(torch.FloatTensor)`, _optional_, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+
+  Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
+  heads.
+- **cross_attentions** (`tuple(torch.FloatTensor)`, _optional_, returned when `output_attentions=True` and `config.add_cross_attention=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+
+  Attentions weights of the decoder's cross-attention layer, after the attention softmax, used to compute the
+  weighted average in the cross-attention heads.
+- **past_key_values** (`tuple(tuple(torch.FloatTensor))`, _optional_, returned when `use_cache=True` is passed or when `config.use_cache=True`) -- Tuple of `tuple(torch.FloatTensor)` of length `config.n_layers`, with each tuple having 2 tensors
+  of shape `(batch_size, num_heads, sequence_length, embed_size_per_head)`) and optionally if
+  `config.is_encoder_decoder=True` 2 additional tensors of shape `(batch_size, num_heads, encoder_sequence_length, embed_size_per_head)`.
+
+  Contains pre-computed hidden-states (key and values in the self-attention blocks and optionally if
+  `config.is_encoder_decoder=True` in the cross-attention blocks) that can be used (see
+  `past_key_values` input) to speed up sequential decoding.</retdesc></docstring>
+The [RobertaModel](/docs/transformers/master/en/model_doc/roberta#transformers.RobertaModel) forward method, overrides the `__call__` special method.
+
+<Tip>
+
+Although the recipe for forward pass needs to be defined within this function, one should call the
+`Module` instance afterwards instead of this since the former takes care of running the pre and post
+processing steps while the latter silently ignores them.
+
+</Tip>
+
+
+
+
+
+
+
+Example:
+
+```python
+>>> from transformers import RobertaTokenizer, RobertaModel
+>>> import torch
+
+>>> tokenizer = RobertaTokenizer.from_pretrained('roberta-base')
+>>> model = RobertaModel.from_pretrained('roberta-base')
+
+>>> inputs = tokenizer("Hello, my dog is cute", return_tensors="pt")
+>>> outputs = model(**inputs)
+
+>>> last_hidden_states = outputs.last_hidden_state
+```
+
+
+</div></div>
+
+<h2 id="transformers.XLMRobertaForCausalLM">XLMRobertaForCausalLM</h2>
+
+<div class="docstring">
+
+<docstring><name>"class transformers.XLMRobertaForCausalLM"</name><anchor>"transformers.XLMRobertaForCausalLM"</anchor><source>"https://github.com/huggingface/transformers/blob/master/src/transformers/models/xlm_roberta/modeling_xlm_roberta.py#L80"</source><parameters>[{"name": "config", "val": ""}]</parameters><paramsdesc>[{"name": "config", "description": "- **config** ([XLMRobertaConfig](/docs/transformers/master/en/model_doc/xlmroberta#transformers.XLMRobertaConfig)) -- Model configuration class with all the parameters of the model. Initializing with a config file does not load the weights associated with the model, only the configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel.from_pretrained) method to load the model weights.", "anchor": "transformers.XLMRobertaForCausalLM.config"}]</paramsdesc></docstring>
+XLM-RoBERTa Model with a _language modeling_ head on top for CLM fine-tuning.
+
+This model inherits from [PreTrainedModel](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel). Check the superclass documentation for the generic
+methods the library implements for all its model (such as downloading or saving, resizing the input embeddings,
+pruning heads etc.)
+
+This model is also a PyTorch [torch.nn.Module](https://pytorch.org/docs/stable/nn.html#torch.nn.Module)
+subclass. Use it as a regular PyTorch Module and refer to the PyTorch documentation for all matter related to
+general usage and behavior.
+
+
+
+This class overrides [RobertaForCausalLM](/docs/transformers/master/en/model_doc/roberta#transformers.RobertaForCausalLM). Please check the superclass for the appropriate
+documentation alongside usage examples.
+
+
+
+<div class="docstring">
+<docstring><name>"forward"</name><anchor>"transformers.RobertaForCausalLM.forward"</anchor><source>"https://github.com/huggingface/transformers/blob/master/src/transformers/models/roberta/modeling_roberta.py#L910"</source><parameters>[{"name": "input_ids", "val": " = None"}, {"name": "attention_mask", "val": " = None"}, {"name": "token_type_ids", "val": " = None"}, {"name": "position_ids", "val": " = None"}, {"name": "head_mask", "val": " = None"}, {"name": "inputs_embeds", "val": " = None"}, {"name": "encoder_hidden_states", "val": " = None"}, {"name": "encoder_attention_mask", "val": " = None"}, {"name": "labels", "val": " = None"}, {"name": "past_key_values", "val": " = None"}, {"name": "use_cache", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "return_dict", "val": " = None"}]</parameters><paramsdesc>[{"name": "input_ids", "description": "- **input_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`) -- Indices of input sequence tokens in the vocabulary. Indices can be obtained using [RobertaTokenizer](/docs/transformers/master/en/model_doc/roberta#transformers.RobertaTokenizer). See [transformers.PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.__call__) for details. [What are input IDs?](../glossary#input-ids)", "anchor": "transformers.RobertaForCausalLM.forward.input_ids"}, {"name": "attention_mask", "description": "- **attention_mask** (`torch.FloatTensor` of shape `(batch_size, sequence_length)`, _optional_) -- Mask to avoid performing attention on padding token indices. Mask values selected in `[0, 1]`: ", "anchor": "transformers.RobertaForCausalLM.forward.attention_mask"}, {"name": "not masked", "description": " - 1 for tokens that are **not masked**,", "anchor": "transformers.RobertaForCausalLM.forward.not masked"}, {"name": "masked", "description": " - 0 for tokens that are **masked**. [What are attention masks?](../glossary#attention-mask)", "anchor": "transformers.RobertaForCausalLM.forward.masked"}, {"name": "token_type_ids", "description": "- **token_type_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`, _optional_) -- Segment token indices to indicate first and second portions of the inputs. Indices are selected in `[0, 1]`: - 0 corresponds to a _sentence A_ token, - 1 corresponds to a _sentence B_ token. [What are token type IDs?](../glossary#token-type-ids)", "anchor": "transformers.RobertaForCausalLM.forward.token_type_ids"}, {"name": "position_ids", "description": "- **position_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`, _optional_) -- Indices of positions of each input sequence tokens in the position embeddings. Selected in the range `[0, config.max_position_embeddings - 1]`. [What are position IDs?](../glossary#position-ids)", "anchor": "transformers.RobertaForCausalLM.forward.position_ids"}, {"name": "head_mask", "description": "- **head_mask** (`torch.FloatTensor` of shape `(num_heads,)` or `(num_layers, num_heads)`, _optional_) -- Mask to nullify selected heads of the self-attention modules. Mask values selected in `[0, 1]`: ", "anchor": "transformers.RobertaForCausalLM.forward.head_mask"}, {"name": "not masked", "description": " - 1 indicates the head is **not masked**,", "anchor": "transformers.RobertaForCausalLM.forward.not masked"}, {"name": "masked", "description": " - 0 indicates the head is **masked**. ", "anchor": "transformers.RobertaForCausalLM.forward.masked"}, {"name": "inputs_embeds", "description": "- **inputs_embeds** (`torch.FloatTensor` of shape `(batch_size, sequence_length, hidden_size)`, _optional_) -- Optionally, instead of passing `input_ids` you can choose to directly pass an embedded representation. This is useful if you want more control over how to convert `input_ids` indices into associated vectors than the model's internal embedding lookup matrix.", "anchor": "transformers.RobertaForCausalLM.forward.inputs_embeds"}, {"name": "output_attentions", "description": "- **output_attentions** (`bool`, _optional_) -- Whether or not to return the attentions tensors of all attention layers. See `attentions` under returned tensors for more detail.", "anchor": "transformers.RobertaForCausalLM.forward.output_attentions"}, {"name": "output_hidden_states", "description": "- **output_hidden_states** (`bool`, _optional_) -- Whether or not to return the hidden states of all layers. See `hidden_states` under returned tensors for more detail.", "anchor": "transformers.RobertaForCausalLM.forward.output_hidden_states"}, {"name": "return_dict", "description": "- **return_dict** (`bool`, _optional_) -- Whether or not to return a [ModelOutput](/docs/transformers/master/en/main_classes/output#transformers.file_utils.ModelOutput) instead of a plain tuple. ", "anchor": "transformers.RobertaForCausalLM.forward.return_dict"}, {"name": "encoder_hidden_states", "description": "- **encoder_hidden_states** (`torch.FloatTensor` of shape `(batch_size, sequence_length, hidden_size)`, _optional_) -- Sequence of hidden-states at the output of the last layer of the encoder. Used in the cross-attention if the model is configured as a decoder.", "anchor": "transformers.RobertaForCausalLM.forward.encoder_hidden_states"}, {"name": "encoder_attention_mask", "description": "- **encoder_attention_mask** (`torch.FloatTensor` of shape `(batch_size, sequence_length)`, _optional_) -- Mask to avoid performing attention on the padding token indices of the encoder input. This mask is used in the cross-attention if the model is configured as a decoder. Mask values selected in `[0, 1]`: ", "anchor": "transformers.RobertaForCausalLM.forward.encoder_attention_mask"}, {"name": "not masked", "description": " - 1 for tokens that are **not masked**,", "anchor": "transformers.RobertaForCausalLM.forward.not masked"}, {"name": "masked", "description": " - 0 for tokens that are **masked**. ", "anchor": "transformers.RobertaForCausalLM.forward.masked"}, {"name": "labels", "description": "- **labels** (`torch.LongTensor` of shape `(batch_size, sequence_length)`, _optional_) -- Labels for computing the left-to-right language modeling loss (next word prediction). Indices should be in `[-100, 0, ..., config.vocab_size]` (see `input_ids` docstring) Tokens with indices set to `-100` are ignored (masked), the loss is only computed for the tokens with labels in `[0, ..., config.vocab_size]`", "anchor": "transformers.RobertaForCausalLM.forward.labels"}, {"name": "past_key_values", "description": "- **past_key_values** (`tuple(tuple(torch.FloatTensor))` of length `config.n_layers` with each tuple having 4 tensors of shape `(batch_size, num_heads, sequence_length - 1, embed_size_per_head)`) -- Contains precomputed key and value hidden states of the attention blocks. Can be used to speed up decoding. If `past_key_values` are used, the user can optionally input only the last `decoder_input_ids` (those that don't have their past key value states given to this model) of shape `(batch_size, 1)` instead of all `decoder_input_ids` of shape `(batch_size, sequence_length)`.", "anchor": "transformers.RobertaForCausalLM.forward.past_key_values"}, {"name": "use_cache", "description": "- **use_cache** (`bool`, _optional_) -- If set to `True`, `past_key_values` key value states are returned and can be used to speed up decoding (see `past_key_values`).", "anchor": "transformers.RobertaForCausalLM.forward.use_cache"}]</paramsdesc><rettype>[CausalLMOutputWithCrossAttentions](/docs/transformers/master/en/main_classes/output#transformers.modeling_outputs.CausalLMOutputWithCrossAttentions) or `tuple(torch.FloatTensor)`</rettype><retdesc>A [CausalLMOutputWithCrossAttentions](/docs/transformers/master/en/main_classes/output#transformers.modeling_outputs.CausalLMOutputWithCrossAttentions) or a tuple of
+`torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising
+various elements depending on the configuration ([RobertaConfig](/docs/transformers/master/en/model_doc/roberta#transformers.RobertaConfig)) and inputs.
+
+- **loss** (`torch.FloatTensor` of shape `(1,)`, _optional_, returned when `labels` is provided) -- Language modeling loss (for next-token prediction).
+- **logits** (`torch.FloatTensor` of shape `(batch_size, sequence_length, config.vocab_size)`) -- Prediction scores of the language modeling head (scores for each vocabulary token before SoftMax).
+- **hidden_states** (`tuple(torch.FloatTensor)`, _optional_, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer)
+  of shape `(batch_size, sequence_length, hidden_size)`.
+
+  Hidden-states of the model at the output of each layer plus the initial embedding outputs.
+- **attentions** (`tuple(torch.FloatTensor)`, _optional_, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+
+  Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
+  heads.
+- **cross_attentions** (`tuple(torch.FloatTensor)`, _optional_, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+
+  Cross attentions weights after the attention softmax, used to compute the weighted average in the
+  cross-attention heads.
+- **past_key_values** (`tuple(tuple(torch.FloatTensor))`, _optional_, returned when `use_cache=True` is passed or when `config.use_cache=True`) -- Tuple of `torch.FloatTensor` tuples of length `config.n_layers`, with each tuple containing the
+  cached key, value states of the self-attention and the cross-attention layers if model is used in
+  encoder-decoder setting. Only relevant if `config.is_decoder = True`.
+
+  Contains pre-computed hidden-states (key and values in the attention blocks) that can be used (see
+  `past_key_values` input) to speed up sequential decoding.</retdesc></docstring>
+The [RobertaForCausalLM](/docs/transformers/master/en/model_doc/roberta#transformers.RobertaForCausalLM) forward method, overrides the `__call__` special method.
+
+<Tip>
+
+Although the recipe for forward pass needs to be defined within this function, one should call the
+`Module` instance afterwards instead of this since the former takes care of running the pre and post
+processing steps while the latter silently ignores them.
+
+</Tip>
+
+
+
+Example:
+
+```python
+>>> from transformers import RobertaTokenizer, RobertaForCausalLM, RobertaConfig
+>>> import torch
+
+>>> tokenizer = RobertaTokenizer.from_pretrained('roberta-base')
+>>> config = RobertaConfig.from_pretrained("roberta-base")
+>>> config.is_decoder = True
+>>> model = RobertaForCausalLM.from_pretrained('roberta-base', config=config)
+
+>>> inputs = tokenizer("Hello, my dog is cute", return_tensors="pt")
+>>> outputs = model(**inputs)
+
+>>> prediction_logits = outputs.logits
+```
+
+
+
+
+
+
+</div></div>
+
+<h2 id="transformers.XLMRobertaForMaskedLM">XLMRobertaForMaskedLM</h2>
+
+<div class="docstring">
+
+<docstring><name>"class transformers.XLMRobertaForMaskedLM"</name><anchor>"transformers.XLMRobertaForMaskedLM"</anchor><source>"https://github.com/huggingface/transformers/blob/master/src/transformers/models/xlm_roberta/modeling_xlm_roberta.py#L93"</source><parameters>[{"name": "config", "val": ""}]</parameters><paramsdesc>[{"name": "config", "description": "- **config** ([XLMRobertaConfig](/docs/transformers/master/en/model_doc/xlmroberta#transformers.XLMRobertaConfig)) -- Model configuration class with all the parameters of the model. Initializing with a config file does not load the weights associated with the model, only the configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel.from_pretrained) method to load the model weights.", "anchor": "transformers.XLMRobertaForMaskedLM.config"}]</paramsdesc></docstring>
+XLM-RoBERTa Model with a _language modeling_ head on top. 
+
+This model inherits from [PreTrainedModel](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel). Check the superclass documentation for the generic
+methods the library implements for all its model (such as downloading or saving, resizing the input embeddings,
+pruning heads etc.)
+
+This model is also a PyTorch [torch.nn.Module](https://pytorch.org/docs/stable/nn.html#torch.nn.Module)
+subclass. Use it as a regular PyTorch Module and refer to the PyTorch documentation for all matter related to
+general usage and behavior.
+
+
+
+This class overrides [RobertaForMaskedLM](/docs/transformers/master/en/model_doc/roberta#transformers.RobertaForMaskedLM). Please check the superclass for the appropriate
+documentation alongside usage examples.
+
+
+
+<div class="docstring">
+<docstring><name>"forward"</name><anchor>"transformers.RobertaForMaskedLM.forward"</anchor><source>"https://github.com/huggingface/transformers/blob/master/src/transformers/models/roberta/modeling_roberta.py#L1064"</source><parameters>[{"name": "input_ids", "val": " = None"}, {"name": "attention_mask", "val": " = None"}, {"name": "token_type_ids", "val": " = None"}, {"name": "position_ids", "val": " = None"}, {"name": "head_mask", "val": " = None"}, {"name": "inputs_embeds", "val": " = None"}, {"name": "encoder_hidden_states", "val": " = None"}, {"name": "encoder_attention_mask", "val": " = None"}, {"name": "labels", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "return_dict", "val": " = None"}]</parameters><paramsdesc>[{"name": "input_ids", "description": "- **input_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`) -- Indices of input sequence tokens in the vocabulary. Indices can be obtained using [RobertaTokenizer](/docs/transformers/master/en/model_doc/roberta#transformers.RobertaTokenizer). See [transformers.PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.__call__) for details. [What are input IDs?](../glossary#input-ids)", "anchor": "transformers.RobertaForMaskedLM.forward.input_ids"}, {"name": "attention_mask", "description": "- **attention_mask** (`torch.FloatTensor` of shape `(batch_size, sequence_length)`, _optional_) -- Mask to avoid performing attention on padding token indices. Mask values selected in `[0, 1]`: ", "anchor": "transformers.RobertaForMaskedLM.forward.attention_mask"}, {"name": "not masked", "description": " - 1 for tokens that are **not masked**,", "anchor": "transformers.RobertaForMaskedLM.forward.not masked"}, {"name": "masked", "description": " - 0 for tokens that are **masked**. [What are attention masks?](../glossary#attention-mask)", "anchor": "transformers.RobertaForMaskedLM.forward.masked"}, {"name": "token_type_ids", "description": "- **token_type_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`, _optional_) -- Segment token indices to indicate first and second portions of the inputs. Indices are selected in `[0, 1]`: - 0 corresponds to a _sentence A_ token, - 1 corresponds to a _sentence B_ token. [What are token type IDs?](../glossary#token-type-ids)", "anchor": "transformers.RobertaForMaskedLM.forward.token_type_ids"}, {"name": "position_ids", "description": "- **position_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`, _optional_) -- Indices of positions of each input sequence tokens in the position embeddings. Selected in the range `[0, config.max_position_embeddings - 1]`. [What are position IDs?](../glossary#position-ids)", "anchor": "transformers.RobertaForMaskedLM.forward.position_ids"}, {"name": "head_mask", "description": "- **head_mask** (`torch.FloatTensor` of shape `(num_heads,)` or `(num_layers, num_heads)`, _optional_) -- Mask to nullify selected heads of the self-attention modules. Mask values selected in `[0, 1]`: ", "anchor": "transformers.RobertaForMaskedLM.forward.head_mask"}, {"name": "not masked", "description": " - 1 indicates the head is **not masked**,", "anchor": "transformers.RobertaForMaskedLM.forward.not masked"}, {"name": "masked", "description": " - 0 indicates the head is **masked**. ", "anchor": "transformers.RobertaForMaskedLM.forward.masked"}, {"name": "inputs_embeds", "description": "- **inputs_embeds** (`torch.FloatTensor` of shape `(batch_size, sequence_length, hidden_size)`, _optional_) -- Optionally, instead of passing `input_ids` you can choose to directly pass an embedded representation. This is useful if you want more control over how to convert `input_ids` indices into associated vectors than the model's internal embedding lookup matrix.", "anchor": "transformers.RobertaForMaskedLM.forward.inputs_embeds"}, {"name": "output_attentions", "description": "- **output_attentions** (`bool`, _optional_) -- Whether or not to return the attentions tensors of all attention layers. See `attentions` under returned tensors for more detail.", "anchor": "transformers.RobertaForMaskedLM.forward.output_attentions"}, {"name": "output_hidden_states", "description": "- **output_hidden_states** (`bool`, _optional_) -- Whether or not to return the hidden states of all layers. See `hidden_states` under returned tensors for more detail.", "anchor": "transformers.RobertaForMaskedLM.forward.output_hidden_states"}, {"name": "return_dict", "description": "- **return_dict** (`bool`, _optional_) -- Whether or not to return a [ModelOutput](/docs/transformers/master/en/main_classes/output#transformers.file_utils.ModelOutput) instead of a plain tuple. ", "anchor": "transformers.RobertaForMaskedLM.forward.return_dict"}, {"name": "labels", "description": "- **labels** (`torch.LongTensor` of shape `(batch_size, sequence_length)`, _optional_) -- Labels for computing the masked language modeling loss. Indices should be in `[-100, 0, ..., config.vocab_size]` (see `input_ids` docstring) Tokens with indices set to `-100` are ignored (masked), the loss is only computed for the tokens with labels in `[0, ..., config.vocab_size]`", "anchor": "transformers.RobertaForMaskedLM.forward.labels"}, {"name": "kwargs", "description": "- **kwargs** (`Dict[str, any]`, optional, defaults to _&amp;lcub;}_) -- Used to hide legacy arguments that have been deprecated.", "anchor": "transformers.RobertaForMaskedLM.forward.kwargs"}]</paramsdesc><rettype>[MaskedLMOutput](/docs/transformers/master/en/main_classes/output#transformers.modeling_outputs.MaskedLMOutput) or `tuple(torch.FloatTensor)`</rettype><retdesc>A [MaskedLMOutput](/docs/transformers/master/en/main_classes/output#transformers.modeling_outputs.MaskedLMOutput) or a tuple of
+`torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising
+various elements depending on the configuration ([RobertaConfig](/docs/transformers/master/en/model_doc/roberta#transformers.RobertaConfig)) and inputs.
+
+- **loss** (`torch.FloatTensor` of shape `(1,)`, _optional_, returned when `labels` is provided) -- Masked language modeling (MLM) loss.
+- **logits** (`torch.FloatTensor` of shape `(batch_size, sequence_length, config.vocab_size)`) -- Prediction scores of the language modeling head (scores for each vocabulary token before SoftMax).
+- **hidden_states** (`tuple(torch.FloatTensor)`, _optional_, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer)
+  of shape `(batch_size, sequence_length, hidden_size)`.
+
+  Hidden-states of the model at the output of each layer plus the initial embedding outputs.
+- **attentions** (`tuple(torch.FloatTensor)`, _optional_, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+
+  Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
+  heads.</retdesc></docstring>
+The [RobertaForMaskedLM](/docs/transformers/master/en/model_doc/roberta#transformers.RobertaForMaskedLM) forward method, overrides the `__call__` special method.
+
+<Tip>
+
+Although the recipe for forward pass needs to be defined within this function, one should call the
+`Module` instance afterwards instead of this since the former takes care of running the pre and post
+processing steps while the latter silently ignores them.
+
+</Tip>
+
+
+
+
+
+
+
+Example:
+
+```python
+>>> from transformers import RobertaTokenizer, RobertaForMaskedLM
+>>> import torch
+
+>>> tokenizer = RobertaTokenizer.from_pretrained('roberta-base')
+>>> model = RobertaForMaskedLM.from_pretrained('roberta-base')
+
+>>> inputs = tokenizer("The capital of France is &amp;lt;mask>.", return_tensors="pt")
+>>> labels = tokenizer("The capital of France is Paris.", return_tensors="pt")["input_ids"]
+
+>>> outputs = model(**inputs, labels=labels)
+>>> loss = outputs.loss
+>>> logits = outputs.logits
+```
+
+
+</div></div>
+
+<h2 id="transformers.XLMRobertaForSequenceClassification">XLMRobertaForSequenceClassification</h2>
+
+<div class="docstring">
+
+<docstring><name>"class transformers.XLMRobertaForSequenceClassification"</name><anchor>"transformers.XLMRobertaForSequenceClassification"</anchor><source>"https://github.com/huggingface/transformers/blob/master/src/transformers/models/xlm_roberta/modeling_xlm_roberta.py#L109"</source><parameters>[{"name": "config", "val": ""}]</parameters><paramsdesc>[{"name": "config", "description": "- **config** ([XLMRobertaConfig](/docs/transformers/master/en/model_doc/xlmroberta#transformers.XLMRobertaConfig)) -- Model configuration class with all the parameters of the model. Initializing with a config file does not load the weights associated with the model, only the configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel.from_pretrained) method to load the model weights.", "anchor": "transformers.XLMRobertaForSequenceClassification.config"}]</paramsdesc></docstring>
+
+XLM-RoBERTa Model transformer with a sequence classification/regression head on top (a linear layer on top of the
+pooled output) e.g. for GLUE tasks.
+
+
+This model inherits from [PreTrainedModel](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel). Check the superclass documentation for the generic
+methods the library implements for all its model (such as downloading or saving, resizing the input embeddings,
+pruning heads etc.)
+
+This model is also a PyTorch [torch.nn.Module](https://pytorch.org/docs/stable/nn.html#torch.nn.Module)
+subclass. Use it as a regular PyTorch Module and refer to the PyTorch documentation for all matter related to
+general usage and behavior.
+
+
+
+This class overrides [RobertaForSequenceClassification](/docs/transformers/master/en/model_doc/roberta#transformers.RobertaForSequenceClassification). Please check the superclass for the
+appropriate documentation alongside usage examples.
+
+
+
+<div class="docstring">
+<docstring><name>"forward"</name><anchor>"transformers.RobertaForSequenceClassification.forward"</anchor><source>"https://github.com/huggingface/transformers/blob/master/src/transformers/models/roberta/modeling_roberta.py#L1178"</source><parameters>[{"name": "input_ids", "val": " = None"}, {"name": "attention_mask", "val": " = None"}, {"name": "token_type_ids", "val": " = None"}, {"name": "position_ids", "val": " = None"}, {"name": "head_mask", "val": " = None"}, {"name": "inputs_embeds", "val": " = None"}, {"name": "labels", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "return_dict", "val": " = None"}]</parameters><paramsdesc>[{"name": "input_ids", "description": "- **input_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`) -- Indices of input sequence tokens in the vocabulary. Indices can be obtained using [RobertaTokenizer](/docs/transformers/master/en/model_doc/roberta#transformers.RobertaTokenizer). See [transformers.PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.__call__) for details. [What are input IDs?](../glossary#input-ids)", "anchor": "transformers.RobertaForSequenceClassification.forward.input_ids"}, {"name": "attention_mask", "description": "- **attention_mask** (`torch.FloatTensor` of shape `(batch_size, sequence_length)`, _optional_) -- Mask to avoid performing attention on padding token indices. Mask values selected in `[0, 1]`: ", "anchor": "transformers.RobertaForSequenceClassification.forward.attention_mask"}, {"name": "not masked", "description": " - 1 for tokens that are **not masked**,", "anchor": "transformers.RobertaForSequenceClassification.forward.not masked"}, {"name": "masked", "description": " - 0 for tokens that are **masked**. [What are attention masks?](../glossary#attention-mask)", "anchor": "transformers.RobertaForSequenceClassification.forward.masked"}, {"name": "token_type_ids", "description": "- **token_type_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`, _optional_) -- Segment token indices to indicate first and second portions of the inputs. Indices are selected in `[0, 1]`: - 0 corresponds to a _sentence A_ token, - 1 corresponds to a _sentence B_ token. [What are token type IDs?](../glossary#token-type-ids)", "anchor": "transformers.RobertaForSequenceClassification.forward.token_type_ids"}, {"name": "position_ids", "description": "- **position_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`, _optional_) -- Indices of positions of each input sequence tokens in the position embeddings. Selected in the range `[0, config.max_position_embeddings - 1]`. [What are position IDs?](../glossary#position-ids)", "anchor": "transformers.RobertaForSequenceClassification.forward.position_ids"}, {"name": "head_mask", "description": "- **head_mask** (`torch.FloatTensor` of shape `(num_heads,)` or `(num_layers, num_heads)`, _optional_) -- Mask to nullify selected heads of the self-attention modules. Mask values selected in `[0, 1]`: ", "anchor": "transformers.RobertaForSequenceClassification.forward.head_mask"}, {"name": "not masked", "description": " - 1 indicates the head is **not masked**,", "anchor": "transformers.RobertaForSequenceClassification.forward.not masked"}, {"name": "masked", "description": " - 0 indicates the head is **masked**. ", "anchor": "transformers.RobertaForSequenceClassification.forward.masked"}, {"name": "inputs_embeds", "description": "- **inputs_embeds** (`torch.FloatTensor` of shape `(batch_size, sequence_length, hidden_size)`, _optional_) -- Optionally, instead of passing `input_ids` you can choose to directly pass an embedded representation. This is useful if you want more control over how to convert `input_ids` indices into associated vectors than the model's internal embedding lookup matrix.", "anchor": "transformers.RobertaForSequenceClassification.forward.inputs_embeds"}, {"name": "output_attentions", "description": "- **output_attentions** (`bool`, _optional_) -- Whether or not to return the attentions tensors of all attention layers. See `attentions` under returned tensors for more detail.", "anchor": "transformers.RobertaForSequenceClassification.forward.output_attentions"}, {"name": "output_hidden_states", "description": "- **output_hidden_states** (`bool`, _optional_) -- Whether or not to return the hidden states of all layers. See `hidden_states` under returned tensors for more detail.", "anchor": "transformers.RobertaForSequenceClassification.forward.output_hidden_states"}, {"name": "return_dict", "description": "- **return_dict** (`bool`, _optional_) -- Whether or not to return a [ModelOutput](/docs/transformers/master/en/main_classes/output#transformers.file_utils.ModelOutput) instead of a plain tuple. ", "anchor": "transformers.RobertaForSequenceClassification.forward.return_dict"}, {"name": "labels", "description": "- **labels** (`torch.LongTensor` of shape `(batch_size,)`, _optional_) -- Labels for computing the sequence classification/regression loss. Indices should be in `[0, ..., config.num_labels - 1]`. If `config.num_labels == 1` a regression loss is computed (Mean-Square loss), If `config.num_labels > 1` a classification loss is computed (Cross-Entropy).", "anchor": "transformers.RobertaForSequenceClassification.forward.labels"}]</paramsdesc><rettype>[SequenceClassifierOutput](/docs/transformers/master/en/main_classes/output#transformers.modeling_outputs.SequenceClassifierOutput) or `tuple(torch.FloatTensor)`</rettype><retdesc>A [SequenceClassifierOutput](/docs/transformers/master/en/main_classes/output#transformers.modeling_outputs.SequenceClassifierOutput) or a tuple of
+`torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising
+various elements depending on the configuration ([RobertaConfig](/docs/transformers/master/en/model_doc/roberta#transformers.RobertaConfig)) and inputs.
+
+- **loss** (`torch.FloatTensor` of shape `(1,)`, _optional_, returned when `labels` is provided) -- Classification (or regression if config.num_labels==1) loss.
+- **logits** (`torch.FloatTensor` of shape `(batch_size, config.num_labels)`) -- Classification (or regression if config.num_labels==1) scores (before SoftMax).
+- **hidden_states** (`tuple(torch.FloatTensor)`, _optional_, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer)
+  of shape `(batch_size, sequence_length, hidden_size)`.
+
+  Hidden-states of the model at the output of each layer plus the initial embedding outputs.
+- **attentions** (`tuple(torch.FloatTensor)`, _optional_, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+
+  Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
+  heads.</retdesc></docstring>
+The [RobertaForSequenceClassification](/docs/transformers/master/en/model_doc/roberta#transformers.RobertaForSequenceClassification) forward method, overrides the `__call__` special method.
+
+<Tip>
+
+Although the recipe for forward pass needs to be defined within this function, one should call the
+`Module` instance afterwards instead of this since the former takes care of running the pre and post
+processing steps while the latter silently ignores them.
+
+</Tip>
+
+
+
+
+
+
+
+Example:
+
+```python
+>>> from transformers import RobertaTokenizer, RobertaForSequenceClassification
+>>> import torch
+
+>>> tokenizer = RobertaTokenizer.from_pretrained('roberta-base')
+>>> model = RobertaForSequenceClassification.from_pretrained('roberta-base')
+
+>>> inputs = tokenizer("Hello, my dog is cute", return_tensors="pt")
+>>> labels = torch.tensor([1]).unsqueeze(0)  # Batch size 1
+>>> outputs = model(**inputs, labels=labels)
+>>> loss = outputs.loss
+>>> logits = outputs.logits
+```
+
+
+</div></div>
+
+<h2 id="transformers.XLMRobertaForMultipleChoice">XLMRobertaForMultipleChoice</h2>
+
+<div class="docstring">
+
+<docstring><name>"class transformers.XLMRobertaForMultipleChoice"</name><anchor>"transformers.XLMRobertaForMultipleChoice"</anchor><source>"https://github.com/huggingface/transformers/blob/master/src/transformers/models/xlm_roberta/modeling_xlm_roberta.py#L125"</source><parameters>[{"name": "config", "val": ""}]</parameters><paramsdesc>[{"name": "config", "description": "- **config** ([XLMRobertaConfig](/docs/transformers/master/en/model_doc/xlmroberta#transformers.XLMRobertaConfig)) -- Model configuration class with all the parameters of the model. Initializing with a config file does not load the weights associated with the model, only the configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel.from_pretrained) method to load the model weights.", "anchor": "transformers.XLMRobertaForMultipleChoice.config"}]</paramsdesc></docstring>
+
+XLM-RoBERTa Model with a multiple choice classification head on top (a linear layer on top of the pooled output and
+a softmax) e.g. for RocStories/SWAG tasks.
+
+
+This model inherits from [PreTrainedModel](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel). Check the superclass documentation for the generic
+methods the library implements for all its model (such as downloading or saving, resizing the input embeddings,
+pruning heads etc.)
+
+This model is also a PyTorch [torch.nn.Module](https://pytorch.org/docs/stable/nn.html#torch.nn.Module)
+subclass. Use it as a regular PyTorch Module and refer to the PyTorch documentation for all matter related to
+general usage and behavior.
+
+
+
+This class overrides [RobertaForMultipleChoice](/docs/transformers/master/en/model_doc/roberta#transformers.RobertaForMultipleChoice). Please check the superclass for the
+appropriate documentation alongside usage examples.
+
+
+
+<div class="docstring">
+<docstring><name>"forward"</name><anchor>"transformers.RobertaForMultipleChoice.forward"</anchor><source>"https://github.com/huggingface/transformers/blob/master/src/transformers/models/roberta/modeling_roberta.py#L1275"</source><parameters>[{"name": "input_ids", "val": " = None"}, {"name": "token_type_ids", "val": " = None"}, {"name": "attention_mask", "val": " = None"}, {"name": "labels", "val": " = None"}, {"name": "position_ids", "val": " = None"}, {"name": "head_mask", "val": " = None"}, {"name": "inputs_embeds", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "return_dict", "val": " = None"}]</parameters><paramsdesc>[{"name": "input_ids", "description": "- **input_ids** (`torch.LongTensor` of shape `(batch_size, num_choices, sequence_length)`) -- Indices of input sequence tokens in the vocabulary. Indices can be obtained using [RobertaTokenizer](/docs/transformers/master/en/model_doc/roberta#transformers.RobertaTokenizer). See [transformers.PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.__call__) for details. [What are input IDs?](../glossary#input-ids)", "anchor": "transformers.RobertaForMultipleChoice.forward.input_ids"}, {"name": "attention_mask", "description": "- **attention_mask** (`torch.FloatTensor` of shape `(batch_size, num_choices, sequence_length)`, _optional_) -- Mask to avoid performing attention on padding token indices. Mask values selected in `[0, 1]`: ", "anchor": "transformers.RobertaForMultipleChoice.forward.attention_mask"}, {"name": "not masked", "description": " - 1 for tokens that are **not masked**,", "anchor": "transformers.RobertaForMultipleChoice.forward.not masked"}, {"name": "masked", "description": " - 0 for tokens that are **masked**. [What are attention masks?](../glossary#attention-mask)", "anchor": "transformers.RobertaForMultipleChoice.forward.masked"}, {"name": "token_type_ids", "description": "- **token_type_ids** (`torch.LongTensor` of shape `(batch_size, num_choices, sequence_length)`, _optional_) -- Segment token indices to indicate first and second portions of the inputs. Indices are selected in `[0, 1]`: - 0 corresponds to a _sentence A_ token, - 1 corresponds to a _sentence B_ token. [What are token type IDs?](../glossary#token-type-ids)", "anchor": "transformers.RobertaForMultipleChoice.forward.token_type_ids"}, {"name": "position_ids", "description": "- **position_ids** (`torch.LongTensor` of shape `(batch_size, num_choices, sequence_length)`, _optional_) -- Indices of positions of each input sequence tokens in the position embeddings. Selected in the range `[0, config.max_position_embeddings - 1]`. [What are position IDs?](../glossary#position-ids)", "anchor": "transformers.RobertaForMultipleChoice.forward.position_ids"}, {"name": "head_mask", "description": "- **head_mask** (`torch.FloatTensor` of shape `(num_heads,)` or `(num_layers, num_heads)`, _optional_) -- Mask to nullify selected heads of the self-attention modules. Mask values selected in `[0, 1]`: ", "anchor": "transformers.RobertaForMultipleChoice.forward.head_mask"}, {"name": "not masked", "description": " - 1 indicates the head is **not masked**,", "anchor": "transformers.RobertaForMultipleChoice.forward.not masked"}, {"name": "masked", "description": " - 0 indicates the head is **masked**. ", "anchor": "transformers.RobertaForMultipleChoice.forward.masked"}, {"name": "inputs_embeds", "description": "- **inputs_embeds** (`torch.FloatTensor` of shape `(batch_size, num_choices, sequence_length, hidden_size)`, _optional_) -- Optionally, instead of passing `input_ids` you can choose to directly pass an embedded representation. This is useful if you want more control over how to convert `input_ids` indices into associated vectors than the model's internal embedding lookup matrix.", "anchor": "transformers.RobertaForMultipleChoice.forward.inputs_embeds"}, {"name": "output_attentions", "description": "- **output_attentions** (`bool`, _optional_) -- Whether or not to return the attentions tensors of all attention layers. See `attentions` under returned tensors for more detail.", "anchor": "transformers.RobertaForMultipleChoice.forward.output_attentions"}, {"name": "output_hidden_states", "description": "- **output_hidden_states** (`bool`, _optional_) -- Whether or not to return the hidden states of all layers. See `hidden_states` under returned tensors for more detail.", "anchor": "transformers.RobertaForMultipleChoice.forward.output_hidden_states"}, {"name": "return_dict", "description": "- **return_dict** (`bool`, _optional_) -- Whether or not to return a [ModelOutput](/docs/transformers/master/en/main_classes/output#transformers.file_utils.ModelOutput) instead of a plain tuple. ", "anchor": "transformers.RobertaForMultipleChoice.forward.return_dict"}, {"name": "labels", "description": "- **labels** (`torch.LongTensor` of shape `(batch_size,)`, _optional_) -- Labels for computing the multiple choice classification loss. Indices should be in `[0, ..., num_choices-1]` where `num_choices` is the size of the second dimension of the input tensors. (See `input_ids` above)", "anchor": "transformers.RobertaForMultipleChoice.forward.labels"}]</paramsdesc><rettype>[MultipleChoiceModelOutput](/docs/transformers/master/en/main_classes/output#transformers.modeling_outputs.MultipleChoiceModelOutput) or `tuple(torch.FloatTensor)`</rettype><retdesc>A [MultipleChoiceModelOutput](/docs/transformers/master/en/main_classes/output#transformers.modeling_outputs.MultipleChoiceModelOutput) or a tuple of
+`torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising
+various elements depending on the configuration ([RobertaConfig](/docs/transformers/master/en/model_doc/roberta#transformers.RobertaConfig)) and inputs.
+
+- **loss** (`torch.FloatTensor` of shape _(1,)_, _optional_, returned when `labels` is provided) -- Classification loss.
+- **logits** (`torch.FloatTensor` of shape `(batch_size, num_choices)`) -- _num_choices_ is the second dimension of the input tensors. (see _input_ids_ above).
+
+  Classification scores (before SoftMax).
+- **hidden_states** (`tuple(torch.FloatTensor)`, _optional_, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer)
+  of shape `(batch_size, sequence_length, hidden_size)`.
+
+  Hidden-states of the model at the output of each layer plus the initial embedding outputs.
+- **attentions** (`tuple(torch.FloatTensor)`, _optional_, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+
+  Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
+  heads.</retdesc></docstring>
+The [RobertaForMultipleChoice](/docs/transformers/master/en/model_doc/roberta#transformers.RobertaForMultipleChoice) forward method, overrides the `__call__` special method.
+
+<Tip>
+
+Although the recipe for forward pass needs to be defined within this function, one should call the
+`Module` instance afterwards instead of this since the former takes care of running the pre and post
+processing steps while the latter silently ignores them.
+
+</Tip>
+
+
+
+
+
+
+
+Example:
+
+```python
+>>> from transformers import RobertaTokenizer, RobertaForMultipleChoice
+>>> import torch
+
+>>> tokenizer = RobertaTokenizer.from_pretrained('roberta-base')
+>>> model = RobertaForMultipleChoice.from_pretrained('roberta-base')
+
+>>> prompt = "In Italy, pizza served in formal settings, such as at a restaurant, is presented unsliced."
+>>> choice0 = "It is eaten with a fork and a knife."
+>>> choice1 = "It is eaten while held in the hand."
+>>> labels = torch.tensor(0).unsqueeze(0)  # choice0 is correct (according to Wikipedia ;)), batch size 1
+
+>>> encoding = tokenizer([prompt, prompt], [choice0, choice1], return_tensors='pt', padding=True)
+>>> outputs = model(**&amp;lcub;k: v.unsqueeze(0) for k,v in encoding.items()}, labels=labels)  # batch size is 1
+
+>>> # the linear classifier still needs to be trained
+>>> loss = outputs.loss
+>>> logits = outputs.logits
+```
+
+
+</div></div>
+
+<h2 id="transformers.XLMRobertaForTokenClassification">XLMRobertaForTokenClassification</h2>
+
+<div class="docstring">
+
+<docstring><name>"class transformers.XLMRobertaForTokenClassification"</name><anchor>"transformers.XLMRobertaForTokenClassification"</anchor><source>"https://github.com/huggingface/transformers/blob/master/src/transformers/models/xlm_roberta/modeling_xlm_roberta.py#L141"</source><parameters>[{"name": "config", "val": ""}]</parameters><paramsdesc>[{"name": "config", "description": "- **config** ([XLMRobertaConfig](/docs/transformers/master/en/model_doc/xlmroberta#transformers.XLMRobertaConfig)) -- Model configuration class with all the parameters of the model. Initializing with a config file does not load the weights associated with the model, only the configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel.from_pretrained) method to load the model weights.", "anchor": "transformers.XLMRobertaForTokenClassification.config"}]</paramsdesc></docstring>
+
+XLM-RoBERTa Model with a token classification head on top (a linear layer on top of the hidden-states output) e.g.
+for Named-Entity-Recognition (NER) tasks.
+
+
+This model inherits from [PreTrainedModel](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel). Check the superclass documentation for the generic
+methods the library implements for all its model (such as downloading or saving, resizing the input embeddings,
+pruning heads etc.)
+
+This model is also a PyTorch [torch.nn.Module](https://pytorch.org/docs/stable/nn.html#torch.nn.Module)
+subclass. Use it as a regular PyTorch Module and refer to the PyTorch documentation for all matter related to
+general usage and behavior.
+
+
+
+This class overrides [RobertaForTokenClassification](/docs/transformers/master/en/model_doc/roberta#transformers.RobertaForTokenClassification). Please check the superclass for the
+appropriate documentation alongside usage examples.
+
+
+
+<div class="docstring">
+<docstring><name>"forward"</name><anchor>"transformers.RobertaForTokenClassification.forward"</anchor><source>"https://github.com/huggingface/transformers/blob/master/src/transformers/models/roberta/modeling_roberta.py#L1373"</source><parameters>[{"name": "input_ids", "val": " = None"}, {"name": "attention_mask", "val": " = None"}, {"name": "token_type_ids", "val": " = None"}, {"name": "position_ids", "val": " = None"}, {"name": "head_mask", "val": " = None"}, {"name": "inputs_embeds", "val": " = None"}, {"name": "labels", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "return_dict", "val": " = None"}]</parameters><paramsdesc>[{"name": "input_ids", "description": "- **input_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`) -- Indices of input sequence tokens in the vocabulary. Indices can be obtained using [RobertaTokenizer](/docs/transformers/master/en/model_doc/roberta#transformers.RobertaTokenizer). See [transformers.PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.__call__) for details. [What are input IDs?](../glossary#input-ids)", "anchor": "transformers.RobertaForTokenClassification.forward.input_ids"}, {"name": "attention_mask", "description": "- **attention_mask** (`torch.FloatTensor` of shape `(batch_size, sequence_length)`, _optional_) -- Mask to avoid performing attention on padding token indices. Mask values selected in `[0, 1]`: ", "anchor": "transformers.RobertaForTokenClassification.forward.attention_mask"}, {"name": "not masked", "description": " - 1 for tokens that are **not masked**,", "anchor": "transformers.RobertaForTokenClassification.forward.not masked"}, {"name": "masked", "description": " - 0 for tokens that are **masked**. [What are attention masks?](../glossary#attention-mask)", "anchor": "transformers.RobertaForTokenClassification.forward.masked"}, {"name": "token_type_ids", "description": "- **token_type_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`, _optional_) -- Segment token indices to indicate first and second portions of the inputs. Indices are selected in `[0, 1]`: - 0 corresponds to a _sentence A_ token, - 1 corresponds to a _sentence B_ token. [What are token type IDs?](../glossary#token-type-ids)", "anchor": "transformers.RobertaForTokenClassification.forward.token_type_ids"}, {"name": "position_ids", "description": "- **position_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`, _optional_) -- Indices of positions of each input sequence tokens in the position embeddings. Selected in the range `[0, config.max_position_embeddings - 1]`. [What are position IDs?](../glossary#position-ids)", "anchor": "transformers.RobertaForTokenClassification.forward.position_ids"}, {"name": "head_mask", "description": "- **head_mask** (`torch.FloatTensor` of shape `(num_heads,)` or `(num_layers, num_heads)`, _optional_) -- Mask to nullify selected heads of the self-attention modules. Mask values selected in `[0, 1]`: ", "anchor": "transformers.RobertaForTokenClassification.forward.head_mask"}, {"name": "not masked", "description": " - 1 indicates the head is **not masked**,", "anchor": "transformers.RobertaForTokenClassification.forward.not masked"}, {"name": "masked", "description": " - 0 indicates the head is **masked**. ", "anchor": "transformers.RobertaForTokenClassification.forward.masked"}, {"name": "inputs_embeds", "description": "- **inputs_embeds** (`torch.FloatTensor` of shape `(batch_size, sequence_length, hidden_size)`, _optional_) -- Optionally, instead of passing `input_ids` you can choose to directly pass an embedded representation. This is useful if you want more control over how to convert `input_ids` indices into associated vectors than the model's internal embedding lookup matrix.", "anchor": "transformers.RobertaForTokenClassification.forward.inputs_embeds"}, {"name": "output_attentions", "description": "- **output_attentions** (`bool`, _optional_) -- Whether or not to return the attentions tensors of all attention layers. See `attentions` under returned tensors for more detail.", "anchor": "transformers.RobertaForTokenClassification.forward.output_attentions"}, {"name": "output_hidden_states", "description": "- **output_hidden_states** (`bool`, _optional_) -- Whether or not to return the hidden states of all layers. See `hidden_states` under returned tensors for more detail.", "anchor": "transformers.RobertaForTokenClassification.forward.output_hidden_states"}, {"name": "return_dict", "description": "- **return_dict** (`bool`, _optional_) -- Whether or not to return a [ModelOutput](/docs/transformers/master/en/main_classes/output#transformers.file_utils.ModelOutput) instead of a plain tuple. ", "anchor": "transformers.RobertaForTokenClassification.forward.return_dict"}, {"name": "labels", "description": "- **labels** (`torch.LongTensor` of shape `(batch_size, sequence_length)`, _optional_) -- Labels for computing the token classification loss. Indices should be in `[0, ..., config.num_labels - 1]`.", "anchor": "transformers.RobertaForTokenClassification.forward.labels"}]</paramsdesc><rettype>[TokenClassifierOutput](/docs/transformers/master/en/main_classes/output#transformers.modeling_outputs.TokenClassifierOutput) or `tuple(torch.FloatTensor)`</rettype><retdesc>A [TokenClassifierOutput](/docs/transformers/master/en/main_classes/output#transformers.modeling_outputs.TokenClassifierOutput) or a tuple of
+`torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising
+various elements depending on the configuration ([RobertaConfig](/docs/transformers/master/en/model_doc/roberta#transformers.RobertaConfig)) and inputs.
+
+- **loss** (`torch.FloatTensor` of shape `(1,)`, _optional_, returned when `labels` is provided)  -- Classification loss.
+- **logits** (`torch.FloatTensor` of shape `(batch_size, sequence_length, config.num_labels)`) -- Classification scores (before SoftMax).
+- **hidden_states** (`tuple(torch.FloatTensor)`, _optional_, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer)
+  of shape `(batch_size, sequence_length, hidden_size)`.
+
+  Hidden-states of the model at the output of each layer plus the initial embedding outputs.
+- **attentions** (`tuple(torch.FloatTensor)`, _optional_, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+
+  Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
+  heads.</retdesc></docstring>
+The [RobertaForTokenClassification](/docs/transformers/master/en/model_doc/roberta#transformers.RobertaForTokenClassification) forward method, overrides the `__call__` special method.
+
+<Tip>
+
+Although the recipe for forward pass needs to be defined within this function, one should call the
+`Module` instance afterwards instead of this since the former takes care of running the pre and post
+processing steps while the latter silently ignores them.
+
+</Tip>
+
+
+
+
+
+
+
+Example:
+
+```python
+>>> from transformers import RobertaTokenizer, RobertaForTokenClassification
+>>> import torch
+
+>>> tokenizer = RobertaTokenizer.from_pretrained('roberta-base')
+>>> model = RobertaForTokenClassification.from_pretrained('roberta-base')
+
+>>> inputs = tokenizer("Hello, my dog is cute", return_tensors="pt")
+>>> labels = torch.tensor([1] * inputs["input_ids"].size(1)).unsqueeze(0)  # Batch size 1
+
+>>> outputs = model(**inputs, labels=labels)
+>>> loss = outputs.loss
+>>> logits = outputs.logits
+```
+
+
+</div></div>
+
+<h2 id="transformers.XLMRobertaForQuestionAnswering">XLMRobertaForQuestionAnswering</h2>
+
+<div class="docstring">
+
+<docstring><name>"class transformers.XLMRobertaForQuestionAnswering"</name><anchor>"transformers.XLMRobertaForQuestionAnswering"</anchor><source>"https://github.com/huggingface/transformers/blob/master/src/transformers/models/xlm_roberta/modeling_xlm_roberta.py#L157"</source><parameters>[{"name": "config", "val": ""}]</parameters><paramsdesc>[{"name": "config", "description": "- **config** ([XLMRobertaConfig](/docs/transformers/master/en/model_doc/xlmroberta#transformers.XLMRobertaConfig)) -- Model configuration class with all the parameters of the model. Initializing with a config file does not load the weights associated with the model, only the configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel.from_pretrained) method to load the model weights.", "anchor": "transformers.XLMRobertaForQuestionAnswering.config"}]</paramsdesc></docstring>
+
+XLM-RoBERTa Model with a span classification head on top for extractive question-answering tasks like SQuAD (a
+linear layers on top of the hidden-states output to compute _span start logits_ and _span end logits_).
+
+
+This model inherits from [PreTrainedModel](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel). Check the superclass documentation for the generic
+methods the library implements for all its model (such as downloading or saving, resizing the input embeddings,
+pruning heads etc.)
+
+This model is also a PyTorch [torch.nn.Module](https://pytorch.org/docs/stable/nn.html#torch.nn.Module)
+subclass. Use it as a regular PyTorch Module and refer to the PyTorch documentation for all matter related to
+general usage and behavior.
+
+
+
+This class overrides [RobertaForQuestionAnswering](/docs/transformers/master/en/model_doc/roberta#transformers.RobertaForQuestionAnswering). Please check the superclass for the
+appropriate documentation alongside usage examples.
+
+
+
+<div class="docstring">
+<docstring><name>"forward"</name><anchor>"transformers.RobertaForQuestionAnswering.forward"</anchor><source>"https://github.com/huggingface/transformers/blob/master/src/transformers/models/roberta/modeling_roberta.py#L1486"</source><parameters>[{"name": "input_ids", "val": " = None"}, {"name": "attention_mask", "val": " = None"}, {"name": "token_type_ids", "val": " = None"}, {"name": "position_ids", "val": " = None"}, {"name": "head_mask", "val": " = None"}, {"name": "inputs_embeds", "val": " = None"}, {"name": "start_positions", "val": " = None"}, {"name": "end_positions", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "return_dict", "val": " = None"}]</parameters><paramsdesc>[{"name": "input_ids", "description": "- **input_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`) -- Indices of input sequence tokens in the vocabulary. Indices can be obtained using [RobertaTokenizer](/docs/transformers/master/en/model_doc/roberta#transformers.RobertaTokenizer). See [transformers.PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.encode) and [transformers.PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.__call__) for details. [What are input IDs?](../glossary#input-ids)", "anchor": "transformers.RobertaForQuestionAnswering.forward.input_ids"}, {"name": "attention_mask", "description": "- **attention_mask** (`torch.FloatTensor` of shape `(batch_size, sequence_length)`, _optional_) -- Mask to avoid performing attention on padding token indices. Mask values selected in `[0, 1]`: ", "anchor": "transformers.RobertaForQuestionAnswering.forward.attention_mask"}, {"name": "not masked", "description": " - 1 for tokens that are **not masked**,", "anchor": "transformers.RobertaForQuestionAnswering.forward.not masked"}, {"name": "masked", "description": " - 0 for tokens that are **masked**. [What are attention masks?](../glossary#attention-mask)", "anchor": "transformers.RobertaForQuestionAnswering.forward.masked"}, {"name": "token_type_ids", "description": "- **token_type_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`, _optional_) -- Segment token indices to indicate first and second portions of the inputs. Indices are selected in `[0, 1]`: - 0 corresponds to a _sentence A_ token, - 1 corresponds to a _sentence B_ token. [What are token type IDs?](../glossary#token-type-ids)", "anchor": "transformers.RobertaForQuestionAnswering.forward.token_type_ids"}, {"name": "position_ids", "description": "- **position_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`, _optional_) -- Indices of positions of each input sequence tokens in the position embeddings. Selected in the range `[0, config.max_position_embeddings - 1]`. [What are position IDs?](../glossary#position-ids)", "anchor": "transformers.RobertaForQuestionAnswering.forward.position_ids"}, {"name": "head_mask", "description": "- **head_mask** (`torch.FloatTensor` of shape `(num_heads,)` or `(num_layers, num_heads)`, _optional_) -- Mask to nullify selected heads of the self-attention modules. Mask values selected in `[0, 1]`: ", "anchor": "transformers.RobertaForQuestionAnswering.forward.head_mask"}, {"name": "not masked", "description": " - 1 indicates the head is **not masked**,", "anchor": "transformers.RobertaForQuestionAnswering.forward.not masked"}, {"name": "masked", "description": " - 0 indicates the head is **masked**. ", "anchor": "transformers.RobertaForQuestionAnswering.forward.masked"}, {"name": "inputs_embeds", "description": "- **inputs_embeds** (`torch.FloatTensor` of shape `(batch_size, sequence_length, hidden_size)`, _optional_) -- Optionally, instead of passing `input_ids` you can choose to directly pass an embedded representation. This is useful if you want more control over how to convert `input_ids` indices into associated vectors than the model's internal embedding lookup matrix.", "anchor": "transformers.RobertaForQuestionAnswering.forward.inputs_embeds"}, {"name": "output_attentions", "description": "- **output_attentions** (`bool`, _optional_) -- Whether or not to return the attentions tensors of all attention layers. See `attentions` under returned tensors for more detail.", "anchor": "transformers.RobertaForQuestionAnswering.forward.output_attentions"}, {"name": "output_hidden_states", "description": "- **output_hidden_states** (`bool`, _optional_) -- Whether or not to return the hidden states of all layers. See `hidden_states` under returned tensors for more detail.", "anchor": "transformers.RobertaForQuestionAnswering.forward.output_hidden_states"}, {"name": "return_dict", "description": "- **return_dict** (`bool`, _optional_) -- Whether or not to return a [ModelOutput](/docs/transformers/master/en/main_classes/output#transformers.file_utils.ModelOutput) instead of a plain tuple. ", "anchor": "transformers.RobertaForQuestionAnswering.forward.return_dict"}, {"name": "start_positions", "description": "- **start_positions** (`torch.LongTensor` of shape `(batch_size,)`, _optional_) -- Labels for position (index) of the start of the labelled span for computing the token classification loss. Positions are clamped to the length of the sequence (`sequence_length`). Position outside of the sequence are not taken into account for computing the loss.", "anchor": "transformers.RobertaForQuestionAnswering.forward.start_positions"}, {"name": "end_positions", "description": "- **end_positions** (`torch.LongTensor` of shape `(batch_size,)`, _optional_) -- Labels for position (index) of the end of the labelled span for computing the token classification loss. Positions are clamped to the length of the sequence (`sequence_length`). Position outside of the sequence are not taken into account for computing the loss.", "anchor": "transformers.RobertaForQuestionAnswering.forward.end_positions"}]</paramsdesc><rettype>[QuestionAnsweringModelOutput](/docs/transformers/master/en/main_classes/output#transformers.modeling_outputs.QuestionAnsweringModelOutput) or `tuple(torch.FloatTensor)`</rettype><retdesc>A [QuestionAnsweringModelOutput](/docs/transformers/master/en/main_classes/output#transformers.modeling_outputs.QuestionAnsweringModelOutput) or a tuple of
+`torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising
+various elements depending on the configuration ([RobertaConfig](/docs/transformers/master/en/model_doc/roberta#transformers.RobertaConfig)) and inputs.
+
+- **loss** (`torch.FloatTensor` of shape `(1,)`, _optional_, returned when `labels` is provided) -- Total span extraction loss is the sum of a Cross-Entropy for the start and end positions.
+- **start_logits** (`torch.FloatTensor` of shape `(batch_size, sequence_length)`) -- Span-start scores (before SoftMax).
+- **end_logits** (`torch.FloatTensor` of shape `(batch_size, sequence_length)`) -- Span-end scores (before SoftMax).
+- **hidden_states** (`tuple(torch.FloatTensor)`, _optional_, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer)
+  of shape `(batch_size, sequence_length, hidden_size)`.
+
+  Hidden-states of the model at the output of each layer plus the initial embedding outputs.
+- **attentions** (`tuple(torch.FloatTensor)`, _optional_, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+
+  Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
+  heads.</retdesc></docstring>
+The [RobertaForQuestionAnswering](/docs/transformers/master/en/model_doc/roberta#transformers.RobertaForQuestionAnswering) forward method, overrides the `__call__` special method.
+
+<Tip>
+
+Although the recipe for forward pass needs to be defined within this function, one should call the
+`Module` instance afterwards instead of this since the former takes care of running the pre and post
+processing steps while the latter silently ignores them.
+
+</Tip>
+
+
+
+
+
+
+
+Example:
+
+```python
+>>> from transformers import RobertaTokenizer, RobertaForQuestionAnswering
+>>> import torch
+
+>>> tokenizer = RobertaTokenizer.from_pretrained('roberta-base')
+>>> model = RobertaForQuestionAnswering.from_pretrained('roberta-base')
+
+>>> question, text = "Who was Jim Henson?", "Jim Henson was a nice puppet"
+>>> inputs = tokenizer(question, text, return_tensors='pt')
+>>> start_positions = torch.tensor([1])
+>>> end_positions = torch.tensor([3])
+
+>>> outputs = model(**inputs, start_positions=start_positions, end_positions=end_positions)
+>>> loss = outputs.loss
+>>> start_scores = outputs.start_logits
+>>> end_scores = outputs.end_logits
+```
+
+
+</div></div>
+
+<h2 id="transformers.TFXLMRobertaModel">TFXLMRobertaModel</h2>
+
+<div class="docstring">
+
+<docstring><name>"class transformers.TFXLMRobertaModel"</name><anchor>"transformers.TFXLMRobertaModel"</anchor><source>"https://github.com/huggingface/transformers/blob/master/src/transformers/models/xlm_roberta/modeling_tf_xlm_roberta.py#L80"</source><parameters>[{"name": "*args", "val": ""}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>[{"name": "config", "description": "- **config** ([XLMRobertaConfig](/docs/transformers/master/en/model_doc/xlmroberta#transformers.XLMRobertaConfig)) -- Model configuration class with all the parameters of the model. Initializing with a config file does not load the weights associated with the model, only the configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel.from_pretrained) method to load the model weights.", "anchor": "transformers.TFXLMRobertaModel.config"}]</paramsdesc></docstring>
+The bare XLM-RoBERTa Model transformer outputting raw hidden-states without any specific head on top.
+
+This model inherits from [TFPreTrainedModel](/docs/transformers/master/en/main_classes/model#transformers.TFPreTrainedModel). Check the superclass documentation for the
+generic methods the library implements for all its model (such as downloading or saving, resizing the input
+embeddings, pruning heads etc.)
+
+This model is also a [tf.keras.Model](https://www.tensorflow.org/api_docs/python/tf/keras/Model) subclass. Use
+it as a regular TF 2.0 Keras Model and refer to the TF 2.0 documentation for all matter related to general usage
+and behavior.
+
+<Tip>
+
+TF 2.0 models accepts two formats as inputs:
+
+- having all inputs as keyword arguments (like PyTorch models), or
+- having all inputs as a list, tuple or dict in the first positional arguments.
+
+This second option is useful when using `tf.keras.Model.fit` method which currently requires having all
+the tensors in the first argument of the model call function: `model(inputs)`.
+
+If you choose this second option, there are three possibilities you can use to gather all the input Tensors in
+the first positional argument :
+
+- a single Tensor with `input_ids` only and nothing else: `model(inputs_ids)`
+- a list of varying length with one or several input Tensors IN THE ORDER given in the docstring:
+  `model([input_ids, attention_mask])` or `model([input_ids, attention_mask, token_type_ids])`
+- a dictionary with one or several input Tensors associated to the input names given in the docstring:
+  `model(&amp;lcub;"input_ids": input_ids, "token_type_ids": token_type_ids})`
+
+</Tip>
+
+
+
+This class overrides [TFRobertaModel](/docs/transformers/master/en/model_doc/roberta#transformers.TFRobertaModel). Please check the superclass for the appropriate
+documentation alongside usage examples.
+
+
+
+<div class="docstring">
+<docstring><name>"call"</name><anchor>"transformers.TFRobertaModel.call"</anchor><source>"https://github.com/huggingface/transformers/blob/master/src/transformers/models/roberta/modeling_tf_roberta.py#L934"</source><parameters>[{"name": "input_ids", "val": " = None"}, {"name": "attention_mask", "val": " = None"}, {"name": "token_type_ids", "val": " = None"}, {"name": "position_ids", "val": " = None"}, {"name": "head_mask", "val": " = None"}, {"name": "inputs_embeds", "val": " = None"}, {"name": "encoder_hidden_states", "val": " = None"}, {"name": "encoder_attention_mask", "val": " = None"}, {"name": "past_key_values", "val": " = None"}, {"name": "use_cache", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "return_dict", "val": " = None"}, {"name": "training", "val": " = False"}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>[{"name": "input_ids", "description": "- **input_ids** (`Numpy array` or `tf.Tensor` of shape `(batch_size, sequence_length)`) -- Indices of input sequence tokens in the vocabulary. Indices can be obtained using [RobertaTokenizer](/docs/transformers/master/en/model_doc/roberta#transformers.RobertaTokenizer). See [transformers.PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.__call__) and [transformers.PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.encode) for details. [What are input IDs?](../glossary#input-ids)", "anchor": "transformers.TFRobertaModel.call.input_ids"}, {"name": "attention_mask", "description": "- **attention_mask** (`Numpy array` or `tf.Tensor` of shape `(batch_size, sequence_length)`, _optional_) -- Mask to avoid performing attention on padding token indices. Mask values selected in `[0, 1]`: ", "anchor": "transformers.TFRobertaModel.call.attention_mask"}, {"name": "not masked", "description": " - 1 for tokens that are **not masked**,", "anchor": "transformers.TFRobertaModel.call.not masked"}, {"name": "masked", "description": " - 0 for tokens that are **masked**. [What are attention masks?](../glossary#attention-mask)", "anchor": "transformers.TFRobertaModel.call.masked"}, {"name": "token_type_ids", "description": "- **token_type_ids** (`Numpy array` or `tf.Tensor` of shape `(batch_size, sequence_length)`, _optional_) -- Segment token indices to indicate first and second portions of the inputs. Indices are selected in `[0, 1]`: - 0 corresponds to a _sentence A_ token, - 1 corresponds to a _sentence B_ token. [What are token type IDs?](../glossary#token-type-ids)", "anchor": "transformers.TFRobertaModel.call.token_type_ids"}, {"name": "position_ids", "description": "- **position_ids** (`Numpy array` or `tf.Tensor` of shape `(batch_size, sequence_length)`, _optional_) -- Indices of positions of each input sequence tokens in the position embeddings. Selected in the range `[0, config.max_position_embeddings - 1]`. [What are position IDs?](../glossary#position-ids)", "anchor": "transformers.TFRobertaModel.call.position_ids"}, {"name": "head_mask", "description": "- **head_mask** (`Numpy array` or `tf.Tensor` of shape `(num_heads,)` or `(num_layers, num_heads)`, _optional_) -- Mask to nullify selected heads of the self-attention modules. Mask values selected in `[0, 1]`: ", "anchor": "transformers.TFRobertaModel.call.head_mask"}, {"name": "not masked", "description": " - 1 indicates the head is **not masked**,", "anchor": "transformers.TFRobertaModel.call.not masked"}, {"name": "masked", "description": " - 0 indicates the head is **masked**. ", "anchor": "transformers.TFRobertaModel.call.masked"}, {"name": "inputs_embeds", "description": "- **inputs_embeds** (`tf.Tensor` of shape `(batch_size, sequence_length, hidden_size)`, _optional_) -- Optionally, instead of passing `input_ids` you can choose to directly pass an embedded representation. This is useful if you want more control over how to convert `input_ids` indices into associated vectors than the model's internal embedding lookup matrix.", "anchor": "transformers.TFRobertaModel.call.inputs_embeds"}, {"name": "output_attentions", "description": "- **output_attentions** (`bool`, _optional_) -- Whether or not to return the attentions tensors of all attention layers. See `attentions` under returned tensors for more detail. This argument can be used only in eager mode, in graph mode the value in the config will be used instead.", "anchor": "transformers.TFRobertaModel.call.output_attentions"}, {"name": "output_hidden_states", "description": "- **output_hidden_states** (`bool`, _optional_) -- Whether or not to return the hidden states of all layers. See `hidden_states` under returned tensors for more detail. This argument can be used only in eager mode, in graph mode the value in the config will be used instead.", "anchor": "transformers.TFRobertaModel.call.output_hidden_states"}, {"name": "return_dict", "description": "- **return_dict** (`bool`, _optional_) -- Whether or not to return a [ModelOutput](/docs/transformers/master/en/main_classes/output#transformers.file_utils.ModelOutput) instead of a plain tuple. This argument can be used in eager mode, in graph mode the value will always be set to True.", "anchor": "transformers.TFRobertaModel.call.return_dict"}, {"name": "training", "description": "- **training** (`bool`, _optional_, defaults to `False`) -- Whether or not to use the model in training mode (some modules like dropout modules have different behaviors between training and evaluation). ", "anchor": "transformers.TFRobertaModel.call.training"}, {"name": "encoder_hidden_states", "description": "- **encoder_hidden_states** (`tf.Tensor` of shape `(batch_size, sequence_length, hidden_size)`, _optional_) -- Sequence of hidden-states at the output of the last layer of the encoder. Used in the cross-attention if the model is configured as a decoder.", "anchor": "transformers.TFRobertaModel.call.encoder_hidden_states"}, {"name": "encoder_attention_mask", "description": "- **encoder_attention_mask** (`tf.Tensor` of shape `(batch_size, sequence_length)`, _optional_) -- Mask to avoid performing attention on the padding token indices of the encoder input. This mask is used in the cross-attention if the model is configured as a decoder. Mask values selected in `[0, 1]`: ", "anchor": "transformers.TFRobertaModel.call.encoder_attention_mask"}, {"name": "not masked", "description": " - 1 for tokens that are **not masked**,", "anchor": "transformers.TFRobertaModel.call.not masked"}, {"name": "masked", "description": " - 0 for tokens that are **masked**. ", "anchor": "transformers.TFRobertaModel.call.masked"}, {"name": "past_key_values", "description": "- **past_key_values** (`Tuple[Tuple[tf.Tensor]]` of length `config.n_layers`) -- contains precomputed key and value hidden states of the attention blocks. Can be used to speed up decoding. If `past_key_values` are used, the user can optionally input only the last `decoder_input_ids` (those that don't have their past key value states given to this model) of shape `(batch_size, 1)` instead of all `decoder_input_ids` of shape `(batch_size, sequence_length)`.", "anchor": "transformers.TFRobertaModel.call.past_key_values"}, {"name": "use_cache", "description": "- **use_cache** (`bool`, _optional_, defaults to `True`) -- If set to `True`, `past_key_values` key value states are returned and can be used to speed up decoding (see `past_key_values`). Set to `False` during training, `True` during generation", "anchor": "transformers.TFRobertaModel.call.use_cache"}]</paramsdesc><rettype>[TFBaseModelOutputWithPoolingAndCrossAttentions](/docs/transformers/master/en/main_classes/output#transformers.modeling_tf_outputs.TFBaseModelOutputWithPoolingAndCrossAttentions) or `tuple(tf.Tensor)`</rettype><retdesc>A [TFBaseModelOutputWithPoolingAndCrossAttentions](/docs/transformers/master/en/main_classes/output#transformers.modeling_tf_outputs.TFBaseModelOutputWithPoolingAndCrossAttentions) or a tuple of
+`tf.Tensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising various
+elements depending on the configuration ([RobertaConfig](/docs/transformers/master/en/model_doc/roberta#transformers.RobertaConfig)) and inputs.
+
+- **last_hidden_state** (`tf.Tensor` of shape `(batch_size, sequence_length, hidden_size)`) -- Sequence of hidden-states at the output of the last layer of the model.
+- **pooler_output** (`tf.Tensor` of shape `(batch_size, hidden_size)`) -- Last layer hidden-state of the first token of the sequence (classification token) further processed by a
+  Linear layer and a Tanh activation function. The Linear layer weights are trained from the next sentence
+  prediction (classification) objective during pretraining.
+
+  This output is usually *not* a good summary of the semantic content of the input, you're often better with
+  averaging or pooling the sequence of hidden-states for the whole input sequence.
+- **past_key_values** (`List[tf.Tensor]`, _optional_, returned when `use_cache=True` is passed or when `config.use_cache=True`) -- List of `tf.Tensor` of length `config.n_layers`, with each tensor of shape `(2, batch_size, num_heads, sequence_length, embed_size_per_head)`).
+
+  Contains pre-computed hidden-states (key and values in the attention blocks) that can be used (see
+  `past_key_values` input) to speed up sequential decoding.
+- **hidden_states** (`tuple(tf.Tensor)`, _optional_, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `tf.Tensor` (one for the output of the embeddings + one for the output of each layer) of
+  shape `(batch_size, sequence_length, hidden_size)`.
+
+  Hidden-states of the model at the output of each layer plus the initial embedding outputs.
+- **attentions** (`tuple(tf.Tensor)`, _optional_, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `tf.Tensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+
+  Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
+  heads.
+- **cross_attentions** (`tuple(tf.Tensor)`, _optional_, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `tf.Tensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+
+  Attentions weights of the decoder's cross-attention layer, after the attention softmax, used to compute the
+  weighted average in the cross-attention heads.</retdesc></docstring>
+The [TFRobertaModel](/docs/transformers/master/en/model_doc/roberta#transformers.TFRobertaModel) forward method, overrides the `__call__` special method.
+
+<Tip>
+
+Although the recipe for forward pass needs to be defined within this function, one should call the
+`Module` instance afterwards instead of this since the former takes care of running the pre and post
+processing steps while the latter silently ignores them.
+
+</Tip>
+
+
+
+
+
+
+
+Example:
+
+```python
+>>> from transformers import RobertaTokenizer, TFRobertaModel
+>>> import tensorflow as tf
+
+>>> tokenizer = RobertaTokenizer.from_pretrained('roberta-base')
+>>> model = TFRobertaModel.from_pretrained('roberta-base')
+
+>>> inputs = tokenizer("Hello, my dog is cute", return_tensors="tf")
+>>> outputs = model(inputs)
+
+>>> last_hidden_states = outputs.last_hidden_state
+```
+
+
+</div></div>
+
+<h2 id="transformers.TFXLMRobertaForMaskedLM">TFXLMRobertaForMaskedLM</h2>
+
+<div class="docstring">
+
+<docstring><name>"class transformers.TFXLMRobertaForMaskedLM"</name><anchor>"transformers.TFXLMRobertaForMaskedLM"</anchor><source>"https://github.com/huggingface/transformers/blob/master/src/transformers/models/xlm_roberta/modeling_tf_xlm_roberta.py#L106"</source><parameters>[{"name": "*args", "val": ""}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>[{"name": "config", "description": "- **config** ([XLMRobertaConfig](/docs/transformers/master/en/model_doc/xlmroberta#transformers.XLMRobertaConfig)) -- Model configuration class with all the parameters of the model. Initializing with a config file does not load the weights associated with the model, only the configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel.from_pretrained) method to load the model weights.", "anchor": "transformers.TFXLMRobertaForMaskedLM.config"}]</paramsdesc></docstring>
+XLM-RoBERTa Model with a _language modeling_ head on top. 
+
+This model inherits from [TFPreTrainedModel](/docs/transformers/master/en/main_classes/model#transformers.TFPreTrainedModel). Check the superclass documentation for the
+generic methods the library implements for all its model (such as downloading or saving, resizing the input
+embeddings, pruning heads etc.)
+
+This model is also a [tf.keras.Model](https://www.tensorflow.org/api_docs/python/tf/keras/Model) subclass. Use
+it as a regular TF 2.0 Keras Model and refer to the TF 2.0 documentation for all matter related to general usage
+and behavior.
+
+<Tip>
+
+TF 2.0 models accepts two formats as inputs:
+
+- having all inputs as keyword arguments (like PyTorch models), or
+- having all inputs as a list, tuple or dict in the first positional arguments.
+
+This second option is useful when using `tf.keras.Model.fit` method which currently requires having all
+the tensors in the first argument of the model call function: `model(inputs)`.
+
+If you choose this second option, there are three possibilities you can use to gather all the input Tensors in
+the first positional argument :
+
+- a single Tensor with `input_ids` only and nothing else: `model(inputs_ids)`
+- a list of varying length with one or several input Tensors IN THE ORDER given in the docstring:
+  `model([input_ids, attention_mask])` or `model([input_ids, attention_mask, token_type_ids])`
+- a dictionary with one or several input Tensors associated to the input names given in the docstring:
+  `model(&amp;lcub;"input_ids": input_ids, "token_type_ids": token_type_ids})`
+
+</Tip>
+
+
+
+This class overrides [TFRobertaForMaskedLM](/docs/transformers/master/en/model_doc/roberta#transformers.TFRobertaForMaskedLM). Please check the superclass for the appropriate
+documentation alongside usage examples.
+
+
+
+<div class="docstring">
+<docstring><name>"call"</name><anchor>"transformers.TFRobertaForMaskedLM.call"</anchor><source>"https://github.com/huggingface/transformers/blob/master/src/transformers/models/roberta/modeling_tf_roberta.py#L1109"</source><parameters>[{"name": "input_ids", "val": " = None"}, {"name": "attention_mask", "val": " = None"}, {"name": "token_type_ids", "val": " = None"}, {"name": "position_ids", "val": " = None"}, {"name": "head_mask", "val": " = None"}, {"name": "inputs_embeds", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "return_dict", "val": " = None"}, {"name": "labels", "val": " = None"}, {"name": "training", "val": " = False"}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>[{"name": "input_ids", "description": "- **input_ids** (`Numpy array` or `tf.Tensor` of shape `(batch_size, sequence_length)`) -- Indices of input sequence tokens in the vocabulary. Indices can be obtained using [RobertaTokenizer](/docs/transformers/master/en/model_doc/roberta#transformers.RobertaTokenizer). See [transformers.PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.__call__) and [transformers.PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.encode) for details. [What are input IDs?](../glossary#input-ids)", "anchor": "transformers.TFRobertaForMaskedLM.call.input_ids"}, {"name": "attention_mask", "description": "- **attention_mask** (`Numpy array` or `tf.Tensor` of shape `(batch_size, sequence_length)`, _optional_) -- Mask to avoid performing attention on padding token indices. Mask values selected in `[0, 1]`: ", "anchor": "transformers.TFRobertaForMaskedLM.call.attention_mask"}, {"name": "not masked", "description": " - 1 for tokens that are **not masked**,", "anchor": "transformers.TFRobertaForMaskedLM.call.not masked"}, {"name": "masked", "description": " - 0 for tokens that are **masked**. [What are attention masks?](../glossary#attention-mask)", "anchor": "transformers.TFRobertaForMaskedLM.call.masked"}, {"name": "token_type_ids", "description": "- **token_type_ids** (`Numpy array` or `tf.Tensor` of shape `(batch_size, sequence_length)`, _optional_) -- Segment token indices to indicate first and second portions of the inputs. Indices are selected in `[0, 1]`: - 0 corresponds to a _sentence A_ token, - 1 corresponds to a _sentence B_ token. [What are token type IDs?](../glossary#token-type-ids)", "anchor": "transformers.TFRobertaForMaskedLM.call.token_type_ids"}, {"name": "position_ids", "description": "- **position_ids** (`Numpy array` or `tf.Tensor` of shape `(batch_size, sequence_length)`, _optional_) -- Indices of positions of each input sequence tokens in the position embeddings. Selected in the range `[0, config.max_position_embeddings - 1]`. [What are position IDs?](../glossary#position-ids)", "anchor": "transformers.TFRobertaForMaskedLM.call.position_ids"}, {"name": "head_mask", "description": "- **head_mask** (`Numpy array` or `tf.Tensor` of shape `(num_heads,)` or `(num_layers, num_heads)`, _optional_) -- Mask to nullify selected heads of the self-attention modules. Mask values selected in `[0, 1]`: ", "anchor": "transformers.TFRobertaForMaskedLM.call.head_mask"}, {"name": "not masked", "description": " - 1 indicates the head is **not masked**,", "anchor": "transformers.TFRobertaForMaskedLM.call.not masked"}, {"name": "masked", "description": " - 0 indicates the head is **masked**. ", "anchor": "transformers.TFRobertaForMaskedLM.call.masked"}, {"name": "inputs_embeds", "description": "- **inputs_embeds** (`tf.Tensor` of shape `(batch_size, sequence_length, hidden_size)`, _optional_) -- Optionally, instead of passing `input_ids` you can choose to directly pass an embedded representation. This is useful if you want more control over how to convert `input_ids` indices into associated vectors than the model's internal embedding lookup matrix.", "anchor": "transformers.TFRobertaForMaskedLM.call.inputs_embeds"}, {"name": "output_attentions", "description": "- **output_attentions** (`bool`, _optional_) -- Whether or not to return the attentions tensors of all attention layers. See `attentions` under returned tensors for more detail. This argument can be used only in eager mode, in graph mode the value in the config will be used instead.", "anchor": "transformers.TFRobertaForMaskedLM.call.output_attentions"}, {"name": "output_hidden_states", "description": "- **output_hidden_states** (`bool`, _optional_) -- Whether or not to return the hidden states of all layers. See `hidden_states` under returned tensors for more detail. This argument can be used only in eager mode, in graph mode the value in the config will be used instead.", "anchor": "transformers.TFRobertaForMaskedLM.call.output_hidden_states"}, {"name": "return_dict", "description": "- **return_dict** (`bool`, _optional_) -- Whether or not to return a [ModelOutput](/docs/transformers/master/en/main_classes/output#transformers.file_utils.ModelOutput) instead of a plain tuple. This argument can be used in eager mode, in graph mode the value will always be set to True.", "anchor": "transformers.TFRobertaForMaskedLM.call.return_dict"}, {"name": "training", "description": "- **training** (`bool`, _optional_, defaults to `False`) -- Whether or not to use the model in training mode (some modules like dropout modules have different behaviors between training and evaluation). ", "anchor": "transformers.TFRobertaForMaskedLM.call.training"}, {"name": "labels", "description": "- **labels** (`tf.Tensor` of shape `(batch_size, sequence_length)`, _optional_) -- Labels for computing the masked language modeling loss. Indices should be in `[-100, 0, ..., config.vocab_size]` (see `input_ids` docstring) Tokens with indices set to `-100` are ignored (masked), the loss is only computed for the tokens with labels in `[0, ..., config.vocab_size]`", "anchor": "transformers.TFRobertaForMaskedLM.call.labels"}]</paramsdesc><rettype>[TFMaskedLMOutput](/docs/transformers/master/en/main_classes/output#transformers.modeling_tf_outputs.TFMaskedLMOutput) or `tuple(tf.Tensor)`</rettype><retdesc>A [TFMaskedLMOutput](/docs/transformers/master/en/main_classes/output#transformers.modeling_tf_outputs.TFMaskedLMOutput) or a tuple of
+`tf.Tensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising various
+elements depending on the configuration ([RobertaConfig](/docs/transformers/master/en/model_doc/roberta#transformers.RobertaConfig)) and inputs.
+
+- **loss** (`tf.Tensor` of shape `(n,)`, _optional_, where n is the number of non-masked labels, returned when `labels` is provided) -- Masked language modeling (MLM) loss.
+- **logits** (`tf.Tensor` of shape `(batch_size, sequence_length, config.vocab_size)`) -- Prediction scores of the language modeling head (scores for each vocabulary token before SoftMax).
+- **hidden_states** (`tuple(tf.Tensor)`, _optional_, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `tf.Tensor` (one for the output of the embeddings + one for the output of each layer) of
+  shape `(batch_size, sequence_length, hidden_size)`.
+
+  Hidden-states of the model at the output of each layer plus the initial embedding outputs.
+- **attentions** (`tuple(tf.Tensor)`, _optional_, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `tf.Tensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+
+  Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
+  heads.</retdesc></docstring>
+The [TFRobertaForMaskedLM](/docs/transformers/master/en/model_doc/roberta#transformers.TFRobertaForMaskedLM) forward method, overrides the `__call__` special method.
+
+<Tip>
+
+Although the recipe for forward pass needs to be defined within this function, one should call the
+`Module` instance afterwards instead of this since the former takes care of running the pre and post
+processing steps while the latter silently ignores them.
+
+</Tip>
+
+
+
+
+
+
+
+Example:
+
+```python
+>>> from transformers import RobertaTokenizer, TFRobertaForMaskedLM
+>>> import tensorflow as tf
+
+>>> tokenizer = RobertaTokenizer.from_pretrained('roberta-base')
+>>> model = TFRobertaForMaskedLM.from_pretrained('roberta-base')
+
+>>> inputs = tokenizer("The capital of France is [MASK].", return_tensors="tf")
+>>> inputs["labels"] = tokenizer("The capital of France is Paris.", return_tensors="tf")["input_ids"]
+
+>>> outputs = model(inputs)
+>>> loss = outputs.loss
+>>> logits = outputs.logits
+```
+
+
+</div></div>
+
+<h2 id="transformers.TFXLMRobertaForSequenceClassification">TFXLMRobertaForSequenceClassification</h2>
+
+<div class="docstring">
+
+<docstring><name>"class transformers.TFXLMRobertaForSequenceClassification"</name><anchor>"transformers.TFXLMRobertaForSequenceClassification"</anchor><source>"https://github.com/huggingface/transformers/blob/master/src/transformers/models/xlm_roberta/modeling_tf_xlm_roberta.py#L122"</source><parameters>[{"name": "*args", "val": ""}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>[{"name": "config", "description": "- **config** ([XLMRobertaConfig](/docs/transformers/master/en/model_doc/xlmroberta#transformers.XLMRobertaConfig)) -- Model configuration class with all the parameters of the model. Initializing with a config file does not load the weights associated with the model, only the configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel.from_pretrained) method to load the model weights.", "anchor": "transformers.TFXLMRobertaForSequenceClassification.config"}]</paramsdesc></docstring>
+
+XLM-RoBERTa Model transformer with a sequence classification/regression head on top (a linear layer on top of the
+pooled output) e.g. for GLUE tasks.
+
+
+This model inherits from [TFPreTrainedModel](/docs/transformers/master/en/main_classes/model#transformers.TFPreTrainedModel). Check the superclass documentation for the
+generic methods the library implements for all its model (such as downloading or saving, resizing the input
+embeddings, pruning heads etc.)
+
+This model is also a [tf.keras.Model](https://www.tensorflow.org/api_docs/python/tf/keras/Model) subclass. Use
+it as a regular TF 2.0 Keras Model and refer to the TF 2.0 documentation for all matter related to general usage
+and behavior.
+
+<Tip>
+
+TF 2.0 models accepts two formats as inputs:
+
+- having all inputs as keyword arguments (like PyTorch models), or
+- having all inputs as a list, tuple or dict in the first positional arguments.
+
+This second option is useful when using `tf.keras.Model.fit` method which currently requires having all
+the tensors in the first argument of the model call function: `model(inputs)`.
+
+If you choose this second option, there are three possibilities you can use to gather all the input Tensors in
+the first positional argument :
+
+- a single Tensor with `input_ids` only and nothing else: `model(inputs_ids)`
+- a list of varying length with one or several input Tensors IN THE ORDER given in the docstring:
+  `model([input_ids, attention_mask])` or `model([input_ids, attention_mask, token_type_ids])`
+- a dictionary with one or several input Tensors associated to the input names given in the docstring:
+  `model(&amp;lcub;"input_ids": input_ids, "token_type_ids": token_type_ids})`
+
+</Tip>
+
+
+
+This class overrides [TFRobertaForSequenceClassification](/docs/transformers/master/en/model_doc/roberta#transformers.TFRobertaForSequenceClassification). Please check the superclass for the
+appropriate documentation alongside usage examples.
+
+
+
+<div class="docstring">
+<docstring><name>"call"</name><anchor>"transformers.TFRobertaForSequenceClassification.call"</anchor><source>"https://github.com/huggingface/transformers/blob/master/src/transformers/models/roberta/modeling_tf_roberta.py#L1393"</source><parameters>[{"name": "input_ids", "val": " = None"}, {"name": "attention_mask", "val": " = None"}, {"name": "token_type_ids", "val": " = None"}, {"name": "position_ids", "val": " = None"}, {"name": "head_mask", "val": " = None"}, {"name": "inputs_embeds", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "return_dict", "val": " = None"}, {"name": "labels", "val": " = None"}, {"name": "training", "val": " = False"}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>[{"name": "input_ids", "description": "- **input_ids** (`Numpy array` or `tf.Tensor` of shape `(batch_size, sequence_length)`) -- Indices of input sequence tokens in the vocabulary. Indices can be obtained using [RobertaTokenizer](/docs/transformers/master/en/model_doc/roberta#transformers.RobertaTokenizer). See [transformers.PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.__call__) and [transformers.PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.encode) for details. [What are input IDs?](../glossary#input-ids)", "anchor": "transformers.TFRobertaForSequenceClassification.call.input_ids"}, {"name": "attention_mask", "description": "- **attention_mask** (`Numpy array` or `tf.Tensor` of shape `(batch_size, sequence_length)`, _optional_) -- Mask to avoid performing attention on padding token indices. Mask values selected in `[0, 1]`: ", "anchor": "transformers.TFRobertaForSequenceClassification.call.attention_mask"}, {"name": "not masked", "description": " - 1 for tokens that are **not masked**,", "anchor": "transformers.TFRobertaForSequenceClassification.call.not masked"}, {"name": "masked", "description": " - 0 for tokens that are **masked**. [What are attention masks?](../glossary#attention-mask)", "anchor": "transformers.TFRobertaForSequenceClassification.call.masked"}, {"name": "token_type_ids", "description": "- **token_type_ids** (`Numpy array` or `tf.Tensor` of shape `(batch_size, sequence_length)`, _optional_) -- Segment token indices to indicate first and second portions of the inputs. Indices are selected in `[0, 1]`: - 0 corresponds to a _sentence A_ token, - 1 corresponds to a _sentence B_ token. [What are token type IDs?](../glossary#token-type-ids)", "anchor": "transformers.TFRobertaForSequenceClassification.call.token_type_ids"}, {"name": "position_ids", "description": "- **position_ids** (`Numpy array` or `tf.Tensor` of shape `(batch_size, sequence_length)`, _optional_) -- Indices of positions of each input sequence tokens in the position embeddings. Selected in the range `[0, config.max_position_embeddings - 1]`. [What are position IDs?](../glossary#position-ids)", "anchor": "transformers.TFRobertaForSequenceClassification.call.position_ids"}, {"name": "head_mask", "description": "- **head_mask** (`Numpy array` or `tf.Tensor` of shape `(num_heads,)` or `(num_layers, num_heads)`, _optional_) -- Mask to nullify selected heads of the self-attention modules. Mask values selected in `[0, 1]`: ", "anchor": "transformers.TFRobertaForSequenceClassification.call.head_mask"}, {"name": "not masked", "description": " - 1 indicates the head is **not masked**,", "anchor": "transformers.TFRobertaForSequenceClassification.call.not masked"}, {"name": "masked", "description": " - 0 indicates the head is **masked**. ", "anchor": "transformers.TFRobertaForSequenceClassification.call.masked"}, {"name": "inputs_embeds", "description": "- **inputs_embeds** (`tf.Tensor` of shape `(batch_size, sequence_length, hidden_size)`, _optional_) -- Optionally, instead of passing `input_ids` you can choose to directly pass an embedded representation. This is useful if you want more control over how to convert `input_ids` indices into associated vectors than the model's internal embedding lookup matrix.", "anchor": "transformers.TFRobertaForSequenceClassification.call.inputs_embeds"}, {"name": "output_attentions", "description": "- **output_attentions** (`bool`, _optional_) -- Whether or not to return the attentions tensors of all attention layers. See `attentions` under returned tensors for more detail. This argument can be used only in eager mode, in graph mode the value in the config will be used instead.", "anchor": "transformers.TFRobertaForSequenceClassification.call.output_attentions"}, {"name": "output_hidden_states", "description": "- **output_hidden_states** (`bool`, _optional_) -- Whether or not to return the hidden states of all layers. See `hidden_states` under returned tensors for more detail. This argument can be used only in eager mode, in graph mode the value in the config will be used instead.", "anchor": "transformers.TFRobertaForSequenceClassification.call.output_hidden_states"}, {"name": "return_dict", "description": "- **return_dict** (`bool`, _optional_) -- Whether or not to return a [ModelOutput](/docs/transformers/master/en/main_classes/output#transformers.file_utils.ModelOutput) instead of a plain tuple. This argument can be used in eager mode, in graph mode the value will always be set to True.", "anchor": "transformers.TFRobertaForSequenceClassification.call.return_dict"}, {"name": "training", "description": "- **training** (`bool`, _optional_, defaults to `False`) -- Whether or not to use the model in training mode (some modules like dropout modules have different behaviors between training and evaluation). ", "anchor": "transformers.TFRobertaForSequenceClassification.call.training"}, {"name": "labels", "description": "- **labels** (`tf.Tensor` of shape `(batch_size,)`, _optional_) -- Labels for computing the sequence classification/regression loss. Indices should be in `[0, ..., config.num_labels - 1]`. If `config.num_labels == 1` a regression loss is computed (Mean-Square loss), If `config.num_labels > 1` a classification loss is computed (Cross-Entropy).", "anchor": "transformers.TFRobertaForSequenceClassification.call.labels"}]</paramsdesc><rettype>[TFSequenceClassifierOutput](/docs/transformers/master/en/main_classes/output#transformers.modeling_tf_outputs.TFSequenceClassifierOutput) or `tuple(tf.Tensor)`</rettype><retdesc>A [TFSequenceClassifierOutput](/docs/transformers/master/en/main_classes/output#transformers.modeling_tf_outputs.TFSequenceClassifierOutput) or a tuple of
+`tf.Tensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising various
+elements depending on the configuration ([RobertaConfig](/docs/transformers/master/en/model_doc/roberta#transformers.RobertaConfig)) and inputs.
+
+- **loss** (`tf.Tensor` of shape `(batch_size, )`, _optional_, returned when `labels` is provided) -- Classification (or regression if config.num_labels==1) loss.
+- **logits** (`tf.Tensor` of shape `(batch_size, config.num_labels)`) -- Classification (or regression if config.num_labels==1) scores (before SoftMax).
+- **hidden_states** (`tuple(tf.Tensor)`, _optional_, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `tf.Tensor` (one for the output of the embeddings + one for the output of each layer) of
+  shape `(batch_size, sequence_length, hidden_size)`.
+
+  Hidden-states of the model at the output of each layer plus the initial embedding outputs.
+- **attentions** (`tuple(tf.Tensor)`, _optional_, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `tf.Tensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+
+  Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
+  heads.</retdesc></docstring>
+The [TFRobertaForSequenceClassification](/docs/transformers/master/en/model_doc/roberta#transformers.TFRobertaForSequenceClassification) forward method, overrides the `__call__` special method.
+
+<Tip>
+
+Although the recipe for forward pass needs to be defined within this function, one should call the
+`Module` instance afterwards instead of this since the former takes care of running the pre and post
+processing steps while the latter silently ignores them.
+
+</Tip>
+
+
+
+
+
+
+
+Example:
+
+```python
+>>> from transformers import RobertaTokenizer, TFRobertaForSequenceClassification
+>>> import tensorflow as tf
+
+>>> tokenizer = RobertaTokenizer.from_pretrained('roberta-base')
+>>> model = TFRobertaForSequenceClassification.from_pretrained('roberta-base')
+
+>>> inputs = tokenizer("Hello, my dog is cute", return_tensors="tf")
+>>> inputs["labels"] = tf.reshape(tf.constant(1), (-1, 1)) # Batch size 1
+
+>>> outputs = model(inputs)
+>>> loss = outputs.loss
+>>> logits = outputs.logits
+```
+
+
+</div></div>
+
+<h2 id="transformers.TFXLMRobertaForMultipleChoice">TFXLMRobertaForMultipleChoice</h2>
+
+<div class="docstring">
+
+<docstring><name>"class transformers.TFXLMRobertaForMultipleChoice"</name><anchor>"transformers.TFXLMRobertaForMultipleChoice"</anchor><source>"https://github.com/huggingface/transformers/blob/master/src/transformers/models/xlm_roberta/modeling_tf_xlm_roberta.py#L170"</source><parameters>[{"name": "*args", "val": ""}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>[{"name": "config", "description": "- **config** ([XLMRobertaConfig](/docs/transformers/master/en/model_doc/xlmroberta#transformers.XLMRobertaConfig)) -- Model configuration class with all the parameters of the model. Initializing with a config file does not load the weights associated with the model, only the configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel.from_pretrained) method to load the model weights.", "anchor": "transformers.TFXLMRobertaForMultipleChoice.config"}]</paramsdesc></docstring>
+
+Roberta Model with a multiple choice classification head on top (a linear layer on top of the pooled output and a
+softmax) e.g. for RocStories/SWAG tasks.
+
+
+This model inherits from [TFPreTrainedModel](/docs/transformers/master/en/main_classes/model#transformers.TFPreTrainedModel). Check the superclass documentation for the
+generic methods the library implements for all its model (such as downloading or saving, resizing the input
+embeddings, pruning heads etc.)
+
+This model is also a [tf.keras.Model](https://www.tensorflow.org/api_docs/python/tf/keras/Model) subclass. Use
+it as a regular TF 2.0 Keras Model and refer to the TF 2.0 documentation for all matter related to general usage
+and behavior.
+
+<Tip>
+
+TF 2.0 models accepts two formats as inputs:
+
+- having all inputs as keyword arguments (like PyTorch models), or
+- having all inputs as a list, tuple or dict in the first positional arguments.
+
+This second option is useful when using `tf.keras.Model.fit` method which currently requires having all
+the tensors in the first argument of the model call function: `model(inputs)`.
+
+If you choose this second option, there are three possibilities you can use to gather all the input Tensors in
+the first positional argument :
+
+- a single Tensor with `input_ids` only and nothing else: `model(inputs_ids)`
+- a list of varying length with one or several input Tensors IN THE ORDER given in the docstring:
+  `model([input_ids, attention_mask])` or `model([input_ids, attention_mask, token_type_ids])`
+- a dictionary with one or several input Tensors associated to the input names given in the docstring:
+  `model(&amp;lcub;"input_ids": input_ids, "token_type_ids": token_type_ids})`
+
+</Tip>
+
+
+
+This class overrides [TFRobertaForMultipleChoice](/docs/transformers/master/en/model_doc/roberta#transformers.TFRobertaForMultipleChoice). Please check the superclass for the
+appropriate documentation alongside usage examples.
+
+
+
+<div class="docstring">
+<docstring><name>"call"</name><anchor>"transformers.TFRobertaForMultipleChoice.call"</anchor><source>"https://github.com/huggingface/transformers/blob/master/src/transformers/models/roberta/modeling_tf_roberta.py#L1504"</source><parameters>[{"name": "input_ids", "val": " = None"}, {"name": "attention_mask", "val": " = None"}, {"name": "token_type_ids", "val": " = None"}, {"name": "position_ids", "val": " = None"}, {"name": "head_mask", "val": " = None"}, {"name": "inputs_embeds", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "return_dict", "val": " = None"}, {"name": "labels", "val": " = None"}, {"name": "training", "val": " = False"}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>[{"name": "input_ids", "description": "- **input_ids** (`Numpy array` or `tf.Tensor` of shape `(batch_size, num_choices, sequence_length)`) -- Indices of input sequence tokens in the vocabulary. Indices can be obtained using [RobertaTokenizer](/docs/transformers/master/en/model_doc/roberta#transformers.RobertaTokenizer). See [transformers.PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.__call__) and [transformers.PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.encode) for details. [What are input IDs?](../glossary#input-ids)", "anchor": "transformers.TFRobertaForMultipleChoice.call.input_ids"}, {"name": "attention_mask", "description": "- **attention_mask** (`Numpy array` or `tf.Tensor` of shape `(batch_size, num_choices, sequence_length)`, _optional_) -- Mask to avoid performing attention on padding token indices. Mask values selected in `[0, 1]`: ", "anchor": "transformers.TFRobertaForMultipleChoice.call.attention_mask"}, {"name": "not masked", "description": " - 1 for tokens that are **not masked**,", "anchor": "transformers.TFRobertaForMultipleChoice.call.not masked"}, {"name": "masked", "description": " - 0 for tokens that are **masked**. [What are attention masks?](../glossary#attention-mask)", "anchor": "transformers.TFRobertaForMultipleChoice.call.masked"}, {"name": "token_type_ids", "description": "- **token_type_ids** (`Numpy array` or `tf.Tensor` of shape `(batch_size, num_choices, sequence_length)`, _optional_) -- Segment token indices to indicate first and second portions of the inputs. Indices are selected in `[0, 1]`: - 0 corresponds to a _sentence A_ token, - 1 corresponds to a _sentence B_ token. [What are token type IDs?](../glossary#token-type-ids)", "anchor": "transformers.TFRobertaForMultipleChoice.call.token_type_ids"}, {"name": "position_ids", "description": "- **position_ids** (`Numpy array` or `tf.Tensor` of shape `(batch_size, num_choices, sequence_length)`, _optional_) -- Indices of positions of each input sequence tokens in the position embeddings. Selected in the range `[0, config.max_position_embeddings - 1]`. [What are position IDs?](../glossary#position-ids)", "anchor": "transformers.TFRobertaForMultipleChoice.call.position_ids"}, {"name": "head_mask", "description": "- **head_mask** (`Numpy array` or `tf.Tensor` of shape `(num_heads,)` or `(num_layers, num_heads)`, _optional_) -- Mask to nullify selected heads of the self-attention modules. Mask values selected in `[0, 1]`: ", "anchor": "transformers.TFRobertaForMultipleChoice.call.head_mask"}, {"name": "not masked", "description": " - 1 indicates the head is **not masked**,", "anchor": "transformers.TFRobertaForMultipleChoice.call.not masked"}, {"name": "masked", "description": " - 0 indicates the head is **masked**. ", "anchor": "transformers.TFRobertaForMultipleChoice.call.masked"}, {"name": "inputs_embeds", "description": "- **inputs_embeds** (`tf.Tensor` of shape `(batch_size, num_choices, sequence_length, hidden_size)`, _optional_) -- Optionally, instead of passing `input_ids` you can choose to directly pass an embedded representation. This is useful if you want more control over how to convert `input_ids` indices into associated vectors than the model's internal embedding lookup matrix.", "anchor": "transformers.TFRobertaForMultipleChoice.call.inputs_embeds"}, {"name": "output_attentions", "description": "- **output_attentions** (`bool`, _optional_) -- Whether or not to return the attentions tensors of all attention layers. See `attentions` under returned tensors for more detail. This argument can be used only in eager mode, in graph mode the value in the config will be used instead.", "anchor": "transformers.TFRobertaForMultipleChoice.call.output_attentions"}, {"name": "output_hidden_states", "description": "- **output_hidden_states** (`bool`, _optional_) -- Whether or not to return the hidden states of all layers. See `hidden_states` under returned tensors for more detail. This argument can be used only in eager mode, in graph mode the value in the config will be used instead.", "anchor": "transformers.TFRobertaForMultipleChoice.call.output_hidden_states"}, {"name": "return_dict", "description": "- **return_dict** (`bool`, _optional_) -- Whether or not to return a [ModelOutput](/docs/transformers/master/en/main_classes/output#transformers.file_utils.ModelOutput) instead of a plain tuple. This argument can be used in eager mode, in graph mode the value will always be set to True.", "anchor": "transformers.TFRobertaForMultipleChoice.call.return_dict"}, {"name": "training", "description": "- **training** (`bool`, _optional_, defaults to `False`) -- Whether or not to use the model in training mode (some modules like dropout modules have different behaviors between training and evaluation). ", "anchor": "transformers.TFRobertaForMultipleChoice.call.training"}, {"name": "labels", "description": "- **labels** (`tf.Tensor` of shape `(batch_size,)`, _optional_) -- Labels for computing the multiple choice classification loss. Indices should be in `[0, ..., num_choices]` where `num_choices` is the size of the second dimension of the input tensors. (See `input_ids` above)", "anchor": "transformers.TFRobertaForMultipleChoice.call.labels"}]</paramsdesc><rettype>[TFMultipleChoiceModelOutput](/docs/transformers/master/en/main_classes/output#transformers.modeling_tf_outputs.TFMultipleChoiceModelOutput) or `tuple(tf.Tensor)`</rettype><retdesc>A [TFMultipleChoiceModelOutput](/docs/transformers/master/en/main_classes/output#transformers.modeling_tf_outputs.TFMultipleChoiceModelOutput) or a tuple of
+`tf.Tensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising various
+elements depending on the configuration ([RobertaConfig](/docs/transformers/master/en/model_doc/roberta#transformers.RobertaConfig)) and inputs.
+
+- **loss** (`tf.Tensor` of shape _(batch_size, )_, _optional_, returned when `labels` is provided) -- Classification loss.
+- **logits** (`tf.Tensor` of shape `(batch_size, num_choices)`) -- _num_choices_ is the second dimension of the input tensors. (see _input_ids_ above).
+
+  Classification scores (before SoftMax).
+- **hidden_states** (`tuple(tf.Tensor)`, _optional_, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `tf.Tensor` (one for the output of the embeddings + one for the output of each layer) of
+  shape `(batch_size, sequence_length, hidden_size)`.
+
+  Hidden-states of the model at the output of each layer plus the initial embedding outputs.
+- **attentions** (`tuple(tf.Tensor)`, _optional_, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `tf.Tensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+
+  Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
+  heads.</retdesc></docstring>
+The [TFRobertaForMultipleChoice](/docs/transformers/master/en/model_doc/roberta#transformers.TFRobertaForMultipleChoice) forward method, overrides the `__call__` special method.
+
+<Tip>
+
+Although the recipe for forward pass needs to be defined within this function, one should call the
+`Module` instance afterwards instead of this since the former takes care of running the pre and post
+processing steps while the latter silently ignores them.
+
+</Tip>
+
+
+
+
+
+
+
+Example:
+
+```python
+>>> from transformers import RobertaTokenizer, TFRobertaForMultipleChoice
+>>> import tensorflow as tf
+
+>>> tokenizer = RobertaTokenizer.from_pretrained('roberta-base')
+>>> model = TFRobertaForMultipleChoice.from_pretrained('roberta-base')
+
+>>> prompt = "In Italy, pizza served in formal settings, such as at a restaurant, is presented unsliced."
+>>> choice0 = "It is eaten with a fork and a knife."
+>>> choice1 = "It is eaten while held in the hand."
+
+>>> encoding = tokenizer([prompt, prompt], [choice0, choice1], return_tensors='tf', padding=True)
+>>> inputs = &amp;lcub;k: tf.expand_dims(v, 0) for k, v in encoding.items()}
+>>> outputs = model(inputs)  # batch size is 1
+
+>>> # the linear classifier still needs to be trained
+>>> logits = outputs.logits
+```
+
+
+</div></div>
+
+<h2 id="transformers.TFXLMRobertaForTokenClassification">TFXLMRobertaForTokenClassification</h2>
+
+<div class="docstring">
+
+<docstring><name>"class transformers.TFXLMRobertaForTokenClassification"</name><anchor>"transformers.TFXLMRobertaForTokenClassification"</anchor><source>"https://github.com/huggingface/transformers/blob/master/src/transformers/models/xlm_roberta/modeling_tf_xlm_roberta.py#L138"</source><parameters>[{"name": "*args", "val": ""}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>[{"name": "config", "description": "- **config** ([XLMRobertaConfig](/docs/transformers/master/en/model_doc/xlmroberta#transformers.XLMRobertaConfig)) -- Model configuration class with all the parameters of the model. Initializing with a config file does not load the weights associated with the model, only the configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel.from_pretrained) method to load the model weights.", "anchor": "transformers.TFXLMRobertaForTokenClassification.config"}]</paramsdesc></docstring>
+
+XLM-RoBERTa Model with a token classification head on top (a linear layer on top of the hidden-states output) e.g.
+for Named-Entity-Recognition (NER) tasks.
+
+
+This model inherits from [TFPreTrainedModel](/docs/transformers/master/en/main_classes/model#transformers.TFPreTrainedModel). Check the superclass documentation for the
+generic methods the library implements for all its model (such as downloading or saving, resizing the input
+embeddings, pruning heads etc.)
+
+This model is also a [tf.keras.Model](https://www.tensorflow.org/api_docs/python/tf/keras/Model) subclass. Use
+it as a regular TF 2.0 Keras Model and refer to the TF 2.0 documentation for all matter related to general usage
+and behavior.
+
+<Tip>
+
+TF 2.0 models accepts two formats as inputs:
+
+- having all inputs as keyword arguments (like PyTorch models), or
+- having all inputs as a list, tuple or dict in the first positional arguments.
+
+This second option is useful when using `tf.keras.Model.fit` method which currently requires having all
+the tensors in the first argument of the model call function: `model(inputs)`.
+
+If you choose this second option, there are three possibilities you can use to gather all the input Tensors in
+the first positional argument :
+
+- a single Tensor with `input_ids` only and nothing else: `model(inputs_ids)`
+- a list of varying length with one or several input Tensors IN THE ORDER given in the docstring:
+  `model([input_ids, attention_mask])` or `model([input_ids, attention_mask, token_type_ids])`
+- a dictionary with one or several input Tensors associated to the input names given in the docstring:
+  `model(&amp;lcub;"input_ids": input_ids, "token_type_ids": token_type_ids})`
+
+</Tip>
+
+
+
+This class overrides [TFRobertaForTokenClassification](/docs/transformers/master/en/model_doc/roberta#transformers.TFRobertaForTokenClassification). Please check the superclass for the
+appropriate documentation alongside usage examples.
+
+
+
+<div class="docstring">
+<docstring><name>"call"</name><anchor>"transformers.TFRobertaForTokenClassification.call"</anchor><source>"https://github.com/huggingface/transformers/blob/master/src/transformers/models/roberta/modeling_tf_roberta.py#L1642"</source><parameters>[{"name": "input_ids", "val": " = None"}, {"name": "attention_mask", "val": " = None"}, {"name": "token_type_ids", "val": " = None"}, {"name": "position_ids", "val": " = None"}, {"name": "head_mask", "val": " = None"}, {"name": "inputs_embeds", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "return_dict", "val": " = None"}, {"name": "labels", "val": " = None"}, {"name": "training", "val": " = False"}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>[{"name": "input_ids", "description": "- **input_ids** (`Numpy array` or `tf.Tensor` of shape `(batch_size, sequence_length)`) -- Indices of input sequence tokens in the vocabulary. Indices can be obtained using [RobertaTokenizer](/docs/transformers/master/en/model_doc/roberta#transformers.RobertaTokenizer). See [transformers.PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.__call__) and [transformers.PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.encode) for details. [What are input IDs?](../glossary#input-ids)", "anchor": "transformers.TFRobertaForTokenClassification.call.input_ids"}, {"name": "attention_mask", "description": "- **attention_mask** (`Numpy array` or `tf.Tensor` of shape `(batch_size, sequence_length)`, _optional_) -- Mask to avoid performing attention on padding token indices. Mask values selected in `[0, 1]`: ", "anchor": "transformers.TFRobertaForTokenClassification.call.attention_mask"}, {"name": "not masked", "description": " - 1 for tokens that are **not masked**,", "anchor": "transformers.TFRobertaForTokenClassification.call.not masked"}, {"name": "masked", "description": " - 0 for tokens that are **masked**. [What are attention masks?](../glossary#attention-mask)", "anchor": "transformers.TFRobertaForTokenClassification.call.masked"}, {"name": "token_type_ids", "description": "- **token_type_ids** (`Numpy array` or `tf.Tensor` of shape `(batch_size, sequence_length)`, _optional_) -- Segment token indices to indicate first and second portions of the inputs. Indices are selected in `[0, 1]`: - 0 corresponds to a _sentence A_ token, - 1 corresponds to a _sentence B_ token. [What are token type IDs?](../glossary#token-type-ids)", "anchor": "transformers.TFRobertaForTokenClassification.call.token_type_ids"}, {"name": "position_ids", "description": "- **position_ids** (`Numpy array` or `tf.Tensor` of shape `(batch_size, sequence_length)`, _optional_) -- Indices of positions of each input sequence tokens in the position embeddings. Selected in the range `[0, config.max_position_embeddings - 1]`. [What are position IDs?](../glossary#position-ids)", "anchor": "transformers.TFRobertaForTokenClassification.call.position_ids"}, {"name": "head_mask", "description": "- **head_mask** (`Numpy array` or `tf.Tensor` of shape `(num_heads,)` or `(num_layers, num_heads)`, _optional_) -- Mask to nullify selected heads of the self-attention modules. Mask values selected in `[0, 1]`: ", "anchor": "transformers.TFRobertaForTokenClassification.call.head_mask"}, {"name": "not masked", "description": " - 1 indicates the head is **not masked**,", "anchor": "transformers.TFRobertaForTokenClassification.call.not masked"}, {"name": "masked", "description": " - 0 indicates the head is **masked**. ", "anchor": "transformers.TFRobertaForTokenClassification.call.masked"}, {"name": "inputs_embeds", "description": "- **inputs_embeds** (`tf.Tensor` of shape `(batch_size, sequence_length, hidden_size)`, _optional_) -- Optionally, instead of passing `input_ids` you can choose to directly pass an embedded representation. This is useful if you want more control over how to convert `input_ids` indices into associated vectors than the model's internal embedding lookup matrix.", "anchor": "transformers.TFRobertaForTokenClassification.call.inputs_embeds"}, {"name": "output_attentions", "description": "- **output_attentions** (`bool`, _optional_) -- Whether or not to return the attentions tensors of all attention layers. See `attentions` under returned tensors for more detail. This argument can be used only in eager mode, in graph mode the value in the config will be used instead.", "anchor": "transformers.TFRobertaForTokenClassification.call.output_attentions"}, {"name": "output_hidden_states", "description": "- **output_hidden_states** (`bool`, _optional_) -- Whether or not to return the hidden states of all layers. See `hidden_states` under returned tensors for more detail. This argument can be used only in eager mode, in graph mode the value in the config will be used instead.", "anchor": "transformers.TFRobertaForTokenClassification.call.output_hidden_states"}, {"name": "return_dict", "description": "- **return_dict** (`bool`, _optional_) -- Whether or not to return a [ModelOutput](/docs/transformers/master/en/main_classes/output#transformers.file_utils.ModelOutput) instead of a plain tuple. This argument can be used in eager mode, in graph mode the value will always be set to True.", "anchor": "transformers.TFRobertaForTokenClassification.call.return_dict"}, {"name": "training", "description": "- **training** (`bool`, _optional_, defaults to `False`) -- Whether or not to use the model in training mode (some modules like dropout modules have different behaviors between training and evaluation). ", "anchor": "transformers.TFRobertaForTokenClassification.call.training"}, {"name": "labels", "description": "- **labels** (`tf.Tensor` of shape `(batch_size, sequence_length)`, _optional_) -- Labels for computing the token classification loss. Indices should be in `[0, ..., config.num_labels - 1]`.", "anchor": "transformers.TFRobertaForTokenClassification.call.labels"}]</paramsdesc><rettype>[TFTokenClassifierOutput](/docs/transformers/master/en/main_classes/output#transformers.modeling_tf_outputs.TFTokenClassifierOutput) or `tuple(tf.Tensor)`</rettype><retdesc>A [TFTokenClassifierOutput](/docs/transformers/master/en/main_classes/output#transformers.modeling_tf_outputs.TFTokenClassifierOutput) or a tuple of
+`tf.Tensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising various
+elements depending on the configuration ([RobertaConfig](/docs/transformers/master/en/model_doc/roberta#transformers.RobertaConfig)) and inputs.
+
+- **loss** (`tf.Tensor` of shape `(n,)`, _optional_, where n is the number of unmasked labels, returned when `labels` is provided)  -- Classification loss.
+- **logits** (`tf.Tensor` of shape `(batch_size, sequence_length, config.num_labels)`) -- Classification scores (before SoftMax).
+- **hidden_states** (`tuple(tf.Tensor)`, _optional_, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `tf.Tensor` (one for the output of the embeddings + one for the output of each layer) of
+  shape `(batch_size, sequence_length, hidden_size)`.
+
+  Hidden-states of the model at the output of each layer plus the initial embedding outputs.
+- **attentions** (`tuple(tf.Tensor)`, _optional_, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `tf.Tensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+
+  Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
+  heads.</retdesc></docstring>
+The [TFRobertaForTokenClassification](/docs/transformers/master/en/model_doc/roberta#transformers.TFRobertaForTokenClassification) forward method, overrides the `__call__` special method.
+
+<Tip>
+
+Although the recipe for forward pass needs to be defined within this function, one should call the
+`Module` instance afterwards instead of this since the former takes care of running the pre and post
+processing steps while the latter silently ignores them.
+
+</Tip>
+
+
+
+
+
+
+
+Example:
+
+```python
+>>> from transformers import RobertaTokenizer, TFRobertaForTokenClassification
+>>> import tensorflow as tf
+
+>>> tokenizer = RobertaTokenizer.from_pretrained('roberta-base')
+>>> model = TFRobertaForTokenClassification.from_pretrained('roberta-base')
+
+>>> inputs = tokenizer("Hello, my dog is cute", return_tensors="tf")
+>>> input_ids = inputs["input_ids"]
+>>> inputs["labels"] = tf.reshape(tf.constant([1] * tf.size(input_ids).numpy()), (-1, tf.size(input_ids))) # Batch size 1
+
+>>> outputs = model(inputs)
+>>> loss = outputs.loss
+>>> logits = outputs.logits
+```
+
+
+</div></div>
+
+<h2 id="transformers.TFXLMRobertaForQuestionAnswering">TFXLMRobertaForQuestionAnswering</h2>
+
+<div class="docstring">
+
+<docstring><name>"class transformers.TFXLMRobertaForQuestionAnswering"</name><anchor>"transformers.TFXLMRobertaForQuestionAnswering"</anchor><source>"https://github.com/huggingface/transformers/blob/master/src/transformers/models/xlm_roberta/modeling_tf_xlm_roberta.py#L154"</source><parameters>[{"name": "*args", "val": ""}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>[{"name": "config", "description": "- **config** ([XLMRobertaConfig](/docs/transformers/master/en/model_doc/xlmroberta#transformers.XLMRobertaConfig)) -- Model configuration class with all the parameters of the model. Initializing with a config file does not load the weights associated with the model, only the configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel.from_pretrained) method to load the model weights.", "anchor": "transformers.TFXLMRobertaForQuestionAnswering.config"}]</paramsdesc></docstring>
+
+XLM-RoBERTa Model with a span classification head on top for extractive question-answering tasks like SQuAD (a linear
+layers on top of the hidden-states output to compute _span start logits_ and _span end logits_).
+
+
+This model inherits from [TFPreTrainedModel](/docs/transformers/master/en/main_classes/model#transformers.TFPreTrainedModel). Check the superclass documentation for the
+generic methods the library implements for all its model (such as downloading or saving, resizing the input
+embeddings, pruning heads etc.)
+
+This model is also a [tf.keras.Model](https://www.tensorflow.org/api_docs/python/tf/keras/Model) subclass. Use
+it as a regular TF 2.0 Keras Model and refer to the TF 2.0 documentation for all matter related to general usage
+and behavior.
+
+<Tip>
+
+TF 2.0 models accepts two formats as inputs:
+
+- having all inputs as keyword arguments (like PyTorch models), or
+- having all inputs as a list, tuple or dict in the first positional arguments.
+
+This second option is useful when using `tf.keras.Model.fit` method which currently requires having all
+the tensors in the first argument of the model call function: `model(inputs)`.
+
+If you choose this second option, there are three possibilities you can use to gather all the input Tensors in
+the first positional argument :
+
+- a single Tensor with `input_ids` only and nothing else: `model(inputs_ids)`
+- a list of varying length with one or several input Tensors IN THE ORDER given in the docstring:
+  `model([input_ids, attention_mask])` or `model([input_ids, attention_mask, token_type_ids])`
+- a dictionary with one or several input Tensors associated to the input names given in the docstring:
+  `model(&amp;lcub;"input_ids": input_ids, "token_type_ids": token_type_ids})`
+
+</Tip>
+
+
+
+This class overrides `TFRobertaForQuestionAnsweringSimple`. Please check the superclass for
+the appropriate documentation alongside usage examples.
+
+
+
+<div class="docstring">
+<docstring><name>"call"</name><anchor>"transformers.TFRobertaForQuestionAnswering.call"</anchor><source>"https://github.com/huggingface/transformers/blob/master/src/transformers/models/roberta/modeling_tf_roberta.py#L1743"</source><parameters>[{"name": "input_ids", "val": " = None"}, {"name": "attention_mask", "val": " = None"}, {"name": "token_type_ids", "val": " = None"}, {"name": "position_ids", "val": " = None"}, {"name": "head_mask", "val": " = None"}, {"name": "inputs_embeds", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "return_dict", "val": " = None"}, {"name": "start_positions", "val": " = None"}, {"name": "end_positions", "val": " = None"}, {"name": "training", "val": " = False"}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>[{"name": "input_ids", "description": "- **input_ids** (`Numpy array` or `tf.Tensor` of shape `(batch_size, sequence_length)`) -- Indices of input sequence tokens in the vocabulary. Indices can be obtained using [RobertaTokenizer](/docs/transformers/master/en/model_doc/roberta#transformers.RobertaTokenizer). See [transformers.PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.__call__) and [transformers.PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.encode) for details. [What are input IDs?](../glossary#input-ids)", "anchor": "transformers.TFRobertaForQuestionAnswering.call.input_ids"}, {"name": "attention_mask", "description": "- **attention_mask** (`Numpy array` or `tf.Tensor` of shape `(batch_size, sequence_length)`, _optional_) -- Mask to avoid performing attention on padding token indices. Mask values selected in `[0, 1]`: ", "anchor": "transformers.TFRobertaForQuestionAnswering.call.attention_mask"}, {"name": "not masked", "description": " - 1 for tokens that are **not masked**,", "anchor": "transformers.TFRobertaForQuestionAnswering.call.not masked"}, {"name": "masked", "description": " - 0 for tokens that are **masked**. [What are attention masks?](../glossary#attention-mask)", "anchor": "transformers.TFRobertaForQuestionAnswering.call.masked"}, {"name": "token_type_ids", "description": "- **token_type_ids** (`Numpy array` or `tf.Tensor` of shape `(batch_size, sequence_length)`, _optional_) -- Segment token indices to indicate first and second portions of the inputs. Indices are selected in `[0, 1]`: - 0 corresponds to a _sentence A_ token, - 1 corresponds to a _sentence B_ token. [What are token type IDs?](../glossary#token-type-ids)", "anchor": "transformers.TFRobertaForQuestionAnswering.call.token_type_ids"}, {"name": "position_ids", "description": "- **position_ids** (`Numpy array` or `tf.Tensor` of shape `(batch_size, sequence_length)`, _optional_) -- Indices of positions of each input sequence tokens in the position embeddings. Selected in the range `[0, config.max_position_embeddings - 1]`. [What are position IDs?](../glossary#position-ids)", "anchor": "transformers.TFRobertaForQuestionAnswering.call.position_ids"}, {"name": "head_mask", "description": "- **head_mask** (`Numpy array` or `tf.Tensor` of shape `(num_heads,)` or `(num_layers, num_heads)`, _optional_) -- Mask to nullify selected heads of the self-attention modules. Mask values selected in `[0, 1]`: ", "anchor": "transformers.TFRobertaForQuestionAnswering.call.head_mask"}, {"name": "not masked", "description": " - 1 indicates the head is **not masked**,", "anchor": "transformers.TFRobertaForQuestionAnswering.call.not masked"}, {"name": "masked", "description": " - 0 indicates the head is **masked**. ", "anchor": "transformers.TFRobertaForQuestionAnswering.call.masked"}, {"name": "inputs_embeds", "description": "- **inputs_embeds** (`tf.Tensor` of shape `(batch_size, sequence_length, hidden_size)`, _optional_) -- Optionally, instead of passing `input_ids` you can choose to directly pass an embedded representation. This is useful if you want more control over how to convert `input_ids` indices into associated vectors than the model's internal embedding lookup matrix.", "anchor": "transformers.TFRobertaForQuestionAnswering.call.inputs_embeds"}, {"name": "output_attentions", "description": "- **output_attentions** (`bool`, _optional_) -- Whether or not to return the attentions tensors of all attention layers. See `attentions` under returned tensors for more detail. This argument can be used only in eager mode, in graph mode the value in the config will be used instead.", "anchor": "transformers.TFRobertaForQuestionAnswering.call.output_attentions"}, {"name": "output_hidden_states", "description": "- **output_hidden_states** (`bool`, _optional_) -- Whether or not to return the hidden states of all layers. See `hidden_states` under returned tensors for more detail. This argument can be used only in eager mode, in graph mode the value in the config will be used instead.", "anchor": "transformers.TFRobertaForQuestionAnswering.call.output_hidden_states"}, {"name": "return_dict", "description": "- **return_dict** (`bool`, _optional_) -- Whether or not to return a [ModelOutput](/docs/transformers/master/en/main_classes/output#transformers.file_utils.ModelOutput) instead of a plain tuple. This argument can be used in eager mode, in graph mode the value will always be set to True.", "anchor": "transformers.TFRobertaForQuestionAnswering.call.return_dict"}, {"name": "training", "description": "- **training** (`bool`, _optional_, defaults to `False`) -- Whether or not to use the model in training mode (some modules like dropout modules have different behaviors between training and evaluation). ", "anchor": "transformers.TFRobertaForQuestionAnswering.call.training"}, {"name": "start_positions", "description": "- **start_positions** (`tf.Tensor` of shape `(batch_size,)`, _optional_) -- Labels for position (index) of the start of the labelled span for computing the token classification loss. Positions are clamped to the length of the sequence (`sequence_length`). Position outside of the sequence are not taken into account for computing the loss.", "anchor": "transformers.TFRobertaForQuestionAnswering.call.start_positions"}, {"name": "end_positions", "description": "- **end_positions** (`tf.Tensor` of shape `(batch_size,)`, _optional_) -- Labels for position (index) of the end of the labelled span for computing the token classification loss. Positions are clamped to the length of the sequence (`sequence_length`). Position outside of the sequence are not taken into account for computing the loss.", "anchor": "transformers.TFRobertaForQuestionAnswering.call.end_positions"}]</paramsdesc><rettype>[TFQuestionAnsweringModelOutput](/docs/transformers/master/en/main_classes/output#transformers.modeling_tf_outputs.TFQuestionAnsweringModelOutput) or `tuple(tf.Tensor)`</rettype><retdesc>A [TFQuestionAnsweringModelOutput](/docs/transformers/master/en/main_classes/output#transformers.modeling_tf_outputs.TFQuestionAnsweringModelOutput) or a tuple of
+`tf.Tensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising various
+elements depending on the configuration ([RobertaConfig](/docs/transformers/master/en/model_doc/roberta#transformers.RobertaConfig)) and inputs.
+
+- **loss** (`tf.Tensor` of shape `(batch_size, )`, _optional_, returned when `start_positions` and `end_positions` are provided) -- Total span extraction loss is the sum of a Cross-Entropy for the start and end positions.
+- **start_logits** (`tf.Tensor` of shape `(batch_size, sequence_length)`) -- Span-start scores (before SoftMax).
+- **end_logits** (`tf.Tensor` of shape `(batch_size, sequence_length)`) -- Span-end scores (before SoftMax).
+- **hidden_states** (`tuple(tf.Tensor)`, _optional_, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `tf.Tensor` (one for the output of the embeddings + one for the output of each layer) of
+  shape `(batch_size, sequence_length, hidden_size)`.
+
+  Hidden-states of the model at the output of each layer plus the initial embedding outputs.
+- **attentions** (`tuple(tf.Tensor)`, _optional_, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `tf.Tensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+
+  Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
+  heads.</retdesc></docstring>
+The [TFRobertaForQuestionAnswering](/docs/transformers/master/en/model_doc/roberta#transformers.TFRobertaForQuestionAnswering) forward method, overrides the `__call__` special method.
+
+<Tip>
+
+Although the recipe for forward pass needs to be defined within this function, one should call the
+`Module` instance afterwards instead of this since the former takes care of running the pre and post
+processing steps while the latter silently ignores them.
+
+</Tip>
+
+
+
+
+
+
+
+Example:
+
+```python
+>>> from transformers import RobertaTokenizer, TFRobertaForQuestionAnswering
+>>> import tensorflow as tf
+
+>>> tokenizer = RobertaTokenizer.from_pretrained('roberta-base')
+>>> model = TFRobertaForQuestionAnswering.from_pretrained('roberta-base')
+
+>>> question, text = "Who was Jim Henson?", "Jim Henson was a nice puppet"
+>>> input_dict = tokenizer(question, text, return_tensors='tf')
+>>> outputs = model(input_dict)
+>>> start_logits = outputs.start_logits
+>>> end_logits = outputs.end_logits
+
+>>> all_tokens = tokenizer.convert_ids_to_tokens(input_dict["input_ids"].numpy()[0])
+>>> answer = ' '.join(all_tokens[tf.math.argmax(start_logits, 1)[0] : tf.math.argmax(end_logits, 1)[0]+1])
+```
+
+
+</div></div>
