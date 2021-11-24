@@ -115,6 +115,7 @@ def get_signature_component(name, anchor, signature, object_doc, source_link):
     - **anchor** (`str`) -- The anchor name of the function or class that will be used for hash links.
     - **signature** (`List(Dict(str,str))`) -- The signature of the object.
     - **object_doc** (`str`) -- The docstring of the the object.
+    - **source_link** (`str`) -- The github source link of the the object.
     """
     
     def inside_example_finder_closure(match, tag):
@@ -150,9 +151,9 @@ def get_signature_component(name, anchor, signature, object_doc, source_link):
     object_doc, returntype = regex_closure(object_doc, _re_returntype)
 
     svelte_str = '<docstring>'
-    svelte_str += f'<name>"{name}"</name>'
-    svelte_str += f'<anchor>"{anchor}"</anchor>'
-    svelte_str += f'<source>"{source_link}"</source>'
+    svelte_str += f'<name>{name}</name>'
+    svelte_str += f'<anchor>{anchor}</anchor>'
+    svelte_str += f'<source>{source_link}</source>'
     svelte_str += f'<parameters>{json.dumps(signature)}</parameters>'
 
     if parameters is not None:
