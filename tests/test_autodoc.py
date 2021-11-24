@@ -170,7 +170,7 @@ class AutodocTester(unittest.TestCase):
         ]
         object_doc = TEST_DOCSTRING
         source_link = "test_link"
-        expected_signature_component = '<docstring><name>"class transformers.BertweetTokenizer"</name><anchor>"transformers.BertweetTokenizer"</anchor><source>"test_link"</source><parameters>[{"name": "vocab_file", "val": ""}, {"name": "normalization", "val": " = False"}, {"name": "bos_token", "val": " = \'&amp;lt;s>\'"}]</parameters><paramsdesc>- **vocab_file** (`str`) --\n  Path to the vocabulary file.\n- **merges_file** (`str`) --\n  Path to the merges file.\n- **normalization** (`bool`, _optional_, defaults to `False`) --\n  Whether or not to apply a normalization preprocess.\n\n<Tip>\n\nWhen building a sequence using special tokens, this is not the token that is used for the beginning of\nsequence. The token used is the `cls_token`.\n\n</Tip></paramsdesc><paramgroups>0</paramgroups><rettype>`List[int]`</rettype><retdesc>List of [input IDs](../glossary.html#input-ids) with the appropriate special tokens.</retdesc></docstring>\nConstructs a BERTweet tokenizer, using Byte-Pair-Encoding.\n\nThis tokenizer inherits from [`~transformers.PreTrainedTokenizer`] which contains most of the main methods.\nUsers should refer to this superclass for more information regarding those methods.\n\n\n\n\n\n'
+        expected_signature_component = '<docstring><name>class transformers.BertweetTokenizer</name><anchor>transformers.BertweetTokenizer</anchor><source>test_link</source><parameters>[{"name": "vocab_file", "val": ""}, {"name": "normalization", "val": " = False"}, {"name": "bos_token", "val": " = \'&amp;lt;s>\'"}]</parameters><paramsdesc>- **vocab_file** (`str`) --\n  Path to the vocabulary file.\n- **merges_file** (`str`) --\n  Path to the merges file.\n- **normalization** (`bool`, _optional_, defaults to `False`) --\n  Whether or not to apply a normalization preprocess.\n\n<Tip>\n\nWhen building a sequence using special tokens, this is not the token that is used for the beginning of\nsequence. The token used is the `cls_token`.\n\n</Tip></paramsdesc><paramgroups>0</paramgroups><rettype>`List[int]`</rettype><retdesc>List of [input IDs](../glossary.html#input-ids) with the appropriate special tokens.</retdesc></docstring>\nConstructs a BERTweet tokenizer, using Byte-Pair-Encoding.\n\nThis tokenizer inherits from [`~transformers.PreTrainedTokenizer`] which contains most of the main methods.\nUsers should refer to this superclass for more information regarding those methods.\n\n\n\n\n\n'
         self.assertEqual(get_signature_component(name, anchor, signature, object_doc, source_link), expected_signature_component)
 
         name = "class transformers.BertweetTokenizer"
@@ -185,7 +185,7 @@ class AutodocTester(unittest.TestCase):
 This tokenizer inherits from [`~transformers.PreTrainedTokenizer`] which contains most of the main methods.
 Users should refer to this superclass for more information regarding those methods.
 """
-        expected_signature_component = '<docstring><name>"class transformers.BertweetTokenizer"</name><anchor>"transformers.BertweetTokenizer"</anchor><source>"test_link"</source><parameters>[{"name": "vocab_file", "val": ""}, {"name": "normalization", "val": " = False"}, {"name": "bos_token", "val": " = \'&amp;lt;s>\'"}]</parameters></docstring>\nConstructs a BERTweet tokenizer, using Byte-Pair-Encoding.\n\nThis tokenizer inherits from [`~transformers.PreTrainedTokenizer`] which contains most of the main methods.\nUsers should refer to this superclass for more information regarding those methods.\n\n'
+        expected_signature_component = '<docstring><name>class transformers.BertweetTokenizer</name><anchor>transformers.BertweetTokenizer</anchor><source>test_link</source><parameters>[{"name": "vocab_file", "val": ""}, {"name": "normalization", "val": " = False"}, {"name": "bos_token", "val": " = \'&amp;lt;s>\'"}]</parameters></docstring>\nConstructs a BERTweet tokenizer, using Byte-Pair-Encoding.\n\nThis tokenizer inherits from [`~transformers.PreTrainedTokenizer`] which contains most of the main methods.\nUsers should refer to this superclass for more information regarding those methods.\n\n'
         self.assertEqual(get_signature_component(name, anchor, signature, object_doc_without_params_and_return, source_link), expected_signature_component)
 
         name = "class transformers.cool_function"
@@ -198,7 +198,7 @@ Users should refer to this superclass for more information regarding those metho
         ]
         object_doc = TEST_DOCSTRING_WITH_PARAM_GROUPS
         source_link = "test_link"
-        expected_signature_component = '<docstring><name>"class transformers.cool_function"</name><anchor>"transformers.cool_function"</anchor><source>"test_link"</source><parameters>[{"name": "param_a", "val": ""}, {"name": "param_b", "val": ""}, {"name": "cool_param_a", "val": ""}, {"name": "cool_param_b", "val": ""}]</parameters><paramsdesc>- **param_a** (`str`) --\n  First default parameter\n- **param_b** (`int`) --\n  Second default parameter\n\n</paramsdesc><paramsdesc1title>New group with cool parameters!</paramsdesc1title><paramsdesc1>\n\n- **cool_param_a** (`str`) --\n  First cool parameter\n- **cool_param_b** (`int`) --\n  Second cool parameter</paramsdesc1><paramgroups>1</paramgroups></docstring>\n\nBuilds something very cool!\n\n\n\n'
+        expected_signature_component = '<docstring><name>class transformers.cool_function</name><anchor>transformers.cool_function</anchor><source>test_link</source><parameters>[{"name": "param_a", "val": ""}, {"name": "param_b", "val": ""}, {"name": "cool_param_a", "val": ""}, {"name": "cool_param_b", "val": ""}]</parameters><paramsdesc>- **param_a** (`str`) --\n  First default parameter\n- **param_b** (`int`) --\n  Second default parameter\n\n</paramsdesc><paramsdesc1title>New group with cool parameters!</paramsdesc1title><paramsdesc1>\n\n- **cool_param_a** (`str`) --\n  First cool parameter\n- **cool_param_b** (`int`) --\n  Second cool parameter</paramsdesc1><paramgroups>1</paramgroups></docstring>\n\nBuilds something very cool!\n\n\n\n'
         self.assertEqual(get_signature_component(name, anchor, signature, object_doc, source_link), expected_signature_component)
 
     def test_get_source_link(self):
@@ -209,8 +209,8 @@ Users should refer to this superclass for more information regarding those metho
         page_info = {"package_name": "transformers"}
 
         model_output_doc = """
-<docstring><name>"class transformers.file\_utils.ModelOutput"</name><anchor>"transformers.file_utils.ModelOutput"</anchor><source>"""
-        model_output_doc += f'"{self.test_source_link}"'
+<docstring><name>class transformers.file\_utils.ModelOutput</name><anchor>transformers.file_utils.ModelOutput</anchor><source>"""
+        model_output_doc += f'{self.test_source_link}'
         model_output_doc += """</source><parameters>""</parameters></docstring>
 
 Base class for all model outputs as dataclass. Has a `__getitem__` that allows indexing by integer or slice (like
