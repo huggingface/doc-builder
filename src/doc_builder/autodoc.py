@@ -103,14 +103,20 @@ _re_parameters = re.compile(r"<parameters>(.*)</parameters>", re.DOTALL)
 _re_returns = re.compile(r"<returns>(.*)</returns>", re.DOTALL)
 _re_returntype = re.compile(r"<returntype>(.*)</returntype>", re.DOTALL)
 _re_example_tags = re.compile(r"(<exampletitle>|<example>)")
+_re_parameter_group = re.compile(r"^> (.*)$", re.MULTILINE)
 
 
-def parse_object_doc(object_doc):
+def get_signature_component(name, anchor, signature, object_doc, source_link):
     """
-    Retrieves & parses the object_doc str into its separate sections 
-    (description, parameters, returns, returntype).
-    Retusn the parsed result as `Dict(str, str)`.
+    Returns the svelte `Docstring` component string. 
+    
+    Args:
+    - **name** (`str`) -- The name of the function or class to document.
+    - **anchor** (`str`) -- The anchor name of the function or class that will be used for hash links.
+    - **signature** (`List(Dict(str,str))`) -- The signature of the object.
+    - **object_doc** (`str`) -- The docstring of the the object.
     """
+    
     def inside_example_finder_closure(match, tag):
         """
         This closure find whether parameters and/or returns sections has example code block inside it
@@ -140,96 +146,29 @@ def parse_object_doc(object_doc):
     object_doc = _re_parameters.sub(lambda m: inside_example_finder_closure(m, 'parameters'), object_doc)
 
     object_doc, parameters = regex_closure(object_doc, _re_parameters)
-    object_doc, returns = regex_closure(object_doc, _re_returns)
+    object_doc, return_description = regex_closure(object_doc, _re_returns)
     object_doc, returntype = regex_closure(object_doc, _re_returntype)
-
-    return { 
-        "parameters": parameters,
-        "returns": returns,
-        "returntype": returntype,
-        "description": object_doc,
-    }
-
-
-_re_parametername = re.compile(r'\*\*(.*)\*\*', re.DOTALL)
-
-
-def get_signature_component(name, anchor, signature, object_doc, source_link):
-    """
-    Returns the svelte `Docstring` component string. 
-    
-    Args:
-    - **name** (`str`) -- The name of the function or class to document.
-    - **anchor** (`str`) -- The anchor name of the function or class that will be used for hash links.
-    - **signature** (`List(Dict(str,str))`) -- The signature of the object.
-    - **object_doc** (`str`) -- The docstring of the the object.
-    """
-    parsed_obj_doc = parse_object_doc(object_doc)
-    description = parsed_obj_doc["description"]
-    parameters = parsed_obj_doc["parameters"]
-    return_description = parsed_obj_doc["returns"]
-    returntype = parsed_obj_doc["returntype"]
 
     svelte_str = '<docstring>'
     svelte_str += f'<name>"{name}"</name>'
-    svelte_str += f'<anchor>"{anchor if (anchor is not None and len(anchor) > 0) else None}"</anchor>'
+    svelte_str += f'<anchor>"{anchor}"</anchor>'
     svelte_str += f'<source>"{source_link}"</source>'
     svelte_str += f'<parameters>{json.dumps(signature)}</parameters>'
-    
-    param_group_tag = "paramsdesc"
-    param_group_count = 0
-    if parameters:
-        parameters = parameters.replace('&amp;lt;', '<')
-        parameters = parameters.split('\n')
 
-        # Greedy algorithm to find parameter name & its description
-        param_name = None
-        param_description = []
-        params_description = []
-        for line in parameters:
-            param_name_ = _re_parametername.search(line)
-            # New parameter group!
-            if line.startswith("> "):
-                # Close previous param description
-                if param_name is not None:
-                    param_description = re.sub(' +', ' ', ' '.join(param_description))
-                    params_description.append({"name":param_name, "description": param_description, "anchor": f'{anchor}.{param_name}'})
-                # Add curent param group to the svelte component
-                svelte_str += f'<{param_group_tag}>{json.dumps(params_description)}</{param_group_tag}>'
-                
-                param_name = None
-                param_description = []
-                params_description = []
-                
-                
-                param_group_count += 1
-                # Add the param group title
-                title_tag = f"paramsdesc{param_group_count}title"
-                svelte_str += f"<{title_tag}>{line[1:].lstrip()}</{title_tag}>"
-                # Update param group tag
-                param_group_tag = f"paramdesc{param_group_count}"
-            
-            # New paramater!
-            elif param_name_ is not None:
-                # Close potential previous param description
-                if param_name is not None:
-                    param_description = re.sub(' +', ' ', ' '.join(param_description))
-                    params_description.append({"name":param_name, "description": param_description, "anchor": f'{anchor}.{param_name}'})
-                # Prepare new parameter.
-                param_name = param_name_.group(1)
-                param_description = [line]
-            else:
-                param_description.append(line)
-                
-        # Close potential previous param description
-        if param_name is not None:
-            param_description = re.sub(' +', ' ', ' '.join(param_description))
-            params_description.append({"name":param_name, "description": param_description, "anchor": f'{anchor}.{param_name}'})
-        # Add param group to the svelte component
-        if len(params_description) > 0:
-            svelte_str += f'<{param_group_tag}>{json.dumps(params_description)}</{param_group_tag}>'
-    else:
-        params_description = None
+    if parameters is not None:
+        parameters_str = ""
+        groups = _re_parameter_group.split(parameters)
+        group_default = groups.pop(0)
+        parameters_str += f'<paramsdesc>{group_default}</paramsdesc>'
+        n_groups = len(groups)//2
+        for idx in range(n_groups):
+            id = idx+1
+            title, group = groups[2*idx], groups[2*idx+1]
+            parameters_str += f'<paramsdesc{id}title>{title}</paramsdesc{id}title>'
+            parameters_str += f'<paramsdesc{id}>{group}</paramsdesc{id}>'
+
+        svelte_str += parameters_str
+        svelte_str += f'<paramgroups>{n_groups}</paramgroups>'
 
     if returntype is not None:
         svelte_str += f'<rettype>{returntype}</rettype>'
@@ -237,7 +176,7 @@ def get_signature_component(name, anchor, signature, object_doc, source_link):
         svelte_str += f'<retdesc>{return_description}</retdesc>'
     svelte_str += '</docstring>'
 
-    return svelte_str + f'\n{description}\n'
+    return svelte_str + f'\n{object_doc}\n'
 
 
 # Re pattern to catch :obj:`xx`, :class:`xx`, :func:`xx` or :meth:`xx`.

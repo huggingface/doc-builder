@@ -17,7 +17,6 @@ from doc_builder.autodoc import (
     find_documented_methods,
     find_object_in_package,
     format_signature,
-    parse_object_doc,
     get_signature_component,
     get_source_link,
     get_shortest_path,
@@ -160,16 +159,6 @@ class AutodocTester(unittest.TestCase):
 
         def generic_func(*args, **kwargs): pass
         self.assertEqual(format_signature(generic_func), [{'name': '*args', 'val': ''}, {'name': '**kwargs', 'val': ''}])
-    
-    def test_parse_object_doc(self):
-        object_doc = TEST_DOCSTRING_WITH_EXAMPLE
-        expected_parsed_object_doc = {
-            'parameters': '- **vocab_file** (`str`) --\n  Path to the vocabulary file.\n- **merges_file** (`str`) --\n  Path to the merges file.\n- **normalization** (`bool`, _optional_, defaults to `False`) --\n  Whether or not to apply a normalization preprocess.\n\n<Tip>\n\nWhen building a sequence using special tokens, this is not the token that is used for the beginning of\nsequence. The token used is the `cls_token`.\n\n</Tip>', 
-            'returns': 'List of [input IDs](../glossary.html#input-ids) with the appropriate special tokens.', 
-            'returntype': '`List[int]`', 
-            'description': 'Constructs a BERTweet tokenizer, using Byte-Pair-Encoding.\n\nThis tokenizer inherits from [`~transformers.PreTrainedTokenizer`] which contains most of the main methods.\nUsers should refer to this superclass for more information regarding those methods.\n\n\n<exampletitle>Example:</exampletitle>\n<example>\n```python\nimport transformers\n```\n<example>\n\n\n\n'
-        }
-        self.assertEqual(parse_object_doc(object_doc), expected_parsed_object_doc)
 
     def test_get_signature_component(self):
         name = "class transformers.BertweetTokenizer"
@@ -181,7 +170,7 @@ class AutodocTester(unittest.TestCase):
         ]
         object_doc = TEST_DOCSTRING
         source_link = "test_link"
-        expected_signature_component = '<docstring><name>"class transformers.BertweetTokenizer"</name><anchor>"transformers.BertweetTokenizer"</anchor><source>"test_link"</source><parameters>[{"name": "vocab_file", "val": ""}, {"name": "normalization", "val": " = False"}, {"name": "bos_token", "val": " = \'&amp;lt;s>\'"}]</parameters><paramsdesc>[{"name": "vocab_file", "description": "- **vocab_file** (`str`) -- Path to the vocabulary file.", "anchor": "transformers.BertweetTokenizer.vocab_file"}, {"name": "merges_file", "description": "- **merges_file** (`str`) -- Path to the merges file.", "anchor": "transformers.BertweetTokenizer.merges_file"}, {"name": "normalization", "description": "- **normalization** (`bool`, _optional_, defaults to `False`) -- Whether or not to apply a normalization preprocess. <Tip> When building a sequence using special tokens, this is not the token that is used for the beginning of sequence. The token used is the `cls_token`. </Tip>", "anchor": "transformers.BertweetTokenizer.normalization"}]</paramsdesc><rettype>`List[int]`</rettype><retdesc>List of [input IDs](../glossary.html#input-ids) with the appropriate special tokens.</retdesc></docstring>\nConstructs a BERTweet tokenizer, using Byte-Pair-Encoding.\n\nThis tokenizer inherits from [`~transformers.PreTrainedTokenizer`] which contains most of the main methods.\nUsers should refer to this superclass for more information regarding those methods.\n\n\n\n\n\n'
+        expected_signature_component = '<docstring><name>"class transformers.BertweetTokenizer"</name><anchor>"transformers.BertweetTokenizer"</anchor><source>"test_link"</source><parameters>[{"name": "vocab_file", "val": ""}, {"name": "normalization", "val": " = False"}, {"name": "bos_token", "val": " = \'&amp;lt;s>\'"}]</parameters><paramsdesc>- **vocab_file** (`str`) --\n  Path to the vocabulary file.\n- **merges_file** (`str`) --\n  Path to the merges file.\n- **normalization** (`bool`, _optional_, defaults to `False`) --\n  Whether or not to apply a normalization preprocess.\n\n<Tip>\n\nWhen building a sequence using special tokens, this is not the token that is used for the beginning of\nsequence. The token used is the `cls_token`.\n\n</Tip></paramsdesc><paramgroups>0</paramgroups><rettype>`List[int]`</rettype><retdesc>List of [input IDs](../glossary.html#input-ids) with the appropriate special tokens.</retdesc></docstring>\nConstructs a BERTweet tokenizer, using Byte-Pair-Encoding.\n\nThis tokenizer inherits from [`~transformers.PreTrainedTokenizer`] which contains most of the main methods.\nUsers should refer to this superclass for more information regarding those methods.\n\n\n\n\n\n'
         self.assertEqual(get_signature_component(name, anchor, signature, object_doc, source_link), expected_signature_component)
 
         name = "class transformers.BertweetTokenizer"
@@ -209,7 +198,7 @@ Users should refer to this superclass for more information regarding those metho
         ]
         object_doc = TEST_DOCSTRING_WITH_PARAM_GROUPS
         source_link = "test_link"
-        expected_signature_component = '<docstring><name>"class transformers.cool_function"</name><anchor>"transformers.cool_function"</anchor><source>"test_link"</source><parameters>[{"name": "param_a", "val": ""}, {"name": "param_b", "val": ""}, {"name": "cool_param_a", "val": ""}, {"name": "cool_param_b", "val": ""}]</parameters><paramsdesc>[{"name": "param_a", "description": "- **param_a** (`str`) -- First default parameter", "anchor": "transformers.cool_function.param_a"}, {"name": "param_b", "description": "- **param_b** (`int`) -- Second default parameter ", "anchor": "transformers.cool_function.param_b"}]</paramsdesc><paramsdesc1title>New group with cool parameters!</paramsdesc1title><paramdesc1>[{"name": "cool_param_a", "description": "- **cool_param_a** (`str`) -- First cool parameter", "anchor": "transformers.cool_function.cool_param_a"}, {"name": "cool_param_b", "description": "- **cool_param_b** (`int`) -- Second cool parameter", "anchor": "transformers.cool_function.cool_param_b"}]</paramdesc1></docstring>\n\nBuilds something very cool!\n\n\n\n'
+        expected_signature_component = '<docstring><name>"class transformers.cool_function"</name><anchor>"transformers.cool_function"</anchor><source>"test_link"</source><parameters>[{"name": "param_a", "val": ""}, {"name": "param_b", "val": ""}, {"name": "cool_param_a", "val": ""}, {"name": "cool_param_b", "val": ""}]</parameters><paramsdesc>- **param_a** (`str`) --\n  First default parameter\n- **param_b** (`int`) --\n  Second default parameter\n\n</paramsdesc><paramsdesc1title>New group with cool parameters!</paramsdesc1title><paramsdesc1>\n\n- **cool_param_a** (`str`) --\n  First cool parameter\n- **cool_param_b** (`int`) --\n  Second cool parameter</paramsdesc1><paramgroups>1</paramgroups></docstring>\n\nBuilds something very cool!\n\n\n\n'
         self.assertEqual(get_signature_component(name, anchor, signature, object_doc, source_link), expected_signature_component)
 
     def test_get_source_link(self):
