@@ -1,6 +1,6 @@
 import argparse
 import importlib
-from doc_builder import build_doc
+from doc_builder import build_doc, update_versions_file
 
 if __name__ == "__main__":
     """
@@ -45,3 +45,4 @@ if __name__ == "__main__":
 
     print("Building docs for", args.library_name, args.path_to_docs, output_path)
     build_doc(args.library_name, args.path_to_docs, output_path)
+    update_versions_file(f"./build/{args.library_name}", version)

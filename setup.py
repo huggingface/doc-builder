@@ -4,6 +4,7 @@ from setuptools import find_packages, setup
 install_requires = [
     "tqdm",
     "pyyaml",
+    "packaging",
 ]
 
 extras = {}
