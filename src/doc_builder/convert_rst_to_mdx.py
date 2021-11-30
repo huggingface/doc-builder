@@ -535,25 +535,28 @@ def split_pt_tf_code_blocks(text):
     return "\n".join(new_lines)
 
 
-def convert_rst_to_mdx(rst_text, page_info):
+def convert_rst_to_mdx(rst_text, page_info, add_imports=True):
     """
     Convert a document written in rst to mdx.
     """
     lines = rst_text.split("\n")
     lines = process_titles(lines)
-    new_lines = [
-        "<script>",
-        '	import Tip from "./Tip.svelte";',
-        '	import Youtube from "./Youtube.svelte";',
-        '	import Docstring from "./Docstring.svelte";',
-        '	import CodeBlock from "./CodeBlock.svelte";',
-        '	import CodeBlockFw from "./CodeBlockFw.svelte";',
-        '	import IconCopyLink from "./IconCopyLink.svelte";',
-        "	",
-        '	export let fw: "pt" | "tf"',
-        "</script>",
-        "",
-    ]
+    if add_imports:
+        new_lines = [
+            "<script>",
+            '	import Tip from "./Tip.svelte";',
+            '	import Youtube from "./Youtube.svelte";',
+            '	import Docstring from "./Docstring.svelte";',
+            '	import CodeBlock from "./CodeBlock.svelte";',
+            '	import CodeBlockFw from "./CodeBlockFw.svelte";',
+            '	import IconCopyLink from "./IconCopyLink.svelte";',
+            "	",
+            '	export let fw: "pt" | "tf"',
+            "</script>",
+            "",
+        ]
+    else:
+        new_lines = []
     for line in lines:
         if _re_ignore_line_table.search(line) is not None:
             continue
