@@ -1,5 +1,5 @@
 import yaml
-from packaging import version
+from packaging import version as package_version
 
 def update_versions_file(build_path, version):
     """
@@ -18,7 +18,7 @@ def update_versions_file(build_path, version):
         new_version = {'version': version}
         did_insert = False
         for i, value in enumerate(sem_versions):
-            if version.parse(new_version['version']) > version.parse(value['version']):
+            if package_version.parse(new_version['version']) > package_version.parse(value['version']):
                 sem_versions.insert(i, new_version)
                 did_insert = True
                 break
