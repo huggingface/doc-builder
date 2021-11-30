@@ -1,5 +1,5 @@
 import yaml
-from packaging.version import parse as parseVer
+from packaging import version
 
 def update_versions_file(build_path, version):
     """
