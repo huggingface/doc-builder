@@ -19,15 +19,13 @@ title: DETR
 ---
 <script>
 import Tip from "./Tip.svelte";
-import Youtube from "./Youtube.svelte";
-import Docstring from "./Docstring.svelte";
-import CodeBlock from "./CodeBlock.svelte";
-import CodeBlockFw from "./CodeBlockFw.svelte";
-import IconCopyLink from "./IconCopyLink.svelte";
-
+import Youtube from "./Youtube.svelte";	
+import Docstring from "./Docstring.svelte";	
+import CodeBlock from "./CodeBlock.svelte";	
+import CodeBlockFw from "./CodeBlockFw.svelte";	
+import IconCopyLink from "./IconCopyLink.svelte";	
 export let fw: "pt" | "tf"
 </script>
-
 <!--Copyright 2021 The HuggingFace Team. All rights reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
@@ -145,25 +143,14 @@ Tips:
 
 As a summary, consider the following table:
 
-| **Task**                                    | **Object detection**                                    | **Instance segmentation**                                            | **Panoptic segmentation**                                              |
-| **Description**                             | Predicting bounding boxes and class labels around       | Predicting masks around objects (i.e. instances) in an image         | Predicting masks around both objects (i.e. instances) as well as       |
-|                                             | objects in an image                                     |                                                                      | "stuff" (i.e. background things like trees and roads) in an image      |
-| **Model**                                   | [DetrForObjectDetection](/docs/transformers/master/en/model_doc/detr#transformers.DetrForObjectDetection)           | [DetrForSegmentation](/docs/transformers/master/en/model_doc/detr#transformers.DetrForSegmentation)                           | [DetrForSegmentation](/docs/transformers/master/en/model_doc/detr#transformers.DetrForSegmentation)                             |
-| **Example dataset**                         | COCO detection                                          | COCO detection,                                                      | COCO panoptic                                                          |
-|                                             |                                                         | COCO panoptic                                                        |                                                                        |
-| **Format of annotations to provide to**     | &amp;lcub;‘image_id’: int,                                       | &amp;lcub;‘image_id’: int,                                                    | &amp;lcub;‘file_name: str,                                                      |
-| [DetrFeatureExtractor](/docs/transformers/master/en/model_doc/detr#transformers.DetrFeatureExtractor) | ‘annotations’: List[Dict]}, each Dict being a COCO      | ‘annotations’: [List[Dict]] } (in case of COCO detection)            | ‘image_id: int,                                                        |
-|                                             | object annotation                                       |                                                                      | ‘segments_info’: List[Dict] }                                          |
-|                                             |                                                         | or                                                                   |                                                                        |
-|                                             |                                                         |                                                                      | and masks_path (path to directory containing PNG files of the masks)   |
-|                                             |                                                         | &amp;lcub;‘file_name’: str,                                                   |                                                                        |
-|                                             |                                                         | ‘image_id’: int,                                                     |                                                                        |
-|                                             |                                                         | ‘segments_info’: List[Dict]} (in case of COCO panoptic)              |                                                                        |
-| **Postprocessing** (i.e. converting the     | [post_process()](/docs/transformers/master/en/model_doc/detr#transformers.DetrFeatureExtractor.post_process) | [post_process_segmentation()](/docs/transformers/master/en/model_doc/detr#transformers.DetrFeatureExtractor.post_process_segmentation) | [post_process_segmentation()](/docs/transformers/master/en/model_doc/detr#transformers.DetrFeatureExtractor.post_process_segmentation),  |
-| output of the model to COCO API)            |                                                         |                                                                      | [post_process_panoptic()](/docs/transformers/master/en/model_doc/detr#transformers.DetrFeatureExtractor.post_process_panoptic)       |
-| **evaluators**                              | `CocoEvaluator` with iou_types = “bbox”            | `CocoEvaluator` with iou_types = “bbox”, “segm”                 | `CocoEvaluator` with iou_tupes = “bbox, “segm”                    |
-|                                             |                                                         |                                                                      |                                                                        |
-|                                             |                                                         |                                                                      | `PanopticEvaluator`                                               |
+| Task | Object detection | Instance segmentation | Panoptic segmentation |
+|------|------------------|-----------------------|-----------------------|
+| **Description** | Predicting bounding boxes and class labels around objects in an image | Predicting masks around objects (i.e. instances) in an image | Predicting masks around both objects (i.e. instances) as well as "stuff" (i.e. background things like trees and roads) in an image |
+| **Model** | [DetrForObjectDetection](/docs/transformers/master/en/model_doc/detr#transformers.DetrForObjectDetection) | [DetrForSegmentation](/docs/transformers/master/en/model_doc/detr#transformers.DetrForSegmentation) | [DetrForSegmentation](/docs/transformers/master/en/model_doc/detr#transformers.DetrForSegmentation) |
+| **Example dataset** | COCO detection | COCO detection, COCO panoptic | COCO panoptic  |                                                                        |
+| **Format of annotations to provide to**  [DetrFeatureExtractor](/docs/transformers/master/en/model_doc/detr#transformers.DetrFeatureExtractor) | &amp;lcub;'image_id': `int`, 'annotations': `List[Dict]`} each Dict being a COCO object annotation  | &amp;lcub;'image_id': `int`, 'annotations': `List[Dict]`}  (in case of COCO detection) or &amp;lcub;'file_name': `str`, 'image_id': `int`, 'segments_info': `List[Dict]`} (in case of COCO panoptic) | &amp;lcub;'file_name': `str`, 'image_id': `int`, 'segments_info': `List[Dict]`} and masks_path (path to directory containing PNG files of the masks) |
+| **Postprocessing** (i.e. converting the output of the model to COCO API) | [post_process()](/docs/transformers/master/en/model_doc/detr#transformers.DetrFeatureExtractor.post_process) | [post_process_segmentation()](/docs/transformers/master/en/model_doc/detr#transformers.DetrFeatureExtractor.post_process_segmentation) | [post_process_segmentation()](/docs/transformers/master/en/model_doc/detr#transformers.DetrFeatureExtractor.post_process_segmentation), [post_process_panoptic()](/docs/transformers/master/en/model_doc/detr#transformers.DetrFeatureExtractor.post_process_panoptic) |
+| **evaluators** | `CocoEvaluator` with `iou_types="bbox"` | `CocoEvaluator` with `iou_types="bbox"` or `"segm"` | `CocoEvaluator` with `iou_tupes="bbox"` or `"segm"`, `PanopticEvaluator` |
 
 In short, one should prepare the data either in COCO detection or COCO panoptic format, then use
 [DetrFeatureExtractor](/docs/transformers/master/en/model_doc/detr#transformers.DetrFeatureExtractor) to create `pixel_values`, `pixel_mask` and optional
