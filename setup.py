@@ -27,5 +27,5 @@ setup(
     packages=find_packages("src"),
     extras_require=extras,
     install_requires=install_requires,
-    entry_points={"console_scripts": ["doc-buider=doc_builder.commands.doc_builder_cli:main"]},
+    entry_points={"console_scripts": ["doc-builder=doc_builder.commands.doc_builder_cli:main"]},
 )
