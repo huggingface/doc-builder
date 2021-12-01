@@ -836,7 +836,7 @@ processing steps while the latter silently ignores them.
 
 
 
-Example:
+Example of single-label classification:
 
 ```python
 >>> from transformers import FNetTokenizer, FNetForSequenceClassification
@@ -847,6 +847,22 @@ Example:
 
 >>> inputs = tokenizer("Hello, my dog is cute", return_tensors="pt")
 >>> labels = torch.tensor([1]).unsqueeze(0)  # Batch size 1
+>>> outputs = model(**inputs, labels=labels)
+>>> loss = outputs.loss
+>>> logits = outputs.logits
+```
+
+Example of multi-label classification:
+
+```python
+>>> from transformers import FNetTokenizer, FNetForSequenceClassification
+>>> import torch
+
+>>> tokenizer = FNetTokenizer.from_pretrained('google/fnet-base')
+>>> model = FNetForSequenceClassification.from_pretrained('google/fnet-base', problem_type="multi_label_classification")
+
+>>> inputs = tokenizer("Hello, my dog is cute", return_tensors="pt")
+>>> labels = torch.tensor([[1, 1]], dtype=torch.float) # need dtype=float for BCEWithLogitsLoss
 >>> outputs = model(**inputs, labels=labels)
 >>> loss = outputs.loss
 >>> logits = outputs.logits

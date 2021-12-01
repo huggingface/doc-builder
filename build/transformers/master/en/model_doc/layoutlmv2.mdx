@@ -53,8 +53,8 @@ specific language governing permissions and limitations under the License.
 <h2 id="overview">Overview</h2>
 
 The LayoutLMV2 model was proposed in [LayoutLMv2: Multi-modal Pre-training for Visually-Rich Document Understanding](https://arxiv.org/abs/2012.14740) by Yang Xu, Yiheng Xu, Tengchao Lv, Lei Cui, Furu Wei, Guoxin Wang, Yijuan Lu,
-Dinei Florencio, Cha Zhang, Wanxiang Che, Min Zhang, Lidong Zhou. LayoutLMV2 improves [LayoutLM](https://huggingface.co/transformers/model_doc/layoutlm.html) to obtain state-of-the-art results across several
-document image understanding benchmarks:
+Dinei Florencio, Cha Zhang, Wanxiang Che, Min Zhang, Lidong Zhou. LayoutLMV2 improves [LayoutLM](layoutlm) to obtain
+state-of-the-art results across several document image understanding benchmarks:
 
 - information extraction from scanned documents: the [FUNSD](https://guillaumejaume.github.io/FUNSD/) dataset (a
   collection of 199 annotated forms comprising more than 30,000 words), the [CORD](https://github.com/clovaai/cord)
@@ -376,7 +376,7 @@ Example:
 
 <div class="docstring">
 
-<docstring><name>class transformers.LayoutLMv2FeatureExtractor</name><anchor>transformers.LayoutLMv2FeatureExtractor</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/layoutlmv2/feature_extraction_layoutlmv2.py#L83</source><parameters>[{"name": "do_resize", "val": " = True"}, {"name": "size", "val": " = 224"}, {"name": "resample", "val": " = 2"}, {"name": "apply_ocr", "val": " = True"}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **do_resize** (`bool`, _optional_, defaults to `True`) --
+<docstring><name>class transformers.LayoutLMv2FeatureExtractor</name><anchor>transformers.LayoutLMv2FeatureExtractor</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/layoutlmv2/feature_extraction_layoutlmv2.py#L83</source><parameters>[{"name": "do_resize", "val": " = True"}, {"name": "size", "val": " = 224"}, {"name": "resample", "val": " = 2"}, {"name": "apply_ocr", "val": " = True"}, {"name": "ocr_lang", "val": " = None"}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **do_resize** (`bool`, _optional_, defaults to `True`) --
   Whether to resize the input to a certain `size`.
 - **size** (`int` or `Tuple(int)`, _optional_, defaults to 224) --
   Resize the input to the given size. If a tuple is provided, it should be (width, height). If only an
@@ -388,6 +388,9 @@ Example:
   Only has an effect if `do_resize` is set to `True`.
 - **apply_ocr** (`bool`, _optional_, defaults to `True`) --
   Whether to apply the Tesseract OCR engine to get words + normalized bounding boxes.
+- **ocr_lang** (`Optional[str]`, _optional_) --
+  The language, specified by its ISO code, to be used by the Tesseract OCR engine. By default, English is
+  used.
 
 <Tip>
 
@@ -407,7 +410,7 @@ methods.
 
 
 <div class="docstring">
-<docstring><name>\_\_call\_\_</name><anchor>transformers.LayoutLMv2FeatureExtractor.__call__</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/layoutlmv2/feature_extraction_layoutlmv2.py#L122</source><parameters>[{"name": "images", "val": ": typing.Union[PIL.Image.Image, numpy.ndarray, ForwardRef('torch.Tensor'), typing.List[PIL.Image.Image], typing.List[numpy.ndarray], typing.List[ForwardRef('torch.Tensor')]]"}, {"name": "return_tensors", "val": ": typing.Union[str, transformers.file_utils.TensorType, NoneType] = None"}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **images** (`PIL.Image.Image`, `np.ndarray`, `torch.Tensor`, `List[PIL.Image.Image]`, `List[np.ndarray]`, `List[torch.Tensor]`) --
+<docstring><name>\_\_call\_\_</name><anchor>transformers.LayoutLMv2FeatureExtractor.__call__</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/layoutlmv2/feature_extraction_layoutlmv2.py#L126</source><parameters>[{"name": "images", "val": ": typing.Union[PIL.Image.Image, numpy.ndarray, ForwardRef('torch.Tensor'), typing.List[PIL.Image.Image], typing.List[numpy.ndarray], typing.List[ForwardRef('torch.Tensor')]]"}, {"name": "return_tensors", "val": ": typing.Union[str, transformers.file_utils.TensorType, NoneType] = None"}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **images** (`PIL.Image.Image`, `np.ndarray`, `torch.Tensor`, `List[PIL.Image.Image]`, `List[np.ndarray]`, `List[torch.Tensor]`) --
   The image or batch of images to be prepared. Each image can be a PIL image, NumPy array or PyTorch
   tensor. In case of a NumPy array/PyTorch tensor, each image should be of shape (C, H, W), where C is a
   number of channels, H and W are image height and width.
