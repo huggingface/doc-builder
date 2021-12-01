@@ -242,7 +242,7 @@ def document_object(object_name, package, page_info, full_name=True):
         if is_rst_docstring(object_doc):
             object_doc = convert_rst_docstring_to_mdx(obj.__doc__, page_info)
         else:
-            object_doc = convert_md_docstring_to_mdx(obj.__doc__)
+            object_doc = convert_md_docstring_to_mdx(obj.__doc__, page_info)
         source_link = get_source_link(obj, page_info)
         component = get_signature_component(signature_name, anchor_name, signature, object_doc, source_link)
         documentation += "\n" + component + "\n"

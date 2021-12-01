@@ -317,6 +317,8 @@ export let fw: "pt" | "tf"
         self.assertEqual(parse_options("    :size: 123\n    :members:"), {"size": "123", "members": ""})
     
     def test_convert_rst_blocks(self):
+        page_info = {"package_name": "transformers", "version": "v4.10.0", "language": "fr"}
+
         original_rst = """
 text
 text
@@ -399,12 +401,12 @@ This is a note.
 
 [[autodoc]] transformers.create_optimizer
 
-<img alt="Alternative text" src="/transformers/_images/warmup_cosine_schedule.png"/>
+<img alt="Alternative text" src="/docs/transformers/v4.10.0/fr/imgs/warmup_cosine_schedule.png"/>
 
 $$formula$$
 """
 
-        self.assertEqual(convert_rst_blocks(original_rst), expected_conversion)
+        self.assertEqual(convert_rst_blocks(original_rst, page_info), expected_conversion)
     
     def test_split_return_line(self):
         self.assertEqual(
