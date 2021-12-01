@@ -5,4 +5,4 @@ test:
 	python -m pytest -n 1 --dist=loadfile -s -v ./tests/
 
 doc:
-	python src/build.py transformers ../transformers/docs/source/
+	doc-builder build transformers ../transformers/docs/source/

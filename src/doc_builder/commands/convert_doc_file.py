@@ -15,6 +15,8 @@ def find_root_git(folder):
 
 def convert_command(args):
     source_file = Path(args.source_file).absolute()
+    if source_file.suffix != ".rst":
+        raise ValueError(f"This script only converts rst files. Got {source_file}.")
     if args.package_name is None:
         git_folder = find_root_git(source_file)
         if git_folder is None:
@@ -38,7 +40,7 @@ def convert_command(args):
                 "Cannot determine a default for package_name as the file passed is not in a git directory. "
                 "Please pass along a package_name."
             )
-        doc_folder = git_folder / "docs/source"
+        doc_folder = (git_folder / "docs") / "source"
         if doc_folder / source_file.relative_to(doc_folder) != source_file:
             raise ValueError(
                 f"The default found for `doc_folder` is {doc_folder} but it does not look like {source_file} is "
