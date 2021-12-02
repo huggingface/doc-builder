@@ -5,7 +5,7 @@ install_requires = ["tqdm", "pyyaml", "packaging"]
 extras = {}
 
 extras["transformers"] = ["transformers[dev]"]
-extras["testing"] = ["pytest", "pytest-xdist", "torch", "transformers[dev]"]
+extras["testing"] = ["pytest", "pytest-xdist", "torch", "transformers"]
 extras["quality"] = ["black==21.4b0", "isort>=5.5.4", "flake8>=3.8.3"]
 
 extras["all"] = extras["testing"] + extras["quality"]
