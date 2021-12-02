@@ -1,3 +1,19 @@
+# coding=utf-8
+# Copyright 2021 The HuggingFace Team. All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+
 import inspect
 import json
 import re
@@ -9,7 +25,7 @@ from .convert_rst_to_mdx import convert_rst_docstring_to_mdx
 def find_object_in_package(object_name, package):
     """
     Find an object from its name inside a given package.
-    
+
     Args:
     - **object_name** (`str`) -- The name of the object to retrieve.
     -- **package** (`types.ModuleType`) -- The package to look into.
@@ -26,7 +42,7 @@ def find_object_in_package(object_name, package):
 
 
 def remove_example_tags(text):
-    tags = ['<exampletitle>', '</exampletitle>', '<example>', '</example>']
+    tags = ["<exampletitle>", "</exampletitle>", "<example>", "</example>"]
     for tag in tags:
         text = text.replace(tag, "")
     return text
@@ -51,7 +67,7 @@ def get_shortest_path(obj, package):
     while idx < len(path_splits) and not hasattr(module, short_name):
         idx += 1
         module = getattr(module, path_splits[idx])
-    return ".".join(path_splits[:idx+1]) + "." + long_name
+    return ".".join(path_splits[: idx + 1]) + "." + long_name
 
 
 def get_type_name(typ):
@@ -95,7 +111,7 @@ def format_signature(obj):
             default = param.default
             default = repr(default)
             param_type_val += f" = {default}"
-        params.append({'name': param_name, 'val': param_type_val})
+        params.append({"name": param_name, "val": param_type_val})
     return params
 
 
@@ -108,8 +124,8 @@ _re_parameter_group = re.compile(r"^> (.*)$", re.MULTILINE)
 
 def get_signature_component(name, anchor, signature, object_doc, source_link):
     """
-    Returns the svelte `Docstring` component string. 
-    
+    Returns the svelte `Docstring` component string.
+
     Args:
     - **name** (`str`) -- The name of the function or class to document.
     - **anchor** (`str`) -- The anchor name of the function or class that will be used for hash links.
@@ -117,7 +133,7 @@ def get_signature_component(name, anchor, signature, object_doc, source_link):
     - **object_doc** (`str`) -- The docstring of the the object.
     - **source_link** (`str`) -- The github source link of the the object.
     """
-    
+
     def inside_example_finder_closure(match, tag):
         """
         This closure find whether parameters and/or returns sections has example code block inside it
@@ -126,9 +142,9 @@ def get_signature_component(name, anchor, signature, object_doc, source_link):
         examples_inside = _re_example_tags.search(match_str)
         if examples_inside:
             example_tag = examples_inside.group(1)
-            match_str = match_str.replace(example_tag, f'</{tag}>{example_tag}', 1)
-            return f'<{tag}>{match_str}'
-        return f'<{tag}>{match_str}</{tag}>'
+            match_str = match_str.replace(example_tag, f"</{tag}>{example_tag}", 1)
+            return f"<{tag}>{match_str}"
+        return f"<{tag}>{match_str}</{tag}>"
 
     def regex_closure(object_doc, regex):
         """
@@ -143,41 +159,41 @@ def get_signature_component(name, anchor, signature, object_doc, source_link):
                 match = _match
         return object_doc, match
 
-    object_doc = _re_returns.sub(lambda m: inside_example_finder_closure(m, 'returns'), object_doc)
-    object_doc = _re_parameters.sub(lambda m: inside_example_finder_closure(m, 'parameters'), object_doc)
+    object_doc = _re_returns.sub(lambda m: inside_example_finder_closure(m, "returns"), object_doc)
+    object_doc = _re_parameters.sub(lambda m: inside_example_finder_closure(m, "parameters"), object_doc)
 
     object_doc, parameters = regex_closure(object_doc, _re_parameters)
     object_doc, return_description = regex_closure(object_doc, _re_returns)
     object_doc, returntype = regex_closure(object_doc, _re_returntype)
 
-    svelte_str = '<docstring>'
-    svelte_str += f'<name>{name}</name>'
-    svelte_str += f'<anchor>{anchor}</anchor>'
-    svelte_str += f'<source>{source_link}</source>'
-    svelte_str += f'<parameters>{json.dumps(signature)}</parameters>'
+    svelte_str = "<docstring>"
+    svelte_str += f"<name>{name}</name>"
+    svelte_str += f"<anchor>{anchor}</anchor>"
+    svelte_str += f"<source>{source_link}</source>"
+    svelte_str += f"<parameters>{json.dumps(signature)}</parameters>"
 
     if parameters is not None:
         parameters_str = ""
         groups = _re_parameter_group.split(parameters)
         group_default = groups.pop(0)
-        parameters_str += f'<paramsdesc>{group_default}</paramsdesc>'
-        n_groups = len(groups)//2
+        parameters_str += f"<paramsdesc>{group_default}</paramsdesc>"
+        n_groups = len(groups) // 2
         for idx in range(n_groups):
-            id = idx+1
-            title, group = groups[2*idx], groups[2*idx+1]
-            parameters_str += f'<paramsdesc{id}title>{title}</paramsdesc{id}title>'
-            parameters_str += f'<paramsdesc{id}>{group}</paramsdesc{id}>'
+            id = idx + 1
+            title, group = groups[2 * idx], groups[2 * idx + 1]
+            parameters_str += f"<paramsdesc{id}title>{title}</paramsdesc{id}title>"
+            parameters_str += f"<paramsdesc{id}>{group}</paramsdesc{id}>"
 
         svelte_str += parameters_str
-        svelte_str += f'<paramgroups>{n_groups}</paramgroups>'
+        svelte_str += f"<paramgroups>{n_groups}</paramgroups>"
 
     if returntype is not None:
-        svelte_str += f'<rettype>{returntype}</rettype>'
+        svelte_str += f"<rettype>{returntype}</rettype>"
     if return_description is not None:
-        svelte_str += f'<retdesc>{return_description}</retdesc>'
-    svelte_str += '</docstring>'
+        svelte_str += f"<retdesc>{return_description}</retdesc>"
+    svelte_str += "</docstring>"
 
-    return svelte_str + f'\n{object_doc}\n'
+    return svelte_str + f"\n{object_doc}\n"
 
 
 # Re pattern to catch :obj:`xx`, :class:`xx`, :func:`xx` or :meth:`xx`.
@@ -212,7 +228,7 @@ def get_source_link(obj, page_info):
 def document_object(object_name, package, page_info, full_name=True):
     """
     Writes the document of a function, class or method.
-    
+
     Args:
     - **object_name** (`str`) -- The name of the object to document.
     - **package** (`types.ModuleType`) -- The package of the object.
@@ -232,10 +248,10 @@ def document_object(object_name, package, page_info, full_name=True):
         name = obj.__name__
     # Escape underscores in magic method names
     name = name.replace("_", "\_")
-    
+
     prefix = "class " if isinstance(obj, type) else ""
     documentation = ""
-    signature_name = prefix+name
+    signature_name = prefix + name
     signature = format_signature(obj)
     if getattr(obj, "__doc__", None) is not None and len(obj.__doc__) > 0:
         object_doc = obj.__doc__
@@ -256,17 +272,20 @@ def find_documented_methods(clas):
     """
     public_attrs = {a: getattr(clas, a) for a in dir(clas) if not a.startswith("_")}
     public_methods = {a: m for a, m in public_attrs.items() if callable(m) and not isinstance(m, type)}
-    documented_methods = {a: m for a, m in public_methods.items() if getattr(m, "__doc__", None) is not None and len(m.__doc__) > 0}
-    
+    documented_methods = {
+        a: m for a, m in public_methods.items() if getattr(m, "__doc__", None) is not None and len(m.__doc__) > 0
+    }
+
     superclasses = clas.mro()[1:]
     for superclass in superclasses:
         superclass_methods = {a: getattr(superclass, a) for a in documented_methods.keys() if hasattr(superclass, a)}
         documented_methods = {
-            a: m for a, m in documented_methods.items() 
+            a: m
+            for a, m in documented_methods.items()
             if (
-                a not in superclass_methods or 
-                getattr(superclass_methods[a], "__doc__", None) is None or 
-                m.__doc__ != superclass_methods[a].__doc__
+                a not in superclass_methods
+                or getattr(superclass_methods[a], "__doc__", None) is None
+                or m.__doc__ != superclass_methods[a].__doc__
             )
         }
     return list(documented_methods.keys())
@@ -275,7 +294,7 @@ def find_documented_methods(clas):
 def autodoc(object_name, package, methods=None, return_anchors=False, page_info=None):
     """
     Generates the documentation of an object, with a potential filtering on the methods for a class.
-    
+
     Args:
     - **object_name** (`str`) -- The name of the function or class to document.
     - **package** (`types.ModuleType`) -- The package of the object.
@@ -311,5 +330,5 @@ def autodoc(object_name, package, methods=None, return_anchors=False, page_info=
             if return_anchors:
                 anchors.append(f"{anchors[0]}.{method}")
     documentation = '<div class="docstring">\n' + documentation + "</div>\n"
-    
+
     return (documentation, anchors) if return_anchors else documentation

@@ -1,5 +1,22 @@
+# coding=utf-8
+# Copyright 2021 The HuggingFace Team. All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+
 import argparse
 import importlib
+
 from doc_builder import build_doc, update_versions_file
 
 
@@ -33,14 +50,14 @@ def build_command_parser(subparsers=None):
         "path_to_docs",
         type=str,
         help="Local path to library documentation. The library should be cloned, and the folder containing the "
-             "documentation files should be indicated here."
+        "documentation files should be indicated here.",
     )
     parser.add_argument("--language", type=str, help="Language of the documentation to generate", default="en")
     parser.add_argument(
         "--version",
         type=str,
         help="Version under which to push the files. Will not affect the actual files generated, as these are"
-             " generated according to the `path_to_docs` argument.",
+        " generated according to the `path_to_docs` argument.",
     )
 
     if subparsers is not None:

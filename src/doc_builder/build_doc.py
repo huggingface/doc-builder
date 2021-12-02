@@ -1,3 +1,19 @@
+# coding=utf-8
+# Copyright 2021 The HuggingFace Team. All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+
 import importlib
 import os
 import re
@@ -19,7 +35,7 @@ _re_list_item = re.compile("^\s*-\s+(\S+)\s*$")
 def resolve_autodoc(content, package, return_anchors=False, page_info=None):
     """
     Replaces [[autodoc]] special syntax by the corresponding generated documentation in some content.
-    
+
     Args:
     - **content** (`str`) -- The documentation to treat.
     - **package** (`types.ModuleType`) -- The package where to look for objects to document.
@@ -41,10 +57,16 @@ def resolve_autodoc(content, package, return_anchors=False, page_info=None):
             idx += 1
             while idx < len(lines) and is_empty_line(lines[idx]):
                 idx += 1
-            if idx < len(lines) and find_indent(lines[idx]) > autodoc_indent and _re_list_item.search(lines[idx]) is not None:
+            if (
+                idx < len(lines)
+                and find_indent(lines[idx]) > autodoc_indent
+                and _re_list_item.search(lines[idx]) is not None
+            ):
                 methods = []
                 methods_indent = find_indent(lines[idx])
-                while is_empty_line(lines[idx]) or (find_indent(lines[idx]) == methods_indent and _re_list_item.search(lines[idx]) is not None):
+                while is_empty_line(lines[idx]) or (
+                    find_indent(lines[idx]) == methods_indent and _re_list_item.search(lines[idx]) is not None
+                ):
                     if not is_empty_line(lines[idx]):
                         methods.append(_re_list_item.search(lines[idx]).groups()[0])
                     idx += 1
@@ -56,17 +78,17 @@ def resolve_autodoc(content, package, return_anchors=False, page_info=None):
             if return_anchors:
                 if len(doc[1]) and idx_last_heading is not None:
                     object_anchor = doc[1][0]
-                    new_lines[idx_last_heading] += f'[[{object_anchor}]]'
+                    new_lines[idx_last_heading] += f"[[{object_anchor}]]"
                     idx_last_heading = None
                 anchors.extend(doc[1])
                 doc = doc[0]
             new_lines.append(doc)
         else:
             new_lines.append(lines[idx])
-            if lines[idx].startswith('```'):
+            if lines[idx].startswith("```"):
                 is_inside_codeblock = not is_inside_codeblock
-            if lines[idx].startswith('#') and not is_inside_codeblock:
-                idx_last_heading = len(new_lines)-1
+            if lines[idx].startswith("#") and not is_inside_codeblock:
+                idx_last_heading = len(new_lines) - 1
             idx += 1
 
     new_content = "\n".join(new_lines)
@@ -78,7 +100,7 @@ def resolve_autodoc(content, package, return_anchors=False, page_info=None):
 def build_mdx_files(package, doc_folder, output_dir, page_info):
     """
     Build the MDX files for a given package.
-    
+
     Args:
     - **package** (`types.ModuleType`) -- The package where to look for objects to document.
     - **doc_folder** (`str` or `os.PathLike`) -- The folder where the doc source files are.
@@ -88,8 +110,8 @@ def build_mdx_files(package, doc_folder, output_dir, page_info):
     doc_folder = Path(doc_folder)
     output_dir = Path(output_dir)
     os.makedirs(output_dir, exist_ok=True)
-    anchor_mapping = {} 
-    
+    anchor_mapping = {}
+
     if "package_name" not in page_info:
         page_info["package_name"] = package.__name__
 
@@ -124,18 +146,18 @@ def build_mdx_files(package, doc_folder, output_dir, page_info):
             dest_file = output_dir / (file.relative_to(doc_folder))
             os.makedirs(dest_file.parent, exist_ok=True)
             shutil.copy(file, dest_file)
-            
+
         if new_anchors is not None:
             page_name = str(file.with_suffix("").relative_to(doc_folder))
             anchor_mapping.update({anchor: page_name for anchor in new_anchors})
-    
+
     return anchor_mapping
 
 
 def resolve_links_in_text(text, package, mapping, page_info):
     """
     Resolve links of the form [`SomeClass`] to the link in the documentation to `SomeClass`.
-    
+
     Args:
     - **text** (`str`) -- The text in which to convert the links.
     - **package** (`types.ModuleType`) -- The package in which to search objects for.
@@ -158,11 +180,11 @@ def resolve_links_in_text(text, package, mapping, page_info):
             obj = find_object_in_package(object_name, package)
         if obj is None:
             return f"`{object_name}`"
-        
+
         # If the object is not a class, we add ()
         if not isinstance(obj, type):
             object_name = f"{object_name}()"
-        
+
         # Link to the anchor
         anchor = get_shortest_path(obj, package)
         if anchor not in mapping:
@@ -177,7 +199,7 @@ def resolve_links(doc_folder, package, mapping, page_info):
     """
     Resolve links of the form [`SomeClass`] to the link in the documentation to `SomeClass` for all files in a
     folder.
-    
+
     Args:
     - **doc_folder** (`str` or `os.PathLike`) -- The folder in which to look for files.
     - **package** (`types.ModuleType`) -- The package in which to search objects for.
@@ -197,11 +219,11 @@ def resolve_links(doc_folder, package, mapping, page_info):
 def generate_frontmatter_in_text(text, file_name=None):
     """
     Adds frontmatter & turns markdown headers into markdown headers with hash links.
-    
+
     Args:
     - **text** (`str`) -- The text in which to convert the links.
     """
-    text = text.split('\n')
+    text = text.split("\n")
     root = None
     is_inside_codeblock = False
     for idx, line in enumerate(text):
@@ -214,15 +236,15 @@ def generate_frontmatter_in_text(text, file_name=None):
             continue
         first_word, title = header_search.groups()
         header_level = len(first_word)
-        serach_local = re.search(r'\[\[(.*)]]', title)
+        serach_local = re.search(r"\[\[(.*)]]", title)
         if serach_local:
             # id/local already exists
             local = serach_local.group(1)
-            title = re.sub(r'\[\[(.*)]]', "", title)
+            title = re.sub(r"\[\[(.*)]]", "", title)
         else:
             # create id/local
-            local = re.sub(r'[^a-z\s]+', '', title.lower())
-            local = re.sub(r'\s{2,}', ' ', local.strip()).replace(' ','-')
+            local = re.sub(r"[^a-z\s]+", "", title.lower())
+            local = re.sub(r"\s{2,}", " ", local.strip()).replace(" ", "-")
         text[idx] = f'<h{header_level} id="{local}">{title}</h{header_level}>'
         node = FrontmatterNode(title, local)
         if header_level == 1:
@@ -236,7 +258,7 @@ def generate_frontmatter_in_text(text, file_name=None):
             root.add_child(node, header_level)
 
     frontmatter = root.get_frontmatter()
-    text = '\n'.join(text)
+    text = "\n".join(text)
     text = frontmatter + text
     return text
 
@@ -244,7 +266,7 @@ def generate_frontmatter_in_text(text, file_name=None):
 def generate_frontmatter(doc_folder):
     """
     Adds frontmatter & turns markdown headers into markdown headers with hash links for all files in a folder.
-    
+
     Args:
     - **doc_folder** (`str` or `os.PathLike`) -- The folder in which to look for files.
     """
@@ -262,7 +284,7 @@ def generate_frontmatter(doc_folder):
 def build_doc(package_name, doc_folder, output_dir, clean=True, version="master", language="en"):
     """
     Build the documentation of a package.
-    
+
     Args:
     - **package_name** (`str`) -- The name of the package.
     - **doc_folder** (`str` or `os.PathLike) -- The folder in which the source documentation of the package is.

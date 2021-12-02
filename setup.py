@@ -1,6 +1,5 @@
 from setuptools import find_packages, setup
 
-
 install_requires = [
     "tqdm",
     "pyyaml",
@@ -12,6 +11,21 @@ extras = {}
 extras["transformers"] = [
     "transformers[dev]",
 ]
+
+extras["testing"] = [
+    "pytest",
+]
+
+extras["quality"] = [
+    "black==21.4b0",
+    "isort>=5.5.4",
+    "flake8>=3.8.3",
+]
+
+extras["all"] = extras["testing"] + extras["quality"]
+
+extras["dev"] = extras["all"]
+
 
 setup(
     name="doc-builder",
