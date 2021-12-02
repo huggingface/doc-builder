@@ -102,7 +102,7 @@ def build_mdx_files(package, doc_folder, output_dir, page_info):
             os.makedirs(dest_file.parent, exist_ok=True)
             with open(file, "r", encoding="utf-8-sig") as reader:
                 content = reader.read()
-            content = convert_md_to_mdx(content)
+            content = convert_md_to_mdx(content, page_info)
             content, new_anchors = resolve_autodoc(content, package, return_anchors=True, page_info=page_info)
             with open(dest_file, "w", encoding="utf-8") as writer:
                 writer.write(content)
