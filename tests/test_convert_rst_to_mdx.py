@@ -1,31 +1,48 @@
+# coding=utf-8
+# Copyright 2021 The HuggingFace Team. All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+
 import sys
 import unittest
+
 
 # To find the doc_builder package.
 sys.path.append("src")
 
 from doc_builder.convert_rst_to_mdx import (
-    _re_obj,
-    _re_math,
-    _re_single_backquotes,
-    _re_double_backquotes,
-    _re_func_class,
-    _re_links,
-    _re_prefix_links,
-    _re_simple_doc,
-    _re_doc_with_description,
-    _re_simple_ref,
-    _re_ref_with_description,
-    _re_example,
+    _re_anchor_section,
+    _re_args,
     _re_block,
     _re_block_info,
-    _re_rst_option,
-    _re_args,
-    _re_returns,
+    _re_doc_with_description,
+    _re_double_backquotes,
+    _re_example,
+    _re_func_class,
     _re_ignore_line_table,
     _re_ignore_line_table1,
+    _re_links,
+    _re_math,
+    _re_obj,
+    _re_prefix_links,
+    _re_ref_with_description,
+    _re_returns,
+    _re_rst_option,
     _re_sep_line_table,
-    _re_anchor_section,
+    _re_simple_doc,
+    _re_simple_ref,
+    _re_single_backquotes,
     convert_rst_blocks,
     convert_rst_formatting,
     convert_rst_links,
@@ -41,58 +58,59 @@ from doc_builder.convert_rst_to_mdx import (
     split_return_line,
 )
 
+
 class ConvertRstToMdxTester(unittest.TestCase):
     def test_re_obj(self):
         self.assertEqual(_re_obj.search("There is an :obj:`object`.").groups(), ("object",))
         self.assertIsNone(_re_obj.search("There is no :obj:`object."))
-    
+
     def test_re_math(self):
         self.assertEqual(_re_math.search("There is a :math:`formula`.").groups(), ("formula",))
         self.assertIsNone(_re_math.search("There is no :math:`formula."))
-    
+
     def test_re_single_backquotes(self):
         self.assertEqual(_re_single_backquotes.search("There is some `code`.").groups(), (" ", "code", "."))
         self.assertIsNone(_re_single_backquotes.search("This is double ``code``."))
         self.assertEqual(_re_single_backquotes.search("`code` at the beginning.").groups(), ("", "code", " "))
         self.assertEqual(_re_single_backquotes.search("At the end there is some `code`").groups(), (" ", "code", ""))
-    
+
     def test_re_double_backquotes(self):
         self.assertEqual(_re_double_backquotes.search("There is some ``code``.").groups(), (" ", "code", "."))
         self.assertIsNone(_re_double_backquotes.search("This is single `code`."))
         self.assertIsNone(_re_double_backquotes.search("This is triple ```code```."))
         self.assertEqual(_re_double_backquotes.search("``code`` at the beginning.").groups(), ("", "code", " "))
         self.assertEqual(_re_double_backquotes.search("At the end there is some ``code``").groups(), (" ", "code", ""))
-    
+
     def test_re_func_class(self):
         self.assertEqual(_re_func_class.search("There is a :class:`class`.").groups(), ("class",))
         self.assertEqual(_re_func_class.search("There is a :func:`function`.").groups(), ("function",))
         self.assertEqual(_re_func_class.search("There is a :meth:`method`.").groups(), ("method",))
         self.assertIsNone(_re_func_class.search("There is no :obj:`object`."))
-    
+
     def test_re_links(self):
         self.assertEqual(_re_links.search("This is a regular `link <url>`_").groups(), ("link", "url"))
         self.assertEqual(_re_links.search("This is a regular `link <url>`__").groups(), ("link", "url"))
-    
+
     def test_re_prefix_links(self):
         self.assertEqual(
             _re_prefix_links.search("This is a regular :prefix_link:`link <url>`").groups(),
             ("link", "url"),
         )
-    
+
     def test_re_simple_doc(self):
         self.assertEqual(_re_simple_doc.search("This is a link to an inner page :doc:`page`.").groups(), ("page",))
-    
+
     def test_re_doc_with_description(self):
         self.assertEqual(
             _re_doc_with_description.search("This is a link to an inner page :doc:`page name <page ref>`.").groups(),
             ("page name", "page ref"),
         )
-    
+
     def test_re_simple_ref(self):
         self.assertEqual(
             _re_simple_ref.search("This is a link to an inner section :ref:`section`.").groups(), ("section",)
         )
-    
+
     def test_re_ref_with_description(self):
         self.assertEqual(
             _re_ref_with_description.search(
@@ -100,20 +118,20 @@ class ConvertRstToMdxTester(unittest.TestCase):
             ).groups(),
             ("section name", "section ref"),
         )
-    
+
     def test_re_example(self):
         self.assertEqual(_re_example.search("  Example::").groups(), ("Example",))
         self.assertEqual(_re_example.search("  Generation example::").groups(), ("Generation example",))
         self.assertIsNone(_re_example.search("  Return:"))
-    
+
     def test_re_block(self):
         self.assertEqual(_re_block.search("  .. note::").groups(), ("note",))
         self.assertEqual(_re_block.search("  .. code-example::").groups(), ("code-example",))
-    
+
     def test_re_block_info(self):
         self.assertEqual(_re_block_info.search("  .. note:: python").groups(), ("python",))
         self.assertEqual(_re_block_info.search("  .. code-example:: python").groups(), ("python",))
-    
+
     def test_re_rst_option(self):
         self.assertEqual(_re_rst_option.search("    :size: 123").groups(), ("size", " 123"))
         self.assertEqual(_re_rst_option.search("    :members: func1, func2,").groups(), ("members", " func1, func2,"))
@@ -123,7 +141,7 @@ class ConvertRstToMdxTester(unittest.TestCase):
             ).groups(),
             ("special-members", " __call__, batch_decode, decode, encode, push_to_hub"),
         )
-    
+
     def test_re_args(self):
         self.assertIsNotNone(_re_args.search("  Args:"))
         self.assertIsNotNone(_re_args.search("  Arg:"))
@@ -132,7 +150,7 @@ class ConvertRstToMdxTester(unittest.TestCase):
         self.assertIsNotNone(_re_args.search("  Parameters:"))
         self.assertIsNotNone(_re_args.search("  Parameter:"))
         self.assertIsNone(_re_args.search("  Parameter: lala"))
-    
+
     def test_re_returns(self):
         self.assertIsNotNone(_re_returns.search("  Returns:"))
         self.assertIsNotNone(_re_returns.search("  Return:"))
@@ -140,13 +158,13 @@ class ConvertRstToMdxTester(unittest.TestCase):
 
     def test_re_ignore_line_table(self):
         self.assertIsNotNone(_re_ignore_line_table.search("+--- + --- +"))
-    
+
     def test_re_ignore_line_table1(self):
         self.assertIsNotNone(_re_ignore_line_table1.search("| +--- + --- +"))
-    
+
     def test_re_sep_line_table(self):
         self.assertIsNotNone(_re_sep_line_table.search("+=== +===+ === +"))
-    
+
     def test_re_anchor_table(self):
         self.assertEqual(_re_anchor_section.search(".. _reference:").groups(), ("reference",))
 
@@ -228,7 +246,7 @@ third line``.
             convert_rst_links("This is a link to an inner section :ref:`section name <section ref>`.", page_info),
             "This is a link to an inner section [section name](/docs/transformers/master/en/model_doc/bert#section ref).",
         )
-    
+
     def test_convert_rst_links_with_version_and_lang(self):
         page_info = {"package_name": "transformers", "version": "v4.10.0", "language": "fr"}
 
@@ -275,7 +293,7 @@ third line``.
         self.assertEqual(find_indent("a"), 0)
         self.assertEqual(find_indent("   "), 3)
         self.assertEqual(find_indent("   a"), 3)
-    
+
     def test_convert_special_chars(self):
         self.assertEqual(convert_special_chars("{ lala }"), "&amp;lcub; lala }")
         self.assertEqual(convert_special_chars("< blo"), "&amp;lt; blo")
@@ -315,7 +333,7 @@ export let fw: "pt" | "tf"
             {"size": "123", "members": "func1, func2, func3"},
         )
         self.assertEqual(parse_options("    :size: 123\n    :members:"), {"size": "123", "members": ""})
-    
+
     def test_convert_rst_blocks(self):
         page_info = {"package_name": "transformers", "version": "v4.10.0", "language": "fr"}
 
@@ -407,7 +425,7 @@ $$formula$$
 """
 
         self.assertEqual(convert_rst_blocks(original_rst, page_info), expected_conversion)
-    
+
     def test_split_return_line(self):
         self.assertEqual(
             split_return_line("A :obj:`str` or a :obj:`bool`: the result"),
@@ -417,14 +435,12 @@ $$formula$$
             split_return_line("A :obj:`str` or a :obj:`bool` the result"),
             (None, "A :obj:`str` or a :obj:`bool` the result"),
         )
-        self.assertEqual(
-            split_return_line("A :obj:`str` or a :obj:`bool`:"), ("A :obj:`str` or a :obj:`bool`", "")
-        )
+        self.assertEqual(split_return_line("A :obj:`str` or a :obj:`bool`:"), ("A :obj:`str` or a :obj:`bool`", ""))
         self.assertEqual(
             split_return_line("    :obj:`str` or :obj:`bool`: some result:"),
             ("    :obj:`str` or :obj:`bool`", " some result:"),
         )
-    
+
     def test_split_arg_line(self):
         self.assertEqual(split_arg_line("   x (:obj:`int`): an int"), ("   x (:obj:`int`)", " an int"))
         self.assertEqual(split_arg_line("   x (:obj:`int`)"), ("   x (:obj:`int`)", ""))
@@ -550,7 +566,7 @@ Loulou
         self.assertEqual(remove_indent(example1), expected1)
         self.assertEqual(remove_indent(example2), expected2)
         self.assertEqual(remove_indent(example3), expected3)
-    
+
     def test_process_titles(self):
         self.assertListEqual(
             process_titles(["Title 1", "=======", "text", "", "section", "--------"]),
