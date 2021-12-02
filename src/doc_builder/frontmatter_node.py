@@ -16,6 +16,7 @@
 
 import yaml
 
+
 class FrontmatterNode:
     """
     A helper class that is used in generating frontmatter for mdx files.
@@ -31,7 +32,7 @@ class FrontmatterNode:
 
     def add_child(self, child, header_level):
         parent = self
-        nested_level = header_level-2
+        nested_level = header_level - 2
         while nested_level:
             if not parent.children:
                 parent.children.append(FrontmatterNode(None, None))
@@ -41,8 +42,8 @@ class FrontmatterNode:
 
     def get_frontmatter(self):
         self._remove_null_nodes()
-        frontmatter_yaml = yaml.dump(self._dictionarify(), allow_unicode=True).replace('\\U0001F917','🤗')
-        return f'---\n{frontmatter_yaml}---\n'
+        frontmatter_yaml = yaml.dump(self._dictionarify(), allow_unicode=True).replace("\\U0001F917", "🤗")
+        return f"---\n{frontmatter_yaml}---\n"
 
     def _remove_null_nodes(self):
         if len(self.children) == 1 and self.children[0].title is None:
@@ -53,6 +54,6 @@ class FrontmatterNode:
 
     def _dictionarify(self):
         if not self.children:
-            return {'title': self.title, 'local': self.local}
+            return {"title": self.title, "local": self.local}
         children = [section._dictionarify() for section in self.children]
-        return {'title': self.title, 'local': self.local, 'sections': children }
+        return {"title": self.title, "local": self.local, "sections": children}

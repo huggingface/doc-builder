@@ -16,6 +16,7 @@
 
 import argparse
 import importlib
+
 from doc_builder import build_doc, update_versions_file
 
 
@@ -49,14 +50,14 @@ def build_command_parser(subparsers=None):
         "path_to_docs",
         type=str,
         help="Local path to library documentation. The library should be cloned, and the folder containing the "
-             "documentation files should be indicated here."
+        "documentation files should be indicated here.",
     )
     parser.add_argument("--language", type=str, help="Language of the documentation to generate", default="en")
     parser.add_argument(
         "--version",
         type=str,
         help="Version under which to push the files. Will not affect the actual files generated, as these are"
-             " generated according to the `path_to_docs` argument.",
+        " generated according to the `path_to_docs` argument.",
     )
 
     if subparsers is not None:

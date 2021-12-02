@@ -36,18 +36,18 @@ def convert_rst_formatting(text):
     # Remove :class:, :func: and :meth: markers. To code-links and put double backquotes
     # (to not be caught by the italic conversion).
     text = _re_func_class.sub(r"[``\1``]", text)
-    # Remove :obj: markers. What's after is in a single backquotes so we put in double backquotes 
+    # Remove :obj: markers. What's after is in a single backquotes so we put in double backquotes
     # (to not be caught by the italic conversion).
     text = _re_obj.sub(r"``\1``", text)
     # Remove :math: markers.
     text = _re_math.sub(r"\\\\(\1\\\\)", text)
     # Convert content in single backquotes to italic.
-    text = _re_single_backquotes.sub(r'\1_\2_\3', text)
+    text = _re_single_backquotes.sub(r"\1_\2_\3", text)
     # Convert content in double backquotes to single backquotes.
-    text = _re_double_backquotes.sub(r'\1`\2`\3', text)
+    text = _re_double_backquotes.sub(r"\1`\2`\3", text)
     # Remove remaining ::
     text = re.sub(r"::\n", "", text)
-    
+
     # Remove new lines inside blocks in backsticks as they will be kept.
     lines = text.split("\n")
     in_code = False
@@ -55,7 +55,7 @@ def convert_rst_formatting(text):
     for line in lines:
         if in_code:
             splits = line.split("`")
-            in_code = (len(splits) > 1 and len(splits) % 2 == 1)
+            in_code = len(splits) > 1 and len(splits) % 2 == 1
             if len(splits) == 1:
                 # Some forgotten lone backstick
                 text += "\n" + line
@@ -67,7 +67,7 @@ def convert_rst_formatting(text):
             else:
                 text = line
             splits = line.split("`")
-            in_code = (len(splits) % 2 == 0)
+            in_code = len(splits) % 2 == 0
     return text
 
 
@@ -97,26 +97,26 @@ def convert_rst_links(text, page_info):
 
     prefix = f"/docs/{package_name}/{version}/{language}/"
     # Links of the form :doc:`page`
-    text = _re_simple_doc.sub(rf'[\1]({prefix}\1)', text)
+    text = _re_simple_doc.sub(rf"[\1]({prefix}\1)", text)
     # Links of the form :doc:`text <page>`
-    text = _re_doc_with_description.sub(rf'[\1]({prefix}\2)', text)
+    text = _re_doc_with_description.sub(rf"[\1]({prefix}\2)", text)
 
     if "page" in page_info:
-        page = str(page_info['page'])
+        page = str(page_info["page"])
         if page.endswith(".html"):
             page = page[:-5]
         prefix = f"{prefix}{page}"
     else:
         prefix = ""
     # Refs of the form :ref:`page`
-    text = _re_simple_ref.sub(rf'[\1]({prefix}#\1)', text)
+    text = _re_simple_ref.sub(rf"[\1]({prefix}#\1)", text)
     # Refs of the form :ref:`text <page>`
-    text = _re_ref_with_description.sub(rf'[\1]({prefix}#\2)', text)
+    text = _re_ref_with_description.sub(rf"[\1]({prefix}#\2)", text)
 
     # Links with a prefix
     # TODO: when it exists, use the API to deal with prefix links properly.
     prefix = f"https://github.com/huggingface/{package_name}/tree/master/"
-    text = _re_prefix_links.sub(fr'[\1]({prefix}\2)', text)
+    text = _re_prefix_links.sub(fr"[\1]({prefix}\2)", text)
     # Other links
     text = _re_links.sub(r"[\1](\2)", text)
     # Relative links or Transformers links need to remove the .html
@@ -156,7 +156,7 @@ def convert_special_chars(text):
     """
     text = text.replace("{", "&amp;lcub;")
     # We don't want to replace those by the HTML code, so we temporarily set them at LTHTML
-    text = re.sub(r"<(img|br|hr)", r"LTHTML\1", text) # html void elements with no closing counterpart
+    text = re.sub(r"<(img|br|hr)", r"LTHTML\1", text)  # html void elements with no closing counterpart
     _re_lt_html = re.compile(r"<(\S+)([^>]*>)(((?!</\1>).)*)<(/\1>)", re.DOTALL)
     while _re_lt_html.search(text):
         text = _re_lt_html.sub(r"LTHTML\1\2\3LTHTML\5", text)
@@ -179,7 +179,7 @@ def parse_options(block_content):
             result[current_option] = value.lstrip()
         elif find_indent(line) > block_indent:
             result[current_option] += " " + line.lstrip()
-    
+
     return result
 
 
@@ -212,7 +212,7 @@ def convert_rst_blocks(text, page_info):
             block_type = "comment"
         elif lines[idx].strip() == "::":
             block_type = "code-block"
-        
+
         if block_type is not None:
             block_indent = find_indent(lines[idx])
             # Find the next nonempty line
@@ -221,7 +221,7 @@ def convert_rst_blocks(text, page_info):
                 idx += 1
             # Grab the indent of the return line, this block will stop when we unindent under it (or has already)
             example_indent = find_indent(lines[idx]) if idx < len(lines) else block_indent
-            
+
             if example_indent == block_indent:
                 block_content = ""
             else:
@@ -230,11 +230,11 @@ def convert_rst_blocks(text, page_info):
                     block_lines.append(lines[idx][example_indent:])
                     idx += 1
                 block_content = "\n".join(block_lines)
-            
+
             if block_type in ["code", "code-block"]:
                 prefix = "```" if block_info is None else f"```{block_info}"
                 new_lines.append(f"{prefix}\n{block_content.strip()}\n```\n")
-            elif block_type  == "code-block-example":
+            elif block_type == "code-block-example":
                 prefix = f"<example>```{block_info}"
                 new_lines.append(f"{prefix}\n{block_content.strip()}\n```\n</example>")
             elif block_type == "note":
@@ -279,14 +279,14 @@ def convert_rst_blocks(text, page_info):
                 options["src"] = options["src"].replace("/imgs/", f"/docs/{package_name}/{version}/{language}/imgs/")
                 html_code = " ".join([f'{key}="{value}"' for key, value in options.items()])
                 new_lines.append(f"<img {html_code}/>\n")
-                    
+
             else:
                 new_lines.append(f"{block_type},{block_info}\n{block_content.rstrip()}\n")
 
         else:
             new_lines.append(lines[idx])
             idx += 1
-    
+
     return "\n".join(new_lines)
 
 
@@ -322,7 +322,8 @@ def split_arg_line(line):
     return ":".join(splits_on_colon[:idx]), ":".join(splits_on_colon[idx:])
 
 
-class InvalidRstDocstringError(ValueError): pass
+class InvalidRstDocstringError(ValueError):
+    pass
 
 
 def parse_rst_docstring(docstring):
@@ -373,12 +374,12 @@ def parse_rst_docstring(docstring):
                 idx += 1
             lines.insert(idx, "</returns>\n")
             idx += 1
-            
+
             # Return block finished, we insert the return type if one was specified
             if return_type is not None:
                 # TODO: change this when we have the proper syntax
                 lines[idx - 1] += f"\n<returntype>{return_type}</returntype>\n"
-        
+
         else:
             idx += 1
 
@@ -417,13 +418,13 @@ def remove_indent(text):
                 level = len(current_indents) - 1
                 while level >= 0 and current_indents[level] != indent:
                     level -= 1
-                current_indents = current_indents[:level+1]
+                current_indents = current_indents[: level + 1]
                 new_indents = new_indents[:level]
                 new_indent = 0 if len(new_indents) == 0 else new_indents[-1]
                 lines[idx] = " " * new_indent + line[indent:]
                 new_indent += len(_re_list.search(line).groups()[0]) + 1
                 new_indents.append(new_indent)
-        
+
         # Line is an autodoc, we keep the indent for the list just after if there is one.
         elif _re_autodoc.search(line) is not None:
             indent = find_indent(line)
@@ -453,7 +454,7 @@ def remove_indent(text):
                 level = len(current_indents) - 1
                 while level >= 0 and current_indents[level] != indent:
                     level -= 1
-                current_indents = current_indents[:level+1]
+                current_indents = current_indents[: level + 1]
                 if level >= 0:
                     new_indents = new_indents[:level]
                     new_indent = 0 if len(new_indents) == 0 else new_indents[-1]
@@ -464,7 +465,7 @@ def remove_indent(text):
                     lines[idx] = line[indent:]
             else:
                 lines[idx] = line[indent:]
-                
+
     return "\n".join(lines)
 
 
@@ -490,12 +491,18 @@ def convert_rst_docstring_to_mdx(docstring, page_info):
 
 
 def process_titles(lines):
-    """ Converts rst titles to markdown titles."""
-    title_chars =  """= - ` : ' " ~ ^ _ * + # < >""".split(" ")
+    """Converts rst titles to markdown titles."""
+    title_chars = """= - ` : ' " ~ ^ _ * + # < >""".split(" ")
     title_levels = {}
     new_lines = []
     for line in lines:
-        if len(new_lines) > 0 and len(line) >= len(new_lines[-1]) and len(set(line)) == 1 and line[0] in title_chars and line != "::":
+        if (
+            len(new_lines) > 0
+            and len(line) >= len(new_lines[-1])
+            and len(set(line)) == 1
+            and line[0] in title_chars
+            and line != "::"
+        ):
             char = line[0]
             level = title_levels.get(char, len(title_levels) + 1)
             if level not in title_levels:
@@ -585,7 +592,7 @@ def convert_rst_to_mdx(rst_text, page_info, add_imports=True):
         elif _re_ignore_line_table1.search(line) is not None:
             continue
         elif _re_sep_line_table.search(line) is not None:
-            line = line.replace('=', '-').replace('+', '|')
+            line = line.replace("=", "-").replace("+", "|")
         elif _re_anchor_section.search(line) is not None:
             anchor_name = _re_anchor_section.search(line).groups()[0]
             line = f"<a id='{anchor_name}'></a>"
