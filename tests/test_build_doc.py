@@ -14,15 +14,9 @@
 # limitations under the License.
 
 
-import sys
 import unittest
 
 import transformers
-
-
-# To find the doc_builder package.
-sys.path.append("src")
-
 from doc_builder.build_doc import _re_autodoc, _re_list_item, generate_frontmatter_in_text, resolve_links_in_text
 
 
