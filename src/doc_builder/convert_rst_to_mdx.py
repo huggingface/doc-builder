@@ -167,10 +167,16 @@ def parse_options(block_content):
     return result
 
 
-def convert_rst_blocks(text):
+def convert_rst_blocks(text, page_info):
     """
     Converts rst special blocks (examples, notes) into MDX.
     """
+    if "package_name" not in page_info:
+        raise ValueError("`page_info` must contain at least the package_name.")
+    package_name = page_info["package_name"]
+    version = page_info.get("version", "master")
+    language = page_info.get("language", "en")
+
     lines = text.split("\n")
     idx = 0
     new_lines = []
@@ -254,7 +260,7 @@ def convert_rst_blocks(text):
                         raise ValueError("Image source not defined.")
                     options["src"] = target
                 # Adapt path
-                options["src"] = options["src"].replace("/imgs/", "/transformers/_images/")
+                options["src"] = options["src"].replace("/imgs/", f"/docs/{package_name}/{version}/{language}/imgs/")
                 html_code = " ".join([f'{key}="{value}"' for key, value in options.items()])
                 new_lines.append(f"<img {html_code}/>\n")
                     
@@ -452,7 +458,7 @@ def base_rst_to_mdx(text, page_info):
     """
     text = convert_rst_links(text, page_info)
     text = convert_special_chars(text)
-    text = convert_rst_blocks(text)
+    text = convert_rst_blocks(text, page_info)
     # Convert * in lists to - to avoid the formatting conversion treat them as bold.
     text = re.sub(r"^(\s*)\*(\s)", r"\1-\2", text, flags=re.MULTILINE)
     text = convert_rst_formatting(text)
