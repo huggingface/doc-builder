@@ -243,7 +243,7 @@ def generate_frontmatter_in_text(text, file_name=None):
             title = re.sub(r"\[\[(.*)]]", "", title)
         else:
             # create id/local
-            local = re.sub(r"[^a-z\s]+", "", title.lower())
+            local = re.sub(r"[^a-z0-9\s]+", "", title.lower())
             local = re.sub(r"\s{2,}", " ", local.strip()).replace(" ", "-")
         text[idx] = f'<h{header_level} id="{local}">{title}</h{header_level}>'
         node = FrontmatterNode(title, local)
