@@ -44,7 +44,7 @@ def convert_img_links(text, page_info):
 
     _re_img_link = re.compile(r"(src=\"|\()/imgs/")
     while _re_img_link.search(text):
-        text = _re_img_link.sub(r"\1/docs/%s/%s/%s/imgs/" % (package_name, version, language), text)
+        text = _re_img_link.sub(rf"\1/docs/{package_name}/{version}/{language}/imgs/", text)
     return text
 
 
