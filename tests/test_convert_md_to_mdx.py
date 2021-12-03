@@ -14,12 +14,7 @@
 # limitations under the License.
 
 
-import sys
 import unittest
-
-
-# To find the doc_builder package.
-sys.path.append("src")
 
 from doc_builder.convert_md_to_mdx import convert_img_links, convert_md_to_mdx, convert_special_chars, process_md
 
@@ -28,7 +23,7 @@ class ConvertMdToMdxTester(unittest.TestCase):
     def test_convert_md_to_mdx(self):
         page_info = {"package_name": "transformers", "version": "v4.10.0", "language": "fr"}
         md_text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit"
-        expected_conversion = '<script>\nimport Tip from "./Tip.svelte";\nimport Youtube from "./Youtube.svelte";\t\nimport Docstring from "./Docstring.svelte";\t\nimport CodeBlock from "./CodeBlock.svelte";\t\nimport CodeBlockFw from "./CodeBlockFw.svelte";\t\nimport IconCopyLink from "./IconCopyLink.svelte";\t\nexport let fw: "pt" | "tf"\n</script>\nLorem ipsum dolor sit amet, consectetur adipiscing elit'
+        expected_conversion = '<script>\nimport Tip from "./Tip.svelte";\nimport Youtube from "./Youtube.svelte";\nimport Docstring from "./Docstring.svelte";\nimport CodeBlock from "./CodeBlock.svelte";\nimport CodeBlockFw from "./CodeBlockFw.svelte";\nimport IconCopyLink from "./IconCopyLink.svelte";\nexport let fw: "pt" | "tf"\n</script>\nLorem ipsum dolor sit amet, consectetur adipiscing elit'
         self.assertEqual(convert_md_to_mdx(md_text, page_info), expected_conversion)
 
     def test_convert_special_chars(self):
@@ -38,9 +33,9 @@ class ConvertMdToMdxTester(unittest.TestCase):
 
         longer_test = """<script>
 import Tip from "./Tip.svelte";
-import Youtube from "./Youtube.svelte";	
-import Docstring from "./Docstring.svelte";	
-import CodeBlock from "./CodeBlock.svelte";	
+import Youtube from "./Youtube.svelte";
+import Docstring from "./Docstring.svelte";
+import CodeBlock from "./CodeBlock.svelte";
 export let fw: "pt" | "tf"
 </script>"""
         self.assertEqual(convert_special_chars(longer_test), longer_test)
