@@ -19,18 +19,18 @@ sections:
     title: Shared Configuration
   - local: zero
     sections:
-    - local: zero-config
+    - local: zero2-config
       title: ZeRO-2 Config
-    - local: zero-config
+    - local: zero3-config
       title: ZeRO-3 Config
     title: ZeRO
   - local: nvme-support
     sections:
-    - local: zero-vs-zero-performance
+    - local: zero2-vs-zero3-performance
       title: ZeRO-2 vs ZeRO-3 Performance
-    - local: zero-example
+    - local: zero2-example
       title: ZeRO-2 Example
-    - local: zero-example
+    - local: zero3-example
       title: ZeRO-3 Example
     title: NVMe Support
   - local: optimizer-and-scheduler
@@ -40,7 +40,7 @@ sections:
     - local: scheduler
       title: Scheduler
     title: Optimizer and Scheduler
-  - local: fp-precision
+  - local: fp32-precision
     title: fp32 Precision
   - local: automatic-mixed-precision
     title: Automatic Mixed Precision
@@ -52,7 +52,7 @@ sections:
     title: Gradient Clipping
   - local: getting-the-model-weights-out
     title: Getting The Model Weights Out
-  - local: zero-and-infinity-nuances
+  - local: zero3-and-infinity-nuances
     sections:
     - local: constructing-massive-models
       title: Constructing Massive Models
@@ -670,7 +670,7 @@ going to use.
 
 <a id='deepspeed-zero2-config'></a>
 
-<h4 id="zero-config">ZeRO-2 Config</h4>
+<h4 id="zero2-config">ZeRO-2 Config</h4>
 
 The following is an example configuration for ZeRO stage 2:
 
@@ -708,7 +708,7 @@ The following is an example configuration for ZeRO stage 2:
 
 <a id='deepspeed-zero3-config'></a>
 
-<h4 id="zero-config">ZeRO-3 Config</h4>
+<h4 id="zero3-config">ZeRO-3 Config</h4>
 
 The following is an example configuration for ZeRO stage 3:
 
@@ -862,7 +862,7 @@ In order to figure out the optimal `aio` configuration block you must run a benc
 
 <a id='deepspeed-zero2-zero3-performance'></a>
 
-<h4 id="zero-vs-zero-performance">ZeRO-2 vs ZeRO-3 Performance</h4>
+<h4 id="zero2-vs-zero3-performance">ZeRO-2 vs ZeRO-3 Performance</h4>
 
 ZeRO-3 is likely to be slower than ZeRO-2 if everything else is configured the same because the former has to gather
 model weights in addition to what ZeRO-2 does. If ZeRO-2 meets your needs and you don't need to scale beyond a few GPUs
@@ -882,7 +882,7 @@ these help you to trade scalability for speed depending on your needs.
 
 <a id='deepspeed-zero2-example'></a>
 
-<h4 id="zero-example">ZeRO-2 Example</h4>
+<h4 id="zero2-example">ZeRO-2 Example</h4>
 
 Here is a full ZeRO-2 auto-configuration file `ds_config_zero2.json`:
 
@@ -993,7 +993,7 @@ values look like, but we highly recommend using the one with multiple `auto` set
 
 <a id='deepspeed-zero3-example'></a>
 
-<h4 id="zero-example">ZeRO-3 Example</h4>
+<h4 id="zero3-example">ZeRO-3 Example</h4>
 
 Here is a full ZeRO-3 auto-configuration file `ds_config_zero3.json`:
 
@@ -1289,7 +1289,7 @@ and ``total_num_steps`, `warmup_max_lr`, `warmup_num_steps` and `total_num_steps
 
 <a id='deepspeed-fp32'></a>
 
-<h3 id="fp-precision">fp32 Precision</h3>
+<h3 id="fp32-precision">fp32 Precision</h3>
 
 Deepspeed supports the full fp32 and the fp16 mixed precision.
 
@@ -1601,7 +1601,7 @@ example will contain `global_step1`.
 Note: currently the script requires 2x general RAM of the final fp32 model weights.
 
 
-<h3 id="zero-and-infinity-nuances">ZeRO-3 and Infinity Nuances</h3>
+<h3 id="zero3-and-infinity-nuances">ZeRO-3 and Infinity Nuances</h3>
 
 ZeRO-3 is quite different from ZeRO-2 because of its param sharding feature.
 

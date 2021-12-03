@@ -1,30 +1,30 @@
 ---
 local: migrating-from-previous-packages
 sections:
-- local: migrating-from-transformers-vx-to-vx
+- local: migrating-from-transformers-v3x-to-v4x
   sections:
-  - local: autotokenizers-and-pipelines-now-use-fast-rust-tokenizers-by-default
+  - local: 1-autotokenizers-and-pipelines-now-use-fast-rust-tokenizers-by-default
     sections:
-    - local: how-to-obtain-the-same-behavior-as-vx-in-vx
+    - local: how-to-obtain-the-same-behavior-as-v3x-in-v4x
       title: How to obtain the same behavior as v3.x in v4.x
     title: 1. AutoTokenizers and pipelines now use fast (rust) tokenizers by default.
-  - local: sentencepiece-is-removed-from-the-required-dependencies
+  - local: 2-sentencepiece-is-removed-from-the-required-dependencies
     sections:
-    - local: how-to-obtain-the-same-behavior-as-vx-in-vx
+    - local: how-to-obtain-the-same-behavior-as-v3x-in-v4x
       title: How to obtain the same behavior as v3.x in v4.x
     title: 2. SentencePiece is removed from the required dependencies
-  - local: the-architecture-of-the-repo-has-been-updated-so-that-each-model-resides-in-its-folder
+  - local: 3-the-architecture-of-the-repo-has-been-updated-so-that-each-model-resides-in-its-folder
     sections:
-    - local: how-to-obtain-the-same-behavior-as-vx-in-vx
+    - local: how-to-obtain-the-same-behavior-as-v3x-in-v4x
       title: How to obtain the same behavior as v3.x in v4.x
     title: 3. The architecture of the repo has been updated so that each model resides
       in its folder
-  - local: switching-the-returndict-argument-to-true-by-default
+  - local: 4-switching-the-returndict-argument-to-true-by-default
     sections:
-    - local: how-to-obtain-the-same-behavior-as-vx-in-vx
+    - local: how-to-obtain-the-same-behavior-as-v3x-in-v4x
       title: How to obtain the same behavior as v3.x in v4.x
     title: 4. Switching the `return_dict` argument to `True` by default
-  - local: removed-some-deprecated-attributes
+  - local: 5-removed-some-deprecated-attributes
     title: 5. Removed some deprecated attributes
   title: Migrating from transformers `v3.x` to `v4.x`
 - local: migrating-from-pytorchtransformers-to-transformers
@@ -47,11 +47,11 @@ title: Migrating from previous packages
 ---
 <script>
 import Tip from "./Tip.svelte";
-import Youtube from "./Youtube.svelte";	
-import Docstring from "./Docstring.svelte";	
-import CodeBlock from "./CodeBlock.svelte";	
-import CodeBlockFw from "./CodeBlockFw.svelte";	
-import IconCopyLink from "./IconCopyLink.svelte";	
+import Youtube from "./Youtube.svelte";
+import Docstring from "./Docstring.svelte";
+import CodeBlock from "./CodeBlock.svelte";
+import CodeBlockFw from "./CodeBlockFw.svelte";
+import IconCopyLink from "./IconCopyLink.svelte";
 export let fw: "pt" | "tf"
 </script>
 <!---
@@ -72,12 +72,12 @@ limitations under the License.
 
 <h1 id="migrating-from-previous-packages">Migrating from previous packages</h1>
 
-<h2 id="migrating-from-transformers-vx-to-vx">Migrating from transformers `v3.x` to `v4.x`</h2>
+<h2 id="migrating-from-transformers-v3x-to-v4x">Migrating from transformers `v3.x` to `v4.x`</h2>
 
 A couple of changes were introduced when the switch from version 3 to version 4 was done. Below is a summary of the
 expected changes:
 
-<h4 id="autotokenizers-and-pipelines-now-use-fast-rust-tokenizers-by-default">1. AutoTokenizers and pipelines now use fast (rust) tokenizers by default.</h4>
+<h4 id="1-autotokenizers-and-pipelines-now-use-fast-rust-tokenizers-by-default">1. AutoTokenizers and pipelines now use fast (rust) tokenizers by default.</h4>
 
 The python and rust tokenizers have roughly the same API, but the rust tokenizers have a more complete feature set.
 
@@ -85,7 +85,7 @@ This introduces two breaking changes:
 - The handling of overflowing tokens between the python and rust tokenizers is different.
 - The rust tokenizers do not accept integers in the encoding methods.
 
-<h5 id="how-to-obtain-the-same-behavior-as-vx-in-vx">How to obtain the same behavior as v3.x in v4.x</h5>
+<h5 id="how-to-obtain-the-same-behavior-as-v3x-in-v4x">How to obtain the same behavior as v3.x in v4.x</h5>
 
 - The pipelines now contain additional features out of the box. See the [token-classification pipeline with the `grouped_entities` flag](main_classes/pipelines#transformers.TokenClassificationPipeline).
 - The auto-tokenizers now return rust tokenizers. In order to obtain the python tokenizers instead, the user may use the `use_fast` flag by setting it to `False`:
@@ -103,7 +103,7 @@ from transformers import AutoTokenizer
 tokenizer = AutoTokenizer.from_pretrained("bert-base-cased", use_fast=False)
 ```
 
-<h4 id="sentencepiece-is-removed-from-the-required-dependencies">2. SentencePiece is removed from the required dependencies</h4>
+<h4 id="2-sentencepiece-is-removed-from-the-required-dependencies">2. SentencePiece is removed from the required dependencies</h4>
 
 The requirement on the SentencePiece dependency has been lifted from the `setup.py`. This is done so that we may have a channel on anaconda cloud without relying on `conda-forge`. This means that the tokenizers that depend on the SentencePiece library will not be available with a standard `transformers` installation.
 
@@ -117,7 +117,7 @@ This includes the **slow** versions of:
 - `ReformerTokenizer`
 - `XLMRobertaTokenizer`
 
-<h5 id="how-to-obtain-the-same-behavior-as-vx-in-vx">How to obtain the same behavior as v3.x in v4.x</h5>
+<h5 id="how-to-obtain-the-same-behavior-as-v3x-in-v4x">How to obtain the same behavior as v3.x in v4.x</h5>
 
 In order to obtain the same behavior as version `v3.x`, you should install `sentencepiece` additionally:
 
@@ -133,13 +133,13 @@ or
 ```bash
 pip install transformers sentencepiece
 ```
-<h4 id="the-architecture-of-the-repo-has-been-updated-so-that-each-model-resides-in-its-folder">3. The architecture of the repo has been updated so that each model resides in its folder</h4>
+<h4 id="3-the-architecture-of-the-repo-has-been-updated-so-that-each-model-resides-in-its-folder">3. The architecture of the repo has been updated so that each model resides in its folder</h4>
 
 The past and foreseeable addition of new models means that the number of files in the directory `src/transformers` keeps growing and becomes harder to navigate and understand. We made the choice to put each model and the files accompanying it in their own sub-directories.
 
 This is a breaking change as importing intermediary layers using a model's module directly needs to be done via a different path.
 
-<h5 id="how-to-obtain-the-same-behavior-as-vx-in-vx">How to obtain the same behavior as v3.x in v4.x</h5>
+<h5 id="how-to-obtain-the-same-behavior-as-v3x-in-v4x">How to obtain the same behavior as v3.x in v4.x</h5>
 
 In order to obtain the same behavior as version `v3.x`, you should update the path used to access the layers.
 
@@ -152,13 +152,13 @@ to obtain the same in version `v4.x`:
 from transformers.models.bert.modeling_bert import BertLayer
 ```
 
-<h4 id="switching-the-returndict-argument-to-true-by-default">4. Switching the `return_dict` argument to `True` by default</h4>
+<h4 id="4-switching-the-returndict-argument-to-true-by-default">4. Switching the `return_dict` argument to `True` by default</h4>
 
 The [`return_dict` argument](main_classes/output) enables the return of dict-like python objects containing the model outputs, instead of the standard tuples. This object is self-documented as keys can be used to retrieve values, while also behaving as a tuple as users may retrieve objects by index or by slice.
 
 This is a breaking change as the limitation of that tuple is that it cannot be unpacked: `value0, value1 = outputs` will not work.
 
-<h5 id="how-to-obtain-the-same-behavior-as-vx-in-vx">How to obtain the same behavior as v3.x in v4.x</h5>
+<h5 id="how-to-obtain-the-same-behavior-as-v3x-in-v4x">How to obtain the same behavior as v3.x in v4.x</h5>
 
 In order to obtain the same behavior as version `v3.x`, you should specify the `return_dict` argument to `False`, either in the model configuration or during the forward pass.
 
@@ -178,7 +178,7 @@ model = BertModel.from_pretrained("bert-base-cased", return_dict=False)
 outputs = model(**inputs)
 ```
 
-<h4 id="removed-some-deprecated-attributes">5. Removed some deprecated attributes</h4>
+<h4 id="5-removed-some-deprecated-attributes">5. Removed some deprecated attributes</h4>
 
 Attributes that were deprecated have been removed if they had been deprecated for at least a month. The full list of deprecated attributes can be found in [#8604](https://github.com/huggingface/transformers/pull/8604).
 
