@@ -25,11 +25,11 @@ def convert_md_to_mdx(md_text, page_info):
     """
     return """<script>
 import Tip from "./Tip.svelte";
-import Youtube from "./Youtube.svelte";	
-import Docstring from "./Docstring.svelte";	
-import CodeBlock from "./CodeBlock.svelte";	
-import CodeBlockFw from "./CodeBlockFw.svelte";	
-import IconCopyLink from "./IconCopyLink.svelte";	
+import Youtube from "./Youtube.svelte";
+import Docstring from "./Docstring.svelte";
+import CodeBlock from "./CodeBlock.svelte";
+import CodeBlockFw from "./CodeBlockFw.svelte";
+import IconCopyLink from "./IconCopyLink.svelte";
 export let fw: "pt" | "tf"
 </script>\n""" + process_md(
         md_text, page_info

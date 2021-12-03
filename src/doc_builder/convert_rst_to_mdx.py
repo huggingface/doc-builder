@@ -335,9 +335,8 @@ def parse_rst_docstring(docstring):
     while idx < len(lines):
         # Parameters section
         if _re_args.search(lines[idx]) is not None:
-            # Title of the section. TODO: change this when we have the proper syntax.
+            # Title of the section.
             lines[idx] = "<parameters>\n"
-            idx_start = idx
             # Find the next nonempty line
             idx += 1
             while is_empty_line(lines[idx]):
@@ -359,7 +358,7 @@ def parse_rst_docstring(docstring):
 
         # Returns section
         elif _re_returns.search(lines[idx]) is not None:
-            # Title of the section. TODO: change this when we have the proper syntax.
+            # Title of the section.
             lines[idx] = "<returns>\n"
             # Find the next nonempty line
             idx += 1
@@ -377,7 +376,6 @@ def parse_rst_docstring(docstring):
 
             # Return block finished, we insert the return type if one was specified
             if return_type is not None:
-                # TODO: change this when we have the proper syntax
                 lines[idx - 1] += f"\n<returntype>{return_type}</returntype>\n"
 
         else:

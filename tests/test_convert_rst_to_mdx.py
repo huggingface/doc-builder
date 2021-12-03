@@ -14,12 +14,7 @@
 # limitations under the License.
 
 
-import sys
 import unittest
-
-
-# To find the doc_builder package.
-sys.path.append("src")
 
 from doc_builder.convert_rst_to_mdx import (
     _re_anchor_section,
@@ -301,9 +296,9 @@ third line``.
 
         longer_test = """<script>
 import Tip from "./Tip.svelte";
-import Youtube from "./Youtube.svelte";	
-import Docstring from "./Docstring.svelte";	
-import CodeBlock from "./CodeBlock.svelte";	
+import Youtube from "./Youtube.svelte";
+import Docstring from "./Docstring.svelte";
+import CodeBlock from "./CodeBlock.svelte";
 export let fw: "pt" | "tf"
 </script>"""
         self.assertEqual(convert_special_chars(longer_test), longer_test)
@@ -354,13 +349,13 @@ Example::
 
 .. note::
     This is a note.
-    
+
 .. autoclass:: transformers.AdamW
     :members:
 
 .. autoclass:: transformers.PreTrainedTokenizer
     :special-members: __call__, batch_decode, decode, encode, push_to_hub
-    :members: 
+    :members:
 
 .. autoclass:: transformers.BertTokenizer
     :members: build_inputs_with_special_tokens, get_special_tokens_mask,
@@ -494,7 +489,7 @@ End of the arg section.
         example1 = """
     Lala
     Loulou
-    
+
     - This is a list.
       This item is long.
     - This is the second item.
@@ -545,12 +540,12 @@ Now we are out of the list.
 
         example3 = """
   Lala
-  
+
   ```python
   def function(x):
       return x
   ```
-  
+
   Loulou
 """
         expected3 = """

@@ -14,16 +14,10 @@
 # limitations under the License.
 
 
-import sys
 import tempfile
 import unittest
 
 import yaml
-
-
-# To find the doc_builder package.
-sys.path.append("src")
-
 from doc_builder.utils import update_versions_file
 
 

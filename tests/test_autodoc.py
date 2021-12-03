@@ -15,18 +15,10 @@
 
 
 import inspect
-import sys
 import unittest
 from typing import List, Optional, Union
 
 import transformers
-from transformers import BertModel, BertTokenizer, BertTokenizerFast
-from transformers.file_utils import PushToHubMixin
-
-
-# To find the doc_builder package.
-sys.path.append("src")
-
 from doc_builder.autodoc import (
     autodoc,
     document_object,
@@ -39,6 +31,8 @@ from doc_builder.autodoc import (
     get_type_name,
     remove_example_tags,
 )
+from transformers import BertModel, BertTokenizer, BertTokenizerFast
+from transformers.file_utils import PushToHubMixin
 
 
 # This is dynamic since the Transformers library is not frozen.
