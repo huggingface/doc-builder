@@ -142,6 +142,10 @@ class ConvertRstToMdxTester(unittest.TestCase):
         self.assertIsNotNone(_re_args.search("  Arg:"))
         self.assertIsNone(_re_args.search("  Arg: lala"))
 
+        self.assertIsNotNone(_re_args.search("  Arguments:"))
+        self.assertIsNotNone(_re_args.search("  Argument:"))
+        self.assertIsNone(_re_args.search("  Argument: lala"))
+
         self.assertIsNotNone(_re_args.search("  Parameters:"))
         self.assertIsNotNone(_re_args.search("  Parameter:"))
         self.assertIsNone(_re_args.search("  Parameter: lala"))
