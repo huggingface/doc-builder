@@ -76,12 +76,11 @@ Implements Adam algorithm with weight decay fix as introduced in [Decoupled Weig
 
 
 <div class="docstring">
-<docstring><name>step</name><anchor>transformers.AdamW.step</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/optimization.py#L313</source><parameters>[{"name": "closure", "val": ": typing.Callable = None"}]</parameters></docstring>
+<docstring><name>step</name><anchor>transformers.AdamW.step</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/optimization.py#L313</source><parameters>[{"name": "closure", "val": ": typing.Callable = None"}]</parameters><paramsdesc>- **closure** (`Callable`, _optional_) -- A closure that reevaluates the model and returns the loss.</paramsdesc><paramgroups>0</paramgroups></docstring>
 
 Performs a single optimization step.
 
-Arguments:
-closure (`Callable`, _optional_): A closure that reevaluates the model and returns the loss.
+
 
 
 </div></div>
@@ -90,7 +89,26 @@ closure (`Callable`, _optional_): A closure that reevaluates the model and retur
 
 <div class="docstring">
 
-<docstring><name>class transformers.Adafactor</name><anchor>transformers.Adafactor</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/optimization.py#L375</source><parameters>[{"name": "params", "val": ""}, {"name": "lr", "val": " = None"}, {"name": "eps", "val": " = (1e-30, 0.001)"}, {"name": "clip_threshold", "val": " = 1.0"}, {"name": "decay_rate", "val": " = -0.8"}, {"name": "beta1", "val": " = None"}, {"name": "weight_decay", "val": " = 0.0"}, {"name": "scale_parameter", "val": " = True"}, {"name": "relative_step", "val": " = True"}, {"name": "warmup_init", "val": " = False"}]</parameters></docstring>
+<docstring><name>class transformers.Adafactor</name><anchor>transformers.Adafactor</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/optimization.py#L375</source><parameters>[{"name": "params", "val": ""}, {"name": "lr", "val": " = None"}, {"name": "eps", "val": " = (1e-30, 0.001)"}, {"name": "clip_threshold", "val": " = 1.0"}, {"name": "decay_rate", "val": " = -0.8"}, {"name": "beta1", "val": " = None"}, {"name": "weight_decay", "val": " = 0.0"}, {"name": "scale_parameter", "val": " = True"}, {"name": "relative_step", "val": " = True"}, {"name": "warmup_init", "val": " = False"}]</parameters><paramsdesc>- **params** (`Iterable[nn.parameter.Parameter]`) --
+  Iterable of parameters to optimize or dictionaries defining parameter groups.
+- **lr** (`float`, _optional_) --
+  The external learning rate.
+- **eps** (`Tuple[float, float]`, _optional_, defaults to (1e-30, 1e-3)) --
+  Regularization constants for square gradient and parameter scale respectively
+- **clip_threshold** (`float`, _optional_, defaults 1.0) --
+  Threshold of root mean square of final gradient update
+- **decay_rate** (`float`, _optional_, defaults to -0.8) --
+  Coefficient used to compute running averages of square
+- **beta1** (`float`, _optional_) --
+  Coefficient used for computing running averages of gradient
+- **weight_decay** (`float`, _optional_, defaults to 0) --
+  Weight decay (L2 penalty)
+- **scale_parameter** (`bool`, _optional_, defaults to `True`) --
+  If True, learning rate is scaled by root mean square
+- **relative_step** (`bool`, _optional_, defaults to `True`) --
+  If True, time-dependent learning rate is computed instead of external learning rate
+- **warmup_init** (`bool`, _optional_, defaults to `False`) --
+  Time-dependent learning rate computation depends on whether warm-up initialization is being used</paramsdesc><paramgroups>0</paramgroups></docstring>
 
 AdaFactor pytorch implementation can be used as a drop in replacement for Adam original fairseq code:
 https://github.com/pytorch/fairseq/blob/master/fairseq/optim/adafactor.py
@@ -100,27 +118,7 @@ this optimizer internally adjusts the learning rate depending on the *scale_para
 *warmup_init* options. To use a manual (external) learning rate schedule you should set _scale_parameter=False_ and
 _relative_step=False_.
 
-Arguments:
-params (`Iterable[nn.parameter.Parameter]`):
-Iterable of parameters to optimize or dictionaries defining parameter groups.
-lr (`float`, _optional_):
-The external learning rate.
-eps (`Tuple[float, float]`, _optional_, defaults to (1e-30, 1e-3)):
-Regularization constants for square gradient and parameter scale respectively
-clip_threshold (`float`, _optional_, defaults 1.0):
-Threshold of root mean square of final gradient update
-decay_rate (`float`, _optional_, defaults to -0.8):
-Coefficient used to compute running averages of square
-beta1 (`float`, _optional_):
-Coefficient used for computing running averages of gradient
-weight_decay (`float`, _optional_, defaults to 0):
-Weight decay (L2 penalty)
-scale_parameter (`bool`, _optional_, defaults to `True`):
-If True, learning rate is scaled by root mean square
-relative_step (`bool`, _optional_, defaults to `True`):
-If True, time-dependent learning rate is computed instead of external learning rate
-warmup_init (`bool`, _optional_, defaults to `False`):
-Time-dependent learning rate computation depends on whether warm-up initialization is being used
+
 
 This implementation handles low-precision (FP16, bfloat) values, but we have not thoroughly tested.
 
@@ -176,14 +174,13 @@ optimizer = Adafactor(
 
 
 <div class="docstring">
-<docstring><name>step</name><anchor>transformers.Adafactor.step</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/optimization.py#L510</source><parameters>[{"name": "closure", "val": " = None"}]</parameters></docstring>
+<docstring><name>step</name><anchor>transformers.Adafactor.step</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/optimization.py#L510</source><parameters>[{"name": "closure", "val": " = None"}]</parameters><paramsdesc>- **closure** (callable, optional) -- A closure that reevaluates the model
+                and returns the loss.</paramsdesc><paramgroups>0</paramgroups></docstring>
 
         Performs a single optimization step
 
-        Arguments:
-            closure (callable, optional): A closure that reevaluates the model
-                and returns the loss.
-        
+
+
 
 </div></div>
 
