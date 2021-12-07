@@ -18,7 +18,13 @@ import re
 import unittest
 
 import transformers
-from doc_builder.build_doc import _re_autodoc, _re_list_item, generate_frontmatter_in_text, resolve_links_in_text, resolve_open_in_colab
+from doc_builder.build_doc import (
+    _re_autodoc,
+    _re_list_item,
+    generate_frontmatter_in_text,
+    resolve_links_in_text,
+    resolve_open_in_colab,
+)
 
 
 class BuildDocTester(unittest.TestCase):
@@ -30,7 +36,7 @@ class BuildDocTester(unittest.TestCase):
 
     def test_re_list_item(self):
         self.assertEqual(_re_list_item.search("   - forward").groups(), ("forward",))
-    
+
     def test_resolve_open_in_colab(self):
         expected = """
 <ColabDropdown hydrate-props={{
