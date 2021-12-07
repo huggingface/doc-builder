@@ -32,6 +32,36 @@ _re_autodoc = re.compile("^\s*\[\[autodoc\]\]\s+(\S+)\s*$")
 _re_list_item = re.compile("^\s*-\s+(\S+)\s*$")
 
 
+def resolve_open_in_colab(content, page_info):
+    """
+    Replaces [[open-in-colab]] special markers by the proper svelte component.
+
+    Args:
+        content (`str`): The documentation to treat.
+        page_info (`Dict[str, str]`, *optional*): Some information about the page.
+    """
+    if "[[open-in-colab]]" not in content:
+        return
+
+    page_name = page_info["page"].split("/")[-1].replace(".html", "")
+    nb_prefix = "https://colab.research.google.com/github/huggingface/notebooks/blob/master/transformers_doc/"
+    links = {
+        "Mixed": f"{nb_prefix}{page_name}.ipynb",
+        "PyTorch": f"{nb_prefix}pytorch/{page_name}.ipynb",
+        "TensorFlow": f"{nb_prefix}tensorflow/{page_name}.ipynb",
+    }
+    formatted_links = ['    {label: "' + key + '", value: "' + value + '"},' for key, value in links.items()]
+
+    svelte_component = """<ColabDropdown hydrate-props={{
+  classNames: "absolute z-10 right-0 top-0",
+  options:[
+"""
+    svelte_component += "\n".join(formatted_links)
+    svelte_component += "\n]}} />"
+
+    return content.replace("[[open-in-colab]]", svelte_component)
+
+
 def resolve_autodoc(content, package, return_anchors=False, page_info=None):
     """
     Replaces [[autodoc]] special syntax by the corresponding generated documentation in some content.
@@ -125,6 +155,7 @@ def build_mdx_files(package, doc_folder, output_dir, page_info):
             with open(file, "r", encoding="utf-8-sig") as reader:
                 content = reader.read()
             content = convert_md_to_mdx(content, page_info)
+            content = resolve_open_in_colab(content, page_info)
             content, new_anchors = resolve_autodoc(content, package, return_anchors=True, page_info=page_info)
             with open(dest_file, "w", encoding="utf-8") as writer:
                 writer.write(content)
@@ -137,6 +168,7 @@ def build_mdx_files(package, doc_folder, output_dir, page_info):
             with open(file, "r", encoding="utf-8") as reader:
                 content = reader.read()
             content = convert_rst_to_mdx(content, page_info)
+            content = resolve_open_in_colab(content, page_info)
             content, new_anchors = resolve_autodoc(content, package, return_anchors=True, page_info=page_info)
             with open(dest_file, "w", encoding="utf-8") as writer:
                 writer.write(content)

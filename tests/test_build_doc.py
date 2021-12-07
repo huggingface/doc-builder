@@ -14,10 +14,11 @@
 # limitations under the License.
 
 
+import re
 import unittest
 
 import transformers
-from doc_builder.build_doc import _re_autodoc, _re_list_item, generate_frontmatter_in_text, resolve_links_in_text
+from doc_builder.build_doc import _re_autodoc, _re_list_item, generate_frontmatter_in_text, resolve_links_in_text, resolve_open_in_colab
 
 
 class BuildDocTester(unittest.TestCase):
@@ -29,6 +30,18 @@ class BuildDocTester(unittest.TestCase):
 
     def test_re_list_item(self):
         self.assertEqual(_re_list_item.search("   - forward").groups(), ("forward",))
+    
+    def test_resolve_open_in_colab(self):
+        expected = """
+<ColabDropdown hydrate-props={{
+  classNames: "absolute z-10 right-0 top-0",
+  options:[
+    {label: "Mixed", value: "https://colab.research.google.com/github/huggingface/notebooks/blob/master/transformers_doc/quicktour.ipynb"},
+    {label: "PyTorch", value: "https://colab.research.google.com/github/huggingface/notebooks/blob/master/transformers_doc/pytorch/quicktour.ipynb"},
+    {label: "TensorFlow", value: "https://colab.research.google.com/github/huggingface/notebooks/blob/master/transformers_doc/tensorflow/quicktour.ipynb"},
+]}} />
+"""
+        self.assertEqual(resolve_open_in_colab("\n[[open-in-colab]]\n", {"page": "quicktour.html"}), expected)
 
     def test_resolve_links_in_text(self):
         page_info = {"package_name": "transformers"}
