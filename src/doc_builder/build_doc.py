@@ -41,9 +41,9 @@ def resolve_open_in_colab(content, page_info):
         page_info (`Dict[str, str]`, *optional*): Some information about the page.
     """
     if "[[open-in-colab]]" not in content:
-        return
+        return content
 
-    page_name = page_info["page"].split("/")[-1].replace(".html", "")
+    page_name = Path(page_info["page"]).stem
     nb_prefix = "https://colab.research.google.com/github/huggingface/notebooks/blob/master/transformers_doc/"
     links = {
         "Mixed": f"{nb_prefix}{page_name}.ipynb",
