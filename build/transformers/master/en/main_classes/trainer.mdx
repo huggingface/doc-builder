@@ -181,7 +181,7 @@ other ML platforms...) and take decisions (like early stopping).
 
 <div class="docstring">
 
-<docstring><name>class transformers.Trainer</name><anchor>transformers.Trainer</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/trainer.py#L195</source><parameters>[{"name": "model", "val": ": typing.Union[transformers.modeling_utils.PreTrainedModel, torch.nn.modules.module.Module] = None"}, {"name": "args", "val": ": TrainingArguments = None"}, {"name": "data_collator", "val": ": typing.Optional[DataCollator] = None"}, {"name": "train_dataset", "val": ": typing.Optional[torch.utils.data.dataset.Dataset] = None"}, {"name": "eval_dataset", "val": ": typing.Optional[torch.utils.data.dataset.Dataset] = None"}, {"name": "tokenizer", "val": ": typing.Optional[transformers.tokenization_utils_base.PreTrainedTokenizerBase] = None"}, {"name": "model_init", "val": ": typing.Callable[[], transformers.modeling_utils.PreTrainedModel] = None"}, {"name": "compute_metrics", "val": ": typing.Union[typing.Callable[[transformers.trainer_utils.EvalPrediction], typing.Dict], NoneType] = None"}, {"name": "callbacks", "val": ": typing.Optional[typing.List[transformers.trainer_callback.TrainerCallback]] = None"}, {"name": "optimizers", "val": ": typing.Tuple[torch.optim.optimizer.Optimizer, torch.optim.lr_scheduler.LambdaLR] = (None, None)"}]</parameters><paramsdesc>- **model** ([PreTrainedModel](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel) or `torch.nn.Module`, _optional_) --
+<docstring><name>class transformers.Trainer</name><anchor>transformers.Trainer</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/trainer.py#L196</source><parameters>[{"name": "model", "val": ": typing.Union[transformers.modeling_utils.PreTrainedModel, torch.nn.modules.module.Module] = None"}, {"name": "args", "val": ": TrainingArguments = None"}, {"name": "data_collator", "val": ": typing.Optional[DataCollator] = None"}, {"name": "train_dataset", "val": ": typing.Optional[torch.utils.data.dataset.Dataset] = None"}, {"name": "eval_dataset", "val": ": typing.Optional[torch.utils.data.dataset.Dataset] = None"}, {"name": "tokenizer", "val": ": typing.Optional[transformers.tokenization_utils_base.PreTrainedTokenizerBase] = None"}, {"name": "model_init", "val": ": typing.Callable[[], transformers.modeling_utils.PreTrainedModel] = None"}, {"name": "compute_metrics", "val": ": typing.Union[typing.Callable[[transformers.trainer_utils.EvalPrediction], typing.Dict], NoneType] = None"}, {"name": "callbacks", "val": ": typing.Optional[typing.List[transformers.trainer_callback.TrainerCallback]] = None"}, {"name": "optimizers", "val": ": typing.Tuple[torch.optim.optimizer.Optimizer, torch.optim.lr_scheduler.LambdaLR] = (None, None)"}]</parameters><paramsdesc>- **model** ([PreTrainedModel](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel) or `torch.nn.Module`, _optional_) --
   The model to train, evaluate or use for predictions. If not provided, a `model_init` must be passed.
 
 <Tip>
@@ -260,7 +260,7 @@ Important attributes:
 
 
 <div class="docstring">
-<docstring><name>add\_callback</name><anchor>transformers.Trainer.add_callback</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/trainer.py#L489</source><parameters>[{"name": "callback", "val": ""}]</parameters><paramsdesc>- **callback** (`type` or `TrainerCallback`) --
+<docstring><name>add\_callback</name><anchor>transformers.Trainer.add_callback</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/trainer.py#L490</source><parameters>[{"name": "callback", "val": ""}]</parameters><paramsdesc>- **callback** (`type` or `TrainerCallback`) --
   A `TrainerCallback` class or an instance of a `TrainerCallback`.
   In the first case, will instantiate a member of that class.</paramsdesc><paramgroups>0</paramgroups></docstring>
 
@@ -271,7 +271,15 @@ Add a callback to the current list of `TrainerCallback`.
 
 </div>
 <div class="docstring">
-<docstring><name>compute\_loss</name><anchor>transformers.Trainer.compute_loss</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/trainer.py#L1896</source><parameters>[{"name": "model", "val": ""}, {"name": "inputs", "val": ""}, {"name": "return_outputs", "val": " = False"}]</parameters></docstring>
+<docstring><name>autocast\_smart\_context\_manager</name><anchor>transformers.Trainer.autocast_smart_context_manager</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/trainer.py#L1841</source><parameters>[]</parameters></docstring>
+
+A helper wrapper that creates an appropriate context manager for `autocast` while feeding it the desired
+arguments, depending on the situation.
+
+
+</div>
+<div class="docstring">
+<docstring><name>compute\_loss</name><anchor>transformers.Trainer.compute_loss</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/trainer.py#L1905</source><parameters>[{"name": "model", "val": ""}, {"name": "inputs", "val": ""}, {"name": "return_outputs", "val": " = False"}]</parameters></docstring>
 
         How the loss is computed by Trainer. By default, all models return the loss in the first element.
 
@@ -280,7 +288,7 @@ Add a callback to the current list of `TrainerCallback`.
 
 </div>
 <div class="docstring">
-<docstring><name>create\_optimizer</name><anchor>transformers.Trainer.create_optimizer</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/trainer.py#L799</source><parameters>[]</parameters></docstring>
+<docstring><name>create\_optimizer</name><anchor>transformers.Trainer.create_optimizer</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/trainer.py#L800</source><parameters>[]</parameters></docstring>
 
 Setup the optimizer.
 
@@ -290,7 +298,7 @@ Trainer's init through `optimizers`, or subclass and override this method in a s
 
 </div>
 <div class="docstring">
-<docstring><name>create\_optimizer\_and\_scheduler</name><anchor>transformers.Trainer.create_optimizer_and_scheduler</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/trainer.py#L788</source><parameters>[{"name": "num_training_steps", "val": ": int"}]</parameters></docstring>
+<docstring><name>create\_optimizer\_and\_scheduler</name><anchor>transformers.Trainer.create_optimizer_and_scheduler</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/trainer.py#L789</source><parameters>[{"name": "num_training_steps", "val": ": int"}]</parameters></docstring>
 
 Setup the optimizer and the learning rate scheduler.
 
@@ -301,7 +309,7 @@ and/or `create_scheduler`) in a subclass.
 
 </div>
 <div class="docstring">
-<docstring><name>create\_scheduler</name><anchor>transformers.Trainer.create_scheduler</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/trainer.py#L844</source><parameters>[{"name": "num_training_steps", "val": ": int"}, {"name": "optimizer", "val": ": Optimizer = None"}]</parameters><paramsdesc>- **num_training_steps** (int) -- The number of training steps to do.</paramsdesc><paramgroups>0</paramgroups></docstring>
+<docstring><name>create\_scheduler</name><anchor>transformers.Trainer.create_scheduler</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/trainer.py#L845</source><parameters>[{"name": "num_training_steps", "val": ": int"}, {"name": "optimizer", "val": ": Optimizer = None"}]</parameters><paramsdesc>- **num_training_steps** (int) -- The number of training steps to do.</paramsdesc><paramgroups>0</paramgroups></docstring>
 
         Setup the scheduler. The optimizer of the trainer must have been set up either before this method is called or
         passed as an argument.
@@ -311,7 +319,7 @@ and/or `create_scheduler`) in a subclass.
 
 </div>
 <div class="docstring">
-<docstring><name>evaluate</name><anchor>transformers.Trainer.evaluate</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/trainer.py#L2104</source><parameters>[{"name": "eval_dataset", "val": ": typing.Optional[torch.utils.data.dataset.Dataset] = None"}, {"name": "ignore_keys", "val": ": typing.Optional[typing.List[str]] = None"}, {"name": "metric_key_prefix", "val": ": str = 'eval'"}]</parameters><paramsdesc>- **eval_dataset** (`Dataset`, _optional_) --
+<docstring><name>evaluate</name><anchor>transformers.Trainer.evaluate</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/trainer.py#L2113</source><parameters>[{"name": "eval_dataset", "val": ": typing.Optional[torch.utils.data.dataset.Dataset] = None"}, {"name": "ignore_keys", "val": ": typing.Optional[typing.List[str]] = None"}, {"name": "metric_key_prefix", "val": ": str = 'eval'"}]</parameters><paramsdesc>- **eval_dataset** (`Dataset`, _optional_) --
   Pass a dataset if you wish to override `self.eval_dataset`. If it is an `datasets.Dataset`,
   columns not accepted by the `model.forward()` method are automatically removed. It must implement the
   `__len__` method.
@@ -337,7 +345,7 @@ You can also subclass and override this method to inject custom behavior.
 
 </div>
 <div class="docstring">
-<docstring><name>evaluation\_loop</name><anchor>transformers.Trainer.evaluation_loop</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/trainer.py#L2230</source><parameters>[{"name": "dataloader", "val": ": DataLoader"}, {"name": "description", "val": ": str"}, {"name": "prediction_loss_only", "val": ": typing.Optional[bool] = None"}, {"name": "ignore_keys", "val": ": typing.Optional[typing.List[str]] = None"}, {"name": "metric_key_prefix", "val": ": str = 'eval'"}]</parameters></docstring>
+<docstring><name>evaluation\_loop</name><anchor>transformers.Trainer.evaluation_loop</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/trainer.py#L2239</source><parameters>[{"name": "dataloader", "val": ": DataLoader"}, {"name": "description", "val": ": str"}, {"name": "prediction_loss_only", "val": ": typing.Optional[bool] = None"}, {"name": "ignore_keys", "val": ": typing.Optional[typing.List[str]] = None"}, {"name": "metric_key_prefix", "val": ": str = 'eval'"}]</parameters></docstring>
 
 Prediction/evaluation loop, shared by `Trainer.evaluate()` and `Trainer.predict()`.
 
@@ -346,7 +354,7 @@ Works both with or without labels.
 
 </div>
 <div class="docstring">
-<docstring><name>floating\_point\_ops</name><anchor>transformers.Trainer.floating_point_ops</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/trainer.py#L2560</source><parameters>[{"name": "inputs", "val": ": typing.Dict[str, typing.Union[torch.Tensor, typing.Any]]"}]</parameters><paramsdesc>- **inputs** (`Dict[str, Union[torch.Tensor, Any]]`) --
+<docstring><name>floating\_point\_ops</name><anchor>transformers.Trainer.floating_point_ops</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/trainer.py#L2555</source><parameters>[{"name": "inputs", "val": ": typing.Dict[str, typing.Union[torch.Tensor, typing.Any]]"}]</parameters><paramsdesc>- **inputs** (`Dict[str, Union[torch.Tensor, Any]]`) --
   The inputs and targets of the model.</paramsdesc><paramgroups>0</paramgroups><rettype>`int`</rettype><retdesc>The number of floating-point operations.</retdesc></docstring>
 
 For models that inherit from [PreTrainedModel](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel), uses that method to compute the number of
@@ -362,7 +370,7 @@ method in the model or subclass and override this method.
 
 </div>
 <div class="docstring">
-<docstring><name>get\_eval\_dataloader</name><anchor>transformers.Trainer.get_eval_dataloader</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/trainer.py#L698</source><parameters>[{"name": "eval_dataset", "val": ": typing.Optional[torch.utils.data.dataset.Dataset] = None"}]</parameters><paramsdesc>- **eval_dataset** (`torch.utils.data.Dataset`, _optional_) --
+<docstring><name>get\_eval\_dataloader</name><anchor>transformers.Trainer.get_eval_dataloader</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/trainer.py#L699</source><parameters>[{"name": "eval_dataset", "val": ": typing.Optional[torch.utils.data.dataset.Dataset] = None"}]</parameters><paramsdesc>- **eval_dataset** (`torch.utils.data.Dataset`, _optional_) --
   If provided, will override `self.eval_dataset`. If it is an `datasets.Dataset`, columns not
   accepted by the `model.forward()` method are automatically removed. It must implement `__len__`.</paramsdesc><paramgroups>0</paramgroups></docstring>
 
@@ -375,7 +383,7 @@ Subclass and override this method if you want to inject some custom behavior.
 
 </div>
 <div class="docstring">
-<docstring><name>get\_test\_dataloader</name><anchor>transformers.Trainer.get_test_dataloader</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/trainer.py#L745</source><parameters>[{"name": "test_dataset", "val": ": Dataset"}]</parameters><paramsdesc>- **test_dataset** (`torch.utils.data.Dataset`, _optional_) --
+<docstring><name>get\_test\_dataloader</name><anchor>transformers.Trainer.get_test_dataloader</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/trainer.py#L746</source><parameters>[{"name": "test_dataset", "val": ": Dataset"}]</parameters><paramsdesc>- **test_dataset** (`torch.utils.data.Dataset`, _optional_) --
   The test dataset to use. If it is an `datasets.Dataset`, columns not accepted by the
   `model.forward()` method are automatically removed. It must implement `__len__`.</paramsdesc><paramgroups>0</paramgroups></docstring>
 
@@ -388,7 +396,7 @@ Subclass and override this method if you want to inject some custom behavior.
 
 </div>
 <div class="docstring">
-<docstring><name>get\_train\_dataloader</name><anchor>transformers.Trainer.get_train_dataloader</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/trainer.py#L623</source><parameters>[]</parameters></docstring>
+<docstring><name>get\_train\_dataloader</name><anchor>transformers.Trainer.get_train_dataloader</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/trainer.py#L624</source><parameters>[]</parameters></docstring>
 
 Returns the training `DataLoader`.
 
@@ -400,7 +408,7 @@ Subclass and override this method if you want to inject some custom behavior.
 
 </div>
 <div class="docstring">
-<docstring><name>hyperparameter\_search</name><anchor>transformers.Trainer.hyperparameter_search</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/trainer.py#L1703</source><parameters>[{"name": "hp_space", "val": ": typing.Union[typing.Callable[[ForwardRef('optuna.Trial')], typing.Dict[str, float]], NoneType] = None"}, {"name": "compute_objective", "val": ": typing.Union[typing.Callable[[typing.Dict[str, float]], float], NoneType] = None"}, {"name": "n_trials", "val": ": int = 20"}, {"name": "direction", "val": ": str = 'minimize'"}, {"name": "backend", "val": ": typing.Union[ForwardRef('str'), transformers.trainer_utils.HPSearchBackend, NoneType] = None"}, {"name": "hp_name", "val": ": typing.Union[typing.Callable[[ForwardRef('optuna.Trial')], str], NoneType] = None"}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **hp_space** (`Callable[["optuna.Trial"], Dict[str, float]]`, _optional_) --
+<docstring><name>hyperparameter\_search</name><anchor>transformers.Trainer.hyperparameter_search</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/trainer.py#L1704</source><parameters>[{"name": "hp_space", "val": ": typing.Union[typing.Callable[[ForwardRef('optuna.Trial')], typing.Dict[str, float]], NoneType] = None"}, {"name": "compute_objective", "val": ": typing.Union[typing.Callable[[typing.Dict[str, float]], float], NoneType] = None"}, {"name": "n_trials", "val": ": int = 20"}, {"name": "direction", "val": ": str = 'minimize'"}, {"name": "backend", "val": ": typing.Union[ForwardRef('str'), transformers.trainer_utils.HPSearchBackend, NoneType] = None"}, {"name": "hp_name", "val": ": typing.Union[typing.Callable[[ForwardRef('optuna.Trial')], str], NoneType] = None"}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **hp_space** (`Callable[["optuna.Trial"], Dict[str, float]]`, _optional_) --
   A function that defines the hyperparameter search space. Will default to
   `default_hp_space_optuna()` or
   `default_hp_space_ray()` or
@@ -447,14 +455,14 @@ method [create_optimizer_and_scheduler()](/docs/transformers/master/en/main_clas
 
 </div>
 <div class="docstring">
-<docstring><name>init\_git\_repo</name><anchor>transformers.Trainer.init_git_repo</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/trainer.py#L2578</source><parameters>[]</parameters></docstring>
+<docstring><name>init\_git\_repo</name><anchor>transformers.Trainer.init_git_repo</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/trainer.py#L2573</source><parameters>[]</parameters></docstring>
 
 Initializes a git repo in `self.args.hub_model_id`.
 
 
 </div>
 <div class="docstring">
-<docstring><name>is\_local\_process\_zero</name><anchor>transformers.Trainer.is_local_process_zero</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/trainer.py#L1920</source><parameters>[]</parameters></docstring>
+<docstring><name>is\_local\_process\_zero</name><anchor>transformers.Trainer.is_local_process_zero</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/trainer.py#L1929</source><parameters>[]</parameters></docstring>
 
         Whether or not this process is the local (e.g., on one machine if training in a distributed fashion on several
         machines) main process.
@@ -462,7 +470,7 @@ Initializes a git repo in `self.args.hub_model_id`.
 
 </div>
 <div class="docstring">
-<docstring><name>is\_world\_process\_zero</name><anchor>transformers.Trainer.is_world_process_zero</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/trainer.py#L1927</source><parameters>[]</parameters></docstring>
+<docstring><name>is\_world\_process\_zero</name><anchor>transformers.Trainer.is_world_process_zero</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/trainer.py#L1936</source><parameters>[]</parameters></docstring>
 
 Whether or not this process is the global main process (when training in a distributed fashion on several
 machines, this is only going to be `True` for one process).
@@ -470,7 +478,7 @@ machines, this is only going to be `True` for one process).
 
 </div>
 <div class="docstring">
-<docstring><name>log</name><anchor>transformers.Trainer.log</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/trainer.py#L1794</source><parameters>[{"name": "logs", "val": ": typing.Dict[str, float]"}]</parameters><paramsdesc>- **logs** (`Dict[str, float]`) --
+<docstring><name>log</name><anchor>transformers.Trainer.log</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/trainer.py#L1795</source><parameters>[{"name": "logs", "val": ": typing.Dict[str, float]"}]</parameters><paramsdesc>- **logs** (`Dict[str, float]`) --
   The values to log.</paramsdesc><paramgroups>0</paramgroups></docstring>
 
 Log `logs` on the various objects watching training.
@@ -578,7 +586,7 @@ Reformat Trainer metrics values to a human-readable format
 
 </div>
 <div class="docstring">
-<docstring><name>num\_examples</name><anchor>transformers.Trainer.num_examples</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/trainer.py#L861</source><parameters>[{"name": "dataloader", "val": ": DataLoader"}]</parameters></docstring>
+<docstring><name>num\_examples</name><anchor>transformers.Trainer.num_examples</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/trainer.py#L862</source><parameters>[{"name": "dataloader", "val": ": DataLoader"}]</parameters></docstring>
 
 Helper to get number of samples in a `DataLoader` by accessing its dataset.
 
@@ -587,7 +595,7 @@ Will raise an exception if the underlying dataset does not implement method `__l
 
 </div>
 <div class="docstring">
-<docstring><name>pop\_callback</name><anchor>transformers.Trainer.pop_callback</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/trainer.py#L500</source><parameters>[{"name": "callback", "val": ""}]</parameters><paramsdesc>- **callback** (`type` or `TrainerCallback`) --
+<docstring><name>pop\_callback</name><anchor>transformers.Trainer.pop_callback</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/trainer.py#L501</source><parameters>[{"name": "callback", "val": ""}]</parameters><paramsdesc>- **callback** (`type` or `TrainerCallback`) --
   A `TrainerCallback` class or an instance of a `TrainerCallback`.
   In the first case, will pop the first member of that class found in the list of callbacks.</paramsdesc><paramgroups>0</paramgroups><rettype>`TrainerCallback`</rettype><retdesc>The callback removed, if found.</retdesc></docstring>
 
@@ -604,7 +612,7 @@ If the callback is not found, returns `None` (and no error is raised).
 
 </div>
 <div class="docstring">
-<docstring><name>predict</name><anchor>transformers.Trainer.predict</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/trainer.py#L2173</source><parameters>[{"name": "test_dataset", "val": ": Dataset"}, {"name": "ignore_keys", "val": ": typing.Optional[typing.List[str]] = None"}, {"name": "metric_key_prefix", "val": ": str = 'test'"}]</parameters><paramsdesc>- **test_dataset** (`Dataset`) --
+<docstring><name>predict</name><anchor>transformers.Trainer.predict</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/trainer.py#L2182</source><parameters>[{"name": "test_dataset", "val": ": Dataset"}, {"name": "ignore_keys", "val": ": typing.Optional[typing.List[str]] = None"}, {"name": "metric_key_prefix", "val": ": str = 'test'"}]</parameters><paramsdesc>- **test_dataset** (`Dataset`) --
   Dataset to run the predictions on. If it is an `datasets.Dataset`, columns not accepted by the
   `model.forward()` method are automatically removed. Has to implement the method `__len__`
 - **ignore_keys** (`Lst[str]`, _optional_) --
@@ -639,7 +647,7 @@ Returns: _NamedTuple_ A namedtuple with the following keys:
 
 </div>
 <div class="docstring">
-<docstring><name>prediction\_loop</name><anchor>transformers.Trainer.prediction_loop</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/trainer.py#L2741</source><parameters>[{"name": "dataloader", "val": ": DataLoader"}, {"name": "description", "val": ": str"}, {"name": "prediction_loss_only", "val": ": typing.Optional[bool] = None"}, {"name": "ignore_keys", "val": ": typing.Optional[typing.List[str]] = None"}, {"name": "metric_key_prefix", "val": ": str = 'eval'"}]</parameters></docstring>
+<docstring><name>prediction\_loop</name><anchor>transformers.Trainer.prediction_loop</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/trainer.py#L2736</source><parameters>[{"name": "dataloader", "val": ": DataLoader"}, {"name": "description", "val": ": str"}, {"name": "prediction_loss_only", "val": ": typing.Optional[bool] = None"}, {"name": "ignore_keys", "val": ": typing.Optional[typing.List[str]] = None"}, {"name": "metric_key_prefix", "val": ": str = 'eval'"}]</parameters></docstring>
 
 Prediction/evaluation loop, shared by `Trainer.evaluate()` and `Trainer.predict()`.
 
@@ -648,7 +656,7 @@ Works both with or without labels.
 
 </div>
 <div class="docstring">
-<docstring><name>prediction\_step</name><anchor>transformers.Trainer.prediction_step</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/trainer.py#L2449</source><parameters>[{"name": "model", "val": ": Module"}, {"name": "inputs", "val": ": typing.Dict[str, typing.Union[torch.Tensor, typing.Any]]"}, {"name": "prediction_loss_only", "val": ": bool"}, {"name": "ignore_keys", "val": ": typing.Optional[typing.List[str]] = None"}]</parameters><paramsdesc>- **model** (`nn.Module`) --
+<docstring><name>prediction\_step</name><anchor>transformers.Trainer.prediction_step</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/trainer.py#L2458</source><parameters>[{"name": "model", "val": ": Module"}, {"name": "inputs", "val": ": typing.Dict[str, typing.Union[torch.Tensor, typing.Any]]"}, {"name": "prediction_loss_only", "val": ": bool"}, {"name": "ignore_keys", "val": ": typing.Optional[typing.List[str]] = None"}]</parameters><paramsdesc>- **model** (`nn.Module`) --
   The model to evaluate.
 - **inputs** (`Dict[str, Union[torch.Tensor, Any]]`) --
   The inputs and targets of the model.
@@ -675,7 +683,7 @@ Subclass and override to inject custom behavior.
 
 </div>
 <div class="docstring">
-<docstring><name>push\_to\_hub</name><anchor>transformers.Trainer.push_to_hub</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/trainer.py#L2692</source><parameters>[{"name": "commit_message", "val": ": typing.Optional[str] = 'End of training'"}, {"name": "blocking", "val": ": bool = True"}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **commit_message** (`str`, _optional_, defaults to `"End of training"`) --
+<docstring><name>push\_to\_hub</name><anchor>transformers.Trainer.push_to_hub</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/trainer.py#L2687</source><parameters>[{"name": "commit_message", "val": ": typing.Optional[str] = 'End of training'"}, {"name": "blocking", "val": ": bool = True"}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **commit_message** (`str`, _optional_, defaults to `"End of training"`) --
   Message to commit while pushing.
 - **blocking** (`bool`, _optional_, defaults to `True`) --
   Whether the function should return only when the `git push` has finished.
@@ -692,7 +700,7 @@ Upload _self.model_ and _self.tokenizer_ to the 🤗 model hub on the repo _self
 
 </div>
 <div class="docstring">
-<docstring><name>remove\_callback</name><anchor>transformers.Trainer.remove_callback</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/trainer.py#L516</source><parameters>[{"name": "callback", "val": ""}]</parameters><paramsdesc>- **callback** (`type` or `TrainerCallback`) --
+<docstring><name>remove\_callback</name><anchor>transformers.Trainer.remove_callback</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/trainer.py#L517</source><parameters>[{"name": "callback", "val": ""}]</parameters><paramsdesc>- **callback** (`type` or `TrainerCallback`) --
   A `TrainerCallback` class or an instance of a `TrainerCallback`.
   In the first case, will remove the first member of that class found in the list of callbacks.</paramsdesc><paramgroups>0</paramgroups></docstring>
 
@@ -723,7 +731,7 @@ difference is that raw unformatted numbers are saved in the current method.
 
 </div>
 <div class="docstring">
-<docstring><name>save\_model</name><anchor>transformers.Trainer.save_model</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/trainer.py#L1939</source><parameters>[{"name": "output_dir", "val": ": typing.Optional[str] = None"}]</parameters></docstring>
+<docstring><name>save\_model</name><anchor>transformers.Trainer.save_model</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/trainer.py#L1948</source><parameters>[{"name": "output_dir", "val": ": typing.Optional[str] = None"}]</parameters></docstring>
 
 Will save the model, so you can reload it using `from_pretrained()`.
 
@@ -741,7 +749,7 @@ Will only save from the main process.
 
 </div>
 <div class="docstring">
-<docstring><name>train</name><anchor>transformers.Trainer.train</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/trainer.py#L1017</source><parameters>[{"name": "resume_from_checkpoint", "val": ": typing.Union[str, bool, NoneType] = None"}, {"name": "trial", "val": ": typing.Union[ForwardRef('optuna.Trial'), typing.Dict[str, typing.Any]] = None"}, {"name": "ignore_keys_for_eval", "val": ": typing.Optional[typing.List[str]] = None"}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **resume_from_checkpoint** (`str` or `bool`, _optional_) --
+<docstring><name>train</name><anchor>transformers.Trainer.train</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/trainer.py#L1018</source><parameters>[{"name": "resume_from_checkpoint", "val": ": typing.Union[str, bool, NoneType] = None"}, {"name": "trial", "val": ": typing.Union[ForwardRef('optuna.Trial'), typing.Dict[str, typing.Any]] = None"}, {"name": "ignore_keys_for_eval", "val": ": typing.Optional[typing.List[str]] = None"}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **resume_from_checkpoint** (`str` or `bool`, _optional_) --
   If a `str`, local path to a saved checkpoint as saved by a previous instance of
   [Trainer](/docs/transformers/master/en/main_classes/trainer#transformers.Trainer). If a `bool` and equals _True_, load the last checkpoint in
   _args.output_dir_ as saved by a previous instance of [Trainer](/docs/transformers/master/en/main_classes/trainer#transformers.Trainer). If present,
@@ -761,7 +769,7 @@ Main training entry point.
 
 </div>
 <div class="docstring">
-<docstring><name>training\_step</name><anchor>transformers.Trainer.training_step</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/trainer.py#L1840</source><parameters>[{"name": "model", "val": ": Module"}, {"name": "inputs", "val": ": typing.Dict[str, typing.Union[torch.Tensor, typing.Any]]"}]</parameters><paramsdesc>- **model** (`nn.Module`) --
+<docstring><name>training\_step</name><anchor>transformers.Trainer.training_step</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/trainer.py#L1856</source><parameters>[{"name": "model", "val": ": Module"}, {"name": "inputs", "val": ": typing.Dict[str, typing.Union[torch.Tensor, typing.Any]]"}]</parameters><paramsdesc>- **model** (`nn.Module`) --
   The model to train.
 - **inputs** (`Dict[str, Union[torch.Tensor, Any]]`) --
   The inputs and targets of the model.
@@ -787,7 +795,7 @@ Subclass and override to inject custom behavior.
 <div class="docstring">
 
 <div class="docstring">
-<docstring><name>evaluate</name><anchor>transformers.Seq2SeqTrainer.evaluate</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/trainer_seq2seq.py#L36</source><parameters>[{"name": "eval_dataset", "val": ": typing.Optional[torch.utils.data.dataset.Dataset] = None"}, {"name": "ignore_keys", "val": ": typing.Optional[typing.List[str]] = None"}, {"name": "metric_key_prefix", "val": ": str = 'eval'"}, {"name": "max_length", "val": ": typing.Optional[int] = None"}, {"name": "num_beams", "val": ": typing.Optional[int] = None"}]</parameters><paramsdesc>- **eval_dataset** (`Dataset`, _optional_) --
+<docstring><name>evaluate</name><anchor>transformers.Seq2SeqTrainer.evaluate</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/trainer_seq2seq.py#L31</source><parameters>[{"name": "eval_dataset", "val": ": typing.Optional[torch.utils.data.dataset.Dataset] = None"}, {"name": "ignore_keys", "val": ": typing.Optional[typing.List[str]] = None"}, {"name": "metric_key_prefix", "val": ": str = 'eval'"}, {"name": "max_length", "val": ": typing.Optional[int] = None"}, {"name": "num_beams", "val": ": typing.Optional[int] = None"}]</parameters><paramsdesc>- **eval_dataset** (`Dataset`, _optional_) --
   Pass a dataset if you wish to override `self.eval_dataset`. If it is an `datasets.Dataset`,
   columns not accepted by the `model.forward()` method are automatically removed. It must implement the
   `__len__` method.
@@ -818,7 +826,7 @@ You can also subclass and override this method to inject custom behavior.
 
 </div>
 <div class="docstring">
-<docstring><name>predict</name><anchor>transformers.Seq2SeqTrainer.predict</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/trainer_seq2seq.py#L77</source><parameters>[{"name": "test_dataset", "val": ": Dataset"}, {"name": "ignore_keys", "val": ": typing.Optional[typing.List[str]] = None"}, {"name": "metric_key_prefix", "val": ": str = 'eval'"}, {"name": "max_length", "val": ": typing.Optional[int] = None"}, {"name": "num_beams", "val": ": typing.Optional[int] = None"}]</parameters><paramsdesc>- **test_dataset** (`Dataset`) --
+<docstring><name>predict</name><anchor>transformers.Seq2SeqTrainer.predict</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/trainer_seq2seq.py#L72</source><parameters>[{"name": "test_dataset", "val": ": Dataset"}, {"name": "ignore_keys", "val": ": typing.Optional[typing.List[str]] = None"}, {"name": "metric_key_prefix", "val": ": str = 'eval'"}, {"name": "max_length", "val": ": typing.Optional[int] = None"}, {"name": "num_beams", "val": ": typing.Optional[int] = None"}]</parameters><paramsdesc>- **test_dataset** (`Dataset`) --
   Dataset to run the predictions on. If it is an `datasets.Dataset`, columns not accepted by the
   `model.forward()` method are automatically removed. Has to implement the method `__len__`
 - **ignore_keys** (`List[str]`, _optional_) --
