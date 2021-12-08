@@ -16,6 +16,7 @@
 
 import argparse
 import importlib
+import os
 
 from doc_builder import build_doc, update_versions_file
 
@@ -32,7 +33,7 @@ def build_command(args):
     else:
         version = args.version
 
-    output_path = f"./build/{args.library_name}/{version}/{args.language}"
+    output_path = os.path.join(args.build_dir, os.path.sep.join([args.library_name, version, args.language]))
 
     print("Building docs for", args.library_name, args.path_to_docs, output_path)
     build_doc(args.library_name, args.path_to_docs, output_path)
@@ -52,6 +53,7 @@ def build_command_parser(subparsers=None):
         help="Local path to library documentation. The library should be cloned, and the folder containing the "
         "documentation files should be indicated here.",
     )
+    parser.add_argument("--build_dir", type=str, help="Where the built documentation will be.", default="./build/")
     parser.add_argument("--language", type=str, help="Language of the documentation to generate", default="en")
     parser.add_argument(
         "--version",

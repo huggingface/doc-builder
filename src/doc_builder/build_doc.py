@@ -118,34 +118,38 @@ def build_mdx_files(package, doc_folder, output_dir, page_info):
     all_files = list(doc_folder.glob("**/*"))
     for file in tqdm(all_files, desc="Building the MDX files"):
         new_anchors = None
-        if file.suffix in [".md", ".mdx"]:
-            dest_file = output_dir / (file.with_suffix(".mdx").relative_to(doc_folder))
-            page_info["page"] = file.with_suffix(".html").relative_to(doc_folder)
-            os.makedirs(dest_file.parent, exist_ok=True)
-            with open(file, "r", encoding="utf-8-sig") as reader:
-                content = reader.read()
-            content = convert_md_to_mdx(content, page_info)
-            content, new_anchors = resolve_autodoc(content, package, return_anchors=True, page_info=page_info)
-            with open(dest_file, "w", encoding="utf-8") as writer:
-                writer.write(content)
-            # Make sure we clean up for next page.
-            del page_info["page"]
-        elif file.suffix in [".rst"]:
-            dest_file = output_dir / (file.with_suffix(".mdx").relative_to(doc_folder))
-            page_info["page"] = file.with_suffix(".html").relative_to(doc_folder)
-            os.makedirs(dest_file.parent, exist_ok=True)
-            with open(file, "r", encoding="utf-8") as reader:
-                content = reader.read()
-            content = convert_rst_to_mdx(content, page_info)
-            content, new_anchors = resolve_autodoc(content, package, return_anchors=True, page_info=page_info)
-            with open(dest_file, "w", encoding="utf-8") as writer:
-                writer.write(content)
-            # Make sure we clean up for next page.
-            del page_info["page"]
-        elif file.is_file():
-            dest_file = output_dir / (file.relative_to(doc_folder))
-            os.makedirs(dest_file.parent, exist_ok=True)
-            shutil.copy(file, dest_file)
+        try:
+            if file.suffix in [".md", ".mdx"]:
+                dest_file = output_dir / (file.with_suffix(".mdx").relative_to(doc_folder))
+                page_info["page"] = file.with_suffix(".html").relative_to(doc_folder)
+                os.makedirs(dest_file.parent, exist_ok=True)
+                with open(file, "r", encoding="utf-8-sig") as reader:
+                    content = reader.read()
+                content = convert_md_to_mdx(content, page_info)
+                content, new_anchors = resolve_autodoc(content, package, return_anchors=True, page_info=page_info)
+                with open(dest_file, "w", encoding="utf-8") as writer:
+                    writer.write(content)
+                # Make sure we clean up for next page.
+                del page_info["page"]
+            elif file.suffix in [".rst"]:
+                dest_file = output_dir / (file.with_suffix(".mdx").relative_to(doc_folder))
+                page_info["page"] = file.with_suffix(".html").relative_to(doc_folder)
+                os.makedirs(dest_file.parent, exist_ok=True)
+                with open(file, "r", encoding="utf-8") as reader:
+                    content = reader.read()
+                content = convert_rst_to_mdx(content, page_info)
+                content, new_anchors = resolve_autodoc(content, package, return_anchors=True, page_info=page_info)
+                with open(dest_file, "w", encoding="utf-8") as writer:
+                    writer.write(content)
+                # Make sure we clean up for next page.
+                del page_info["page"]
+            elif file.is_file():
+                dest_file = output_dir / (file.relative_to(doc_folder))
+                os.makedirs(dest_file.parent, exist_ok=True)
+                shutil.copy(file, dest_file)
+
+        except Exception as e:
+            raise type(e)(f"There was an error when converting {file} to the MDX format.\n" + e.args[0]) from e
 
         if new_anchors is not None:
             page_name = str(file.with_suffix("").relative_to(doc_folder))
