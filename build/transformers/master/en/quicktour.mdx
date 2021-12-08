@@ -23,10 +23,8 @@ import Docstring from "./Docstring.svelte";
 import CodeBlock from "./CodeBlock.svelte";
 import CodeBlockFw from "./CodeBlockFw.svelte";
 import IconCopyLink from "./IconCopyLink.svelte";
-
 export let fw: "pt" | "tf"
 </script>
-
 <!--Copyright 2020 The HuggingFace Team. All rights reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
@@ -59,23 +57,20 @@ not, the code is expected to work for both backends without any change needed.
 
 The easiest way to use a pretrained model on a given task is to use [pipeline()](/docs/transformers/master/en/main_classes/pipelines#transformers.pipeline).
 
-<iframe width="560" height="315" src="https://www.youtube.com/embed/tiZFewofSLM" title="YouTube video player"
-frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope;
-picture-in-picture" allowfullscreen></iframe>
+&amp;lt;Youtube id="tiZFewofSLM"/>
 
 🤗 Transformers provides the following tasks out of the box:
 
 - Sentiment analysis: is a text positive or negative?
 - Text generation (in English): provide a prompt and the model will generate what follows.
-- Name entity recognition (NER): in an input sentence, label each word with the entity it represents (person, place,
-  etc.)
+- Name entity recognition (NER): in an input sentence, label each word with the entity it represents (person, place, etc.)
 - Question answering: provide the model with some context and a question, extract the answer from the context.
 - Filling masked text: given a text with masked words (e.g., replaced by `[MASK]`), fill the blanks.
 - Summarization: generate a summary of a long text.
 - Translation: translate a text in another language.
 - Feature extraction: return a tensor representation of the text.
 
-Let's see how this work for sentiment analysis (the other tasks are all covered in the [task summary](/docs/transformers/master/en/task_summary)):
+Let's see how this work for sentiment analysis (the other tasks are all covered in the [task summary](task_summary)):
 
 Install the following dependencies (if not already installed):
 
@@ -85,7 +80,7 @@ pip install torch
 pip install tensorflow
 ```
 
-```
+```py
 >>> from transformers import pipeline
 >>> classifier = pipeline('sentiment-analysis')
 ```
@@ -96,7 +91,7 @@ then responsible for making predictions. The pipeline groups all of that togethe
 make them readable. For instance:
 
 
-```
+```py
 >>> classifier('We are very happy to show you the 🤗 Transformers library.')
 [&amp;lcub;'label': 'POSITIVE', 'score': 0.9998}]
 ```
@@ -104,7 +99,7 @@ make them readable. For instance:
 That's encouraging! You can use it on a list of sentences, which will be preprocessed then fed to the model, returning
 a list of dictionaries like this one:
 
-```
+```py
 >>> results = classifier(["We are very happy to show you the 🤗 Transformers library.",
 ...            "We hope you don't hate it."])
 >>> for result in results:
@@ -113,14 +108,14 @@ label: POSITIVE, with score: 0.9998
 label: NEGATIVE, with score: 0.5309
 ```
 
-To use with a large dataset, look at [iterating over a pipeline](/docs/transformers/master/en/./main_classes/pipelines)
+To use with a large dataset, look at [iterating over a pipeline](main_classes/pipelines)
 
 You can see the second sentence has been classified as negative (it needs to be positive or negative) but its score is
 fairly neutral.
 
 By default, the model downloaded for this pipeline is called "distilbert-base-uncased-finetuned-sst-2-english". We can
 look at its [model page](https://huggingface.co/distilbert-base-uncased-finetuned-sst-2-english) to get more
-information about it. It uses the [DistilBERT architecture](/docs/transformers/master/en/model_doc/distilbert) and has been fine-tuned on a
+information about it. It uses the [DistilBERT architecture](model_doc/distilbert) and has been fine-tuned on a
 dataset called SST-2 for the sentiment analysis task.
 
 Let's say we want to use another model; for instance, one that has been trained on French data. We can search through
@@ -131,7 +126,7 @@ see how we can use it.
 
 You can directly pass the name of the model to use to [pipeline()](/docs/transformers/master/en/main_classes/pipelines#transformers.pipeline):
 
-```
+```py
 >>> classifier = pipeline('sentiment-analysis', model="nlptown/bert-base-multilingual-uncased-sentiment")
 ```
 
@@ -139,14 +134,9 @@ This classifier can now deal with texts in English, French, but also Dutch, Germ
 replace that name by a local folder where you have saved a pretrained model (see below). You can also pass a model
 object and its associated tokenizer.
 
-We will need two classes for this. The first is [AutoTokenizer](/docs/transformers/master/en/model_doc/auto#transformers.AutoTokenizer), which we will use to download the
-tokenizer associated to the model we picked and instantiate it. The second is
-[AutoModelForSequenceClassification](/docs/transformers/master/en/model_doc/auto#transformers.AutoModelForSequenceClassification) (or
-[TFAutoModelForSequenceClassification](/docs/transformers/master/en/model_doc/auto#transformers.TFAutoModelForSequenceClassification) if you are using TensorFlow), which we will use to download
-the model itself. Note that if we were using the library on an other task, the class of the model would change. The
-[task summary](/docs/transformers/master/en/task_summary) tutorial summarizes which class is used for which task.
+We will need two classes for this. The first is [AutoTokenizer](/docs/transformers/master/en/model_doc/auto#transformers.AutoTokenizer), which we will use to download the tokenizer associated to the model we picked and instantiate it. The second is [AutoModelForSequenceClassification](/docs/transformers/master/en/model_doc/auto#transformers.AutoModelForSequenceClassification) (or [TFAutoModelForSequenceClassification](/docs/transformers/master/en/model_doc/auto#transformers.TFAutoModelForSequenceClassification) if you are using TensorFlow), which we will use to download the model itself. Note that if we were using the library on an other task, the class of the model would change. The [task summary](task_summary) tutorial summarizes which class is used for which task.
 
-```
+```py
 >>> from transformers import AutoTokenizer, AutoModelForSequenceClassification
 ===PT-TF-SPLIT===
 >>> from transformers import AutoTokenizer, TFAutoModelForSequenceClassification
@@ -156,7 +146,7 @@ Now, to download the models and tokenizer we found previously, we just have to u
 `from_pretrained()` method (feel free to replace `model_name` by
 any other model from the model hub):
 
-```
+```py
 >>> model_name = "nlptown/bert-base-multilingual-uncased-sentiment"
 >>> model = AutoModelForSequenceClassification.from_pretrained(model_name)
 >>> tokenizer = AutoTokenizer.from_pretrained(model_name)
@@ -170,8 +160,8 @@ any other model from the model hub):
 ```
 
 If you don't find a model that has been pretrained on some data similar to yours, you will need to fine-tune a
-pretrained model on your data. We provide [example scripts](/docs/transformers/master/en/examples) to do so. Once you're done, don't forget
-to share your fine-tuned model on the hub with the community, using [this tutorial](/docs/transformers/master/en/model_sharing).
+pretrained model on your data. We provide [example scripts](examples) to do so. Once you're done, don't forget
+to share your fine-tuned model on the hub with the community, using [this tutorial](model_sharing).
 
 <a id='pretrained-model'></a>
 
@@ -179,13 +169,11 @@ to share your fine-tuned model on the hub with the community, using [this tutori
 
 Let's now see what happens beneath the hood when using those pipelines.
 
-<iframe width="560" height="315" src="https://www.youtube.com/embed/AhChOFRegn4" title="YouTube video player"
-frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope;
-picture-in-picture" allowfullscreen></iframe>
+&amp;lt;Youtube id="AhChOFRegn4"/>
 
 As we saw, the model and tokenizer are created using the `from_pretrained` method:
 
-```
+```py
 >>> from transformers import AutoTokenizer, AutoModelForSequenceClassification
 >>> model_name = "distilbert-base-uncased-finetuned-sst-2-english"
 >>> pt_model = AutoModelForSequenceClassification.from_pretrained(model_name)
@@ -201,7 +189,7 @@ As we saw, the model and tokenizer are created using the `from_pretrained` metho
 
 We mentioned the tokenizer is responsible for the preprocessing of your texts. First, it will split a given text in
 words (or part of words, punctuation symbols, etc.) usually called _tokens_. There are multiple rules that can govern
-that process (you can learn more about them in the [tokenizer summary](/docs/transformers/master/en/tokenizer_summary)), which is why we need
+that process (you can learn more about them in the [tokenizer summary](tokenizer_summary)), which is why we need
 to instantiate the tokenizer using the name of the model, to make sure we use the same rules as when the model was
 pretrained.
 
@@ -211,7 +199,7 @@ the model. To do this, the tokenizer has a _vocab_, which is the part we downloa
 
 To apply these steps on a given text, we can just feed it to our tokenizer:
 
-```
+```py
 >>> inputs = tokenizer("We are very happy to show you the 🤗 Transformers library.")
 ```
 
@@ -220,7 +208,7 @@ mentioned before, but also additional arguments that will be useful to the model
 [attention mask](glossary#attention-mask) that the model will use to have a better understanding of the sequence:
 
 
-```
+```py
 >>> print(inputs)
 &amp;lcub;'input_ids': [101, 2057, 2024, 2200, 3407, 2000, 2265, 2017, 1996, 100, 19081, 3075, 1012, 102],
  'attention_mask': [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]}
@@ -230,7 +218,7 @@ You can pass a list of sentences directly to your tokenizer. If your goal is to 
 batch, you probably want to pad them all to the same length, truncate them to the maximum length the model can accept
 and get tensors back. You can specify all of that to the tokenizer:
 
-```
+```py
 >>> pt_batch = tokenizer(
 ...     ["We are very happy to show you the 🤗 Transformers library.", "We hope you don't hate it."],
 ...     padding=True,
@@ -251,7 +239,7 @@ and get tensors back. You can specify all of that to the tokenizer:
 The padding is automatically applied on the side expected by the model (in this case, on the right), with the padding
 token the model was pretrained with. The attention mask is also adapted to take the padding into account:
 
-```
+```py
 >>> for key, value in pt_batch.items():
 ...     print(f"&amp;lcub;key}: &amp;lcub;value.numpy().tolist()}")
 input_ids: [[101, 2057, 2024, 2200, 3407, 2000, 2265, 2017, 1996, 100, 19081, 3075, 1012, 102], [101, 2057, 3246, 2017, 2123, 1005, 1056, 5223, 2009, 1012, 102, 0, 0, 0]]
@@ -263,7 +251,7 @@ input_ids: [[101, 2057, 2024, 2200, 3407, 2000, 2265, 2017, 1996, 100, 19081, 30
 attention_mask: [[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0]]
 ```
 
-You can learn more about tokenizers [here](/docs/transformers/master/en/preprocessing).
+You can learn more about tokenizers [here](preprocessing).
 
 <h3 id="using-the-model">Using the model</h3>
 
@@ -271,16 +259,16 @@ Once your input has been preprocessed by the tokenizer, you can send it directly
 contain all the relevant information the model needs. If you're using a TensorFlow model, you can pass the dictionary
 keys directly to tensors, for a PyTorch model, you need to unpack the dictionary by adding `**`.
 
-```
+```py
 >>> pt_outputs = pt_model(**pt_batch)
 ===PT-TF-SPLIT===
 >>> tf_outputs = tf_model(tf_batch)
 ```
 
 In 🤗 Transformers, all outputs are objects that contain the model's final activations along with other metadata. These
-objects are described in greater detail [here](/docs/transformers/master/en/main_classes/output). For now, let's inspect the output ourselves:
+objects are described in greater detail [here](main_classes/output). For now, let's inspect the output ourselves:
 
-```
+```py
 >>> print(pt_outputs)
 SequenceClassifierOutput(loss=None, logits=tensor([[-4.0833,  4.3364],
         [ 0.0818, -0.0418]], grad_fn=&amp;lt;AddmmBackward>), hidden_states=None, attentions=None)
@@ -302,7 +290,7 @@ function (like SoftMax) since this final activation function is often fused with
 
 Let's apply the SoftMax activation to get predictions.
 
-```
+```py
 >>> from torch import nn
 >>> pt_predictions = nn.functional.softmax(pt_outputs.logits, dim=-1)
 ===PT-TF-SPLIT===
@@ -312,7 +300,7 @@ Let's apply the SoftMax activation to get predictions.
 
 We can see we get the numbers from before:
 
-```
+```py
 >>> print(pt_predictions)
 tensor([[2.2043e-04, 9.9978e-01],
         [5.3086e-01, 4.6914e-01]], grad_fn=&amp;lt;SoftmaxBackward>)
@@ -326,7 +314,7 @@ tf.Tensor(
 If you provide the model with labels in addition to inputs, the model output object will also contain a `loss`
 attribute:
 
-```
+```py
 >>> import torch
 >>> pt_outputs = pt_model(**pt_batch, labels = torch.tensor([1, 0]))
 >>> print(pt_outputs)
@@ -341,10 +329,7 @@ array([[-4.0833 ,  4.3364  ],
        [ 0.0818, -0.0418]], dtype=float32)>, hidden_states=None, attentions=None)
 ```
 
-Models are standard [torch.nn.Module](https://pytorch.org/docs/stable/nn.html#torch.nn.Module) or [tf.keras.Model](https://www.tensorflow.org/api_docs/python/tf/keras/Model) so you can use them in your usual training loop. 🤗
-Transformers also provides a [Trainer](/docs/transformers/master/en/main_classes/trainer#transformers.Trainer) (or [TFTrainer](/docs/transformers/master/en/main_classes/trainer#transformers.TFTrainer) if you are using
-TensorFlow) class to help with your training (taking care of things such as distributed training, mixed precision,
-etc.). See the [training tutorial](/docs/transformers/master/en/training) for more details.
+Models are standard [torch.nn.Module](https://pytorch.org/docs/stable/nn.html#torch.nn.Module) or [tf.keras.Model](https://www.tensorflow.org/api_docs/python/tf/keras/Model) so you can use them in your usual training loop. 🤗 Transformers also provides a [Trainer](/docs/transformers/master/en/main_classes/trainer#transformers.Trainer) class to help with your training in PyTorch (taking care of things such as distributed training, mixed precision, etc.) whereas you can leverage the `fit()` method in Keras. See the [training tutorial](training) for more details.
 
 <Tip>
 
@@ -356,7 +341,7 @@ case the attributes not set (that have `None` values) are ignored.
 
 Once your model is fine-tuned, you can save it with its tokenizer in the following way:
 
-```
+```py
 >>> pt_save_directory = './pt_save_pretrained'
 >>> tokenizer.save_pretrained(pt_save_directory)
 >>> pt_model.save_pretrained(pt_save_directory)
@@ -366,7 +351,7 @@ Once your model is fine-tuned, you can save it with its tokenizer in the followi
 >>> tf_model.save_pretrained(tf_save_directory)
 ```
 
-You can then load this model back using the `from_pretrained()` method by passing the
+You can then load this model back using the `AutoModel.from_pretrained()` method by passing the
 directory name instead of the model name. One cool feature of 🤗 Transformers is that you can easily switch between
 PyTorch and TensorFlow: any model saved as before can be loaded back either in PyTorch or TensorFlow.
 
@@ -381,7 +366,7 @@ pip install torch
 
 Then, use the corresponding Auto class to load it like this:
 
-```
+```py
 >>> from transformers import TFAutoModel
 >>> tokenizer = AutoTokenizer.from_pretrained(pt_save_directory)
 >>> tf_model = TFAutoModel.from_pretrained(pt_save_directory, from_pt=True)
@@ -394,7 +379,7 @@ Then, use the corresponding Auto class to load it like this:
 Lastly, you can also ask the model to return all hidden states and all attention weights if you need them:
 
 
-```
+```py
 >>> pt_outputs = pt_model(**pt_batch, output_hidden_states=True, output_attentions=True)
 >>> all_hidden_states  = pt_outputs.hidden_states 
 >>> all_attentions = pt_outputs.attentions
@@ -406,19 +391,15 @@ Lastly, you can also ask the model to return all hidden states and all attention
 
 <h3 id="accessing-the-code">Accessing the code</h3>
 
-The `AutoModel` and `AutoTokenizer` classes are just shortcuts that will automatically work with any
+The [AutoModel](/docs/transformers/master/en/model_doc/auto#transformers.AutoModel) and [AutoTokenizer](/docs/transformers/master/en/model_doc/auto#transformers.AutoTokenizer) classes are just shortcuts that will automatically work with any
 pretrained model. Behind the scenes, the library has one model class per combination of architecture plus class, so the
 code is easy to access and tweak if you need to.
 
 In our previous example, the model was called "distilbert-base-uncased-finetuned-sst-2-english", which means it's using
-the [DistilBERT](/docs/transformers/master/en/model_doc/distilbert) architecture. As
-[AutoModelForSequenceClassification](/docs/transformers/master/en/model_doc/auto#transformers.AutoModelForSequenceClassification) (or
-[TFAutoModelForSequenceClassification](/docs/transformers/master/en/model_doc/auto#transformers.TFAutoModelForSequenceClassification) if you are using TensorFlow) was used, the model
-automatically created is then a [DistilBertForSequenceClassification](/docs/transformers/master/en/model_doc/distilbert#transformers.DistilBertForSequenceClassification). You can look at its
-documentation for all details relevant to that specific model, or browse the source code. This is how you would
+the [DistilBERT](model_doc/distilbert) architecture. As [AutoModelForSequenceClassification](/docs/transformers/master/en/model_doc/auto#transformers.AutoModelForSequenceClassification) (or [TFAutoModelForSequenceClassification](/docs/transformers/master/en/model_doc/auto#transformers.TFAutoModelForSequenceClassification) if you are using TensorFlow) was used, the model automatically created is then a [DistilBertForSequenceClassification](/docs/transformers/master/en/model_doc/distilbert#transformers.DistilBertForSequenceClassification). You can look at its documentation for all details relevant to that specific model, or browse the source code. This is how you would
 directly instantiate model and tokenizer without the auto magic:
 
-```
+```py
 >>> from transformers import DistilBertTokenizer, DistilBertForSequenceClassification
 >>> model_name = "distilbert-base-uncased-finetuned-sst-2-english"
 >>> model = DistilBertForSequenceClassification.from_pretrained(model_name)
@@ -441,9 +422,9 @@ then instantiate the model directly from this configuration.
 Below, we load a predefined vocabulary for a tokenizer with the
 [from_pretrained()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.from_pretrained) method. However, unlike the tokenizer, we wish to initialize
 the model from scratch. Therefore, we instantiate the model from a configuration instead of using the
-[from_pretrained()](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel.from_pretrained) method.
+[DistilBertForSequenceClassification.from_pretrained()](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel.from_pretrained) method.
 
-```
+```py
 >>> from transformers import DistilBertConfig, DistilBertTokenizer, DistilBertForSequenceClassification
 >>> config = DistilBertConfig(n_heads=8, dim=512, hidden_dim=4*512)
 >>> tokenizer = DistilBertTokenizer.from_pretrained('distilbert-base-uncased')
@@ -461,7 +442,7 @@ Instead of creating a new configuration with all the default values just to chan
 pass any argument a configuration would take to the `from_pretrained` method and it will update the default
 configuration appropriately:
 
-```
+```py
 >>> from transformers import DistilBertConfig, DistilBertTokenizer, DistilBertForSequenceClassification
 >>> model_name = "distilbert-base-uncased"
 >>> model = DistilBertForSequenceClassification.from_pretrained(model_name, num_labels=10)

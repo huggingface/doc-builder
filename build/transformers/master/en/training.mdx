@@ -20,10 +20,8 @@ import Docstring from "./Docstring.svelte";
 import CodeBlock from "./CodeBlock.svelte";
 import CodeBlockFw from "./CodeBlockFw.svelte";
 import IconCopyLink from "./IconCopyLink.svelte";
-
 export let fw: "pt" | "tf"
 </script>
-
 <!--Copyright 2020 The HuggingFace Team. All rights reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
@@ -45,19 +43,17 @@ a model from scratch easily. Then we will show you how to alternatively write th
 
 Before we can fine-tune a model, we need a dataset. In this tutorial, we will show you how to fine-tune BERT on the
 [IMDB dataset](https://www.imdb.com/interfaces/): the task is to classify whether movie reviews are positive or
-negative. For examples of other tasks, refer to the [additional-resources](/docs/transformers/master/en/training#additional-resources) section!
+negative. For examples of other tasks, refer to the [additional-resources](#additional-resources) section!
 
 <a id='data-processing'></a>
 
 <h2 id="preparing-the-datasets">Preparing the datasets</h2>
 
-<iframe width="560" height="315" src="https://www.youtube.com/embed/_BZearw7f0w" title="YouTube video player"
-frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope;
-picture-in-picture" allowfullscreen></iframe>
+&amp;lt;Youtube id="_BZearw7f0w"/>
 
 We will use the [🤗 Datasets](https://github.com/huggingface/datasets/) library to download and preprocess the IMDB
 datasets. We will go over this part pretty quickly. Since the focus of this tutorial is on training, you should refer
-to the 🤗 Datasets [documentation](https://huggingface.co/docs/datasets/) or the [preprocessing](/docs/transformers/master/en/preprocessing) tutorial for
+to the 🤗 Datasets [documentation](https://huggingface.co/docs/datasets/) or the [preprocessing](preprocessing) tutorial for
 more information.
 
 First, we can use the `load_dataset` function to download and cache the dataset:
@@ -83,7 +79,7 @@ from transformers import AutoTokenizer
 tokenizer = AutoTokenizer.from_pretrained("bert-base-cased")
 ```
 
-As we saw in [preprocessing](/docs/transformers/master/en/preprocessing), we can prepare the text inputs for the model with the following command (this is an
+As we saw in [preprocessing](preprocessing), we can prepare the text inputs for the model with the following command (this is an
 example, not a command you can execute):
 
 ```python
@@ -121,9 +117,7 @@ them by their _full_ equivalent to train or evaluate on the full dataset.
 
 <h2 id="finetuning-in-pytorch-with-the-trainer-api">Fine-tuning in PyTorch with the Trainer API</h2>
 
-<iframe width="560" height="315" src="https://www.youtube.com/embed/nvBXf7s7vTI" title="YouTube video player"
-frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope;
-picture-in-picture" allowfullscreen></iframe>
+&amp;lt;Youtube id="nvBXf7s7vTI"/>
 
 Since PyTorch does not provide a training loop, the 🤗 Transformers library provides a [Trainer](/docs/transformers/master/en/main_classes/trainer#transformers.Trainer)
 API that is optimized for 🤗 Transformers models, with a wide range of training options and with built-in features like
@@ -229,9 +223,7 @@ See the documentation of [TrainingArguments](/docs/transformers/master/en/main_c
 
 <h2 id="finetuning-with-keras">Fine-tuning with Keras</h2>
 
-<iframe width="560" height="315" src="https://www.youtube.com/embed/rnTGBy2ax1c" title="YouTube video player"
-frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope;
-picture-in-picture" allowfullscreen></iframe>
+&amp;lt;Youtube id="rnTGBy2ax1c"/>
 
 Models can also be trained natively in TensorFlow using the Keras API. First, let's define our model:
 
@@ -289,9 +281,7 @@ pytorch_model = AutoModelForSequenceClassification.from_pretrained("my_imdb_mode
 
 <h2 id="finetuning-in-native-pytorch">Fine-tuning in native PyTorch</h2>
 
-<iframe width="560" height="315" src="https://www.youtube.com/embed/Dh9CL8fyG80" title="YouTube video player"
-frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope;
-picture-in-picture" allowfullscreen></iframe>
+&amp;lt;Youtube id="Dh9CL8fyG80"/>
 
 You might need to restart your notebook at this stage to free some memory, or execute the following code:
 
@@ -302,7 +292,7 @@ del trainer
 torch.cuda.empty_cache()
 ```
 
-Let's now see how to achieve the same results as in [trainer section](/docs/transformers/master/en/training#trainer) in PyTorch. First we need to
+Let's now see how to achieve the same results as in [trainer section](#trainer) in PyTorch. First we need to
 define the dataloaders, which we will use to iterate over batches. We just need to apply a bit of post-processing to
 our `tokenized_datasets` before doing that to:
 
@@ -399,7 +389,7 @@ bit strange, as we are directly fine-tuning the whole model without taking any p
 this way for Transformers model (so this is not an oversight on our side). If you're not familiar with what "freezing
 the body" of the model means, forget you read this paragraph.
 
-Now to check the results, we need to write the evaluation loop. Like in the [trainer section](/docs/transformers/master/en/training#trainer) we will
+Now to check the results, we need to write the evaluation loop. Like in the [trainer section](#trainer) we will
 use a metric from the datasets library. Here we accumulate the predictions at each batch before computing the final
 result when the loop is finished.
 

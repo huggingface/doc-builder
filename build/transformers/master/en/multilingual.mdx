@@ -12,8 +12,6 @@ sections:
   title: BERT
 - local: xlmroberta
   title: XLM-RoBERTa
-- local: mluke
-  title: mLUKE
 title: Multi-lingual models
 ---
 <script>
@@ -23,10 +21,8 @@ import Docstring from "./Docstring.svelte";
 import CodeBlock from "./CodeBlock.svelte";
 import CodeBlockFw from "./CodeBlockFw.svelte";
 import IconCopyLink from "./IconCopyLink.svelte";
-
 export let fw: "pt" | "tf"
 </script>
-
 <!--Copyright 2020 The HuggingFace Team. All rights reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
@@ -70,7 +66,7 @@ the tokenizer.
 Here is an example using the `xlm-clm-enfr-1024` checkpoint (Causal language modeling, English-French):
 
 
-```
+```py
 >>> import torch
 >>> from transformers import XLMTokenizer, XLMWithLMHeadModel
 
@@ -81,21 +77,21 @@ Here is an example using the `xlm-clm-enfr-1024` checkpoint (Causal language mod
 The different languages this model/tokenizer handles, as well as the ids of these languages are visible using the
 `lang2id` attribute:
 
-```
+```py
 >>> print(tokenizer.lang2id)
 &amp;lcub;'en': 0, 'fr': 1}
 ```
 
 These ids should be used when passing a language parameter during a model pass. Let's define our inputs:
 
-```
+```py
 >>> input_ids = torch.tensor([tokenizer.encode("Wikipedia was used to")]) # batch size of 1
 ```
 
 We should now define the language embedding by using the previously defined language id. We want to create a tensor
 filled with the appropriate language ids, of the same size as input_ids. For english, the id is 0:
 
-```
+```py
 >>> language_id = tokenizer.lang2id['en']  # 0
 >>> langs = torch.tensor([language_id] * input_ids.shape[1])  # torch.tensor([0, 0, 0, ..., 0])
 
@@ -105,7 +101,7 @@ filled with the appropriate language ids, of the same size as input_ids. For eng
 
 You can then feed it all as input to your model:
 
-```
+```py
 >>> outputs = model(input_ids, langs=langs)
 ```
 
@@ -143,16 +139,3 @@ Two XLM-RoBERTa checkpoints can be used for multi-lingual tasks:
 
 - `xlm-roberta-base` (Masked language modeling, 100 languages)
 - `xlm-roberta-large` (Masked language modeling, 100 languages)
-
-<h2 id="mluke">mLUKE</h2>
-
-mLUKE is based on XLM-RoBERTa and further trained on Wikipedia articles in 24 languages with masked language modeling
-as well as masked entity prediction objective.
-
-The model can be used in the same way as other models solely based on word-piece inputs, but also can be used with
-entity representations to achieve further performance gain, with entity-related tasks such as relation extraction,
-named entity recognition and question answering (see [LUKE](/docs/transformers/master/en/model_doc/luke)).
-
-Currently, one mLUKE checkpoint is available:
-
-- `studio-ousia/mluke-base` (Masked language modeling + Masked entity prediction, 100 languages)
