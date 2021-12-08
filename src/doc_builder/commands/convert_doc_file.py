@@ -68,8 +68,14 @@ def convert_command(args):
     with open(source_file, "r", encoding="utf-8") as f:
         text = f.read()
 
-    page_info = {"package_name": package_name, "page": source_file.with_suffix(".html").relative_to(doc_folder)}
+    page_info = {
+        "package_name": package_name,
+        "page": source_file.with_suffix(".html").relative_to(doc_folder),
+        "no_prefix": True,
+    }
     text = convert_rst_to_mdx(text, page_info, add_imports=False)
+    text = text.replace("&amp;lcub;", "{")
+    text = text.replace("&amp;lt;", "<")
     text = re.sub(r"^\[\[autodoc\]\](\s+)(transformers\.)", r"[[autodoc]]\1", text, flags=re.MULTILINE)
 
     with open(output_file, "w", encoding="utf-8") as f:
