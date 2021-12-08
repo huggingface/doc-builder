@@ -18,10 +18,8 @@ import Docstring from "./Docstring.svelte";
 import CodeBlock from "./CodeBlock.svelte";
 import CodeBlockFw from "./CodeBlockFw.svelte";
 import IconCopyLink from "./IconCopyLink.svelte";
-
 export let fw: "pt" | "tf"
 </script>
-
 <!--Copyright 2020 The HuggingFace Team. All rights reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
@@ -37,10 +35,10 @@ specific language governing permissions and limitations under the License.
 <h1 id="preprocessing-data">Preprocessing data</h1>
 
 In this tutorial, we'll explore how to preprocess your data using 🤗 Transformers. The main tool for this is what we
-call a [tokenizer](/docs/transformers/master/en/main_classes/tokenizer). You can build one using the tokenizer class associated to the model
+call a [tokenizer](main_classes/tokenizer). You can build one using the tokenizer class associated to the model
 you would like to use, or directly with the [AutoTokenizer](/docs/transformers/master/en/model_doc/auto#transformers.AutoTokenizer) class.
 
-As we saw in the [quick tour](/docs/transformers/master/en/quicktour), the tokenizer will first split a given text in words (or part of
+As we saw in the [quick tour](quicktour), the tokenizer will first split a given text in words (or part of
 words, punctuation symbols, etc.) usually called _tokens_. Then it will convert those _tokens_ into numbers, to be able
 to build a tensor out of them and feed them to the model. It will also add any additional inputs the model might expect
 to work properly.
@@ -54,23 +52,22 @@ token to index (that we usually call a _vocab_) as during pretraining.
 </Tip>
 
 To automatically download the vocab used during pretraining or fine-tuning a given model, you can use the
-[from_pretrained()](/docs/transformers/master/en/model_doc/auto#transformers.AutoTokenizer.from_pretrained) method:
+[AutoTokenizer.from_pretrained()](/docs/transformers/master/en/model_doc/auto#transformers.AutoTokenizer.from_pretrained) method:
 
-```
+```py
 from transformers import AutoTokenizer
 tokenizer = AutoTokenizer.from_pretrained('bert-base-cased')
 ```
 
 <h2 id="base-use">Base use</h2>
 
-<iframe width="560" height="315" src="https://www.youtube.com/embed/Yffk5aydLzg" title="YouTube video player"
-frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope;
-picture-in-picture" allowfullscreen></iframe>
+
+&amp;lt;Youtube id="Yffk5aydLzg"/>
 
 A [PreTrainedTokenizer](/docs/transformers/master/en/main_classes/tokenizer#transformers.PreTrainedTokenizer) has many methods, but the only one you need to remember for preprocessing
 is its `__call__`: you just need to feed your sentence to your tokenizer object.
 
-```
+```py
 >>> encoded_input = tokenizer("Hello, I'm a single sentence!")
 >>> print(encoded_input)
 &amp;lcub;'input_ids': [101, 138, 18696, 155, 1942, 3190, 1144, 1572, 13745, 1104, 159, 9664, 2107, 102], 
@@ -80,11 +77,11 @@ is its `__call__`: you just need to feed your sentence to your tokenizer object.
 
 This returns a dictionary string to list of ints. The [input_ids](glossary#input-ids) are the indices corresponding
 to each token in our sentence. We will see below what the [attention_mask](glossary#attention-mask) is used for and
-in [the next section](/docs/transformers/master/en/preprocessing#preprocessing-pairs-of-sentences) the goal of [token_type_ids](glossary#token-type-ids).
+in [the next section](#preprocessing-pairs-of-sentences) the goal of [token_type_ids](glossary#token-type-ids).
 
 The tokenizer can decode a list of token ids in a proper sentence:
 
-```
+```py
 >>> tokenizer.decode(encoded_input["input_ids"])
 "[CLS] Hello, I'm a single sentence! [SEP]"
 ```
@@ -97,7 +94,7 @@ have added those special tokens yourself) by passing `add_special_tokens=False`.
 If you have several sentences you want to process, you can do this efficiently by sending them as a list to the
 tokenizer:
 
-```
+```py
 >>> batch_sentences = ["Hello I'm a single sentence",
 ...                    "And another sentence",
 ...                    "And the very very last one"]
@@ -125,7 +122,7 @@ probably want:
 
 You can do all of this by using the following options when feeding your list of sentences to the tokenizer:
 
-```
+```py
 >>> batch = tokenizer(batch_sentences, padding=True, truncation=True, return_tensors="pt")
 >>> print(batch)
 &amp;lcub;'input_ids': tensor([[ 101, 8667,  146,  112,  182,  170, 1423, 5650,  102],
@@ -162,9 +159,7 @@ can safely ignore it. You can also pass `verbose=False` to stop the tokenizer fr
 
 <h2 id="preprocessing-pairs-of-sentences">Preprocessing pairs of sentences</h2>
 
-<iframe width="560" height="315" src="https://www.youtube.com/embed/0u3ioSwev3s" title="YouTube video player"
-frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope;
-picture-in-picture" allowfullscreen></iframe>
+&amp;lt;Youtube id="0u3ioSwev3s"/>
 
 Sometimes you need to feed a pair of sentences to your model. For instance, if you want to classify if two sentences in
 a pair are similar, or for question-answering models, which take a context and a question. For BERT models, the input
@@ -174,7 +169,7 @@ You can encode a pair of sentences in the format expected by your model by suppl
 (not a list since a list of two sentences will be interpreted as a batch of two single sentences, as we saw before).
 This will once again return a dict string to list of ints:
 
-```
+```py
 >>> encoded_input = tokenizer("How old are you?", "I'm 6 years old")
 >>> print(encoded_input)
 &amp;lcub;'input_ids': [101, 1731, 1385, 1132, 1128, 136, 102, 146, 112, 182, 127, 1201, 1385, 102], 
@@ -190,7 +185,7 @@ its associated model expects. You can force the return (or the non-return) of an
 
 If we decode the token ids we obtained, we will see that the special tokens have been properly added.
 
-```
+```py
 >>> tokenizer.decode(encoded_input["input_ids"])
 "[CLS] How old are you? [SEP] I'm 6 years old [SEP]"
 ```
@@ -198,7 +193,7 @@ If we decode the token ids we obtained, we will see that the special tokens have
 If you have a list of pairs of sequences you want to process, you should feed them as two lists to your tokenizer: the
 list of first sentences and the list of second sentences:
 
-```
+```py
 >>> batch_sentences = ["Hello I'm a single sentence",
 ...                    "And another sentence",
 ...                    "And the very very last one"]
@@ -222,7 +217,7 @@ As we can see, it returns a dictionary where each value is a list of lists of in
 
 To double-check what is fed to the model, we can decode each list in _input_ids_ one by one:
 
-```
+```py
 >>> for ids in encoded_inputs["input_ids"]:
 >>>     print(tokenizer.decode(ids))
 [CLS] Hello I'm a single sentence [SEP] I'm a sentence that goes with the first sentence [SEP]
@@ -233,7 +228,7 @@ To double-check what is fed to the model, we can decode each list in _input_ids_
 Once again, you can automatically pad your inputs to the maximum sentence length in the batch, truncate to the maximum
 length the model can accept and return tensors directly with the following:
 
-```
+```py
 batch = tokenizer(batch_sentences, batch_of_second_sentences, padding=True, truncation=True, return_tensors="pt")
 ===PT-TF-SPLIT===
 batch = tokenizer(batch_sentences, batch_of_second_sentences, padding=True, truncation=True, return_tensors="tf")
@@ -306,7 +301,7 @@ The tokenizer also accept pre-tokenized inputs. This is particularly useful when
 predictions in [named entity recognition (NER)](https://en.wikipedia.org/wiki/Named-entity_recognition) or
 [part-of-speech tagging (POS tagging)](https://en.wikipedia.org/wiki/Part-of-speech_tagging).
 
-<Tip warning={true}>
+<Tip warning=&amp;lcub;true}>
 
 Pre-tokenized does not mean your inputs are already tokenized (you wouldn't need to pass them through the tokenizer
 if that was the case) but just split into words (which is often the first step in subword tokenization algorithms
@@ -317,7 +312,7 @@ like BPE).
 If you want to use pre-tokenized inputs, just set `is_split_into_words=True` when passing your inputs to the
 tokenizer. For instance, we have:
 
-```
+```py
 >>> encoded_input = tokenizer(["Hello", "I'm", "a", "single", "sentence"], is_split_into_words=True)
 >>> print(encoded_input)
 &amp;lcub;'input_ids': [101, 8667, 146, 112, 182, 170, 1423, 5650, 102],
@@ -331,7 +326,7 @@ Note that the tokenizer still adds the ids of special tokens (if applicable) unl
 This works exactly as before for batch of sentences or batch of pairs of sentences. You can encode a batch of sentences
 like this:
 
-```
+```py
 batch_sentences = [["Hello", "I'm", "a", "single", "sentence"],
                    ["And", "another", "sentence"],
                    ["And", "the", "very", "very", "last", "one"]]
@@ -340,7 +335,7 @@ encoded_inputs = tokenizer(batch_sentences, is_split_into_words=True)
 
 or a batch of pair sentences like this:
 
-```
+```py
 batch_of_second_sentences = [["I'm", "a", "sentence", "that", "goes", "with", "the", "first", "sentence"],
                              ["And", "I", "should", "be", "encoded", "with", "the", "second", "sentence"],
                              ["And", "I", "go", "with", "the", "very", "last", "one"]]
@@ -349,7 +344,7 @@ encoded_inputs = tokenizer(batch_sentences, batch_of_second_sentences, is_split_
 
 And you can add padding, truncation as well as directly return tensors like before:
 
-```
+```py
 batch = tokenizer(batch_sentences,
                   batch_of_second_sentences,
                   is_split_into_words=True,
