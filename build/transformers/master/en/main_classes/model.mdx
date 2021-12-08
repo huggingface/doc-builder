@@ -97,7 +97,7 @@ Class attributes (overridden by derived classes):
 
 
 <div class="docstring">
-<docstring><name>push\_to\_hub</name><anchor>transformers.file_utils.PushToHubMixin.push_to_hub</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/file_utils.py#L2280</source><parameters>[{"name": "repo_path_or_name", "val": ": typing.Optional[str] = None"}, {"name": "repo_url", "val": ": typing.Optional[str] = None"}, {"name": "use_temp_dir", "val": ": bool = False"}, {"name": "commit_message", "val": ": typing.Optional[str] = None"}, {"name": "organization", "val": ": typing.Optional[str] = None"}, {"name": "private", "val": ": typing.Optional[bool] = None"}, {"name": "use_auth_token", "val": ": typing.Union[bool, str, NoneType] = None"}]</parameters><paramsdesc>- **repo_path_or_name** (`str`, _optional_) --
+<docstring><name>push\_to\_hub</name><anchor>transformers.file_utils.PushToHubMixin.push_to_hub</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/file_utils.py#L2329</source><parameters>[{"name": "repo_path_or_name", "val": ": typing.Optional[str] = None"}, {"name": "repo_url", "val": ": typing.Optional[str] = None"}, {"name": "use_temp_dir", "val": ": bool = False"}, {"name": "commit_message", "val": ": typing.Optional[str] = None"}, {"name": "organization", "val": ": typing.Optional[str] = None"}, {"name": "private", "val": ": typing.Optional[bool] = None"}, {"name": "use_auth_token", "val": ": typing.Union[bool, str, NoneType] = None"}]</parameters><paramsdesc>- **repo_path_or_name** (`str`, _optional_) --
   Can either be a repository name for your model in the Hub or a path to a local folder (in which case
   the repository will have the name of that local folder). If not specified, will default to the name
   given by `repo_url` and a local directory with that name will be created.
@@ -367,31 +367,29 @@ Returns the model's output embeddings.
 
 </div>
 <div class="docstring">
-<docstring><name>prune\_heads</name><anchor>transformers.PreTrainedModel.prune_heads</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/modeling_utils.py#L942</source><parameters>[{"name": "heads_to_prune", "val": ": typing.Dict[int, typing.List[int]]"}]</parameters></docstring>
+<docstring><name>prune\_heads</name><anchor>transformers.PreTrainedModel.prune_heads</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/modeling_utils.py#L942</source><parameters>[{"name": "heads_to_prune", "val": ": typing.Dict[int, typing.List[int]]"}]</parameters><paramsdesc>- **heads_to_prune** (`Dict[int, List[int]]`) --
+  Dictionary with keys being selected layer indices (`int`) and associated values being the list of
+  heads to prune in said layer (list of `int`). For instance &amp;lcub;1: [0, 2], 2: [2, 3]} will prune heads
+  0 and 2 on layer 1 and heads 2 and 3 on layer 2.</paramsdesc><paramgroups>0</paramgroups></docstring>
 
 Prunes heads of the base model.
 
-Arguments:
-heads_to_prune (`Dict[int, List[int]]`):
-Dictionary with keys being selected layer indices (`int`) and associated values being the list of
-heads to prune in said layer (list of `int`). For instance &amp;lcub;1: [0, 2], 2: [2, 3]} will prune heads
-0 and 2 on layer 1 and heads 2 and 3 on layer 2.
+
 
 
 </div>
 <div class="docstring">
-<docstring><name>resize\_token\_embeddings</name><anchor>transformers.PreTrainedModel.resize_token_embeddings</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/modeling_utils.py#L718</source><parameters>[{"name": "new_num_tokens", "val": ": typing.Optional[int] = None"}]</parameters><rettype>`torch.nn.Embedding`</rettype><retdesc>Pointer to the input tokens Embeddings Module of the model.</retdesc></docstring>
+<docstring><name>resize\_token\_embeddings</name><anchor>transformers.PreTrainedModel.resize_token_embeddings</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/modeling_utils.py#L718</source><parameters>[{"name": "new_num_tokens", "val": ": typing.Optional[int] = None"}]</parameters><paramsdesc>- **new_num_tokens** (`int`, _optional_) --
+  The number of new tokens in the embedding matrix. Increasing the size will add newly initialized
+  vectors at the end. Reducing the size will remove vectors from the end. If not provided or `None`,
+  just returns a pointer to the input tokens `torch.nn.Embedding` module of the model without doing
+  anything.</paramsdesc><paramgroups>0</paramgroups><rettype>`torch.nn.Embedding`</rettype><retdesc>Pointer to the input tokens Embeddings Module of the model.</retdesc></docstring>
 
 Resizes input token embeddings matrix of the model if `new_num_tokens != config.vocab_size`.
 
 Takes care of tying weights embeddings afterwards if the model class has a `tie_weights()` method.
 
-Arguments:
-new_num_tokens (`int`, _optional_):
-The number of new tokens in the embedding matrix. Increasing the size will add newly initialized
-vectors at the end. Reducing the size will remove vectors from the end. If not provided or `None`,
-just returns a pointer to the input tokens `torch.nn.Embedding` module of the model without doing
-anything.
+
 
 
 
@@ -400,27 +398,21 @@ anything.
 
 </div>
 <div class="docstring">
-<docstring><name>save\_pretrained</name><anchor>transformers.PreTrainedModel.save_pretrained</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/modeling_utils.py#L990</source><parameters>[{"name": "save_directory", "val": ": typing.Union[str, os.PathLike]"}, {"name": "save_config", "val": ": bool = True"}, {"name": "state_dict", "val": ": typing.Optional[dict] = None"}, {"name": "save_function", "val": ": typing.Callable = <function save at 0x7f69d4ee1280>"}, {"name": "push_to_hub", "val": ": bool = False"}, {"name": "**kwargs", "val": ""}]</parameters></docstring>
-
-Save a model and its configuration file to a directory, so that it can be re-loaded using the
-`[from_pretrained()](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel.from_pretrained)` class method.
-
-Arguments:
-save_directory (`str` or `os.PathLike`):
-Directory to which to save. Will be created if it doesn't exist.
-save_config (`bool`, _optional_, defaults to `True`):
-Whether or not to save the config of the model. Useful when in distributed training like TPUs and need
-to call this function on all processes. In this case, set `save_config=True` only on the main
-process to avoid race conditions.
-state_dict (nested dictionary of `torch.Tensor`):
-The state dictionary of the model to save. Will default to `self.state_dict()`, but can be used to
-only save parts of the model or if special precautions need to be taken when recovering the state
-dictionary of a model (like when using model parallelism).
-save_function (`Callable`):
-The function to use to save the state dictionary. Useful on distributed training like TPUs when one
-need to replace `torch.save` by another method.
-push_to_hub (`bool`, _optional_, defaults to `False`):
-Whether or not to push your model to the Hugging Face model hub after saving it.
+<docstring><name>save\_pretrained</name><anchor>transformers.PreTrainedModel.save_pretrained</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/modeling_utils.py#L990</source><parameters>[{"name": "save_directory", "val": ": typing.Union[str, os.PathLike]"}, {"name": "save_config", "val": ": bool = True"}, {"name": "state_dict", "val": ": typing.Optional[dict] = None"}, {"name": "save_function", "val": ": typing.Callable = <function save at 0x7fefc1c654c0>"}, {"name": "push_to_hub", "val": ": bool = False"}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **save_directory** (`str` or `os.PathLike`) --
+  Directory to which to save. Will be created if it doesn't exist.
+- **save_config** (`bool`, _optional_, defaults to `True`) --
+  Whether or not to save the config of the model. Useful when in distributed training like TPUs and need
+  to call this function on all processes. In this case, set `save_config=True` only on the main
+  process to avoid race conditions.
+- **state_dict** (nested dictionary of `torch.Tensor`) --
+  The state dictionary of the model to save. Will default to `self.state_dict()`, but can be used to
+  only save parts of the model or if special precautions need to be taken when recovering the state
+  dictionary of a model (like when using model parallelism).
+- **save_function** (`Callable`) --
+  The function to use to save the state dictionary. Useful on distributed training like TPUs when one
+  need to replace `torch.save` by another method.
+- **push_to_hub** (`bool`, _optional_, defaults to `False`) --
+  Whether or not to push your model to the Hugging Face model hub after saving it.
 
 <Tip warning={true}>
 
@@ -431,9 +423,14 @@ instead.
 
 </Tip>
 
-kwargs:
+kwargs --
 Additional key word arguments passed along to the
-[push_to_hub()](/docs/transformers/master/en/main_classes/model#transformers.file_utils.PushToHubMixin.push_to_hub) method.
+[push_to_hub()](/docs/transformers/master/en/main_classes/model#transformers.file_utils.PushToHubMixin.push_to_hub) method.</paramsdesc><paramgroups>0</paramgroups></docstring>
+
+Save a model and its configuration file to a directory, so that it can be re-loaded using the
+`[from_pretrained()](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel.from_pretrained)` class method.
+
+
 
 
 </div>
@@ -544,17 +541,16 @@ re-use e.g. Albert or Universal Transformers, or if doing long-range modeling wi
 
 </div>
 <div class="docstring">
-<docstring><name>get\_extended\_attention\_mask</name><anchor>transformers.modeling_utils.ModuleUtilsMixin.get_extended_attention_mask</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/modeling_utils.py#L245</source><parameters>[{"name": "attention_mask", "val": ": Tensor"}, {"name": "input_shape", "val": ": typing.Tuple[int]"}, {"name": "device", "val": ": <property object at 0x7f69ccbe91d0>"}]</parameters><retdesc>`torch.Tensor` The extended attention mask, with a the same dtype as `attention_mask.dtype`.</retdesc></docstring>
+<docstring><name>get\_extended\_attention\_mask</name><anchor>transformers.modeling_utils.ModuleUtilsMixin.get_extended_attention_mask</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/modeling_utils.py#L245</source><parameters>[{"name": "attention_mask", "val": ": Tensor"}, {"name": "input_shape", "val": ": typing.Tuple[int]"}, {"name": "device", "val": ": <property object at 0x7fefb59b9b80>"}]</parameters><paramsdesc>- **attention_mask** (`torch.Tensor`) --
+  Mask with ones indicating tokens to attend to, zeros for tokens to ignore.
+- **input_shape** (`Tuple[int]`) --
+  The shape of the input to the model.
+  device -- (`torch.device`):
+  The device of the input to the model.</paramsdesc><paramgroups>0</paramgroups><retdesc>`torch.Tensor` The extended attention mask, with a the same dtype as `attention_mask.dtype`.</retdesc></docstring>
 
 Makes broadcastable attention and causal masks so that future and masked tokens are ignored.
 
-Arguments:
-attention_mask (`torch.Tensor`):
-Mask with ones indicating tokens to attend to, zeros for tokens to ignore.
-input_shape (`Tuple[int]`):
-The shape of the input to the model.
-device: (`torch.device`):
-The device of the input to the model.
+
 
 
 
@@ -640,7 +636,7 @@ Class attributes (overridden by derived classes):
 
 
 <div class="docstring">
-<docstring><name>push\_to\_hub</name><anchor>transformers.file_utils.PushToHubMixin.push_to_hub</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/file_utils.py#L2280</source><parameters>[{"name": "repo_path_or_name", "val": ": typing.Optional[str] = None"}, {"name": "repo_url", "val": ": typing.Optional[str] = None"}, {"name": "use_temp_dir", "val": ": bool = False"}, {"name": "commit_message", "val": ": typing.Optional[str] = None"}, {"name": "organization", "val": ": typing.Optional[str] = None"}, {"name": "private", "val": ": typing.Optional[bool] = None"}, {"name": "use_auth_token", "val": ": typing.Union[bool, str, NoneType] = None"}]</parameters><paramsdesc>- **repo_path_or_name** (`str`, _optional_) --
+<docstring><name>push\_to\_hub</name><anchor>transformers.file_utils.PushToHubMixin.push_to_hub</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/file_utils.py#L2329</source><parameters>[{"name": "repo_path_or_name", "val": ": typing.Optional[str] = None"}, {"name": "repo_url", "val": ": typing.Optional[str] = None"}, {"name": "use_temp_dir", "val": ": bool = False"}, {"name": "commit_message", "val": ": typing.Optional[str] = None"}, {"name": "organization", "val": ": typing.Optional[str] = None"}, {"name": "private", "val": ": typing.Optional[bool] = None"}, {"name": "use_auth_token", "val": ": typing.Union[bool, str, NoneType] = None"}]</parameters><paramsdesc>- **repo_path_or_name** (`str`, _optional_) --
   Can either be a repository name for your model in the Hub or a path to a local folder (in which case
   the repository will have the name of that local folder). If not specified, will default to the name
   given by `repo_url` and a local directory with that name will be created.
@@ -902,31 +898,29 @@ the checkpoint was made.
 
 </div>
 <div class="docstring">
-<docstring><name>prune\_heads</name><anchor>transformers.TFPreTrainedModel.prune_heads</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/modeling_tf_utils.py#L1247</source><parameters>[{"name": "heads_to_prune", "val": ""}]</parameters></docstring>
+<docstring><name>prune\_heads</name><anchor>transformers.TFPreTrainedModel.prune_heads</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/modeling_tf_utils.py#L1247</source><parameters>[{"name": "heads_to_prune", "val": ""}]</parameters><paramsdesc>- **heads_to_prune** (`Dict[int, List[int]]`) --
+  Dictionary with keys being selected layer indices (`int`) and associated values being the list of
+  heads to prune in said layer (list of `int`). For instance &amp;lcub;1: [0, 2], 2: [2, 3]} will prune heads
+  0 and 2 on layer 1 and heads 2 and 3 on layer 2.</paramsdesc><paramgroups>0</paramgroups></docstring>
 
 Prunes heads of the base model.
 
-Arguments:
-heads_to_prune (`Dict[int, List[int]]`):
-Dictionary with keys being selected layer indices (`int`) and associated values being the list of
-heads to prune in said layer (list of `int`). For instance &amp;lcub;1: [0, 2], 2: [2, 3]} will prune heads
-0 and 2 on layer 1 and heads 2 and 3 on layer 2.
+
 
 
 </div>
 <div class="docstring">
-<docstring><name>resize\_token\_embeddings</name><anchor>transformers.TFPreTrainedModel.resize_token_embeddings</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/modeling_tf_utils.py#L1051</source><parameters>[{"name": "new_num_tokens", "val": " = None"}]</parameters><rettype>`tf.Variable`</rettype><retdesc>Pointer to the input tokens Embeddings Module of the model.</retdesc></docstring>
+<docstring><name>resize\_token\_embeddings</name><anchor>transformers.TFPreTrainedModel.resize_token_embeddings</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/modeling_tf_utils.py#L1051</source><parameters>[{"name": "new_num_tokens", "val": " = None"}]</parameters><paramsdesc>- **new_num_tokens** (`int`, _optional_) --
+  The number of new tokens in the embedding matrix. Increasing the size will add newly initialized
+  vectors at the end. Reducing the size will remove vectors from the end. If not provided or `None`,
+  just returns a pointer to the input tokens `tf.Variable` module of the model without doing
+  anything.</paramsdesc><paramgroups>0</paramgroups><rettype>`tf.Variable`</rettype><retdesc>Pointer to the input tokens Embeddings Module of the model.</retdesc></docstring>
 
 Resizes input token embeddings matrix of the model if `new_num_tokens != config.vocab_size`.
 
 Takes care of tying weights embeddings afterwards if the model class has a `tie_weights()` method.
 
-Arguments:
-new_num_tokens (`int`, _optional_):
-The number of new tokens in the embedding matrix. Increasing the size will add newly initialized
-vectors at the end. Reducing the size will remove vectors from the end. If not provided or `None`,
-just returns a pointer to the input tokens `tf.Variable` module of the model without doing
-anything.
+
 
 
 
@@ -935,22 +929,16 @@ anything.
 
 </div>
 <div class="docstring">
-<docstring><name>save\_pretrained</name><anchor>transformers.TFPreTrainedModel.save_pretrained</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/modeling_tf_utils.py#L1259</source><parameters>[{"name": "save_directory", "val": ""}, {"name": "saved_model", "val": " = False"}, {"name": "version", "val": " = 1"}, {"name": "push_to_hub", "val": " = False"}, {"name": "**kwargs", "val": ""}]</parameters></docstring>
-
-Save a model and its configuration file to a directory, so that it can be re-loaded using the
-[from_pretrained()](/docs/transformers/master/en/main_classes/model#transformers.TFPreTrainedModel.from_pretrained) class method.
-
-Arguments:
-save_directory (`str`):
-Directory to which to save. Will be created if it doesn't exist.
-saved_model (`bool`, _optional_, defaults to `False`):
-If the model has to be saved in saved model format as well or not.
-version (`int`, _optional_, defaults to 1):
-The version of the saved model. A saved model needs to be versioned in order to be properly loaded by
-TensorFlow Serving as detailed in the official documentation
-https://www.tensorflow.org/tfx/serving/serving_basic
-push_to_hub (`bool`, _optional_, defaults to `False`):
-Whether or not to push your model to the Hugging Face model hub after saving it.
+<docstring><name>save\_pretrained</name><anchor>transformers.TFPreTrainedModel.save_pretrained</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/modeling_tf_utils.py#L1259</source><parameters>[{"name": "save_directory", "val": ""}, {"name": "saved_model", "val": " = False"}, {"name": "version", "val": " = 1"}, {"name": "push_to_hub", "val": " = False"}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **save_directory** (`str`) --
+  Directory to which to save. Will be created if it doesn't exist.
+- **saved_model** (`bool`, _optional_, defaults to `False`) --
+  If the model has to be saved in saved model format as well or not.
+- **version** (`int`, _optional_, defaults to 1) --
+  The version of the saved model. A saved model needs to be versioned in order to be properly loaded by
+  TensorFlow Serving as detailed in the official documentation
+  https://www.tensorflow.org/tfx/serving/serving_basic
+- **push_to_hub** (`bool`, _optional_, defaults to `False`) --
+  Whether or not to push your model to the Hugging Face model hub after saving it.
 
 <Tip warning={true}>
 
@@ -961,9 +949,14 @@ instead.
 
 </Tip>
 
-kwargs:
+kwargs --
 Additional key word arguments passed along to the
-[push_to_hub()](/docs/transformers/master/en/main_classes/model#transformers.file_utils.PushToHubMixin.push_to_hub) method.
+[push_to_hub()](/docs/transformers/master/en/main_classes/model#transformers.file_utils.PushToHubMixin.push_to_hub) method.</paramsdesc><paramgroups>0</paramgroups></docstring>
+
+Save a model and its configuration file to a directory, so that it can be re-loaded using the
+[from_pretrained()](/docs/transformers/master/en/main_classes/model#transformers.TFPreTrainedModel.from_pretrained) class method.
+
+
 
 
 </div>
@@ -978,7 +971,7 @@ Method used for serving the model.
 
 </div>
 <div class="docstring">
-<docstring><name>serving\_output</name><anchor>transformers.TFPreTrainedModel.serving_output</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/modeling_tf_utils.py#L735</source><parameters>[{"name": "output", "val": ""}]</parameters><paramsdesc>- **output** (`~transformers.TFBaseModelOutput`) --
+<docstring><name>serving\_output</name><anchor>transformers.TFPreTrainedModel.serving_output</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/modeling_tf_utils.py#L735</source><parameters>[{"name": "output", "val": ""}]</parameters><paramsdesc>- **output** (`TFBaseModelOutput`) --
   The output returned by the model.</paramsdesc><paramgroups>0</paramgroups></docstring>
 
 Prepare the output of the saved model. Each model must implement this function.
@@ -1078,7 +1071,7 @@ Class attributes (overridden by derived classes):
 
 
 <div class="docstring">
-<docstring><name>push\_to\_hub</name><anchor>transformers.file_utils.PushToHubMixin.push_to_hub</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/file_utils.py#L2280</source><parameters>[{"name": "repo_path_or_name", "val": ": typing.Optional[str] = None"}, {"name": "repo_url", "val": ": typing.Optional[str] = None"}, {"name": "use_temp_dir", "val": ": bool = False"}, {"name": "commit_message", "val": ": typing.Optional[str] = None"}, {"name": "organization", "val": ": typing.Optional[str] = None"}, {"name": "private", "val": ": typing.Optional[bool] = None"}, {"name": "use_auth_token", "val": ": typing.Union[bool, str, NoneType] = None"}]</parameters><paramsdesc>- **repo_path_or_name** (`str`, _optional_) --
+<docstring><name>push\_to\_hub</name><anchor>transformers.file_utils.PushToHubMixin.push_to_hub</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/file_utils.py#L2329</source><parameters>[{"name": "repo_path_or_name", "val": ": typing.Optional[str] = None"}, {"name": "repo_url", "val": ": typing.Optional[str] = None"}, {"name": "use_temp_dir", "val": ": bool = False"}, {"name": "commit_message", "val": ": typing.Optional[str] = None"}, {"name": "organization", "val": ": typing.Optional[str] = None"}, {"name": "private", "val": ": typing.Optional[bool] = None"}, {"name": "use_auth_token", "val": ": typing.Union[bool, str, NoneType] = None"}]</parameters><paramsdesc>- **repo_path_or_name** (`str`, _optional_) --
   Can either be a repository name for your model in the Hub or a path to a local folder (in which case
   the repository will have the name of that local folder). If not specified, will default to the name
   given by `repo_url` and a local directory with that name will be created.
@@ -1240,16 +1233,10 @@ Examples:
 
 </div>
 <div class="docstring">
-<docstring><name>save\_pretrained</name><anchor>transformers.FlaxPreTrainedModel.save_pretrained</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/modeling_flax_utils.py#L589</source><parameters>[{"name": "save_directory", "val": ": typing.Union[str, os.PathLike]"}, {"name": "params", "val": " = None"}, {"name": "push_to_hub", "val": " = False"}, {"name": "**kwargs", "val": ""}]</parameters></docstring>
-
-Save a model and its configuration file to a directory, so that it can be re-loaded using the
-`[from_pretrained()](/docs/transformers/master/en/main_classes/model#transformers.FlaxPreTrainedModel.from_pretrained)` class method
-
-Arguments:
-save_directory (`str` or `os.PathLike`):
-Directory to which to save. Will be created if it doesn't exist.
-push_to_hub (`bool`, _optional_, defaults to `False`):
-Whether or not to push your model to the Hugging Face model hub after saving it.
+<docstring><name>save\_pretrained</name><anchor>transformers.FlaxPreTrainedModel.save_pretrained</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/modeling_flax_utils.py#L589</source><parameters>[{"name": "save_directory", "val": ": typing.Union[str, os.PathLike]"}, {"name": "params", "val": " = None"}, {"name": "push_to_hub", "val": " = False"}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **save_directory** (`str` or `os.PathLike`) --
+  Directory to which to save. Will be created if it doesn't exist.
+- **push_to_hub** (`bool`, _optional_, defaults to `False`) --
+  Whether or not to push your model to the Hugging Face model hub after saving it.
 
 <Tip warning={true}>
 
@@ -1260,14 +1247,23 @@ instead.
 
 </Tip>
 
-kwargs:
+kwargs --
 Additional key word arguments passed along to the
-[push_to_hub()](/docs/transformers/master/en/main_classes/model#transformers.file_utils.PushToHubMixin.push_to_hub) method.
+[push_to_hub()](/docs/transformers/master/en/main_classes/model#transformers.file_utils.PushToHubMixin.push_to_hub) method.</paramsdesc><paramgroups>0</paramgroups></docstring>
+
+Save a model and its configuration file to a directory, so that it can be re-loaded using the
+`[from_pretrained()](/docs/transformers/master/en/main_classes/model#transformers.FlaxPreTrainedModel.from_pretrained)` class method
+
+
 
 
 </div>
 <div class="docstring">
-<docstring><name>to\_bf16</name><anchor>transformers.FlaxPreTrainedModel.to_bf16</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/modeling_flax_utils.py#L181</source><parameters>[{"name": "params", "val": ": typing.Union[typing.Dict, flax.core.frozen_dict.FrozenDict]"}, {"name": "mask", "val": ": typing.Any = None"}]</parameters></docstring>
+<docstring><name>to\_bf16</name><anchor>transformers.FlaxPreTrainedModel.to_bf16</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/modeling_flax_utils.py#L181</source><parameters>[{"name": "params", "val": ": typing.Union[typing.Dict, flax.core.frozen_dict.FrozenDict]"}, {"name": "mask", "val": ": typing.Any = None"}]</parameters><paramsdesc>- **params** (`Union[Dict, FrozenDict]`) --
+  A `PyTree` of model parameters.
+- **mask** (`Union[Dict, FrozenDict]`) --
+  A `PyTree` with same structure as the `params` tree. The leaves should be booleans, `True` for
+  params you want to cast, and should be `False` for those you want to skip.</paramsdesc><paramgroups>0</paramgroups></docstring>
 
 Cast the floating-point `params` to `jax.numpy.bfloat16`. This returns a new `params` tree and does not
 cast the `params` in place.
@@ -1275,12 +1271,7 @@ cast the `params` in place.
 This method can be used on TPU to explicitly convert the model parameters to bfloat16 precision to do full
 half-precision training or to save weights in bfloat16 for inference in order to save memory and improve speed.
 
-Arguments:
-params (`Union[Dict, FrozenDict]`):
-A `PyTree` of model parameters.
-mask (`Union[Dict, FrozenDict]`):
-A `PyTree` with same structure as the `params` tree. The leaves should be booleans, `True` for
-params you want to cast, and should be `False` for those you want to skip.
+
 
 Examples:
 
@@ -1303,7 +1294,11 @@ Examples:
 
 </div>
 <div class="docstring">
-<docstring><name>to\_fp16</name><anchor>transformers.FlaxPreTrainedModel.to_fp16</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/modeling_flax_utils.py#L240</source><parameters>[{"name": "params", "val": ": typing.Union[typing.Dict, flax.core.frozen_dict.FrozenDict]"}, {"name": "mask", "val": ": typing.Any = None"}]</parameters></docstring>
+<docstring><name>to\_fp16</name><anchor>transformers.FlaxPreTrainedModel.to_fp16</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/modeling_flax_utils.py#L240</source><parameters>[{"name": "params", "val": ": typing.Union[typing.Dict, flax.core.frozen_dict.FrozenDict]"}, {"name": "mask", "val": ": typing.Any = None"}]</parameters><paramsdesc>- **params** (`Union[Dict, FrozenDict]`) --
+  A `PyTree` of model parameters.
+- **mask** (`Union[Dict, FrozenDict]`) --
+  A `PyTree` with same structure as the `params` tree. The leaves should be booleans, `True` for
+  params you want to cast, and should be `False` for those you want to skip</paramsdesc><paramgroups>0</paramgroups></docstring>
 
 Cast the floating-point `parmas` to `jax.numpy.float16`. This returns a new `params` tree and does not
 cast the `params` in place.
@@ -1311,12 +1306,7 @@ cast the `params` in place.
 This method can be used on GPU to explicitly convert the model parameters to float16 precision to do full
 half-precision training or to save weights in float16 for inference in order to save memory and improve speed.
 
-Arguments:
-params (`Union[Dict, FrozenDict]`):
-A `PyTree` of model parameters.
-mask (`Union[Dict, FrozenDict]`):
-A `PyTree` with same structure as the `params` tree. The leaves should be booleans, `True` for
-params you want to cast, and should be `False` for those you want to skip
+
 
 Examples:
 
@@ -1339,18 +1329,17 @@ Examples:
 
 </div>
 <div class="docstring">
-<docstring><name>to\_fp32</name><anchor>transformers.FlaxPreTrainedModel.to_fp32</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/modeling_flax_utils.py#L214</source><parameters>[{"name": "params", "val": ": typing.Union[typing.Dict, flax.core.frozen_dict.FrozenDict]"}, {"name": "mask", "val": ": typing.Any = None"}]</parameters></docstring>
+<docstring><name>to\_fp32</name><anchor>transformers.FlaxPreTrainedModel.to_fp32</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/modeling_flax_utils.py#L214</source><parameters>[{"name": "params", "val": ": typing.Union[typing.Dict, flax.core.frozen_dict.FrozenDict]"}, {"name": "mask", "val": ": typing.Any = None"}]</parameters><paramsdesc>- **params** (`Union[Dict, FrozenDict]`) --
+  A `PyTree` of model parameters.
+- **mask** (`Union[Dict, FrozenDict]`) --
+  A `PyTree` with same structure as the `params` tree. The leaves should be booleans, `True` for
+  params you want to cast, and should be `False` for those you want to skip</paramsdesc><paramgroups>0</paramgroups></docstring>
 
 Cast the floating-point `parmas` to `jax.numpy.float32`. This method can be used to explicitly convert the
 model parameters to fp32 precision. This returns a new `params` tree and does not cast the `params` in
 place.
 
-Arguments:
-params (`Union[Dict, FrozenDict]`):
-A `PyTree` of model parameters.
-mask (`Union[Dict, FrozenDict]`):
-A `PyTree` with same structure as the `params` tree. The leaves should be booleans, `True` for
-params you want to cast, and should be `False` for those you want to skip
+
 
 Examples:
 
@@ -2311,14 +2300,14 @@ Examples:
 
 <div class="docstring">
 
-<docstring><name>class transformers.file\_utils.PushToHubMixin</name><anchor>transformers.file_utils.PushToHubMixin</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/file_utils.py#L2275</source><parameters>[]</parameters></docstring>
+<docstring><name>class transformers.file\_utils.PushToHubMixin</name><anchor>transformers.file_utils.PushToHubMixin</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/file_utils.py#L2324</source><parameters>[]</parameters></docstring>
 
     A Mixin containing the functionality to push a model or tokenizer to the hub.
     
 
 
 <div class="docstring">
-<docstring><name>push\_to\_hub</name><anchor>transformers.file_utils.PushToHubMixin.push_to_hub</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/file_utils.py#L2280</source><parameters>[{"name": "repo_path_or_name", "val": ": typing.Optional[str] = None"}, {"name": "repo_url", "val": ": typing.Optional[str] = None"}, {"name": "use_temp_dir", "val": ": bool = False"}, {"name": "commit_message", "val": ": typing.Optional[str] = None"}, {"name": "organization", "val": ": typing.Optional[str] = None"}, {"name": "private", "val": ": typing.Optional[bool] = None"}, {"name": "use_auth_token", "val": ": typing.Union[bool, str, NoneType] = None"}]</parameters><paramsdesc>- **repo_path_or_name** (`str`, _optional_) --
+<docstring><name>push\_to\_hub</name><anchor>transformers.file_utils.PushToHubMixin.push_to_hub</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/file_utils.py#L2329</source><parameters>[{"name": "repo_path_or_name", "val": ": typing.Optional[str] = None"}, {"name": "repo_url", "val": ": typing.Optional[str] = None"}, {"name": "use_temp_dir", "val": ": bool = False"}, {"name": "commit_message", "val": ": typing.Optional[str] = None"}, {"name": "organization", "val": ": typing.Optional[str] = None"}, {"name": "private", "val": ": typing.Optional[bool] = None"}, {"name": "use_auth_token", "val": ": typing.Union[bool, str, NoneType] = None"}]</parameters><paramsdesc>- **repo_path_or_name** (`str`, _optional_) --
   Can either be a repository name for your &amp;lcub;object} in the Hub or a path to a local folder (in which case
   the repository will have the name of that local folder). If not specified, will default to the name
   given by `repo_url` and a local directory with that name will be created.

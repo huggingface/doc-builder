@@ -36,19 +36,19 @@ sections:
     title: '`forward` vs `backward` Execution Speed'
   - local: floating-data-types
     sections:
-    - local: fp
+    - local: fp16
       sections:
-      - local: fp-caching
+      - local: fp16-caching
         title: fp16 caching
-      - local: fp-inference
+      - local: fp16-inference
         title: fp16 Inference
       title: fp16
-    - local: bf
+    - local: bf16
       sections:
-      - local: bf-inference
+      - local: bf16-inference
         title: bf16 Inference
       title: bf16
-    - local: tf
+    - local: tf32
       title: tf32
     title: Floating Data Types
   - local: gradient-checkpointing
@@ -68,11 +68,11 @@ title: 'Performance and Scalability: How To Fit a Bigger Model and Train It Fast
 ---
 <script>
 import Tip from "./Tip.svelte";
-import Youtube from "./Youtube.svelte";	
-import Docstring from "./Docstring.svelte";	
-import CodeBlock from "./CodeBlock.svelte";	
-import CodeBlockFw from "./CodeBlockFw.svelte";	
-import IconCopyLink from "./IconCopyLink.svelte";	
+import Youtube from "./Youtube.svelte";
+import Docstring from "./Docstring.svelte";
+import CodeBlock from "./CodeBlock.svelte";
+import CodeBlockFw from "./CodeBlockFw.svelte";
+import IconCopyLink from "./IconCopyLink.svelte";
 export let fw: "pt" | "tf"
 </script>
 <!---
@@ -309,7 +309,7 @@ Here is a diagram that shows how these data types correlate to each other.
 While fp16 and fp32 have been around for quite some time, bf16 and tf32 are only available on the Ampere architecture GPUS. TPUs support bf16 as well.
 
 
-<h4 id="fp">fp16</h4>
+<h4 id="fp16">fp16</h4>
 
 AMP = Automatic Mixed Precision
 
@@ -361,13 +361,13 @@ Some amazing tutorials to read on mixed precision:
 - @sgugger wrote a great explanation of mixed precision [here](https://docs.fast.ai/callback.fp16.html#A-little-bit-of-theory)
 - Aleksey Bilogur's [A developer-friendly guide to mixed precision training with PyTorch](https://spell.ml/blog/mixed-precision-training-with-pytorch-Xuk7YBEAACAASJam)
 
-<h5 id="fp-caching">fp16 caching</h5>
+<h5 id="fp16-caching">fp16 caching</h5>
 
 pytorch `autocast` which performs AMP include a caching feature, which speed things up by caching fp16-converted values. Here is the full description from this [comment](https://discuss.pytorch.org/t/autocast-and-torch-no-grad-unexpected-behaviour/93475/3):
 
 Autocast maintains a cache of the FP16 casts of model parameters (leaves). This helps streamline parameter reuse: if the same FP32 param is used in several different FP16list ops, like several matmuls, instead of re-casting the param to FP16 on entering each matmul, the cast will occur on the first matmul, the casted FP16 copy will be cached, and for all later matmuls the FP16 copy will be reused. The cache is maintained only within a particular outermost autocast context. When you exit the autocast context the cache is dropped. For recommended usage, in which autocast wraps the forward pass, and then you exit the context before calling backward(), this means the cache only lasts the duration of the forward pass each iteration, and will be rebuilt next iteration. (The cache of FP16-casted copies MUST be rebuilt each iteration. The FP32 parameters get updated by the optimizer, so the FP16 copies must be recreated, otherwise the FP16 values will be stale.)
 
-<h5 id="fp-inference">fp16 Inference</h5>
+<h5 id="fp16-inference">fp16 Inference</h5>
 
 While normally inference is done with fp16/amp as with training, it's also possible to use the full fp16 mode without using mixed precision. This is especially a good fit if the pretrained model weights are already in fp16. So a lot less memory is used: 2 bytes per parameter vs 6 bytes with mixed precision!
 
@@ -378,9 +378,9 @@ For example, LayerNorm has to be done in fp32 and recent pytorch (1.10+) has bee
 In 🤗 Transformers the full fp16 inference is enabled by passing `--fp16_full_eval` to the 🤗 Trainer.
 
 
-<h4 id="bf">bf16</h4>
+<h4 id="bf16">bf16</h4>
 
-If you own the new Ampere hardware you can start using bf16 for your training and evaluation. While bf16 has a worse precision than fp16, it has a much much bigger dynamic range. Therefore, if in the past you were experiencing overflow issues while training the model, bf16 will prevent this from happening most of the time. Remember that in fp16 the biggest number you can have is `65535` and any number above that will overflow. a bf16 number can be as large as `3.39e+38` (!) which is about the same as fp32 - because both have 8-bits used for the numerical range.
+If you own Ampere or newer hardware you can start using bf16 for your training and evaluation. While bf16 has a worse precision than fp16, it has a much much bigger dynamic range. Therefore, if in the past you were experiencing overflow issues while training the model, bf16 will prevent this from happening most of the time. Remember that in fp16 the biggest number you can have is `65535` and any number above that will overflow. A bf16 number can be as large as `3.39e+38` (!) which is about the same as fp32 - because both have 8-bits used for the numerical range.
 
 Automatic Mixed Precision (AMP) is the same as with fp16, except it'll use bf16.
 
@@ -388,7 +388,7 @@ Thanks to the fp32-like dynamic range with bf16 mixed precision loss scaling is 
 
 If you have tried to finetune models pre-trained under bf16 mixed precision (e.g. T5) it's very likely that you have encountered overflow issues. Now you should be able to finetune those models without any issues.
 
-That's said also be aware that if you pre-trained a model in bf16, it's likely to have overflow issues if someone tries to finetune it in fp16 down the road. So once started on the bf16-mode path it's best to remain on it and not switch to fp16.
+That said, also be aware that if you pre-trained a model in bf16, it's likely to have overflow issues if someone tries to finetune it in fp16 down the road. So once started on the bf16-mode path it's best to remain on it and not switch to fp16.
 
 In 🤗 Transformers bf16 mixed precision is enabled by passing `--bf16` to the 🤗 Trainer.
 
@@ -411,18 +411,18 @@ python -c 'import transformers; print(f"BF16 support is &amp;lcub;transformers.f
 On the other hand bf16 has a much worse precision than fp16, so there are certain situations where you'd still want to use fp16 and not bf16.
 
 
-<h5 id="bf-inference">bf16 Inference</h5>
+<h5 id="bf16-inference">bf16 Inference</h5>
 
 Same as with fp16, you can do inference in either the mixed precision bf16 or using the full bf16 mode. The same caveats apply. For details see [fp16 Inference](#fp16-inference).
 
 In 🤗 Transformers the full bf16 inference is enabled by passing `--bf16_full_eval` to the 🤗 Trainer.
 
 
-<h4 id="tf">tf32</h4>
+<h4 id="tf32">tf32</h4>
 
 The Ampere hardware uses a magical data type called tf32. It has the same numerical range as fp32 (8-bits), but instead of 23 bits precision it has only 10 bits (same as fp16). In total it uses only 19 bits.
 
-It's magical in a sense that you can use the normal fp32 training and/or inference code and by enabling tf32 support you can get up to 3x throughput improvement. All you need to do is to add this to your code:
+It's magical in the sense that you can use the normal fp32 training and/or inference code and by enabling tf32 support you can get up to 3x throughput improvement. All you need to do is to add this to your code:
 
 ```
 import torch
@@ -435,7 +435,12 @@ Like all cases with reduced precision this may or may not be satisfactory for yo
 
 If you're already using fp16 or bf16 mixed precision it may help with the throughput as well.
 
+You can enable this mode in the 🤗 Trainer with `--tf32`, or disable it with `--tf32 0` or `--no_tf32`.
+By default the PyTorch default is used.
+
 Note: tf32 mode is internal to CUDA and can't be accessed directly via `tensor.to(dtype=torch.tf32)` as `torch.tf32` doesn't exit.
+
+Note: you need `torch>=1.7` to enjoy this feature.
 
 
 <h3 id="gradient-checkpointing">Gradient Checkpointing</h3>

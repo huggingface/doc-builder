@@ -94,14 +94,15 @@ def convert_rst_links(text, page_info):
     package_name = page_info["package_name"]
     version = page_info.get("version", "master")
     language = page_info.get("language", "en")
+    no_prefix = page_info.get("no_prefix", False)
 
-    prefix = f"/docs/{package_name}/{version}/{language}/"
+    prefix = "" if no_prefix else f"/docs/{package_name}/{version}/{language}/"
     # Links of the form :doc:`page`
     text = _re_simple_doc.sub(rf"[\1]({prefix}\1)", text)
     # Links of the form :doc:`text <page>`
     text = _re_doc_with_description.sub(rf"[\1]({prefix}\2)", text)
 
-    if "page" in page_info:
+    if "page" in page_info and not no_prefix:
         page = str(page_info["page"])
         if page.endswith(".html"):
             page = page[:-5]
@@ -291,7 +292,7 @@ def convert_rst_blocks(text, page_info):
 
 
 # Re pattern that catches rst args blocks of the form `Parameters:`.
-_re_args = re.compile("^\s*(Args?|Parameters?):\s*$")
+_re_args = re.compile("^\s*(Args?|Arguments?|Parameters?):\s*$")
 # Re pattern that catches return blocks of the form `Return:`.
 _re_returns = re.compile("^\s*Returns?:\s*$")
 

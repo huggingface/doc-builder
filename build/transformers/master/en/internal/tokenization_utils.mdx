@@ -964,7 +964,50 @@ overflowing tokens. Such a combination of arguments will raise an error.
 
 </div>
 <div class="docstring">
-<docstring><name>prepare\_seq2seq\_batch</name><anchor>transformers.PreTrainedTokenizerBase.prepare_seq2seq_batch</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/tokenization_utils_base.py#L3329</source><parameters>[{"name": "src_texts", "val": ": typing.List[str]"}, {"name": "tgt_texts", "val": ": typing.Optional[typing.List[str]] = None"}, {"name": "max_length", "val": ": typing.Optional[int] = None"}, {"name": "max_target_length", "val": ": typing.Optional[int] = None"}, {"name": "padding", "val": ": str = 'longest'"}, {"name": "return_tensors", "val": ": str = None"}, {"name": "truncation", "val": ": bool = True"}, {"name": "**kwargs", "val": ""}]</parameters><rettype>[BatchEncoding](/docs/transformers/master/en/main_classes/tokenizer#transformers.BatchEncoding)</rettype><retdesc>A [BatchEncoding](/docs/transformers/master/en/main_classes/tokenizer#transformers.BatchEncoding) with the following fields:
+<docstring><name>prepare\_seq2seq\_batch</name><anchor>transformers.PreTrainedTokenizerBase.prepare_seq2seq_batch</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/tokenization_utils_base.py#L3329</source><parameters>[{"name": "src_texts", "val": ": typing.List[str]"}, {"name": "tgt_texts", "val": ": typing.Optional[typing.List[str]] = None"}, {"name": "max_length", "val": ": typing.Optional[int] = None"}, {"name": "max_target_length", "val": ": typing.Optional[int] = None"}, {"name": "padding", "val": ": str = 'longest'"}, {"name": "return_tensors", "val": ": str = None"}, {"name": "truncation", "val": ": bool = True"}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **src_texts** (`List[str]`) --
+  List of documents to summarize or source language texts.
+- **tgt_texts** (`list`, _optional_) --
+  List of summaries or target language texts.
+- **max_length** (`int`, _optional_) --
+  Controls the maximum length for encoder inputs (documents to summarize or source language texts) If
+  left unset or set to `None`, this will use the predefined model maximum length if a maximum length
+  is required by one of the truncation/padding parameters. If the model has no specific maximum input
+  length (like XLNet) truncation/padding to a maximum length will be deactivated.
+- **max_target_length** (`int`, _optional_) --
+  Controls the maximum length of decoder inputs (target language texts or summaries) If left unset or set
+  to `None`, this will use the max_length value.
+- **padding** (`bool`, `str` or [PaddingStrategy](/docs/transformers/master/en/internal/file_utils#transformers.file_utils.PaddingStrategy), _optional_, defaults to `False`) --
+  Activates and controls padding. Accepts the following values:
+
+  - `True` or `'longest'`: Pad to the longest sequence in the batch (or no padding if only a
+    single sequence if provided).
+  - `'max_length'`: Pad to a maximum length specified with the argument `max_length` or to the
+    maximum acceptable input length for the model if that argument is not provided.
+  - `False` or `'do_not_pad'` (default): No padding (i.e., can output a batch with sequences of
+    different lengths).
+- **return_tensors** (`str` or [TensorType](/docs/transformers/master/en/internal/file_utils#transformers.TensorType), _optional_) --
+  If set, will return tensors instead of list of python integers. Acceptable values are:
+
+  - `'tf'`: Return TensorFlow `tf.constant` objects.
+  - `'pt'`: Return PyTorch `torch.Tensor` objects.
+  - `'np'`: Return Numpy `np.ndarray` objects.
+- **truncation** (`bool`, `str` or [TruncationStrategy](/docs/transformers/master/en/internal/tokenization_utils#transformers.tokenization_utils_base.TruncationStrategy), _optional_, defaults to `True`) --
+  Activates and controls truncation. Accepts the following values:
+
+  - `True` or `'longest_first'`: Truncate to a maximum length specified with the argument
+    `max_length` or to the maximum acceptable input length for the model if that argument is not
+    provided. This will truncate token by token, removing a token from the longest sequence in the pair
+    if a pair of sequences (or a batch of pairs) is provided.
+  - `'only_first'`: Truncate to a maximum length specified with the argument `max_length` or to
+    the maximum acceptable input length for the model if that argument is not provided. This will only
+    truncate the first sequence of a pair if a pair of sequences (or a batch of pairs) is provided.
+  - `'only_second'`: Truncate to a maximum length specified with the argument `max_length` or
+    to the maximum acceptable input length for the model if that argument is not provided. This will only
+    truncate the second sequence of a pair if a pair of sequences (or a batch of pairs) is provided.
+  - `False` or `'do_not_truncate'` (default): No truncation (i.e., can output batch with
+    sequence lengths greater than the model maximum admissible input size).
+**kwargs --
+Additional keyword arguments passed along to `self.__call__`.</paramsdesc><paramgroups>0</paramgroups><rettype>[BatchEncoding](/docs/transformers/master/en/main_classes/tokenizer#transformers.BatchEncoding)</rettype><retdesc>A [BatchEncoding](/docs/transformers/master/en/main_classes/tokenizer#transformers.BatchEncoding) with the following fields:
 
 - **input_ids** -- List of token ids to be fed to the encoder.
 - **attention_mask** -- List of indices specifying which tokens should be attended to by the model.
@@ -975,51 +1018,7 @@ Otherwise, input_ids, attention_mask will be the only keys.</retdesc></docstring
 
 Prepare model inputs for translation. For best performance, translate one sentence at a time.
 
-Arguments:
-src_texts (`List[str]`):
-List of documents to summarize or source language texts.
-tgt_texts (`list`, _optional_):
-List of summaries or target language texts.
-max_length (`int`, _optional_):
-Controls the maximum length for encoder inputs (documents to summarize or source language texts) If
-left unset or set to `None`, this will use the predefined model maximum length if a maximum length
-is required by one of the truncation/padding parameters. If the model has no specific maximum input
-length (like XLNet) truncation/padding to a maximum length will be deactivated.
-max_target_length (`int`, _optional_):
-Controls the maximum length of decoder inputs (target language texts or summaries) If left unset or set
-to `None`, this will use the max_length value.
-padding (`bool`, `str` or [PaddingStrategy](/docs/transformers/master/en/internal/file_utils#transformers.file_utils.PaddingStrategy), _optional_, defaults to `False`):
-Activates and controls padding. Accepts the following values:
 
-- `True` or `'longest'`: Pad to the longest sequence in the batch (or no padding if only a
-  single sequence if provided).
-- `'max_length'`: Pad to a maximum length specified with the argument `max_length` or to the
-  maximum acceptable input length for the model if that argument is not provided.
-- `False` or `'do_not_pad'` (default): No padding (i.e., can output a batch with sequences of
-  different lengths).
-return_tensors (`str` or [TensorType](/docs/transformers/master/en/internal/file_utils#transformers.TensorType), _optional_):
-If set, will return tensors instead of list of python integers. Acceptable values are:
-
-- `'tf'`: Return TensorFlow `tf.constant` objects.
-- `'pt'`: Return PyTorch `torch.Tensor` objects.
-- `'np'`: Return Numpy `np.ndarray` objects.
-truncation (`bool`, `str` or [TruncationStrategy](/docs/transformers/master/en/internal/tokenization_utils#transformers.tokenization_utils_base.TruncationStrategy), _optional_, defaults to `True`):
-Activates and controls truncation. Accepts the following values:
-
-- `True` or `'longest_first'`: Truncate to a maximum length specified with the argument
-  `max_length` or to the maximum acceptable input length for the model if that argument is not
-  provided. This will truncate token by token, removing a token from the longest sequence in the pair
-  if a pair of sequences (or a batch of pairs) is provided.
-- `'only_first'`: Truncate to a maximum length specified with the argument `max_length` or to
-  the maximum acceptable input length for the model if that argument is not provided. This will only
-  truncate the first sequence of a pair if a pair of sequences (or a batch of pairs) is provided.
-- `'only_second'`: Truncate to a maximum length specified with the argument `max_length` or
-  to the maximum acceptable input length for the model if that argument is not provided. This will only
-  truncate the second sequence of a pair if a pair of sequences (or a batch of pairs) is provided.
-- `False` or `'do_not_truncate'` (default): No truncation (i.e., can output batch with
-  sequence lengths greater than the model maximum admissible input size).
-**kwargs:
-Additional keyword arguments passed along to `self.__call__`.
 
 
 
@@ -1028,7 +1027,7 @@ Additional keyword arguments passed along to `self.__call__`.
 
 </div>
 <div class="docstring">
-<docstring><name>push\_to\_hub</name><anchor>transformers.file_utils.PushToHubMixin.push_to_hub</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/file_utils.py#L2280</source><parameters>[{"name": "repo_path_or_name", "val": ": typing.Optional[str] = None"}, {"name": "repo_url", "val": ": typing.Optional[str] = None"}, {"name": "use_temp_dir", "val": ": bool = False"}, {"name": "commit_message", "val": ": typing.Optional[str] = None"}, {"name": "organization", "val": ": typing.Optional[str] = None"}, {"name": "private", "val": ": typing.Optional[bool] = None"}, {"name": "use_auth_token", "val": ": typing.Union[bool, str, NoneType] = None"}]</parameters><paramsdesc>- **repo_path_or_name** (`str`, _optional_) --
+<docstring><name>push\_to\_hub</name><anchor>transformers.file_utils.PushToHubMixin.push_to_hub</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/file_utils.py#L2329</source><parameters>[{"name": "repo_path_or_name", "val": ": typing.Optional[str] = None"}, {"name": "repo_url", "val": ": typing.Optional[str] = None"}, {"name": "use_temp_dir", "val": ": bool = False"}, {"name": "commit_message", "val": ": typing.Optional[str] = None"}, {"name": "organization", "val": ": typing.Optional[str] = None"}, {"name": "private", "val": ": typing.Optional[bool] = None"}, {"name": "use_auth_token", "val": ": typing.Union[bool, str, NoneType] = None"}]</parameters><paramsdesc>- **repo_path_or_name** (`str`, _optional_) --
   Can either be a repository name for your tokenizer in the Hub or a path to a local folder (in which case
   the repository will have the name of that local folder). If not specified, will default to the name
   given by `repo_url` and a local directory with that name will be created.

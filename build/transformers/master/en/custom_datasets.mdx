@@ -14,7 +14,7 @@ sections:
   title: Sequence classification with IMDb reviews
 - local: token-classification-with-wnut-emerging-entities
   sections:
-  - local: load-wnut-dataset
+  - local: load-wnut-17-dataset
     title: Load WNUT 17 dataset
   - local: preprocess
     title: Preprocess
@@ -43,10 +43,8 @@ import Docstring from "./Docstring.svelte";
 import CodeBlock from "./CodeBlock.svelte";
 import CodeBlockFw from "./CodeBlockFw.svelte";
 import IconCopyLink from "./IconCopyLink.svelte";
-
 export let fw: "pt" | "tf"
 </script>
-
 <!--Copyright 2020 The HuggingFace Team. All rights reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
@@ -75,9 +73,9 @@ pip install datasets
 
 Learn how to fine-tune a model for:
 
-- [seq_imdb](/docs/transformers/master/en/custom_datasets#seq_imdb)
-- [tok_ner](/docs/transformers/master/en/custom_datasets#tok_ner)
-- [qa_squad](/docs/transformers/master/en/custom_datasets#qa_squad)
+- [seq_imdb](#seq_imdb)
+- [tok_ner](#tok_ner)
+- [qa_squad](#qa_squad)
 
 <a id='seq_imdb'></a>
 
@@ -151,7 +149,7 @@ data_collator = DataCollatorWithPadding(tokenizer=tokenizer)
 
 <h3 id="finetune-with-the-trainer-api">Fine-tune with the Trainer API</h3>
 
-Now load your model with the [AutoModel](/docs/transformers/master/en/model_doc/auto#transformers.AutoModel) class along with the number of expected labels:
+Now load your model with the [AutoModelForSequenceClassification](/docs/transformers/master/en/model_doc/auto#transformers.AutoModelForSequenceClassification) class along with the number of expected labels:
 
 ```python
 from transformers import AutoModelForSequenceClassification
@@ -161,9 +159,8 @@ model = AutoModelForSequenceClassification.from_pretrained("distilbert-base-unca
 At this point, only three steps remain:
 
 1. Define your training hyperparameters in [TrainingArguments](/docs/transformers/master/en/main_classes/trainer#transformers.TrainingArguments).
-2. Pass the training arguments to a [Trainer](/docs/transformers/master/en/main_classes/trainer#transformers.Trainer) along with the model, dataset, tokenizer, and data
-   collator.
-3. Call `trainer.train` to fine-tune your model.
+2. Pass the training arguments to a [Trainer](/docs/transformers/master/en/main_classes/trainer#transformers.Trainer) along with the model, dataset, tokenizer, and data collator.
+3. Call `Trainer.train()` to fine-tune your model.
 
 ```python
 from transformers import TrainingArguments, Trainer
@@ -193,7 +190,7 @@ trainer.train()
 
 Fine-tuning with TensorFlow is just as easy, with only a few differences.
 
-Start by batching the processed examples together with dynamic padding using the `DataCollatorWithPadding` function.
+Start by batching the processed examples together with dynamic padding using the [DataCollatorWithPadding](/docs/transformers/master/en/main_classes/data_collator#transformers.DataCollatorWithPadding) function.
 Make sure you set `return_tensors="tf"` to return `tf.Tensor` outputs instead of PyTorch tensors!
 
 ```python
@@ -237,7 +234,7 @@ optimizer, schedule = create_optimizer(
 )
 ```
 
-Load your model with the [TFAutoModel](/docs/transformers/master/en/model_doc/auto#transformers.TFAutoModel) class along with the number of expected labels:
+Load your model with the [TFAutoModelForSequenceClassification](/docs/transformers/master/en/model_doc/auto#transformers.TFAutoModelForSequenceClassification) class along with the number of expected labels:
 
 ```python
 from transformers import TFAutoModelForSequenceClassification
@@ -277,7 +274,7 @@ or [TensorFlow notebook](https://colab.research.google.com/github/huggingface/no
 
 </Tip>
 
-<h3 id="load-wnut-dataset">Load WNUT 17 dataset</h3>
+<h3 id="load-wnut-17-dataset">Load WNUT 17 dataset</h3>
 
 Load the WNUT 17 dataset from the 🤗 Datasets library:
 
@@ -389,7 +386,7 @@ data_collator = DataCollatorForTokenClassification(tokenizer)
 
 <h3 id="finetune-with-the-trainer-api">Fine-tune with the Trainer API</h3>
 
-Load your model with the [AutoModel](/docs/transformers/master/en/model_doc/auto#transformers.AutoModel) class along with the number of expected labels:
+Load your model with the [AutoModelForTokenClassification](/docs/transformers/master/en/model_doc/auto#transformers.AutoModelForTokenClassification) class along with the number of expected labels:
 
 ```python
 from transformers import AutoModelForTokenClassification, TrainingArguments, Trainer
@@ -456,7 +453,7 @@ tf_validation_set = tokenized_wnut["validation"].to_tf_dataset(
 )
 ```
 
-Load the model with the [TFAutoModel](/docs/transformers/master/en/model_doc/auto#transformers.TFAutoModel) class along with the number of expected labels:
+Load the model with the [TFAutoModelForTokenClassification](/docs/transformers/master/en/model_doc/auto#transformers.TFAutoModelForTokenClassification) class along with the number of expected labels:
 
 ```python
 from transformers import TFAutoModelForTokenClassification
@@ -620,7 +617,7 @@ data_collator = default_data_collator
 
 <h3 id="finetune-with-the-trainer-api">Fine-tune with the Trainer API</h3>
 
-Load your model with the [AutoModel](/docs/transformers/master/en/model_doc/auto#transformers.AutoModel) class:
+Load your model with the [AutoModelForQuestionAnswering](/docs/transformers/master/en/model_doc/auto#transformers.AutoModelForQuestionAnswering) class:
 
 ```python
 from transformers import AutoModelForQuestionAnswering, TrainingArguments, Trainer
@@ -704,7 +701,7 @@ optimizer, schedule = create_optimizer(
 )
 ```
 
-Load your model with the [TFAutoModel](/docs/transformers/master/en/model_doc/auto#transformers.TFAutoModel) class:
+Load your model with the [TFAutoModelForQuestionAnswering](/docs/transformers/master/en/model_doc/auto#transformers.TFAutoModelForQuestionAnswering) class:
 
 ```python
 from transformers import TFAutoModelForQuestionAnswering

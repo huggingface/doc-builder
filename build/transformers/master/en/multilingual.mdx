@@ -21,10 +21,8 @@ import Docstring from "./Docstring.svelte";
 import CodeBlock from "./CodeBlock.svelte";
 import CodeBlockFw from "./CodeBlockFw.svelte";
 import IconCopyLink from "./IconCopyLink.svelte";
-
 export let fw: "pt" | "tf"
 </script>
-
 <!--Copyright 2020 The HuggingFace Team. All rights reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
@@ -42,8 +40,6 @@ specific language governing permissions and limitations under the License.
 Most of the models available in this library are mono-lingual models (English, Chinese and German). A few multi-lingual
 models are available and have a different mechanisms than mono-lingual models. This page details the usage of these
 models.
-
-The two models that currently support multiple languages are BERT and XLM.
 
 <h2 id="xlm">XLM</h2>
 
@@ -70,7 +66,7 @@ the tokenizer.
 Here is an example using the `xlm-clm-enfr-1024` checkpoint (Causal language modeling, English-French):
 
 
-```
+```py
 >>> import torch
 >>> from transformers import XLMTokenizer, XLMWithLMHeadModel
 
@@ -81,21 +77,21 @@ Here is an example using the `xlm-clm-enfr-1024` checkpoint (Causal language mod
 The different languages this model/tokenizer handles, as well as the ids of these languages are visible using the
 `lang2id` attribute:
 
-```
+```py
 >>> print(tokenizer.lang2id)
 &amp;lcub;'en': 0, 'fr': 1}
 ```
 
 These ids should be used when passing a language parameter during a model pass. Let's define our inputs:
 
-```
+```py
 >>> input_ids = torch.tensor([tokenizer.encode("Wikipedia was used to")]) # batch size of 1
 ```
 
 We should now define the language embedding by using the previously defined language id. We want to create a tensor
 filled with the appropriate language ids, of the same size as input_ids. For english, the id is 0:
 
-```
+```py
 >>> language_id = tokenizer.lang2id['en']  # 0
 >>> langs = torch.tensor([language_id] * input_ids.shape[1])  # torch.tensor([0, 0, 0, ..., 0])
 
@@ -105,7 +101,7 @@ filled with the appropriate language ids, of the same size as input_ids. For eng
 
 You can then feed it all as input to your model:
 
-```
+```py
 >>> outputs = model(input_ids, langs=langs)
 ```
 
