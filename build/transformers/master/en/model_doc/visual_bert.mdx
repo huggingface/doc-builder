@@ -292,27 +292,27 @@ Llion Jones, Aidan N. Gomez, Lukasz Kaiser and Illia Polosukhin.
 
   Example --:
 
-  >>> # Assumption: _get_visual_embeddings(image)_ gets the visual embeddings of the image.
-  >>> from transformers import BertTokenizer, VisualBertModel
-  >>> import torch
+  # Assumption: _get_visual_embeddings(image)_ gets the visual embeddings of the image.
+  from transformers import BertTokenizer, VisualBertModel
+  import torch
 
-  >>> tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
-  >>> model = VisualBertModel.from_pretrained('uclanlp/visualbert-vqa-coco-pre')
+  tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
+  model = VisualBertModel.from_pretrained('uclanlp/visualbert-vqa-coco-pre')
 
-  >>> inputs = tokenizer("The capital of France is Paris.", return_tensors="pt")
-  >>> visual_embeds = get_visual_embeddings(image).unsqueeze(0)
-  >>> visual_token_type_ids = torch.ones(visual_embeds.shape[:-1], dtype=torch.long)
-  >>> visual_attention_mask = torch.ones(visual_embeds.shape[:-1], dtype=torch.float)
+  inputs = tokenizer("The capital of France is Paris.", return_tensors="pt")
+  visual_embeds = get_visual_embeddings(image).unsqueeze(0)
+  visual_token_type_ids = torch.ones(visual_embeds.shape[:-1], dtype=torch.long)
+  visual_attention_mask = torch.ones(visual_embeds.shape[:-1], dtype=torch.float)
 
-  >>> inputs.update(&amp;lcub;
-  ...     "visual_embeds": visual_embeds,
-  ...     "visual_token_type_ids": visual_token_type_ids,
-  ...     "visual_attention_mask": visual_attention_mask
-  ... })
+  inputs.update(&amp;lcub;
+  "visual_embeds": visual_embeds,
+  "visual_token_type_ids": visual_token_type_ids,
+  "visual_attention_mask": visual_attention_mask
+  })
 
-  >>> outputs = model(**inputs)
+  outputs = model(**inputs)
 
-  >>> last_hidden_states = outputs.last_hidden_state</paramsdesc><paramgroups>0</paramgroups></docstring>
+  last_hidden_states = outputs.last_hidden_state</paramsdesc><paramgroups>0</paramgroups></docstring>
 The [VisualBertModel](/docs/transformers/master/en/model_doc/visual_bert#transformers.VisualBertModel) forward method, overrides the `__call__` special method.
 
 <Tip>
@@ -458,31 +458,31 @@ processing steps while the latter silently ignores them.
 Example:
 
 ```python
->>> # Assumption: _get_visual_embeddings(image)_ gets the visual embeddings of the image in the batch.
->>> from transformers import BertTokenizer, VisualBertForPreTraining
+# Assumption: _get_visual_embeddings(image)_ gets the visual embeddings of the image in the batch.
+from transformers import BertTokenizer, VisualBertForPreTraining
 
->>> tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
->>> model = VisualBertForPreTraining.from_pretrained('uclanlp/visualbert-vqa-coco-pre')
+tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
+model = VisualBertForPreTraining.from_pretrained('uclanlp/visualbert-vqa-coco-pre')
 
->>> inputs = tokenizer("The capital of France is &amp;lcub;mask}.", return_tensors="pt")
->>> visual_embeds = get_visual_embeddings(image).unsqueeze(0)
->>> visual_token_type_ids = torch.ones(visual_embeds.shape[:-1], dtype=torch.long)
->>> visual_attention_mask = torch.ones(visual_embeds.shape[:-1], dtype=torch.float)
+inputs = tokenizer("The capital of France is &amp;lcub;mask}.", return_tensors="pt")
+visual_embeds = get_visual_embeddings(image).unsqueeze(0)
+visual_token_type_ids = torch.ones(visual_embeds.shape[:-1], dtype=torch.long)
+visual_attention_mask = torch.ones(visual_embeds.shape[:-1], dtype=torch.float)
 
->>> inputs.update(&amp;lcub;
-...     "visual_embeds": visual_embeds,
-...     "visual_token_type_ids": visual_token_type_ids,
-...     "visual_attention_mask": visual_attention_mask
-... })
->>> max_length  = inputs["input_ids"].shape[-1]+visual_embeds.shape[-2]
->>> labels = tokenizer("The capital of France is Paris.", return_tensors="pt", padding="max_length", max_length=max_length)["input_ids"]
->>> sentence_image_labels = torch.tensor(1).unsqueeze(0) # Batch_size
+inputs.update(&amp;lcub;
+"visual_embeds": visual_embeds,
+"visual_token_type_ids": visual_token_type_ids,
+"visual_attention_mask": visual_attention_mask
+})
+max_length  = inputs["input_ids"].shape[-1]+visual_embeds.shape[-2]
+labels = tokenizer("The capital of France is Paris.", return_tensors="pt", padding="max_length", max_length=max_length)["input_ids"]
+sentence_image_labels = torch.tensor(1).unsqueeze(0) # Batch_size
 
 
->>> outputs = model(**inputs, labels=labels, sentence_image_labels=sentence_image_labels)
->>> loss = outputs.loss
->>> prediction_logits = outputs.prediction_logits
->>> seq_relationship_logits = outputs.seq_relationship_logits
+outputs = model(**inputs, labels=labels, sentence_image_labels=sentence_image_labels)
+loss = outputs.loss
+prediction_logits = outputs.prediction_logits
+seq_relationship_logits = outputs.seq_relationship_logits
 ```
 
 
@@ -496,7 +496,7 @@ Example:
 
 <div class="docstring">
 
-<docstring><name>class transformers.VisualBertForQuestionAnswering</name><anchor>transformers.VisualBertForQuestionAnswering</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/visual_bert/modeling_visual_bert.py#L1167</source><parameters>[{"name": "config", "val": ""}]</parameters><paramsdesc>- **config** ([VisualBertConfig](/docs/transformers/master/en/model_doc/visual_bert#transformers.VisualBertConfig)) -- Model configuration class with all the parameters of the model.
+<docstring><name>class transformers.VisualBertForQuestionAnswering</name><anchor>transformers.VisualBertForQuestionAnswering</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/visual_bert/modeling_visual_bert.py#L1168</source><parameters>[{"name": "config", "val": ""}]</parameters><paramsdesc>- **config** ([VisualBertConfig](/docs/transformers/master/en/model_doc/visual_bert#transformers.VisualBertConfig)) -- Model configuration class with all the parameters of the model.
   Initializing with a config file does not load the weights associated with the model, only the
   configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel.from_pretrained) method to load the model
   weights.</paramsdesc><paramgroups>0</paramgroups></docstring>
@@ -517,7 +517,7 @@ general usage and behavior.
 
 
 <div class="docstring">
-<docstring><name>forward</name><anchor>transformers.VisualBertForQuestionAnswering.forward</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/visual_bert/modeling_visual_bert.py#L1179</source><parameters>[{"name": "input_ids", "val": " = None"}, {"name": "attention_mask", "val": " = None"}, {"name": "token_type_ids", "val": " = None"}, {"name": "position_ids", "val": " = None"}, {"name": "head_mask", "val": " = None"}, {"name": "inputs_embeds", "val": " = None"}, {"name": "visual_embeds", "val": " = None"}, {"name": "visual_attention_mask", "val": " = None"}, {"name": "visual_token_type_ids", "val": " = None"}, {"name": "image_text_alignment", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "return_dict", "val": " = None"}, {"name": "labels", "val": " = None"}]</parameters><paramsdesc>- **input_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`) --
+<docstring><name>forward</name><anchor>transformers.VisualBertForQuestionAnswering.forward</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/visual_bert/modeling_visual_bert.py#L1180</source><parameters>[{"name": "input_ids", "val": " = None"}, {"name": "attention_mask", "val": " = None"}, {"name": "token_type_ids", "val": " = None"}, {"name": "position_ids", "val": " = None"}, {"name": "head_mask", "val": " = None"}, {"name": "inputs_embeds", "val": " = None"}, {"name": "visual_embeds", "val": " = None"}, {"name": "visual_attention_mask", "val": " = None"}, {"name": "visual_token_type_ids", "val": " = None"}, {"name": "image_text_alignment", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "return_dict", "val": " = None"}, {"name": "labels", "val": " = None"}]</parameters><paramsdesc>- **input_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`) --
   Indices of input sequence tokens in the vocabulary.
 
   Indices can be obtained using [BertTokenizer](/docs/transformers/master/en/model_doc/bert#transformers.BertTokenizer). See
@@ -612,30 +612,30 @@ processing steps while the latter silently ignores them.
 Example:
 
 ```python
->>> # Assumption: _get_visual_embeddings(image)_ gets the visual embeddings of the image in the batch.
->>> from transformers import BertTokenizer, VisualBertForQuestionAnswering
->>> import torch
+# Assumption: _get_visual_embeddings(image)_ gets the visual embeddings of the image in the batch.
+from transformers import BertTokenizer, VisualBertForQuestionAnswering
+import torch
 
->>> tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
->>> model = VisualBertForQuestionAnswering.from_pretrained('uclanlp/visualbert-vqa')
+tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
+model = VisualBertForQuestionAnswering.from_pretrained('uclanlp/visualbert-vqa')
 
->>> text = "Who is eating the apple?"
->>> inputs = tokenizer(text, return_tensors='pt')
->>> visual_embeds = get_visual_embeddings(image).unsqueeze(0)
->>> visual_token_type_ids = torch.ones(visual_embeds.shape[:-1], dtype=torch.long)
->>> visual_attention_mask = torch.ones(visual_embeds.shape[:-1], dtype=torch.float)
+text = "Who is eating the apple?"
+inputs = tokenizer(text, return_tensors='pt')
+visual_embeds = get_visual_embeddings(image).unsqueeze(0)
+visual_token_type_ids = torch.ones(visual_embeds.shape[:-1], dtype=torch.long)
+visual_attention_mask = torch.ones(visual_embeds.shape[:-1], dtype=torch.float)
 
->>> inputs.update(&amp;lcub;
-...     "visual_embeds": visual_embeds,
-...     "visual_token_type_ids": visual_token_type_ids,
-...     "visual_attention_mask": visual_attention_mask
-... })
+inputs.update(&amp;lcub;
+"visual_embeds": visual_embeds,
+"visual_token_type_ids": visual_token_type_ids,
+"visual_attention_mask": visual_attention_mask
+})
 
->>> labels = torch.tensor([[0.0,1.0]]).unsqueeze(0)  # Batch size 1, Num labels 2
+labels = torch.tensor([[0.0,1.0]]).unsqueeze(0)  # Batch size 1, Num labels 2
 
->>> outputs = model(**inputs, labels=labels)
->>> loss = outputs.loss
->>> scores = outputs.logits
+outputs = model(**inputs, labels=labels)
+loss = outputs.loss
+scores = outputs.logits
 ```
 
 
@@ -768,37 +768,38 @@ processing steps while the latter silently ignores them.
 Example:
 
 ```python
->>> from transformers import BertTokenizer, VisualBertForMultipleChoice
->>> import torch
+# Assumption: _get_visual_embeddings(image)_ gets the visual embeddings of the image in the batch.
+from transformers import BertTokenizer, VisualBertForMultipleChoice
+import torch
 
->>> tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
->>> model = VisualBertForMultipleChoice.from_pretrained('uclanlp/visualbert-vcr')
+tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
+model = VisualBertForMultipleChoice.from_pretrained('uclanlp/visualbert-vcr')
 
->>> prompt = "In Italy, pizza served in formal settings, such as at a restaurant, is presented unsliced."
->>> choice0 = "It is eaten with a fork and a knife."
->>> choice1 = "It is eaten while held in the hand."
+prompt = "In Italy, pizza served in formal settings, such as at a restaurant, is presented unsliced."
+choice0 = "It is eaten with a fork and a knife."
+choice1 = "It is eaten while held in the hand."
 
->>> visual_embeds = get_visual_embeddings(image)
->>> # (batch_size, num_choices, visual_seq_length, visual_embedding_dim)
->>> visual_embeds = visual_embeds.expand(1, 2, *visual_embeds.shape)
->>> visual_token_type_ids = torch.ones(visual_embeds.shape[:-1], dtype=torch.long)
->>> visual_attention_mask = torch.ones(visual_embeds.shape[:-1], dtype=torch.float)
+visual_embeds = get_visual_embeddings(image)
+# (batch_size, num_choices, visual_seq_length, visual_embedding_dim)
+visual_embeds = visual_embeds.expand(1, 2, *visual_embeds.shape)
+visual_token_type_ids = torch.ones(visual_embeds.shape[:-1], dtype=torch.long)
+visual_attention_mask = torch.ones(visual_embeds.shape[:-1], dtype=torch.float)
 
->>> labels = torch.tensor(0).unsqueeze(0)  # choice0 is correct (according to Wikipedia ;)), batch size 1
+labels = torch.tensor(0).unsqueeze(0)  # choice0 is correct (according to Wikipedia ;)), batch size 1
 
->>> encoding = tokenizer([[prompt, prompt], [choice0, choice1]], return_tensors='pt', padding=True)
->>> # batch size is 1
->>> inputs_dict = &amp;lcub;k: v.unsqueeze(0) for k,v in encoding.items()}
->>> inputs_dict.update(&amp;lcub;
-...     "visual_embeds": visual_embeds,
-...     "visual_attention_mask": visual_attention_mask,
-...     "visual_token_type_ids": visual_token_type_ids,
-...     "labels": labels
-... })
->>> outputs = model(**inputs_dict)
+encoding = tokenizer([[prompt, prompt], [choice0, choice1]], return_tensors='pt', padding=True)
+# batch size is 1
+inputs_dict = &amp;lcub;k: v.unsqueeze(0) for k,v in encoding.items()}
+inputs_dict.update(&amp;lcub;
+"visual_embeds": visual_embeds,
+"visual_attention_mask": visual_attention_mask,
+"visual_token_type_ids": visual_token_type_ids,
+"labels": labels
+})
+outputs = model(**inputs_dict)
 
->>> loss = outputs.loss
->>> logits = outputs.logits
+loss = outputs.loss
+logits = outputs.logits
 ```
 
 
@@ -812,7 +813,7 @@ Example:
 
 <div class="docstring">
 
-<docstring><name>class transformers.VisualBertForVisualReasoning</name><anchor>transformers.VisualBertForVisualReasoning</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/visual_bert/modeling_visual_bert.py#L1290</source><parameters>[{"name": "config", "val": ""}]</parameters><paramsdesc>- **config** ([VisualBertConfig](/docs/transformers/master/en/model_doc/visual_bert#transformers.VisualBertConfig)) -- Model configuration class with all the parameters of the model.
+<docstring><name>class transformers.VisualBertForVisualReasoning</name><anchor>transformers.VisualBertForVisualReasoning</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/visual_bert/modeling_visual_bert.py#L1291</source><parameters>[{"name": "config", "val": ""}]</parameters><paramsdesc>- **config** ([VisualBertConfig](/docs/transformers/master/en/model_doc/visual_bert#transformers.VisualBertConfig)) -- Model configuration class with all the parameters of the model.
   Initializing with a config file does not load the weights associated with the model, only the
   configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel.from_pretrained) method to load the model
   weights.</paramsdesc><paramgroups>0</paramgroups></docstring>
@@ -833,7 +834,7 @@ general usage and behavior.
 
 
 <div class="docstring">
-<docstring><name>forward</name><anchor>transformers.VisualBertForVisualReasoning.forward</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/visual_bert/modeling_visual_bert.py#L1302</source><parameters>[{"name": "input_ids", "val": " = None"}, {"name": "attention_mask", "val": " = None"}, {"name": "token_type_ids", "val": " = None"}, {"name": "position_ids", "val": " = None"}, {"name": "head_mask", "val": " = None"}, {"name": "inputs_embeds", "val": " = None"}, {"name": "visual_embeds", "val": " = None"}, {"name": "visual_attention_mask", "val": " = None"}, {"name": "visual_token_type_ids", "val": " = None"}, {"name": "image_text_alignment", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "return_dict", "val": " = None"}, {"name": "labels", "val": " = None"}]</parameters><paramsdesc>- **input_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`) --
+<docstring><name>forward</name><anchor>transformers.VisualBertForVisualReasoning.forward</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/visual_bert/modeling_visual_bert.py#L1303</source><parameters>[{"name": "input_ids", "val": " = None"}, {"name": "attention_mask", "val": " = None"}, {"name": "token_type_ids", "val": " = None"}, {"name": "position_ids", "val": " = None"}, {"name": "head_mask", "val": " = None"}, {"name": "inputs_embeds", "val": " = None"}, {"name": "visual_embeds", "val": " = None"}, {"name": "visual_attention_mask", "val": " = None"}, {"name": "visual_token_type_ids", "val": " = None"}, {"name": "image_text_alignment", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "return_dict", "val": " = None"}, {"name": "labels", "val": " = None"}]</parameters><paramsdesc>- **input_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`) --
   Indices of input sequence tokens in the vocabulary.
 
   Indices can be obtained using [BertTokenizer](/docs/transformers/master/en/model_doc/bert#transformers.BertTokenizer). See
@@ -928,30 +929,30 @@ processing steps while the latter silently ignores them.
 Example:
 
 ```python
->>> # Assumption: _get_visual_embeddings(image)_ gets the visual embeddings of the image in the batch.
->>> from transformers import BertTokenizer, VisualBertForVisualReasoning
->>> import torch
+# Assumption: _get_visual_embeddings(image)_ gets the visual embeddings of the image in the batch.
+from transformers import BertTokenizer, VisualBertForVisualReasoning
+import torch
 
->>> tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
->>> model = VisualBertForVisualReasoning.from_pretrained('uclanlp/visualbert-nlvr2')
+tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
+model = VisualBertForVisualReasoning.from_pretrained('uclanlp/visualbert-nlvr2')
 
->>> text = "Who is eating the apple?"
->>> inputs = tokenizer(text, return_tensors='pt')
->>> visual_embeds = get_visual_embeddings(image).unsqueeze(0)
->>> visual_token_type_ids = torch.ones(visual_embeds.shape[:-1], dtype=torch.long)
->>> visual_attention_mask = torch.ones(visual_embeds.shape[:-1], dtype=torch.float)
+text = "Who is eating the apple?"
+inputs = tokenizer(text, return_tensors='pt')
+visual_embeds = get_visual_embeddings(image).unsqueeze(0)
+visual_token_type_ids = torch.ones(visual_embeds.shape[:-1], dtype=torch.long)
+visual_attention_mask = torch.ones(visual_embeds.shape[:-1], dtype=torch.float)
 
->>> inputs.update(&amp;lcub;
-...     "visual_embeds": visual_embeds,
-...     "visual_token_type_ids": visual_token_type_ids,
-...     "visual_attention_mask": visual_attention_mask
-... })
+inputs.update(&amp;lcub;
+"visual_embeds": visual_embeds,
+"visual_token_type_ids": visual_token_type_ids,
+"visual_attention_mask": visual_attention_mask
+})
 
->>> labels = torch.tensor(1).unsqueeze(0)  # Batch size 1, Num choices 2
+labels = torch.tensor(1).unsqueeze(0)  # Batch size 1, Num choices 2
 
->>> outputs = model(**inputs, labels=labels)
->>> loss = outputs.loss
->>> scores = outputs.logits
+outputs = model(**inputs, labels=labels)
+loss = outputs.loss
+scores = outputs.logits
 ```
 
 
@@ -965,7 +966,7 @@ Example:
 
 <div class="docstring">
 
-<docstring><name>class transformers.VisualBertForRegionToPhraseAlignment</name><anchor>transformers.VisualBertForRegionToPhraseAlignment</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/visual_bert/modeling_visual_bert.py#L1447</source><parameters>[{"name": "config", "val": ""}]</parameters><paramsdesc>- **config** ([VisualBertConfig](/docs/transformers/master/en/model_doc/visual_bert#transformers.VisualBertConfig)) -- Model configuration class with all the parameters of the model.
+<docstring><name>class transformers.VisualBertForRegionToPhraseAlignment</name><anchor>transformers.VisualBertForRegionToPhraseAlignment</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/visual_bert/modeling_visual_bert.py#L1448</source><parameters>[{"name": "config", "val": ""}]</parameters><paramsdesc>- **config** ([VisualBertConfig](/docs/transformers/master/en/model_doc/visual_bert#transformers.VisualBertConfig)) -- Model configuration class with all the parameters of the model.
   Initializing with a config file does not load the weights associated with the model, only the
   configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel.from_pretrained) method to load the model
   weights.</paramsdesc><paramgroups>0</paramgroups></docstring>
@@ -986,7 +987,7 @@ general usage and behavior.
 
 
 <div class="docstring">
-<docstring><name>forward</name><anchor>transformers.VisualBertForRegionToPhraseAlignment.forward</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/visual_bert/modeling_visual_bert.py#L1459</source><parameters>[{"name": "input_ids", "val": " = None"}, {"name": "attention_mask", "val": " = None"}, {"name": "token_type_ids", "val": " = None"}, {"name": "position_ids", "val": " = None"}, {"name": "head_mask", "val": " = None"}, {"name": "inputs_embeds", "val": " = None"}, {"name": "visual_embeds", "val": " = None"}, {"name": "visual_attention_mask", "val": " = None"}, {"name": "visual_token_type_ids", "val": " = None"}, {"name": "image_text_alignment", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "return_dict", "val": " = None"}, {"name": "region_to_phrase_position", "val": " = None"}, {"name": "labels", "val": " = None"}]</parameters><paramsdesc>- **input_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`) --
+<docstring><name>forward</name><anchor>transformers.VisualBertForRegionToPhraseAlignment.forward</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/visual_bert/modeling_visual_bert.py#L1460</source><parameters>[{"name": "input_ids", "val": " = None"}, {"name": "attention_mask", "val": " = None"}, {"name": "token_type_ids", "val": " = None"}, {"name": "position_ids", "val": " = None"}, {"name": "head_mask", "val": " = None"}, {"name": "inputs_embeds", "val": " = None"}, {"name": "visual_embeds", "val": " = None"}, {"name": "visual_attention_mask", "val": " = None"}, {"name": "visual_token_type_ids", "val": " = None"}, {"name": "image_text_alignment", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "return_dict", "val": " = None"}, {"name": "region_to_phrase_position", "val": " = None"}, {"name": "labels", "val": " = None"}]</parameters><paramsdesc>- **input_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`) --
   Indices of input sequence tokens in the vocabulary.
 
   Indices can be obtained using [BertTokenizer](/docs/transformers/master/en/model_doc/bert#transformers.BertTokenizer). See
@@ -1085,32 +1086,32 @@ processing steps while the latter silently ignores them.
 Example:
 
 ```python
->>> # Assumption: _get_visual_embeddings(image)_ gets the visual embeddings of the image in the batch.
->>> from transformers import BertTokenizer, VisualBertForRegionToPhraseAlignment
->>> import torch
+# Assumption: _get_visual_embeddings(image)_ gets the visual embeddings of the image in the batch.
+from transformers import BertTokenizer, VisualBertForRegionToPhraseAlignment
+import torch
 
->>> tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
->>> model = VisualBertForRegionToPhraseAlignment.from_pretrained('uclanlp/visualbert-vqa-coco-pre')
+tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
+model = VisualBertForRegionToPhraseAlignment.from_pretrained('uclanlp/visualbert-vqa-coco-pre')
 
->>> text = "Who is eating the apple?"
->>> inputs = tokenizer(text, return_tensors='pt')
->>> visual_embeds = get_visual_embeddings(image).unsqueeze(0)
->>> visual_token_type_ids = torch.ones(visual_embeds.shape[:-1], dtype=torch.long)
->>> visual_attention_mask = torch.ones(visual_embeds.shape[:-1], dtype=torch.float)
->>> region_to_phrase_position = torch.ones((1, inputs["input_ids"].shape[-1]+visual_embeds.shape[-2]))
+text = "Who is eating the apple?"
+inputs = tokenizer(text, return_tensors='pt')
+visual_embeds = get_visual_embeddings(image).unsqueeze(0)
+visual_token_type_ids = torch.ones(visual_embeds.shape[:-1], dtype=torch.long)
+visual_attention_mask = torch.ones(visual_embeds.shape[:-1], dtype=torch.float)
+region_to_phrase_position = torch.ones((1, inputs["input_ids"].shape[-1]+visual_embeds.shape[-2]))
 
->>> inputs.update(&amp;lcub;
-...     "region_to_phrase_position": region_to_phrase_position,
-...     "visual_embeds": visual_embeds,
-...     "visual_token_type_ids": visual_token_type_ids,
-...     "visual_attention_mask": visual_attention_mask
-... })
+inputs.update(&amp;lcub;
+"region_to_phrase_position": region_to_phrase_position,
+"visual_embeds": visual_embeds,
+"visual_token_type_ids": visual_token_type_ids,
+"visual_attention_mask": visual_attention_mask
+})
 
->>> labels = torch.ones((1, inputs["input_ids"].shape[-1]+visual_embeds.shape[-2], visual_embeds.shape[-2])) # Batch size 1
+labels = torch.ones((1, inputs["input_ids"].shape[-1]+visual_embeds.shape[-2], visual_embeds.shape[-2])) # Batch size 1
 
->>> outputs = model(**inputs, labels=labels)
->>> loss = outputs.loss
->>> scores = outputs.logits
+outputs = model(**inputs, labels=labels)
+loss = outputs.loss
+scores = outputs.logits
 ```
 
 
