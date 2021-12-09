@@ -239,10 +239,13 @@ def document_object(object_name, package, page_info, full_name=True):
     if "package_name" not in page_info:
         page_info["package_name"] = package.__name__
     obj = find_object_in_package(object_name=object_name, package=package)
+    if obj is None:
+        raise ValueError(
+            f"Unable to find {object_name} in {package.__name__}. Make sure the path to that object is correct."
+        )
+
     anchor_name = get_shortest_path(obj, package)
-    if full_name:
-        # TODO: check if sphinx uses fulle name, object_name or anchor_name here.
-        # name = f"{obj.__module__}.{obj.__name__}"
+    if full_name and anchor_name is not None:
         name = anchor_name
     else:
         name = obj.__name__
