@@ -15,14 +15,7 @@
 
 import unittest
 
-import transformers
-from doc_builder.build_doc import (
-    _re_autodoc,
-    _re_list_item,
-    generate_frontmatter_in_text,
-    resolve_links_in_text,
-    resolve_open_in_colab,
-)
+from doc_builder.build_doc import _re_autodoc, _re_list_item, generate_frontmatter_in_text, resolve_open_in_colab
 
 
 class BuildDocTester(unittest.TestCase):
@@ -46,104 +39,6 @@ class BuildDocTester(unittest.TestCase):
 ]}} />
 """
         self.assertEqual(resolve_open_in_colab("\n[[open-in-colab]]\n", {"page": "quicktour.html"}), expected)
-
-    def test_resolve_links_in_text(self):
-        page_info = {"package_name": "transformers"}
-        small_mapping = {
-            "transformers.BertModel": "model_doc/bert.html",
-            "transformers.BertModel.forward": "model_doc/bert.html",
-            "transformers.BertTokenizer": "bert.html",
-        }
-
-        self.maxDiff = None
-        self.assertEqual(
-            resolve_links_in_text(
-                "Link to [`BertModel`], [`BertModel.forward`] and [`BertTokenizer`] as well as [`SomeClass`].",
-                transformers,
-                small_mapping,
-                page_info,
-            ),
-            (
-                "Link to [BertModel](/docs/transformers/master/en/model_doc/bert.html#transformers.BertModel), "
-                "[BertModel.forward()](/docs/transformers/master/en/model_doc/bert.html#transformers.BertModel.forward) "
-                "and [BertTokenizer](/docs/transformers/master/en/bert.html#transformers.BertTokenizer) as well as `SomeClass`."
-            ),
-        )
-
-        self.assertEqual(
-            resolve_links_in_text(
-                "Link to [`~transformers.BertModel`], [`~transformers.BertModel.forward`].",
-                transformers,
-                small_mapping,
-                page_info,
-            ),
-            (
-                "Link to [BertModel](/docs/transformers/master/en/model_doc/bert.html#transformers.BertModel), "
-                "[forward()](/docs/transformers/master/en/model_doc/bert.html#transformers.BertModel.forward)."
-            ),
-        )
-
-        self.assertEqual(
-            resolve_links_in_text(
-                "Link to [`transformers.BertModel`], [`transformers.BertModel.forward`].",
-                transformers,
-                small_mapping,
-                page_info,
-            ),
-            (
-                "Link to [transformers.BertModel](/docs/transformers/master/en/model_doc/bert.html#transformers.BertModel), "
-                "[transformers.BertModel.forward()](/docs/transformers/master/en/model_doc/bert.html#transformers.BertModel.forward)."
-            ),
-        )
-
-    def test_resolve_links_in_text_custom_version_lang(self):
-        page_info = {"package_name": "transformers", "version": "v4.10.0", "language": "fr"}
-        small_mapping = {
-            "transformers.BertModel": "model_doc/bert.html",
-            "transformers.BertModel.forward": "model_doc/bert.html",
-            "transformers.BertTokenizer": "bert.html",
-        }
-
-        self.maxDiff = None
-        self.assertEqual(
-            resolve_links_in_text(
-                "Link to [`BertModel`], [`BertModel.forward`] and [`BertTokenizer`] as well as [`SomeClass`].",
-                transformers,
-                small_mapping,
-                page_info,
-            ),
-            (
-                "Link to [BertModel](/docs/transformers/v4.10.0/fr/model_doc/bert.html#transformers.BertModel), "
-                "[BertModel.forward()](/docs/transformers/v4.10.0/fr/model_doc/bert.html#transformers.BertModel.forward) "
-                "and [BertTokenizer](/docs/transformers/v4.10.0/fr/bert.html#transformers.BertTokenizer) as well as `SomeClass`."
-            ),
-        )
-
-        self.assertEqual(
-            resolve_links_in_text(
-                "Link to [`~transformers.BertModel`], [`~transformers.BertModel.forward`].",
-                transformers,
-                small_mapping,
-                page_info,
-            ),
-            (
-                "Link to [BertModel](/docs/transformers/v4.10.0/fr/model_doc/bert.html#transformers.BertModel), "
-                "[forward()](/docs/transformers/v4.10.0/fr/model_doc/bert.html#transformers.BertModel.forward)."
-            ),
-        )
-
-        self.assertEqual(
-            resolve_links_in_text(
-                "Link to [`transformers.BertModel`], [`transformers.BertModel.forward`].",
-                transformers,
-                small_mapping,
-                page_info,
-            ),
-            (
-                "Link to [transformers.BertModel](/docs/transformers/v4.10.0/fr/model_doc/bert.html#transformers.BertModel), "
-                "[transformers.BertModel.forward()](/docs/transformers/v4.10.0/fr/model_doc/bert.html#transformers.BertModel.forward)."
-            ),
-        )
 
     def test_generate_frontmatter_in_text(self):
         # test canonical
