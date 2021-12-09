@@ -133,7 +133,7 @@ End
         page_info = {"package_name": "datasets", "page": "quicktour.html", "version": "stable", "language": "fr"}
         self.assertEqual(
             expand_links("Checkout the [task summary](task-summary)", page_info),
-            "Checkout the [task summary](https://huggingface.co/docs/datasetss/stable/fr/task-summary)",
+            "Checkout the [task summary](https://huggingface.co/docs/datasets/stable/fr/task-summary)",
         )
 
         page_info = {"package_name": "transformers", "page": "data/quicktour.html"}
