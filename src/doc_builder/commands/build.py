@@ -36,7 +36,7 @@ def build_command(args):
     output_path = os.path.join(args.build_dir, os.path.sep.join([args.library_name, version, args.language]))
 
     print("Building docs for", args.library_name, args.path_to_docs, output_path)
-    build_doc(args.library_name, args.path_to_docs, output_path)
+    build_doc(args.library_name, args.path_to_docs, output_path, notebook_dir=args.notebook_dir)
     update_versions_file(f"./build/{args.library_name}", version)
 
 
@@ -61,6 +61,7 @@ def build_command_parser(subparsers=None):
         help="Version under which to push the files. Will not affect the actual files generated, as these are"
         " generated according to the `path_to_docs` argument.",
     )
+    parser.add_argument("--notebook_dir", type=str, help="Where to save the generated notebooks.", default=None)
 
     if subparsers is not None:
         parser.set_defaults(func=build_command)

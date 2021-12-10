@@ -335,3 +335,44 @@ def autodoc(object_name, package, methods=None, return_anchors=False, page_info=
     documentation = '<div class="docstring">\n' + documentation + "</div>\n"
 
     return (documentation, anchors) if return_anchors else documentation
+
+
+def resolve_links_in_text(text, package, mapping, page_info):
+    """
+    Resolve links of the form [`SomeClass`] to the link in the documentation to `SomeClass`.
+
+    Args:
+    - **text** (`str`) -- The text in which to convert the links.
+    - **package** (`types.ModuleType`) -- The package in which to search objects for.
+    - **mapping** (`Dict[str, str]`) -- The map from anchor names of objects to their page in the documentation.
+    - **page_info** (`Dict[str, str]`) -- Some information about the page.
+    """
+    package_name = page_info.get("package_name", package.__name__)
+    version = page_info.get("version", "master")
+    language = page_info.get("language", "en")
+
+    prefix = f"/docs/{package_name}/{version}/{language}/"
+
+    def _resolve_link(search):
+        object_name = search.groups()[0]
+        # If the name begins with `~`, we shortcut to the last part.
+        if object_name.startswith("~"):
+            obj = find_object_in_package(object_name[1:], package)
+            object_name = object_name.split(".")[-1]
+        else:
+            obj = find_object_in_package(object_name, package)
+        if obj is None:
+            return f"`{object_name}`"
+
+        # If the object is not a class, we add ()
+        if not isinstance(obj, type):
+            object_name = f"{object_name}()"
+
+        # Link to the anchor
+        anchor = get_shortest_path(obj, package)
+        if anchor not in mapping:
+            return f"`{object_name}`"
+        page = f"{prefix}{mapping[anchor]}"
+        return f"[{object_name}]({page}#{anchor})"
+
+    return re.sub(r"\[`([^`]+)`\]", _resolve_link, text)
