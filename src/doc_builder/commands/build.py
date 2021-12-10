@@ -36,7 +36,15 @@ def build_command(args):
     output_path = os.path.join(args.build_dir, os.path.sep.join([args.library_name, version, args.language]))
 
     print("Building docs for", args.library_name, args.path_to_docs, output_path)
-    build_doc(args.library_name, args.path_to_docs, output_path, notebook_dir=args.notebook_dir)
+    build_doc(
+        args.library_name,
+        args.path_to_docs,
+        output_path,
+        clean=args.clean,
+        version=args.version,
+        language=args.language,
+        notebook_dir=args.notebook_dir,
+    )
     update_versions_file(f"./build/{args.library_name}", version)
 
 
@@ -54,6 +62,7 @@ def build_command_parser(subparsers=None):
         "documentation files should be indicated here.",
     )
     parser.add_argument("--build_dir", type=str, help="Where the built documentation will be.", default="./build/")
+    parser.add_argument("--clean", action="store-true", help="Whether or not to clean the output dir before building.")
     parser.add_argument("--language", type=str, help="Language of the documentation to generate", default="en")
     parser.add_argument(
         "--version",
