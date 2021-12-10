@@ -22,9 +22,10 @@ from pathlib import Path
 
 from tqdm import tqdm
 
-from .autodoc import autodoc, find_object_in_package, get_shortest_path, remove_example_tags
+from .autodoc import autodoc, remove_example_tags, resolve_links_in_text
 from .convert_md_to_mdx import convert_md_to_mdx
 from .convert_rst_to_mdx import convert_rst_to_mdx, find_indent, is_empty_line
+from .convert_to_notebook import generate_notebooks_from_file
 from .frontmatter_node import FrontmatterNode
 
 
@@ -190,47 +191,6 @@ def build_mdx_files(package, doc_folder, output_dir, page_info):
     return anchor_mapping
 
 
-def resolve_links_in_text(text, package, mapping, page_info):
-    """
-    Resolve links of the form [`SomeClass`] to the link in the documentation to `SomeClass`.
-
-    Args:
-    - **text** (`str`) -- The text in which to convert the links.
-    - **package** (`types.ModuleType`) -- The package in which to search objects for.
-    - **mapping** (`Dict[str, str]`) -- The map from anchor names of objects to their page in the documentation.
-    - **page_info** (`Dict[str, str]`) -- Some information about the page.
-    """
-    package_name = page_info.get("package_name", package.__name__)
-    version = page_info.get("version", "master")
-    language = page_info.get("language", "en")
-
-    prefix = f"/docs/{package_name}/{version}/{language}/"
-
-    def _resolve_link(search):
-        object_name = search.groups()[0]
-        # If the name begins with `~`, we shortcut to the last part.
-        if object_name.startswith("~"):
-            obj = find_object_in_package(object_name[1:], package)
-            object_name = object_name.split(".")[-1]
-        else:
-            obj = find_object_in_package(object_name, package)
-        if obj is None:
-            return f"`{object_name}`"
-
-        # If the object is not a class, we add ()
-        if not isinstance(obj, type):
-            object_name = f"{object_name}()"
-
-        # Link to the anchor
-        anchor = get_shortest_path(obj, package)
-        if anchor not in mapping:
-            return f"`{object_name}`"
-        page = f"{prefix}{mapping[anchor]}"
-        return f"[{object_name}]({page}#{anchor})"
-
-    return re.sub(r"\[`([^`]+)`\]", _resolve_link, text)
-
-
 def resolve_links(doc_folder, package, mapping, page_info):
     """
     Resolve links of the form [`SomeClass`] to the link in the documentation to `SomeClass` for all files in a
@@ -317,24 +277,67 @@ def generate_frontmatter(doc_folder):
             writer.write(content)
 
 
-def build_doc(package_name, doc_folder, output_dir, clean=True, version="master", language="en"):
+def build_notebooks(doc_folder, notebook_dir, package=None, mapping=None, page_info=None):
+    """
+    Build the notebooks associated to the MDX files in the documentation with an [[open-in-colab]] marker.
+
+    Args:
+        doc_folder (`str` or `os.PathLike`): The folder where the doc source files are.
+        notebook_dir_dir (`str` or `os.PathLike`): Where to save the generated notebooks
+        package (`types.ModuleType`, *optional*):
+            The package in which to search objects for (needs to be passed to resolve doc links).
+        mapping (`Dict[str, str]`, *optional*):
+            The map from anchor names of objects to their page in the documentation (needs to be passed to resolve doc
+            links).
+        page_info (`Dict[str, str]`, *optional*):
+            Some information about the page (needs to be passed to resolve doc links).
+    """
+    doc_folder = Path(doc_folder)
+
+    if "package_name" not in page_info:
+        page_info["package_name"] = package.__name__
+
+    mdx_files = list(doc_folder.glob("**/*.mdx"))
+    for file in tqdm(mdx_files, desc="Building the notebooks"):
+        with open(file, "r", encoding="utf-8") as f:
+            if "[[open-in-colab]]" not in f.read():
+                continue
+        try:
+            page_info["page"] = file.with_suffix(".html").relative_to(doc_folder)
+            generate_notebooks_from_file(file, notebook_dir, package=package, mapping=mapping, page_info=page_info)
+            # Make sure we clean up for next page.
+            del page_info["page"]
+
+        except Exception as e:
+            raise type(e)(f"There was an error when converting {file} to a notebook.\n" + e.args[0]) from e
+
+
+def build_doc(package_name, doc_folder, output_dir, clean=True, version="master", language="en", notebook_dir=None):
     """
     Build the documentation of a package.
 
     Args:
-    - **package_name** (`str`) -- The name of the package.
-    - **doc_folder** (`str` or `os.PathLike) -- The folder in which the source documentation of the package is.
-    - **output_dir** (`str` or `os.PathLike) -- The folder in which to put the built documentation. Will
-      be created if it does not exist.
-    - **clean** (`bool`, *optional*, defaults to `True`) -- Whether or not to delete the content of the
-      `output_dir` if that directory exists.
-    - **version** (`str`, *optional*, defaults to `"master"`) -- The name of the version of the doc.
-    - **language** (`str`, *optional*, defaults to `"en"`) -- The language of the doc.
+        package_name (`str`): The name of the package.
+        doc_folder (`str` or `os.PathLike`): The folder in which the source documentation of the package is.
+        output_dir (`str` or `os.PathLike`):
+            The folder in which to put the built documentation. Will be created if it does not exist.
+        clean (`bool`, *optional*, defaults to `True`):
+            Whether or not to delete the content of the `output_dir` if that directory exists.
+        version (`str`, *optional*, defaults to `"master"`): The name of the version of the doc.
+        language (`str`, *optional*, defaults to `"en"`): The language of the doc.
+        notebook_dir (`str` or `os.PathLike`, *optional*):
+            If provided, where to save the notebooks generated from the doc file with an [[open-in-colab]] marker.
     """
     page_info = {"version": version, "language": language, "package_name": package_name}
     if clean and Path(output_dir).exists():
         shutil.rmtree(output_dir)
+
     package = importlib.import_module(package_name)
     anchors_mapping = build_mdx_files(package, doc_folder, output_dir, page_info)
     resolve_links(output_dir, package, anchors_mapping, page_info)
     generate_frontmatter(output_dir)
+
+    if notebook_dir is not None:
+        if clean and Path(notebook_dir).exists():
+            shutil.rmtree(notebook_dir)
+        build_notebooks(doc_folder, notebook_dir, package=package, mapping=anchors_mapping, page_info=page_info)
