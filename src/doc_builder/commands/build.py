@@ -41,7 +41,7 @@ def build_command(args):
         args.path_to_docs,
         output_path,
         clean=args.clean,
-        version=args.version,
+        version=version,
         language=args.language,
         notebook_dir=args.notebook_dir,
     )
