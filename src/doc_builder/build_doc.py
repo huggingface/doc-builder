@@ -342,5 +342,6 @@ def build_doc(package_name, doc_folder, output_dir, clean=True, version="master"
 
     if notebook_dir is not None:
         if clean and Path(notebook_dir).exists():
-            shutil.rmtree(notebook_dir)
+            for nb_file in notebook_dir.glob("**/*.ipynb"):
+                os.remove(nb_file)
         build_notebooks(doc_folder, notebook_dir, package=package, mapping=anchors_mapping, page_info=page_info)
