@@ -55,7 +55,7 @@ doc_config = None
 
 def read_doc_config(doc_folder):
     """
-    Execute the `_config.py` file inside the doc source directory and returns it as a Python module.
+    Execute the `_config.py` file inside the doc source directory and executes it as a Python module.
     """
     global doc_config
 
@@ -66,4 +66,7 @@ def read_doc_config(doc_folder):
 
 
 def get_doc_config():
+    """
+    Returns the `doc_config` if it has been loaded.
+    """
     return doc_config
