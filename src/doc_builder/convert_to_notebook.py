@@ -20,6 +20,7 @@ from pathlib import Path
 import nbformat
 
 from .autodoc import resolve_links_in_text
+from .utils import get_doc_config
 
 
 # Re pattern that matches inline math in MDX: \\(formula\\)
@@ -192,6 +193,14 @@ def parse_doc_into_cells(content):
     Split a documentation content into cells.
     """
     cells = []
+    doc_config = get_doc_config()
+    if doc_config is not None:
+        for cell in doc_config.notebook_first_cells:
+            if cell["type"] == "markdown":
+                cells.append(markdown_cell(cell["content"].strip()))
+            elif cell["type"] == "code":
+                cells.append(code_cell(cell["content"].strip()))
+
     current_lines = []
     cell_type = "markdown"
     # We keep track of whether we are in a general code block (not necessarily in a code cell) as a line with a comment
@@ -262,14 +271,7 @@ def create_notebook(cells):
     """
     Create a notebook object with `cells`.
     """
-    return nbformat.notebooknode.NotebookNode(
-        {
-            "cells": cells,
-            "metadata": {},
-            "nbformat": 4,
-            "nbformat_minor": 4,
-        }
-    )
+    return nbformat.notebooknode.NotebookNode({"cells": cells, "metadata": {}, "nbformat": 4, "nbformat_minor": 4})
 
 
 def generate_notebooks_from_file(file_name, output_dir, package=None, mapping=None, page_info=None):
