@@ -31,6 +31,7 @@ import CodeBlock from "./CodeBlock.svelte";
 import CodeBlockFw from "./CodeBlockFw.svelte";
 import ColabDropdown from "./ColabDropdown.svelte";
 import IconCopyLink from "./IconCopyLink.svelte";
+import FrameworkSwitch from "./FrameworkSwitch.svelte";
 export let fw: "pt" | "tf"
 </script>\n""" + process_md(
         md_text, page_info
@@ -43,7 +44,9 @@ def convert_special_chars(text):
     """
     text = text.replace("{", "&amp;lcub;")
     # We don't want to replace those by the HTML code, so we temporarily set them at LTHTML
-    text = re.sub(r"<(img|br|hr|Youtube)", r"LTHTML\1", text)  # html void elements with no closing counterpart
+    text = re.sub(
+        r"<(img|br|hr|Youtube|FrameworkSwitch)", r"LTHTML\1", text
+    )  # html void elements with no closing counterpart
     _re_lt_html = re.compile(r"<(\S+)([^>]*>)(((?!</\1>).)*)<(/\1>)", re.DOTALL)
     while _re_lt_html.search(text):
         text = _re_lt_html.sub(r"LTHTML\1\2\3LTHTML\5", text)
