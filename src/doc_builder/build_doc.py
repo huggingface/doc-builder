@@ -27,6 +27,7 @@ from .convert_md_to_mdx import convert_md_to_mdx
 from .convert_rst_to_mdx import convert_rst_to_mdx, find_indent, is_empty_line
 from .convert_to_notebook import generate_notebooks_from_file
 from .frontmatter_node import FrontmatterNode
+from .utils import read_doc_config
 
 
 _re_autodoc = re.compile("^\s*\[\[autodoc\]\]\s+(\S+)\s*$")
@@ -332,6 +333,8 @@ def build_doc(package_name, doc_folder, output_dir, clean=True, version="master"
     if clean and Path(output_dir).exists():
         shutil.rmtree(output_dir)
 
+    read_doc_config(doc_folder)
+
     package = importlib.import_module(package_name)
     anchors_mapping = build_mdx_files(package, doc_folder, output_dir, page_info)
     resolve_links(output_dir, package, anchors_mapping, page_info)
@@ -339,5 +342,6 @@ def build_doc(package_name, doc_folder, output_dir, clean=True, version="master"
 
     if notebook_dir is not None:
         if clean and Path(notebook_dir).exists():
-            shutil.rmtree(notebook_dir)
+            for nb_file in Path(notebook_dir).glob("**/*.ipynb"):
+                os.remove(nb_file)
         build_notebooks(doc_folder, notebook_dir, package=package, mapping=anchors_mapping, page_info=page_info)

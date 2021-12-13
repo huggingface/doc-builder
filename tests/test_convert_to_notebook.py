@@ -49,21 +49,48 @@ class ConvertToNotebookTester(unittest.TestCase):
         self.assertIsNone(_re_python_code.search("```"))
 
     def test_parse_inputs_output(self):
-        expected = "from transformers import pipeline\nclassifier = pipeline('sentiment-analysis')"
+        expected = "from transformers import pipeline\n\nclassifier = pipeline('sentiment-analysis')"
         doctest_lines_no_output = [
             ">>> from transformers import pipeline",
+            "",
             ">>> classifier = pipeline('sentiment-analysis')",
         ]
         doctest_lines_with_output = [
             ">>> from transformers import pipeline",
+            "",
             ">>> classifier = pipeline('sentiment-analysis')",
             "output",
         ]
-        regular_lines = ["from transformers import pipeline", "classifier = pipeline('sentiment-analysis')"]
+        regular_lines = ["from transformers import pipeline", "", "classifier = pipeline('sentiment-analysis')"]
 
-        self.assertEqual(parse_input_output(regular_lines), (expected, None))
-        self.assertEqual(parse_input_output(doctest_lines_no_output), (expected, None))
-        self.assertEqual(parse_input_output(doctest_lines_with_output), (expected, "output"))
+        self.assertListEqual(parse_input_output(regular_lines), [(expected, None)])
+        self.assertListEqual(parse_input_output(doctest_lines_no_output), [(expected, None)])
+        self.assertListEqual(parse_input_output(doctest_lines_with_output), [(expected, "output")])
+
+    def test_parse_inputs_output_multiple_outputs(self):
+        expected_1 = "from transformers import pipeline"
+        expected_2 = "classifier = pipeline('sentiment-analysis')"
+
+        doctest_lines_with_output = [
+            ">>> from transformers import pipeline",
+            "output 1",
+            ">>> classifier = pipeline('sentiment-analysis')",
+            "output 2",
+        ]
+
+        self.assertListEqual(
+            parse_input_output(doctest_lines_with_output), [(expected_1, "output 1"), (expected_2, "output 2")]
+        )
+
+        doctest_lines_with_one_output = [
+            ">>> from transformers import pipeline",
+            "output 1",
+            ">>> classifier = pipeline('sentiment-analysis')",
+        ]
+
+        self.assertListEqual(
+            parse_input_output(doctest_lines_with_one_output), [(expected_1, "output 1"), (expected_2, None)]
+        )
 
     def test_split_framewors(self):
         test_content = """
