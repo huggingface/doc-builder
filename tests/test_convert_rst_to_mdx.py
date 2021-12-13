@@ -298,7 +298,6 @@ third line``.
         self.assertEqual(convert_special_chars("< blo"), "&amp;lt; blo")
         self.assertEqual(convert_special_chars("<source></source>"), "<source></source>")
         self.assertEqual(convert_special_chars("<Youtube id='my_vid' />"), "<Youtube id='my_vid' />")
-        self.assertEqual(convert_special_chars("<FrameworkSwitch />"), "<FrameworkSwitch />")
 
         longer_test = """<script>
 import Tip from "./Tip.svelte";
