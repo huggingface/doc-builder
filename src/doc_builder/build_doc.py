@@ -372,3 +372,12 @@ def check_all_doc_files_are_in_toc(doc_folder, output_dir):
         raise RuntimeError(
             f"The following files are not present in the table of contents:\n" + message + f"\nAdd them to {toc_file}."
         )
+
+    files_not_exist = [f for f in toc_sections if f not in doc_files]
+    if len(files_not_exist) > 0:
+        message = "\n".join([f"- {f}" for f in files_not_exist])
+        raise RuntimeError(
+            f"The following files are present in the table of contents but do not exist:\n"
+            + message
+            + f"\nRemove them from {toc_file}."
+        )
