@@ -20,6 +20,8 @@ from pathlib import Path
 import nbformat
 
 from .autodoc import resolve_links_in_text
+from .convert_rst_to_mdx import is_empty_line
+from .utils import get_doc_config
 
 
 # Re pattern that matches inline math in MDX: \\(formula\\)
@@ -123,22 +125,36 @@ def parse_input_output(code_lines):
     """
     Parse a code sample written in doctest syntax to extract input code and expected output.
     """
-    has_output = False
-    output = None
-    input_lines = []
-    for idx, line in enumerate(code_lines):
-        if line.startswith(">>> "):
-            has_output = True
-            input_lines.append(line[4:])
-        elif has_output and line.startswith("... "):
-            input_lines.append(line[4:])
-        elif has_output and line[:4] not in [">>> ", "... "]:
-            output = "\n".join(code_lines[idx:])
-            break
-        else:
-            input_lines.append(line)
+    current_lines = []
+    in_input = True
+    cells = []
 
-    return "\n".join(input_lines), output
+    for idx, line in enumerate(code_lines):
+        if is_empty_line(line):
+            current_lines.append(line)
+        elif not in_input and line.startswith(">>> "):
+            in_input = True
+            cells[-1] = (cells[-1][0], "\n".join(current_lines).strip())
+            current_lines = [line[4:]]
+        elif in_input and line[:4] not in [">>> ", "... "]:
+            in_input = False
+            cells.append(("\n".join(current_lines).strip(), None))
+            current_lines = [line]
+        else:
+            if line.startswith(">>> ") or line.startswith("... "):
+                current_lines.append(line[4:])
+            else:
+                current_lines.append(line)
+
+    if in_input:
+        cells.append(("\n".join(current_lines).strip(), None))
+    else:
+        cells[-1] = (cells[-1][0], "\n".join(current_lines).strip())
+
+    if len(cells) == 1 and len(cells[0][0]) == 0:
+        return [(cells[0][1], None)]
+
+    return cells
 
 
 def code_cell(code, output=None):
@@ -192,6 +208,14 @@ def parse_doc_into_cells(content):
     Split a documentation content into cells.
     """
     cells = []
+    doc_config = get_doc_config()
+    if doc_config is not None:
+        for cell in doc_config.notebook_first_cells:
+            if cell["type"] == "markdown":
+                cells.append(markdown_cell(cell["content"].strip()))
+            elif cell["type"] == "code":
+                cells.append(code_cell(cell["content"].strip()))
+
     current_lines = []
     cell_type = "markdown"
     # We keep track of whether we are in a general code block (not necessarily in a code cell) as a line with a comment
@@ -226,8 +250,8 @@ def parse_doc_into_cells(content):
                 if len(content) > 0:
                     cells.append(markdown_cell(content))
             elif cell_type == "code" and len(current_lines) > 0:
-                code, output = parse_input_output(current_lines)
-                cells.append(code_cell(code, output=output))
+                for code, output in parse_input_output(current_lines):
+                    cells.append(code_cell(code, output=output))
             current_lines = []
 
         if special_line == "header":
@@ -262,14 +286,7 @@ def create_notebook(cells):
     """
     Create a notebook object with `cells`.
     """
-    return nbformat.notebooknode.NotebookNode(
-        {
-            "cells": cells,
-            "metadata": {},
-            "nbformat": 4,
-            "nbformat_minor": 4,
-        }
-    )
+    return nbformat.notebooknode.NotebookNode({"cells": cells, "metadata": {}, "nbformat": 4, "nbformat_minor": 4})
 
 
 def generate_notebooks_from_file(file_name, output_dir, package=None, mapping=None, page_info=None):
