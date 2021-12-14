@@ -161,7 +161,7 @@ for out in tqdm.tqdm(pipe(KeyDataset(dataset, "file"))):
 
 <div class="docstring">
 
-<docstring><name>transformers.pipeline</name><anchor>transformers.pipeline</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/pipelines.py#L335</source><parameters>[{"name": "task", "val": ": str = None"}, {"name": "model", "val": ": typing.Optional = None"}, {"name": "config", "val": ": typing.Union[str, transformers.configuration_utils.PretrainedConfig, NoneType] = None"}, {"name": "tokenizer", "val": ": typing.Union[str, transformers.tokenization_utils.PreTrainedTokenizer, NoneType] = None"}, {"name": "feature_extractor", "val": ": typing.Union[str, ForwardRef('SequenceFeatureExtractor'), NoneType] = None"}, {"name": "framework", "val": ": typing.Optional[str] = None"}, {"name": "revision", "val": ": typing.Optional[str] = None"}, {"name": "use_fast", "val": ": bool = True"}, {"name": "use_auth_token", "val": ": typing.Union[bool, str, NoneType] = None"}, {"name": "model_kwargs", "val": ": typing.Dict[str, typing.Any] = None"}, {"name": "pipeline_class", "val": ": typing.Optional[typing.Any] = None"}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **task** (`str`) --
+<docstring><name>transformers.pipeline</name><anchor>transformers.pipeline</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/pipelines.py#L362</source><parameters>[{"name": "task", "val": ": str = None"}, {"name": "model", "val": ": typing.Optional = None"}, {"name": "config", "val": ": typing.Union[str, transformers.configuration_utils.PretrainedConfig, NoneType] = None"}, {"name": "tokenizer", "val": ": typing.Union[str, transformers.tokenization_utils.PreTrainedTokenizer, NoneType] = None"}, {"name": "feature_extractor", "val": ": typing.Union[str, ForwardRef('SequenceFeatureExtractor'), NoneType] = None"}, {"name": "framework", "val": ": typing.Optional[str] = None"}, {"name": "revision", "val": ": typing.Optional[str] = None"}, {"name": "use_fast", "val": ": bool = True"}, {"name": "use_auth_token", "val": ": typing.Union[bool, str, NoneType] = None"}, {"name": "model_kwargs", "val": ": typing.Dict[str, typing.Any] = None"}, {"name": "pipeline_class", "val": ": typing.Optional[typing.Any] = None"}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **task** (`str`) --
   The task defining which pipeline will be returned. Currently accepted tasks are:
 
   - `"audio-classification"`: will return a [AudioClassificationPipeline](/docs/transformers/master/en/main_classes/pipelines#transformers.AudioClassificationPipeline):.
@@ -832,7 +832,9 @@ which includes the bi-directional models in the library. See the up-to-date list
 
 <Tip>
 
-This pipeline only works for inputs with exactly one token masked.
+This pipeline only works for inputs with exactly one token masked. Experimental: We added support for multiple
+masks. The returned values are raw model output, and correspond to disjoint probabilities where one might
+expect joint probabilities (See [discussion](https://github.com/huggingface/transformers/pull/10222)).
 
 </Tip>
 
@@ -841,7 +843,7 @@ This pipeline only works for inputs with exactly one token masked.
 
 
 <div class="docstring">
-<docstring><name>\_\_call\_\_</name><anchor>transformers.FillMaskPipeline.__call__</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/pipelines/fill_mask.py#L200</source><parameters>[{"name": "inputs", "val": ""}, {"name": "*args", "val": ""}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **args** (`str` or `List[str]`) --
+<docstring><name>\_\_call\_\_</name><anchor>transformers.FillMaskPipeline.__call__</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/pipelines/fill_mask.py#L203</source><parameters>[{"name": "inputs", "val": ""}, {"name": "*args", "val": ""}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **args** (`str` or `List[str]`) --
   One or several texts (or one list of prompts) with masked tokens.
 - **targets** (`str` or `List[str]`, _optional_) --
   When passed, the model will limit the scores to the passed targets instead of looking up in the whole
@@ -1031,7 +1033,7 @@ Perform segmentation (detect masks & classes) in the image(s) passed as inputs.
 
 <div class="docstring">
 
-<docstring><name>class transformers.TokenClassificationPipeline</name><anchor>transformers.TokenClassificationPipeline</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/pipelines/token_classification.py#L85</source><parameters>[{"name": "args_parser", "val": " = <transformers.pipelines.token_classification.TokenClassificationArgumentHandler object at 0x7f3391835790>"}, {"name": "*args", "val": ""}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **model** ([PreTrainedModel](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel) or [TFPreTrainedModel](/docs/transformers/master/en/main_classes/model#transformers.TFPreTrainedModel)) --
+<docstring><name>class transformers.TokenClassificationPipeline</name><anchor>transformers.TokenClassificationPipeline</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/pipelines/token_classification.py#L85</source><parameters>[{"name": "args_parser", "val": " = <transformers.pipelines.token_classification.TokenClassificationArgumentHandler object at 0x7f8c9874a820>"}, {"name": "*args", "val": ""}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **model** ([PreTrainedModel](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel) or [TFPreTrainedModel](/docs/transformers/master/en/main_classes/model#transformers.TFPreTrainedModel)) --
   The model that will be used by the pipeline to make predictions. This needs to be a model inheriting from
   [PreTrainedModel](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel) for PyTorch and [TFPreTrainedModel](/docs/transformers/master/en/main_classes/model#transformers.TFPreTrainedModel) for
   TensorFlow.
@@ -1456,7 +1458,7 @@ Summarize the text(s) given as inputs.
 
 <div class="docstring">
 
-<docstring><name>class transformers.TableQuestionAnsweringPipeline</name><anchor>transformers.TableQuestionAnsweringPipeline</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/pipelines/table_question_answering.py#L83</source><parameters>[{"name": "args_parser", "val": " = <transformers.pipelines.table_question_answering.TableQuestionAnsweringArgumentHandler object at 0x7f3391895bb0>"}, {"name": "*args", "val": ""}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **model** ([PreTrainedModel](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel) or [TFPreTrainedModel](/docs/transformers/master/en/main_classes/model#transformers.TFPreTrainedModel)) --
+<docstring><name>class transformers.TableQuestionAnsweringPipeline</name><anchor>transformers.TableQuestionAnsweringPipeline</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/pipelines/table_question_answering.py#L83</source><parameters>[{"name": "args_parser", "val": " = <transformers.pipelines.table_question_answering.TableQuestionAnsweringArgumentHandler object at 0x7f8c987bf040>"}, {"name": "*args", "val": ""}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **model** ([PreTrainedModel](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel) or [TFPreTrainedModel](/docs/transformers/master/en/main_classes/model#transformers.TFPreTrainedModel)) --
   The model that will be used by the pipeline to make predictions. This needs to be a model inheriting from
   [PreTrainedModel](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel) for PyTorch and [TFPreTrainedModel](/docs/transformers/master/en/main_classes/model#transformers.TFPreTrainedModel) for
   TensorFlow.
@@ -1870,7 +1872,7 @@ Generate the output text(s) using text(s) given as inputs.
 
 <div class="docstring">
 
-<docstring><name>class transformers.TokenClassificationPipeline</name><anchor>transformers.TokenClassificationPipeline</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/pipelines/token_classification.py#L85</source><parameters>[{"name": "args_parser", "val": " = <transformers.pipelines.token_classification.TokenClassificationArgumentHandler object at 0x7f3391835790>"}, {"name": "*args", "val": ""}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **model** ([PreTrainedModel](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel) or [TFPreTrainedModel](/docs/transformers/master/en/main_classes/model#transformers.TFPreTrainedModel)) --
+<docstring><name>class transformers.TokenClassificationPipeline</name><anchor>transformers.TokenClassificationPipeline</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/pipelines/token_classification.py#L85</source><parameters>[{"name": "args_parser", "val": " = <transformers.pipelines.token_classification.TokenClassificationArgumentHandler object at 0x7f8c9874a820>"}, {"name": "*args", "val": ""}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **model** ([PreTrainedModel](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel) or [TFPreTrainedModel](/docs/transformers/master/en/main_classes/model#transformers.TFPreTrainedModel)) --
   The model that will be used by the pipeline to make predictions. This needs to be a model inheriting from
   [PreTrainedModel](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel) for PyTorch and [TFPreTrainedModel](/docs/transformers/master/en/main_classes/model#transformers.TFPreTrainedModel) for
   TensorFlow.
@@ -2095,7 +2097,7 @@ Translate the text(s) given as inputs.
 
 <div class="docstring">
 
-<docstring><name>class transformers.ZeroShotClassificationPipeline</name><anchor>transformers.ZeroShotClassificationPipeline</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/pipelines/zero_shot_classification.py#L47</source><parameters>[{"name": "args_parser", "val": " = <transformers.pipelines.zero_shot_classification.ZeroShotClassificationArgumentHandler object at 0x7f3391843040>"}, {"name": "*args", "val": ""}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **model** ([PreTrainedModel](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel) or [TFPreTrainedModel](/docs/transformers/master/en/main_classes/model#transformers.TFPreTrainedModel)) --
+<docstring><name>class transformers.ZeroShotClassificationPipeline</name><anchor>transformers.ZeroShotClassificationPipeline</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/pipelines/zero_shot_classification.py#L47</source><parameters>[{"name": "args_parser", "val": " = <transformers.pipelines.zero_shot_classification.ZeroShotClassificationArgumentHandler object at 0x7f8c987590d0>"}, {"name": "*args", "val": ""}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **model** ([PreTrainedModel](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel) or [TFPreTrainedModel](/docs/transformers/master/en/main_classes/model#transformers.TFPreTrainedModel)) --
   The model that will be used by the pipeline to make predictions. This needs to be a model inheriting from
   [PreTrainedModel](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel) for PyTorch and [TFPreTrainedModel](/docs/transformers/master/en/main_classes/model#transformers.TFPreTrainedModel) for
   TensorFlow.
