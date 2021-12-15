@@ -29,6 +29,25 @@ def find_root_git(folder):
     return folder if folder != folder.parent else None
 
 
+# Re pattern that matches links of the form [`some_class`]
+_re_internal_ref = re.compile("\[`([^`]*)`\]")
+
+
+def shorten_internal_refs(content):
+    """
+    Shortens links of the form [`~transformers.Trainer`] to just [`Trainer`].
+    """
+
+    def _shorten_ref(match):
+        full_name = match.groups()[0]
+        full_name = full_name.replace("transformers.", "")
+        if full_name.startswith("~") and "." not in full_name:
+            full_name = full_name[1:]
+        return f"[`{full_name}`]"
+
+    return _re_internal_ref.sub(_shorten_ref, content)
+
+
 def convert_command(args):
     source_file = Path(args.source_file).absolute()
     if source_file.suffix != ".rst":
@@ -77,6 +96,7 @@ def convert_command(args):
     text = text.replace("&amp;lcub;", "{")
     text = text.replace("&amp;lt;", "<")
     text = re.sub(r"^\[\[autodoc\]\](\s+)(transformers\.)", r"[[autodoc]]\1", text, flags=re.MULTILINE)
+    text = shorten_internal_refs(text)
 
     with open(output_file, "w", encoding="utf-8") as f:
         f.write(text)
