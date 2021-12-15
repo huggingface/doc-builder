@@ -59,10 +59,11 @@ def read_doc_config(doc_folder):
     """
     global doc_config
 
-    loader = importlib.machinery.SourceFileLoader("doc_config", os.path.join(doc_folder, "_config.py"))
-    spec = importlib.util.spec_from_loader("doc_config", loader)
-    doc_config = importlib.util.module_from_spec(spec)
-    loader.exec_module(doc_config)
+    if os.path.isfile(os.path.join(doc_folder, "_config.py")):
+        loader = importlib.machinery.SourceFileLoader("doc_config", os.path.join(doc_folder, "_config.py"))
+        spec = importlib.util.spec_from_loader("doc_config", loader)
+        doc_config = importlib.util.module_from_spec(spec)
+        loader.exec_module(doc_config)
 
 
 def get_doc_config():
