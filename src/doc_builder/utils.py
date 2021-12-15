@@ -28,7 +28,7 @@ def update_versions_file(build_path, version):
     """
     if version == "master":
         return
-    with open(f"{build_path}/_versions.yml", "r") as versions_file:
+    with open(os.path.join(build_path, "_versions.yml"), "r") as versions_file:
         versions = yaml.load(versions_file, yaml.FullLoader)
 
         if versions[0]["version"] != "master":
@@ -45,7 +45,7 @@ def update_versions_file(build_path, version):
         if not did_insert:
             sem_versions.append(new_version)
 
-    with open(f"{build_path}/_versions.yml", "w") as versions_file:
+    with open(os.path.join(build_path, "_versions.yml"), "w") as versions_file:
         versions_updated = [master_version] + sem_versions
         yaml.dump(versions_updated, versions_file)
 
