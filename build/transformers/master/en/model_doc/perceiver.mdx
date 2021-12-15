@@ -152,9 +152,10 @@ Tips:
 
 - The quickest way to get started with the Perceiver is by checking the [tutorial
   notebooks](https://github.com/NielsRogge/Transformers-Tutorials/tree/master/Perceiver).
-- Note that the models available in the library only showcase some examples of what you can do with the Perceiver.
-  There are many more use cases, including question answering,
-named-entity recognition, object detection, audio classification, video classification, etc.
+- Refer to the [blog post](https://huggingface.co/blog/perceiver) if you want to fully understand how the model works and
+is implemented in the library. Note that the models available in the library only showcase some examples of what you can do
+with the Perceiver. There are many more use cases, including question answering, named-entity recognition, object detection, 
+audio classification, video classification, etc. 
 
 <h2 id="transformers.models.perceiver.modeling_perceiver.PerceiverModelOutput">Perceiver specific outputs</h2>
 
@@ -370,16 +371,118 @@ Users should refer to this superclass for more information regarding those metho
 
 
 <div class="docstring">
-<docstring><name>build\_inputs\_with\_special\_tokens</name><anchor>transformers.PerceiverTokenizer.build_inputs_with_special_tokens</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/perceiver/tokenization_perceiver.py#L141</source><parameters>[{"name": "token_ids_0", "val": ": typing.List[int]"}, {"name": "token_ids_1", "val": ": typing.Optional[typing.List[int]] = None"}]</parameters><paramsdesc>- **token_ids_0** (`List[int]`) --
-  List of IDs to which the special tokens will be added.
-- **token_ids_1** (`List[int]`, _optional_) --
-  Optional second list of IDs for sequence pairs.</paramsdesc><paramgroups>0</paramgroups><rettype>`List[int]`</rettype><retdesc>List of [input IDs](../glossary#input-ids) with the appropriate special tokens.</retdesc></docstring>
+<docstring><name>\_\_call\_\_</name><anchor>transformers.PreTrainedTokenizerBase.__call__</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/tokenization_utils_base.py#L2329</source><parameters>[{"name": "text", "val": ": typing.Union[str, typing.List[str], typing.List[typing.List[str]]]"}, {"name": "text_pair", "val": ": typing.Union[str, typing.List[str], typing.List[typing.List[str]], NoneType] = None"}, {"name": "add_special_tokens", "val": ": bool = True"}, {"name": "padding", "val": ": typing.Union[bool, str, transformers.file_utils.PaddingStrategy] = False"}, {"name": "truncation", "val": ": typing.Union[bool, str, transformers.tokenization_utils_base.TruncationStrategy] = False"}, {"name": "max_length", "val": ": typing.Optional[int] = None"}, {"name": "stride", "val": ": int = 0"}, {"name": "is_split_into_words", "val": ": bool = False"}, {"name": "pad_to_multiple_of", "val": ": typing.Optional[int] = None"}, {"name": "return_tensors", "val": ": typing.Union[str, transformers.file_utils.TensorType, NoneType] = None"}, {"name": "return_token_type_ids", "val": ": typing.Optional[bool] = None"}, {"name": "return_attention_mask", "val": ": typing.Optional[bool] = None"}, {"name": "return_overflowing_tokens", "val": ": bool = False"}, {"name": "return_special_tokens_mask", "val": ": bool = False"}, {"name": "return_offsets_mapping", "val": ": bool = False"}, {"name": "return_length", "val": ": bool = False"}, {"name": "verbose", "val": ": bool = True"}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **text** (`str`, `List[str]`, `List[List[str]]`) --
+  The sequence or batch of sequences to be encoded. Each sequence can be a string or a list of strings
+  (pretokenized string). If the sequences are provided as list of strings (pretokenized), you must set
+  `is_split_into_words=True` (to lift the ambiguity with a batch of sequences).
+- **text_pair** (`str`, `List[str]`, `List[List[str]]`) --
+  The sequence or batch of sequences to be encoded. Each sequence can be a string or a list of strings
+  (pretokenized string). If the sequences are provided as list of strings (pretokenized), you must set
+  `is_split_into_words=True` (to lift the ambiguity with a batch of sequences).
 
-Build model inputs from a sequence or a pair of sequence for sequence classification tasks. A sequence has the
-following format:
+- **add_special_tokens** (`bool`, _optional_, defaults to `True`) --
+  Whether or not to encode the sequences with the special tokens relative to their model.
+- **padding** (`bool`, `str` or [PaddingStrategy](/docs/transformers/master/en/internal/file_utils#transformers.file_utils.PaddingStrategy), _optional_, defaults to `False`) --
+  Activates and controls padding. Accepts the following values:
 
-- single sequence: `[CLS] X [SEP]`
-- pair of sequences: `[CLS] A [SEP] B [SEP]`
+  - `True` or `'longest'`: Pad to the longest sequence in the batch (or no padding if only a
+    single sequence if provided).
+  - `'max_length'`: Pad to a maximum length specified with the argument `max_length` or to the
+    maximum acceptable input length for the model if that argument is not provided.
+  - `False` or `'do_not_pad'` (default): No padding (i.e., can output a batch with sequences of
+    different lengths).
+- **truncation** (`bool`, `str` or [TruncationStrategy](/docs/transformers/master/en/internal/tokenization_utils#transformers.tokenization_utils_base.TruncationStrategy), _optional_, defaults to `False`) --
+  Activates and controls truncation. Accepts the following values:
+
+  - `True` or `'longest_first'`: Truncate to a maximum length specified with the argument
+    `max_length` or to the maximum acceptable input length for the model if that argument is not
+    provided. This will truncate token by token, removing a token from the longest sequence in the pair
+    if a pair of sequences (or a batch of pairs) is provided.
+  - `'only_first'`: Truncate to a maximum length specified with the argument `max_length` or to
+    the maximum acceptable input length for the model if that argument is not provided. This will only
+    truncate the first sequence of a pair if a pair of sequences (or a batch of pairs) is provided.
+  - `'only_second'`: Truncate to a maximum length specified with the argument `max_length` or
+    to the maximum acceptable input length for the model if that argument is not provided. This will only
+    truncate the second sequence of a pair if a pair of sequences (or a batch of pairs) is provided.
+  - `False` or `'do_not_truncate'` (default): No truncation (i.e., can output batch with
+    sequence lengths greater than the model maximum admissible input size).
+- **max_length** (`int`, _optional_) --
+  Controls the maximum length to use by one of the truncation/padding parameters.
+
+  If left unset or set to `None`, this will use the predefined model maximum length if a maximum
+  length is required by one of the truncation/padding parameters. If the model has no specific maximum
+  input length (like XLNet) truncation/padding to a maximum length will be deactivated.
+- **stride** (`int`, _optional_, defaults to 0) --
+  If set to a number along with `max_length`, the overflowing tokens returned when
+  `return_overflowing_tokens=True` will contain some tokens from the end of the truncated sequence
+  returned to provide some overlap between truncated and overflowing sequences. The value of this
+  argument defines the number of overlapping tokens.
+- **is_split_into_words** (`bool`, _optional_, defaults to `False`) --
+  Whether or not the input is already pre-tokenized (e.g., split into words). If set to `True`, the
+  tokenizer assumes the input is already split into words (for instance, by splitting it on whitespace)
+  which it will tokenize. This is useful for NER or token classification.
+- **pad_to_multiple_of** (`int`, _optional_) --
+  If set will pad the sequence to a multiple of the provided value. This is especially useful to enable
+  the use of Tensor Cores on NVIDIA hardware with compute capability >= 7.5 (Volta).
+- **return_tensors** (`str` or [TensorType](/docs/transformers/master/en/internal/file_utils#transformers.TensorType), _optional_) --
+  If set, will return tensors instead of list of python integers. Acceptable values are:
+
+  - `'tf'`: Return TensorFlow `tf.constant` objects.
+  - `'pt'`: Return PyTorch `torch.Tensor` objects.
+  - `'np'`: Return Numpy `np.ndarray` objects.
+
+- **return_token_type_ids** (`bool`, _optional_) --
+  Whether to return token type IDs. If left to the default, will return the token type IDs according to
+  the specific tokenizer's default, defined by the `return_outputs` attribute.
+
+  [What are token type IDs?](../glossary#token-type-ids)
+- **return_attention_mask** (`bool`, _optional_) --
+  Whether to return the attention mask. If left to the default, will return the attention mask according
+  to the specific tokenizer's default, defined by the `return_outputs` attribute.
+
+  [What are attention masks?](../glossary#attention-mask)
+- **return_overflowing_tokens** (`bool`, _optional_, defaults to `False`) --
+  Whether or not to return overflowing token sequences. If a pair of sequences of input ids (or a batch
+  of pairs) is provided with `truncation_strategy = longest_first` or `True`, an error is
+  raised instead of returning overflowing tokens.
+- **return_special_tokens_mask** (`bool`, _optional_, defaults to `False`) --
+  Whether or not to return special tokens mask information.
+- **return_offsets_mapping** (`bool`, _optional_, defaults to `False`) --
+  Whether or not to return `(char_start, char_end)` for each token.
+
+  This is only available on fast tokenizers inheriting from
+  [PreTrainedTokenizerFast](/docs/transformers/master/en/main_classes/tokenizer#transformers.PreTrainedTokenizerFast), if using Python's tokenizer, this method will raise
+  `NotImplementedError`.
+- **return_length**  (`bool`, _optional_, defaults to `False`) --
+  Whether or not to return the lengths of the encoded inputs.
+- **verbose** (`bool`, _optional_, defaults to `True`) --
+  Whether or not to print more information and warnings.
+  **kwargs -- passed to the `self.tokenize()` method</paramsdesc><paramgroups>0</paramgroups><rettype>[BatchEncoding](/docs/transformers/master/en/main_classes/tokenizer#transformers.BatchEncoding)</rettype><retdesc>A [BatchEncoding](/docs/transformers/master/en/main_classes/tokenizer#transformers.BatchEncoding) with the following fields:
+
+- **input_ids** -- List of token ids to be fed to a model.
+
+  [What are input IDs?](../glossary#input-ids)
+
+- **token_type_ids** -- List of token type ids to be fed to a model (when `return_token_type_ids=True`
+  or if _"token_type_ids"_ is in `self.model_input_names`).
+
+  [What are token type IDs?](../glossary#token-type-ids)
+
+- **attention_mask** -- List of indices specifying which tokens should be attended to by the model (when
+  `return_attention_mask=True` or if _"attention_mask"_ is in `self.model_input_names`).
+
+  [What are attention masks?](../glossary#attention-mask)
+
+- **overflowing_tokens** -- List of overflowing tokens sequences (when a `max_length` is specified and
+  `return_overflowing_tokens=True`).
+- **num_truncated_tokens** -- Number of tokens truncated (when a `max_length` is specified and
+  `return_overflowing_tokens=True`).
+- **special_tokens_mask** -- List of 0s and 1s, with 1 specifying added special tokens and 0 specifying
+  regular sequence tokens (when `add_special_tokens=True` and `return_special_tokens_mask=True`).
+- **length** -- The length of the inputs (when `return_length=True`)</retdesc></docstring>
+
+Main method to tokenize and prepare for the model one or several sequence(s) or one or several pair(s) of
+sequences.
 
 
 
@@ -388,43 +491,7 @@ following format:
 
 
 
-</div>
-<div class="docstring">
-<docstring><name>get\_special\_tokens\_mask</name><anchor>transformers.PerceiverTokenizer.get_special_tokens_mask</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/perceiver/tokenization_perceiver.py#L113</source><parameters>[{"name": "token_ids_0", "val": ": typing.List[int]"}, {"name": "token_ids_1", "val": ": typing.Optional[typing.List[int]] = None"}, {"name": "already_has_special_tokens", "val": ": bool = False"}]</parameters><paramsdesc>- **token_ids_0** (`List[int]`) --
-  List of IDs.
-- **token_ids_1** (`List[int]`, _optional_) --
-  Optional second list of IDs for sequence pairs.
-- **already_has_special_tokens** (`bool`, _optional_, defaults to `False`) --
-  Whether or not the token list is already formatted with special tokens for the model.</paramsdesc><paramgroups>0</paramgroups><rettype>`List[int]`</rettype><retdesc>A list of integers in the range [0, 1]: 1 for a special token, 0 for a sequence token.</retdesc></docstring>
-
-Retrieve sequence ids from a token list that has no special tokens added. This method is called when adding
-special tokens using the tokenizer `prepare_for_model` method.
-
-
-
-
-
-
-
-
-</div>
-<div class="docstring">
-<docstring><name>create\_token\_type\_ids\_from\_sequences</name><anchor>transformers.PreTrainedTokenizerBase.create_token_type_ids_from_sequences</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/tokenization_utils_base.py#L2806</source><parameters>[{"name": "token_ids_0", "val": ": typing.List[int]"}, {"name": "token_ids_1", "val": ": typing.Optional[typing.List[int]] = None"}]</parameters><paramsdesc>- **token_ids_0** (`List[int]`) -- The first tokenized sequence.
-- **token_ids_1** (`List[int]`, _optional_) -- The second tokenized sequence.</paramsdesc><paramgroups>0</paramgroups><rettype>`List[int]`</rettype><retdesc>The token type ids.</retdesc></docstring>
-
-Create the token type IDs corresponding to the sequences passed. [What are token type IDs?](../glossary#token-type-ids)
-
-Should be overridden in a subclass if the model has a special way of building those.
-
-
-
-
-
-
-
-
-</div>
-<div class="docstring"></div></div>
+</div></div>
 
 <h2 id="transformers.PerceiverFeatureExtractor">PerceiverFeatureExtractor</h2>
 
@@ -501,7 +568,7 @@ PIL images.
 
 <div class="docstring">
 
-<docstring><name>class transformers.models.perceiver.modeling\_perceiver.PerceiverTextPreprocessor</name><anchor>transformers.models.perceiver.modeling_perceiver.PerceiverTextPreprocessor</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/perceiver/modeling_perceiver.py#L2634</source><parameters>[{"name": "config", "val": ""}]</parameters><paramsdesc>- **config** ([PerceiverConfig](/docs/transformers/master/en/model_doc/perceiver#transformers.PerceiverConfig)) --
+<docstring><name>class transformers.models.perceiver.modeling\_perceiver.PerceiverTextPreprocessor</name><anchor>transformers.models.perceiver.modeling_perceiver.PerceiverTextPreprocessor</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/perceiver/modeling_perceiver.py#L2739</source><parameters>[{"name": "config", "val": ""}]</parameters><paramsdesc>- **config** ([PerceiverConfig](/docs/transformers/master/en/model_doc/perceiver#transformers.PerceiverConfig)) --
             Model configuration.</paramsdesc><paramgroups>0</paramgroups></docstring>
 
     Text preprocessing for Perceiver Encoder. Can be used to embed `inputs` and add positional encodings.
@@ -517,7 +584,7 @@ PIL images.
 
 <div class="docstring">
 
-<docstring><name>class transformers.models.perceiver.modeling\_perceiver.PerceiverImagePreprocessor</name><anchor>transformers.models.perceiver.modeling_perceiver.PerceiverImagePreprocessor</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/perceiver/modeling_perceiver.py#L2791</source><parameters>[{"name": "config", "val": ""}, {"name": "prep_type", "val": " = 'conv'"}, {"name": "spatial_downsample", "val": ": int = 4"}, {"name": "temporal_downsample", "val": ": int = 1"}, {"name": "position_encoding_type", "val": ": str = 'fourier'"}, {"name": "in_channels", "val": ": int = 3"}, {"name": "out_channels", "val": ": int = 64"}, {"name": "conv_after_patching", "val": ": bool = False"}, {"name": "conv_after_patching_in_channels", "val": ": int = 54"}, {"name": "conv2d_use_batchnorm", "val": ": bool = True"}, {"name": "concat_or_add_pos", "val": ": str = 'concat'"}, {"name": "project_pos_dim", "val": ": int = -1"}, {"name": "**position_encoding_kwargs", "val": ""}]</parameters><paramsdesc>- **config** ([_PerceiverConfig_]) --
+<docstring><name>class transformers.models.perceiver.modeling\_perceiver.PerceiverImagePreprocessor</name><anchor>transformers.models.perceiver.modeling_perceiver.PerceiverImagePreprocessor</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/perceiver/modeling_perceiver.py#L2896</source><parameters>[{"name": "config", "val": ""}, {"name": "prep_type", "val": " = 'conv'"}, {"name": "spatial_downsample", "val": ": int = 4"}, {"name": "temporal_downsample", "val": ": int = 1"}, {"name": "position_encoding_type", "val": ": str = 'fourier'"}, {"name": "in_channels", "val": ": int = 3"}, {"name": "out_channels", "val": ": int = 64"}, {"name": "conv_after_patching", "val": ": bool = False"}, {"name": "conv_after_patching_in_channels", "val": ": int = 54"}, {"name": "conv2d_use_batchnorm", "val": ": bool = True"}, {"name": "concat_or_add_pos", "val": ": str = 'concat'"}, {"name": "project_pos_dim", "val": ": int = -1"}, {"name": "**position_encoding_kwargs", "val": ""}]</parameters><paramsdesc>- **config** ([_PerceiverConfig_]) --
   Model configuration.
 - **prep_type** (`str`, _optional_, defaults to `"conv"`) --
   Preprocessing type. Can be "conv1x1", "conv", "patches", "pixels".
@@ -559,7 +626,7 @@ position encoding kwargs are set equal to the _out_channels_.
 
 <div class="docstring">
 
-<docstring><name>class transformers.models.perceiver.modeling\_perceiver.PerceiverOneHotPreprocessor</name><anchor>transformers.models.perceiver.modeling_perceiver.PerceiverOneHotPreprocessor</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/perceiver/modeling_perceiver.py#L3020</source><parameters>[{"name": "config", "val": ""}]</parameters><paramsdesc>- **config** ([PerceiverConfig](/docs/transformers/master/en/model_doc/perceiver#transformers.PerceiverConfig)) --
+<docstring><name>class transformers.models.perceiver.modeling\_perceiver.PerceiverOneHotPreprocessor</name><anchor>transformers.models.perceiver.modeling_perceiver.PerceiverOneHotPreprocessor</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/perceiver/modeling_perceiver.py#L3125</source><parameters>[{"name": "config", "val": ""}]</parameters><paramsdesc>- **config** ([PerceiverConfig](/docs/transformers/master/en/model_doc/perceiver#transformers.PerceiverConfig)) --
             Model configuration.</paramsdesc><paramgroups>0</paramgroups></docstring>
 
     One-hot preprocessor for Perceiver Encoder. Can be used to add a dummy index dimension to the input.
@@ -573,7 +640,7 @@ position encoding kwargs are set equal to the _out_channels_.
 
 <div class="docstring">
 
-<docstring><name>class transformers.models.perceiver.modeling\_perceiver.PerceiverAudioPreprocessor</name><anchor>transformers.models.perceiver.modeling_perceiver.PerceiverAudioPreprocessor</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/perceiver/modeling_perceiver.py#L3046</source><parameters>[{"name": "config", "val": ""}, {"name": "prep_type", "val": ": str = 'patches'"}, {"name": "samples_per_patch", "val": ": int = 96"}, {"name": "position_encoding_type", "val": ": str = 'fourier'"}, {"name": "concat_or_add_pos", "val": ": str = 'concat'"}, {"name": "out_channels", "val": " = 64"}, {"name": "project_pos_dim", "val": " = -1"}, {"name": "**position_encoding_kwargs", "val": ""}]</parameters><paramsdesc>- **config** ([_PerceiverConfig_]) --
+<docstring><name>class transformers.models.perceiver.modeling\_perceiver.PerceiverAudioPreprocessor</name><anchor>transformers.models.perceiver.modeling_perceiver.PerceiverAudioPreprocessor</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/perceiver/modeling_perceiver.py#L3151</source><parameters>[{"name": "config", "val": ""}, {"name": "prep_type", "val": ": str = 'patches'"}, {"name": "samples_per_patch", "val": ": int = 96"}, {"name": "position_encoding_type", "val": ": str = 'fourier'"}, {"name": "concat_or_add_pos", "val": ": str = 'concat'"}, {"name": "out_channels", "val": " = 64"}, {"name": "project_pos_dim", "val": " = -1"}, {"name": "**position_encoding_kwargs", "val": ""}]</parameters><paramsdesc>- **config** ([_PerceiverConfig_]) --
   Model configuration.
 - **prep_type** (`str`, _optional_, defaults to `"patches"`) --
   Preprocessor type to use. Only "patches" is supported.
@@ -601,7 +668,7 @@ Audio preprocessing for Perceiver Encoder.
 
 <div class="docstring">
 
-<docstring><name>class transformers.models.perceiver.modeling\_perceiver.PerceiverMultimodalPreprocessor</name><anchor>transformers.models.perceiver.modeling_perceiver.PerceiverMultimodalPreprocessor</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/perceiver/modeling_perceiver.py#L3143</source><parameters>[{"name": "modalities", "val": ": typing.Mapping[str, typing.Callable[..., typing.Tuple[torch.Tensor, typing.Optional[torch.Tensor], torch.Tensor]]]"}, {"name": "mask_probs", "val": ": typing.Union[typing.Mapping[str, float], NoneType] = None"}, {"name": "min_padding_size", "val": ": int = 2"}]</parameters><paramsdesc>- **modalities** (`Dict[str, PreprocessorType]`) --
+<docstring><name>class transformers.models.perceiver.modeling\_perceiver.PerceiverMultimodalPreprocessor</name><anchor>transformers.models.perceiver.modeling_perceiver.PerceiverMultimodalPreprocessor</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/perceiver/modeling_perceiver.py#L3248</source><parameters>[{"name": "modalities", "val": ": typing.Mapping[str, typing.Callable[..., typing.Tuple[torch.Tensor, typing.Optional[torch.Tensor], torch.Tensor]]]"}, {"name": "mask_probs", "val": ": typing.Union[typing.Mapping[str, float], NoneType] = None"}, {"name": "min_padding_size", "val": ": int = 2"}]</parameters><paramsdesc>- **modalities** (`Dict[str, PreprocessorType]`) --
   Dict mapping modality name to preprocessor.
 - **mask_probs** (`Dict[str, float]`) --
   Dict mapping modality name to masking probability of that modality.
@@ -623,7 +690,7 @@ of channels.
 
 <div class="docstring">
 
-<docstring><name>class transformers.models.perceiver.modeling\_perceiver.PerceiverProjectionDecoder</name><anchor>transformers.models.perceiver.modeling_perceiver.PerceiverProjectionDecoder</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/perceiver/modeling_perceiver.py#L1880</source><parameters>[{"name": "config", "val": ""}]</parameters><paramsdesc>- **config** ([PerceiverConfig](/docs/transformers/master/en/model_doc/perceiver#transformers.PerceiverConfig)) --
+<docstring><name>class transformers.models.perceiver.modeling\_perceiver.PerceiverProjectionDecoder</name><anchor>transformers.models.perceiver.modeling_perceiver.PerceiverProjectionDecoder</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/perceiver/modeling_perceiver.py#L1985</source><parameters>[{"name": "config", "val": ""}]</parameters><paramsdesc>- **config** ([PerceiverConfig](/docs/transformers/master/en/model_doc/perceiver#transformers.PerceiverConfig)) --
             Model configuration.</paramsdesc><paramgroups>0</paramgroups></docstring>
 
     Baseline projection decoder (no cross-attention).
@@ -637,7 +704,7 @@ of channels.
 
 <div class="docstring">
 
-<docstring><name>class transformers.models.perceiver.modeling\_perceiver.PerceiverBasicDecoder</name><anchor>transformers.models.perceiver.modeling_perceiver.PerceiverBasicDecoder</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/perceiver/modeling_perceiver.py#L1904</source><parameters>[{"name": "config", "val": ""}, {"name": "output_num_channels", "val": ""}, {"name": "position_encoding_type", "val": " = 'trainable'"}, {"name": "output_index_dims", "val": " = None"}, {"name": "num_channels", "val": " = 128"}, {"name": "subsampled_index_dims", "val": " = None"}, {"name": "qk_channels", "val": " = None"}, {"name": "v_channels", "val": " = None"}, {"name": "num_heads", "val": " = 1"}, {"name": "widening_factor", "val": " = 1"}, {"name": "use_query_residual", "val": " = False"}, {"name": "concat_preprocessed_input", "val": " = False"}, {"name": "final_project", "val": " = True"}, {"name": "position_encoding_only", "val": " = False"}, {"name": "**position_encoding_kwargs", "val": ""}]</parameters><paramsdesc>- **config** ([_PerceiverConfig_]) --
+<docstring><name>class transformers.models.perceiver.modeling\_perceiver.PerceiverBasicDecoder</name><anchor>transformers.models.perceiver.modeling_perceiver.PerceiverBasicDecoder</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/perceiver/modeling_perceiver.py#L2009</source><parameters>[{"name": "config", "val": ""}, {"name": "output_num_channels", "val": ""}, {"name": "position_encoding_type", "val": " = 'trainable'"}, {"name": "output_index_dims", "val": " = None"}, {"name": "num_channels", "val": " = 128"}, {"name": "subsampled_index_dims", "val": " = None"}, {"name": "qk_channels", "val": " = None"}, {"name": "v_channels", "val": " = None"}, {"name": "num_heads", "val": " = 1"}, {"name": "widening_factor", "val": " = 1"}, {"name": "use_query_residual", "val": " = False"}, {"name": "concat_preprocessed_input", "val": " = False"}, {"name": "final_project", "val": " = True"}, {"name": "position_encoding_only", "val": " = False"}, {"name": "**position_encoding_kwargs", "val": ""}]</parameters><paramsdesc>- **config** ([_PerceiverConfig_]) --
   Model configuration.
 - **output_num_channels** (`int`, _optional_) --
   The number of channels in the output. Will only be used in case _final_project_ is set to _True_.
@@ -678,7 +745,7 @@ The shape of the output of this class depends on how one defines the output quer
 
 <div class="docstring">
 
-<docstring><name>class transformers.models.perceiver.modeling\_perceiver.PerceiverClassificationDecoder</name><anchor>transformers.models.perceiver.modeling_perceiver.PerceiverClassificationDecoder</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/perceiver/modeling_perceiver.py#L2082</source><parameters>[{"name": "config", "val": ""}, {"name": "**decoder_kwargs", "val": ""}]</parameters><paramsdesc>- **config** ([PerceiverConfig](/docs/transformers/master/en/model_doc/perceiver#transformers.PerceiverConfig)) --
+<docstring><name>class transformers.models.perceiver.modeling\_perceiver.PerceiverClassificationDecoder</name><anchor>transformers.models.perceiver.modeling_perceiver.PerceiverClassificationDecoder</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/perceiver/modeling_perceiver.py#L2187</source><parameters>[{"name": "config", "val": ""}, {"name": "**decoder_kwargs", "val": ""}]</parameters><paramsdesc>- **config** ([PerceiverConfig](/docs/transformers/master/en/model_doc/perceiver#transformers.PerceiverConfig)) --
             Model configuration.</paramsdesc><paramgroups>0</paramgroups></docstring>
 
     Cross-attention based classification decoder. Light-weight wrapper of `PerceiverBasicDecoder` for logit output.
@@ -694,7 +761,7 @@ The shape of the output of this class depends on how one defines the output quer
 
 <div class="docstring">
 
-<docstring><name>class transformers.models.perceiver.modeling\_perceiver.PerceiverOpticalFlowDecoder</name><anchor>transformers.models.perceiver.modeling_perceiver.PerceiverOpticalFlowDecoder</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/perceiver/modeling_perceiver.py#L2122</source><parameters>[{"name": "config", "val": ""}, {"name": "output_image_shape", "val": ""}, {"name": "output_num_channels", "val": " = 2"}, {"name": "rescale_factor", "val": " = 100.0"}, {"name": "**decoder_kwargs", "val": ""}]</parameters></docstring>
+<docstring><name>class transformers.models.perceiver.modeling\_perceiver.PerceiverOpticalFlowDecoder</name><anchor>transformers.models.perceiver.modeling_perceiver.PerceiverOpticalFlowDecoder</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/perceiver/modeling_perceiver.py#L2227</source><parameters>[{"name": "config", "val": ""}, {"name": "output_image_shape", "val": ""}, {"name": "output_num_channels", "val": " = 2"}, {"name": "rescale_factor", "val": " = 100.0"}, {"name": "**decoder_kwargs", "val": ""}]</parameters></docstring>
 Cross-attention based optical flow decoder.
 
 </div>
@@ -703,7 +770,7 @@ Cross-attention based optical flow decoder.
 
 <div class="docstring">
 
-<docstring><name>class transformers.models.perceiver.modeling\_perceiver.PerceiverBasicVideoAutoencodingDecoder</name><anchor>transformers.models.perceiver.modeling_perceiver.PerceiverBasicVideoAutoencodingDecoder</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/perceiver/modeling_perceiver.py#L2151</source><parameters>[{"name": "config", "val": ""}, {"name": "output_shape", "val": ""}, {"name": "position_encoding_type", "val": ""}, {"name": "**decoder_kwargs", "val": ""}]</parameters><paramsdesc>- **config** ([_PerceiverConfig_]) --
+<docstring><name>class transformers.models.perceiver.modeling\_perceiver.PerceiverBasicVideoAutoencodingDecoder</name><anchor>transformers.models.perceiver.modeling_perceiver.PerceiverBasicVideoAutoencodingDecoder</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/perceiver/modeling_perceiver.py#L2256</source><parameters>[{"name": "config", "val": ""}, {"name": "output_shape", "val": ""}, {"name": "position_encoding_type", "val": ""}, {"name": "**decoder_kwargs", "val": ""}]</parameters><paramsdesc>- **config** ([_PerceiverConfig_]) --
   Model configuration.
 - **output_shape** (`List[int]`) --
   Shape of the output as (batch_size, num_frames, height, width), excluding the channel dimension.
@@ -722,7 +789,7 @@ reshaping logic.
 
 <div class="docstring">
 
-<docstring><name>class transformers.models.perceiver.modeling\_perceiver.PerceiverMultimodalDecoder</name><anchor>transformers.models.perceiver.modeling_perceiver.PerceiverMultimodalDecoder</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/perceiver/modeling_perceiver.py#L2224</source><parameters>[{"name": "config", "val": ""}, {"name": "modalities", "val": ""}, {"name": "num_outputs", "val": ""}, {"name": "output_num_channels", "val": ""}, {"name": "min_padding_size", "val": " = 2"}, {"name": "subsampled_index_dims", "val": " = None"}, {"name": "**decoder_kwargs", "val": ""}]</parameters><paramsdesc>- **config** ([_PerceiverConfig_]) --
+<docstring><name>class transformers.models.perceiver.modeling\_perceiver.PerceiverMultimodalDecoder</name><anchor>transformers.models.perceiver.modeling_perceiver.PerceiverMultimodalDecoder</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/perceiver/modeling_perceiver.py#L2329</source><parameters>[{"name": "config", "val": ""}, {"name": "modalities", "val": ""}, {"name": "num_outputs", "val": ""}, {"name": "output_num_channels", "val": ""}, {"name": "min_padding_size", "val": " = 2"}, {"name": "subsampled_index_dims", "val": " = None"}, {"name": "**decoder_kwargs", "val": ""}]</parameters><paramsdesc>- **config** ([_PerceiverConfig_]) --
   Model configuration.
 - **modalities** (`Dict[str, PerceiverAbstractDecoder]`) --
   Dictionary mapping modality name to the decoder of that modality.
@@ -753,7 +820,7 @@ Next, there is a shared cross attention operation across all modalities.
 
 <div class="docstring">
 
-<docstring><name>class transformers.models.perceiver.modeling\_perceiver.PerceiverProjectionPostprocessor</name><anchor>transformers.models.perceiver.modeling_perceiver.PerceiverProjectionPostprocessor</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/perceiver/modeling_perceiver.py#L2770</source><parameters>[{"name": "in_channels", "val": ""}, {"name": "out_channels", "val": ""}]</parameters><paramsdesc>- **in_channels** (`int`) --
+<docstring><name>class transformers.models.perceiver.modeling\_perceiver.PerceiverProjectionPostprocessor</name><anchor>transformers.models.perceiver.modeling_perceiver.PerceiverProjectionPostprocessor</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/perceiver/modeling_perceiver.py#L2875</source><parameters>[{"name": "in_channels", "val": ""}, {"name": "out_channels", "val": ""}]</parameters><paramsdesc>- **in_channels** (`int`) --
   Number of channels in the input.
 - **out_channels** (`int`) --
   Number of channels in the output.</paramsdesc><paramgroups>0</paramgroups></docstring>
@@ -770,7 +837,7 @@ dimension.
 
 <div class="docstring">
 
-<docstring><name>class transformers.models.perceiver.modeling\_perceiver.PerceiverAudioPostprocessor</name><anchor>transformers.models.perceiver.modeling_perceiver.PerceiverAudioPostprocessor</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/perceiver/modeling_perceiver.py#L2742</source><parameters>[{"name": "config", "val": ""}, {"name": "in_channels", "val": ""}, {"name": "postproc_type", "val": ": str = 'patches'"}]</parameters><paramsdesc>- **config** ([_PerceiverConfig_]) --
+<docstring><name>class transformers.models.perceiver.modeling\_perceiver.PerceiverAudioPostprocessor</name><anchor>transformers.models.perceiver.modeling_perceiver.PerceiverAudioPostprocessor</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/perceiver/modeling_perceiver.py#L2847</source><parameters>[{"name": "config", "val": ""}, {"name": "in_channels", "val": ""}, {"name": "postproc_type", "val": ": str = 'patches'"}]</parameters><paramsdesc>- **config** ([_PerceiverConfig_]) --
   Model configuration.
 - **in_channels** (`int`) --
   Number of channels in the input.
@@ -788,7 +855,7 @@ Audio postprocessing for Perceiver. Can be used to convert the decoder output to
 
 <div class="docstring">
 
-<docstring><name>class transformers.models.perceiver.modeling\_perceiver.PerceiverClassificationPostprocessor</name><anchor>transformers.models.perceiver.modeling_perceiver.PerceiverClassificationPostprocessor</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/perceiver/modeling_perceiver.py#L2722</source><parameters>[{"name": "config", "val": ""}, {"name": "in_channels", "val": ""}]</parameters><paramsdesc>- **config** ([_PerceiverConfig_]) --
+<docstring><name>class transformers.models.perceiver.modeling\_perceiver.PerceiverClassificationPostprocessor</name><anchor>transformers.models.perceiver.modeling_perceiver.PerceiverClassificationPostprocessor</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/perceiver/modeling_perceiver.py#L2827</source><parameters>[{"name": "config", "val": ""}, {"name": "in_channels", "val": ""}]</parameters><paramsdesc>- **config** ([_PerceiverConfig_]) --
   Model configuration.
 - **in_channels** (`int`) --
   Number of channels in the input.</paramsdesc><paramgroups>0</paramgroups></docstring>
@@ -804,7 +871,7 @@ Classification postprocessing for Perceiver. Can be used to convert the decoder 
 
 <div class="docstring">
 
-<docstring><name>class transformers.models.perceiver.modeling\_perceiver.PerceiverMultimodalPostprocessor</name><anchor>transformers.models.perceiver.modeling_perceiver.PerceiverMultimodalPostprocessor</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/perceiver/modeling_perceiver.py#L2688</source><parameters>[{"name": "modalities", "val": ": typing.Mapping[str, typing.Callable[..., typing.Any]]"}, {"name": "input_is_dict", "val": ": bool = False"}]</parameters><paramsdesc>- **modalities** (`Dict[str, PostprocessorType]`) --
+<docstring><name>class transformers.models.perceiver.modeling\_perceiver.PerceiverMultimodalPostprocessor</name><anchor>transformers.models.perceiver.modeling_perceiver.PerceiverMultimodalPostprocessor</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/perceiver/modeling_perceiver.py#L2793</source><parameters>[{"name": "modalities", "val": ": typing.Mapping[str, typing.Callable[..., typing.Any]]"}, {"name": "input_is_dict", "val": ": bool = False"}]</parameters><paramsdesc>- **modalities** (`Dict[str, PostprocessorType]`) --
   Dictionary mapping modality name to postprocessor class for that modality.
 - **input_is_dict** (`bool`, _optional_, defaults to `False`) --
   If True, input is assumed to be dictionary structured, and outputs keep the same dictionary shape. If
@@ -903,24 +970,87 @@ processing steps while the latter silently ignores them.
 
 
 
-
-
-
-
-Example:
+Examples:
 
 ```python
->>> from transformers import PerceiverTokenizer, PerceiverModel
+>>> from transformers import PerceiverConfig, PerceiverTokenizer, PerceiverFeatureExtractor, PerceiverModel
+>>> from transformers.models.perceiver.modeling_perceiver import PerceiverTextPreprocessor, PerceiverImagePreprocessor, PerceiverClassificationDecoder
 >>> import torch
+>>> import requests
+>>> from PIL import Image
 
->>> tokenizer = PerceiverTokenizer.from_pretrained('deepmind/language-perceiver')
->>> model = PerceiverModel.from_pretrained('deepmind/language-perceiver')
+>>> # EXAMPLE 1: using the Perceiver to classify texts
+>>> # - we define a TextPreprocessor, which can be used to embed tokens
+>>> # - we define a ClassificationDecoder, which can be used to decode the
+>>> # final hidden states of the latents to classification logits
+>>> # using trainable position embeddings
+>>> config = PerceiverConfig()
+>>> preprocessor = PerceiverTextPreprocessor(config)
+>>> decoder = PerceiverClassificationDecoder(config,
+...                                          num_channels=config.d_latents,
+...                                          trainable_position_encoding_kwargs=dict(num_channels=config.d_latents, index_dims=1),
+...                                          use_query_residual=True)
+>>> model = PerceiverModel(config, input_preprocessor=preprocessor, decoder=decoder)
 
->>> inputs = tokenizer("Hello, my dog is cute", return_tensors="pt")
->>> outputs = model(**inputs)
+>>> # you can then do a forward pass as follows:
+>>> tokenizer = PerceiverTokenizer()
+>>> text = "hello world"
+>>> inputs = tokenizer(text, return_tensors="pt").input_ids
 
->>> last_hidden_states = outputs.last_hidden_state
+>>> with torch.no_grad():
+>>>    outputs = model(inputs=inputs)
+>>> logits = outputs.logits
+
+>>> # to train, one can train the model using standard cross-entropy:
+>>> criterion = torch.nn.CrossEntropyLoss()
+
+>>> labels = torch.tensor([1])
+>>> loss = criterion(logits, labels)
+
+>>> # EXAMPLE 2: using the Perceiver to classify images
+>>> # - we define an ImagePreprocessor, which can be used to embed images
+>>> preprocessor=PerceiverImagePreprocessor(
+config,
+prep_type="conv1x1",
+spatial_downsample=1,
+out_channels=256,
+position_encoding_type="trainable",
+concat_or_add_pos="concat",
+project_pos_dim=256,
+trainable_position_encoding_kwargs=dict(num_channels=256, index_dims=config.image_size ** 2),
+)
+
+>>> model = PerceiverModel(
+...         config,
+...         input_preprocessor=preprocessor,
+...         decoder=PerceiverClassificationDecoder(
+...              config,
+...              num_channels=config.d_latents,
+...              trainable_position_encoding_kwargs=dict(num_channels=config.d_latents, index_dims=1),
+...              use_query_residual=True,
+...          ),
+... )
+
+>>> # you can then do a forward pass as follows:
+>>> feature_extractor = PerceiverFeatureExtractor()
+>>> url = 'http://images.cocodataset.org/val2017/000000039769.jpg'
+>>> image = Image.open(requests.get(url, stream=True).raw)
+>>> inputs = feature_extractor(image, return_tensors="pt").pixel_values
+
+>>> with torch.no_grad():
+>>>    outputs = model(inputs=inputs)
+>>> logits = outputs.logits
+
+>>> # to train, one can train the model using standard cross-entropy:
+>>> criterion = torch.nn.CrossEntropyLoss()
+
+>>> labels = torch.tensor([1])
+>>> loss = criterion(logits, labels)
 ```
+
+
+
+
 
 
 </div></div>
@@ -929,7 +1059,7 @@ Example:
 
 <div class="docstring">
 
-<docstring><name>class transformers.PerceiverForMaskedLM</name><anchor>transformers.PerceiverForMaskedLM</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/perceiver/modeling_perceiver.py#L872</source><parameters>[{"name": "config", "val": ""}]</parameters><paramsdesc>- **config** ([PerceiverConfig](/docs/transformers/master/en/model_doc/perceiver#transformers.PerceiverConfig)) -- Model configuration class with all the parameters of the model.
+<docstring><name>class transformers.PerceiverForMaskedLM</name><anchor>transformers.PerceiverForMaskedLM</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/perceiver/modeling_perceiver.py#L946</source><parameters>[{"name": "config", "val": ""}]</parameters><paramsdesc>- **config** ([PerceiverConfig](/docs/transformers/master/en/model_doc/perceiver#transformers.PerceiverConfig)) -- Model configuration class with all the parameters of the model.
   Initializing with a config file does not load the weights associated with the model, only the
   configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel.from_pretrained) method to load the model
   weights.</paramsdesc><paramgroups>0</paramgroups></docstring>
@@ -943,7 +1073,7 @@ behavior.
 
 
 <div class="docstring">
-<docstring><name>forward</name><anchor>transformers.PerceiverForMaskedLM.forward</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/perceiver/modeling_perceiver.py#L903</source><parameters>[{"name": "inputs", "val": " = None"}, {"name": "attention_mask", "val": " = None"}, {"name": "head_mask", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "labels", "val": " = None"}, {"name": "return_dict", "val": " = None"}, {"name": "input_ids", "val": " = None"}]</parameters><paramsdesc>- **inputs** (`torch.FloatTensor`) --
+<docstring><name>forward</name><anchor>transformers.PerceiverForMaskedLM.forward</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/perceiver/modeling_perceiver.py#L977</source><parameters>[{"name": "inputs", "val": " = None"}, {"name": "attention_mask", "val": " = None"}, {"name": "head_mask", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "labels", "val": " = None"}, {"name": "return_dict", "val": " = None"}, {"name": "input_ids", "val": " = None"}]</parameters><paramsdesc>- **inputs** (`torch.FloatTensor`) --
   Inputs to the perceiver. Can be anything: images, text, audio, video, etc.
 - **attention_mask** (`torch.FloatTensor` of shape `batch_size, sequence_length`, _optional_) --
   Mask to avoid performing attention on padding token indices. Mask values selected in `[0, 1]`:
@@ -994,11 +1124,7 @@ processing steps while the latter silently ignores them.
 
 
 
-
-
-
-
-Example:
+Examples:
 
 ```python
 >>> from transformers import PerceiverTokenizer, PerceiverForMaskedLM
@@ -1007,13 +1133,37 @@ Example:
 >>> tokenizer = PerceiverTokenizer.from_pretrained('deepmind/language-perceiver')
 >>> model = PerceiverForMaskedLM.from_pretrained('deepmind/language-perceiver')
 
->>> inputs = tokenizer("The capital of France is [MASK].", return_tensors="pt")
->>> labels = tokenizer("The capital of France is Paris.", return_tensors="pt")["input_ids"]
+>>> # training
+>>> text = "This is an incomplete sentence where some words are missing."
+>>> inputs = tokenizer(text, padding="max_length", return_tensors="pt")
+>>> # mask " missing."
+>>> inputs['input_ids'][0, 52:61] = tokenizer.mask_token_id
+>>> labels = tokenizer(text, padding="max_length", return_tensors="pt").input_ids
 
 >>> outputs = model(**inputs, labels=labels)
 >>> loss = outputs.loss
 >>> logits = outputs.logits
+
+>>> # inference
+>>> text = "This is an incomplete sentence where some words are missing."
+>>> encoding = tokenizer(text, padding="max_length", return_tensors="pt")
+
+>>> # mask bytes corresponding to " missing.". Note that the model performs much better if the masked span starts with a space.
+>>> encoding['input_ids'][0, 52:61] = tokenizer.mask_token_id
+
+>>> # forward pass
+>>> with torch.no_grad():
+>>>    outputs = model(**encoding)
+>>> logits = outputs.logits
+
+>>> masked_tokens_predictions = logits[0, 52:61].argmax(dim=-1).tolist()
+>>> tokenizer.decode(masked_tokens_predictions)
+' missing.'
 ```
+
+
+
+
 
 
 </div></div>
@@ -1022,7 +1172,7 @@ Example:
 
 <div class="docstring">
 
-<docstring><name>class transformers.PerceiverForSequenceClassification</name><anchor>transformers.PerceiverForSequenceClassification</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/perceiver/modeling_perceiver.py#L966</source><parameters>[{"name": "config", "val": ""}]</parameters><paramsdesc>- **config** ([PerceiverConfig](/docs/transformers/master/en/model_doc/perceiver#transformers.PerceiverConfig)) -- Model configuration class with all the parameters of the model.
+<docstring><name>class transformers.PerceiverForSequenceClassification</name><anchor>transformers.PerceiverForSequenceClassification</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/perceiver/modeling_perceiver.py#L1071</source><parameters>[{"name": "config", "val": ""}]</parameters><paramsdesc>- **config** ([PerceiverConfig](/docs/transformers/master/en/model_doc/perceiver#transformers.PerceiverConfig)) -- Model configuration class with all the parameters of the model.
   Initializing with a config file does not load the weights associated with the model, only the
   configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel.from_pretrained) method to load the model
   weights.</paramsdesc><paramgroups>0</paramgroups></docstring>
@@ -1036,7 +1186,7 @@ behavior.
 
 
 <div class="docstring">
-<docstring><name>forward</name><anchor>transformers.PerceiverForSequenceClassification.forward</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/perceiver/modeling_perceiver.py#L987</source><parameters>[{"name": "inputs", "val": " = None"}, {"name": "attention_mask", "val": " = None"}, {"name": "head_mask", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "labels", "val": " = None"}, {"name": "return_dict", "val": " = None"}, {"name": "input_ids", "val": " = None"}]</parameters><paramsdesc>- **inputs** (`torch.FloatTensor`) --
+<docstring><name>forward</name><anchor>transformers.PerceiverForSequenceClassification.forward</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/perceiver/modeling_perceiver.py#L1092</source><parameters>[{"name": "inputs", "val": " = None"}, {"name": "attention_mask", "val": " = None"}, {"name": "head_mask", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "labels", "val": " = None"}, {"name": "return_dict", "val": " = None"}, {"name": "input_ids", "val": " = None"}]</parameters><paramsdesc>- **inputs** (`torch.FloatTensor`) --
   Inputs to the perceiver. Can be anything: images, text, audio, video, etc.
 - **attention_mask** (`torch.FloatTensor` of shape `batch_size, sequence_length`, _optional_) --
   Mask to avoid performing attention on padding token indices. Mask values selected in `[0, 1]`:
@@ -1144,7 +1294,7 @@ Example of multi-label classification:
 
 <div class="docstring">
 
-<docstring><name>class transformers.PerceiverForImageClassificationLearned</name><anchor>transformers.PerceiverForImageClassificationLearned</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/perceiver/modeling_perceiver.py#L1093</source><parameters>[{"name": "config", "val": ""}]</parameters><paramsdesc>- **config** ([PerceiverConfig](/docs/transformers/master/en/model_doc/perceiver#transformers.PerceiverConfig)) -- Model configuration class with all the parameters of the model.
+<docstring><name>class transformers.PerceiverForImageClassificationLearned</name><anchor>transformers.PerceiverForImageClassificationLearned</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/perceiver/modeling_perceiver.py#L1198</source><parameters>[{"name": "config", "val": ""}]</parameters><paramsdesc>- **config** ([PerceiverConfig](/docs/transformers/master/en/model_doc/perceiver#transformers.PerceiverConfig)) -- Model configuration class with all the parameters of the model.
   Initializing with a config file does not load the weights associated with the model, only the
   configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel.from_pretrained) method to load the model
   weights.</paramsdesc><paramgroups>0</paramgroups></docstring>
@@ -1168,7 +1318,7 @@ behavior.
 
 
 <div class="docstring">
-<docstring><name>forward</name><anchor>transformers.PerceiverForImageClassificationLearned.forward</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/perceiver/modeling_perceiver.py#L1124</source><parameters>[{"name": "inputs", "val": " = None"}, {"name": "attention_mask", "val": " = None"}, {"name": "head_mask", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "labels", "val": " = None"}, {"name": "return_dict", "val": " = None"}, {"name": "pixel_values", "val": " = None"}]</parameters><paramsdesc>- **inputs** (`torch.FloatTensor`) --
+<docstring><name>forward</name><anchor>transformers.PerceiverForImageClassificationLearned.forward</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/perceiver/modeling_perceiver.py#L1229</source><parameters>[{"name": "inputs", "val": " = None"}, {"name": "attention_mask", "val": " = None"}, {"name": "head_mask", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "labels", "val": " = None"}, {"name": "return_dict", "val": " = None"}, {"name": "pixel_values", "val": " = None"}]</parameters><paramsdesc>- **inputs** (`torch.FloatTensor`) --
   Inputs to the perceiver. Can be anything: images, text, audio, video, etc.
 - **attention_mask** (`torch.FloatTensor` of shape `batch_size, sequence_length`, _optional_) --
   Mask to avoid performing attention on padding token indices. Mask values selected in `[0, 1]`:
@@ -1251,7 +1401,7 @@ Examples:
 
 <div class="docstring">
 
-<docstring><name>class transformers.PerceiverForImageClassificationFourier</name><anchor>transformers.PerceiverForImageClassificationFourier</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/perceiver/modeling_perceiver.py#L1231</source><parameters>[{"name": "config", "val": ""}]</parameters><paramsdesc>- **config** ([PerceiverConfig](/docs/transformers/master/en/model_doc/perceiver#transformers.PerceiverConfig)) -- Model configuration class with all the parameters of the model.
+<docstring><name>class transformers.PerceiverForImageClassificationFourier</name><anchor>transformers.PerceiverForImageClassificationFourier</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/perceiver/modeling_perceiver.py#L1336</source><parameters>[{"name": "config", "val": ""}]</parameters><paramsdesc>- **config** ([PerceiverConfig](/docs/transformers/master/en/model_doc/perceiver#transformers.PerceiverConfig)) -- Model configuration class with all the parameters of the model.
   Initializing with a config file does not load the weights associated with the model, only the
   configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel.from_pretrained) method to load the model
   weights.</paramsdesc><paramgroups>0</paramgroups></docstring>
@@ -1275,7 +1425,7 @@ behavior.
 
 
 <div class="docstring">
-<docstring><name>forward</name><anchor>transformers.PerceiverForImageClassificationFourier.forward</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/perceiver/modeling_perceiver.py#L1260</source><parameters>[{"name": "inputs", "val": " = None"}, {"name": "attention_mask", "val": " = None"}, {"name": "head_mask", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "labels", "val": " = None"}, {"name": "return_dict", "val": " = None"}, {"name": "pixel_values", "val": " = None"}]</parameters><paramsdesc>- **inputs** (`torch.FloatTensor`) --
+<docstring><name>forward</name><anchor>transformers.PerceiverForImageClassificationFourier.forward</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/perceiver/modeling_perceiver.py#L1365</source><parameters>[{"name": "inputs", "val": " = None"}, {"name": "attention_mask", "val": " = None"}, {"name": "head_mask", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "labels", "val": " = None"}, {"name": "return_dict", "val": " = None"}, {"name": "pixel_values", "val": " = None"}]</parameters><paramsdesc>- **inputs** (`torch.FloatTensor`) --
   Inputs to the perceiver. Can be anything: images, text, audio, video, etc.
 - **attention_mask** (`torch.FloatTensor` of shape `batch_size, sequence_length`, _optional_) --
   Mask to avoid performing attention on padding token indices. Mask values selected in `[0, 1]`:
@@ -1358,7 +1508,7 @@ Examples:
 
 <div class="docstring">
 
-<docstring><name>class transformers.PerceiverForImageClassificationConvProcessing</name><anchor>transformers.PerceiverForImageClassificationConvProcessing</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/perceiver/modeling_perceiver.py#L1366</source><parameters>[{"name": "config", "val": ""}]</parameters><paramsdesc>- **config** ([PerceiverConfig](/docs/transformers/master/en/model_doc/perceiver#transformers.PerceiverConfig)) -- Model configuration class with all the parameters of the model.
+<docstring><name>class transformers.PerceiverForImageClassificationConvProcessing</name><anchor>transformers.PerceiverForImageClassificationConvProcessing</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/perceiver/modeling_perceiver.py#L1471</source><parameters>[{"name": "config", "val": ""}]</parameters><paramsdesc>- **config** ([PerceiverConfig](/docs/transformers/master/en/model_doc/perceiver#transformers.PerceiverConfig)) -- Model configuration class with all the parameters of the model.
   Initializing with a config file does not load the weights associated with the model, only the
   configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel.from_pretrained) method to load the model
   weights.</paramsdesc><paramgroups>0</paramgroups></docstring>
@@ -1382,7 +1532,7 @@ behavior.
 
 
 <div class="docstring">
-<docstring><name>forward</name><anchor>transformers.PerceiverForImageClassificationConvProcessing.forward</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/perceiver/modeling_perceiver.py#L1396</source><parameters>[{"name": "inputs", "val": " = None"}, {"name": "attention_mask", "val": " = None"}, {"name": "head_mask", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "labels", "val": " = None"}, {"name": "return_dict", "val": " = None"}, {"name": "pixel_values", "val": " = None"}]</parameters><paramsdesc>- **inputs** (`torch.FloatTensor`) --
+<docstring><name>forward</name><anchor>transformers.PerceiverForImageClassificationConvProcessing.forward</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/perceiver/modeling_perceiver.py#L1501</source><parameters>[{"name": "inputs", "val": " = None"}, {"name": "attention_mask", "val": " = None"}, {"name": "head_mask", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "labels", "val": " = None"}, {"name": "return_dict", "val": " = None"}, {"name": "pixel_values", "val": " = None"}]</parameters><paramsdesc>- **inputs** (`torch.FloatTensor`) --
   Inputs to the perceiver. Can be anything: images, text, audio, video, etc.
 - **attention_mask** (`torch.FloatTensor` of shape `batch_size, sequence_length`, _optional_) --
   Mask to avoid performing attention on padding token indices. Mask values selected in `[0, 1]`:
@@ -1465,7 +1615,7 @@ Examples:
 
 <div class="docstring">
 
-<docstring><name>class transformers.PerceiverForOpticalFlow</name><anchor>transformers.PerceiverForOpticalFlow</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/perceiver/modeling_perceiver.py#L1502</source><parameters>[{"name": "config", "val": ""}]</parameters><paramsdesc>- **config** ([PerceiverConfig](/docs/transformers/master/en/model_doc/perceiver#transformers.PerceiverConfig)) -- Model configuration class with all the parameters of the model.
+<docstring><name>class transformers.PerceiverForOpticalFlow</name><anchor>transformers.PerceiverForOpticalFlow</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/perceiver/modeling_perceiver.py#L1607</source><parameters>[{"name": "config", "val": ""}]</parameters><paramsdesc>- **config** ([PerceiverConfig](/docs/transformers/master/en/model_doc/perceiver#transformers.PerceiverConfig)) -- Model configuration class with all the parameters of the model.
   Initializing with a config file does not load the weights associated with the model, only the
   configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel.from_pretrained) method to load the model
   weights.</paramsdesc><paramgroups>0</paramgroups></docstring>
@@ -1489,7 +1639,7 @@ behavior.
 
 
 <div class="docstring">
-<docstring><name>forward</name><anchor>transformers.PerceiverForOpticalFlow.forward</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/perceiver/modeling_perceiver.py#L1549</source><parameters>[{"name": "inputs", "val": " = None"}, {"name": "attention_mask", "val": " = None"}, {"name": "head_mask", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "labels", "val": " = None"}, {"name": "return_dict", "val": " = None"}]</parameters><paramsdesc>- **inputs** (`torch.FloatTensor`) --
+<docstring><name>forward</name><anchor>transformers.PerceiverForOpticalFlow.forward</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/perceiver/modeling_perceiver.py#L1654</source><parameters>[{"name": "inputs", "val": " = None"}, {"name": "attention_mask", "val": " = None"}, {"name": "head_mask", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "labels", "val": " = None"}, {"name": "return_dict", "val": " = None"}]</parameters><paramsdesc>- **inputs** (`torch.FloatTensor`) --
   Inputs to the perceiver. Can be anything: images, text, audio, video, etc.
 - **attention_mask** (`torch.FloatTensor` of shape `batch_size, sequence_length`, _optional_) --
   Mask to avoid performing attention on padding token indices. Mask values selected in `[0, 1]`:
@@ -1567,7 +1717,7 @@ Examples:
 
 <div class="docstring">
 
-<docstring><name>class transformers.PerceiverForMultimodalAutoencoding</name><anchor>transformers.PerceiverForMultimodalAutoencoding</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/perceiver/modeling_perceiver.py#L1641</source><parameters>[{"name": "config", "val": ""}]</parameters><paramsdesc>- **config** ([PerceiverConfig](/docs/transformers/master/en/model_doc/perceiver#transformers.PerceiverConfig)) -- Model configuration class with all the parameters of the model.
+<docstring><name>class transformers.PerceiverForMultimodalAutoencoding</name><anchor>transformers.PerceiverForMultimodalAutoencoding</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/perceiver/modeling_perceiver.py#L1746</source><parameters>[{"name": "config", "val": ""}]</parameters><paramsdesc>- **config** ([PerceiverConfig](/docs/transformers/master/en/model_doc/perceiver#transformers.PerceiverConfig)) -- Model configuration class with all the parameters of the model.
   Initializing with a config file does not load the weights associated with the model, only the
   configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel.from_pretrained) method to load the model
   weights.</paramsdesc><paramgroups>0</paramgroups></docstring>
@@ -1607,7 +1757,7 @@ behavior.
 
 
 <div class="docstring">
-<docstring><name>forward</name><anchor>transformers.PerceiverForMultimodalAutoencoding.forward</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/perceiver/modeling_perceiver.py#L1757</source><parameters>[{"name": "inputs", "val": " = None"}, {"name": "attention_mask", "val": " = None"}, {"name": "subsampled_output_points", "val": " = None"}, {"name": "head_mask", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "labels", "val": " = None"}, {"name": "return_dict", "val": " = None"}]</parameters><paramsdesc>- **inputs** (`torch.FloatTensor`) --
+<docstring><name>forward</name><anchor>transformers.PerceiverForMultimodalAutoencoding.forward</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/perceiver/modeling_perceiver.py#L1862</source><parameters>[{"name": "inputs", "val": " = None"}, {"name": "attention_mask", "val": " = None"}, {"name": "subsampled_output_points", "val": " = None"}, {"name": "head_mask", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "labels", "val": " = None"}, {"name": "return_dict", "val": " = None"}]</parameters><paramsdesc>- **inputs** (`torch.FloatTensor`) --
   Inputs to the perceiver. Can be anything: images, text, audio, video, etc.
 - **attention_mask** (`torch.FloatTensor` of shape `batch_size, sequence_length`, _optional_) --
   Mask to avoid performing attention on padding token indices. Mask values selected in `[0, 1]`:
