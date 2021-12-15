@@ -20,6 +20,7 @@ import re
 import shutil
 from pathlib import Path
 
+import yaml
 from tqdm import tqdm
 
 from .autodoc import autodoc, remove_example_tags, resolve_links_in_text
@@ -337,6 +338,7 @@ def build_doc(package_name, doc_folder, output_dir, clean=True, version="master"
 
     package = importlib.import_module(package_name)
     anchors_mapping = build_mdx_files(package, doc_folder, output_dir, page_info)
+    check_toc_integrity(doc_folder, output_dir)
     resolve_links(output_dir, package, anchors_mapping, page_info)
     generate_frontmatter(output_dir)
 
@@ -345,3 +347,43 @@ def build_doc(package_name, doc_folder, output_dir, clean=True, version="master"
             for nb_file in Path(notebook_dir).glob("**/*.ipynb"):
                 os.remove(nb_file)
         build_notebooks(doc_folder, notebook_dir, package=package, mapping=anchors_mapping, page_info=page_info)
+
+
+def check_toc_integrity(doc_folder, output_dir):
+    """
+    Checks all the MDX files obtained after building the documentation are present in the table of contents.
+
+    Args:
+        doc_folder (`str` or `os.PathLike`): The folder where the source files of the documentation lie.
+        output_dir (`str` or `os.PathLike`): The folder where the doc is built.
+    """
+    output_dir = Path(output_dir)
+    doc_files = [str(f.relative_to(output_dir).with_suffix("")) for f in output_dir.glob("**/*.mdx")]
+
+    toc_file = Path(doc_folder) / "_toctree.yml"
+    with open(toc_file, "r", encoding="utf-8") as f:
+        toc = yaml.safe_load(f.read())
+
+    toc_sections = []
+    # We don't just loop directly in toc as we will add more into it as we un-nest things.
+    while len(toc) > 0:
+        part = toc.pop(0)
+        toc_sections.extend([sec["local"] for sec in part["sections"] if "local" in sec])
+        # Toc has some nested sections in the API doc for instance, so we recurse.
+        toc.extend([sec for sec in part["sections"] if "sections" in sec])
+
+    files_not_in_toc = [f for f in doc_files if f not in toc_sections]
+    if len(files_not_in_toc) > 0:
+        message = "\n".join([f"- {f}" for f in files_not_in_toc])
+        raise RuntimeError(
+            "The following files are not present in the table of contents:\n" + message + f"\nAdd them to {toc_file}."
+        )
+
+    files_not_exist = [f for f in toc_sections if f not in doc_files]
+    if len(files_not_exist) > 0:
+        message = "\n".join([f"- {f}" for f in files_not_exist])
+        raise RuntimeError(
+            "The following files are present in the table of contents but do not exist:\n"
+            + message
+            + f"\nRemove them from {toc_file}."
+        )
