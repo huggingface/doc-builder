@@ -45,7 +45,10 @@ def build_command(args):
         language=args.language,
         notebook_dir=args.notebook_dir,
     )
-    update_versions_file(f"./build/{args.library_name}", version)
+
+    package_doc_path = os.path.join(args.build_dir, args.library_name)
+    if os.path.isfile(os.path.join(package_doc_path, "_versions.yml")):
+        update_versions_file(os.path.join(args.build_dir, args.library_name), version)
 
 
 def build_command_parser(subparsers=None):
