@@ -173,7 +173,7 @@ This text comports a bit of everything: `italics`, *italics*, some ``code``. The
 some references to :obj:`objects`, :class:`~transformers.classes`, :meth:`methods` and :func:`funcs`. Also, we can find
 a :math:`formula`."""
         expected_converted_1 = """
-This text comports a bit of everything: _italics_, *italics*, some `code`. There is some already converted **bold** and
+This text comports a bit of everything: *italics*, *italics*, some `code`. There is some already converted **bold** and
 some references to `objects`, [`~transformers.classes`], [`methods`] and [`funcs`]. Also, we can find
 a \\\\(formula\\\\)."""
         self.assertEqual(convert_rst_formatting(test_text_1), expected_converted_1)
