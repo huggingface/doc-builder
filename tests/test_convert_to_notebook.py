@@ -99,11 +99,18 @@ Intro
 common_code_sample
 ```
 Content
+<frameworkcontent>
+<pytorch>
 ```py
 pt_sample
-===PT-TF-SPLIT===
+```
+</pytorch>
+<tensorflow>
+```py
 tf_sample
 ```
+</tensorflow>
+</frameworkcontent>
 End
 """
         mixed_content = """
@@ -115,7 +122,6 @@ Content
 ```py
 pt_sample
 ```
-
 ```py
 tf_sample
 ```
