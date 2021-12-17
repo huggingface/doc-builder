@@ -38,6 +38,7 @@ from doc_builder.convert_rst_to_mdx import (
     _re_simple_doc,
     _re_simple_ref,
     _re_single_backquotes,
+    apply_min_indent,
     convert_rst_blocks,
     convert_rst_formatting,
     convert_rst_links,
@@ -426,6 +427,27 @@ $$formula$$
 
         self.assertEqual(convert_rst_blocks(original_rst, page_info), expected_conversion)
 
+        rst_with_indent = """
+    This is inside a docstring, so we have some indent.
+
+    .. note::
+        There is a note in the middle.
+
+    We should keep the indent for the note.
+"""
+        expected_conversion = """
+    This is inside a docstring, so we have some indent.
+
+    <Tip>
+
+    There is a note in the middle.
+
+    </Tip>
+
+    We should keep the indent for the note.
+"""
+        self.assertEqual(convert_rst_blocks(rst_with_indent, page_info), expected_conversion)
+
     def test_split_return_line(self):
         self.assertEqual(
             split_return_line("A :obj:`str` or a :obj:`bool`: the result"),
@@ -602,3 +624,6 @@ bli
 """
 
         self.assertEqual(split_pt_tf_code_blocks(content), expected)
+
+    def test_apply_min_indent(self):
+        self.assertEqual(apply_min_indent("aaa\n  bb\n\n    ccc\ndd", 4), "    aaa\n    bb\n\n    ccc\n    dd")

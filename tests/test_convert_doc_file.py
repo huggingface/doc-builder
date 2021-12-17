@@ -12,7 +12,7 @@
 
 import unittest
 
-from doc_builder.commands.convert_doc_file import apply_min_indent, shorten_internal_refs
+from doc_builder.commands.convert_doc_file import shorten_internal_refs
 
 
 class ConvertDocFileTester(unittest.TestCase):
@@ -22,6 +22,3 @@ class ConvertDocFileTester(unittest.TestCase):
             shorten_internal_refs("Look at the [`~transformers.PreTrainedModel.generate`] method."),
             "Look at the [`~PreTrainedModel.generate`] method.",
         )
-
-    def test_apply_min_indent(self):
-        self.assertEqual(apply_min_indent("aaa\n  bb\n\n    ccc\ndd", 4), "    aaa\n    bb\n\n    ccc\n    dd")
