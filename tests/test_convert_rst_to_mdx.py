@@ -591,12 +591,20 @@ bli
         expected = """
 bla
 
+<frameworkcontent>
+<pytorch>
 ```py
 common_code
 pytorch_code
-===PT-TF-SPLIT===
+```
+</pytorch>
+<tensorflow>
+```py
+common_code
 tf_code
 ```
+</tensorflow>
+</frameworkcontent>
 
 bli
 """
