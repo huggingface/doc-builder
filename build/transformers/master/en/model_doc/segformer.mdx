@@ -88,13 +88,13 @@ Tips:
   important preprocessing step is that images and segmentation maps are randomly cropped and padded to the same size,
   such as 512x512 or 640x640, after which they are normalized.
 - One additional thing to keep in mind is that one can initialize [SegformerFeatureExtractor](/docs/transformers/master/en/model_doc/segformer#transformers.SegformerFeatureExtractor) with
-  `reduce_labels` set to _True_ or _False_. In some datasets (like ADE20k), the 0 index is used in the annotated
+  `reduce_labels` set to *True* or *False*. In some datasets (like ADE20k), the 0 index is used in the annotated
   segmentation maps for background. However, ADE20k doesn't include the "background" class in its 150 labels.
   Therefore, `reduce_labels` is used to reduce all labels by 1, and to make sure no loss is computed for the
-  background class (i.e. it replaces 0 in the annotated maps by 255, which is the _ignore_index_ of the loss function
+  background class (i.e. it replaces 0 in the annotated maps by 255, which is the *ignore_index* of the loss function
   used by [SegformerForSemanticSegmentation](/docs/transformers/master/en/model_doc/segformer#transformers.SegformerForSemanticSegmentation)). However, other datasets use the 0 index as
   background class and include this class as part of all labels. In that case, `reduce_labels` should be set to
-  _False_, as loss should also be computed for the background class.
+  *False*, as loss should also be computed for the background class.
 - As most models, SegFormer comes in different sizes, the details of which can be found in the table below.
 
 | **Model variant** | **Depths**    | **Hidden sizes**    | **Decoder hidden size** | **Params (M)** | **ImageNet-1k Top 1** |
@@ -109,50 +109,50 @@ Tips:
 
 <div class="docstring">
 
-<docstring><name>class transformers.SegformerConfig</name><anchor>transformers.SegformerConfig</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/segformer/configuration_segformer.py#L29</source><parameters>[{"name": "image_size", "val": " = 224"}, {"name": "num_channels", "val": " = 3"}, {"name": "num_encoder_blocks", "val": " = 4"}, {"name": "depths", "val": " = [2, 2, 2, 2]"}, {"name": "sr_ratios", "val": " = [8, 4, 2, 1]"}, {"name": "hidden_sizes", "val": " = [32, 64, 160, 256]"}, {"name": "downsampling_rates", "val": " = [1, 4, 8, 16]"}, {"name": "patch_sizes", "val": " = [7, 3, 3, 3]"}, {"name": "strides", "val": " = [4, 2, 2, 2]"}, {"name": "num_attention_heads", "val": " = [1, 2, 5, 8]"}, {"name": "mlp_ratios", "val": " = [4, 4, 4, 4]"}, {"name": "hidden_act", "val": " = 'gelu'"}, {"name": "hidden_dropout_prob", "val": " = 0.0"}, {"name": "attention_probs_dropout_prob", "val": " = 0.0"}, {"name": "classifier_dropout_prob", "val": " = 0.1"}, {"name": "initializer_range", "val": " = 0.02"}, {"name": "drop_path_rate", "val": " = 0.1"}, {"name": "layer_norm_eps", "val": " = 1e-06"}, {"name": "decoder_hidden_size", "val": " = 256"}, {"name": "is_encoder_decoder", "val": " = False"}, {"name": "reshape_last_stage", "val": " = True"}, {"name": "semantic_loss_ignore_index", "val": " = 255"}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **image_size** (`int`, _optional_, defaults to 512) --
+<docstring><name>class transformers.SegformerConfig</name><anchor>transformers.SegformerConfig</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/segformer/configuration_segformer.py#L29</source><parameters>[{"name": "image_size", "val": " = 224"}, {"name": "num_channels", "val": " = 3"}, {"name": "num_encoder_blocks", "val": " = 4"}, {"name": "depths", "val": " = [2, 2, 2, 2]"}, {"name": "sr_ratios", "val": " = [8, 4, 2, 1]"}, {"name": "hidden_sizes", "val": " = [32, 64, 160, 256]"}, {"name": "downsampling_rates", "val": " = [1, 4, 8, 16]"}, {"name": "patch_sizes", "val": " = [7, 3, 3, 3]"}, {"name": "strides", "val": " = [4, 2, 2, 2]"}, {"name": "num_attention_heads", "val": " = [1, 2, 5, 8]"}, {"name": "mlp_ratios", "val": " = [4, 4, 4, 4]"}, {"name": "hidden_act", "val": " = 'gelu'"}, {"name": "hidden_dropout_prob", "val": " = 0.0"}, {"name": "attention_probs_dropout_prob", "val": " = 0.0"}, {"name": "classifier_dropout_prob", "val": " = 0.1"}, {"name": "initializer_range", "val": " = 0.02"}, {"name": "drop_path_rate", "val": " = 0.1"}, {"name": "layer_norm_eps", "val": " = 1e-06"}, {"name": "decoder_hidden_size", "val": " = 256"}, {"name": "is_encoder_decoder", "val": " = False"}, {"name": "reshape_last_stage", "val": " = True"}, {"name": "semantic_loss_ignore_index", "val": " = 255"}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **image_size** (`int`, *optional*, defaults to 512) --
   The size (resolution) of each image.
-- **num_channels** (`int`, _optional_, defaults to 3) --
+- **num_channels** (`int`, *optional*, defaults to 3) --
   The number of input channels.
-- **num_encoder_blocks** (`int`, _optional_, defaults to 4) --
+- **num_encoder_blocks** (`int`, *optional*, defaults to 4) --
   The number of encoder blocks (i.e. stages in the Mix Transformer encoder).
-- **depths** (`List[int]`, _optional_, defaults to [2, 2, 2, 2]) --
+- **depths** (`List[int]`, *optional*, defaults to [2, 2, 2, 2]) --
   The number of layers in each encoder block.
-- **sr_ratios** (`List[int]`, _optional_, defaults to [8, 4, 2, 1]) --
+- **sr_ratios** (`List[int]`, *optional*, defaults to [8, 4, 2, 1]) --
   Sequence reduction ratios in each encoder block.
-- **hidden_sizes** (`List[int]`, _optional_, defaults to [32, 64, 160, 256]) --
+- **hidden_sizes** (`List[int]`, *optional*, defaults to [32, 64, 160, 256]) --
   Dimension of each of the encoder blocks.
-- **downsampling_rates** (`List[int]`, _optional_, defaults to [1, 4, 8, 16]) --
+- **downsampling_rates** (`List[int]`, *optional*, defaults to [1, 4, 8, 16]) --
   Downsample rate of the image resolution compared to the original image size before each encoder block.
-- **patch_sizes** (`List[int]`, _optional_, defaults to [7, 3, 3, 3]) --
+- **patch_sizes** (`List[int]`, *optional*, defaults to [7, 3, 3, 3]) --
   Patch size before each encoder block.
-- **strides** (`List[int]`, _optional_, defaults to [4, 2, 2, 2]) --
+- **strides** (`List[int]`, *optional*, defaults to [4, 2, 2, 2]) --
   Stride before each encoder block.
-- **num_attention_heads** (`List[int]`, _optional_, defaults to [1, 2, 4, 8]) --
+- **num_attention_heads** (`List[int]`, *optional*, defaults to [1, 2, 4, 8]) --
   Number of attention heads for each attention layer in each block of the Transformer encoder.
-- **mlp_ratios** (`List[int]`, _optional_, defaults to [4, 4, 4, 4]) --
+- **mlp_ratios** (`List[int]`, *optional*, defaults to [4, 4, 4, 4]) --
   Ratio of the size of the hidden layer compared to the size of the input layer of the Mix FFNs in the
   encoder blocks.
-- **hidden_act** (`str` or `function`, _optional_, defaults to `"gelu"`) --
+- **hidden_act** (`str` or `function`, *optional*, defaults to `"gelu"`) --
   The non-linear activation function (function or string) in the encoder and pooler. If string,
   `"gelu"`, `"relu"`, `"selu"` and `"gelu_new"` are supported.
-- **hidden_dropout_prob** (`float`, _optional_, defaults to 0.0) --
+- **hidden_dropout_prob** (`float`, *optional*, defaults to 0.0) --
   The dropout probability for all fully connected layers in the embeddings, encoder, and pooler.
-- **attention_probs_dropout_prob** (`float`, _optional_, defaults to 0.0) --
+- **attention_probs_dropout_prob** (`float`, *optional*, defaults to 0.0) --
   The dropout ratio for the attention probabilities.
-- **classifier_dropout_prob** (`float`, _optional_, defaults to 0.1) --
+- **classifier_dropout_prob** (`float`, *optional*, defaults to 0.1) --
   The dropout probability before the classification head.
-- **initializer_range** (`float`, _optional_, defaults to 0.02) --
+- **initializer_range** (`float`, *optional*, defaults to 0.02) --
   The standard deviation of the truncated_normal_initializer for initializing all weight matrices.
-- **drop_path_rate** (`float`, _optional_, defaults to 0.1) --
+- **drop_path_rate** (`float`, *optional*, defaults to 0.1) --
   The dropout probability for stochastic depth, used in the blocks of the Transformer encoder.
-- **layer_norm_eps** (`float`, _optional_, defaults to 1e-6) --
+- **layer_norm_eps** (`float`, *optional*, defaults to 1e-6) --
   The epsilon used by the layer normalization layers.
-- **decoder_hidden_size** (`int`, _optional_, defaults to 256) --
+- **decoder_hidden_size** (`int`, *optional*, defaults to 256) --
   The dimension of the all-MLP decode head.
-- **reshape_last_stage** (`bool`, _optional_, defaults to `True`) --
+- **reshape_last_stage** (`bool`, *optional*, defaults to `True`) --
   Whether to reshape the features of the last stage back to `(batch_size, num_channels, height, width)`.
   Only required for the semantic segmentation model.
-- **semantic_loss_ignore_index** (`int`, _optional_, defaults to 255) --
+- **semantic_loss_ignore_index** (`int`, *optional*, defaults to 255) --
   The index that is ignored by the loss function of the semantic segmentation model.</paramsdesc><paramgroups>0</paramgroups></docstring>
 
 This is the configuration class to store the configuration of a [SegformerModel](/docs/transformers/master/en/model_doc/segformer#transformers.SegformerModel). It is used
@@ -188,24 +188,24 @@ Example:
 
 <div class="docstring">
 
-<docstring><name>class transformers.SegformerFeatureExtractor</name><anchor>transformers.SegformerFeatureExtractor</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/segformer/feature_extraction_segformer.py#L37</source><parameters>[{"name": "do_resize", "val": " = True"}, {"name": "size", "val": " = 512"}, {"name": "resample", "val": " = 2"}, {"name": "do_normalize", "val": " = True"}, {"name": "image_mean", "val": " = None"}, {"name": "image_std", "val": " = None"}, {"name": "reduce_labels", "val": " = False"}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **do_resize** (`bool`, _optional_, defaults to `True`) --
+<docstring><name>class transformers.SegformerFeatureExtractor</name><anchor>transformers.SegformerFeatureExtractor</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/segformer/feature_extraction_segformer.py#L37</source><parameters>[{"name": "do_resize", "val": " = True"}, {"name": "size", "val": " = 512"}, {"name": "resample", "val": " = 2"}, {"name": "do_normalize", "val": " = True"}, {"name": "image_mean", "val": " = None"}, {"name": "image_std", "val": " = None"}, {"name": "reduce_labels", "val": " = False"}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **do_resize** (`bool`, *optional*, defaults to `True`) --
   Whether to resize the input based on a certain `size`.
-- **size** (`int` or `Tuple(int)`, _optional_, defaults to 512) --
+- **size** (`int` or `Tuple(int)`, *optional*, defaults to 512) --
   Resize the input to the given size. If a tuple is provided, it should be (width, height). If only an
   integer is provided, then the input will be resized to (size, size). Only has an effect if `do_resize`
   is set to `True`.
-- **resample** (`int`, _optional_, defaults to `PIL.Image.BILINEAR`) --
+- **resample** (`int`, *optional*, defaults to `PIL.Image.BILINEAR`) --
   An optional resampling filter. This can be one of `PIL.Image.NEAREST`, `PIL.Image.BOX`,
   `PIL.Image.BILINEAR`, `PIL.Image.HAMMING`, `PIL.Image.BICUBIC` or `PIL.Image.LANCZOS`.
   Only has an effect if `do_resize` is set to `True`.
-- **do_normalize** (`bool`, _optional_, defaults to `True`) --
+- **do_normalize** (`bool`, *optional*, defaults to `True`) --
   Whether or not to normalize the input with mean and standard deviation.
-- **image_mean** (`int`, _optional_, defaults to `[0.485, 0.456, 0.406]`) --
+- **image_mean** (`int`, *optional*, defaults to `[0.485, 0.456, 0.406]`) --
   The sequence of means for each channel, to be used when normalizing images. Defaults to the ImageNet mean.
-- **image_std** (`int`, _optional_, defaults to `[0.229, 0.224, 0.225]`) --
+- **image_std** (`int`, *optional*, defaults to `[0.229, 0.224, 0.225]`) --
   The sequence of standard deviations for each channel, to be used when normalizing images. Defaults to the
   ImageNet std.
-- **reduce_labels** (`bool`, _optional_, defaults to `False`) --
+- **reduce_labels** (`bool`, *optional*, defaults to `False`) --
   Whether or not to reduce all label values of segmentation maps by 1. Usually used for datasets where 0 is
   used for background, and background itself is not included in all classes of a dataset (e.g. ADE20k). The
   background label will be replaced by 255.</paramsdesc><paramgroups>0</paramgroups></docstring>
@@ -225,10 +225,10 @@ methods. Users should refer to this superclass for more information regarding th
   tensor. In case of a NumPy array/PyTorch tensor, each image should be of shape (C, H, W), where C is
   the number of channels, H and W are image height and width.
 
-- **segmentation_maps** (`PIL.Image.Image`, `np.ndarray`, `torch.Tensor`, `List[PIL.Image.Image]`, `List[np.ndarray]`, `List[torch.Tensor]`, _optional_) --
+- **segmentation_maps** (`PIL.Image.Image`, `np.ndarray`, `torch.Tensor`, `List[PIL.Image.Image]`, `List[np.ndarray]`, `List[torch.Tensor]`, *optional*) --
   Optionally, the corresponding semantic segmentation maps with the pixel-wise annotations.
 
-- **return_tensors** (`str` or [TensorType](/docs/transformers/master/en/internal/file_utils#transformers.TensorType), _optional_, defaults to `'np'`) --
+- **return_tensors** (`str` or [TensorType](/docs/transformers/master/en/internal/file_utils#transformers.TensorType), *optional*, defaults to `'np'`) --
   If set, will return tensors of a particular framework. Acceptable values are:
 
   - `'tf'`: Return TensorFlow `tf.constant` objects.
@@ -281,23 +281,23 @@ behavior.
   [SegformerFeatureExtractor](/docs/transformers/master/en/model_doc/segformer#transformers.SegformerFeatureExtractor). See
   [transformers.SegformerFeatureExtractor.__call__()](/docs/transformers/master/en/model_doc/segformer#transformers.SegformerFeatureExtractor.__call__) for details.
 
-- **output_attentions** (`bool`, _optional_) --
+- **output_attentions** (`bool`, *optional*) --
   Whether or not to return the attentions tensors of all attention layers. See `attentions` under returned
   tensors for more detail.
-- **output_hidden_states** (`bool`, _optional_) --
+- **output_hidden_states** (`bool`, *optional*) --
   Whether or not to return the hidden states of all layers. See `hidden_states` under returned tensors for
   more detail.
-- **return_dict** (`bool`, _optional_) --
+- **return_dict** (`bool`, *optional*) --
   Whether or not to return a [ModelOutput](/docs/transformers/master/en/main_classes/output#transformers.file_utils.ModelOutput) instead of a plain tuple.</paramsdesc><paramgroups>0</paramgroups><rettype>[BaseModelOutput](/docs/transformers/master/en/main_classes/output#transformers.modeling_outputs.BaseModelOutput) or `tuple(torch.FloatTensor)`</rettype><retdesc>A [BaseModelOutput](/docs/transformers/master/en/main_classes/output#transformers.modeling_outputs.BaseModelOutput) or a tuple of
 `torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising
 various elements depending on the configuration ([SegformerConfig](/docs/transformers/master/en/model_doc/segformer#transformers.SegformerConfig)) and inputs.
 
 - **last_hidden_state** (`torch.FloatTensor` of shape `(batch_size, sequence_length, hidden_size)`) -- Sequence of hidden-states at the output of the last layer of the model.
-- **hidden_states** (`tuple(torch.FloatTensor)`, _optional_, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer)
+- **hidden_states** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer)
   of shape `(batch_size, sequence_length, hidden_size)`.
 
   Hidden-states of the model at the output of each layer plus the initial embedding outputs.
-- **attentions** (`tuple(torch.FloatTensor)`, _optional_, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+- **attentions** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
 
   Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
   heads.</retdesc></docstring>
@@ -370,28 +370,28 @@ behavior.
   [SegformerFeatureExtractor](/docs/transformers/master/en/model_doc/segformer#transformers.SegformerFeatureExtractor). See
   [transformers.SegformerFeatureExtractor.__call__()](/docs/transformers/master/en/model_doc/segformer#transformers.SegformerFeatureExtractor.__call__) for details.
 
-- **output_attentions** (`bool`, _optional_) --
+- **output_attentions** (`bool`, *optional*) --
   Whether or not to return the attentions tensors of all attention layers. See `attentions` under returned
   tensors for more detail.
-- **output_hidden_states** (`bool`, _optional_) --
+- **output_hidden_states** (`bool`, *optional*) --
   Whether or not to return the hidden states of all layers. See `hidden_states` under returned tensors for
   more detail.
-- **return_dict** (`bool`, _optional_) --
+- **return_dict** (`bool`, *optional*) --
   Whether or not to return a [ModelOutput](/docs/transformers/master/en/main_classes/output#transformers.file_utils.ModelOutput) instead of a plain tuple.
 
-- **labels** (`torch.LongTensor` of shape `(batch_size,)`, _optional_) --
+- **labels** (`torch.LongTensor` of shape `(batch_size,)`, *optional*) --
   Labels for computing the image classification/regression loss. Indices should be in `[0, ..., config.num_labels - 1]`. If `config.num_labels == 1` a regression loss is computed (Mean-Square loss),
   If `config.num_labels > 1` a classification loss is computed (Cross-Entropy).</paramsdesc><paramgroups>0</paramgroups><rettype>[SequenceClassifierOutput](/docs/transformers/master/en/main_classes/output#transformers.modeling_outputs.SequenceClassifierOutput) or `tuple(torch.FloatTensor)`</rettype><retdesc>A [SequenceClassifierOutput](/docs/transformers/master/en/main_classes/output#transformers.modeling_outputs.SequenceClassifierOutput) or a tuple of
 `torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising
 various elements depending on the configuration ([SegformerConfig](/docs/transformers/master/en/model_doc/segformer#transformers.SegformerConfig)) and inputs.
 
-- **loss** (`torch.FloatTensor` of shape `(1,)`, _optional_, returned when `labels` is provided) -- Classification (or regression if config.num_labels==1) loss.
+- **loss** (`torch.FloatTensor` of shape `(1,)`, *optional*, returned when `labels` is provided) -- Classification (or regression if config.num_labels==1) loss.
 - **logits** (`torch.FloatTensor` of shape `(batch_size, config.num_labels)`) -- Classification (or regression if config.num_labels==1) scores (before SoftMax).
-- **hidden_states** (`tuple(torch.FloatTensor)`, _optional_, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer)
+- **hidden_states** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer)
   of shape `(batch_size, sequence_length, hidden_size)`.
 
   Hidden-states of the model at the output of each layer plus the initial embedding outputs.
-- **attentions** (`tuple(torch.FloatTensor)`, _optional_, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+- **attentions** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
 
   Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
   heads.</retdesc></docstring>
@@ -458,28 +458,28 @@ behavior.
   [SegformerFeatureExtractor](/docs/transformers/master/en/model_doc/segformer#transformers.SegformerFeatureExtractor). See
   [transformers.SegformerFeatureExtractor.__call__()](/docs/transformers/master/en/model_doc/segformer#transformers.SegformerFeatureExtractor.__call__) for details.
 
-- **output_attentions** (`bool`, _optional_) --
+- **output_attentions** (`bool`, *optional*) --
   Whether or not to return the attentions tensors of all attention layers. See `attentions` under returned
   tensors for more detail.
-- **output_hidden_states** (`bool`, _optional_) --
+- **output_hidden_states** (`bool`, *optional*) --
   Whether or not to return the hidden states of all layers. See `hidden_states` under returned tensors for
   more detail.
-- **return_dict** (`bool`, _optional_) --
+- **return_dict** (`bool`, *optional*) --
   Whether or not to return a [ModelOutput](/docs/transformers/master/en/main_classes/output#transformers.file_utils.ModelOutput) instead of a plain tuple.
 
-- **labels** (`torch.LongTensor` of shape `(batch_size, height, width)`, _optional_) --
+- **labels** (`torch.LongTensor` of shape `(batch_size, height, width)`, *optional*) --
   Ground truth semantic segmentation maps for computing the loss. Indices should be in `[0, ..., config.num_labels - 1]`. If `config.num_labels > 1`, a classification loss is computed
   (Cross-Entropy).</paramsdesc><paramgroups>0</paramgroups><rettype>[SequenceClassifierOutput](/docs/transformers/master/en/main_classes/output#transformers.modeling_outputs.SequenceClassifierOutput) or `tuple(torch.FloatTensor)`</rettype><retdesc>A [SequenceClassifierOutput](/docs/transformers/master/en/main_classes/output#transformers.modeling_outputs.SequenceClassifierOutput) or a tuple of
 `torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising
 various elements depending on the configuration ([SegformerConfig](/docs/transformers/master/en/model_doc/segformer#transformers.SegformerConfig)) and inputs.
 
-- **loss** (`torch.FloatTensor` of shape `(1,)`, _optional_, returned when `labels` is provided) -- Classification (or regression if config.num_labels==1) loss.
+- **loss** (`torch.FloatTensor` of shape `(1,)`, *optional*, returned when `labels` is provided) -- Classification (or regression if config.num_labels==1) loss.
 - **logits** (`torch.FloatTensor` of shape `(batch_size, config.num_labels)`) -- Classification (or regression if config.num_labels==1) scores (before SoftMax).
-- **hidden_states** (`tuple(torch.FloatTensor)`, _optional_, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer)
+- **hidden_states** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer)
   of shape `(batch_size, sequence_length, hidden_size)`.
 
   Hidden-states of the model at the output of each layer plus the initial embedding outputs.
-- **attentions** (`tuple(torch.FloatTensor)`, _optional_, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+- **attentions** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
 
   Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
   heads.</retdesc></docstring>

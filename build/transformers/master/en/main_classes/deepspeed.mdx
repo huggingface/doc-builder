@@ -191,7 +191,7 @@ TORCH_CUDA_ARCH_LIST="8.6" DS_BUILD_CPU_ADAM=1 DS_BUILD_UTILS=1 pip install . \
 ```
 
 If you intend to use NVMe offload you will need to also include `DS_BUILD_AIO=1` in the instructions above (and also
-install _libaio-dev_ system-wide).
+install *libaio-dev* system-wide).
 
 Edit `TORCH_CUDA_ARCH_LIST` to insert the code for the architectures of the GPU cards you intend to use. Assuming all
 your cards are the same you can get the arch via:
@@ -788,7 +788,7 @@ grouped into buckets of `sub_group_size` and each buckets is updated one at a ti
 ZeRO-Infinity, `sub_group_size` therefore controls the granularity in which model states are moved in and out of CPU
 memory from NVMe during the optimizer step. This prevents running out of CPU memory for extremely large models.
 
-You can leave `sub_group_size` to its default value of _1e9_ when not using NVMe offload. You may want to change its
+You can leave `sub_group_size` to its default value of *1e9* when not using NVMe offload. You may want to change its
 default value in the following cases:
 
 1. Running into OOM during optimizer step: Reduce `sub_group_size` to reduce memory utilization of temporary buffers
@@ -848,7 +848,7 @@ The following configuration example enables NVMe to offload both optimizer state
 
 You can choose to offload both optimizer states and params to NVMe, or just one of them or none. For example, if you
 have copious amounts of CPU memory available, by all means offload to CPU memory only as it'd be faster (hint:
-_"device": "cpu"_).
+*"device": "cpu"*).
 
 Here is the full documentation for offloading [optimizer states](https://www.deepspeed.ai/docs/config-json/#optimizer-offloading) and [parameters](https://www.deepspeed.ai/docs/config-json/#parameter-offloading).
 
@@ -1236,7 +1236,7 @@ Here is an example of the auto-configured `scheduler` entry for `WarmupLR`:
 }
 ```
 
-Since _"auto"_ is used the [Trainer](/docs/transformers/master/en/main_classes/trainer#transformers.Trainer) arguments will set the correct values in the configuration
+Since *"auto"* is used the [Trainer](/docs/transformers/master/en/main_classes/trainer#transformers.Trainer) arguments will set the correct values in the configuration
 file. This is so that there is one definitive source of the values and to avoid hard to find errors when, for example,
 the learning rate is set to different values in different places. Command line rules. The values that get set are:
 
@@ -1527,7 +1527,7 @@ checkpoint_dir = get_last_checkpoint(trainer.args.output_dir)
 fp32_model = load_state_dict_from_zero_checkpoint(trainer.model, checkpoint_dir)
 ```
 
-If you're using the `--load_best_model_at_end` class:_~transformers.TrainingArguments_ argument (to track the best
+If you're using the `--load_best_model_at_end` class:*~transformers.TrainingArguments* argument (to track the best
 checkpoint), then you can finish the training by first saving the final model explicitly and then do the same as above:
 
 ```python
@@ -1546,7 +1546,7 @@ of the training.
 
 </Tip>
 
-Of course, you don't have to use class:_~transformers.Trainer_ and you can adjust the examples above to your own
+Of course, you don't have to use class:*~transformers.Trainer* and you can adjust the examples above to your own
 trainer.
 
 If for some reason you want more refinement, you can also extract the fp32 `state_dict` of the weights and apply
@@ -1583,7 +1583,7 @@ drwxrwxr-x 2 stas stas 4.0K Mar 25 19:52 global_step1/
 -rwxrw-r-- 1 stas stas 5.5K Mar 27 13:16 zero_to_fp32.py*
 ```
 
-In this example there is just one DeepSpeed checkpoint sub-folder _global_step1_. Therefore to reconstruct the fp32
+In this example there is just one DeepSpeed checkpoint sub-folder *global_step1*. Therefore to reconstruct the fp32
 weights just run:
 
 ```bash
@@ -1616,7 +1616,7 @@ circumstances you may find the following information to be needed.
 <h4 id="constructing-massive-models">Constructing Massive Models</h4>
 
 DeepSpeed/ZeRO-3 can handle models with Trillions of parameters which may not fit onto the existing RAM. In such cases,
-but also if you want the initialization to happen much faster, initialize the model using _deepspeed.zero.Init()_
+but also if you want the initialization to happen much faster, initialize the model using *deepspeed.zero.Init()*
 context manager (which is also a function decorator), like so:
 
 ```python
@@ -1631,7 +1631,7 @@ As you can see this gives you a randomly initialized model.
 
 If you want to use a pretrained model, `model_class.from_pretrained` will activate this feature as long as
 `is_deepspeed_zero3_enabled()` returns `True`, which currently is setup by the
-class:_~transformers.TrainingArguments_ object if the passed DeepSpeed configuration file contains ZeRO-3 config
+class:*~transformers.TrainingArguments* object if the passed DeepSpeed configuration file contains ZeRO-3 config
 section. Thus you must create the [TrainingArguments](/docs/transformers/master/en/main_classes/trainer#transformers.TrainingArguments) object **before** calling
 `from_pretrained`. Here is an example of a possible sequence:
 
