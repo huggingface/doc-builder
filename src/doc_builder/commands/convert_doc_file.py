@@ -19,7 +19,13 @@ import re
 from pathlib import Path
 
 from doc_builder.autodoc import is_rst_docstring, remove_example_tags
-from doc_builder.convert_rst_to_mdx import base_rst_to_mdx, convert_rst_to_mdx, find_indent, is_empty_line
+from doc_builder.convert_rst_to_mdx import (
+    apply_min_indent,
+    base_rst_to_mdx,
+    convert_rst_to_mdx,
+    find_indent,
+    is_empty_line,
+)
 
 
 def find_docstring_indent(docstring):
@@ -29,28 +35,6 @@ def find_docstring_indent(docstring):
     for line in docstring.split("\n"):
         if not is_empty_line(line):
             return find_indent(line)
-
-
-def apply_min_indent(text, min_indent):
-    """
-    Make sure all lines in a text are have a minimum indentation.
-
-    Args:
-        text (`str`): The text to treat.
-        min_indent (`int`): The minimal indentation.
-
-    Returns:
-        `str`: The processed text.
-    """
-    lines = text.split("\n")
-    for idx, line in enumerate(lines):
-        if is_empty_line(line):
-            continue
-        indent = find_indent(line)
-        if indent < min_indent:
-            lines[idx] = " " * (min_indent - indent) + line
-
-    return "\n".join(lines)
 
 
 def find_root_git(folder):

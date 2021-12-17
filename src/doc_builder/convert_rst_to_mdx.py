@@ -184,6 +184,28 @@ def parse_options(block_content):
     return result
 
 
+def apply_min_indent(text, min_indent):
+    """
+    Make sure all lines in a text are have a minimum indentation.
+
+    Args:
+        text (`str`): The text to treat.
+        min_indent (`int`): The minimal indentation.
+
+    Returns:
+        `str`: The processed text.
+    """
+    lines = text.split("\n")
+    for idx, line in enumerate(lines):
+        if is_empty_line(line):
+            continue
+        indent = find_indent(line)
+        if indent < min_indent:
+            lines[idx] = " " * (min_indent - indent) + line
+
+    return "\n".join(lines)
+
+
 def convert_rst_blocks(text, page_info):
     """
     Converts rst special blocks (examples, notes) into MDX.
@@ -239,9 +261,11 @@ def convert_rst_blocks(text, page_info):
                 prefix = f"<example>```{block_info}"
                 new_lines.append(f"{prefix}\n{block_content.strip()}\n```\n</example>")
             elif block_type == "note":
-                new_lines.append(f"<Tip>\n\n{block_content.strip()}\n\n</Tip>\n")
+                new_lines.append(apply_min_indent(f"<Tip>\n\n{block_content.strip()}\n\n</Tip>\n", block_indent))
             elif block_type == "warning":
-                new_lines.append("<Tip warning={true}>\n\n" + f"{block_content.strip()}\n\n</Tip>\n")
+                new_lines.append(
+                    apply_min_indent("<Tip warning={true}>\n\n" + f"{block_content.strip()}\n\n</Tip>\n", block_indent)
+                )
             elif block_type == "raw":
                 new_lines.append(block_content.strip() + "\n")
             elif block_type == "math":
