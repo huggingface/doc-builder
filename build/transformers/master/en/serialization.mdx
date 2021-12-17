@@ -137,7 +137,7 @@ Exporting a checkpoint using a ready-made configuration can be done as follows:
 python -m transformers.onnx --model=bert-base-cased onnx/bert-base-cased/
 ```
 
-This exports an ONNX graph of the mentioned checkpoint. Here it is _bert-base-cased_, but it can be any model from the
+This exports an ONNX graph of the mentioned checkpoint. Here it is *bert-base-cased*, but it can be any model from the
 hub, or a local path.
 
 It will be exported under `onnx/bert-base-cased`. You should see similar logs:
@@ -216,9 +216,9 @@ indicates the axis of that output.
 Once this is done, a single step remains: adding this configuration object to the initialisation of the model class,
 and to the general `transformers` initialisation.
 
-An important fact to notice is the use of _OrderedDict_ in both inputs and outputs properties. This is a requirements
-as inputs are matched against their relative position within the _PreTrainedModel.forward()_ prototype and outputs are
-match against there position in the returned _BaseModelOutputX_ instance.
+An important fact to notice is the use of *OrderedDict* in both inputs and outputs properties. This is a requirements
+as inputs are matched against their relative position within the *PreTrainedModel.forward()* prototype and outputs are
+match against there position in the returned *BaseModelOutputX* instance.
 
 An example of such an addition is visible here, for the MBart model: [Making MBART ONNX-convertible](https://github.com/huggingface/transformers/pull/13049/commits/d097adcebd89a520f04352eb215a85916934204f)
 
@@ -233,7 +233,7 @@ The approach detailed here is bing deprecated. We recommend you follow the part 
 
 </Tip>
 
-Exporting a model is done through the script _convert_graph_to_onnx.py_ at the root of the transformers sources. The
+Exporting a model is done through the script *convert_graph_to_onnx.py* at the root of the transformers sources. The
 following command shows how easy it is to export a BERT model from the library, simply run:
 
 ```bash
@@ -301,28 +301,28 @@ For more information about the optimizations enabled by ONNXRuntime, please have
 ONNX exporter supports generating a quantized version of the model to allow efficient inference.
 
 Quantization works by converting the memory representation of the parameters in the neural network to a compact integer
-format. By default, weights of a neural network are stored as single-precision float (_float32_) which can express a
+format. By default, weights of a neural network are stored as single-precision float (*float32*) which can express a
 wide-range of floating-point numbers with decent precision. These properties are especially interesting at training
 where you want fine-grained representation.
 
 On the other hand, after the training phase, it has been shown one can greatly reduce the range and the precision of
-_float32_ numbers without changing the performances of the neural network.
+*float32* numbers without changing the performances of the neural network.
 
-More technically, _float32_ parameters are converted to a type requiring fewer bits to represent each number, thus
-reducing the overall size of the model. Here, we are enabling _float32_ mapping to _int8_ values (a non-floating,
+More technically, *float32* parameters are converted to a type requiring fewer bits to represent each number, thus
+reducing the overall size of the model. Here, we are enabling *float32* mapping to *int8* values (a non-floating,
 single byte, number representation) according to the following formula:
 
 $$y_&amp;lcub;float32} = scale * x_&amp;lcub;int8} - zero\_point$$
 
 <Tip>
 
-The quantization process will infer the parameter _scale_ and _zero_point_ from the neural network parameters
+The quantization process will infer the parameter *scale* and *zero_point* from the neural network parameters
 
 </Tip>
 
 Leveraging tiny-integers has numerous advantages when it comes to inference:
 
-- Storing fewer bits instead of 32 bits for the _float32_ reduces the size of the model and makes it load faster.
+- Storing fewer bits instead of 32 bits for the *float32* reduces the size of the model and makes it load faster.
 - Integer operations execute a magnitude faster on modern hardware
 - Integer operations require less power to do the computations
 
@@ -345,7 +345,7 @@ Quantization support requires ONNX Runtime >= 1.4.0
 <Tip>
 
 When exporting quantized model you will end up with two different ONNX files. The one specified at the end of the
-above command will contain the original ONNX model storing _float32_ weights. The second one, with `-quantized`
+above command will contain the original ONNX model storing *float32* weights. The second one, with `-quantized`
 suffix, will hold the quantized parameters.
 
 </Tip>
@@ -453,7 +453,7 @@ model = BertModel(config)
 # The model needs to be in evaluation mode
 model.eval()
 
-# If you are instantiating the model with _from_pretrained_ you can also easily set the TorchScript flag
+# If you are instantiating the model with *from_pretrained* you can also easily set the TorchScript flag
 model = BertModel.from_pretrained("bert-base-uncased", torchscript=True)
 
 # Creating the trace

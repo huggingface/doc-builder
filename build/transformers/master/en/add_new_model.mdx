@@ -127,7 +127,7 @@ model.config  # model has access to its config
 
 Similar to the model, the configuration inherits basic serialization and deserialization functionalities from
 [PretrainedConfig](/docs/transformers/master/en/main_classes/configuration#transformers.PretrainedConfig). Note that the configuration and the model are always serialized into two
-different formats - the model to a _pytorch_model.bin_ file and the configuration to a _config.json_ file. Calling
+different formats - the model to a *pytorch_model.bin* file and the configuration to a *config.json* file. Calling
 [save_pretrained()](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel.save_pretrained) will automatically call
 [save_pretrained()](/docs/transformers/master/en/main_classes/configuration#transformers.PretrainedConfig.save_pretrained), so that both model and configuration are saved.
 
@@ -271,8 +271,8 @@ figure out the following:
 -  Be able to locate the important components of the model: Where is the model's class? Are there model sub-classes,
   *e.g.* EncoderModel, DecoderModel? Where is the self-attention layer? Are there multiple different attention layers,
   *e.g.* *self-attention*, *cross-attention*...?
--  How can you debug the model in the original environment of the repo? Do you have to add _print_ statements, can you
-  work with an interactive debugger like _ipdb_, or should you use an efficient IDE to debug the model, like PyCharm?
+-  How can you debug the model in the original environment of the repo? Do you have to add *print* statements, can you
+  work with an interactive debugger like *ipdb*, or should you use an efficient IDE to debug the model, like PyCharm?
 
 It is very important that before you start the porting process, that you can **efficiently** debug code in the original
 repository! Also, remember that you are working with an open-source library, so do not hesitate to open an issue, or
@@ -394,13 +394,13 @@ important. Here is some advice is to make your debugging environment as efficien
   find the function in the original repository that **only** calls a single forward pass, *i.e.* that is often called
   `predict`, `evaluate`, `forward` or `__call__`. You don't want to debug a function that calls `forward`
   multiple times, *e.g.* to generate text, like `autoregressive_sample`, `generate`.
--  Try to separate the tokenization from the model's _forward_ pass. If the original repository shows examples where
+-  Try to separate the tokenization from the model's *forward* pass. If the original repository shows examples where
   you have to input a string, then try to find out where in the forward call the string input is changed to input ids
   and start from this point. This might mean that you have to possibly write a small script yourself or change the
   original code so that you can directly input the ids instead of an input string.
 -  Make sure that the model in your debugging setup is **not** in training mode, which often causes the model to yield
   random outputs due to multiple dropout layers in the model. Make sure that the forward pass in your debugging
-  environment is **deterministic** so that the dropout layers are not used. Or use _transformers.file_utils.set_seed_
+  environment is **deterministic** so that the dropout layers are not used. Or use *transformers.file_utils.set_seed*
   if the old and new implementations are in the same framework.
 
 The following section gives you more specific details/tips on how you can do this for *brand_new_bert*.
@@ -667,7 +667,7 @@ output = model(input_ids).last_hidden_states
 It is very likely that the 🤗 Transformers implementation and the original model implementation don't give the exact
 same output the very first time or that the forward pass throws an error. Don't be disappointed - it's expected! First,
 you should make sure that the forward pass doesn't throw any errors. It often happens that the wrong dimensions are
-used leading to a _Dimensionality mismatch_ error or that the wrong data type object is used, *e.g.* `torch.long`
+used leading to a *Dimensionality mismatch* error or that the wrong data type object is used, *e.g.* `torch.long`
 instead of `torch.float32`. Don't hesitate to ask the Hugging Face team for help, if you don't manage to solve
 certain errors.
 
@@ -677,11 +677,11 @@ equivalent to a precision of `1e-3`. First, you should ensure that the output sh
 implementation. Next, you should make sure that the output values are identical as well. This one of the most difficult
 parts of adding a new model. Common mistakes why the outputs are not identical are:
 
--  Some layers were not added, *i.e.* an _activation_ layer was not added, or the residual connection was forgotten
+-  Some layers were not added, *i.e.* an *activation* layer was not added, or the residual connection was forgotten
 -  The word embedding matrix was not tied
 -  The wrong positional embeddings are used because the original implementation uses on offset
--  Dropout is applied during the forward pass. To fix this make sure _model.training is False_ and that no dropout
-  layer is falsely activated during the forward pass, *i.e.* pass _self.training_ to [PyTorch's functional dropout](https://pytorch.org/docs/stable/nn.functional.html?highlight=dropout#torch.nn.functional.dropout)
+-  Dropout is applied during the forward pass. To fix this make sure *model.training is False* and that no dropout
+  layer is falsely activated during the forward pass, *i.e.* pass *self.training* to [PyTorch's functional dropout](https://pytorch.org/docs/stable/nn.functional.html?highlight=dropout#torch.nn.functional.dropout)
 
 The best way to fix the problem is usually to look at the forward pass of the original implementation and the 🤗
 Transformers implementation side-by-side and check if there are any differences. Ideally, you should debug/print out
