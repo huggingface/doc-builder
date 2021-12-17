@@ -42,7 +42,7 @@ def convert_rst_formatting(text):
     # Remove :math: markers.
     text = _re_math.sub(r"\\\\(\1\\\\)", text)
     # Convert content in single backquotes to italic.
-    text = _re_single_backquotes.sub(r"\1_\2_\3", text)
+    text = _re_single_backquotes.sub(r"\1*\2*\3", text)
     # Convert content in double backquotes to single backquotes.
     text = _re_double_backquotes.sub(r"\1`\2`\3", text)
     # Remove remaining ::
@@ -468,7 +468,7 @@ def remove_indent(text):
     return "\n".join(lines)
 
 
-def base_rst_to_mdx(text, page_info):
+def base_rst_to_mdx(text, page_info, unindent=True):
     """
     Convert a text from rst to mdx, with the base operations necessary for both docstrings and rst docs.
     """
@@ -478,7 +478,7 @@ def base_rst_to_mdx(text, page_info):
     # Convert * in lists to - to avoid the formatting conversion treat them as bold.
     text = re.sub(r"^(\s*)\*(\s)", r"\1-\2", text, flags=re.MULTILINE)
     text = convert_rst_formatting(text)
-    return remove_indent(text)
+    return remove_indent(text) if unindent else text
 
 
 def convert_rst_docstring_to_mdx(docstring, page_info):
