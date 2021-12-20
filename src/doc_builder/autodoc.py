@@ -159,6 +159,9 @@ def get_signature_component(name, anchor, signature, object_doc, source_link):
                 match = _match
         return object_doc, match
 
+    if anchor == "transformers.BertForPreTraining.forward":
+        print(object_doc)
+
     object_doc = _re_returns.sub(lambda m: inside_example_finder_closure(m, "returns"), object_doc)
     object_doc = _re_parameters.sub(lambda m: inside_example_finder_closure(m, "parameters"), object_doc)
 
@@ -258,10 +261,15 @@ def document_object(object_name, package, page_info, full_name=True):
     signature = format_signature(obj)
     if getattr(obj, "__doc__", None) is not None and len(obj.__doc__) > 0:
         object_doc = obj.__doc__
+        if anchor_name == "transformers.BertForPreTraining.forward":
+            print(object_doc)
         if is_rst_docstring(object_doc):
             object_doc = convert_rst_docstring_to_mdx(obj.__doc__, page_info)
         else:
             object_doc = convert_md_docstring_to_mdx(obj.__doc__, page_info)
+        
+        if anchor_name == "transformers.BertForPreTraining.forward":
+            print(object_doc)
         source_link = get_source_link(obj, page_info)
         component = get_signature_component(signature_name, anchor_name, signature, object_doc, source_link)
         documentation += "\n" + component + "\n"
