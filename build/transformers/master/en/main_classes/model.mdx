@@ -68,7 +68,7 @@ for text generation, [GenerationMixin](/docs/transformers/master/en/main_classes
 
 <div class="docstring">
 
-<docstring><name>class transformers.PreTrainedModel</name><anchor>transformers.PreTrainedModel</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/modeling_utils.py#L415</source><parameters>[{"name": "config", "val": ": PretrainedConfig"}, {"name": "*inputs", "val": ""}, {"name": "**kwargs", "val": ""}]</parameters></docstring>
+<docstring><name>class transformers.PreTrainedModel</name><anchor>transformers.PreTrainedModel</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/modeling_utils.py#L413</source><parameters>[{"name": "config", "val": ": PretrainedConfig"}, {"name": "*inputs", "val": ""}, {"name": "**kwargs", "val": ""}]</parameters></docstring>
 
 Base class for all models.
 
@@ -94,6 +94,8 @@ Class attributes (overridden by derived classes):
 - **base_model_prefix** (`str`) -- A string indicating the attribute associated to the base model in
   derived classes of the same architecture adding modules on top of the base model.
 - **is_parallelizable** (`bool`) -- A flag indicating whether this model supports model parallelization.
+- **main_input_name** (`str`) -- The name of the principal input to the model (often `input_ids` for
+  NLP models, `pixel_values` for vision models and `input_values` for speech models).
 
 
 
@@ -155,7 +157,7 @@ model.push_to_hub("my-finetuned-bert", repo_url="https://huggingface.co/sgugger/
 
 </div>
 <div class="docstring">
-<docstring><name>from\_pretrained</name><anchor>transformers.PreTrainedModel.from_pretrained</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/modeling_utils.py#L1076</source><parameters>[{"name": "pretrained_model_name_or_path", "val": ": typing.Union[str, os.PathLike, NoneType]"}, {"name": "*model_args", "val": ""}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **pretrained_model_name_or_path** (`str` or `os.PathLike`, *optional*) --
+<docstring><name>from\_pretrained</name><anchor>transformers.PreTrainedModel.from_pretrained</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/modeling_utils.py#L1078</source><parameters>[{"name": "pretrained_model_name_or_path", "val": ": typing.Union[str, os.PathLike, NoneType]"}, {"name": "*model_args", "val": ""}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **pretrained_model_name_or_path** (`str` or `os.PathLike`, *optional*) --
   Can be either:
 
   - A string, the *model id* of a pretrained model hosted inside a model repo on huggingface.co.
@@ -311,7 +313,7 @@ Examples:
 
 </div>
 <div class="docstring">
-<docstring><name>get\_input\_embeddings</name><anchor>transformers.PreTrainedModel.get_input_embeddings</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/modeling_utils.py#L564</source><parameters>[]</parameters><rettype>`nn.Module`</rettype><retdesc>A torch module mapping vocabulary to hidden states.</retdesc></docstring>
+<docstring><name>get\_input\_embeddings</name><anchor>transformers.PreTrainedModel.get_input_embeddings</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/modeling_utils.py#L566</source><parameters>[]</parameters><rettype>`nn.Module`</rettype><retdesc>A torch module mapping vocabulary to hidden states.</retdesc></docstring>
 
 Returns the model's input embeddings.
 
@@ -322,7 +324,7 @@ Returns the model's input embeddings.
 
 </div>
 <div class="docstring">
-<docstring><name>get\_output\_embeddings</name><anchor>transformers.PreTrainedModel.get_output_embeddings</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/modeling_utils.py#L590</source><parameters>[]</parameters><rettype>`nn.Module`</rettype><retdesc>A torch module mapping hidden states to vocabulary.</retdesc></docstring>
+<docstring><name>get\_output\_embeddings</name><anchor>transformers.PreTrainedModel.get_output_embeddings</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/modeling_utils.py#L592</source><parameters>[]</parameters><rettype>`nn.Module`</rettype><retdesc>A torch module mapping hidden states to vocabulary.</retdesc></docstring>
 
 Returns the model's output embeddings.
 
@@ -333,7 +335,7 @@ Returns the model's output embeddings.
 
 </div>
 <div class="docstring">
-<docstring><name>gradient\_checkpointing\_disable</name><anchor>transformers.PreTrainedModel.gradient_checkpointing_disable</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/modeling_utils.py#L970</source><parameters>[]</parameters></docstring>
+<docstring><name>gradient\_checkpointing\_disable</name><anchor>transformers.PreTrainedModel.gradient_checkpointing_disable</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/modeling_utils.py#L972</source><parameters>[]</parameters></docstring>
 
         Deactivates gradient checkpointing for the current model.
 
@@ -343,7 +345,7 @@ Returns the model's output embeddings.
 
 </div>
 <div class="docstring">
-<docstring><name>gradient\_checkpointing\_enable</name><anchor>transformers.PreTrainedModel.gradient_checkpointing_enable</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/modeling_utils.py#L959</source><parameters>[]</parameters></docstring>
+<docstring><name>gradient\_checkpointing\_enable</name><anchor>transformers.PreTrainedModel.gradient_checkpointing_enable</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/modeling_utils.py#L961</source><parameters>[]</parameters></docstring>
 
         Activates gradient checkpointing for the current model.
 
@@ -353,14 +355,14 @@ Returns the model's output embeddings.
 
 </div>
 <div class="docstring">
-<docstring><name>init\_weights</name><anchor>transformers.PreTrainedModel.init_weights</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/modeling_utils.py#L926</source><parameters>[]</parameters></docstring>
+<docstring><name>init\_weights</name><anchor>transformers.PreTrainedModel.init_weights</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/modeling_utils.py#L928</source><parameters>[]</parameters></docstring>
 
         If needed prunes and maybe initializes weights.
         
 
 </div>
 <div class="docstring">
-<docstring><name>post\_init</name><anchor>transformers.PreTrainedModel.post_init</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/modeling_utils.py#L483</source><parameters>[]</parameters></docstring>
+<docstring><name>post\_init</name><anchor>transformers.PreTrainedModel.post_init</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/modeling_utils.py#L485</source><parameters>[]</parameters></docstring>
 
         A method executed at the end of each Transformer model initialization, to execute code that needs the model's
         modules properly initialized (such as weight initialization).
@@ -368,7 +370,7 @@ Returns the model's output embeddings.
 
 </div>
 <div class="docstring">
-<docstring><name>prune\_heads</name><anchor>transformers.PreTrainedModel.prune_heads</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/modeling_utils.py#L942</source><parameters>[{"name": "heads_to_prune", "val": ": typing.Dict[int, typing.List[int]]"}]</parameters><paramsdesc>- **heads_to_prune** (`Dict[int, List[int]]`) --
+<docstring><name>prune\_heads</name><anchor>transformers.PreTrainedModel.prune_heads</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/modeling_utils.py#L944</source><parameters>[{"name": "heads_to_prune", "val": ": typing.Dict[int, typing.List[int]]"}]</parameters><paramsdesc>- **heads_to_prune** (`Dict[int, List[int]]`) --
   Dictionary with keys being selected layer indices (`int`) and associated values being the list of
   heads to prune in said layer (list of `int`). For instance &amp;lcub;1: [0, 2], 2: [2, 3]} will prune heads
   0 and 2 on layer 1 and heads 2 and 3 on layer 2.</paramsdesc><paramgroups>0</paramgroups></docstring>
@@ -380,7 +382,7 @@ Prunes heads of the base model.
 
 </div>
 <div class="docstring">
-<docstring><name>resize\_token\_embeddings</name><anchor>transformers.PreTrainedModel.resize_token_embeddings</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/modeling_utils.py#L718</source><parameters>[{"name": "new_num_tokens", "val": ": typing.Optional[int] = None"}]</parameters><paramsdesc>- **new_num_tokens** (`int`, *optional*) --
+<docstring><name>resize\_token\_embeddings</name><anchor>transformers.PreTrainedModel.resize_token_embeddings</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/modeling_utils.py#L720</source><parameters>[{"name": "new_num_tokens", "val": ": typing.Optional[int] = None"}]</parameters><paramsdesc>- **new_num_tokens** (`int`, *optional*) --
   The number of new tokens in the embedding matrix. Increasing the size will add newly initialized
   vectors at the end. Reducing the size will remove vectors from the end. If not provided or `None`,
   just returns a pointer to the input tokens `torch.nn.Embedding` module of the model without doing
@@ -399,7 +401,7 @@ Takes care of tying weights embeddings afterwards if the model class has a `tie_
 
 </div>
 <div class="docstring">
-<docstring><name>save\_pretrained</name><anchor>transformers.PreTrainedModel.save_pretrained</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/modeling_utils.py#L990</source><parameters>[{"name": "save_directory", "val": ": typing.Union[str, os.PathLike]"}, {"name": "save_config", "val": ": bool = True"}, {"name": "state_dict", "val": ": typing.Optional[dict] = None"}, {"name": "save_function", "val": ": typing.Callable = <function save at 0x7f88dfef3430>"}, {"name": "push_to_hub", "val": ": bool = False"}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **save_directory** (`str` or `os.PathLike`) --
+<docstring><name>save\_pretrained</name><anchor>transformers.PreTrainedModel.save_pretrained</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/modeling_utils.py#L992</source><parameters>[{"name": "save_directory", "val": ": typing.Union[str, os.PathLike]"}, {"name": "save_config", "val": ": bool = True"}, {"name": "state_dict", "val": ": typing.Optional[dict] = None"}, {"name": "save_function", "val": ": typing.Callable = <function save at 0x7f6c00818430>"}, {"name": "push_to_hub", "val": ": bool = False"}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **save_directory** (`str` or `os.PathLike`) --
   Directory to which to save. Will be created if it doesn't exist.
 - **save_config** (`bool`, *optional*, defaults to `True`) --
   Whether or not to save the config of the model. Useful when in distributed training like TPUs and need
@@ -436,7 +438,7 @@ Save a model and its configuration file to a directory, so that it can be re-loa
 
 </div>
 <div class="docstring">
-<docstring><name>set\_input\_embeddings</name><anchor>transformers.PreTrainedModel.set_input_embeddings</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/modeling_utils.py#L577</source><parameters>[{"name": "value", "val": ": Module"}]</parameters><paramsdesc>- **value** (`nn.Module`) -- A module mapping vocabulary to hidden states.</paramsdesc><paramgroups>0</paramgroups></docstring>
+<docstring><name>set\_input\_embeddings</name><anchor>transformers.PreTrainedModel.set_input_embeddings</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/modeling_utils.py#L579</source><parameters>[{"name": "value", "val": ": Module"}]</parameters><paramsdesc>- **value** (`nn.Module`) -- A module mapping vocabulary to hidden states.</paramsdesc><paramgroups>0</paramgroups></docstring>
 
 Set model's input embeddings.
 
@@ -445,7 +447,7 @@ Set model's input embeddings.
 
 </div>
 <div class="docstring">
-<docstring><name>tie\_weights</name><anchor>transformers.PreTrainedModel.tie_weights</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/modeling_utils.py#L605</source><parameters>[]</parameters></docstring>
+<docstring><name>tie\_weights</name><anchor>transformers.PreTrainedModel.tie_weights</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/modeling_utils.py#L607</source><parameters>[]</parameters></docstring>
 
 Tie the weights between the input embeddings and the output embeddings.
 
@@ -489,14 +491,14 @@ Due to Pytorch design, this functionality is only available for floating dtypes.
 
 <div class="docstring">
 
-<docstring><name>class transformers.modeling\_utils.ModuleUtilsMixin</name><anchor>transformers.modeling_utils.ModuleUtilsMixin</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/modeling_utils.py#L145</source><parameters>[]</parameters></docstring>
+<docstring><name>class transformers.modeling\_utils.ModuleUtilsMixin</name><anchor>transformers.modeling_utils.ModuleUtilsMixin</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/modeling_utils.py#L144</source><parameters>[]</parameters></docstring>
 
 A few utilities for `torch.nn.Modules`, to be used as a mixin.
 
 
 
 <div class="docstring">
-<docstring><name>add\_memory\_hooks</name><anchor>transformers.modeling_utils.ModuleUtilsMixin.add_memory_hooks</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/modeling_utils.py#L176</source><parameters>[]</parameters></docstring>
+<docstring><name>add\_memory\_hooks</name><anchor>transformers.modeling_utils.ModuleUtilsMixin.add_memory_hooks</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/modeling_utils.py#L175</source><parameters>[]</parameters></docstring>
 
 Add a memory hook before and after each sub-module forward pass to record increase in memory consumption.
 
@@ -506,7 +508,7 @@ zero with `model.reset_memory_hooks_state()`.
 
 </div>
 <div class="docstring">
-<docstring><name>estimate\_tokens</name><anchor>transformers.modeling_utils.ModuleUtilsMixin.estimate_tokens</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/modeling_utils.py#L369</source><parameters>[{"name": "input_dict", "val": ": typing.Dict[str, typing.Union[torch.Tensor, typing.Any]]"}]</parameters><paramsdesc>- **inputs** (`dict`) -- The model inputs.</paramsdesc><paramgroups>0</paramgroups><rettype>`int`</rettype><retdesc>The total number of tokens.</retdesc></docstring>
+<docstring><name>estimate\_tokens</name><anchor>transformers.modeling_utils.ModuleUtilsMixin.estimate_tokens</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/modeling_utils.py#L368</source><parameters>[{"name": "input_dict", "val": ": typing.Dict[str, typing.Union[torch.Tensor, typing.Any]]"}]</parameters><paramsdesc>- **inputs** (`dict`) -- The model inputs.</paramsdesc><paramgroups>0</paramgroups><rettype>`int`</rettype><retdesc>The total number of tokens.</retdesc></docstring>
 
 Helper function to estimate the total number of tokens from the model inputs.
 
@@ -519,7 +521,7 @@ Helper function to estimate the total number of tokens from the model inputs.
 
 </div>
 <div class="docstring">
-<docstring><name>floating\_point\_ops</name><anchor>transformers.modeling_utils.ModuleUtilsMixin.floating_point_ops</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/modeling_utils.py#L388</source><parameters>[{"name": "input_dict", "val": ": typing.Dict[str, typing.Union[torch.Tensor, typing.Any]]"}, {"name": "exclude_embeddings", "val": ": bool = True"}]</parameters><paramsdesc>- **batch_size** (`int`) --
+<docstring><name>floating\_point\_ops</name><anchor>transformers.modeling_utils.ModuleUtilsMixin.floating_point_ops</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/modeling_utils.py#L386</source><parameters>[{"name": "input_dict", "val": ": typing.Dict[str, typing.Union[torch.Tensor, typing.Any]]"}, {"name": "exclude_embeddings", "val": ": bool = True"}]</parameters><paramsdesc>- **batch_size** (`int`) --
   The batch size for the forward pass.
 
 - **sequence_length** (`int`) --
@@ -542,7 +544,7 @@ re-use e.g. Albert or Universal Transformers, or if doing long-range modeling wi
 
 </div>
 <div class="docstring">
-<docstring><name>get\_extended\_attention\_mask</name><anchor>transformers.modeling_utils.ModuleUtilsMixin.get_extended_attention_mask</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/modeling_utils.py#L245</source><parameters>[{"name": "attention_mask", "val": ": Tensor"}, {"name": "input_shape", "val": ": typing.Tuple[int]"}, {"name": "device", "val": ": <property object at 0x7f887bc55180>"}]</parameters><paramsdesc>- **attention_mask** (`torch.Tensor`) --
+<docstring><name>get\_extended\_attention\_mask</name><anchor>transformers.modeling_utils.ModuleUtilsMixin.get_extended_attention_mask</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/modeling_utils.py#L244</source><parameters>[{"name": "attention_mask", "val": ": Tensor"}, {"name": "input_shape", "val": ": typing.Tuple[int]"}, {"name": "device", "val": ": <property object at 0x7f6b9c5eb270>"}]</parameters><paramsdesc>- **attention_mask** (`torch.Tensor`) --
   Mask with ones indicating tokens to attend to, zeros for tokens to ignore.
 - **input_shape** (`Tuple[int]`) --
   The shape of the input to the model.
@@ -558,7 +560,7 @@ Makes broadcastable attention and causal masks so that future and masked tokens 
 
 </div>
 <div class="docstring">
-<docstring><name>get\_head\_mask</name><anchor>transformers.modeling_utils.ModuleUtilsMixin.get_head_mask</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/modeling_utils.py#L305</source><parameters>[{"name": "head_mask", "val": ": typing.Optional[torch.Tensor]"}, {"name": "num_hidden_layers", "val": ": int"}, {"name": "is_attention_chunked", "val": ": bool = False"}]</parameters><paramsdesc>- **head_mask** (`torch.Tensor` with shape `[num_heads]` or `[num_hidden_layers x num_heads]`, *optional*) --
+<docstring><name>get\_head\_mask</name><anchor>transformers.modeling_utils.ModuleUtilsMixin.get_head_mask</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/modeling_utils.py#L304</source><parameters>[{"name": "head_mask", "val": ": typing.Optional[torch.Tensor]"}, {"name": "num_hidden_layers", "val": ": int"}, {"name": "is_attention_chunked", "val": ": bool = False"}]</parameters><paramsdesc>- **head_mask** (`torch.Tensor` with shape `[num_heads]` or `[num_hidden_layers x num_heads]`, *optional*) --
   The mask indicating if we should keep the heads or not (1.0 for keep, 0.0 for discard).
 - **num_hidden_layers** (`int`) --
   The number of hidden layers in the model.
@@ -575,7 +577,7 @@ Prepare the head mask if needed.
 
 </div>
 <div class="docstring">
-<docstring><name>invert\_attention\_mask</name><anchor>transformers.modeling_utils.ModuleUtilsMixin.invert_attention_mask</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/modeling_utils.py#L213</source><parameters>[{"name": "encoder_attention_mask", "val": ": Tensor"}]</parameters><paramsdesc>- **encoder_attention_mask** (`torch.Tensor`) -- An attention mask.</paramsdesc><paramgroups>0</paramgroups><rettype>`torch.Tensor`</rettype><retdesc>The inverted attention mask.</retdesc></docstring>
+<docstring><name>invert\_attention\_mask</name><anchor>transformers.modeling_utils.ModuleUtilsMixin.invert_attention_mask</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/modeling_utils.py#L212</source><parameters>[{"name": "encoder_attention_mask", "val": ": Tensor"}]</parameters><paramsdesc>- **encoder_attention_mask** (`torch.Tensor`) -- An attention mask.</paramsdesc><paramgroups>0</paramgroups><rettype>`torch.Tensor`</rettype><retdesc>The inverted attention mask.</retdesc></docstring>
 
 Invert an attention mask (e.g., switches 0. and 1.).
 
@@ -588,7 +590,7 @@ Invert an attention mask (e.g., switches 0. and 1.).
 
 </div>
 <div class="docstring">
-<docstring><name>num\_parameters</name><anchor>transformers.modeling_utils.ModuleUtilsMixin.num_parameters</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/modeling_utils.py#L343</source><parameters>[{"name": "only_trainable", "val": ": bool = False"}, {"name": "exclude_embeddings", "val": ": bool = False"}]</parameters><paramsdesc>- **only_trainable** (`bool`, *optional*, defaults to `False`) --
+<docstring><name>num\_parameters</name><anchor>transformers.modeling_utils.ModuleUtilsMixin.num_parameters</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/modeling_utils.py#L342</source><parameters>[{"name": "only_trainable", "val": ": bool = False"}, {"name": "exclude_embeddings", "val": ": bool = False"}]</parameters><paramsdesc>- **only_trainable** (`bool`, *optional*, defaults to `False`) --
   Whether or not to return only the number of trainable parameters
 
 - **exclude_embeddings** (`bool`, *optional*, defaults to `False`) --
@@ -605,7 +607,7 @@ Get number of (optionally, trainable or non-embeddings) parameters in the module
 
 </div>
 <div class="docstring">
-<docstring><name>reset\_memory\_hooks\_state</name><anchor>transformers.modeling_utils.ModuleUtilsMixin.reset_memory_hooks_state</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/modeling_utils.py#L188</source><parameters>[]</parameters></docstring>
+<docstring><name>reset\_memory\_hooks\_state</name><anchor>transformers.modeling_utils.ModuleUtilsMixin.reset_memory_hooks_state</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/modeling_utils.py#L187</source><parameters>[]</parameters></docstring>
 
 Reset the `mem_rss_diff` attribute of each module (see
 [add_memory_hooks()](/docs/transformers/master/en/main_classes/model#transformers.modeling_utils.ModuleUtilsMixin.add_memory_hooks)).
@@ -633,6 +635,8 @@ Class attributes (overridden by derived classes):
   [PretrainedConfig](/docs/transformers/master/en/main_classes/configuration#transformers.PretrainedConfig) to use as configuration class for this model architecture.
 - **base_model_prefix** (`str`) -- A string indicating the attribute associated to the base model in
   derived classes of the same architecture adding modules on top of the base model.
+- **main_input_name** (`str`) -- The name of the principal input to the model (often `input_ids` for
+  NLP models, `pixel_values` for vision models and `input_values` for speech models).
 
 
 
@@ -694,7 +698,7 @@ model.push_to_hub("my-finetuned-bert", repo_url="https://huggingface.co/sgugger/
 
 </div>
 <div class="docstring">
-<docstring><name>compile</name><anchor>transformers.TFPreTrainedModel.compile</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/modeling_tf_utils.py#L826</source><parameters>[{"name": "optimizer", "val": " = 'rmsprop'"}, {"name": "loss", "val": " = 'passthrough'"}, {"name": "metrics", "val": " = None"}, {"name": "loss_weights", "val": " = None"}, {"name": "weighted_metrics", "val": " = None"}, {"name": "run_eagerly", "val": " = None"}, {"name": "steps_per_execution", "val": " = None"}, {"name": "**kwargs", "val": ""}]</parameters></docstring>
+<docstring><name>compile</name><anchor>transformers.TFPreTrainedModel.compile</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/modeling_tf_utils.py#L830</source><parameters>[{"name": "optimizer", "val": " = 'rmsprop'"}, {"name": "loss", "val": " = 'passthrough'"}, {"name": "metrics", "val": " = None"}, {"name": "loss_weights", "val": " = None"}, {"name": "weighted_metrics", "val": " = None"}, {"name": "run_eagerly", "val": " = None"}, {"name": "steps_per_execution", "val": " = None"}, {"name": "**kwargs", "val": ""}]</parameters></docstring>
 
         This is a thin wrapper that sets the model's loss output head as the loss if the user does not specify a loss
         function themselves.
@@ -702,7 +706,7 @@ model.push_to_hub("my-finetuned-bert", repo_url="https://huggingface.co/sgugger/
 
 </div>
 <div class="docstring">
-<docstring><name>from\_pretrained</name><anchor>transformers.TFPreTrainedModel.from_pretrained</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/modeling_tf_utils.py#L1351</source><parameters>[{"name": "pretrained_model_name_or_path", "val": ""}, {"name": "*model_args", "val": ""}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **pretrained_model_name_or_path** (`str`, *optional*) --
+<docstring><name>from\_pretrained</name><anchor>transformers.TFPreTrainedModel.from_pretrained</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/modeling_tf_utils.py#L1355</source><parameters>[{"name": "pretrained_model_name_or_path", "val": ""}, {"name": "*model_args", "val": ""}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **pretrained_model_name_or_path** (`str`, *optional*) --
   Can be either:
 
   - A string, the *model id* of a pretrained model hosted inside a model repo on huggingface.co.
@@ -816,7 +820,7 @@ Examples:
 
 </div>
 <div class="docstring">
-<docstring><name>get\_bias</name><anchor>transformers.TFPreTrainedModel.get_bias</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/modeling_tf_utils.py#L1045</source><parameters>[]</parameters><rettype>`tf.Variable`</rettype><retdesc>The weights representing the bias, None if not an LM model.</retdesc></docstring>
+<docstring><name>get\_bias</name><anchor>transformers.TFPreTrainedModel.get_bias</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/modeling_tf_utils.py#L1049</source><parameters>[]</parameters><rettype>`tf.Variable`</rettype><retdesc>The weights representing the bias, None if not an LM model.</retdesc></docstring>
 
 Dict of bias attached to an LM head. The key represents the name of the bias attribute.
 
@@ -827,7 +831,7 @@ Dict of bias attached to an LM head. The key represents the name of the bias att
 
 </div>
 <div class="docstring">
-<docstring><name>get\_input\_embeddings</name><anchor>transformers.TFPreTrainedModel.get_input_embeddings</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/modeling_tf_utils.py#L745</source><parameters>[]</parameters><rettype>`tf.Variable`</rettype><retdesc>The embeddings layer mapping vocabulary to hidden states.</retdesc></docstring>
+<docstring><name>get\_input\_embeddings</name><anchor>transformers.TFPreTrainedModel.get_input_embeddings</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/modeling_tf_utils.py#L749</source><parameters>[]</parameters><rettype>`tf.Variable`</rettype><retdesc>The embeddings layer mapping vocabulary to hidden states.</retdesc></docstring>
 
 Returns the model's input embeddings layer.
 
@@ -838,7 +842,7 @@ Returns the model's input embeddings layer.
 
 </div>
 <div class="docstring">
-<docstring><name>get\_lm\_head</name><anchor>transformers.TFPreTrainedModel.get_lm_head</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/modeling_tf_utils.py#L1078</source><parameters>[]</parameters><rettype>`tf.keras.layers.Layer`</rettype><retdesc>The LM head layer if the model has one, None if not.</retdesc></docstring>
+<docstring><name>get\_lm\_head</name><anchor>transformers.TFPreTrainedModel.get_lm_head</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/modeling_tf_utils.py#L1082</source><parameters>[]</parameters><rettype>`tf.keras.layers.Layer`</rettype><retdesc>The LM head layer if the model has one, None if not.</retdesc></docstring>
 
 The LM Head layer. This method must be overwritten by all the models that have a lm head.
 
@@ -849,7 +853,7 @@ The LM Head layer. This method must be overwritten by all the models that have a
 
 </div>
 <div class="docstring">
-<docstring><name>get\_output\_embeddings</name><anchor>transformers.TFPreTrainedModel.get_output_embeddings</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/modeling_tf_utils.py#L985</source><parameters>[]</parameters><rettype>`tf.Variable`</rettype><retdesc>The new weights mapping vocabulary to hidden states.</retdesc></docstring>
+<docstring><name>get\_output\_embeddings</name><anchor>transformers.TFPreTrainedModel.get_output_embeddings</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/modeling_tf_utils.py#L989</source><parameters>[]</parameters><rettype>`tf.Variable`</rettype><retdesc>The new weights mapping vocabulary to hidden states.</retdesc></docstring>
 
 Returns the model's output embeddings
 
@@ -860,7 +864,7 @@ Returns the model's output embeddings
 
 </div>
 <div class="docstring">
-<docstring><name>get\_output\_layer\_with\_bias</name><anchor>transformers.TFPreTrainedModel.get_output_layer_with_bias</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/modeling_tf_utils.py#L1022</source><parameters>[]</parameters><rettype>`tf.keras.layers.Layer`</rettype><retdesc>The layer that handles the bias, None if not an LM model.</retdesc></docstring>
+<docstring><name>get\_output\_layer\_with\_bias</name><anchor>transformers.TFPreTrainedModel.get_output_layer_with_bias</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/modeling_tf_utils.py#L1026</source><parameters>[]</parameters><rettype>`tf.keras.layers.Layer`</rettype><retdesc>The layer that handles the bias, None if not an LM model.</retdesc></docstring>
 
 Get the layer that handles a bias attribute in case the model has an LM head with weights tied to the
 embeddings
@@ -872,7 +876,7 @@ embeddings
 
 </div>
 <div class="docstring">
-<docstring><name>get\_prefix\_bias\_name</name><anchor>transformers.TFPreTrainedModel.get_prefix_bias_name</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/modeling_tf_utils.py#L1035</source><parameters>[]</parameters><rettype>`str`</rettype><retdesc>The _prefix name of the bias.</retdesc></docstring>
+<docstring><name>get\_prefix\_bias\_name</name><anchor>transformers.TFPreTrainedModel.get_prefix_bias_name</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/modeling_tf_utils.py#L1039</source><parameters>[]</parameters><rettype>`str`</rettype><retdesc>The _prefix name of the bias.</retdesc></docstring>
 
 Get the concatenated _prefix name of the bias from the model name to the parent layer
 
@@ -883,7 +887,7 @@ Get the concatenated _prefix name of the bias from the model name to the parent 
 
 </div>
 <div class="docstring">
-<docstring><name>load\_repo\_checkpoint</name><anchor>transformers.TFPreTrainedModel.load_repo_checkpoint</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/modeling_tf_utils.py#L772</source><parameters>[{"name": "repo_path_or_name", "val": ""}]</parameters><paramsdesc>- **repo_path_or_name** (`str`) --
+<docstring><name>load\_repo\_checkpoint</name><anchor>transformers.TFPreTrainedModel.load_repo_checkpoint</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/modeling_tf_utils.py#L776</source><parameters>[{"name": "repo_path_or_name", "val": ""}]</parameters><paramsdesc>- **repo_path_or_name** (`str`) --
   Can either be a repository name for your &amp;lcub;object} in the Hub or a path to a local folder (in which case
   the repository will have the name of that local folder).</paramsdesc><paramgroups>0</paramgroups><rettype>`dict`</rettype><retdesc>A dictionary of extra metadata from the checkpoint, most commonly an "epoch" count.</retdesc></docstring>
 
@@ -899,7 +903,7 @@ the checkpoint was made.
 
 </div>
 <div class="docstring">
-<docstring><name>prune\_heads</name><anchor>transformers.TFPreTrainedModel.prune_heads</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/modeling_tf_utils.py#L1283</source><parameters>[{"name": "heads_to_prune", "val": ""}]</parameters><paramsdesc>- **heads_to_prune** (`Dict[int, List[int]]`) --
+<docstring><name>prune\_heads</name><anchor>transformers.TFPreTrainedModel.prune_heads</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/modeling_tf_utils.py#L1287</source><parameters>[{"name": "heads_to_prune", "val": ""}]</parameters><paramsdesc>- **heads_to_prune** (`Dict[int, List[int]]`) --
   Dictionary with keys being selected layer indices (`int`) and associated values being the list of
   heads to prune in said layer (list of `int`). For instance &amp;lcub;1: [0, 2], 2: [2, 3]} will prune heads
   0 and 2 on layer 1 and heads 2 and 3 on layer 2.</paramsdesc><paramgroups>0</paramgroups></docstring>
@@ -911,7 +915,7 @@ Prunes heads of the base model.
 
 </div>
 <div class="docstring">
-<docstring><name>resize\_token\_embeddings</name><anchor>transformers.TFPreTrainedModel.resize_token_embeddings</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/modeling_tf_utils.py#L1087</source><parameters>[{"name": "new_num_tokens", "val": " = None"}]</parameters><paramsdesc>- **new_num_tokens** (`int`, *optional*) --
+<docstring><name>resize\_token\_embeddings</name><anchor>transformers.TFPreTrainedModel.resize_token_embeddings</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/modeling_tf_utils.py#L1091</source><parameters>[{"name": "new_num_tokens", "val": " = None"}]</parameters><paramsdesc>- **new_num_tokens** (`int`, *optional*) --
   The number of new tokens in the embedding matrix. Increasing the size will add newly initialized
   vectors at the end. Reducing the size will remove vectors from the end. If not provided or `None`,
   just returns a pointer to the input tokens `tf.Variable` module of the model without doing
@@ -930,7 +934,7 @@ Takes care of tying weights embeddings afterwards if the model class has a `tie_
 
 </div>
 <div class="docstring">
-<docstring><name>save\_pretrained</name><anchor>transformers.TFPreTrainedModel.save_pretrained</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/modeling_tf_utils.py#L1295</source><parameters>[{"name": "save_directory", "val": ""}, {"name": "saved_model", "val": " = False"}, {"name": "version", "val": " = 1"}, {"name": "push_to_hub", "val": " = False"}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **save_directory** (`str`) --
+<docstring><name>save\_pretrained</name><anchor>transformers.TFPreTrainedModel.save_pretrained</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/modeling_tf_utils.py#L1299</source><parameters>[{"name": "save_directory", "val": ""}, {"name": "saved_model", "val": " = False"}, {"name": "version", "val": " = 1"}, {"name": "push_to_hub", "val": " = False"}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **save_directory** (`str`) --
   Directory to which to save. Will be created if it doesn't exist.
 - **saved_model** (`bool`, *optional*, defaults to `False`) --
   If the model has to be saved in saved model format as well or not.
@@ -962,7 +966,7 @@ Save a model and its configuration file to a directory, so that it can be re-loa
 
 </div>
 <div class="docstring">
-<docstring><name>serving</name><anchor>transformers.TFPreTrainedModel.serving</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/modeling_tf_utils.py#L714</source><parameters>[{"name": "inputs", "val": ""}]</parameters><paramsdesc>- **inputs** (`Dict[str, tf.Tensor]`) --
+<docstring><name>serving</name><anchor>transformers.TFPreTrainedModel.serving</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/modeling_tf_utils.py#L718</source><parameters>[{"name": "inputs", "val": ""}]</parameters><paramsdesc>- **inputs** (`Dict[str, tf.Tensor]`) --
   The input of the saved model as a dictionary of tensors.</paramsdesc><paramgroups>0</paramgroups></docstring>
 
 Method used for serving the model.
@@ -972,7 +976,7 @@ Method used for serving the model.
 
 </div>
 <div class="docstring">
-<docstring><name>serving\_output</name><anchor>transformers.TFPreTrainedModel.serving_output</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/modeling_tf_utils.py#L735</source><parameters>[{"name": "output", "val": ""}]</parameters><paramsdesc>- **output** (`TFBaseModelOutput`) --
+<docstring><name>serving\_output</name><anchor>transformers.TFPreTrainedModel.serving_output</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/modeling_tf_utils.py#L739</source><parameters>[{"name": "output", "val": ""}]</parameters><paramsdesc>- **output** (`TFBaseModelOutput`) --
   The output returned by the model.</paramsdesc><paramgroups>0</paramgroups></docstring>
 
 Prepare the output of the saved model. Each model must implement this function.
@@ -982,7 +986,7 @@ Prepare the output of the saved model. Each model must implement this function.
 
 </div>
 <div class="docstring">
-<docstring><name>set\_bias</name><anchor>transformers.TFPreTrainedModel.set_bias</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/modeling_tf_utils.py#L1062</source><parameters>[{"name": "value", "val": ""}]</parameters><paramsdesc>- **value** (`Dict[tf.Variable]`) --
+<docstring><name>set\_bias</name><anchor>transformers.TFPreTrainedModel.set_bias</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/modeling_tf_utils.py#L1066</source><parameters>[{"name": "value", "val": ""}]</parameters><paramsdesc>- **value** (`Dict[tf.Variable]`) --
   All the new bias attached to an LM head.</paramsdesc><paramgroups>0</paramgroups></docstring>
 
 Set all the bias in the LM head.
@@ -992,7 +996,7 @@ Set all the bias in the LM head.
 
 </div>
 <div class="docstring">
-<docstring><name>set\_input\_embeddings</name><anchor>transformers.TFPreTrainedModel.set_input_embeddings</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/modeling_tf_utils.py#L965</source><parameters>[{"name": "value", "val": ""}]</parameters><paramsdesc>- **value** (`tf.Variable`) --
+<docstring><name>set\_input\_embeddings</name><anchor>transformers.TFPreTrainedModel.set_input_embeddings</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/modeling_tf_utils.py#L969</source><parameters>[{"name": "value", "val": ""}]</parameters><paramsdesc>- **value** (`tf.Variable`) --
   The new weights mapping hidden states to vocabulary.</paramsdesc><paramgroups>0</paramgroups></docstring>
 
 Set model's input embeddings
@@ -1002,7 +1006,7 @@ Set model's input embeddings
 
 </div>
 <div class="docstring">
-<docstring><name>set\_output\_embeddings</name><anchor>transformers.TFPreTrainedModel.set_output_embeddings</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/modeling_tf_utils.py#L1005</source><parameters>[{"name": "value", "val": ""}]</parameters><paramsdesc>- **value** (`tf.Variable`) --
+<docstring><name>set\_output\_embeddings</name><anchor>transformers.TFPreTrainedModel.set_output_embeddings</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/modeling_tf_utils.py#L1009</source><parameters>[{"name": "value", "val": ""}]</parameters><paramsdesc>- **value** (`tf.Variable`) --
   The new weights mapping hidden states to vocabulary.</paramsdesc><paramgroups>0</paramgroups></docstring>
 
 Set model's output embeddings
@@ -1012,14 +1016,14 @@ Set model's output embeddings
 
 </div>
 <div class="docstring">
-<docstring><name>test\_step</name><anchor>transformers.TFPreTrainedModel.test_step</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/modeling_tf_utils.py#L902</source><parameters>[{"name": "data", "val": ""}]</parameters></docstring>
+<docstring><name>test\_step</name><anchor>transformers.TFPreTrainedModel.test_step</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/modeling_tf_utils.py#L906</source><parameters>[{"name": "data", "val": ""}]</parameters></docstring>
 
         A modification of Keras's default test_step that cleans up the printed metrics when we use a dummy loss.
         
 
 </div>
 <div class="docstring">
-<docstring><name>train\_step</name><anchor>transformers.TFPreTrainedModel.train_step</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/modeling_tf_utils.py#L861</source><parameters>[{"name": "data", "val": ""}]</parameters></docstring>
+<docstring><name>train\_step</name><anchor>transformers.TFPreTrainedModel.train_step</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/modeling_tf_utils.py#L865</source><parameters>[{"name": "data", "val": ""}]</parameters></docstring>
 
         A modification of Keras's default train_step that cleans up the printed metrics when we use a dummy loss.
         
@@ -1068,6 +1072,8 @@ Class attributes (overridden by derived classes):
   [PretrainedConfig](/docs/transformers/master/en/main_classes/configuration#transformers.PretrainedConfig) to use as configuration class for this model architecture.
 - **base_model_prefix** (`str`) -- A string indicating the attribute associated to the base model in
   derived classes of the same architecture adding modules on top of the base model.
+- **main_input_name** (`str`) -- The name of the principal input to the model (often `input_ids` for
+  NLP models, `pixel_values` for vision models and `input_values` for speech models).
 
 
 
@@ -1129,7 +1135,7 @@ model.push_to_hub("my-finetuned-bert", repo_url="https://huggingface.co/sgugger/
 
 </div>
 <div class="docstring">
-<docstring><name>from\_pretrained</name><anchor>transformers.FlaxPreTrainedModel.from_pretrained</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/modeling_flax_utils.py#L273</source><parameters>[{"name": "pretrained_model_name_or_path", "val": ": typing.Union[str, os.PathLike]"}, {"name": "dtype", "val": ": dtype = <class 'jax._src.numpy.lax_numpy.float32'>"}, {"name": "*model_args", "val": ""}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **pretrained_model_name_or_path** (`str` or `os.PathLike`) --
+<docstring><name>from\_pretrained</name><anchor>transformers.FlaxPreTrainedModel.from_pretrained</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/modeling_flax_utils.py#L276</source><parameters>[{"name": "pretrained_model_name_or_path", "val": ": typing.Union[str, os.PathLike]"}, {"name": "dtype", "val": ": dtype = <class 'jax._src.numpy.lax_numpy.float32'>"}, {"name": "*model_args", "val": ""}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **pretrained_model_name_or_path** (`str` or `os.PathLike`) --
   Can be either:
 
   - A string, the *model id* of a pretrained model hosted inside a model repo on huggingface.co.
@@ -1234,7 +1240,7 @@ Examples:
 
 </div>
 <div class="docstring">
-<docstring><name>save\_pretrained</name><anchor>transformers.FlaxPreTrainedModel.save_pretrained</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/modeling_flax_utils.py#L589</source><parameters>[{"name": "save_directory", "val": ": typing.Union[str, os.PathLike]"}, {"name": "params", "val": " = None"}, {"name": "push_to_hub", "val": " = False"}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **save_directory** (`str` or `os.PathLike`) --
+<docstring><name>save\_pretrained</name><anchor>transformers.FlaxPreTrainedModel.save_pretrained</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/modeling_flax_utils.py#L592</source><parameters>[{"name": "save_directory", "val": ": typing.Union[str, os.PathLike]"}, {"name": "params", "val": " = None"}, {"name": "push_to_hub", "val": " = False"}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **save_directory** (`str` or `os.PathLike`) --
   Directory to which to save. Will be created if it doesn't exist.
 - **push_to_hub** (`bool`, *optional*, defaults to `False`) --
   Whether or not to push your model to the Hugging Face model hub after saving it.
@@ -1260,7 +1266,7 @@ Save a model and its configuration file to a directory, so that it can be re-loa
 
 </div>
 <div class="docstring">
-<docstring><name>to\_bf16</name><anchor>transformers.FlaxPreTrainedModel.to_bf16</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/modeling_flax_utils.py#L181</source><parameters>[{"name": "params", "val": ": typing.Union[typing.Dict, flax.core.frozen_dict.FrozenDict]"}, {"name": "mask", "val": ": typing.Any = None"}]</parameters><paramsdesc>- **params** (`Union[Dict, FrozenDict]`) --
+<docstring><name>to\_bf16</name><anchor>transformers.FlaxPreTrainedModel.to_bf16</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/modeling_flax_utils.py#L184</source><parameters>[{"name": "params", "val": ": typing.Union[typing.Dict, flax.core.frozen_dict.FrozenDict]"}, {"name": "mask", "val": ": typing.Any = None"}]</parameters><paramsdesc>- **params** (`Union[Dict, FrozenDict]`) --
   A `PyTree` of model parameters.
 - **mask** (`Union[Dict, FrozenDict]`) --
   A `PyTree` with same structure as the `params` tree. The leaves should be booleans, `True` for
@@ -1295,7 +1301,7 @@ Examples:
 
 </div>
 <div class="docstring">
-<docstring><name>to\_fp16</name><anchor>transformers.FlaxPreTrainedModel.to_fp16</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/modeling_flax_utils.py#L240</source><parameters>[{"name": "params", "val": ": typing.Union[typing.Dict, flax.core.frozen_dict.FrozenDict]"}, {"name": "mask", "val": ": typing.Any = None"}]</parameters><paramsdesc>- **params** (`Union[Dict, FrozenDict]`) --
+<docstring><name>to\_fp16</name><anchor>transformers.FlaxPreTrainedModel.to_fp16</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/modeling_flax_utils.py#L243</source><parameters>[{"name": "params", "val": ": typing.Union[typing.Dict, flax.core.frozen_dict.FrozenDict]"}, {"name": "mask", "val": ": typing.Any = None"}]</parameters><paramsdesc>- **params** (`Union[Dict, FrozenDict]`) --
   A `PyTree` of model parameters.
 - **mask** (`Union[Dict, FrozenDict]`) --
   A `PyTree` with same structure as the `params` tree. The leaves should be booleans, `True` for
@@ -1330,7 +1336,7 @@ Examples:
 
 </div>
 <div class="docstring">
-<docstring><name>to\_fp32</name><anchor>transformers.FlaxPreTrainedModel.to_fp32</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/modeling_flax_utils.py#L214</source><parameters>[{"name": "params", "val": ": typing.Union[typing.Dict, flax.core.frozen_dict.FrozenDict]"}, {"name": "mask", "val": ": typing.Any = None"}]</parameters><paramsdesc>- **params** (`Union[Dict, FrozenDict]`) --
+<docstring><name>to\_fp32</name><anchor>transformers.FlaxPreTrainedModel.to_fp32</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/modeling_flax_utils.py#L217</source><parameters>[{"name": "params", "val": ": typing.Union[typing.Dict, flax.core.frozen_dict.FrozenDict]"}, {"name": "mask", "val": ": typing.Any = None"}]</parameters><paramsdesc>- **params** (`Union[Dict, FrozenDict]`) --
   A `PyTree` of model parameters.
 - **mask** (`Union[Dict, FrozenDict]`) --
   A `PyTree` with same structure as the `params` tree. The leaves should be booleans, `True` for
