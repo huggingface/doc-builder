@@ -157,6 +157,10 @@ is implemented in the library. Note that the models available in the library onl
 with the Perceiver. There are many more use cases, including question answering, named-entity recognition, object detection, 
 audio classification, video classification, etc. 
 
+**Note**:
+
+- Perceiver does **not** work with `torch.nn.DataParallel` due to a bug in PyTorch, see [issue #36035](https://github.com/pytorch/pytorch/issues/36035)
+
 <h2 id="transformers.models.perceiver.modeling_perceiver.PerceiverModelOutput">Perceiver specific outputs</h2>
 
 <div class="docstring">
@@ -568,7 +572,7 @@ PIL images.
 
 <div class="docstring">
 
-<docstring><name>class transformers.models.perceiver.modeling\_perceiver.PerceiverTextPreprocessor</name><anchor>transformers.models.perceiver.modeling_perceiver.PerceiverTextPreprocessor</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/perceiver/modeling_perceiver.py#L2745</source><parameters>[{"name": "config", "val": ""}]</parameters><paramsdesc>- **config** ([PerceiverConfig](/docs/transformers/master/en/model_doc/perceiver#transformers.PerceiverConfig)) --
+<docstring><name>class transformers.models.perceiver.modeling\_perceiver.PerceiverTextPreprocessor</name><anchor>transformers.models.perceiver.modeling_perceiver.PerceiverTextPreprocessor</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/perceiver/modeling_perceiver.py#L2747</source><parameters>[{"name": "config", "val": ""}]</parameters><paramsdesc>- **config** ([PerceiverConfig](/docs/transformers/master/en/model_doc/perceiver#transformers.PerceiverConfig)) --
             Model configuration.</paramsdesc><paramgroups>0</paramgroups></docstring>
 
     Text preprocessing for Perceiver Encoder. Can be used to embed `inputs` and add positional encodings.
@@ -584,7 +588,7 @@ PIL images.
 
 <div class="docstring">
 
-<docstring><name>class transformers.models.perceiver.modeling\_perceiver.PerceiverImagePreprocessor</name><anchor>transformers.models.perceiver.modeling_perceiver.PerceiverImagePreprocessor</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/perceiver/modeling_perceiver.py#L2902</source><parameters>[{"name": "config", "val": ""}, {"name": "prep_type", "val": " = 'conv'"}, {"name": "spatial_downsample", "val": ": int = 4"}, {"name": "temporal_downsample", "val": ": int = 1"}, {"name": "position_encoding_type", "val": ": str = 'fourier'"}, {"name": "in_channels", "val": ": int = 3"}, {"name": "out_channels", "val": ": int = 64"}, {"name": "conv_after_patching", "val": ": bool = False"}, {"name": "conv_after_patching_in_channels", "val": ": int = 54"}, {"name": "conv2d_use_batchnorm", "val": ": bool = True"}, {"name": "concat_or_add_pos", "val": ": str = 'concat'"}, {"name": "project_pos_dim", "val": ": int = -1"}, {"name": "**position_encoding_kwargs", "val": ""}]</parameters><paramsdesc>- **config** ([*PerceiverConfig*]) --
+<docstring><name>class transformers.models.perceiver.modeling\_perceiver.PerceiverImagePreprocessor</name><anchor>transformers.models.perceiver.modeling_perceiver.PerceiverImagePreprocessor</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/perceiver/modeling_perceiver.py#L2904</source><parameters>[{"name": "config", "val": ""}, {"name": "prep_type", "val": " = 'conv'"}, {"name": "spatial_downsample", "val": ": int = 4"}, {"name": "temporal_downsample", "val": ": int = 1"}, {"name": "position_encoding_type", "val": ": str = 'fourier'"}, {"name": "in_channels", "val": ": int = 3"}, {"name": "out_channels", "val": ": int = 64"}, {"name": "conv_after_patching", "val": ": bool = False"}, {"name": "conv_after_patching_in_channels", "val": ": int = 54"}, {"name": "conv2d_use_batchnorm", "val": ": bool = True"}, {"name": "concat_or_add_pos", "val": ": str = 'concat'"}, {"name": "project_pos_dim", "val": ": int = -1"}, {"name": "**position_encoding_kwargs", "val": ""}]</parameters><paramsdesc>- **config** ([*PerceiverConfig*]) --
   Model configuration.
 - **prep_type** (`str`, *optional*, defaults to `"conv"`) --
   Preprocessing type. Can be "conv1x1", "conv", "patches", "pixels".
@@ -626,7 +630,7 @@ position encoding kwargs are set equal to the *out_channels*.
 
 <div class="docstring">
 
-<docstring><name>class transformers.models.perceiver.modeling\_perceiver.PerceiverOneHotPreprocessor</name><anchor>transformers.models.perceiver.modeling_perceiver.PerceiverOneHotPreprocessor</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/perceiver/modeling_perceiver.py#L3131</source><parameters>[{"name": "config", "val": ""}]</parameters><paramsdesc>- **config** ([PerceiverConfig](/docs/transformers/master/en/model_doc/perceiver#transformers.PerceiverConfig)) --
+<docstring><name>class transformers.models.perceiver.modeling\_perceiver.PerceiverOneHotPreprocessor</name><anchor>transformers.models.perceiver.modeling_perceiver.PerceiverOneHotPreprocessor</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/perceiver/modeling_perceiver.py#L3133</source><parameters>[{"name": "config", "val": ""}]</parameters><paramsdesc>- **config** ([PerceiverConfig](/docs/transformers/master/en/model_doc/perceiver#transformers.PerceiverConfig)) --
             Model configuration.</paramsdesc><paramgroups>0</paramgroups></docstring>
 
     One-hot preprocessor for Perceiver Encoder. Can be used to add a dummy index dimension to the input.
@@ -640,7 +644,7 @@ position encoding kwargs are set equal to the *out_channels*.
 
 <div class="docstring">
 
-<docstring><name>class transformers.models.perceiver.modeling\_perceiver.PerceiverAudioPreprocessor</name><anchor>transformers.models.perceiver.modeling_perceiver.PerceiverAudioPreprocessor</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/perceiver/modeling_perceiver.py#L3157</source><parameters>[{"name": "config", "val": ""}, {"name": "prep_type", "val": ": str = 'patches'"}, {"name": "samples_per_patch", "val": ": int = 96"}, {"name": "position_encoding_type", "val": ": str = 'fourier'"}, {"name": "concat_or_add_pos", "val": ": str = 'concat'"}, {"name": "out_channels", "val": " = 64"}, {"name": "project_pos_dim", "val": " = -1"}, {"name": "**position_encoding_kwargs", "val": ""}]</parameters><paramsdesc>- **config** ([*PerceiverConfig*]) --
+<docstring><name>class transformers.models.perceiver.modeling\_perceiver.PerceiverAudioPreprocessor</name><anchor>transformers.models.perceiver.modeling_perceiver.PerceiverAudioPreprocessor</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/perceiver/modeling_perceiver.py#L3159</source><parameters>[{"name": "config", "val": ""}, {"name": "prep_type", "val": ": str = 'patches'"}, {"name": "samples_per_patch", "val": ": int = 96"}, {"name": "position_encoding_type", "val": ": str = 'fourier'"}, {"name": "concat_or_add_pos", "val": ": str = 'concat'"}, {"name": "out_channels", "val": " = 64"}, {"name": "project_pos_dim", "val": " = -1"}, {"name": "**position_encoding_kwargs", "val": ""}]</parameters><paramsdesc>- **config** ([*PerceiverConfig*]) --
   Model configuration.
 - **prep_type** (`str`, *optional*, defaults to `"patches"`) --
   Preprocessor type to use. Only "patches" is supported.
@@ -668,7 +672,7 @@ Audio preprocessing for Perceiver Encoder.
 
 <div class="docstring">
 
-<docstring><name>class transformers.models.perceiver.modeling\_perceiver.PerceiverMultimodalPreprocessor</name><anchor>transformers.models.perceiver.modeling_perceiver.PerceiverMultimodalPreprocessor</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/perceiver/modeling_perceiver.py#L3254</source><parameters>[{"name": "modalities", "val": ": typing.Mapping[str, typing.Callable[..., typing.Tuple[torch.Tensor, typing.Optional[torch.Tensor], torch.Tensor]]]"}, {"name": "mask_probs", "val": ": typing.Union[typing.Mapping[str, float], NoneType] = None"}, {"name": "min_padding_size", "val": ": int = 2"}]</parameters><paramsdesc>- **modalities** (`Dict[str, PreprocessorType]`) --
+<docstring><name>class transformers.models.perceiver.modeling\_perceiver.PerceiverMultimodalPreprocessor</name><anchor>transformers.models.perceiver.modeling_perceiver.PerceiverMultimodalPreprocessor</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/perceiver/modeling_perceiver.py#L3256</source><parameters>[{"name": "modalities", "val": ": typing.Mapping[str, typing.Callable[..., typing.Tuple[torch.Tensor, typing.Optional[torch.Tensor], torch.Tensor]]]"}, {"name": "mask_probs", "val": ": typing.Union[typing.Mapping[str, float], NoneType] = None"}, {"name": "min_padding_size", "val": ": int = 2"}]</parameters><paramsdesc>- **modalities** (`Dict[str, PreprocessorType]`) --
   Dict mapping modality name to preprocessor.
 - **mask_probs** (`Dict[str, float]`) --
   Dict mapping modality name to masking probability of that modality.
@@ -745,7 +749,7 @@ The shape of the output of this class depends on how one defines the output quer
 
 <div class="docstring">
 
-<docstring><name>class transformers.models.perceiver.modeling\_perceiver.PerceiverClassificationDecoder</name><anchor>transformers.models.perceiver.modeling_perceiver.PerceiverClassificationDecoder</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/perceiver/modeling_perceiver.py#L2193</source><parameters>[{"name": "config", "val": ""}, {"name": "**decoder_kwargs", "val": ""}]</parameters><paramsdesc>- **config** ([PerceiverConfig](/docs/transformers/master/en/model_doc/perceiver#transformers.PerceiverConfig)) --
+<docstring><name>class transformers.models.perceiver.modeling\_perceiver.PerceiverClassificationDecoder</name><anchor>transformers.models.perceiver.modeling_perceiver.PerceiverClassificationDecoder</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/perceiver/modeling_perceiver.py#L2195</source><parameters>[{"name": "config", "val": ""}, {"name": "**decoder_kwargs", "val": ""}]</parameters><paramsdesc>- **config** ([PerceiverConfig](/docs/transformers/master/en/model_doc/perceiver#transformers.PerceiverConfig)) --
             Model configuration.</paramsdesc><paramgroups>0</paramgroups></docstring>
 
     Cross-attention based classification decoder. Light-weight wrapper of `PerceiverBasicDecoder` for logit output.
@@ -761,7 +765,7 @@ The shape of the output of this class depends on how one defines the output quer
 
 <div class="docstring">
 
-<docstring><name>class transformers.models.perceiver.modeling\_perceiver.PerceiverOpticalFlowDecoder</name><anchor>transformers.models.perceiver.modeling_perceiver.PerceiverOpticalFlowDecoder</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/perceiver/modeling_perceiver.py#L2233</source><parameters>[{"name": "config", "val": ""}, {"name": "output_image_shape", "val": ""}, {"name": "output_num_channels", "val": " = 2"}, {"name": "rescale_factor", "val": " = 100.0"}, {"name": "**decoder_kwargs", "val": ""}]</parameters></docstring>
+<docstring><name>class transformers.models.perceiver.modeling\_perceiver.PerceiverOpticalFlowDecoder</name><anchor>transformers.models.perceiver.modeling_perceiver.PerceiverOpticalFlowDecoder</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/perceiver/modeling_perceiver.py#L2235</source><parameters>[{"name": "config", "val": ""}, {"name": "output_image_shape", "val": ""}, {"name": "output_num_channels", "val": " = 2"}, {"name": "rescale_factor", "val": " = 100.0"}, {"name": "**decoder_kwargs", "val": ""}]</parameters></docstring>
 Cross-attention based optical flow decoder.
 
 </div>
@@ -770,7 +774,7 @@ Cross-attention based optical flow decoder.
 
 <div class="docstring">
 
-<docstring><name>class transformers.models.perceiver.modeling\_perceiver.PerceiverBasicVideoAutoencodingDecoder</name><anchor>transformers.models.perceiver.modeling_perceiver.PerceiverBasicVideoAutoencodingDecoder</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/perceiver/modeling_perceiver.py#L2262</source><parameters>[{"name": "config", "val": ""}, {"name": "output_shape", "val": ""}, {"name": "position_encoding_type", "val": ""}, {"name": "**decoder_kwargs", "val": ""}]</parameters><paramsdesc>- **config** ([*PerceiverConfig*]) --
+<docstring><name>class transformers.models.perceiver.modeling\_perceiver.PerceiverBasicVideoAutoencodingDecoder</name><anchor>transformers.models.perceiver.modeling_perceiver.PerceiverBasicVideoAutoencodingDecoder</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/perceiver/modeling_perceiver.py#L2264</source><parameters>[{"name": "config", "val": ""}, {"name": "output_shape", "val": ""}, {"name": "position_encoding_type", "val": ""}, {"name": "**decoder_kwargs", "val": ""}]</parameters><paramsdesc>- **config** ([*PerceiverConfig*]) --
   Model configuration.
 - **output_shape** (`List[int]`) --
   Shape of the output as (batch_size, num_frames, height, width), excluding the channel dimension.
@@ -789,7 +793,7 @@ reshaping logic.
 
 <div class="docstring">
 
-<docstring><name>class transformers.models.perceiver.modeling\_perceiver.PerceiverMultimodalDecoder</name><anchor>transformers.models.perceiver.modeling_perceiver.PerceiverMultimodalDecoder</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/perceiver/modeling_perceiver.py#L2335</source><parameters>[{"name": "config", "val": ""}, {"name": "modalities", "val": ""}, {"name": "num_outputs", "val": ""}, {"name": "output_num_channels", "val": ""}, {"name": "min_padding_size", "val": " = 2"}, {"name": "subsampled_index_dims", "val": " = None"}, {"name": "**decoder_kwargs", "val": ""}]</parameters><paramsdesc>- **config** ([*PerceiverConfig*]) --
+<docstring><name>class transformers.models.perceiver.modeling\_perceiver.PerceiverMultimodalDecoder</name><anchor>transformers.models.perceiver.modeling_perceiver.PerceiverMultimodalDecoder</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/perceiver/modeling_perceiver.py#L2337</source><parameters>[{"name": "config", "val": ""}, {"name": "modalities", "val": ""}, {"name": "num_outputs", "val": ""}, {"name": "output_num_channels", "val": ""}, {"name": "min_padding_size", "val": " = 2"}, {"name": "subsampled_index_dims", "val": " = None"}, {"name": "**decoder_kwargs", "val": ""}]</parameters><paramsdesc>- **config** ([*PerceiverConfig*]) --
   Model configuration.
 - **modalities** (`Dict[str, PerceiverAbstractDecoder]`) --
   Dictionary mapping modality name to the decoder of that modality.
@@ -820,7 +824,7 @@ Next, there is a shared cross attention operation across all modalities.
 
 <div class="docstring">
 
-<docstring><name>class transformers.models.perceiver.modeling\_perceiver.PerceiverProjectionPostprocessor</name><anchor>transformers.models.perceiver.modeling_perceiver.PerceiverProjectionPostprocessor</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/perceiver/modeling_perceiver.py#L2881</source><parameters>[{"name": "in_channels", "val": ""}, {"name": "out_channels", "val": ""}]</parameters><paramsdesc>- **in_channels** (`int`) --
+<docstring><name>class transformers.models.perceiver.modeling\_perceiver.PerceiverProjectionPostprocessor</name><anchor>transformers.models.perceiver.modeling_perceiver.PerceiverProjectionPostprocessor</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/perceiver/modeling_perceiver.py#L2883</source><parameters>[{"name": "in_channels", "val": ""}, {"name": "out_channels", "val": ""}]</parameters><paramsdesc>- **in_channels** (`int`) --
   Number of channels in the input.
 - **out_channels** (`int`) --
   Number of channels in the output.</paramsdesc><paramgroups>0</paramgroups></docstring>
@@ -837,7 +841,7 @@ dimension.
 
 <div class="docstring">
 
-<docstring><name>class transformers.models.perceiver.modeling\_perceiver.PerceiverAudioPostprocessor</name><anchor>transformers.models.perceiver.modeling_perceiver.PerceiverAudioPostprocessor</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/perceiver/modeling_perceiver.py#L2853</source><parameters>[{"name": "config", "val": ""}, {"name": "in_channels", "val": ""}, {"name": "postproc_type", "val": ": str = 'patches'"}]</parameters><paramsdesc>- **config** ([*PerceiverConfig*]) --
+<docstring><name>class transformers.models.perceiver.modeling\_perceiver.PerceiverAudioPostprocessor</name><anchor>transformers.models.perceiver.modeling_perceiver.PerceiverAudioPostprocessor</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/perceiver/modeling_perceiver.py#L2855</source><parameters>[{"name": "config", "val": ""}, {"name": "in_channels", "val": ""}, {"name": "postproc_type", "val": ": str = 'patches'"}]</parameters><paramsdesc>- **config** ([*PerceiverConfig*]) --
   Model configuration.
 - **in_channels** (`int`) --
   Number of channels in the input.
@@ -855,7 +859,7 @@ Audio postprocessing for Perceiver. Can be used to convert the decoder output to
 
 <div class="docstring">
 
-<docstring><name>class transformers.models.perceiver.modeling\_perceiver.PerceiverClassificationPostprocessor</name><anchor>transformers.models.perceiver.modeling_perceiver.PerceiverClassificationPostprocessor</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/perceiver/modeling_perceiver.py#L2833</source><parameters>[{"name": "config", "val": ""}, {"name": "in_channels", "val": ""}]</parameters><paramsdesc>- **config** ([*PerceiverConfig*]) --
+<docstring><name>class transformers.models.perceiver.modeling\_perceiver.PerceiverClassificationPostprocessor</name><anchor>transformers.models.perceiver.modeling_perceiver.PerceiverClassificationPostprocessor</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/perceiver/modeling_perceiver.py#L2835</source><parameters>[{"name": "config", "val": ""}, {"name": "in_channels", "val": ""}]</parameters><paramsdesc>- **config** ([*PerceiverConfig*]) --
   Model configuration.
 - **in_channels** (`int`) --
   Number of channels in the input.</paramsdesc><paramgroups>0</paramgroups></docstring>
@@ -871,7 +875,7 @@ Classification postprocessing for Perceiver. Can be used to convert the decoder 
 
 <div class="docstring">
 
-<docstring><name>class transformers.models.perceiver.modeling\_perceiver.PerceiverMultimodalPostprocessor</name><anchor>transformers.models.perceiver.modeling_perceiver.PerceiverMultimodalPostprocessor</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/perceiver/modeling_perceiver.py#L2799</source><parameters>[{"name": "modalities", "val": ": typing.Mapping[str, typing.Callable[..., typing.Any]]"}, {"name": "input_is_dict", "val": ": bool = False"}]</parameters><paramsdesc>- **modalities** (`Dict[str, PostprocessorType]`) --
+<docstring><name>class transformers.models.perceiver.modeling\_perceiver.PerceiverMultimodalPostprocessor</name><anchor>transformers.models.perceiver.modeling_perceiver.PerceiverMultimodalPostprocessor</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/perceiver/modeling_perceiver.py#L2801</source><parameters>[{"name": "modalities", "val": ": typing.Mapping[str, typing.Callable[..., typing.Any]]"}, {"name": "input_is_dict", "val": ": bool = False"}]</parameters><paramsdesc>- **modalities** (`Dict[str, PostprocessorType]`) --
   Dictionary mapping modality name to postprocessor class for that modality.
 - **input_is_dict** (`bool`, *optional*, defaults to `False`) --
   If True, input is assumed to be dictionary structured, and outputs keep the same dictionary shape. If
