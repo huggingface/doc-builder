@@ -373,9 +373,12 @@ def parse_rst_docstring(docstring):
             idx += 1
             while is_empty_line(lines[idx]):
                 idx += 1
-            # Grab the indent of the list of parameters, this block will stop when we unindent under it.
+            # Grab the indent of the list of parameters, this block will stop when we unindent under it or we see the
+            # Returns block.
             param_indent = find_indent(lines[idx])
-            while idx < len(lines) and find_indent(lines[idx]) == param_indent:
+            while (
+                idx < len(lines) and find_indent(lines[idx]) == param_indent and _re_returns.search(lines[idx]) is None
+            ):
                 intro, doc = split_arg_line(lines[idx])
                 # Line starting with a > after indent indicate a "section title" in the parameters.
                 if intro.lstrip().startswith(">"):
