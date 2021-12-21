@@ -180,7 +180,6 @@ Examples:
 >>> configuration = model.config
 ```
 
-
 </div>
 
 <h2 id="transformers.LayoutLMTokenizer">LayoutLMTokenizer</h2>
@@ -191,7 +190,7 @@ Examples:
 
 Constructs a LayoutLM tokenizer.
 
-`LayoutLMTokenizer is identical to :class:`~transformers.BertTokenizer` and runs end-to-end
+[LayoutLMTokenizer](/docs/transformers/master/en/model_doc/layoutlm#transformers.LayoutLMTokenizer) is identical to [BertTokenizer](/docs/transformers/master/en/model_doc/bert#transformers.BertTokenizer) and runs end-to-end
 tokenization: punctuation splitting + wordpiece.
 
 Refer to superclass [BertTokenizer](/docs/transformers/master/en/model_doc/bert#transformers.BertTokenizer) for usage examples and documentation concerning
@@ -311,33 +310,35 @@ behavior.
     `past_key_values` input) to speed up sequential decoding.
 
 
-Examples --:
+Examples --
 
->>> from transformers import LayoutLMTokenizer, LayoutLMModel
->>> import torch
+```python --
+ transformers import LayoutLMTokenizer, LayoutLMModel
+rt torch
 
->>> tokenizer = LayoutLMTokenizer.from_pretrained('microsoft/layoutlm-base-uncased')
->>> model = LayoutLMModel.from_pretrained('microsoft/layoutlm-base-uncased')
+nizer = LayoutLMTokenizer.from_pretrained('microsoft/layoutlm-base-uncased')
+l = LayoutLMModel.from_pretrained('microsoft/layoutlm-base-uncased')
 
->>> words = ["Hello", "world"]
->>> normalized_word_boxes = [637, 773, 693, 782], [698, 773, 733, 782]
+s = ["Hello", "world"]
+alized_word_boxes = [637, 773, 693, 782], [698, 773, 733, 782]
 
->>> token_boxes = []
->>> for word, box in zip(words, normalized_word_boxes):
-...     word_tokens = tokenizer.tokenize(word)
-...     token_boxes.extend([box] * len(word_tokens))
->>> # add bounding boxes of cls + sep tokens
->>> token_boxes = [[0, 0, 0, 0]] + token_boxes + [[1000, 1000, 1000, 1000]]
+n_boxes = []
+word, box in zip(words, normalized_word_boxes)
+- **...**     word_tokens = tokenizer.tokenize(word) --
+- **...**     token_boxes.extend([box] * len(word_tokens)) --
+d bounding boxes of cls + sep tokens
+n_boxes = [[0, 0, 0, 0]] + token_boxes + [[1000, 1000, 1000, 1000]]
 
->>> encoding = tokenizer(' '.join(words), return_tensors="pt")
->>> input_ids = encoding["input_ids"]
->>> attention_mask = encoding["attention_mask"]
->>> token_type_ids = encoding["token_type_ids"]
->>> bbox = torch.tensor([token_boxes])
+ding = tokenizer(' '.join(words), return_tensors="pt")
+t_ids = encoding["input_ids"]
+ntion_mask = encoding["attention_mask"]
+n_type_ids = encoding["token_type_ids"]
+ = torch.tensor([token_boxes])
 
->>> outputs = model(input_ids=input_ids, bbox=bbox, attention_mask=attention_mask, token_type_ids=token_type_ids)
+uts = model(input_ids=input_ids, bbox=bbox, attention_mask=attention_mask, token_type_ids=token_type_ids)
 
->>> last_hidden_states = outputs.last_hidden_state</paramsdesc><paramgroups>0</paramgroups></docstring>
+_hidden_states = outputs.last_hidden_state
+``` --</paramsdesc><paramgroups>0</paramgroups></docstring>
 The [LayoutLMModel](/docs/transformers/master/en/model_doc/layoutlm#transformers.LayoutLMModel) forward method, overrides the `__call__` special method.
 
 <Tip>
@@ -357,7 +358,7 @@ the latter silently ignores them.
 
 <div class="docstring">
 
-<docstring><name>class transformers.LayoutLMForMaskedLM</name><anchor>transformers.LayoutLMForMaskedLM</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/layoutlm/modeling_layoutlm.py#L849</source><parameters>[{"name": "config", "val": ""}]</parameters><paramsdesc>- **config** ([LayoutLMConfig](/docs/transformers/master/en/model_doc/layoutlm#transformers.LayoutLMConfig)) -- Model configuration class with all the parameters of the model.
+<docstring><name>class transformers.LayoutLMForMaskedLM</name><anchor>transformers.LayoutLMForMaskedLM</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/layoutlm/modeling_layoutlm.py#L850</source><parameters>[{"name": "config", "val": ""}]</parameters><paramsdesc>- **config** ([LayoutLMConfig](/docs/transformers/master/en/model_doc/layoutlm#transformers.LayoutLMConfig)) -- Model configuration class with all the parameters of the model.
   Initializing with a config file does not load the weights associated with the model, only the
   configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel.from_pretrained) method to load the model
   weights.</paramsdesc><paramgroups>0</paramgroups></docstring>
@@ -373,7 +374,7 @@ behavior.
 
 
 <div class="docstring">
-<docstring><name>forward</name><anchor>transformers.LayoutLMForMaskedLM.forward</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/layoutlm/modeling_layoutlm.py#L868</source><parameters>[{"name": "input_ids", "val": " = None"}, {"name": "bbox", "val": " = None"}, {"name": "attention_mask", "val": " = None"}, {"name": "token_type_ids", "val": " = None"}, {"name": "position_ids", "val": " = None"}, {"name": "head_mask", "val": " = None"}, {"name": "inputs_embeds", "val": " = None"}, {"name": "labels", "val": " = None"}, {"name": "encoder_hidden_states", "val": " = None"}, {"name": "encoder_attention_mask", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "return_dict", "val": " = None"}]</parameters><paramsdesc>- **input_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`) --
+<docstring><name>forward</name><anchor>transformers.LayoutLMForMaskedLM.forward</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/layoutlm/modeling_layoutlm.py#L869</source><parameters>[{"name": "input_ids", "val": " = None"}, {"name": "bbox", "val": " = None"}, {"name": "attention_mask", "val": " = None"}, {"name": "token_type_ids", "val": " = None"}, {"name": "position_ids", "val": " = None"}, {"name": "head_mask", "val": " = None"}, {"name": "inputs_embeds", "val": " = None"}, {"name": "labels", "val": " = None"}, {"name": "encoder_hidden_states", "val": " = None"}, {"name": "encoder_attention_mask", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "return_dict", "val": " = None"}]</parameters><paramsdesc>- **input_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`) --
   Indices of input sequence tokens in the vocabulary.
 
   Indices can be obtained using [LayoutLMTokenizer](/docs/transformers/master/en/model_doc/layoutlm#transformers.LayoutLMTokenizer). See
@@ -488,7 +489,7 @@ the latter silently ignores them.
 
 <div class="docstring">
 
-<docstring><name>class transformers.LayoutLMForSequenceClassification</name><anchor>transformers.LayoutLMForSequenceClassification</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/layoutlm/modeling_layoutlm.py#L972</source><parameters>[{"name": "config", "val": ""}]</parameters><paramsdesc>- **config** ([LayoutLMConfig](/docs/transformers/master/en/model_doc/layoutlm#transformers.LayoutLMConfig)) -- Model configuration class with all the parameters of the model.
+<docstring><name>class transformers.LayoutLMForSequenceClassification</name><anchor>transformers.LayoutLMForSequenceClassification</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/layoutlm/modeling_layoutlm.py#L973</source><parameters>[{"name": "config", "val": ""}]</parameters><paramsdesc>- **config** ([LayoutLMConfig](/docs/transformers/master/en/model_doc/layoutlm#transformers.LayoutLMConfig)) -- Model configuration class with all the parameters of the model.
   Initializing with a config file does not load the weights associated with the model, only the
   configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel.from_pretrained) method to load the model
   weights.</paramsdesc><paramgroups>0</paramgroups></docstring>
@@ -507,7 +508,7 @@ behavior.
 
 
 <div class="docstring">
-<docstring><name>forward</name><anchor>transformers.LayoutLMForSequenceClassification.forward</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/layoutlm/modeling_layoutlm.py#L986</source><parameters>[{"name": "input_ids", "val": " = None"}, {"name": "bbox", "val": " = None"}, {"name": "attention_mask", "val": " = None"}, {"name": "token_type_ids", "val": " = None"}, {"name": "position_ids", "val": " = None"}, {"name": "head_mask", "val": " = None"}, {"name": "inputs_embeds", "val": " = None"}, {"name": "labels", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "return_dict", "val": " = None"}]</parameters><paramsdesc>- **input_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`) --
+<docstring><name>forward</name><anchor>transformers.LayoutLMForSequenceClassification.forward</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/layoutlm/modeling_layoutlm.py#L987</source><parameters>[{"name": "input_ids", "val": " = None"}, {"name": "bbox", "val": " = None"}, {"name": "attention_mask", "val": " = None"}, {"name": "token_type_ids", "val": " = None"}, {"name": "position_ids", "val": " = None"}, {"name": "head_mask", "val": " = None"}, {"name": "inputs_embeds", "val": " = None"}, {"name": "labels", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "return_dict", "val": " = None"}]</parameters><paramsdesc>- **input_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`) --
   Indices of input sequence tokens in the vocabulary.
 
   Indices can be obtained using [LayoutLMTokenizer](/docs/transformers/master/en/model_doc/layoutlm#transformers.LayoutLMTokenizer). See
@@ -622,7 +623,7 @@ the latter silently ignores them.
 
 <div class="docstring">
 
-<docstring><name>class transformers.LayoutLMForTokenClassification</name><anchor>transformers.LayoutLMForTokenClassification</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/layoutlm/modeling_layoutlm.py#L1103</source><parameters>[{"name": "config", "val": ""}]</parameters><paramsdesc>- **config** ([LayoutLMConfig](/docs/transformers/master/en/model_doc/layoutlm#transformers.LayoutLMConfig)) -- Model configuration class with all the parameters of the model.
+<docstring><name>class transformers.LayoutLMForTokenClassification</name><anchor>transformers.LayoutLMForTokenClassification</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/layoutlm/modeling_layoutlm.py#L1104</source><parameters>[{"name": "config", "val": ""}]</parameters><paramsdesc>- **config** ([LayoutLMConfig](/docs/transformers/master/en/model_doc/layoutlm#transformers.LayoutLMConfig)) -- Model configuration class with all the parameters of the model.
   Initializing with a config file does not load the weights associated with the model, only the
   configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel.from_pretrained) method to load the model
   weights.</paramsdesc><paramgroups>0</paramgroups></docstring>
@@ -642,7 +643,7 @@ behavior.
 
 
 <div class="docstring">
-<docstring><name>forward</name><anchor>transformers.LayoutLMForTokenClassification.forward</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/layoutlm/modeling_layoutlm.py#L1117</source><parameters>[{"name": "input_ids", "val": " = None"}, {"name": "bbox", "val": " = None"}, {"name": "attention_mask", "val": " = None"}, {"name": "token_type_ids", "val": " = None"}, {"name": "position_ids", "val": " = None"}, {"name": "head_mask", "val": " = None"}, {"name": "inputs_embeds", "val": " = None"}, {"name": "labels", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "return_dict", "val": " = None"}]</parameters><paramsdesc>- **input_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`) --
+<docstring><name>forward</name><anchor>transformers.LayoutLMForTokenClassification.forward</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/layoutlm/modeling_layoutlm.py#L1118</source><parameters>[{"name": "input_ids", "val": " = None"}, {"name": "bbox", "val": " = None"}, {"name": "attention_mask", "val": " = None"}, {"name": "token_type_ids", "val": " = None"}, {"name": "position_ids", "val": " = None"}, {"name": "head_mask", "val": " = None"}, {"name": "inputs_embeds", "val": " = None"}, {"name": "labels", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "return_dict", "val": " = None"}]</parameters><paramsdesc>- **input_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`) --
   Indices of input sequence tokens in the vocabulary.
 
   Indices can be obtained using [LayoutLMTokenizer](/docs/transformers/master/en/model_doc/layoutlm#transformers.LayoutLMTokenizer). See
@@ -877,33 +878,35 @@ the first positional argument :
     weighted average in the cross-attention heads.
 
 
-Examples --:
+Examples --
 
->>> from transformers import LayoutLMTokenizer, TFLayoutLMModel
->>> import tensorflow as tf
+```python --
+ transformers import LayoutLMTokenizer, TFLayoutLMModel
+rt tensorflow as tf
 
->>> tokenizer = LayoutLMTokenizer.from_pretrained('microsoft/layoutlm-base-uncased')
->>> model = TFLayoutLMModel.from_pretrained('microsoft/layoutlm-base-uncased')
+nizer = LayoutLMTokenizer.from_pretrained('microsoft/layoutlm-base-uncased')
+l = TFLayoutLMModel.from_pretrained('microsoft/layoutlm-base-uncased')
 
->>> words = ["Hello", "world"]
->>> normalized_word_boxes = [637, 773, 693, 782], [698, 773, 733, 782]
+s = ["Hello", "world"]
+alized_word_boxes = [637, 773, 693, 782], [698, 773, 733, 782]
 
->>> token_boxes = []
->>> for word, box in zip(words, normalized_word_boxes):
-...     word_tokens = tokenizer.tokenize(word)
-...     token_boxes.extend([box] * len(word_tokens))
->>> # add bounding boxes of cls + sep tokens
->>> token_boxes = [[0, 0, 0, 0]] + token_boxes + [[1000, 1000, 1000, 1000]]
+n_boxes = []
+word, box in zip(words, normalized_word_boxes)
+- **...**     word_tokens = tokenizer.tokenize(word) --
+- **...**     token_boxes.extend([box] * len(word_tokens)) --
+d bounding boxes of cls + sep tokens
+n_boxes = [[0, 0, 0, 0]] + token_boxes + [[1000, 1000, 1000, 1000]]
 
->>> encoding = tokenizer(' '.join(words), return_tensors="tf")
->>> input_ids = encoding["input_ids"]
->>> attention_mask = encoding["attention_mask"]
->>> token_type_ids = encoding["token_type_ids"]
->>> bbox = tf.convert_to_tensor([token_boxes])
+ding = tokenizer(' '.join(words), return_tensors="tf")
+t_ids = encoding["input_ids"]
+ntion_mask = encoding["attention_mask"]
+n_type_ids = encoding["token_type_ids"]
+ = tf.convert_to_tensor([token_boxes])
 
->>> outputs = model(input_ids=input_ids, bbox=bbox, attention_mask=attention_mask, token_type_ids=token_type_ids)
+uts = model(input_ids=input_ids, bbox=bbox, attention_mask=attention_mask, token_type_ids=token_type_ids)
 
->>> last_hidden_states = outputs.last_hidden_state</paramsdesc><paramgroups>0</paramgroups></docstring>
+_hidden_states = outputs.last_hidden_state
+``` --</paramsdesc><paramgroups>0</paramgroups></docstring>
 The [TFLayoutLMModel](/docs/transformers/master/en/model_doc/layoutlm#transformers.TFLayoutLMModel) forward method, overrides the `__call__` special method.
 
 <Tip>
@@ -923,7 +926,7 @@ the latter silently ignores them.
 
 <div class="docstring">
 
-<docstring><name>class transformers.TFLayoutLMForMaskedLM</name><anchor>transformers.TFLayoutLMForMaskedLM</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/layoutlm/modeling_tf_layoutlm.py#L1035</source><parameters>[{"name": "*args", "val": ""}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **config** ([LayoutLMConfig](/docs/transformers/master/en/model_doc/layoutlm#transformers.LayoutLMConfig)) -- Model configuration class with all the parameters of the model.
+<docstring><name>class transformers.TFLayoutLMForMaskedLM</name><anchor>transformers.TFLayoutLMForMaskedLM</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/layoutlm/modeling_tf_layoutlm.py#L1036</source><parameters>[{"name": "*args", "val": ""}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **config** ([LayoutLMConfig](/docs/transformers/master/en/model_doc/layoutlm#transformers.LayoutLMConfig)) -- Model configuration class with all the parameters of the model.
   Initializing with a config file does not load the weights associated with the model, only the
   configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model#transformers.TFPreTrainedModel.from_pretrained) method to load the
   model weights.</paramsdesc><paramgroups>0</paramgroups></docstring>
@@ -963,7 +966,7 @@ the first positional argument :
 
 
 <div class="docstring">
-<docstring><name>call</name><anchor>transformers.TFLayoutLMForMaskedLM.call</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/layoutlm/modeling_tf_layoutlm.py#L1063</source><parameters>[{"name": "input_ids", "val": ": typing.Union[typing.List[tensorflow.python.framework.ops.Tensor], typing.List[numpy.ndarray], typing.List[tensorflow.python.keras.engine.keras_tensor.KerasTensor], typing.Dict[str, tensorflow.python.framework.ops.Tensor], typing.Dict[str, numpy.ndarray], typing.Dict[str, tensorflow.python.keras.engine.keras_tensor.KerasTensor], tensorflow.python.framework.ops.Tensor, numpy.ndarray, tensorflow.python.keras.engine.keras_tensor.KerasTensor, NoneType] = None"}, {"name": "bbox", "val": ": typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None"}, {"name": "attention_mask", "val": ": typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None"}, {"name": "token_type_ids", "val": ": typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None"}, {"name": "position_ids", "val": ": typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None"}, {"name": "head_mask", "val": ": typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None"}, {"name": "inputs_embeds", "val": ": typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None"}, {"name": "output_attentions", "val": ": typing.Optional[bool] = None"}, {"name": "output_hidden_states", "val": ": typing.Optional[bool] = None"}, {"name": "return_dict", "val": ": typing.Optional[bool] = None"}, {"name": "labels", "val": ": typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None"}, {"name": "training", "val": ": typing.Optional[bool] = False"}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **input_ids** (`Numpy array` or `tf.Tensor` of shape `(batch_size, sequence_length)`) --
+<docstring><name>call</name><anchor>transformers.TFLayoutLMForMaskedLM.call</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/layoutlm/modeling_tf_layoutlm.py#L1064</source><parameters>[{"name": "input_ids", "val": ": typing.Union[typing.List[tensorflow.python.framework.ops.Tensor], typing.List[numpy.ndarray], typing.List[tensorflow.python.keras.engine.keras_tensor.KerasTensor], typing.Dict[str, tensorflow.python.framework.ops.Tensor], typing.Dict[str, numpy.ndarray], typing.Dict[str, tensorflow.python.keras.engine.keras_tensor.KerasTensor], tensorflow.python.framework.ops.Tensor, numpy.ndarray, tensorflow.python.keras.engine.keras_tensor.KerasTensor, NoneType] = None"}, {"name": "bbox", "val": ": typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None"}, {"name": "attention_mask", "val": ": typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None"}, {"name": "token_type_ids", "val": ": typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None"}, {"name": "position_ids", "val": ": typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None"}, {"name": "head_mask", "val": ": typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None"}, {"name": "inputs_embeds", "val": ": typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None"}, {"name": "output_attentions", "val": ": typing.Optional[bool] = None"}, {"name": "output_hidden_states", "val": ": typing.Optional[bool] = None"}, {"name": "return_dict", "val": ": typing.Optional[bool] = None"}, {"name": "labels", "val": ": typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None"}, {"name": "training", "val": ": typing.Optional[bool] = False"}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **input_ids** (`Numpy array` or `tf.Tensor` of shape `(batch_size, sequence_length)`) --
   Indices of input sequence tokens in the vocabulary.
 
   Indices can be obtained using [LayoutLMTokenizer](/docs/transformers/master/en/model_doc/layoutlm#transformers.LayoutLMTokenizer). See
@@ -1086,7 +1089,7 @@ the latter silently ignores them.
 
 <div class="docstring">
 
-<docstring><name>class transformers.TFLayoutLMForSequenceClassification</name><anchor>transformers.TFLayoutLMForSequenceClassification</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/layoutlm/modeling_tf_layoutlm.py#L1181</source><parameters>[{"name": "*args", "val": ""}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **config** ([LayoutLMConfig](/docs/transformers/master/en/model_doc/layoutlm#transformers.LayoutLMConfig)) -- Model configuration class with all the parameters of the model.
+<docstring><name>class transformers.TFLayoutLMForSequenceClassification</name><anchor>transformers.TFLayoutLMForSequenceClassification</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/layoutlm/modeling_tf_layoutlm.py#L1182</source><parameters>[{"name": "*args", "val": ""}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **config** ([LayoutLMConfig](/docs/transformers/master/en/model_doc/layoutlm#transformers.LayoutLMConfig)) -- Model configuration class with all the parameters of the model.
   Initializing with a config file does not load the weights associated with the model, only the
   configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model#transformers.TFPreTrainedModel.from_pretrained) method to load the
   model weights.</paramsdesc><paramgroups>0</paramgroups></docstring>
@@ -1129,7 +1132,7 @@ the first positional argument :
 
 
 <div class="docstring">
-<docstring><name>call</name><anchor>transformers.TFLayoutLMForSequenceClassification.call</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/layoutlm/modeling_tf_layoutlm.py#L1199</source><parameters>[{"name": "input_ids", "val": ": typing.Union[typing.List[tensorflow.python.framework.ops.Tensor], typing.List[numpy.ndarray], typing.List[tensorflow.python.keras.engine.keras_tensor.KerasTensor], typing.Dict[str, tensorflow.python.framework.ops.Tensor], typing.Dict[str, numpy.ndarray], typing.Dict[str, tensorflow.python.keras.engine.keras_tensor.KerasTensor], tensorflow.python.framework.ops.Tensor, numpy.ndarray, tensorflow.python.keras.engine.keras_tensor.KerasTensor, NoneType] = None"}, {"name": "bbox", "val": ": typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None"}, {"name": "attention_mask", "val": ": typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None"}, {"name": "token_type_ids", "val": ": typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None"}, {"name": "position_ids", "val": ": typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None"}, {"name": "head_mask", "val": ": typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None"}, {"name": "inputs_embeds", "val": ": typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None"}, {"name": "output_attentions", "val": ": typing.Optional[bool] = None"}, {"name": "output_hidden_states", "val": ": typing.Optional[bool] = None"}, {"name": "return_dict", "val": ": typing.Optional[bool] = None"}, {"name": "labels", "val": ": typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None"}, {"name": "training", "val": ": typing.Optional[bool] = False"}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **input_ids** (`Numpy array` or `tf.Tensor` of shape `(batch_size, sequence_length)`) --
+<docstring><name>call</name><anchor>transformers.TFLayoutLMForSequenceClassification.call</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/layoutlm/modeling_tf_layoutlm.py#L1200</source><parameters>[{"name": "input_ids", "val": ": typing.Union[typing.List[tensorflow.python.framework.ops.Tensor], typing.List[numpy.ndarray], typing.List[tensorflow.python.keras.engine.keras_tensor.KerasTensor], typing.Dict[str, tensorflow.python.framework.ops.Tensor], typing.Dict[str, numpy.ndarray], typing.Dict[str, tensorflow.python.keras.engine.keras_tensor.KerasTensor], tensorflow.python.framework.ops.Tensor, numpy.ndarray, tensorflow.python.keras.engine.keras_tensor.KerasTensor, NoneType] = None"}, {"name": "bbox", "val": ": typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None"}, {"name": "attention_mask", "val": ": typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None"}, {"name": "token_type_ids", "val": ": typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None"}, {"name": "position_ids", "val": ": typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None"}, {"name": "head_mask", "val": ": typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None"}, {"name": "inputs_embeds", "val": ": typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None"}, {"name": "output_attentions", "val": ": typing.Optional[bool] = None"}, {"name": "output_hidden_states", "val": ": typing.Optional[bool] = None"}, {"name": "return_dict", "val": ": typing.Optional[bool] = None"}, {"name": "labels", "val": ": typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None"}, {"name": "training", "val": ": typing.Optional[bool] = False"}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **input_ids** (`Numpy array` or `tf.Tensor` of shape `(batch_size, sequence_length)`) --
   Indices of input sequence tokens in the vocabulary.
 
   Indices can be obtained using [LayoutLMTokenizer](/docs/transformers/master/en/model_doc/layoutlm#transformers.LayoutLMTokenizer). See
@@ -1252,7 +1255,7 @@ the latter silently ignores them.
 
 <div class="docstring">
 
-<docstring><name>class transformers.TFLayoutLMForTokenClassification</name><anchor>transformers.TFLayoutLMForTokenClassification</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/layoutlm/modeling_tf_layoutlm.py#L1316</source><parameters>[{"name": "*args", "val": ""}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **config** ([LayoutLMConfig](/docs/transformers/master/en/model_doc/layoutlm#transformers.LayoutLMConfig)) -- Model configuration class with all the parameters of the model.
+<docstring><name>class transformers.TFLayoutLMForTokenClassification</name><anchor>transformers.TFLayoutLMForTokenClassification</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/layoutlm/modeling_tf_layoutlm.py#L1317</source><parameters>[{"name": "*args", "val": ""}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **config** ([LayoutLMConfig](/docs/transformers/master/en/model_doc/layoutlm#transformers.LayoutLMConfig)) -- Model configuration class with all the parameters of the model.
   Initializing with a config file does not load the weights associated with the model, only the
   configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model#transformers.TFPreTrainedModel.from_pretrained) method to load the
   model weights.</paramsdesc><paramgroups>0</paramgroups></docstring>
@@ -1295,7 +1298,7 @@ the first positional argument :
 
 
 <div class="docstring">
-<docstring><name>call</name><anchor>transformers.TFLayoutLMForTokenClassification.call</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/layoutlm/modeling_tf_layoutlm.py#L1340</source><parameters>[{"name": "input_ids", "val": ": typing.Union[typing.List[tensorflow.python.framework.ops.Tensor], typing.List[numpy.ndarray], typing.List[tensorflow.python.keras.engine.keras_tensor.KerasTensor], typing.Dict[str, tensorflow.python.framework.ops.Tensor], typing.Dict[str, numpy.ndarray], typing.Dict[str, tensorflow.python.keras.engine.keras_tensor.KerasTensor], tensorflow.python.framework.ops.Tensor, numpy.ndarray, tensorflow.python.keras.engine.keras_tensor.KerasTensor, NoneType] = None"}, {"name": "bbox", "val": ": typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None"}, {"name": "attention_mask", "val": ": typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None"}, {"name": "token_type_ids", "val": ": typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None"}, {"name": "position_ids", "val": ": typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None"}, {"name": "head_mask", "val": ": typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None"}, {"name": "inputs_embeds", "val": ": typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None"}, {"name": "output_attentions", "val": ": typing.Optional[bool] = None"}, {"name": "output_hidden_states", "val": ": typing.Optional[bool] = None"}, {"name": "return_dict", "val": ": typing.Optional[bool] = None"}, {"name": "labels", "val": ": typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None"}, {"name": "training", "val": ": typing.Optional[bool] = False"}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **input_ids** (`Numpy array` or `tf.Tensor` of shape `(batch_size, sequence_length)`) --
+<docstring><name>call</name><anchor>transformers.TFLayoutLMForTokenClassification.call</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/layoutlm/modeling_tf_layoutlm.py#L1341</source><parameters>[{"name": "input_ids", "val": ": typing.Union[typing.List[tensorflow.python.framework.ops.Tensor], typing.List[numpy.ndarray], typing.List[tensorflow.python.keras.engine.keras_tensor.KerasTensor], typing.Dict[str, tensorflow.python.framework.ops.Tensor], typing.Dict[str, numpy.ndarray], typing.Dict[str, tensorflow.python.keras.engine.keras_tensor.KerasTensor], tensorflow.python.framework.ops.Tensor, numpy.ndarray, tensorflow.python.keras.engine.keras_tensor.KerasTensor, NoneType] = None"}, {"name": "bbox", "val": ": typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None"}, {"name": "attention_mask", "val": ": typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None"}, {"name": "token_type_ids", "val": ": typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None"}, {"name": "position_ids", "val": ": typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None"}, {"name": "head_mask", "val": ": typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None"}, {"name": "inputs_embeds", "val": ": typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None"}, {"name": "output_attentions", "val": ": typing.Optional[bool] = None"}, {"name": "output_hidden_states", "val": ": typing.Optional[bool] = None"}, {"name": "return_dict", "val": ": typing.Optional[bool] = None"}, {"name": "labels", "val": ": typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None"}, {"name": "training", "val": ": typing.Optional[bool] = False"}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **input_ids** (`Numpy array` or `tf.Tensor` of shape `(batch_size, sequence_length)`) --
   Indices of input sequence tokens in the vocabulary.
 
   Indices can be obtained using [LayoutLMTokenizer](/docs/transformers/master/en/model_doc/layoutlm#transformers.LayoutLMTokenizer). See

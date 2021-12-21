@@ -392,7 +392,6 @@ Examples:
 >>> configuration = model.config
 ```
 
-
 </div>
 
 <h2 id="transformers.DetrFeatureExtractor">DetrFeatureExtractor</h2>
@@ -473,7 +472,7 @@ Main method to prepare for the model one or several image(s) and optional annota
 padded up to the largest image in a batch, and a pixel mask is created that indicates which pixels are
 real/which are padding.
 
-<Tip warning={true}>
+<Tip warning=&amp;lcub;true}>
 
 NumPy arrays and PyTorch tensors are converted to PIL images when resizing, so the most efficient is to pass
 PIL images.
@@ -489,7 +488,7 @@ PIL images.
 
 </div>
 <div class="docstring">
-<docstring><name>pad\_and\_create\_pixel\_mask</name><anchor>transformers.DetrFeatureExtractor.pad_and_create_pixel_mask</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/detr/feature_extraction_detr.py#L633</source><parameters>[{"name": "pixel_values_list", "val": ": typing.List[ForwardRef('torch.Tensor')]"}, {"name": "return_tensors", "val": ": typing.Union[str, transformers.file_utils.TensorType, NoneType] = None"}]</parameters><paramsdesc>- **pixel_values_list** (`List[torch.Tensor]`) --
+<docstring><name>pad\_and\_create\_pixel\_mask</name><anchor>transformers.DetrFeatureExtractor.pad_and_create_pixel_mask</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/detr/feature_extraction_detr.py#L631</source><parameters>[{"name": "pixel_values_list", "val": ": typing.List[ForwardRef('torch.Tensor')]"}, {"name": "return_tensors", "val": ": typing.Union[str, transformers.file_utils.TensorType, NoneType] = None"}]</parameters><paramsdesc>- **pixel_values_list** (`List[torch.Tensor]`) --
   List of images (pixel values) to be padded. Each image should be a tensor of shape (C, H, W).
 - **return_tensors** (`str` or [TensorType](/docs/transformers/master/en/internal/file_utils#transformers.TensorType), *optional*) --
   If set, will return tensors instead of NumPy arrays. If set to `'pt'`, return PyTorch
@@ -510,7 +509,7 @@ Pad images up to the largest image in a batch and create a corresponding `pixel_
 
 </div>
 <div class="docstring">
-<docstring><name>post\_process</name><anchor>transformers.DetrFeatureExtractor.post_process</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/detr/feature_extraction_detr.py#L677</source><parameters>[{"name": "outputs", "val": ""}, {"name": "target_sizes", "val": ""}]</parameters><paramsdesc>- **outputs** (`DetrObjectDetectionOutput`) --
+<docstring><name>post\_process</name><anchor>transformers.DetrFeatureExtractor.post_process</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/detr/feature_extraction_detr.py#L675</source><parameters>[{"name": "outputs", "val": ""}, {"name": "target_sizes", "val": ""}]</parameters><paramsdesc>- **outputs** (`DetrObjectDetectionOutput`) --
   Raw outputs of the model.
 - **target_sizes** (`torch.Tensor` of shape `(batch_size, 2)`, *optional*) --
   Tensor containing the size (h, w) of each image of the batch. For evaluation, this must be the original
@@ -530,7 +529,7 @@ Only supports PyTorch.
 
 </div>
 <div class="docstring">
-<docstring><name>post\_process\_segmentation</name><anchor>transformers.DetrFeatureExtractor.post_process_segmentation</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/detr/feature_extraction_detr.py#L715</source><parameters>[{"name": "outputs", "val": ""}, {"name": "target_sizes", "val": ""}, {"name": "threshold", "val": " = 0.9"}, {"name": "mask_threshold", "val": " = 0.5"}]</parameters><paramsdesc>- **outputs** (`DetrSegmentationOutput`) --
+<docstring><name>post\_process\_segmentation</name><anchor>transformers.DetrFeatureExtractor.post_process_segmentation</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/detr/feature_extraction_detr.py#L713</source><parameters>[{"name": "outputs", "val": ""}, {"name": "target_sizes", "val": ""}, {"name": "threshold", "val": " = 0.9"}, {"name": "mask_threshold", "val": " = 0.5"}]</parameters><paramsdesc>- **outputs** (`DetrSegmentationOutput`) --
   Raw outputs of the model.
 - **target_sizes** (`torch.Tensor` of shape `(batch_size, 2)` or `List[Tuple]` of length `batch_size`) --
   Torch Tensor (or list) corresponding to the requested final size (h, w) of each prediction.
@@ -552,7 +551,7 @@ supports PyTorch.
 
 </div>
 <div class="docstring">
-<docstring><name>post\_process\_panoptic</name><anchor>transformers.DetrFeatureExtractor.post_process_panoptic</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/detr/feature_extraction_detr.py#L802</source><parameters>[{"name": "outputs", "val": ""}, {"name": "processed_sizes", "val": ""}, {"name": "target_sizes", "val": " = None"}, {"name": "is_thing_map", "val": " = None"}, {"name": "threshold", "val": " = 0.85"}]</parameters><paramsdesc>- **outputs** (`DetrSegmentationOutput`) --
+<docstring><name>post\_process\_panoptic</name><anchor>transformers.DetrFeatureExtractor.post_process_panoptic</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/detr/feature_extraction_detr.py#L800</source><parameters>[{"name": "outputs", "val": ""}, {"name": "processed_sizes", "val": ""}, {"name": "target_sizes", "val": " = None"}, {"name": "is_thing_map", "val": " = None"}, {"name": "threshold", "val": " = 0.85"}]</parameters><paramsdesc>- **outputs** (`DetrSegmentationOutput`) --
   Raw outputs of the model.
 - **processed_sizes** (`torch.Tensor` of shape `(batch_size, 2)` or `List[Tuple]` of length `batch_size`) --
   Torch Tensor (or list) containing the size (h, w) of each image of the batch, i.e. the size after data
@@ -664,20 +663,22 @@ general usage and behavior.
     layernorm.
 
 
-Examples --:
+Examples --
 
->>> from transformers import DetrFeatureExtractor, DetrModel
->>> from PIL import Image
->>> import requests
+```python --
+ transformers import DetrFeatureExtractor, DetrModel
+ PIL import Image
+rt requests
 
->>> url = 'http://images.cocodataset.org/val2017/000000039769.jpg'
->>> image = Image.open(requests.get(url, stream=True).raw)
+= 'http
+e = Image.open(requests.get(url, stream=True).raw)
 
->>> feature_extractor = DetrFeatureExtractor.from_pretrained('facebook/detr-resnet-50')
->>> model = DetrModel.from_pretrained('facebook/detr-resnet-50')
->>> inputs = feature_extractor(images=image, return_tensors="pt")
->>> outputs = model(**inputs)
->>> last_hidden_states = outputs.last_hidden_state</paramsdesc><paramgroups>0</paramgroups></docstring>
+ure_extractor = DetrFeatureExtractor.from_pretrained('facebook/detr-resnet-50')
+l = DetrModel.from_pretrained('facebook/detr-resnet-50')
+ts = feature_extractor(images=image, return_tensors="pt")
+uts = model(**inputs)
+_hidden_states = outputs.last_hidden_state
+``` --</paramsdesc><paramgroups>0</paramgroups></docstring>
 The [DetrModel](/docs/transformers/master/en/model_doc/detr#transformers.DetrModel) forward method, overrides the `__call__` special method.
 
 <Tip>
@@ -697,7 +698,7 @@ the latter silently ignores them.
 
 <div class="docstring">
 
-<docstring><name>class transformers.DetrForObjectDetection</name><anchor>transformers.DetrForObjectDetection</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/detr/modeling_detr.py#L1314</source><parameters>[{"name": "config", "val": ": DetrConfig"}]</parameters><paramsdesc>- **config** ([DetrConfig](/docs/transformers/master/en/model_doc/detr#transformers.DetrConfig)) --
+<docstring><name>class transformers.DetrForObjectDetection</name><anchor>transformers.DetrForObjectDetection</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/detr/modeling_detr.py#L1315</source><parameters>[{"name": "config", "val": ": DetrConfig"}]</parameters><paramsdesc>- **config** ([DetrConfig](/docs/transformers/master/en/model_doc/detr#transformers.DetrConfig)) --
   Model configuration class with all the parameters of the model. Initializing with a config file does not
   load the weights associated with the model, only the configuration. Check out the
   [from_pretrained()](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel.from_pretrained) method to load the model weights.</paramsdesc><paramgroups>0</paramgroups></docstring>
@@ -718,7 +719,7 @@ general usage and behavior.
 
 
 <div class="docstring">
-<docstring><name>forward</name><anchor>transformers.DetrForObjectDetection.forward</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/detr/modeling_detr.py#L1340</source><parameters>[{"name": "pixel_values", "val": ""}, {"name": "pixel_mask", "val": " = None"}, {"name": "decoder_attention_mask", "val": " = None"}, {"name": "encoder_outputs", "val": " = None"}, {"name": "inputs_embeds", "val": " = None"}, {"name": "decoder_inputs_embeds", "val": " = None"}, {"name": "labels", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "return_dict", "val": " = None"}]</parameters><paramsdesc>- **pixel_values** (`torch.FloatTensor` of shape `(batch_size, num_channels, height, width)`) --
+<docstring><name>forward</name><anchor>transformers.DetrForObjectDetection.forward</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/detr/modeling_detr.py#L1341</source><parameters>[{"name": "pixel_values", "val": ""}, {"name": "pixel_mask", "val": " = None"}, {"name": "decoder_attention_mask", "val": " = None"}, {"name": "encoder_outputs", "val": " = None"}, {"name": "inputs_embeds", "val": " = None"}, {"name": "decoder_inputs_embeds", "val": " = None"}, {"name": "labels", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "return_dict", "val": " = None"}]</parameters><paramsdesc>- **pixel_values** (`torch.FloatTensor` of shape `(batch_size, num_channels, height, width)`) --
   Pixel values. Padding will be ignored by default should you provide it.
 
   Pixel values can be obtained using [DetrFeatureExtractor](/docs/transformers/master/en/model_doc/detr#transformers.DetrFeatureExtractor). See
@@ -831,7 +832,7 @@ the latter silently ignores them.
 
 <div class="docstring">
 
-<docstring><name>class transformers.DetrForSegmentation</name><anchor>transformers.DetrForSegmentation</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/detr/modeling_detr.py#L1471</source><parameters>[{"name": "config", "val": ": DetrConfig"}]</parameters><paramsdesc>- **config** ([DetrConfig](/docs/transformers/master/en/model_doc/detr#transformers.DetrConfig)) --
+<docstring><name>class transformers.DetrForSegmentation</name><anchor>transformers.DetrForSegmentation</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/detr/modeling_detr.py#L1472</source><parameters>[{"name": "config", "val": ": DetrConfig"}]</parameters><paramsdesc>- **config** ([DetrConfig](/docs/transformers/master/en/model_doc/detr#transformers.DetrConfig)) --
   Model configuration class with all the parameters of the model. Initializing with a config file does not
   load the weights associated with the model, only the configuration. Check out the
   [from_pretrained()](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel.from_pretrained) method to load the model weights.</paramsdesc><paramgroups>0</paramgroups></docstring>
@@ -853,7 +854,7 @@ general usage and behavior.
 
 
 <div class="docstring">
-<docstring><name>forward</name><anchor>transformers.DetrForSegmentation.forward</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/detr/modeling_detr.py#L1493</source><parameters>[{"name": "pixel_values", "val": ""}, {"name": "pixel_mask", "val": " = None"}, {"name": "decoder_attention_mask", "val": " = None"}, {"name": "encoder_outputs", "val": " = None"}, {"name": "inputs_embeds", "val": " = None"}, {"name": "decoder_inputs_embeds", "val": " = None"}, {"name": "labels", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "return_dict", "val": " = None"}]</parameters><paramsdesc>- **pixel_values** (`torch.FloatTensor` of shape `(batch_size, num_channels, height, width)`) --
+<docstring><name>forward</name><anchor>transformers.DetrForSegmentation.forward</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/detr/modeling_detr.py#L1494</source><parameters>[{"name": "pixel_values", "val": ""}, {"name": "pixel_mask", "val": " = None"}, {"name": "decoder_attention_mask", "val": " = None"}, {"name": "encoder_outputs", "val": " = None"}, {"name": "inputs_embeds", "val": " = None"}, {"name": "decoder_inputs_embeds", "val": " = None"}, {"name": "labels", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "return_dict", "val": " = None"}]</parameters><paramsdesc>- **pixel_values** (`torch.FloatTensor` of shape `(batch_size, num_channels, height, width)`) --
   Pixel values. Padding will be ignored by default should you provide it.
 
   Pixel values can be obtained using [DetrFeatureExtractor](/docs/transformers/master/en/model_doc/detr#transformers.DetrFeatureExtractor). See
