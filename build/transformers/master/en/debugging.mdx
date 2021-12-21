@@ -16,10 +16,8 @@ import CodeBlock from "./CodeBlock.svelte";
 import CodeBlockFw from "./CodeBlockFw.svelte";
 import ColabDropdown from "./ColabDropdown.svelte";
 import IconCopyLink from "./IconCopyLink.svelte";
-
 export let fw: "pt" | "tf"
 </script>
-
 <!--Copyright 2021 The HuggingFace Team. All rights reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
@@ -133,12 +131,11 @@ Each reported frame starts by declaring the fully qualified entry for the corres
 for. If we look just at this frame:
 
 ```
-encoder.block.2.layer.1.layer_norm T5LayerNorm
-```
-
+                  encoder.block.2.layer.1.layer_norm T5LayerNorm
 8.69e-02 4.18e-01 weight
 2.65e-04 3.42e+03 input[0]
 1.79e-06 4.65e+00 output
+```
 
 Here, `encoder.block.2.layer.1.layer_norm` indicates that it was a layer norm for the first layer, of the second
 block of the encoder. And the specific calls of the `forward` is `T5LayerNorm`.
@@ -252,7 +249,7 @@ class T5LayerFF(nn.Module):
 You can see that we added 2 of these and now we track if `inf` or `nan` for `forwarded_states` was detected
 somewhere in between.
 
-Actually, the detector already reports these because each of the calls in the example above is a `nn.Module``, but
+Actually, the detector already reports these because each of the calls in the example above is a `nn.Module`, but
 let's say if you had some local direct calculations this is how you'd do that.
 
 Additionally, if you're instantiating the debugger in your own code, you can adjust the number of frames printed from
@@ -282,34 +279,33 @@ This is helpful if you know that the program starts misbehaving after a certain 
 right to that area. Here is a sample truncated output for such configuration:
 
 ```
-*** Starting batch number=1 ***
-```
-
+                  *** Starting batch number=1 ***
 abs min  abs max  metadata
-shared Embedding
+                  shared Embedding
 1.01e-06 7.92e+02 weight
 0.00e+00 2.47e+04 input[0]
 5.36e-05 7.92e+02 output
 [...]
-decoder.dropout Dropout
+                  decoder.dropout Dropout
 1.60e-07 2.27e+01 input[0]
 0.00e+00 2.52e+01 output
-decoder T5Stack
-not a tensor output
-lm_head Linear
+                  decoder T5Stack
+     not a tensor output
+                  lm_head Linear
 1.01e-06 7.92e+02 weight
 0.00e+00 1.11e+00 input[0]
 6.06e-02 8.39e+01 output
-T5ForConditionalGeneration
-not a tensor output
+                   T5ForConditionalGeneration
+     not a tensor output
 
-*** Starting batch number=3 ***
+                  *** Starting batch number=3 ***
 abs min  abs max  metadata
-shared Embedding
+                  shared Embedding
 1.01e-06 7.92e+02 weight
 0.00e+00 2.78e+04 input[0]
 5.36e-05 7.92e+02 output
 [...]
+```
 
 Here you will get a huge number of frames dumped - as many as there were forward calls in your model, so it may or may
 not what you want, but sometimes it can be easier to use for debugging purposes than a normal debugger. For example, if

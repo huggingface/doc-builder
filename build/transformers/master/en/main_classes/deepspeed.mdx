@@ -84,10 +84,8 @@ import CodeBlock from "./CodeBlock.svelte";
 import CodeBlockFw from "./CodeBlockFw.svelte";
 import ColabDropdown from "./ColabDropdown.svelte";
 import IconCopyLink from "./IconCopyLink.svelte";
-
 export let fw: "pt" | "tf"
 </script>
-
 <!--Copyright 2020 The HuggingFace Team. All rights reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
@@ -101,7 +99,6 @@ specific language governing permissions and limitations under the License.
 -->
 
 <h1 id="deepspeed-integration">DeepSpeed Integration</h1>
-
 
 [DeepSpeed](https://github.com/microsoft/DeepSpeed) implements everything described in the [ZeRO paper](https://arxiv.org/abs/1910.02054). Currently it provides full support for:
 
@@ -120,8 +117,6 @@ DeepSpeed ZeRO-2 is primarily used only for training, as its features are of no 
 DeepSpeed ZeRO-3 can be used for inference as well, since it allows huge models to be loaded on multiple GPUs, which
 won't be possible on a single GPU.
 
-
-
 🤗 Transformers integrates [DeepSpeed](https://github.com/microsoft/DeepSpeed) via 2 options:
 
 1. Integration of the core DeepSpeed features via [Trainer](/docs/transformers/master/en/main_classes/trainer#transformers.Trainer). This is everything done for you type
@@ -130,7 +125,7 @@ won't be possible on a single GPU.
 2. If you don't use [Trainer](/docs/transformers/master/en/main_classes/trainer#transformers.Trainer) and want to use your own Trainer where you integrated DeepSpeed
    yourself, core functionality functions like `from_pretrained` and `from_config` include integration of essential
    parts of DeepSpeed like `zero.Init` for ZeRO stage 3 and higher. To tap into this feature read the docs on
-   [deepspeed-non-trainer-integration](/docs/transformers/master/en/main_classes/deepspeed#deepspeed-non-trainer-integration).
+   [deepspeed-non-trainer-integration](#deepspeed-non-trainer-integration).
 
 What is integrated:
 
@@ -142,7 +137,7 @@ Inference:
 
 1. DeepSpeed ZeRO Inference supports ZeRO stage 3 with ZeRO-Infinity. It uses the same ZeRO protocol as training, but
    it doesn't use an optimizer and a lr scheduler and only stage 3 is relevant. For more details see:
-   [deepspeed-zero-inference](/docs/transformers/master/en/main_classes/deepspeed#deepspeed-zero-inference).
+   [deepspeed-zero-inference](#deepspeed-zero-inference).
 
 There is also DeepSpeed Inference - this is a totally different technology which uses Tensor Parallelism instead of
 ZeRO (coming soon).
@@ -174,7 +169,7 @@ pip install transformers[deepspeed]
 or find more details on [the DeepSpeed's GitHub page](https://github.com/microsoft/deepspeed#installation) and
 [advanced install](https://www.deepspeed.ai/tutorials/advanced-install/).
 
-If you're still struggling with the build, first make sure to read [zero-install-notes](/docs/transformers/master/en/main_classes/deepspeed#zero-install-notes).
+If you're still struggling with the build, first make sure to read [zero-install-notes](#zero-install-notes).
 
 If you don't prebuild the extensions and rely on them to be built at run time and you tried all of the above solutions
 to no avail, the next thing to try is to pre-build the modules before installing them.
@@ -288,7 +283,7 @@ Here is an example of running `run_translation.py` under DeepSpeed deploying all
 ```bash
 deepspeed examples/pytorch/translation/run_translation.py \
 --deepspeed tests/deepspeed/ds_config_zero3.json \
---model_name_or_path t5-small --per_device_train_batch_size 1   \
+--model_name_or_path t5-small --per_device_train_batch_size 1 \
 --output_dir output_dir --overwrite_output_dir --fp16 \
 --do_train --max_train_samples 500 --num_train_epochs 1 \
 --dataset_name wmt16 --dataset_config "ro-en" \
@@ -312,7 +307,7 @@ To deploy DeepSpeed with one GPU adjust the [Trainer](/docs/transformers/master/
 ```bash
 deepspeed --num_gpus=1 examples/pytorch/translation/run_translation.py \
 --deepspeed tests/deepspeed/ds_config_zero2.json \
---model_name_or_path t5-small --per_device_train_batch_size 1   \
+--model_name_or_path t5-small --per_device_train_batch_size 1 \
 --output_dir output_dir --overwrite_output_dir --fp16 \
 --do_train --max_train_samples 500 --num_train_epochs 1 \
 --dataset_name wmt16 --dataset_config "ro-en" \
@@ -359,7 +354,7 @@ For a practical usage example of this type of deployment, please, see this [post
 
 You may also try the ZeRO-3 with CPU and NVMe offload as explained further in this document.
 
-&amp;lt;!--- TODO: Benchmark whether we can get better performance out of ZeRO-3 vs. ZeRO-2 on a single GPU, and then
+<!--- TODO: Benchmark whether we can get better performance out of ZeRO-3 vs. ZeRO-2 on a single GPU, and then
 recommend ZeRO-3 config as starting one. -->
 
 Notes:
@@ -367,9 +362,9 @@ Notes:
 - if you need to run on a specific GPU, which is different from GPU 0, you can't use `CUDA_VISIBLE_DEVICES` to limit
   the visible scope of available GPUs. Instead, you have to use the following syntax:
 
-```bash
-deepspeed --include localhost:1 examples/pytorch/translation/run_translation.py ...
-```
+  ```bash
+  deepspeed --include localhost:1 examples/pytorch/translation/run_translation.py ...
+  ```
 
   In this example, we tell DeepSpeed to use GPU 1 (second gpu).
 
@@ -475,14 +470,14 @@ EOT
 If the training script is in a normal file and not in the notebook cells, you can launch `deepspeed` normally via
 shell from a cell. For example, to use `run_translation.py` you would launch it with:
 
-```
+```python
 !git clone https://github.com/huggingface/transformers
 !cd transformers; deepspeed examples/pytorch/translation/run_translation.py ...
 ```
 
 or with `%%bash` magic, where you can write a multi-line code for the shell program to run:
 
-```
+```python
 %%bash
 
 git clone https://github.com/huggingface/transformers
@@ -614,7 +609,7 @@ TrainingArguments(..., deepspeed=ds_config_dict)
 <h3 id="shared-configuration">Shared Configuration</h3>
 
 
-<Tip warning={true}>
+<Tip warning=&amp;lcub;true}>
 
 This section is a must-read
 
@@ -1283,7 +1278,7 @@ For example, for `WarmupDecayLR`, you can use the following entry:
 }
 ```
 
-and ``total_num_steps`, `warmup_max_lr`, `warmup_num_steps` and `total_num_steps` will be set at loading time.
+and `total_num_steps`, `warmup_max_lr`, `warmup_num_steps` and `total_num_steps` will be set at loading time.
 
 
 
@@ -1631,7 +1626,7 @@ As you can see this gives you a randomly initialized model.
 
 If you want to use a pretrained model, `model_class.from_pretrained` will activate this feature as long as
 `is_deepspeed_zero3_enabled()` returns `True`, which currently is setup by the
-class:*~transformers.TrainingArguments* object if the passed DeepSpeed configuration file contains ZeRO-3 config
+[TrainingArguments](/docs/transformers/master/en/main_classes/trainer#transformers.TrainingArguments) object if the passed DeepSpeed configuration file contains ZeRO-3 config
 section. Thus you must create the [TrainingArguments](/docs/transformers/master/en/main_classes/trainer#transformers.TrainingArguments) object **before** calling
 `from_pretrained`. Here is an example of a possible sequence:
 
@@ -1650,7 +1645,7 @@ Note: If the fp16 weights of the model can't fit onto the memory of a single GPU
 For full details on this method and other related features please refer to [Constructing Massive Models](https://deepspeed.readthedocs.io/en/latest/zero3.html#constructing-massive-models).
 
 Also when loading fp16-pretrained models, you will want to tell `from_pretrained` to use
-`torch_dtype=torch.float16`. For details, please, see [from_pretrained-torch-dtype](/docs/transformers/master/en/main_classes/deepspeed#from_pretrained-torch-dtype).
+`torch_dtype=torch.float16`. For details, please, see [from_pretrained-torch-dtype](#from_pretrained-torch-dtype).
 
 
 <h4 id="gathering-parameters">Gathering Parameters</h4>
@@ -1730,11 +1725,11 @@ In your report please always include:
 
 3. Output of:
 
-```bash
-python -c 'import torch; print(f"torch: &amp;lcub;torch.__version__}")'
-python -c 'import transformers; print(f"transformers: &amp;lcub;transformers.__version__}")'
-python -c 'import deepspeed; print(f"deepspeed: &amp;lcub;deepspeed.__version__}")'
-```
+    ```bash
+    python -c 'import torch; print(f"torch: &amp;lcub;torch.__version__}")'
+    python -c 'import transformers; print(f"transformers: &amp;lcub;transformers.__version__}")'
+    python -c 'import deepspeed; print(f"deepspeed: &amp;lcub;deepspeed.__version__}")'
+    ```
 
 4. If possible include a link to a Google Colab notebook that we can reproduce the problem with. You can use this
    [notebook](https://github.com/stas00/porting/blob/master/transformers/deepspeed/DeepSpeed_on_colab_CLI.ipynb) as

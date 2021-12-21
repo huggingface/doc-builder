@@ -92,10 +92,8 @@ import CodeBlock from "./CodeBlock.svelte";
 import CodeBlockFw from "./CodeBlockFw.svelte";
 import ColabDropdown from "./ColabDropdown.svelte";
 import IconCopyLink from "./IconCopyLink.svelte";
-
 export let fw: "pt" | "tf"
 </script>
-
 <!--Copyright 2020 The HuggingFace Team. All rights reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
@@ -121,21 +119,21 @@ There are 2 test suites in the repository:
 <h2 id="how-transformers-are-tested">How transformers are tested</h2>
 
 1. Once a PR is submitted it gets tested with 9 CircleCi jobs. Every new commit to that PR gets retested. These jobs
-   are defined in this [config file](https://github.com/huggingface/transformers/tree/master/.circleci/config.yml), so that if needed you can reproduce the same
+   are defined in this [config file](https://github.com/huggingface/transformers-doc2mdx/tree/master/.circleci/config.yml), so that if needed you can reproduce the same
    environment on your machine.
 
    These CI jobs don't run `@slow` tests.
 
 2. There are 3 jobs run by [github actions](https://github.com/huggingface/transformers/actions):
 
-   - [torch hub integration](https://github.com/huggingface/transformers/tree/master/.github/workflows/github-torch-hub.yml): checks whether torch hub
+   - [torch hub integration](https://github.com/huggingface/transformers-doc2mdx/tree/master/.github/workflows/github-torch-hub.yml): checks whether torch hub
      integration works.
 
-   - [self-hosted (push)](https://github.com/huggingface/transformers/tree/master/.github/workflows/self-push.yml): runs fast tests on GPU only on commits on
+   - [self-hosted (push)](https://github.com/huggingface/transformers-doc2mdx/tree/master/.github/workflows/self-push.yml): runs fast tests on GPU only on commits on
      `master`. It only runs if a commit on `master` has updated the code in one of the following folders: `src`,
      `tests`, `.github` (to prevent running on added model cards, notebooks, etc.)
 
-   - [self-hosted runner](https://github.com/huggingface/transformers/tree/master/.github/workflows/self-scheduled.yml): runs normal and slow tests on GPU in
+   - [self-hosted runner](https://github.com/huggingface/transformers-doc2mdx/tree/master/.github/workflows/self-scheduled.yml): runs normal and slow tests on GPU in
      `tests` and `examples`:
 
 ```bash
@@ -433,7 +431,7 @@ By default `--random-order-bucket=module` is implied, which will shuffle the fil
 shuffle on `class`, `package`, `global` and `none` levels. For the complete details please see its
 [documentation](https://github.com/jbasko/pytest-random-order).
 
-Another randomization alternative is: `pytest-randomly` &amp;lt;https://github.com/pytest-dev/pytest-randomly>`__. This
+Another randomization alternative is: `pytest-randomly`(https://github.com/pytest-dev/pytest-randomly). This
 module has a very similar functionality/interface, but it doesn't have the bucket modes available in
 `pytest-random-order`. It has the same problem of imposing itself once installed.
 
@@ -509,8 +507,8 @@ decorators are used to set the requirements of tests CPU/GPU/TPU-wise:
 Let's depict the GPU requirements in the following table:
 
 
-| n gpus   |  decorator                       |
-|----------|----------------------------------|
+| n gpus | decorator                      |
+|--------+--------------------------------|
 | `>= 0` | `@require_torch`               |
 | `>= 1` | `@require_torch_gpu`           |
 | `>= 2` | `@require_torch_multi_gpu`     |
@@ -557,7 +555,7 @@ Inside tests:
 
 - How many GPUs are available:
 
-```bash
+```python
 from transformers.testing_utils import get_gpu_count
 n_gpu = get_gpu_count() # works with torch and tf
 ```
@@ -570,8 +568,8 @@ spawns a normal process that then spawns off multiple workers and manages the IO
 
 Here are some tests that use it:
 
-- [test_trainer_distributed.py](https://github.com/huggingface/transformers/tree/master/tests/test_trainer_distributed.py)
-- [test_deepspeed.py](https://github.com/huggingface/transformers/tree/master/tests/deepspeed/test_deepspeed.py)
+- [test_trainer_distributed.py](https://github.com/huggingface/transformers-doc2mdx/tree/master/tests/test_trainer_distributed.py)
+- [test_deepspeed.py](https://github.com/huggingface/transformers-doc2mdx/tree/master/tests/deepspeed/test_deepspeed.py)
 
 To jump right into the execution point, search for the `execute_subprocess_async` call in those tests.
 
@@ -1013,7 +1011,7 @@ slow models to do qualitative testing. To see the use of these simply look for *
 grep tiny tests examples
 ```
 
-Here is a an example of a [script](https://github.com/huggingface/transformers/tree/master/scripts/fsmt/fsmt-make-tiny-model.py) that created the tiny model
+Here is a an example of a [script](https://github.com/huggingface/transformers-doc2mdx/tree/master/scripts/fsmt/fsmt-make-tiny-model.py) that created the tiny model
 [stas/tiny-wmt19-en-de](https://huggingface.co/stas/tiny-wmt19-en-de). You can easily adjust it to your specific
 model's architecture.
 
