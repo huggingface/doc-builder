@@ -16,7 +16,7 @@
 
 import re
 
-from .convert_rst_to_mdx import parse_rst_docstring
+from .convert_rst_to_mdx import parse_rst_docstring, remove_indent
 
 
 def convert_md_to_mdx(md_text, page_info):
@@ -73,6 +73,7 @@ def convert_md_docstring_to_mdx(docstring, page_info):
     Convert a docstring written in Markdown to mdx.
     """
     text = parse_rst_docstring(docstring)
+    text = remove_indent(text)
     return process_md(text, page_info)
 
 
