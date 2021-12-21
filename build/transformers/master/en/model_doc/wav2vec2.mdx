@@ -375,35 +375,36 @@ Users should refer to the superclass for more information regarding such methods
   Whether or not to return the lengths of the encoded inputs.
 - **verbose** (`bool`, *optional*, defaults to `True`) --
   Whether or not to print more information and warnings.
-  **kwargs -- passed to the `self.tokenize()` method
+  **kwargs -- passed to the `self.tokenize()` method</paramsdesc><paramgroups>0</paramgroups><rettype>[BatchEncoding](/docs/transformers/master/en/main_classes/tokenizer#transformers.BatchEncoding)</rettype><retdesc>A [BatchEncoding](/docs/transformers/master/en/main_classes/tokenizer#transformers.BatchEncoding) with the following fields:
 
-  Return --
-  [BatchEncoding](/docs/transformers/master/en/main_classes/tokenizer#transformers.BatchEncoding) -- A [BatchEncoding](/docs/transformers/master/en/main_classes/tokenizer#transformers.BatchEncoding) with the following fields:
-
-- **-** **input_ids** -- List of token ids to be fed to a model. --
+- **input_ids** -- List of token ids to be fed to a model.
 
   [What are input IDs?](../glossary#input-ids)
 
-- **-** **token_type_ids** -- List of token type ids to be fed to a model (when `return_token_type_ids=True` --
+- **token_type_ids** -- List of token type ids to be fed to a model (when `return_token_type_ids=True`
   or if *"token_type_ids"* is in `self.model_input_names`).
 
   [What are token type IDs?](../glossary#token-type-ids)
 
-- **-** **attention_mask** -- List of indices specifying which tokens should be attended to by the model (when --
+- **attention_mask** -- List of indices specifying which tokens should be attended to by the model (when
   `return_attention_mask=True` or if *"attention_mask"* is in `self.model_input_names`).
 
   [What are attention masks?](../glossary#attention-mask)
 
-- **-** **overflowing_tokens** -- List of overflowing tokens sequences (when a `max_length` is specified and --
+- **overflowing_tokens** -- List of overflowing tokens sequences (when a `max_length` is specified and
   `return_overflowing_tokens=True`).
-- **-** **num_truncated_tokens** -- Number of tokens truncated (when a `max_length` is specified and --
+- **num_truncated_tokens** -- Number of tokens truncated (when a `max_length` is specified and
   `return_overflowing_tokens=True`).
-- **-** **special_tokens_mask** -- List of 0s and 1s, with 1 specifying added special tokens and 0 specifying --
+- **special_tokens_mask** -- List of 0s and 1s, with 1 specifying added special tokens and 0 specifying
   regular sequence tokens (when `add_special_tokens=True` and `return_special_tokens_mask=True`).
-- **-** **length** -- The length of the inputs (when `return_length=True`) --</paramsdesc><paramgroups>0</paramgroups></docstring>
+- **length** -- The length of the inputs (when `return_length=True`)</retdesc></docstring>
 
 Main method to tokenize and prepare for the model one or several sequence(s) or one or several pair(s) of
 sequences.
+
+
+
+
 
 
 
@@ -1570,76 +1571,26 @@ behavior.
   masked extracted features in *config.proj_codevector_dim* space.
 - **sampled_negative_indices** (`torch.BoolTensor` of shape `(batch_size, sequence_length, num_negatives)`, *optional*) --
   Indices indicating which quantized target vectors are used as negative sampled vectors in contrastive loss.
-  Required input for pre-training.
+  Required input for pre-training.</paramsdesc><paramgroups>0</paramgroups><rettype>[transformers.models.wav2vec2.modeling_wav2vec2.Wav2Vec2ForPreTrainingOutput](/docs/transformers/master/en/model_doc/wav2vec2#transformers.models.wav2vec2.modeling_wav2vec2.Wav2Vec2ForPreTrainingOutput) or `tuple(torch.FloatTensor)`</rettype><retdesc>A [transformers.models.wav2vec2.modeling_wav2vec2.Wav2Vec2ForPreTrainingOutput](/docs/transformers/master/en/model_doc/wav2vec2#transformers.models.wav2vec2.modeling_wav2vec2.Wav2Vec2ForPreTrainingOutput) or a tuple of
+`torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising various
+elements depending on the configuration ([Wav2Vec2Config](/docs/transformers/master/en/model_doc/wav2vec2#transformers.Wav2Vec2Config)) and inputs.
 
+- **loss** (*optional*, returned when `sample_negative_indices` are passed, `torch.FloatTensor` of shape `(1,)`) -- Total loss as the sum of the contrastive loss (L_m) and the diversity loss (L_d) as stated in the [official
+  paper](https://arxiv.org/pdf/2006.11477.pdf) . (classification) loss.
+- **projected_states** (`torch.FloatTensor` of shape `(batch_size, sequence_length, config.proj_codevector_dim)`) -- Hidden-states of the model projected to *config.proj_codevector_dim* that can be used to predict the masked
+  projected quantized states.
+- **projected_quantized_states** (`torch.FloatTensor` of shape `(batch_size, sequence_length, config.proj_codevector_dim)`) -- Quantized extracted feature vectors projected to *config.proj_codevector_dim* representing the positive
+  target vectors for contrastive loss.
+- **hidden_states** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer)
+  of shape `(batch_size, sequence_length, hidden_size)`.
 
-  Returns --
-  [transformers.models.wav2vec2.modeling_wav2vec2.Wav2Vec2ForPreTrainingOutput](/docs/transformers/master/en/model_doc/wav2vec2#transformers.models.wav2vec2.modeling_wav2vec2.Wav2Vec2ForPreTrainingOutput) or `tuple(torch.FloatTensor)`: A [transformers.models.wav2vec2.modeling_wav2vec2.Wav2Vec2ForPreTrainingOutput](/docs/transformers/master/en/model_doc/wav2vec2#transformers.models.wav2vec2.modeling_wav2vec2.Wav2Vec2ForPreTrainingOutput) or a tuple of
-  `torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising various
-  elements depending on the configuration ([Wav2Vec2Config](/docs/transformers/master/en/model_doc/wav2vec2#transformers.Wav2Vec2Config)) and inputs.
+  Hidden-states of the model at the output of each layer plus the initial embedding outputs.
+- **attentions** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
 
-  - **loss** (*optional*, returned when `sample_negative_indices` are passed, `torch.FloatTensor` of shape `(1,)`) -- Total loss as the sum of the contrastive loss (L_m) and the diversity loss (L_d) as stated in the [official
-    paper](https://arxiv.org/pdf/2006.11477.pdf) . (classification) loss.
-  - **projected_states** (`torch.FloatTensor` of shape `(batch_size, sequence_length, config.proj_codevector_dim)`) -- Hidden-states of the model projected to *config.proj_codevector_dim* that can be used to predict the masked
-    projected quantized states.
-  - **projected_quantized_states** (`torch.FloatTensor` of shape `(batch_size, sequence_length, config.proj_codevector_dim)`) -- Quantized extracted feature vectors projected to *config.proj_codevector_dim* representing the positive
-    target vectors for contrastive loss.
-  - **hidden_states** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer)
-    of shape `(batch_size, sequence_length, hidden_size)`.
-
-    Hidden-states of the model at the output of each layer plus the initial embedding outputs.
-  - **attentions** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
-
-    Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
-    heads.
-  - **contrastive_loss** (*optional*, returned when `sample_negative_indices` are passed, `torch.FloatTensor` of shape `(1,)`) -- The contrastive loss (L_m) as stated in the [official paper](https://arxiv.org/pdf/2006.11477.pdf) .
-  - **diversity_loss** (*optional*, returned when `sample_negative_indices` are passed, `torch.FloatTensor` of shape `(1,)`) -- The diversity loss (L_d) as stated in the [official paper](https://arxiv.org/pdf/2006.11477.pdf) .
-
-
-Example --
-
-```python --
-rt torch
- transformers import Wav2Vec2FeatureExtractor, Wav2Vec2ForPreTraining
- transformers.models.wav2vec2.modeling_wav2vec2 import _compute_mask_indices
- datasets import load_dataset
-rt soundfile as sf
-
-ure_extractor = Wav2Vec2FeatureExtractor.from_pretrained("patrickvonplaten/wav2vec2-base")
-l = Wav2Vec2ForPreTraining.from_pretrained("patrickvonplaten/wav2vec2-base")
-
-
-map_to_array(batch)
-- **...**     speech, _ = sf.read(batch["file"]) --
-- **...**     batch["speech"] = speech --
-- **...**     return batch --
-
-
- load_dataset("hf-internal-testing/librispeech_asr_dummy", "clean", split="validation")
- ds.map(map_to_array)
-
-t_values = feature_extractor(ds["speech"][0], return_tensors="pt").input_values  # Batch size 1
-
-mpute masked indices
-h_size, raw_sequence_length = input_values.shape
-ence_length = model._get_feat_extract_output_lengths(raw_sequence_length)
-_time_indices = _compute_mask_indices((batch_size, sequence_length), mask_prob=0.2, mask_length=2)
-
- torch.no_grad()
-- **...**     outputs = model(input_values, mask_time_indices=mask_time_indices) --
-
-mpute cosine similarity between predicted (=projected_states) and target (=projected_quantized_states)
-ne_sim = torch.cosine_similarity(
-- **...**     outputs.projected_states, outputs.projected_quantized_states, dim=-1 --
-- **...** ) --
-
-ow that cosine similarity is much higher than random
-rt cosine_sim[mask_time_indices].mean() > 0.5
-
-r contrastive loss training model should be put into train mode
-l.train()
- = model(input_values, mask_time_indices=mask_time_indices).loss
-``` --</paramsdesc><paramgroups>0</paramgroups></docstring>
+  Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
+  heads.
+- **contrastive_loss** (*optional*, returned when `sample_negative_indices` are passed, `torch.FloatTensor` of shape `(1,)`) -- The contrastive loss (L_m) as stated in the [official paper](https://arxiv.org/pdf/2006.11477.pdf) .
+- **diversity_loss** (*optional*, returned when `sample_negative_indices` are passed, `torch.FloatTensor` of shape `(1,)`) -- The diversity loss (L_d) as stated in the [official paper](https://arxiv.org/pdf/2006.11477.pdf) .</retdesc></docstring>
 The [Wav2Vec2ForPreTraining](/docs/transformers/master/en/model_doc/wav2vec2#transformers.Wav2Vec2ForPreTraining) forward method, overrides the `__call__` special method.
 
 <Tip>
@@ -1652,6 +1603,54 @@ the latter silently ignores them.
 
 
 
+
+
+
+
+Example:
+
+```python
+>>> import torch
+>>> from transformers import Wav2Vec2FeatureExtractor, Wav2Vec2ForPreTraining
+>>> from transformers.models.wav2vec2.modeling_wav2vec2 import _compute_mask_indices
+>>> from datasets import load_dataset
+>>> import soundfile as sf
+
+>>> feature_extractor = Wav2Vec2FeatureExtractor.from_pretrained("patrickvonplaten/wav2vec2-base")
+>>> model = Wav2Vec2ForPreTraining.from_pretrained("patrickvonplaten/wav2vec2-base")
+
+
+>>> def map_to_array(batch):
+...     speech, _ = sf.read(batch["file"])
+...     batch["speech"] = speech
+...     return batch
+
+
+>>> ds = load_dataset("hf-internal-testing/librispeech_asr_dummy", "clean", split="validation")
+>>> ds = ds.map(map_to_array)
+
+>>> input_values = feature_extractor(ds["speech"][0], return_tensors="pt").input_values  # Batch size 1
+
+>>> # compute masked indices
+>>> batch_size, raw_sequence_length = input_values.shape
+>>> sequence_length = model._get_feat_extract_output_lengths(raw_sequence_length)
+>>> mask_time_indices = _compute_mask_indices((batch_size, sequence_length), mask_prob=0.2, mask_length=2)
+
+>>> with torch.no_grad():
+...     outputs = model(input_values, mask_time_indices=mask_time_indices)
+
+>>> # compute cosine similarity between predicted (=projected_states) and target (=projected_quantized_states)
+>>> cosine_sim = torch.cosine_similarity(
+...     outputs.projected_states, outputs.projected_quantized_states, dim=-1
+... )
+
+>>> # show that cosine similarity is much higher than random
+>>> assert cosine_sim[mask_time_indices].mean() > 0.5
+
+>>> # for contrastive loss training model should be put into train mode
+>>> model.train()
+>>> loss = model(input_values, mask_time_indices=mask_time_indices).loss
+```
 
 </div></div>
 
@@ -1748,47 +1747,19 @@ the first positional argument :
   argument can be used in eager mode, in graph mode the value will always be set to True.
 - **training** (`bool`, *optional*, defaults to `False``) --
   Whether or not to use the model in training mode (some modules like dropout modules have different
-  behaviors between training and evaluation).
+  behaviors between training and evaluation).</paramsdesc><paramgroups>0</paramgroups><rettype>[transformers.modeling_tf_outputs.TFBaseModelOutput](/docs/transformers/master/en/main_classes/output#transformers.modeling_tf_outputs.TFBaseModelOutput) or `tuple(tf.Tensor)`</rettype><retdesc>A [transformers.modeling_tf_outputs.TFBaseModelOutput](/docs/transformers/master/en/main_classes/output#transformers.modeling_tf_outputs.TFBaseModelOutput) or a tuple of `tf.Tensor` (if
+`return_dict=False` is passed or when `config.return_dict=False`) comprising various elements depending on the
+configuration ([Wav2Vec2Config](/docs/transformers/master/en/model_doc/wav2vec2#transformers.Wav2Vec2Config)) and inputs.
 
+- **last_hidden_state** (`tf.Tensor` of shape `(batch_size, sequence_length, hidden_size)`) -- Sequence of hidden-states at the output of the last layer of the model.
+- **hidden_states** (`tuple(tf.FloatTensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `tf.Tensor` (one for the output of the embeddings + one for the output of each layer) of
+  shape `(batch_size, sequence_length, hidden_size)`.
 
+  Hidden-states of the model at the output of each layer plus the initial embedding outputs.
+- **attentions** (`tuple(tf.Tensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `tf.Tensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
 
-  Returns --
-  [transformers.modeling_tf_outputs.TFBaseModelOutput](/docs/transformers/master/en/main_classes/output#transformers.modeling_tf_outputs.TFBaseModelOutput) or `tuple(tf.Tensor)`: A [transformers.modeling_tf_outputs.TFBaseModelOutput](/docs/transformers/master/en/main_classes/output#transformers.modeling_tf_outputs.TFBaseModelOutput) or a tuple of `tf.Tensor` (if
-  `return_dict=False` is passed or when `config.return_dict=False`) comprising various elements depending on the
-  configuration ([Wav2Vec2Config](/docs/transformers/master/en/model_doc/wav2vec2#transformers.Wav2Vec2Config)) and inputs.
-
-  - **last_hidden_state** (`tf.Tensor` of shape `(batch_size, sequence_length, hidden_size)`) -- Sequence of hidden-states at the output of the last layer of the model.
-  - **hidden_states** (`tuple(tf.FloatTensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `tf.Tensor` (one for the output of the embeddings + one for the output of each layer) of
-    shape `(batch_size, sequence_length, hidden_size)`.
-
-    Hidden-states of the model at the output of each layer plus the initial embedding outputs.
-  - **attentions** (`tuple(tf.Tensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `tf.Tensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
-
-    Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
-    heads.
-
-
-Example --
-
-```python --
- transformers import Wav2Vec2Processor, TFWav2Vec2Model
- datasets import load_dataset
-rt soundfile as sf
-
-essor = Wav2Vec2Processor.from_pretrained("facebook/wav2vec2-base-960h")
-l = TFWav2Vec2Model.from_pretrained("facebook/wav2vec2-base-960h")
-
-map_to_array(batch)
-speech, _ = sf.read(batch["file"])
-batch["speech"] = speech
-return batch
-
- load_dataset("hf-internal-testing/librispeech_asr_dummy", "clean", split="validation")
- ds.map(map_to_array)
-
-t_values = processor(ds["speech"][0], return_tensors="tf").input_values  # Batch size 1
-en_states = model(input_values).last_hidden_state
-``` --</paramsdesc><paramgroups>0</paramgroups></docstring>
+  Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
+  heads.</retdesc></docstring>
 The [TFWav2Vec2Model](/docs/transformers/master/en/model_doc/wav2vec2#transformers.TFWav2Vec2Model) forward method, overrides the `__call__` special method.
 
 <Tip>
@@ -1801,6 +1772,31 @@ the latter silently ignores them.
 
 
 
+
+
+
+
+Example:
+
+```python
+>>> from transformers import Wav2Vec2Processor, TFWav2Vec2Model
+>>> from datasets import load_dataset
+>>> import soundfile as sf
+
+>>> processor = Wav2Vec2Processor.from_pretrained("facebook/wav2vec2-base-960h")
+>>> model = TFWav2Vec2Model.from_pretrained("facebook/wav2vec2-base-960h")
+
+>>> def map_to_array(batch):
+>>>     speech, _ = sf.read(batch["file"])
+>>>     batch["speech"] = speech
+>>>     return batch
+
+>>> ds = load_dataset("hf-internal-testing/librispeech_asr_dummy", "clean", split="validation")
+>>> ds = ds.map(map_to_array)
+
+>>> input_values = processor(ds["speech"][0], return_tensors="tf").input_values  # Batch size 1
+>>> hidden_states = model(input_values).last_hidden_state
+```
 
 </div></div>
 
@@ -1901,60 +1897,20 @@ the first positional argument :
 
 - **labels** (`tf.Tensor` or `np.ndarray` of shape `(batch_size, sequence_length)`, *optional*) --
   Labels for computing the masked language modeling loss. Indices should be in `[-100, 0, ..., config.vocab_size]` (see `input_values` docstring) Tokens with indices set to `-100` are ignored
-  (masked), the loss is only computed for the tokens with labels in `[0, ..., config.vocab_size]`
+  (masked), the loss is only computed for the tokens with labels in `[0, ..., config.vocab_size]`</paramsdesc><paramgroups>0</paramgroups><rettype>[transformers.modeling_tf_outputs.TFCausalLMOutput](/docs/transformers/master/en/main_classes/output#transformers.modeling_tf_outputs.TFCausalLMOutput) or `tuple(tf.Tensor)`</rettype><retdesc>A [transformers.modeling_tf_outputs.TFCausalLMOutput](/docs/transformers/master/en/main_classes/output#transformers.modeling_tf_outputs.TFCausalLMOutput) or a tuple of `tf.Tensor` (if
+`return_dict=False` is passed or when `config.return_dict=False`) comprising various elements depending on the
+configuration ([Wav2Vec2Config](/docs/transformers/master/en/model_doc/wav2vec2#transformers.Wav2Vec2Config)) and inputs.
 
+- **loss** (`tf.Tensor` of shape `(n,)`, *optional*, where n is the number of non-masked labels, returned when `labels` is provided) -- Language modeling loss (for next-token prediction).
+- **logits** (`tf.Tensor` of shape `(batch_size, sequence_length, config.vocab_size)`) -- Prediction scores of the language modeling head (scores for each vocabulary token before SoftMax).
+- **hidden_states** (`tuple(tf.Tensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `tf.Tensor` (one for the output of the embeddings + one for the output of each layer) of
+  shape `(batch_size, sequence_length, hidden_size)`.
 
-  Returns --
-  [transformers.modeling_tf_outputs.TFCausalLMOutput](/docs/transformers/master/en/main_classes/output#transformers.modeling_tf_outputs.TFCausalLMOutput) or `tuple(tf.Tensor)`: A [transformers.modeling_tf_outputs.TFCausalLMOutput](/docs/transformers/master/en/main_classes/output#transformers.modeling_tf_outputs.TFCausalLMOutput) or a tuple of `tf.Tensor` (if
-  `return_dict=False` is passed or when `config.return_dict=False`) comprising various elements depending on the
-  configuration ([Wav2Vec2Config](/docs/transformers/master/en/model_doc/wav2vec2#transformers.Wav2Vec2Config)) and inputs.
+  Hidden-states of the model at the output of each layer plus the initial embedding outputs.
+- **attentions** (`tuple(tf.Tensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `tf.Tensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
 
-  - **loss** (`tf.Tensor` of shape `(n,)`, *optional*, where n is the number of non-masked labels, returned when `labels` is provided) -- Language modeling loss (for next-token prediction).
-  - **logits** (`tf.Tensor` of shape `(batch_size, sequence_length, config.vocab_size)`) -- Prediction scores of the language modeling head (scores for each vocabulary token before SoftMax).
-  - **hidden_states** (`tuple(tf.Tensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `tf.Tensor` (one for the output of the embeddings + one for the output of each layer) of
-    shape `(batch_size, sequence_length, hidden_size)`.
-
-    Hidden-states of the model at the output of each layer plus the initial embedding outputs.
-  - **attentions** (`tuple(tf.Tensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `tf.Tensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
-
-    Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
-    heads.
-
-
-Example --
-
-```python --
-rt tensorflow as tf
- transformers import Wav2Vec2Processor, TFWav2Vec2ForCTC
- datasets import load_dataset
-rt soundfile as sf
-
-essor = Wav2Vec2Processor.from_pretrained("facebook/wav2vec2-base-960h")
-l = TFWav2Vec2ForCTC.from_pretrained("facebook/wav2vec2-base-960h")
-
-map_to_array(batch)
-speech, _ = sf.read(batch["file"])
-batch["speech"] = speech
-return batch
-
- load_dataset("hf-internal-testing/librispeech_asr_dummy", "clean", split="validation")
- ds.map(map_to_array)
-
-t_values = processor(ds["speech"][0], return_tensors="tf").input_values # Batch size 1
-ts = model(input_values).logits
-icted_ids = tf.argmax(logits, axis=-1)
-
-scription = processor.decode(predicted_ids[0])
-
-mpute loss
-et_transcription = "A MAN SAID TO THE UNIVERSE SIR I EXIST"
-
-ap processor as target processor to encode labels
- processor.as_target_processor()
-labels = processor(transcription, return_tensors="tf").input_ids
-
- = model(input_values, labels=labels).loss
-``` --</paramsdesc><paramgroups>0</paramgroups></docstring>
+  Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
+  heads.</retdesc></docstring>
 The [TFWav2Vec2ForCTC](/docs/transformers/master/en/model_doc/wav2vec2#transformers.TFWav2Vec2ForCTC) forward method, overrides the `__call__` special method.
 
 <Tip>
@@ -1967,6 +1923,44 @@ the latter silently ignores them.
 
 
 
+
+
+
+
+Example:
+
+```python
+>>> import tensorflow as tf
+>>> from transformers import Wav2Vec2Processor, TFWav2Vec2ForCTC
+>>> from datasets import load_dataset
+>>> import soundfile as sf
+
+>>> processor = Wav2Vec2Processor.from_pretrained("facebook/wav2vec2-base-960h")
+>>> model = TFWav2Vec2ForCTC.from_pretrained("facebook/wav2vec2-base-960h")
+
+>>> def map_to_array(batch):
+>>>     speech, _ = sf.read(batch["file"])
+>>>     batch["speech"] = speech
+>>>     return batch
+
+>>> ds = load_dataset("hf-internal-testing/librispeech_asr_dummy", "clean", split="validation")
+>>> ds = ds.map(map_to_array)
+
+>>> input_values = processor(ds["speech"][0], return_tensors="tf").input_values # Batch size 1
+>>> logits = model(input_values).logits
+>>> predicted_ids = tf.argmax(logits, axis=-1)
+
+>>> transcription = processor.decode(predicted_ids[0])
+
+>>> # compute loss
+>>> target_transcription = "A MAN SAID TO THE UNIVERSE SIR I EXIST"
+
+>>> # wrap processor as target processor to encode labels
+>>> with processor.as_target_processor():
+>>>     labels = processor(transcription, return_tensors="tf").input_ids
+
+>>> loss = model(input_values, labels=labels).loss
+```
 
 </div></div>
 

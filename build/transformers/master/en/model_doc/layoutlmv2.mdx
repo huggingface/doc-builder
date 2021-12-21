@@ -879,41 +879,19 @@ behavior.
   Whether or not to return the hidden states of all layers. See `hidden_states` under returned tensors for
   more detail.
 - **return_dict** (`bool`, *optional*) --
-  Whether or not to return a [ModelOutput](/docs/transformers/master/en/main_classes/output#transformers.file_utils.ModelOutput) instead of a plain tuple.
+  Whether or not to return a [ModelOutput](/docs/transformers/master/en/main_classes/output#transformers.file_utils.ModelOutput) instead of a plain tuple.</paramsdesc><paramgroups>0</paramgroups><rettype>[transformers.modeling_outputs.BaseModelOutput](/docs/transformers/master/en/main_classes/output#transformers.modeling_outputs.BaseModelOutput) or `tuple(torch.FloatTensor)`</rettype><retdesc>A [transformers.modeling_outputs.BaseModelOutput](/docs/transformers/master/en/main_classes/output#transformers.modeling_outputs.BaseModelOutput) or a tuple of
+`torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising various
+elements depending on the configuration ([LayoutLMv2Config](/docs/transformers/master/en/model_doc/layoutlmv2#transformers.LayoutLMv2Config)) and inputs.
 
+- **last_hidden_state** (`torch.FloatTensor` of shape `(batch_size, sequence_length, hidden_size)`) -- Sequence of hidden-states at the output of the last layer of the model.
+- **hidden_states** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer)
+  of shape `(batch_size, sequence_length, hidden_size)`.
 
-  Returns --
-  [transformers.modeling_outputs.BaseModelOutput](/docs/transformers/master/en/main_classes/output#transformers.modeling_outputs.BaseModelOutput) or `tuple(torch.FloatTensor)`: A [transformers.modeling_outputs.BaseModelOutput](/docs/transformers/master/en/main_classes/output#transformers.modeling_outputs.BaseModelOutput) or a tuple of
-  `torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising various
-  elements depending on the configuration ([LayoutLMv2Config](/docs/transformers/master/en/model_doc/layoutlmv2#transformers.LayoutLMv2Config)) and inputs.
+  Hidden-states of the model at the output of each layer plus the initial embedding outputs.
+- **attentions** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
 
-  - **last_hidden_state** (`torch.FloatTensor` of shape `(batch_size, sequence_length, hidden_size)`) -- Sequence of hidden-states at the output of the last layer of the model.
-  - **hidden_states** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer)
-    of shape `(batch_size, sequence_length, hidden_size)`.
-
-    Hidden-states of the model at the output of each layer plus the initial embedding outputs.
-  - **attentions** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
-
-    Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
-    heads.
-
-
-Examples --
-
-```python --
- transformers import LayoutLMv2Processor, LayoutLMv2Model
- PIL import Image
-
-essor = LayoutLMv2Processor.from_pretrained('microsoft/layoutlmv2-base-uncased')
-l = LayoutLMv2Model.from_pretrained('microsoft/layoutlmv2-base-uncased')
-
-e = Image.open("name_of_your_document - can be a png file, pdf, etc.").convert("RGB")
-
-ding = processor(image, return_tensors="pt")
-
-uts = model(**encoding)
-_hidden_states = outputs.last_hidden_state
-``` --</paramsdesc><paramgroups>0</paramgroups></docstring>
+  Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
+  heads.</retdesc></docstring>
 The [LayoutLMv2Model](/docs/transformers/master/en/model_doc/layoutlmv2#transformers.LayoutLMv2Model) forward method, overrides the `__call__` special method.
 
 <Tip>
@@ -926,6 +904,26 @@ the latter silently ignores them.
 
 
 
+
+
+
+
+Examples:
+
+```python
+>>> from transformers import LayoutLMv2Processor, LayoutLMv2Model
+>>> from PIL import Image
+
+>>> processor = LayoutLMv2Processor.from_pretrained('microsoft/layoutlmv2-base-uncased')
+>>> model = LayoutLMv2Model.from_pretrained('microsoft/layoutlmv2-base-uncased')
+
+>>> image = Image.open("name_of_your_document - can be a png file, pdf, etc.").convert("RGB")
+
+>>> encoding = processor(image, return_tensors="pt")
+
+>>> outputs = model(**encoding)
+>>> last_hidden_states = outputs.last_hidden_state
+```
 
 </div></div>
 
@@ -1008,45 +1006,20 @@ behavior.
 
 - **labels** (`torch.LongTensor` of shape `(batch_size,)`, *optional*) --
   Labels for computing the sequence classification/regression loss. Indices should be in `[0, ..., config.num_labels - 1]`. If `config.num_labels == 1` a regression loss is computed (Mean-Square loss),
-  If `config.num_labels > 1` a classification loss is computed (Cross-Entropy).
+  If `config.num_labels > 1` a classification loss is computed (Cross-Entropy).</paramsdesc><paramgroups>0</paramgroups><rettype>[transformers.modeling_outputs.SequenceClassifierOutput](/docs/transformers/master/en/main_classes/output#transformers.modeling_outputs.SequenceClassifierOutput) or `tuple(torch.FloatTensor)`</rettype><retdesc>A [transformers.modeling_outputs.SequenceClassifierOutput](/docs/transformers/master/en/main_classes/output#transformers.modeling_outputs.SequenceClassifierOutput) or a tuple of
+`torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising various
+elements depending on the configuration ([LayoutLMv2Config](/docs/transformers/master/en/model_doc/layoutlmv2#transformers.LayoutLMv2Config)) and inputs.
 
+- **loss** (`torch.FloatTensor` of shape `(1,)`, *optional*, returned when `labels` is provided) -- Classification (or regression if config.num_labels==1) loss.
+- **logits** (`torch.FloatTensor` of shape `(batch_size, config.num_labels)`) -- Classification (or regression if config.num_labels==1) scores (before SoftMax).
+- **hidden_states** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer)
+  of shape `(batch_size, sequence_length, hidden_size)`.
 
-  Returns --
-  [transformers.modeling_outputs.SequenceClassifierOutput](/docs/transformers/master/en/main_classes/output#transformers.modeling_outputs.SequenceClassifierOutput) or `tuple(torch.FloatTensor)`: A [transformers.modeling_outputs.SequenceClassifierOutput](/docs/transformers/master/en/main_classes/output#transformers.modeling_outputs.SequenceClassifierOutput) or a tuple of
-  `torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising various
-  elements depending on the configuration ([LayoutLMv2Config](/docs/transformers/master/en/model_doc/layoutlmv2#transformers.LayoutLMv2Config)) and inputs.
+  Hidden-states of the model at the output of each layer plus the initial embedding outputs.
+- **attentions** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
 
-  - **loss** (`torch.FloatTensor` of shape `(1,)`, *optional*, returned when `labels` is provided) -- Classification (or regression if config.num_labels==1) loss.
-  - **logits** (`torch.FloatTensor` of shape `(batch_size, config.num_labels)`) -- Classification (or regression if config.num_labels==1) scores (before SoftMax).
-  - **hidden_states** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer)
-    of shape `(batch_size, sequence_length, hidden_size)`.
-
-    Hidden-states of the model at the output of each layer plus the initial embedding outputs.
-  - **attentions** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
-
-    Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
-    heads.
-
-
-Examples --
-
-```python --
- transformers import LayoutLMv2Processor, LayoutLMv2ForSequenceClassification
- PIL import Image
-rt torch
-
-essor = LayoutLMv2Processor.from_pretrained('microsoft/layoutlmv2-base-uncased')
-l = LayoutLMv2ForSequenceClassification.from_pretrained('microsoft/layoutlmv2-base-uncased')
-
-e = Image.open("name_of_your_document - can be a png file, pdf, etc.").convert("RGB")
-
-ding = processor(image, return_tensors="pt")
-ence_label = torch.tensor([1])
-
-uts = model(**encoding, labels=sequence_label)
- = outputs.loss
-ts = outputs.logits
-``` --</paramsdesc><paramgroups>0</paramgroups></docstring>
+  Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
+  heads.</retdesc></docstring>
 The [LayoutLMv2ForSequenceClassification](/docs/transformers/master/en/model_doc/layoutlmv2#transformers.LayoutLMv2ForSequenceClassification) forward method, overrides the `__call__` special method.
 
 <Tip>
@@ -1059,6 +1032,29 @@ the latter silently ignores them.
 
 
 
+
+
+
+
+Examples:
+
+```python
+>>> from transformers import LayoutLMv2Processor, LayoutLMv2ForSequenceClassification
+>>> from PIL import Image
+>>> import torch
+
+>>> processor = LayoutLMv2Processor.from_pretrained('microsoft/layoutlmv2-base-uncased')
+>>> model = LayoutLMv2ForSequenceClassification.from_pretrained('microsoft/layoutlmv2-base-uncased')
+
+>>> image = Image.open("name_of_your_document - can be a png file, pdf, etc.").convert("RGB")
+
+>>> encoding = processor(image, return_tensors="pt")
+>>> sequence_label = torch.tensor([1])
+
+>>> outputs = model(**encoding, labels=sequence_label)
+>>> loss = outputs.loss
+>>> logits = outputs.logits
+```
 
 </div></div>
 
@@ -1140,46 +1136,20 @@ behavior.
   Whether or not to return a [ModelOutput](/docs/transformers/master/en/main_classes/output#transformers.file_utils.ModelOutput) instead of a plain tuple.
 
 - **labels** (`torch.LongTensor` of shape `(batch_size, sequence_length)`, *optional*) --
-  Labels for computing the token classification loss. Indices should be in `[0, ..., config.num_labels - 1]`.
+  Labels for computing the token classification loss. Indices should be in `[0, ..., config.num_labels - 1]`.</paramsdesc><paramgroups>0</paramgroups><rettype>[transformers.modeling_outputs.TokenClassifierOutput](/docs/transformers/master/en/main_classes/output#transformers.modeling_outputs.TokenClassifierOutput) or `tuple(torch.FloatTensor)`</rettype><retdesc>A [transformers.modeling_outputs.TokenClassifierOutput](/docs/transformers/master/en/main_classes/output#transformers.modeling_outputs.TokenClassifierOutput) or a tuple of
+`torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising various
+elements depending on the configuration ([LayoutLMv2Config](/docs/transformers/master/en/model_doc/layoutlmv2#transformers.LayoutLMv2Config)) and inputs.
 
+- **loss** (`torch.FloatTensor` of shape `(1,)`, *optional*, returned when `labels` is provided)  -- Classification loss.
+- **logits** (`torch.FloatTensor` of shape `(batch_size, sequence_length, config.num_labels)`) -- Classification scores (before SoftMax).
+- **hidden_states** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer)
+  of shape `(batch_size, sequence_length, hidden_size)`.
 
-  Returns --
-  [transformers.modeling_outputs.TokenClassifierOutput](/docs/transformers/master/en/main_classes/output#transformers.modeling_outputs.TokenClassifierOutput) or `tuple(torch.FloatTensor)`: A [transformers.modeling_outputs.TokenClassifierOutput](/docs/transformers/master/en/main_classes/output#transformers.modeling_outputs.TokenClassifierOutput) or a tuple of
-  `torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising various
-  elements depending on the configuration ([LayoutLMv2Config](/docs/transformers/master/en/model_doc/layoutlmv2#transformers.LayoutLMv2Config)) and inputs.
+  Hidden-states of the model at the output of each layer plus the initial embedding outputs.
+- **attentions** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
 
-  - **loss** (`torch.FloatTensor` of shape `(1,)`, *optional*, returned when `labels` is provided)  -- Classification loss.
-  - **logits** (`torch.FloatTensor` of shape `(batch_size, sequence_length, config.num_labels)`) -- Classification scores (before SoftMax).
-  - **hidden_states** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer)
-    of shape `(batch_size, sequence_length, hidden_size)`.
-
-    Hidden-states of the model at the output of each layer plus the initial embedding outputs.
-  - **attentions** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
-
-    Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
-    heads.
-
-
-Examples --
-
-```python --
- transformers import LayoutLMv2Processor, LayoutLMv2ForTokenClassification
- PIL import Image
-
-essor = LayoutLMv2Processor.from_pretrained('microsoft/layoutlmv2-base-uncased', revision="no_ocr")
-l = LayoutLMv2ForTokenClassification.from_pretrained('microsoft/layoutlmv2-base-uncased')
-
-e = Image.open("name_of_your_document - can be a png file, pdf, etc.").convert("RGB")
-s = ["hello", "world"]
-s = [[1, 2, 3, 4], [5, 6, 7, 8]] # make sure to normalize your bounding boxes
-_labels = [0, 1]
-
-ding = processor(image, words, boxes=boxes, word_labels=word_labels, return_tensors="pt")
-
-uts = model(**encoding)
- = outputs.loss
-ts = outputs.logits
-``` --</paramsdesc><paramgroups>0</paramgroups></docstring>
+  Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
+  heads.</retdesc></docstring>
 The [LayoutLMv2ForTokenClassification](/docs/transformers/master/en/model_doc/layoutlmv2#transformers.LayoutLMv2ForTokenClassification) forward method, overrides the `__call__` special method.
 
 <Tip>
@@ -1192,6 +1162,30 @@ the latter silently ignores them.
 
 
 
+
+
+
+
+Examples:
+
+```python
+>>> from transformers import LayoutLMv2Processor, LayoutLMv2ForTokenClassification
+>>> from PIL import Image
+
+>>> processor = LayoutLMv2Processor.from_pretrained('microsoft/layoutlmv2-base-uncased', revision="no_ocr")
+>>> model = LayoutLMv2ForTokenClassification.from_pretrained('microsoft/layoutlmv2-base-uncased')
+
+>>> image = Image.open("name_of_your_document - can be a png file, pdf, etc.").convert("RGB")
+>>> words = ["hello", "world"]
+>>> boxes = [[1, 2, 3, 4], [5, 6, 7, 8]] # make sure to normalize your bounding boxes
+>>> word_labels = [0, 1]
+
+>>> encoding = processor(image, words, boxes=boxes, word_labels=word_labels, return_tensors="pt")
+
+>>> outputs = model(**encoding)
+>>> loss = outputs.loss
+>>> logits = outputs.logits
+```
 
 </div></div>
 
@@ -1278,49 +1272,21 @@ behavior.
 - **end_positions** (`torch.LongTensor` of shape `(batch_size,)`, *optional*) --
   Labels for position (index) of the end of the labelled span for computing the token classification loss.
   Positions are clamped to the length of the sequence (`sequence_length`). Position outside of the
-  sequence are not taken into account for computing the loss.
+  sequence are not taken into account for computing the loss.</paramsdesc><paramgroups>0</paramgroups><rettype>[transformers.modeling_outputs.QuestionAnsweringModelOutput](/docs/transformers/master/en/main_classes/output#transformers.modeling_outputs.QuestionAnsweringModelOutput) or `tuple(torch.FloatTensor)`</rettype><retdesc>A [transformers.modeling_outputs.QuestionAnsweringModelOutput](/docs/transformers/master/en/main_classes/output#transformers.modeling_outputs.QuestionAnsweringModelOutput) or a tuple of
+`torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising various
+elements depending on the configuration ([LayoutLMv2Config](/docs/transformers/master/en/model_doc/layoutlmv2#transformers.LayoutLMv2Config)) and inputs.
 
+- **loss** (`torch.FloatTensor` of shape `(1,)`, *optional*, returned when `labels` is provided) -- Total span extraction loss is the sum of a Cross-Entropy for the start and end positions.
+- **start_logits** (`torch.FloatTensor` of shape `(batch_size, sequence_length)`) -- Span-start scores (before SoftMax).
+- **end_logits** (`torch.FloatTensor` of shape `(batch_size, sequence_length)`) -- Span-end scores (before SoftMax).
+- **hidden_states** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer)
+  of shape `(batch_size, sequence_length, hidden_size)`.
 
-  Returns --
-  [transformers.modeling_outputs.QuestionAnsweringModelOutput](/docs/transformers/master/en/main_classes/output#transformers.modeling_outputs.QuestionAnsweringModelOutput) or `tuple(torch.FloatTensor)`: A [transformers.modeling_outputs.QuestionAnsweringModelOutput](/docs/transformers/master/en/main_classes/output#transformers.modeling_outputs.QuestionAnsweringModelOutput) or a tuple of
-  `torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising various
-  elements depending on the configuration ([LayoutLMv2Config](/docs/transformers/master/en/model_doc/layoutlmv2#transformers.LayoutLMv2Config)) and inputs.
+  Hidden-states of the model at the output of each layer plus the initial embedding outputs.
+- **attentions** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
 
-  - **loss** (`torch.FloatTensor` of shape `(1,)`, *optional*, returned when `labels` is provided) -- Total span extraction loss is the sum of a Cross-Entropy for the start and end positions.
-  - **start_logits** (`torch.FloatTensor` of shape `(batch_size, sequence_length)`) -- Span-start scores (before SoftMax).
-  - **end_logits** (`torch.FloatTensor` of shape `(batch_size, sequence_length)`) -- Span-end scores (before SoftMax).
-  - **hidden_states** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer)
-    of shape `(batch_size, sequence_length, hidden_size)`.
-
-    Hidden-states of the model at the output of each layer plus the initial embedding outputs.
-  - **attentions** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
-
-    Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
-    heads.
-
-
-Examples --
-
-```python --
- transformers import LayoutLMv2Processor, LayoutLMv2ForQuestionAnswering
- PIL import Image
-rt torch
-
-essor = LayoutLMv2Processor.from_pretrained('microsoft/layoutlmv2-base-uncased')
-l = LayoutLMv2ForQuestionAnswering.from_pretrained('microsoft/layoutlmv2-base-uncased')
-
-e = Image.open("name_of_your_document - can be a png file, pdf, etc.").convert("RGB")
-tion = "what's his name?"
-
-ding = processor(image, question, return_tensors="pt")
-t_positions = torch.tensor([1])
-positions = torch.tensor([3])
-
-uts = model(**encoding, start_positions=start_positions, end_positions=end_positions)
- = outputs.loss
-t_scores = outputs.start_logits
-scores = outputs.end_logits
-``` --</paramsdesc><paramgroups>0</paramgroups></docstring>
+  Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
+  heads.</retdesc></docstring>
 The [LayoutLMv2ForQuestionAnswering](/docs/transformers/master/en/model_doc/layoutlmv2#transformers.LayoutLMv2ForQuestionAnswering) forward method, overrides the `__call__` special method.
 
 <Tip>
@@ -1333,5 +1299,31 @@ the latter silently ignores them.
 
 
 
+
+
+
+
+Examples:
+
+```python
+>>> from transformers import LayoutLMv2Processor, LayoutLMv2ForQuestionAnswering
+>>> from PIL import Image
+>>> import torch
+
+>>> processor = LayoutLMv2Processor.from_pretrained('microsoft/layoutlmv2-base-uncased')
+>>> model = LayoutLMv2ForQuestionAnswering.from_pretrained('microsoft/layoutlmv2-base-uncased')
+
+>>> image = Image.open("name_of_your_document - can be a png file, pdf, etc.").convert("RGB")
+>>> question = "what's his name?"
+
+>>> encoding = processor(image, question, return_tensors="pt")
+>>> start_positions = torch.tensor([1])
+>>> end_positions = torch.tensor([3])
+
+>>> outputs = model(**encoding, start_positions=start_positions, end_positions=end_positions)
+>>> loss = outputs.loss
+>>> start_scores = outputs.start_logits
+>>> end_scores = outputs.end_logits
+```
 
 </div></div>

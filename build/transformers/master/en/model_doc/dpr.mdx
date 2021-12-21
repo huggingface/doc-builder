@@ -518,36 +518,21 @@ token_type_ids:   0   0   0   0  0     0   0
   Whether or not to return the hidden states of all layers. See `hidden_states` under returned tensors for
   more detail.
 - **return_dict** (`bool`, *optional*) --
-  Whether or not to return a [ModelOutput](/docs/transformers/master/en/main_classes/output#transformers.file_utils.ModelOutput) instead of a plain tuple.
+  Whether or not to return a [ModelOutput](/docs/transformers/master/en/main_classes/output#transformers.file_utils.ModelOutput) instead of a plain tuple.</paramsdesc><paramgroups>0</paramgroups><rettype>[transformers.models.dpr.modeling_dpr.DPRContextEncoderOutput](/docs/transformers/master/en/model_doc/dpr#transformers.models.dpr.modeling_dpr.DPRContextEncoderOutput) or `tuple(torch.FloatTensor)`</rettype><retdesc>A [transformers.models.dpr.modeling_dpr.DPRContextEncoderOutput](/docs/transformers/master/en/model_doc/dpr#transformers.models.dpr.modeling_dpr.DPRContextEncoderOutput) or a tuple of
+`torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising various
+elements depending on the configuration ([DPRConfig](/docs/transformers/master/en/model_doc/dpr#transformers.DPRConfig)) and inputs.
 
+- **pooler_output** (`torch.FloatTensor` of shape `(batch_size, embeddings_size)`) -- The DPR encoder outputs the *pooler_output* that corresponds to the context representation. Last layer
+  hidden-state of the first token of the sequence (classification token) further processed by a Linear layer.
+  This output is to be used to embed contexts for nearest neighbors queries with questions embeddings.
+- **hidden_states** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer)
+  of shape `(batch_size, sequence_length, hidden_size)`.
 
-  Returns --
-  [transformers.models.dpr.modeling_dpr.DPRContextEncoderOutput](/docs/transformers/master/en/model_doc/dpr#transformers.models.dpr.modeling_dpr.DPRContextEncoderOutput) or `tuple(torch.FloatTensor)`: A [transformers.models.dpr.modeling_dpr.DPRContextEncoderOutput](/docs/transformers/master/en/model_doc/dpr#transformers.models.dpr.modeling_dpr.DPRContextEncoderOutput) or a tuple of
-  `torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising various
-  elements depending on the configuration ([DPRConfig](/docs/transformers/master/en/model_doc/dpr#transformers.DPRConfig)) and inputs.
+  Hidden-states of the model at the output of each layer plus the initial embedding outputs.
+- **attentions** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
 
-  - **pooler_output** (`torch.FloatTensor` of shape `(batch_size, embeddings_size)`) -- The DPR encoder outputs the *pooler_output* that corresponds to the context representation. Last layer
-    hidden-state of the first token of the sequence (classification token) further processed by a Linear layer.
-    This output is to be used to embed contexts for nearest neighbors queries with questions embeddings.
-  - **hidden_states** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer)
-    of shape `(batch_size, sequence_length, hidden_size)`.
-
-    Hidden-states of the model at the output of each layer plus the initial embedding outputs.
-  - **attentions** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
-
-    Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
-    heads.
-
-
-Examples --
-
-```python --
- transformers import DPRContextEncoder, DPRContextEncoderTokenizer
-nizer = DPRContextEncoderTokenizer.from_pretrained('facebook/dpr-ctx_encoder-single-nq-base')
-l = DPRContextEncoder.from_pretrained('facebook/dpr-ctx_encoder-single-nq-base')
-t_ids = tokenizer("Hello, is my dog cute ?", return_tensors='pt')["input_ids"]
-ddings = model(input_ids).pooler_output
-``` --</paramsdesc><paramgroups>0</paramgroups></docstring>
+  Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
+  heads.</retdesc></docstring>
 The [DPRContextEncoder](/docs/transformers/master/en/model_doc/dpr#transformers.DPRContextEncoder) forward method, overrides the `__call__` special method.
 
 <Tip>
@@ -560,6 +545,19 @@ the latter silently ignores them.
 
 
 
+
+
+
+
+Examples:
+
+```python
+>>> from transformers import DPRContextEncoder, DPRContextEncoderTokenizer
+>>> tokenizer = DPRContextEncoderTokenizer.from_pretrained('facebook/dpr-ctx_encoder-single-nq-base')
+>>> model = DPRContextEncoder.from_pretrained('facebook/dpr-ctx_encoder-single-nq-base')
+>>> input_ids = tokenizer("Hello, is my dog cute ?", return_tensors='pt')["input_ids"]
+>>> embeddings = model(input_ids).pooler_output
+```
 
 </div></div>
 
@@ -637,36 +635,21 @@ token_type_ids:   0   0   0   0  0     0   0
   Whether or not to return the hidden states of all layers. See `hidden_states` under returned tensors for
   more detail.
 - **return_dict** (`bool`, *optional*) --
-  Whether or not to return a [ModelOutput](/docs/transformers/master/en/main_classes/output#transformers.file_utils.ModelOutput) instead of a plain tuple.
+  Whether or not to return a [ModelOutput](/docs/transformers/master/en/main_classes/output#transformers.file_utils.ModelOutput) instead of a plain tuple.</paramsdesc><paramgroups>0</paramgroups><rettype>[transformers.models.dpr.modeling_dpr.DPRQuestionEncoderOutput](/docs/transformers/master/en/model_doc/dpr#transformers.models.dpr.modeling_dpr.DPRQuestionEncoderOutput) or `tuple(torch.FloatTensor)`</rettype><retdesc>A [transformers.models.dpr.modeling_dpr.DPRQuestionEncoderOutput](/docs/transformers/master/en/model_doc/dpr#transformers.models.dpr.modeling_dpr.DPRQuestionEncoderOutput) or a tuple of
+`torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising various
+elements depending on the configuration ([DPRConfig](/docs/transformers/master/en/model_doc/dpr#transformers.DPRConfig)) and inputs.
 
+- **pooler_output** (`torch.FloatTensor` of shape `(batch_size, embeddings_size)`) -- The DPR encoder outputs the *pooler_output* that corresponds to the question representation. Last layer
+  hidden-state of the first token of the sequence (classification token) further processed by a Linear layer.
+  This output is to be used to embed questions for nearest neighbors queries with context embeddings.
+- **hidden_states** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer)
+  of shape `(batch_size, sequence_length, hidden_size)`.
 
-  Returns --
-  [transformers.models.dpr.modeling_dpr.DPRQuestionEncoderOutput](/docs/transformers/master/en/model_doc/dpr#transformers.models.dpr.modeling_dpr.DPRQuestionEncoderOutput) or `tuple(torch.FloatTensor)`: A [transformers.models.dpr.modeling_dpr.DPRQuestionEncoderOutput](/docs/transformers/master/en/model_doc/dpr#transformers.models.dpr.modeling_dpr.DPRQuestionEncoderOutput) or a tuple of
-  `torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising various
-  elements depending on the configuration ([DPRConfig](/docs/transformers/master/en/model_doc/dpr#transformers.DPRConfig)) and inputs.
+  Hidden-states of the model at the output of each layer plus the initial embedding outputs.
+- **attentions** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
 
-  - **pooler_output** (`torch.FloatTensor` of shape `(batch_size, embeddings_size)`) -- The DPR encoder outputs the *pooler_output* that corresponds to the question representation. Last layer
-    hidden-state of the first token of the sequence (classification token) further processed by a Linear layer.
-    This output is to be used to embed questions for nearest neighbors queries with context embeddings.
-  - **hidden_states** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer)
-    of shape `(batch_size, sequence_length, hidden_size)`.
-
-    Hidden-states of the model at the output of each layer plus the initial embedding outputs.
-  - **attentions** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
-
-    Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
-    heads.
-
-
-Examples --
-
-```python --
- transformers import DPRQuestionEncoder, DPRQuestionEncoderTokenizer
-nizer = DPRQuestionEncoderTokenizer.from_pretrained('facebook/dpr-question_encoder-single-nq-base')
-l = DPRQuestionEncoder.from_pretrained('facebook/dpr-question_encoder-single-nq-base')
-t_ids = tokenizer("Hello, is my dog cute ?", return_tensors='pt')["input_ids"]
-ddings = model(input_ids).pooler_output
-``` --</paramsdesc><paramgroups>0</paramgroups></docstring>
+  Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
+  heads.</retdesc></docstring>
 The [DPRQuestionEncoder](/docs/transformers/master/en/model_doc/dpr#transformers.DPRQuestionEncoder) forward method, overrides the `__call__` special method.
 
 <Tip>
@@ -678,6 +661,20 @@ the latter silently ignores them.
 </Tip>
 
 
+
+
+
+
+
+Examples:
+
+```python
+>>> from transformers import DPRQuestionEncoder, DPRQuestionEncoderTokenizer
+>>> tokenizer = DPRQuestionEncoderTokenizer.from_pretrained('facebook/dpr-question_encoder-single-nq-base')
+>>> model = DPRQuestionEncoder.from_pretrained('facebook/dpr-question_encoder-single-nq-base')
+>>> input_ids = tokenizer("Hello, is my dog cute ?", return_tensors='pt')["input_ids"]
+>>> embeddings = model(input_ids).pooler_output
+```
 
 
 </div></div>
@@ -737,45 +734,22 @@ more details.
   Whether or not to return the hidden states of all layers. See `hidden_states` under returned tensors for
   more detail.
 - **return_dict** (`bool`, *optional*) --
-  Whether or not to return a [ModelOutput](/docs/transformers/master/en/main_classes/output#transformers.file_utils.ModelOutput) instead of a plain tuple.
+  Whether or not to return a [ModelOutput](/docs/transformers/master/en/main_classes/output#transformers.file_utils.ModelOutput) instead of a plain tuple.</paramsdesc><paramgroups>0</paramgroups><rettype>[transformers.models.dpr.modeling_dpr.DPRReaderOutput](/docs/transformers/master/en/model_doc/dpr#transformers.DPRReaderOutput) or `tuple(torch.FloatTensor)`</rettype><retdesc>A [transformers.models.dpr.modeling_dpr.DPRReaderOutput](/docs/transformers/master/en/model_doc/dpr#transformers.DPRReaderOutput) or a tuple of
+`torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising various
+elements depending on the configuration ([DPRConfig](/docs/transformers/master/en/model_doc/dpr#transformers.DPRConfig)) and inputs.
 
+- **start_logits** (`torch.FloatTensor` of shape `(n_passages, sequence_length)`) -- Logits of the start index of the span for each passage.
+- **end_logits** (`torch.FloatTensor` of shape `(n_passages, sequence_length)`) -- Logits of the end index of the span for each passage.
+- **relevance_logits** (`torch.FloatTensor` of shape `(n_passages, )`) -- Outputs of the QA classifier of the DPRReader that corresponds to the scores of each passage to answer the
+  question, compared to all the other passages.
+- **hidden_states** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer)
+  of shape `(batch_size, sequence_length, hidden_size)`.
 
-  Returns --
-  [transformers.models.dpr.modeling_dpr.DPRReaderOutput](/docs/transformers/master/en/model_doc/dpr#transformers.DPRReaderOutput) or `tuple(torch.FloatTensor)`: A [transformers.models.dpr.modeling_dpr.DPRReaderOutput](/docs/transformers/master/en/model_doc/dpr#transformers.DPRReaderOutput) or a tuple of
-  `torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising various
-  elements depending on the configuration ([DPRConfig](/docs/transformers/master/en/model_doc/dpr#transformers.DPRConfig)) and inputs.
+  Hidden-states of the model at the output of each layer plus the initial embedding outputs.
+- **attentions** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
 
-  - **start_logits** (`torch.FloatTensor` of shape `(n_passages, sequence_length)`) -- Logits of the start index of the span for each passage.
-  - **end_logits** (`torch.FloatTensor` of shape `(n_passages, sequence_length)`) -- Logits of the end index of the span for each passage.
-  - **relevance_logits** (`torch.FloatTensor` of shape `(n_passages, )`) -- Outputs of the QA classifier of the DPRReader that corresponds to the scores of each passage to answer the
-    question, compared to all the other passages.
-  - **hidden_states** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer)
-    of shape `(batch_size, sequence_length, hidden_size)`.
-
-    Hidden-states of the model at the output of each layer plus the initial embedding outputs.
-  - **attentions** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
-
-    Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
-    heads.
-
-
-Examples --
-
-```python --
- transformers import DPRReader, DPRReaderTokenizer
-nizer = DPRReaderTokenizer.from_pretrained('facebook/dpr-reader-single-nq-base')
-l = DPRReader.from_pretrained('facebook/dpr-reader-single-nq-base')
-ded_inputs = tokenizer(
-- **...**         questions=["What is love ?"], --
-- **...**         titles=["Haddaway"], --
-- **...**         texts=["'What Is Love' is a song recorded by the artist Haddaway"], --
-- **...**         return_tensors='pt' --
-- **...**     ) --
-uts = model(**encoded_inputs)
-t_logits = outputs.start_logits
-logits = outputs.end_logits
-vance_logits = outputs.relevance_logits
-``` --</paramsdesc><paramgroups>0</paramgroups></docstring>
+  Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
+  heads.</retdesc></docstring>
 The [DPRReader](/docs/transformers/master/en/model_doc/dpr#transformers.DPRReader) forward method, overrides the `__call__` special method.
 
 <Tip>
@@ -787,6 +761,28 @@ the latter silently ignores them.
 </Tip>
 
 
+
+
+
+
+
+Examples:
+
+```python
+>>> from transformers import DPRReader, DPRReaderTokenizer
+>>> tokenizer = DPRReaderTokenizer.from_pretrained('facebook/dpr-reader-single-nq-base')
+>>> model = DPRReader.from_pretrained('facebook/dpr-reader-single-nq-base')
+>>> encoded_inputs = tokenizer(
+...         questions=["What is love ?"],
+...         titles=["Haddaway"],
+...         texts=["'What Is Love' is a song recorded by the artist Haddaway"],
+...         return_tensors='pt'
+...     )
+>>> outputs = model(**encoded_inputs)
+>>> start_logits = outputs.start_logits
+>>> end_logits = outputs.end_logits
+>>> relevance_logits = outputs.relevance_logits
+```
 
 
 </div></div>
@@ -892,36 +888,21 @@ token_type_ids:   0   0   0   0  0     0   0
   argument can be used in eager mode, in graph mode the value will always be set to True.
 - **training** (`bool`, *optional*, defaults to `False`) --
   Whether or not to use the model in training mode (some modules like dropout modules have different
-  behaviors between training and evaluation).
+  behaviors between training and evaluation).</paramsdesc><paramgroups>0</paramgroups><rettype>`transformers.models.dpr.modeling_tf_dpr.TFDPRContextEncoderOutput` or `tuple(tf.Tensor)`</rettype><retdesc>A `transformers.models.dpr.modeling_tf_dpr.TFDPRContextEncoderOutput` or a tuple of `tf.Tensor` (if
+`return_dict=False` is passed or when `config.return_dict=False`) comprising various elements depending on the
+configuration ([DPRConfig](/docs/transformers/master/en/model_doc/dpr#transformers.DPRConfig)) and inputs.
 
+- **pooler_output** (`tf.Tensor` of shape `(batch_size, embeddings_size)`) -- The DPR encoder outputs the *pooler_output* that corresponds to the context representation. Last layer
+  hidden-state of the first token of the sequence (classification token) further processed by a Linear layer.
+  This output is to be used to embed contexts for nearest neighbors queries with questions embeddings.
+- **hidden_states** (`tuple(tf.Tensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `tf.Tensor` (one for the output of the embeddings + one for the output of each layer) of
+  shape `(batch_size, sequence_length, hidden_size)`.
 
-  Returns --
-  `transformers.models.dpr.modeling_tf_dpr.TFDPRContextEncoderOutput` or `tuple(tf.Tensor)`: A `transformers.models.dpr.modeling_tf_dpr.TFDPRContextEncoderOutput` or a tuple of `tf.Tensor` (if
-  `return_dict=False` is passed or when `config.return_dict=False`) comprising various elements depending on the
-  configuration ([DPRConfig](/docs/transformers/master/en/model_doc/dpr#transformers.DPRConfig)) and inputs.
+  Hidden-states of the model at the output of each layer plus the initial embedding outputs.
+- **attentions** (`tuple(tf.Tensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `tf.Tensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
 
-  - **pooler_output** (`tf.Tensor` of shape `(batch_size, embeddings_size)`) -- The DPR encoder outputs the *pooler_output* that corresponds to the context representation. Last layer
-    hidden-state of the first token of the sequence (classification token) further processed by a Linear layer.
-    This output is to be used to embed contexts for nearest neighbors queries with questions embeddings.
-  - **hidden_states** (`tuple(tf.Tensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `tf.Tensor` (one for the output of the embeddings + one for the output of each layer) of
-    shape `(batch_size, sequence_length, hidden_size)`.
-
-    Hidden-states of the model at the output of each layer plus the initial embedding outputs.
-  - **attentions** (`tuple(tf.Tensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `tf.Tensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
-
-    Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
-    heads.
-
-
-Examples --
-
-```python --
- transformers import TFDPRContextEncoder, DPRContextEncoderTokenizer
-nizer = DPRContextEncoderTokenizer.from_pretrained('facebook/dpr-ctx_encoder-single-nq-base')
-l = TFDPRContextEncoder.from_pretrained('facebook/dpr-ctx_encoder-single-nq-base', from_pt=True)
-t_ids = tokenizer("Hello, is my dog cute ?", return_tensors='tf')["input_ids"]
-ddings = model(input_ids).pooler_output
-``` --</paramsdesc><paramgroups>0</paramgroups></docstring>
+  Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
+  heads.</retdesc></docstring>
 The [TFDPRContextEncoder](/docs/transformers/master/en/model_doc/dpr#transformers.TFDPRContextEncoder) forward method, overrides the `__call__` special method.
 
 <Tip>
@@ -933,6 +914,20 @@ the latter silently ignores them.
 </Tip>
 
 
+
+
+
+
+
+Examples:
+
+```python
+>>> from transformers import TFDPRContextEncoder, DPRContextEncoderTokenizer
+>>> tokenizer = DPRContextEncoderTokenizer.from_pretrained('facebook/dpr-ctx_encoder-single-nq-base')
+>>> model = TFDPRContextEncoder.from_pretrained('facebook/dpr-ctx_encoder-single-nq-base', from_pt=True)
+>>> input_ids = tokenizer("Hello, is my dog cute ?", return_tensors='tf')["input_ids"]
+>>> embeddings = model(input_ids).pooler_output
+```
 
 
 </div></div>
@@ -1038,36 +1033,21 @@ token_type_ids:   0   0   0   0  0     0   0
   argument can be used in eager mode, in graph mode the value will always be set to True.
 - **training** (`bool`, *optional*, defaults to `False`) --
   Whether or not to use the model in training mode (some modules like dropout modules have different
-  behaviors between training and evaluation).
+  behaviors between training and evaluation).</paramsdesc><paramgroups>0</paramgroups><rettype>`transformers.models.dpr.modeling_tf_dpr.TFDPRQuestionEncoderOutput` or `tuple(tf.Tensor)`</rettype><retdesc>A `transformers.models.dpr.modeling_tf_dpr.TFDPRQuestionEncoderOutput` or a tuple of `tf.Tensor` (if
+`return_dict=False` is passed or when `config.return_dict=False`) comprising various elements depending on the
+configuration ([DPRConfig](/docs/transformers/master/en/model_doc/dpr#transformers.DPRConfig)) and inputs.
 
+- **pooler_output** (`tf.Tensor` of shape `(batch_size, embeddings_size)`) -- The DPR encoder outputs the *pooler_output* that corresponds to the question representation. Last layer
+  hidden-state of the first token of the sequence (classification token) further processed by a Linear layer.
+  This output is to be used to embed questions for nearest neighbors queries with context embeddings.
+- **hidden_states** (`tuple(tf.Tensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `tf.Tensor` (one for the output of the embeddings + one for the output of each layer) of
+  shape `(batch_size, sequence_length, hidden_size)`.
 
-  Returns --
-  `transformers.models.dpr.modeling_tf_dpr.TFDPRQuestionEncoderOutput` or `tuple(tf.Tensor)`: A `transformers.models.dpr.modeling_tf_dpr.TFDPRQuestionEncoderOutput` or a tuple of `tf.Tensor` (if
-  `return_dict=False` is passed or when `config.return_dict=False`) comprising various elements depending on the
-  configuration ([DPRConfig](/docs/transformers/master/en/model_doc/dpr#transformers.DPRConfig)) and inputs.
+  Hidden-states of the model at the output of each layer plus the initial embedding outputs.
+- **attentions** (`tuple(tf.Tensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `tf.Tensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
 
-  - **pooler_output** (`tf.Tensor` of shape `(batch_size, embeddings_size)`) -- The DPR encoder outputs the *pooler_output* that corresponds to the question representation. Last layer
-    hidden-state of the first token of the sequence (classification token) further processed by a Linear layer.
-    This output is to be used to embed questions for nearest neighbors queries with context embeddings.
-  - **hidden_states** (`tuple(tf.Tensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `tf.Tensor` (one for the output of the embeddings + one for the output of each layer) of
-    shape `(batch_size, sequence_length, hidden_size)`.
-
-    Hidden-states of the model at the output of each layer plus the initial embedding outputs.
-  - **attentions** (`tuple(tf.Tensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `tf.Tensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
-
-    Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
-    heads.
-
-
-Examples --
-
-```python --
- transformers import TFDPRQuestionEncoder, DPRQuestionEncoderTokenizer
-nizer = DPRQuestionEncoderTokenizer.from_pretrained('facebook/dpr-question_encoder-single-nq-base')
-l = TFDPRQuestionEncoder.from_pretrained('facebook/dpr-question_encoder-single-nq-base', from_pt=True)
-t_ids = tokenizer("Hello, is my dog cute ?", return_tensors='tf')["input_ids"]
-ddings = model(input_ids).pooler_output
-``` --</paramsdesc><paramgroups>0</paramgroups></docstring>
+  Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
+  heads.</retdesc></docstring>
 The [TFDPRQuestionEncoder](/docs/transformers/master/en/model_doc/dpr#transformers.TFDPRQuestionEncoder) forward method, overrides the `__call__` special method.
 
 <Tip>
@@ -1079,6 +1059,20 @@ the latter silently ignores them.
 </Tip>
 
 
+
+
+
+
+
+Examples:
+
+```python
+>>> from transformers import TFDPRQuestionEncoder, DPRQuestionEncoderTokenizer
+>>> tokenizer = DPRQuestionEncoderTokenizer.from_pretrained('facebook/dpr-question_encoder-single-nq-base')
+>>> model = TFDPRQuestionEncoder.from_pretrained('facebook/dpr-question_encoder-single-nq-base', from_pt=True)
+>>> input_ids = tokenizer("Hello, is my dog cute ?", return_tensors='tf')["input_ids"]
+>>> embeddings = model(input_ids).pooler_output
+```
 
 
 </div></div>
@@ -1159,45 +1153,22 @@ more details.
   argument can be used in eager mode, in graph mode the value will always be set to True.
 - **training** (`bool`, *optional*, defaults to `False`) --
   Whether or not to use the model in training mode (some modules like dropout modules have different
-  behaviors between training and evaluation).
+  behaviors between training and evaluation).</paramsdesc><paramgroups>0</paramgroups><rettype>`transformers.models.dpr.modeling_tf_dpr.TFDPRReaderOutput` or `tuple(tf.Tensor)`</rettype><retdesc>A `transformers.models.dpr.modeling_tf_dpr.TFDPRReaderOutput` or a tuple of `tf.Tensor` (if
+`return_dict=False` is passed or when `config.return_dict=False`) comprising various elements depending on the
+configuration ([DPRConfig](/docs/transformers/master/en/model_doc/dpr#transformers.DPRConfig)) and inputs.
 
+- **start_logits** (`tf.Tensor` of shape `(n_passages, sequence_length)`) -- Logits of the start index of the span for each passage.
+- **end_logits** (`tf.Tensor` of shape `(n_passages, sequence_length)`) -- Logits of the end index of the span for each passage.
+- **relevance_logits** (`tf.Tensor` of shape `(n_passages, )`) -- Outputs of the QA classifier of the DPRReader that corresponds to the scores of each passage to answer the
+  question, compared to all the other passages.
+- **hidden_states** (`tuple(tf.Tensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `tf.Tensor` (one for the output of the embeddings + one for the output of each layer) of
+  shape `(batch_size, sequence_length, hidden_size)`.
 
-  Returns --
-  `transformers.models.dpr.modeling_tf_dpr.TFDPRReaderOutput` or `tuple(tf.Tensor)`: A `transformers.models.dpr.modeling_tf_dpr.TFDPRReaderOutput` or a tuple of `tf.Tensor` (if
-  `return_dict=False` is passed or when `config.return_dict=False`) comprising various elements depending on the
-  configuration ([DPRConfig](/docs/transformers/master/en/model_doc/dpr#transformers.DPRConfig)) and inputs.
+  Hidden-states of the model at the output of each layer plus the initial embedding outputs.
+- **attentions** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
 
-  - **start_logits** (`tf.Tensor` of shape `(n_passages, sequence_length)`) -- Logits of the start index of the span for each passage.
-  - **end_logits** (`tf.Tensor` of shape `(n_passages, sequence_length)`) -- Logits of the end index of the span for each passage.
-  - **relevance_logits** (`tf.Tensor` of shape `(n_passages, )`) -- Outputs of the QA classifier of the DPRReader that corresponds to the scores of each passage to answer the
-    question, compared to all the other passages.
-  - **hidden_states** (`tuple(tf.Tensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `tf.Tensor` (one for the output of the embeddings + one for the output of each layer) of
-    shape `(batch_size, sequence_length, hidden_size)`.
-
-    Hidden-states of the model at the output of each layer plus the initial embedding outputs.
-  - **attentions** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
-
-    Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
-    heads.
-
-
-Examples --
-
-```python --
- transformers import TFDPRReader, DPRReaderTokenizer
-nizer = DPRReaderTokenizer.from_pretrained('facebook/dpr-reader-single-nq-base')
-l = TFDPRReader.from_pretrained('facebook/dpr-reader-single-nq-base', from_pt=True)
-ded_inputs = tokenizer(
-- **...**         questions=["What is love ?"], --
-- **...**         titles=["Haddaway"], --
-- **...**         texts=["'What Is Love' is a song recorded by the artist Haddaway"], --
-- **...**         return_tensors='tf' --
-- **...**     ) --
-uts = model(encoded_inputs)
-t_logits = outputs.start_logits
-logits = outputs.end_logits
-vance_logits = outputs.relevance_logits
-``` --</paramsdesc><paramgroups>0</paramgroups></docstring>
+  Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
+  heads.</retdesc></docstring>
 The [TFDPRReader](/docs/transformers/master/en/model_doc/dpr#transformers.TFDPRReader) forward method, overrides the `__call__` special method.
 
 <Tip>
@@ -1209,6 +1180,28 @@ the latter silently ignores them.
 </Tip>
 
 
+
+
+
+
+
+Examples:
+
+```python
+>>> from transformers import TFDPRReader, DPRReaderTokenizer
+>>> tokenizer = DPRReaderTokenizer.from_pretrained('facebook/dpr-reader-single-nq-base')
+>>> model = TFDPRReader.from_pretrained('facebook/dpr-reader-single-nq-base', from_pt=True)
+>>> encoded_inputs = tokenizer(
+...         questions=["What is love ?"],
+...         titles=["Haddaway"],
+...         texts=["'What Is Love' is a song recorded by the artist Haddaway"],
+...         return_tensors='tf'
+...     )
+>>> outputs = model(encoded_inputs)
+>>> start_logits = outputs.start_logits
+>>> end_logits = outputs.end_logits
+>>> relevance_logits = outputs.relevance_logits
+```
 
 
 </div></div>

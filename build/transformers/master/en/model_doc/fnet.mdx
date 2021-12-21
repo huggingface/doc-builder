@@ -507,36 +507,18 @@ behavior.
   - 0 indicates sequence B is a continuation of sequence A,
   - 1 indicates sequence B is a random sequence.
 - **kwargs** (`Dict[str, any]`, optional, defaults to *&amp;lcub;}*) --
-  Used to hide legacy arguments that have been deprecated.
+  Used to hide legacy arguments that have been deprecated.</paramsdesc><paramgroups>0</paramgroups><rettype>`transformers.models.fnet.modeling_fnet.FNetForPreTrainingOutput` or `tuple(torch.FloatTensor)`</rettype><retdesc>A `transformers.models.fnet.modeling_fnet.FNetForPreTrainingOutput` or a tuple of
+`torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising various
+elements depending on the configuration ([FNetConfig](/docs/transformers/master/en/model_doc/fnet#transformers.FNetConfig)) and inputs.
 
-
-  Returns --
-  `transformers.models.fnet.modeling_fnet.FNetForPreTrainingOutput` or `tuple(torch.FloatTensor)`: A `transformers.models.fnet.modeling_fnet.FNetForPreTrainingOutput` or a tuple of
-  `torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising various
-  elements depending on the configuration ([FNetConfig](/docs/transformers/master/en/model_doc/fnet#transformers.FNetConfig)) and inputs.
-
-  - **loss** (*optional*, returned when `labels` is provided, `torch.FloatTensor` of shape `(1,)`) -- Total loss as the sum of the masked language modeling loss and the next sequence prediction
-    (classification) loss.
-  - **prediction_logits** (`torch.FloatTensor` of shape `(batch_size, sequence_length, config.vocab_size)`) -- Prediction scores of the language modeling head (scores for each vocabulary token before SoftMax).
-  - **seq_relationship_logits** (`torch.FloatTensor` of shape `(batch_size, 2)`) -- Prediction scores of the next sequence prediction (classification) head (scores of True/False continuation
-    before SoftMax).
-  - **hidden_states** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer)
-    of shape `(batch_size, sequence_length, hidden_size)`. Hidden-states of the model at the output of
-    each layer plus the initial embedding outputs.
-
-
-Example --
-
-```python --
- transformers import FNetTokenizer, FNetForPreTraining
-rt torch
-nizer = FNetTokenizer.from_pretrained('google/fnet-base')
-l = FNetForPreTraining.from_pretrained('google/fnet-base')
-ts = tokenizer("Hello, my dog is cute", return_tensors="pt")
-uts = model(**inputs)
-iction_logits = outputs.prediction_logits
-relationship_logits = outputs.seq_relationship_logits
-``` --</paramsdesc><paramgroups>0</paramgroups></docstring>
+- **loss** (*optional*, returned when `labels` is provided, `torch.FloatTensor` of shape `(1,)`) -- Total loss as the sum of the masked language modeling loss and the next sequence prediction
+  (classification) loss.
+- **prediction_logits** (`torch.FloatTensor` of shape `(batch_size, sequence_length, config.vocab_size)`) -- Prediction scores of the language modeling head (scores for each vocabulary token before SoftMax).
+- **seq_relationship_logits** (`torch.FloatTensor` of shape `(batch_size, 2)`) -- Prediction scores of the next sequence prediction (classification) head (scores of True/False continuation
+  before SoftMax).
+- **hidden_states** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer)
+  of shape `(batch_size, sequence_length, hidden_size)`. Hidden-states of the model at the output of
+  each layer plus the initial embedding outputs.</retdesc></docstring>
 The [FNetForPreTraining](/docs/transformers/master/en/model_doc/fnet#transformers.FNetForPreTraining) forward method, overrides the `__call__` special method.
 
 <Tip>
@@ -549,6 +531,22 @@ the latter silently ignores them.
 
 
 
+
+
+
+
+Example:
+
+```python
+>>> from transformers import FNetTokenizer, FNetForPreTraining
+>>> import torch
+>>> tokenizer = FNetTokenizer.from_pretrained('google/fnet-base')
+>>> model = FNetForPreTraining.from_pretrained('google/fnet-base')
+>>> inputs = tokenizer("Hello, my dog is cute", return_tensors="pt")
+>>> outputs = model(**inputs)
+>>> prediction_logits = outputs.prediction_logits
+>>> seq_relationship_logits = outputs.seq_relationship_logits
+```
 
 </div></div>
 
@@ -705,11 +703,7 @@ behavior.
   (see `input_ids` docstring). Indices should be in `[0, 1]`:
 
   - 0 indicates sequence B is a continuation of sequence A,
-  - 1 indicates sequence B is a random sequence.
-
-
-Returns --
-[transformers.modeling_outputs.NextSentencePredictorOutput](/docs/transformers/master/en/main_classes/output#transformers.modeling_outputs.NextSentencePredictorOutput) or `tuple(torch.FloatTensor)`: A [transformers.modeling_outputs.NextSentencePredictorOutput](/docs/transformers/master/en/main_classes/output#transformers.modeling_outputs.NextSentencePredictorOutput) or a tuple of
+  - 1 indicates sequence B is a random sequence.</paramsdesc><paramgroups>0</paramgroups><rettype>[transformers.modeling_outputs.NextSentencePredictorOutput](/docs/transformers/master/en/main_classes/output#transformers.modeling_outputs.NextSentencePredictorOutput) or `tuple(torch.FloatTensor)`</rettype><retdesc>A [transformers.modeling_outputs.NextSentencePredictorOutput](/docs/transformers/master/en/main_classes/output#transformers.modeling_outputs.NextSentencePredictorOutput) or a tuple of
 `torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising various
 elements depending on the configuration ([FNetConfig](/docs/transformers/master/en/model_doc/fnet#transformers.FNetConfig)) and inputs.
 
@@ -723,23 +717,7 @@ elements depending on the configuration ([FNetConfig](/docs/transformers/master/
 - **attentions** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
 
   Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
-  heads.
-
-
-Example --
-
-```python --
- transformers import FNetTokenizer, FNetForNextSentencePrediction
-rt torch
-nizer = FNetTokenizer.from_pretrained('google/fnet-base')
-l = FNetForNextSentencePrediction.from_pretrained('google/fnet-base')
-pt = "In Italy, pizza served in formal settings, such as at a restaurant, is presented unsliced."
-_sentence = "The sky is blue due to the shorter wavelength of blue light."
-ding = tokenizer(prompt, next_sentence, return_tensors='pt')
-uts = model(**encoding, labels=torch.LongTensor([1]))
-ts = outputs.logits
-rt logits[0, 0] &amp;lt; logits[0, 1] # next sentence was random
-``` --</paramsdesc><paramgroups>0</paramgroups></docstring>
+  heads.</retdesc></docstring>
 The [FNetForNextSentencePrediction](/docs/transformers/master/en/model_doc/fnet#transformers.FNetForNextSentencePrediction) forward method, overrides the `__call__` special method.
 
 <Tip>
@@ -752,6 +730,24 @@ the latter silently ignores them.
 
 
 
+
+
+
+
+Example:
+
+```python
+>>> from transformers import FNetTokenizer, FNetForNextSentencePrediction
+>>> import torch
+>>> tokenizer = FNetTokenizer.from_pretrained('google/fnet-base')
+>>> model = FNetForNextSentencePrediction.from_pretrained('google/fnet-base')
+>>> prompt = "In Italy, pizza served in formal settings, such as at a restaurant, is presented unsliced."
+>>> next_sentence = "The sky is blue due to the shorter wavelength of blue light."
+>>> encoding = tokenizer(prompt, next_sentence, return_tensors='pt')
+>>> outputs = model(**encoding, labels=torch.LongTensor([1]))
+>>> logits = outputs.logits
+>>> assert logits[0, 0] &amp;lt; logits[0, 1] # next sentence was random
+```
 
 </div></div>
 
