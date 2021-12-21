@@ -86,7 +86,6 @@ def split_frameworks(content):
     Split a given doc content in three to extract the Mixed, PyTorch and TensorFlow content.
     """
     new_lines = {"mixed": [], "pt": [], "tf": []}
-    abbreviations = {"pytorch": "pt", "tensorflow": "tf"}
     lines = content.split("\n")
     idx = 0
     while idx < len(lines):
@@ -99,7 +98,7 @@ def split_frameworks(content):
                     current_framework = _re_framework.search(lines[idx]).groups()[0]
                     print(current_framework)
                 elif current_framework is not None and lines[idx].strip() == f"</{current_framework}>":
-                    new_lines[abbreviations[current_framework]].extend(current_lines)
+                    new_lines[current_framework].extend(current_lines)
                     new_lines["mixed"].extend(current_lines)
                     current_framework = None
                     current_lines = []

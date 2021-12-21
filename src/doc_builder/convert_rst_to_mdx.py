@@ -550,11 +550,11 @@ def split_pt_tf_code_blocks(text):
                     code_lines["common"].append(lines[idx])
                 idx += 1
             if len(code_lines["pytorch"]) > 0 or len(code_lines["tensorflow"]) > 0:
-                block_lines = ["<frameworkcontent>", "<pytorch>"]
+                block_lines = ["<frameworkcontent>", "<pt>"]
                 block_lines.extend(code_lines["common"].copy() + code_lines["pytorch"])
-                block_lines.extend(["```", "</pytorch>", "<tensorflow>"])
+                block_lines.extend(["```", "</pt>", "<tf>"])
                 block_lines.extend(code_lines["common"].copy() + code_lines["tensorflow"])
-                block_lines.extend(["```", "</tensorflow>", "</frameworkcontent>"])
+                block_lines.extend(["```", "</tf>", "</frameworkcontent>"])
                 new_lines.extend(block_lines)
             else:
                 block_lines = code_lines["common"] + ["```"]

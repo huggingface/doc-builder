@@ -592,18 +592,18 @@ bli
 bla
 
 <frameworkcontent>
-<pytorch>
+<pt>
 ```py
 common_code
 pytorch_code
 ```
-</pytorch>
-<tensorflow>
+</pt>
+<tf>
 ```py
 common_code
 tf_code
 ```
-</tensorflow>
+</tf>
 </frameworkcontent>
 
 bli
