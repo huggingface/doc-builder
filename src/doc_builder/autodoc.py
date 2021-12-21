@@ -200,6 +200,8 @@ def get_signature_component(name, anchor, signature, object_doc, source_link):
 _re_rst_special_words = re.compile(r":(?:obj|func|class|meth):`([^`]+)`")
 # Re pattern to catch things between double backquotes.
 _re_double_backquotes = re.compile(r"(^|[^`])``([^`]+)``([^`]|$)")
+# Re pattern to catch example introduction.
+_re_rst_example = re.compile(r"^\s*Example.*::\s*$", flags=re.MULTILINE)
 
 
 def is_rst_docstring(docstring):
@@ -209,6 +211,8 @@ def is_rst_docstring(docstring):
     if _re_rst_special_words.search(docstring) is not None:
         return True
     if _re_double_backquotes.search(docstring) is not None:
+        return True
+    if _re_rst_example.search(docstring) is not None:
         return True
     return False
 
