@@ -196,12 +196,19 @@ def apply_min_indent(text, min_indent):
         `str`: The processed text.
     """
     lines = text.split("\n")
-    for idx, line in enumerate(lines):
-        if is_empty_line(line):
+    idx = 0
+    while idx < len(lines):
+        if is_empty_line(lines[idx]):
+            idx += 1
             continue
-        indent = find_indent(line)
+        indent = find_indent(lines[idx])
         if indent < min_indent:
-            lines[idx] = " " * (min_indent - indent) + line
+            while idx < len(lines) and (find_indent(lines[idx]) >= indent or is_empty_line(lines[idx])):
+                if not is_empty_line(lines[idx]):
+                    lines[idx] = " " * (min_indent - indent) + lines[idx]
+                idx += 1
+        else:
+            idx += 1
 
     return "\n".join(lines)
 

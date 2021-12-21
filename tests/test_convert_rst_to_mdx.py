@@ -626,4 +626,4 @@ bli
         self.assertEqual(split_pt_tf_code_blocks(content), expected)
 
     def test_apply_min_indent(self):
-        self.assertEqual(apply_min_indent("aaa\n  bb\n\n    ccc\ndd", 4), "    aaa\n    bb\n\n    ccc\n    dd")
+        self.assertEqual(apply_min_indent("aaa\n  bb\n\n    ccc\ndd", 4), "    aaa\n      bb\n\n        ccc\n    dd")
