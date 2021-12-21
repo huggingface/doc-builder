@@ -613,11 +613,7 @@ Example:
   docstring) Indices should be in `[0, 1]`:
 
   - 0 indicates the token is an original token,
-  - 1 indicates the token was replaced.
-
-
-Returns --
-[transformers.models.funnel.modeling_funnel.FunnelForPreTrainingOutput](/docs/transformers/master/en/model_doc/funnel#transformers.models.funnel.modeling_funnel.FunnelForPreTrainingOutput) or `tuple(torch.FloatTensor)`: A [transformers.models.funnel.modeling_funnel.FunnelForPreTrainingOutput](/docs/transformers/master/en/model_doc/funnel#transformers.models.funnel.modeling_funnel.FunnelForPreTrainingOutput) or a tuple of
+  - 1 indicates the token was replaced.</paramsdesc><paramgroups>0</paramgroups><rettype>[transformers.models.funnel.modeling_funnel.FunnelForPreTrainingOutput](/docs/transformers/master/en/model_doc/funnel#transformers.models.funnel.modeling_funnel.FunnelForPreTrainingOutput) or `tuple(torch.FloatTensor)`</rettype><retdesc>A [transformers.models.funnel.modeling_funnel.FunnelForPreTrainingOutput](/docs/transformers/master/en/model_doc/funnel#transformers.models.funnel.modeling_funnel.FunnelForPreTrainingOutput) or a tuple of
 `torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising various
 elements depending on the configuration ([FunnelConfig](/docs/transformers/master/en/model_doc/funnel#transformers.FunnelConfig)) and inputs.
 
@@ -630,21 +626,7 @@ elements depending on the configuration ([FunnelConfig](/docs/transformers/maste
 - **attentions** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
 
   Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
-  heads.
-
-
-Examples --
-
-```python --
- transformers import FunnelTokenizer, FunnelForPreTraining
-rt torch
-
-nizer = FunnelTokenizer.from_pretrained('funnel-transformer/small')
-l = FunnelForPreTraining.from_pretrained('funnel-transformer/small')
-
-ts = tokenizer("Hello, my dog is cute", return_tensors= "pt")
-ts = model(**inputs).logits
-``` --</paramsdesc><paramgroups>0</paramgroups></docstring>
+  heads.</retdesc></docstring>
 The [FunnelForPreTraining](/docs/transformers/master/en/model_doc/funnel#transformers.FunnelForPreTraining) forward method, overrides the `__call__` special method.
 
 <Tip>
@@ -657,6 +639,22 @@ the latter silently ignores them.
 
 
 
+
+
+
+
+Examples:
+
+```python
+>>> from transformers import FunnelTokenizer, FunnelForPreTraining
+>>> import torch
+
+>>> tokenizer = FunnelTokenizer.from_pretrained('funnel-transformer/small')
+>>> model = FunnelForPreTraining.from_pretrained('funnel-transformer/small')
+
+>>> inputs = tokenizer("Hello, my dog is cute", return_tensors= "pt")
+>>> logits = model(**inputs).logits
+```
 
 </div></div>
 
@@ -1624,37 +1622,19 @@ the first positional argument :
   argument can be used in eager mode, in graph mode the value will always be set to True.
 - **training** (`bool`, *optional*, defaults to `False`) --
   Whether or not to use the model in training mode (some modules like dropout modules have different
-  behaviors between training and evaluation).
+  behaviors between training and evaluation).</paramsdesc><paramgroups>0</paramgroups><rettype>[transformers.models.funnel.modeling_tf_funnel.TFFunnelForPreTrainingOutput](/docs/transformers/master/en/model_doc/funnel#transformers.models.funnel.modeling_tf_funnel.TFFunnelForPreTrainingOutput) or `tuple(tf.Tensor)`</rettype><retdesc>A [transformers.models.funnel.modeling_tf_funnel.TFFunnelForPreTrainingOutput](/docs/transformers/master/en/model_doc/funnel#transformers.models.funnel.modeling_tf_funnel.TFFunnelForPreTrainingOutput) or a tuple of `tf.Tensor` (if
+`return_dict=False` is passed or when `config.return_dict=False`) comprising various elements depending on the
+configuration ([FunnelConfig](/docs/transformers/master/en/model_doc/funnel#transformers.FunnelConfig)) and inputs.
 
+- **logits** (`tf.Tensor` of shape `(batch_size, sequence_length)`) -- Prediction scores of the head (scores for each token before SoftMax).
+- **hidden_states** (`tuple(tf.Tensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `tf.Tensor` (one for the output of the embeddings + one for the output of each layer) of
+  shape `(batch_size, sequence_length, hidden_size)`.
 
-  Returns --
-  [transformers.models.funnel.modeling_tf_funnel.TFFunnelForPreTrainingOutput](/docs/transformers/master/en/model_doc/funnel#transformers.models.funnel.modeling_tf_funnel.TFFunnelForPreTrainingOutput) or `tuple(tf.Tensor)`: A [transformers.models.funnel.modeling_tf_funnel.TFFunnelForPreTrainingOutput](/docs/transformers/master/en/model_doc/funnel#transformers.models.funnel.modeling_tf_funnel.TFFunnelForPreTrainingOutput) or a tuple of `tf.Tensor` (if
-  `return_dict=False` is passed or when `config.return_dict=False`) comprising various elements depending on the
-  configuration ([FunnelConfig](/docs/transformers/master/en/model_doc/funnel#transformers.FunnelConfig)) and inputs.
+  Hidden-states of the model at the output of each layer plus the initial embedding outputs.
+- **attentions** (`tuple(tf.Tensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `tf.Tensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
 
-  - **logits** (`tf.Tensor` of shape `(batch_size, sequence_length)`) -- Prediction scores of the head (scores for each token before SoftMax).
-  - **hidden_states** (`tuple(tf.Tensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `tf.Tensor` (one for the output of the embeddings + one for the output of each layer) of
-    shape `(batch_size, sequence_length, hidden_size)`.
-
-    Hidden-states of the model at the output of each layer plus the initial embedding outputs.
-  - **attentions** (`tuple(tf.Tensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `tf.Tensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
-
-    Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
-    heads.
-
-
-Examples --
-
-```python --
- transformers import FunnelTokenizer, TFFunnelForPreTraining
-rt torch
-
-nizer = TFFunnelTokenizer.from_pretrained('funnel-transformer/small')
-l = TFFunnelForPreTraining.from_pretrained('funnel-transformer/small')
-
-ts = tokenizer("Hello, my dog is cute", return_tensors= "tf")
-ts = model(inputs).logits
-``` --</paramsdesc><paramgroups>0</paramgroups></docstring>
+  Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
+  heads.</retdesc></docstring>
 The [TFFunnelForPreTraining](/docs/transformers/master/en/model_doc/funnel#transformers.TFFunnelForPreTraining) forward method, overrides the `__call__` special method.
 
 <Tip>
@@ -1667,6 +1647,22 @@ the latter silently ignores them.
 
 
 
+
+
+
+
+Examples:
+
+```python
+>>> from transformers import FunnelTokenizer, TFFunnelForPreTraining
+>>> import torch
+
+>>> tokenizer = TFFunnelTokenizer.from_pretrained('funnel-transformer/small')
+>>> model = TFFunnelForPreTraining.from_pretrained('funnel-transformer/small')
+
+>>> inputs = tokenizer("Hello, my dog is cute", return_tensors= "tf")
+>>> logits = model(inputs).logits
+```
 
 </div></div>
 

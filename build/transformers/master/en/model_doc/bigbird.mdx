@@ -646,44 +646,23 @@ Example:
   - 0 indicates sequence B is a continuation of sequence A,
   - 1 indicates sequence B is a random sequence.
 - **kwargs** (`Dict[str, any]`, optional, defaults to *&amp;lcub;}*) --
-  Used to hide legacy arguments that have been deprecated.
+  Used to hide legacy arguments that have been deprecated.</paramsdesc><paramgroups>0</paramgroups><rettype>[transformers.models.big_bird.modeling_big_bird.BigBirdForPreTrainingOutput](/docs/transformers/master/en/model_doc/bigbird#transformers.models.big_bird.modeling_big_bird.BigBirdForPreTrainingOutput) or `tuple(torch.FloatTensor)`</rettype><retdesc>A [transformers.models.big_bird.modeling_big_bird.BigBirdForPreTrainingOutput](/docs/transformers/master/en/model_doc/bigbird#transformers.models.big_bird.modeling_big_bird.BigBirdForPreTrainingOutput) or a tuple of
+`torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising various
+elements depending on the configuration ([BigBirdConfig](/docs/transformers/master/en/model_doc/bigbird#transformers.BigBirdConfig)) and inputs.
 
+- **loss** (*optional*, returned when `labels` is provided, `torch.FloatTensor` of shape `(1,)`) -- Total loss as the sum of the masked language modeling loss and the next sequence prediction
+  (classification) loss.
+- **prediction_logits** (`torch.FloatTensor` of shape `(batch_size, sequence_length, config.vocab_size)`) -- Prediction scores of the language modeling head (scores for each vocabulary token before SoftMax).
+- **seq_relationship_logits** (`torch.FloatTensor` of shape `(batch_size, 2)`) -- Prediction scores of the next sequence prediction (classification) head (scores of True/False continuation
+  before SoftMax).
+- **hidden_states** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer)
+  of shape `(batch_size, sequence_length, hidden_size)`.
 
-  Returns --
-  [transformers.models.big_bird.modeling_big_bird.BigBirdForPreTrainingOutput](/docs/transformers/master/en/model_doc/bigbird#transformers.models.big_bird.modeling_big_bird.BigBirdForPreTrainingOutput) or `tuple(torch.FloatTensor)`: A [transformers.models.big_bird.modeling_big_bird.BigBirdForPreTrainingOutput](/docs/transformers/master/en/model_doc/bigbird#transformers.models.big_bird.modeling_big_bird.BigBirdForPreTrainingOutput) or a tuple of
-  `torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising various
-  elements depending on the configuration ([BigBirdConfig](/docs/transformers/master/en/model_doc/bigbird#transformers.BigBirdConfig)) and inputs.
+  Hidden-states of the model at the output of each layer plus the initial embedding outputs.
+- **attentions** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
 
-  - **loss** (*optional*, returned when `labels` is provided, `torch.FloatTensor` of shape `(1,)`) -- Total loss as the sum of the masked language modeling loss and the next sequence prediction
-    (classification) loss.
-  - **prediction_logits** (`torch.FloatTensor` of shape `(batch_size, sequence_length, config.vocab_size)`) -- Prediction scores of the language modeling head (scores for each vocabulary token before SoftMax).
-  - **seq_relationship_logits** (`torch.FloatTensor` of shape `(batch_size, 2)`) -- Prediction scores of the next sequence prediction (classification) head (scores of True/False continuation
-    before SoftMax).
-  - **hidden_states** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer)
-    of shape `(batch_size, sequence_length, hidden_size)`.
-
-    Hidden-states of the model at the output of each layer plus the initial embedding outputs.
-  - **attentions** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
-
-    Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
-    heads.
-
-
-Example --
-
-```python --
- transformers import BigBirdTokenizer, BigBirdForPreTraining
-rt torch
-
-nizer = BigBirdTokenizer.from_pretrained('google/bigbird-roberta-base')
-l = BigBirdForPreTraining.from_pretrained('google/bigbird-roberta-base')
-
-ts = tokenizer("Hello, my dog is cute", return_tensors="pt")
-uts = model(**inputs)
-
-iction_logits = outputs.prediction_logits
-relationship_logits = outputs.seq_relationship_logits
-``` --</paramsdesc><paramgroups>0</paramgroups></docstring>
+  Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
+  heads.</retdesc></docstring>
 The [BigBirdForPreTraining](/docs/transformers/master/en/model_doc/bigbird#transformers.BigBirdForPreTraining) forward method, overrides the `__call__` special method.
 
 <Tip>
@@ -696,6 +675,25 @@ the latter silently ignores them.
 
 
 
+
+
+
+
+Example:
+
+```python
+>>> from transformers import BigBirdTokenizer, BigBirdForPreTraining
+>>> import torch
+
+>>> tokenizer = BigBirdTokenizer.from_pretrained('google/bigbird-roberta-base')
+>>> model = BigBirdForPreTraining.from_pretrained('google/bigbird-roberta-base')
+
+>>> inputs = tokenizer("Hello, my dog is cute", return_tensors="pt")
+>>> outputs = model(**inputs)
+
+>>> prediction_logits = outputs.prediction_logits
+>>> seq_relationship_logits = outputs.seq_relationship_logits
+```
 
 </div></div>
 
@@ -782,52 +780,30 @@ behavior.
   ignored (masked), the loss is only computed for the tokens with labels n `[0, ..., config.vocab_size]`.
 - **use_cache** (`bool`, *optional*) --
   If set to `True`, `past_key_values` key value states are returned and can be used to speed up
-  decoding (see `past_key_values`).
+  decoding (see `past_key_values`).</paramsdesc><paramgroups>0</paramgroups><rettype>[transformers.modeling_outputs.CausalLMOutputWithCrossAttentions](/docs/transformers/master/en/main_classes/output#transformers.modeling_outputs.CausalLMOutputWithCrossAttentions) or `tuple(torch.FloatTensor)`</rettype><retdesc>A [transformers.modeling_outputs.CausalLMOutputWithCrossAttentions](/docs/transformers/master/en/main_classes/output#transformers.modeling_outputs.CausalLMOutputWithCrossAttentions) or a tuple of
+`torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising various
+elements depending on the configuration ([BigBirdConfig](/docs/transformers/master/en/model_doc/bigbird#transformers.BigBirdConfig)) and inputs.
 
+- **loss** (`torch.FloatTensor` of shape `(1,)`, *optional*, returned when `labels` is provided) -- Language modeling loss (for next-token prediction).
+- **logits** (`torch.FloatTensor` of shape `(batch_size, sequence_length, config.vocab_size)`) -- Prediction scores of the language modeling head (scores for each vocabulary token before SoftMax).
+- **hidden_states** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer)
+  of shape `(batch_size, sequence_length, hidden_size)`.
 
-  Returns --
-  [transformers.modeling_outputs.CausalLMOutputWithCrossAttentions](/docs/transformers/master/en/main_classes/output#transformers.modeling_outputs.CausalLMOutputWithCrossAttentions) or `tuple(torch.FloatTensor)`: A [transformers.modeling_outputs.CausalLMOutputWithCrossAttentions](/docs/transformers/master/en/main_classes/output#transformers.modeling_outputs.CausalLMOutputWithCrossAttentions) or a tuple of
-  `torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising various
-  elements depending on the configuration ([BigBirdConfig](/docs/transformers/master/en/model_doc/bigbird#transformers.BigBirdConfig)) and inputs.
+  Hidden-states of the model at the output of each layer plus the initial embedding outputs.
+- **attentions** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
 
-  - **loss** (`torch.FloatTensor` of shape `(1,)`, *optional*, returned when `labels` is provided) -- Language modeling loss (for next-token prediction).
-  - **logits** (`torch.FloatTensor` of shape `(batch_size, sequence_length, config.vocab_size)`) -- Prediction scores of the language modeling head (scores for each vocabulary token before SoftMax).
-  - **hidden_states** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer)
-    of shape `(batch_size, sequence_length, hidden_size)`.
+  Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
+  heads.
+- **cross_attentions** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
 
-    Hidden-states of the model at the output of each layer plus the initial embedding outputs.
-  - **attentions** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+  Cross attentions weights after the attention softmax, used to compute the weighted average in the
+  cross-attention heads.
+- **past_key_values** (`tuple(tuple(torch.FloatTensor))`, *optional*, returned when `use_cache=True` is passed or when `config.use_cache=True`) -- Tuple of `torch.FloatTensor` tuples of length `config.n_layers`, with each tuple containing the
+  cached key, value states of the self-attention and the cross-attention layers if model is used in
+  encoder-decoder setting. Only relevant if `config.is_decoder = True`.
 
-    Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
-    heads.
-  - **cross_attentions** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
-
-    Cross attentions weights after the attention softmax, used to compute the weighted average in the
-    cross-attention heads.
-  - **past_key_values** (`tuple(tuple(torch.FloatTensor))`, *optional*, returned when `use_cache=True` is passed or when `config.use_cache=True`) -- Tuple of `torch.FloatTensor` tuples of length `config.n_layers`, with each tuple containing the
-    cached key, value states of the self-attention and the cross-attention layers if model is used in
-    encoder-decoder setting. Only relevant if `config.is_decoder = True`.
-
-    Contains pre-computed hidden-states (key and values in the attention blocks) that can be used (see
-    `past_key_values` input) to speed up sequential decoding.
-
-
-Example --
-
-```python --
- transformers import BigBirdTokenizer, BigBirdForCausalLM, BigBirdConfig
-rt torch
-
-nizer = BigBirdTokenizer.from_pretrained('google/bigbird-roberta-base')
-ig = BigBirdConfig.from_pretrained("google/bigbird-roberta-base")
-ig.is_decoder = True
-l = BigBirdForCausalLM.from_pretrained('google/bigbird-roberta-base', config=config)
-
-ts = tokenizer("Hello, my dog is cute", return_tensors="pt")
-uts = model(**inputs)
-
-iction_logits = outputs.logits
-``` --</paramsdesc><paramgroups>0</paramgroups></docstring>
+  Contains pre-computed hidden-states (key and values in the attention blocks) that can be used (see
+  `past_key_values` input) to speed up sequential decoding.</retdesc></docstring>
 The [BigBirdForCausalLM](/docs/transformers/master/en/model_doc/bigbird#transformers.BigBirdForCausalLM) forward method, overrides the `__call__` special method.
 
 <Tip>
@@ -840,6 +816,26 @@ the latter silently ignores them.
 
 
 
+
+
+
+
+Example:
+
+```python
+>>> from transformers import BigBirdTokenizer, BigBirdForCausalLM, BigBirdConfig
+>>> import torch
+
+>>> tokenizer = BigBirdTokenizer.from_pretrained('google/bigbird-roberta-base')
+>>> config = BigBirdConfig.from_pretrained("google/bigbird-roberta-base")
+>>> config.is_decoder = True
+>>> model = BigBirdForCausalLM.from_pretrained('google/bigbird-roberta-base', config=config)
+
+>>> inputs = tokenizer("Hello, my dog is cute", return_tensors="pt")
+>>> outputs = model(**inputs)
+
+>>> prediction_logits = outputs.logits
+```
 
 </div></div>
 

@@ -605,49 +605,22 @@ general usage and behavior.
 
 - **labels** (`torch.LongTensor` of shape `(batch_size,)`, *optional*) --
   Labels for computing the multiple choice classification loss. Indices should be in `[0, ..., num_choices-1]` where `num_choices` is the size of the second dimension of the input tensors. (See
-  `input_ids` above)
+  `input_ids` above)</paramsdesc><paramgroups>0</paramgroups><rettype>[transformers.modeling_outputs.MultipleChoiceModelOutput](/docs/transformers/master/en/main_classes/output#transformers.modeling_outputs.MultipleChoiceModelOutput) or `tuple(torch.FloatTensor)`</rettype><retdesc>A [transformers.modeling_outputs.MultipleChoiceModelOutput](/docs/transformers/master/en/main_classes/output#transformers.modeling_outputs.MultipleChoiceModelOutput) or a tuple of
+`torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising various
+elements depending on the configuration ([DistilBertConfig](/docs/transformers/master/en/model_doc/distilbert#transformers.DistilBertConfig)) and inputs.
 
+- **loss** (`torch.FloatTensor` of shape *(1,)*, *optional*, returned when `labels` is provided) -- Classification loss.
+- **logits** (`torch.FloatTensor` of shape `(batch_size, num_choices)`) -- *num_choices* is the second dimension of the input tensors. (see *input_ids* above).
 
-  Returns --
-  [transformers.modeling_outputs.MultipleChoiceModelOutput](/docs/transformers/master/en/main_classes/output#transformers.modeling_outputs.MultipleChoiceModelOutput) or `tuple(torch.FloatTensor)`: A [transformers.modeling_outputs.MultipleChoiceModelOutput](/docs/transformers/master/en/main_classes/output#transformers.modeling_outputs.MultipleChoiceModelOutput) or a tuple of
-  `torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising various
-  elements depending on the configuration ([DistilBertConfig](/docs/transformers/master/en/model_doc/distilbert#transformers.DistilBertConfig)) and inputs.
+  Classification scores (before SoftMax).
+- **hidden_states** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer)
+  of shape `(batch_size, sequence_length, hidden_size)`.
 
-  - **loss** (`torch.FloatTensor` of shape *(1,)*, *optional*, returned when `labels` is provided) -- Classification loss.
-  - **logits** (`torch.FloatTensor` of shape `(batch_size, num_choices)`) -- *num_choices* is the second dimension of the input tensors. (see *input_ids* above).
+  Hidden-states of the model at the output of each layer plus the initial embedding outputs.
+- **attentions** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
 
-    Classification scores (before SoftMax).
-  - **hidden_states** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer)
-    of shape `(batch_size, sequence_length, hidden_size)`.
-
-    Hidden-states of the model at the output of each layer plus the initial embedding outputs.
-  - **attentions** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
-
-    Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
-    heads.
-
-
-Examples --
-
-```python --
- transformers import DistilBertTokenizer, DistilBertForMultipleChoice
-rt torch
-
-nizer = DistilBertTokenizer.from_pretrained('distilbert-base-cased')
-l = DistilBertForMultipleChoice.from_pretrained('distilbert-base-cased')
-
-pt = "In Italy, pizza served in formal settings, such as at a restaurant, is presented unsliced."
-ce0 = "It is eaten with a fork and a knife."
-ce1 = "It is eaten while held in the hand."
-ls = torch.tensor(0).unsqueeze(0)  # choice0 is correct (according to Wikipedia ;)), batch size 1
-
-ding = tokenizer([[prompt, choice0], [prompt, choice1]], return_tensors='pt', padding=True)
-uts = model(**&amp;lcub;k
-
-e linear classifier still needs to be trained
- = outputs.loss
-ts = outputs.logits
-``` --</paramsdesc><paramgroups>0</paramgroups></docstring>
+  Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
+  heads.</retdesc></docstring>
 The [DistilBertForMultipleChoice](/docs/transformers/master/en/model_doc/distilbert#transformers.DistilBertForMultipleChoice) forward method, overrides the `__call__` special method.
 
 <Tip>
@@ -660,6 +633,31 @@ the latter silently ignores them.
 
 
 
+
+
+
+
+Examples:
+
+```python
+>>> from transformers import DistilBertTokenizer, DistilBertForMultipleChoice
+>>> import torch
+
+>>> tokenizer = DistilBertTokenizer.from_pretrained('distilbert-base-cased')
+>>> model = DistilBertForMultipleChoice.from_pretrained('distilbert-base-cased')
+
+>>> prompt = "In Italy, pizza served in formal settings, such as at a restaurant, is presented unsliced."
+>>> choice0 = "It is eaten with a fork and a knife."
+>>> choice1 = "It is eaten while held in the hand."
+>>> labels = torch.tensor(0).unsqueeze(0)  # choice0 is correct (according to Wikipedia ;)), batch size 1
+
+>>> encoding = tokenizer([[prompt, choice0], [prompt, choice1]], return_tensors='pt', padding=True)
+>>> outputs = model(**&amp;lcub;k: v.unsqueeze(0) for k,v in encoding.items()}, labels=labels) # batch size is 1
+
+>>> # the linear classifier still needs to be trained
+>>> loss = outputs.loss
+>>> logits = outputs.logits
+```
 
 </div></div>
 

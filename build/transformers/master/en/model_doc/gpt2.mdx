@@ -870,57 +870,26 @@ general usage and behavior.
   `-100` are ignored (masked), the loss is only computed for labels in `[0, ..., config.vocab_size - 1]`
 - **mc_labels** (`torch.LongTensor` of shape `(batch_size)`, *optional*) --
   Labels for computing the multiple choice classification loss. Indices should be in `[0, ..., num_choices]` where *num_choices* is the size of the second dimension of the input tensors. (see
-  *input_ids* above)
+  *input_ids* above)</paramsdesc><paramgroups>0</paramgroups><rettype>[transformers.models.gpt2.modeling_gpt2.GPT2DoubleHeadsModelOutput](/docs/transformers/master/en/model_doc/gpt2#transformers.models.gpt2.modeling_gpt2.GPT2DoubleHeadsModelOutput) or `tuple(torch.FloatTensor)`</rettype><retdesc>A [transformers.models.gpt2.modeling_gpt2.GPT2DoubleHeadsModelOutput](/docs/transformers/master/en/model_doc/gpt2#transformers.models.gpt2.modeling_gpt2.GPT2DoubleHeadsModelOutput) or a tuple of
+`torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising various
+elements depending on the configuration ([GPT2Config](/docs/transformers/master/en/model_doc/gpt2#transformers.GPT2Config)) and inputs.
 
+- **loss** (`torch.FloatTensor` of shape `(1,)`, *optional*, returned when `labels` is provided) -- Language modeling loss.
+- **mc_loss** (`torch.FloatTensor` of shape `(1,)`, *optional*, returned when `mc_labels` is provided) -- Multiple choice classification loss.
+- **logits** (`torch.FloatTensor` of shape `(batch_size, num_choices, sequence_length, config.vocab_size)`) -- Prediction scores of the language modeling head (scores for each vocabulary token before SoftMax).
+- **mc_logits** (`torch.FloatTensor` of shape `(batch_size, num_choices)`) -- Prediction scores of the multiple choice classification head (scores for each choice before SoftMax).
+- **past_key_values** (`Tuple[Tuple[torch.Tensor]]`, *optional*, returned when `use_cache=True` is passed or when `config.use_cache=True`) -- Tuple of length `config.n_layers`, containing tuples of tensors of shape `(batch_size, num_heads, sequence_length, embed_size_per_head)`).
 
-  Returns --
-  [transformers.models.gpt2.modeling_gpt2.GPT2DoubleHeadsModelOutput](/docs/transformers/master/en/model_doc/gpt2#transformers.models.gpt2.modeling_gpt2.GPT2DoubleHeadsModelOutput) or `tuple(torch.FloatTensor)`: A [transformers.models.gpt2.modeling_gpt2.GPT2DoubleHeadsModelOutput](/docs/transformers/master/en/model_doc/gpt2#transformers.models.gpt2.modeling_gpt2.GPT2DoubleHeadsModelOutput) or a tuple of
-  `torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising various
-  elements depending on the configuration ([GPT2Config](/docs/transformers/master/en/model_doc/gpt2#transformers.GPT2Config)) and inputs.
+  Contains pre-computed hidden-states (key and values in the attention blocks) that can be used (see
+  `past_key_values` input) to speed up sequential decoding.
+- **hidden_states** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer)
+  of shape `(batch_size, sequence_length, hidden_size)`.
 
-  - **loss** (`torch.FloatTensor` of shape `(1,)`, *optional*, returned when `labels` is provided) -- Language modeling loss.
-  - **mc_loss** (`torch.FloatTensor` of shape `(1,)`, *optional*, returned when `mc_labels` is provided) -- Multiple choice classification loss.
-  - **logits** (`torch.FloatTensor` of shape `(batch_size, num_choices, sequence_length, config.vocab_size)`) -- Prediction scores of the language modeling head (scores for each vocabulary token before SoftMax).
-  - **mc_logits** (`torch.FloatTensor` of shape `(batch_size, num_choices)`) -- Prediction scores of the multiple choice classification head (scores for each choice before SoftMax).
-  - **past_key_values** (`Tuple[Tuple[torch.Tensor]]`, *optional*, returned when `use_cache=True` is passed or when `config.use_cache=True`) -- Tuple of length `config.n_layers`, containing tuples of tensors of shape `(batch_size, num_heads, sequence_length, embed_size_per_head)`).
+  Hidden-states of the model at the output of each layer plus the initial embedding outputs.
+- **attentions** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
 
-    Contains pre-computed hidden-states (key and values in the attention blocks) that can be used (see
-    `past_key_values` input) to speed up sequential decoding.
-  - **hidden_states** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer)
-    of shape `(batch_size, sequence_length, hidden_size)`.
-
-    Hidden-states of the model at the output of each layer plus the initial embedding outputs.
-  - **attentions** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
-
-    GPT2Attentions weights after the attention softmax, used to compute the weighted average in the
-    self-attention heads.
-
-
-Example --
-
-```python --
-rt torch
- transformers import GPT2Tokenizer, GPT2DoubleHeadsModel
-
-nizer = GPT2Tokenizer.from_pretrained('gpt2')
-l = GPT2DoubleHeadsModel.from_pretrained('gpt2')
-
-d a [CLS] to the vocabulary (we should train it also!)
-added_tokens = tokenizer.add_special_tokens(&amp;lcub;'cls_token'
-
-dding_layer = model.resize_token_embeddings(len(tokenizer))  # Update the model embeddings with the new vocabulary size
-
-ces = ["Hello, my dog is cute [CLS]", "Hello, my cat is cute [CLS]"]
-ded_choices = [tokenizer.encode(s) for s in choices]
-token_location = [tokens.index(tokenizer.cls_token_id) for tokens in encoded_choices]
-
-t_ids = torch.tensor(encoded_choices).unsqueeze(0)  # Batch size
-oken_ids = torch.tensor([cls_token_location])  # Batch size
-
-uts = model(input_ids, mc_token_ids=mc_token_ids)
-ogits = outputs.logits
-ogits = outputs.mc_logits
-``` --</paramsdesc><paramgroups>0</paramgroups></docstring>
+  GPT2Attentions weights after the attention softmax, used to compute the weighted average in the
+  self-attention heads.</retdesc></docstring>
 The [GPT2DoubleHeadsModel](/docs/transformers/master/en/model_doc/gpt2#transformers.GPT2DoubleHeadsModel) forward method, overrides the `__call__` special method.
 
 <Tip>
@@ -933,6 +902,35 @@ the latter silently ignores them.
 
 
 
+
+
+
+
+Example:
+
+```python
+>>> import torch
+>>> from transformers import GPT2Tokenizer, GPT2DoubleHeadsModel
+
+>>> tokenizer = GPT2Tokenizer.from_pretrained('gpt2')
+>>> model = GPT2DoubleHeadsModel.from_pretrained('gpt2')
+
+>>> # Add a [CLS] to the vocabulary (we should train it also!)
+>>> num_added_tokens = tokenizer.add_special_tokens(&amp;lcub;'cls_token': '[CLS]'})
+
+>>> embedding_layer = model.resize_token_embeddings(len(tokenizer))  # Update the model embeddings with the new vocabulary size
+
+>>> choices = ["Hello, my dog is cute [CLS]", "Hello, my cat is cute [CLS]"]
+>>> encoded_choices = [tokenizer.encode(s) for s in choices]
+>>> cls_token_location = [tokens.index(tokenizer.cls_token_id) for tokens in encoded_choices]
+
+>>> input_ids = torch.tensor(encoded_choices).unsqueeze(0)  # Batch size: 1, number of choices: 2
+>>> mc_token_ids = torch.tensor([cls_token_location])  # Batch size: 1
+
+>>> outputs = model(input_ids, mc_token_ids=mc_token_ids)
+>>> lm_logits = outputs.logits
+>>> mc_logits = outputs.mc_logits
+```
 
 </div></div>
 
@@ -1708,54 +1706,24 @@ the first positional argument :
   behaviors between training and evaluation).
 
 - **mc_token_ids** (`tf.Tensor` or `Numpy array` of shape `(batch_size, num_choices)`, *optional*, default to index of the last token of the input) --
-  Index of the classification token in each input sequence. Selected in the range `[0, input_ids.size(-1) - 1[`.
+  Index of the classification token in each input sequence. Selected in the range `[0, input_ids.size(-1) - 1[`.</paramsdesc><paramgroups>0</paramgroups><rettype>[transformers.models.gpt2.modeling_tf_gpt2.TFGPT2DoubleHeadsModelOutput](/docs/transformers/master/en/model_doc/gpt2#transformers.models.gpt2.modeling_tf_gpt2.TFGPT2DoubleHeadsModelOutput) or `tuple(tf.Tensor)`</rettype><retdesc>A [transformers.models.gpt2.modeling_tf_gpt2.TFGPT2DoubleHeadsModelOutput](/docs/transformers/master/en/model_doc/gpt2#transformers.models.gpt2.modeling_tf_gpt2.TFGPT2DoubleHeadsModelOutput) or a tuple of `tf.Tensor` (if
+`return_dict=False` is passed or when `config.return_dict=False`) comprising various elements depending on the
+configuration ([GPT2Config](/docs/transformers/master/en/model_doc/gpt2#transformers.GPT2Config)) and inputs.
 
+- **logits** (`tf.Tensor` of shape `(batch_size, num_choices, sequence_length, config.vocab_size)`) -- Prediction scores of the language modeling head (scores for each vocabulary token before SoftMax).
+- **mc_logits** (`tf.Tensor` of shape `(batch_size, num_choices)`) -- Prediction scores of the multiple choice classification head (scores for each choice before SoftMax).
+- **past_key_values** (`List[tf.Tensor]`, *optional*, returned when `use_cache=True` is passed or when `config.use_cache=True`) -- List of `tf.Tensor` of length `config.n_layers`, with each tensor of shape `(2, batch_size, num_heads, sequence_length, embed_size_per_head)`).
 
-  Returns --
-  [transformers.models.gpt2.modeling_tf_gpt2.TFGPT2DoubleHeadsModelOutput](/docs/transformers/master/en/model_doc/gpt2#transformers.models.gpt2.modeling_tf_gpt2.TFGPT2DoubleHeadsModelOutput) or `tuple(tf.Tensor)`: A [transformers.models.gpt2.modeling_tf_gpt2.TFGPT2DoubleHeadsModelOutput](/docs/transformers/master/en/model_doc/gpt2#transformers.models.gpt2.modeling_tf_gpt2.TFGPT2DoubleHeadsModelOutput) or a tuple of `tf.Tensor` (if
-  `return_dict=False` is passed or when `config.return_dict=False`) comprising various elements depending on the
-  configuration ([GPT2Config](/docs/transformers/master/en/model_doc/gpt2#transformers.GPT2Config)) and inputs.
+  Contains pre-computed hidden-states (key and values in the attention blocks) that can be used (see
+  `past_key_values` input) to speed up sequential decoding.
+- **hidden_states** (`tuple(tf.Tensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `tf.Tensor` (one for the output of the embeddings + one for the output of each layer) of
+  shape `(batch_size, sequence_length, hidden_size)`.
 
-  - **logits** (`tf.Tensor` of shape `(batch_size, num_choices, sequence_length, config.vocab_size)`) -- Prediction scores of the language modeling head (scores for each vocabulary token before SoftMax).
-  - **mc_logits** (`tf.Tensor` of shape `(batch_size, num_choices)`) -- Prediction scores of the multiple choice classification head (scores for each choice before SoftMax).
-  - **past_key_values** (`List[tf.Tensor]`, *optional*, returned when `use_cache=True` is passed or when `config.use_cache=True`) -- List of `tf.Tensor` of length `config.n_layers`, with each tensor of shape `(2, batch_size, num_heads, sequence_length, embed_size_per_head)`).
+  Hidden-states of the model at the output of each layer plus the initial embedding outputs.
+- **attentions** (`tuple(tf.Tensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `tf.Tensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
 
-    Contains pre-computed hidden-states (key and values in the attention blocks) that can be used (see
-    `past_key_values` input) to speed up sequential decoding.
-  - **hidden_states** (`tuple(tf.Tensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `tf.Tensor` (one for the output of the embeddings + one for the output of each layer) of
-    shape `(batch_size, sequence_length, hidden_size)`.
-
-    Hidden-states of the model at the output of each layer plus the initial embedding outputs.
-  - **attentions** (`tuple(tf.Tensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `tf.Tensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
-
-    Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
-    heads.
-
-
-Examples --
-
-```python --
-rt tensorflow as tf
- transformers import GPT2Tokenizer, TFGPT2DoubleHeadsModel
-
-nizer = GPT2Tokenizer.from_pretrained('gpt2')
-l = TFGPT2DoubleHeadsModel.from_pretrained('gpt2')
-
-d a [CLS] to the vocabulary (we should train it also!)
-added_tokens = tokenizer.add_special_tokens(&amp;lcub;'cls_token'
-
-dding_layer = model.resize_token_embeddings(len(tokenizer))  # Update the model embeddings with the new vocabulary size
-
-ces = ["Hello, my dog is cute [CLS]", "Hello, my cat is cute [CLS]"]
-ded_choices = [tokenizer.encode(s) for s in choices]
-token_location = [tokens.index(tokenizer.cls_token_id) for tokens in encoded_choices]
-
-t_ids = tf.constant(encoded_choices)[None, 
-oken_ids = tf.constant([cls_token_location])  # Batch size
-
-uts = model(input_ids, mc_token_ids=mc_token_ids)
-rediction_scores, mc_prediction_scores = outputs[
-``` --</paramsdesc><paramgroups>0</paramgroups></docstring>
+  Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
+  heads.</retdesc></docstring>
 The [TFGPT2DoubleHeadsModel](/docs/transformers/master/en/model_doc/gpt2#transformers.TFGPT2DoubleHeadsModel) forward method, overrides the `__call__` special method.
 
 <Tip>
@@ -1768,6 +1736,34 @@ the latter silently ignores them.
 
 
 
+
+
+
+
+Examples:
+
+```python
+>>> import tensorflow as tf
+>>> from transformers import GPT2Tokenizer, TFGPT2DoubleHeadsModel
+
+>>> tokenizer = GPT2Tokenizer.from_pretrained('gpt2')
+>>> model = TFGPT2DoubleHeadsModel.from_pretrained('gpt2')
+
+>>> # Add a [CLS] to the vocabulary (we should train it also!)
+>>> num_added_tokens = tokenizer.add_special_tokens(&amp;lcub;'cls_token': '[CLS]'})
+
+>>> embedding_layer = model.resize_token_embeddings(len(tokenizer))  # Update the model embeddings with the new vocabulary size
+
+>>> choices = ["Hello, my dog is cute [CLS]", "Hello, my cat is cute [CLS]"]
+>>> encoded_choices = [tokenizer.encode(s) for s in choices]
+>>> cls_token_location = [tokens.index(tokenizer.cls_token_id) for tokens in encoded_choices]
+
+>>> input_ids = tf.constant(encoded_choices)[None, :]  # Batch size: 1, number of choices: 2
+>>> mc_token_ids = tf.constant([cls_token_location])  # Batch size: 1
+
+>>> outputs = model(input_ids, mc_token_ids=mc_token_ids)
+>>> lm_prediction_scores, mc_prediction_scores = outputs[:2]
+```
 
 </div></div>
 

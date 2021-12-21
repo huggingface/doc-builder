@@ -549,52 +549,30 @@ behavior.
   ignored (masked), the loss is only computed for the tokens with labels n `[0, ..., config.vocab_size]`.
 - **use_cache** (`bool`, *optional*) --
   If set to `True`, `past_key_values` key value states are returned and can be used to speed up
-  decoding (see `past_key_values`).
+  decoding (see `past_key_values`).</paramsdesc><paramgroups>0</paramgroups><rettype>[transformers.modeling_outputs.CausalLMOutputWithCrossAttentions](/docs/transformers/master/en/main_classes/output#transformers.modeling_outputs.CausalLMOutputWithCrossAttentions) or `tuple(torch.FloatTensor)`</rettype><retdesc>A [transformers.modeling_outputs.CausalLMOutputWithCrossAttentions](/docs/transformers/master/en/main_classes/output#transformers.modeling_outputs.CausalLMOutputWithCrossAttentions) or a tuple of
+`torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising various
+elements depending on the configuration ([RoFormerConfig](/docs/transformers/master/en/model_doc/roformer#transformers.RoFormerConfig)) and inputs.
 
+- **loss** (`torch.FloatTensor` of shape `(1,)`, *optional*, returned when `labels` is provided) -- Language modeling loss (for next-token prediction).
+- **logits** (`torch.FloatTensor` of shape `(batch_size, sequence_length, config.vocab_size)`) -- Prediction scores of the language modeling head (scores for each vocabulary token before SoftMax).
+- **hidden_states** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer)
+  of shape `(batch_size, sequence_length, hidden_size)`.
 
-  Returns --
-  [transformers.modeling_outputs.CausalLMOutputWithCrossAttentions](/docs/transformers/master/en/main_classes/output#transformers.modeling_outputs.CausalLMOutputWithCrossAttentions) or `tuple(torch.FloatTensor)`: A [transformers.modeling_outputs.CausalLMOutputWithCrossAttentions](/docs/transformers/master/en/main_classes/output#transformers.modeling_outputs.CausalLMOutputWithCrossAttentions) or a tuple of
-  `torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising various
-  elements depending on the configuration ([RoFormerConfig](/docs/transformers/master/en/model_doc/roformer#transformers.RoFormerConfig)) and inputs.
+  Hidden-states of the model at the output of each layer plus the initial embedding outputs.
+- **attentions** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
 
-  - **loss** (`torch.FloatTensor` of shape `(1,)`, *optional*, returned when `labels` is provided) -- Language modeling loss (for next-token prediction).
-  - **logits** (`torch.FloatTensor` of shape `(batch_size, sequence_length, config.vocab_size)`) -- Prediction scores of the language modeling head (scores for each vocabulary token before SoftMax).
-  - **hidden_states** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer)
-    of shape `(batch_size, sequence_length, hidden_size)`.
+  Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
+  heads.
+- **cross_attentions** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
 
-    Hidden-states of the model at the output of each layer plus the initial embedding outputs.
-  - **attentions** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+  Cross attentions weights after the attention softmax, used to compute the weighted average in the
+  cross-attention heads.
+- **past_key_values** (`tuple(tuple(torch.FloatTensor))`, *optional*, returned when `use_cache=True` is passed or when `config.use_cache=True`) -- Tuple of `torch.FloatTensor` tuples of length `config.n_layers`, with each tuple containing the
+  cached key, value states of the self-attention and the cross-attention layers if model is used in
+  encoder-decoder setting. Only relevant if `config.is_decoder = True`.
 
-    Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
-    heads.
-  - **cross_attentions** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
-
-    Cross attentions weights after the attention softmax, used to compute the weighted average in the
-    cross-attention heads.
-  - **past_key_values** (`tuple(tuple(torch.FloatTensor))`, *optional*, returned when `use_cache=True` is passed or when `config.use_cache=True`) -- Tuple of `torch.FloatTensor` tuples of length `config.n_layers`, with each tuple containing the
-    cached key, value states of the self-attention and the cross-attention layers if model is used in
-    encoder-decoder setting. Only relevant if `config.is_decoder = True`.
-
-    Contains pre-computed hidden-states (key and values in the attention blocks) that can be used (see
-    `past_key_values` input) to speed up sequential decoding.
-
-
-Example --
-
-```python --
- transformers import RoFormerTokenizer, RoFormerForCausalLM, RoFormerConfig
-rt torch
-
-nizer = RoFormerTokenizer.from_pretrained('junnyu/roformer_chinese_base')
-ig = RoFormerConfig.from_pretrained("junnyu/roformer_chinese_base")
-ig.is_decoder = True
-l = RoFormerForCausalLM.from_pretrained('junnyu/roformer_chinese_base', config=config)
-
-ts = tokenizer("今天天气非常好。", return_tensors="pt")
-uts = model(**inputs)
-
-iction_logits = outputs.logits
-``` --</paramsdesc><paramgroups>0</paramgroups></docstring>
+  Contains pre-computed hidden-states (key and values in the attention blocks) that can be used (see
+  `past_key_values` input) to speed up sequential decoding.</retdesc></docstring>
 The [RoFormerForCausalLM](/docs/transformers/master/en/model_doc/roformer#transformers.RoFormerForCausalLM) forward method, overrides the `__call__` special method.
 
 <Tip>
@@ -607,6 +585,26 @@ the latter silently ignores them.
 
 
 
+
+
+
+
+Example:
+
+```python
+>>> from transformers import RoFormerTokenizer, RoFormerForCausalLM, RoFormerConfig
+>>> import torch
+
+>>> tokenizer = RoFormerTokenizer.from_pretrained('junnyu/roformer_chinese_base')
+>>> config = RoFormerConfig.from_pretrained("junnyu/roformer_chinese_base")
+>>> config.is_decoder = True
+>>> model = RoFormerForCausalLM.from_pretrained('junnyu/roformer_chinese_base', config=config)
+
+>>> inputs = tokenizer("今天天气非常好。", return_tensors="pt")
+>>> outputs = model(**inputs)
+
+>>> prediction_logits = outputs.logits
+```
 
 </div></div>
 

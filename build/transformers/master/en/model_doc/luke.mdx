@@ -363,56 +363,57 @@ used by the LUKE model.
   Whether or not to return the lengths of the encoded inputs.
 - **verbose** (`bool`, *optional*, defaults to `True`) --
   Whether or not to print more information and warnings.
-  **kwargs -- passed to the `self.tokenize()` method
+  **kwargs -- passed to the `self.tokenize()` method</paramsdesc><paramgroups>0</paramgroups><rettype>[BatchEncoding](/docs/transformers/master/en/main_classes/tokenizer#transformers.BatchEncoding)</rettype><retdesc>A [BatchEncoding](/docs/transformers/master/en/main_classes/tokenizer#transformers.BatchEncoding) with the following fields:
 
-  Return --
-  [BatchEncoding](/docs/transformers/master/en/main_classes/tokenizer#transformers.BatchEncoding) -- A [BatchEncoding](/docs/transformers/master/en/main_classes/tokenizer#transformers.BatchEncoding) with the following fields:
-
-- **-** **input_ids** -- List of token ids to be fed to a model. --
+- **input_ids** -- List of token ids to be fed to a model.
 
   [What are input IDs?](../glossary#input-ids)
 
-- **-** **token_type_ids** -- List of token type ids to be fed to a model (when `return_token_type_ids=True` --
+- **token_type_ids** -- List of token type ids to be fed to a model (when `return_token_type_ids=True`
   or if *"token_type_ids"* is in `self.model_input_names`).
 
   [What are token type IDs?](../glossary#token-type-ids)
 
-- **-** **attention_mask** -- List of indices specifying which tokens should be attended to by the model (when --
+- **attention_mask** -- List of indices specifying which tokens should be attended to by the model (when
   `return_attention_mask=True` or if *"attention_mask"* is in `self.model_input_names`).
 
   [What are attention masks?](../glossary#attention-mask)
 
-- **-** **entity_ids** -- List of entity ids to be fed to a model. --
+- **entity_ids** -- List of entity ids to be fed to a model.
 
   [What are input IDs?](../glossary#input-ids)
 
-- **-** **entity_position_ids** -- List of entity positions in the input sequence to be fed to a model. --
+- **entity_position_ids** -- List of entity positions in the input sequence to be fed to a model.
 
-- **-** **entity_token_type_ids** -- List of entity token type ids to be fed to a model (when --
+- **entity_token_type_ids** -- List of entity token type ids to be fed to a model (when
   `return_token_type_ids=True` or if *"entity_token_type_ids"* is in `self.model_input_names`).
 
   [What are token type IDs?](../glossary#token-type-ids)
 
-- **-** **entity_attention_mask** -- List of indices specifying which entities should be attended to by the model --
+- **entity_attention_mask** -- List of indices specifying which entities should be attended to by the model
   (when `return_attention_mask=True` or if *"entity_attention_mask"* is in
   `self.model_input_names`).
 
   [What are attention masks?](../glossary#attention-mask)
 
-- **-** **entity_start_positions** -- List of the start positions of entities in the word token sequence (when --
+- **entity_start_positions** -- List of the start positions of entities in the word token sequence (when
   `task="entity_span_classification"`).
-- **-** **entity_end_positions** -- List of the end positions of entities in the word token sequence (when --
+- **entity_end_positions** -- List of the end positions of entities in the word token sequence (when
   `task="entity_span_classification"`).
-- **-** **overflowing_tokens** -- List of overflowing tokens sequences (when a `max_length` is specified and --
+- **overflowing_tokens** -- List of overflowing tokens sequences (when a `max_length` is specified and
   `return_overflowing_tokens=True`).
-- **-** **num_truncated_tokens** -- Number of tokens truncated (when a `max_length` is specified and --
+- **num_truncated_tokens** -- Number of tokens truncated (when a `max_length` is specified and
   `return_overflowing_tokens=True`).
-- **-** **special_tokens_mask** -- List of 0s and 1s, with 1 specifying added special tokens and 0 specifying --
+- **special_tokens_mask** -- List of 0s and 1s, with 1 specifying added special tokens and 0 specifying
   regular sequence tokens (when `add_special_tokens=True` and `return_special_tokens_mask=True`).
-- **-** **length** -- The length of the inputs (when `return_length=True`) --</paramsdesc><paramgroups>0</paramgroups></docstring>
+- **length** -- The length of the inputs (when `return_length=True`)</retdesc></docstring>
 
 Main method to tokenize and prepare for the model one or several sequence(s) or one or several pair(s) of
 sequences, depending on the task you want to prepare them for.
+
+
+
+
 
 
 
@@ -511,56 +512,22 @@ general usage and behavior.
   Whether or not to return the hidden states of all layers. See `hidden_states` under returned tensors for
   more detail.
 - **return_dict** (`bool`, *optional*) --
-  Whether or not to return a [ModelOutput](/docs/transformers/master/en/main_classes/output#transformers.file_utils.ModelOutput) instead of a plain tuple.
+  Whether or not to return a [ModelOutput](/docs/transformers/master/en/main_classes/output#transformers.file_utils.ModelOutput) instead of a plain tuple.</paramsdesc><paramgroups>0</paramgroups><rettype>`transformers.models.luke.modeling_luke.BaseLukeModelOutputWithPooling` or `tuple(torch.FloatTensor)`</rettype><retdesc>A `transformers.models.luke.modeling_luke.BaseLukeModelOutputWithPooling` or a tuple of
+`torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising various
+elements depending on the configuration ([LukeConfig](/docs/transformers/master/en/model_doc/luke#transformers.LukeConfig)) and inputs.
 
-
-
-  Returns --
-  `transformers.models.luke.modeling_luke.BaseLukeModelOutputWithPooling` or `tuple(torch.FloatTensor)`: A `transformers.models.luke.modeling_luke.BaseLukeModelOutputWithPooling` or a tuple of
-  `torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising various
-  elements depending on the configuration ([LukeConfig](/docs/transformers/master/en/model_doc/luke#transformers.LukeConfig)) and inputs.
-
-  - **last_hidden_state** (`torch.FloatTensor` of shape `(batch_size, sequence_length, hidden_size)`) -- Sequence of hidden-states at the output of the last layer of the model.
-  - **entity_last_hidden_state** (`torch.FloatTensor` of shape `(batch_size, entity_length, hidden_size)`) -- Sequence of entity hidden-states at the output of the last layer of the model.
-  - **pooler_output** (`torch.FloatTensor` of shape `(batch_size, hidden_size)`) -- Last layer hidden-state of the first token of the sequence (classification token) further processed by a
-    Linear layer and a Tanh activation function.
-  - **hidden_states** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer)
-    of shape `(batch_size, sequence_length, hidden_size)`. Hidden-states of the model at the output of
-    each layer plus the initial embedding outputs.
-  - **entity_hidden_states** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer)
-    of shape `(batch_size, entity_length, hidden_size)`. Entity hidden-states of the model at the output
-    of each layer plus the initial entity embedding outputs.
-  - **attentions** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length + entity_length, sequence_length + entity_length)`. Attentions weights after the attention
-    softmax, used to compute the weighted average in the self-attention heads.
-
-
-Examples --
-
-```python --
- transformers import LukeTokenizer, LukeModel
-
-nizer = LukeTokenizer.from_pretrained("studio-ousia/luke-base")
-l = LukeModel.from_pretrained("studio-ousia/luke-base")
-
-- **#** Compute the contextualized entity representation corresponding to the entity mention "Beyoncé" --
- = "Beyoncé lives in Los Angeles."
-ty_spans = [(0, 7)]  # character-based entity span corresponding to "Beyoncé"
-
-ding = tokenizer(text, entity_spans=entity_spans, add_prefix_space=True, return_tensors="pt")
-uts = model(**encoding)
-_last_hidden_state = outputs.last_hidden_state
-ty_last_hidden_state = outputs.entity_last_hidden_state
-
-- **#** Input Wikipedia entities to obtain enriched contextualized representations of word tokens --
- = "Beyoncé lives in Los Angeles."
-ties = ["Beyoncé", "Los Angeles"]  # Wikipedia entity titles corresponding to the entity mentions "Beyoncé" and "Los Angeles"
-ty_spans = [(0, 7), (17, 28)]  # character-based entity spans corresponding to "Beyoncé" and "Los Angeles"
-
-ding = tokenizer(text, entities=entities, entity_spans=entity_spans, add_prefix_space=True, return_tensors="pt")
-uts = model(**encoding)
-_last_hidden_state = outputs.last_hidden_state
-ty_last_hidden_state = outputs.entity_last_hidden_state
-``` --</paramsdesc><paramgroups>0</paramgroups></docstring>
+- **last_hidden_state** (`torch.FloatTensor` of shape `(batch_size, sequence_length, hidden_size)`) -- Sequence of hidden-states at the output of the last layer of the model.
+- **entity_last_hidden_state** (`torch.FloatTensor` of shape `(batch_size, entity_length, hidden_size)`) -- Sequence of entity hidden-states at the output of the last layer of the model.
+- **pooler_output** (`torch.FloatTensor` of shape `(batch_size, hidden_size)`) -- Last layer hidden-state of the first token of the sequence (classification token) further processed by a
+  Linear layer and a Tanh activation function.
+- **hidden_states** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer)
+  of shape `(batch_size, sequence_length, hidden_size)`. Hidden-states of the model at the output of
+  each layer plus the initial embedding outputs.
+- **entity_hidden_states** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer)
+  of shape `(batch_size, entity_length, hidden_size)`. Entity hidden-states of the model at the output
+  of each layer plus the initial entity embedding outputs.
+- **attentions** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length + entity_length, sequence_length + entity_length)`. Attentions weights after the attention
+  softmax, used to compute the weighted average in the self-attention heads.</retdesc></docstring>
 The [LukeModel](/docs/transformers/master/en/model_doc/luke#transformers.LukeModel) forward method, overrides the `__call__` special method.
 
 <Tip>
@@ -573,6 +540,37 @@ the latter silently ignores them.
 
 
 
+
+
+
+
+Examples:
+
+```python
+>>> from transformers import LukeTokenizer, LukeModel
+
+>>> tokenizer = LukeTokenizer.from_pretrained("studio-ousia/luke-base")
+>>> model = LukeModel.from_pretrained("studio-ousia/luke-base")
+
+# Compute the contextualized entity representation corresponding to the entity mention "Beyoncé"
+>>> text = "Beyoncé lives in Los Angeles."
+>>> entity_spans = [(0, 7)]  # character-based entity span corresponding to "Beyoncé"
+
+>>> encoding = tokenizer(text, entity_spans=entity_spans, add_prefix_space=True, return_tensors="pt")
+>>> outputs = model(**encoding)
+>>> word_last_hidden_state = outputs.last_hidden_state
+>>> entity_last_hidden_state = outputs.entity_last_hidden_state
+
+# Input Wikipedia entities to obtain enriched contextualized representations of word tokens
+>>> text = "Beyoncé lives in Los Angeles."
+>>> entities = ["Beyoncé", "Los Angeles"]  # Wikipedia entity titles corresponding to the entity mentions "Beyoncé" and "Los Angeles"
+>>> entity_spans = [(0, 7), (17, 28)]  # character-based entity spans corresponding to "Beyoncé" and "Los Angeles"
+
+>>> encoding = tokenizer(text, entities=entities, entity_spans=entity_spans, add_prefix_space=True, return_tensors="pt")
+>>> outputs = model(**encoding)
+>>> word_last_hidden_state = outputs.last_hidden_state
+>>> entity_last_hidden_state = outputs.entity_last_hidden_state
+```
 
 </div></div>
 
@@ -677,30 +675,26 @@ general usage and behavior.
   (masked), the loss is only computed for the tokens with labels in `[0, ..., config.vocab_size]`
 - **entity_labels** (`torch.LongTensor` of shape `(batch_size, entity_length)`, *optional*) --
   Labels for computing the masked language modeling loss. Indices should be in `[-100, 0, ..., config.vocab_size]` (see `input_ids` docstring) Tokens with indices set to `-100` are ignored
-  (masked), the loss is only computed for the tokens with labels in `[0, ..., config.vocab_size]`
+  (masked), the loss is only computed for the tokens with labels in `[0, ..., config.vocab_size]`</paramsdesc><paramgroups>0</paramgroups><rettype>`transformers.models.luke.modeling_luke.LukeMaskedLMOutput` or `tuple(torch.FloatTensor)`</rettype><retdesc>A `transformers.models.luke.modeling_luke.LukeMaskedLMOutput` or a tuple of
+`torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising various
+elements depending on the configuration ([LukeConfig](/docs/transformers/master/en/model_doc/luke#transformers.LukeConfig)) and inputs.
 
+- **loss** (`torch.FloatTensor` of shape `(1,)`, *optional*, returned when `labels` is provided) -- The sum of masked language modeling (MLM) loss and entity prediction loss.
+- **mlm_loss** (`torch.FloatTensor` of shape `(1,)`, *optional*, returned when `labels` is provided) -- Masked language modeling (MLM) loss.
+- **mep_loss** (`torch.FloatTensor` of shape `(1,)`, *optional*, returned when `labels` is provided) -- Masked entity prediction (MEP) loss.
+- **logits** (`torch.FloatTensor` of shape `(batch_size, sequence_length, config.vocab_size)`) -- Prediction scores of the language modeling head (scores for each vocabulary token before SoftMax).
+- **entity_logits** (`torch.FloatTensor` of shape `(batch_size, sequence_length, config.vocab_size)`) -- Prediction scores of the entity prediction head (scores for each entity vocabulary token before SoftMax).
+- **hidden_states** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer)
+  of shape `(batch_size, sequence_length, hidden_size)`.
 
-  Returns --
-  `transformers.models.luke.modeling_luke.LukeMaskedLMOutput` or `tuple(torch.FloatTensor)`: A `transformers.models.luke.modeling_luke.LukeMaskedLMOutput` or a tuple of
-  `torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising various
-  elements depending on the configuration ([LukeConfig](/docs/transformers/master/en/model_doc/luke#transformers.LukeConfig)) and inputs.
+  Hidden-states of the model at the output of each layer plus the initial embedding outputs.
+- **entity_hidden_states** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer)
+  of shape `(batch_size, entity_length, hidden_size)`. Entity hidden-states of the model at the output
+  of each layer plus the initial entity embedding outputs.
+- **attentions** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
 
-  - **loss** (`torch.FloatTensor` of shape `(1,)`, *optional*, returned when `labels` is provided) -- The sum of masked language modeling (MLM) loss and entity prediction loss.
-  - **mlm_loss** (`torch.FloatTensor` of shape `(1,)`, *optional*, returned when `labels` is provided) -- Masked language modeling (MLM) loss.
-  - **mep_loss** (`torch.FloatTensor` of shape `(1,)`, *optional*, returned when `labels` is provided) -- Masked entity prediction (MEP) loss.
-  - **logits** (`torch.FloatTensor` of shape `(batch_size, sequence_length, config.vocab_size)`) -- Prediction scores of the language modeling head (scores for each vocabulary token before SoftMax).
-  - **entity_logits** (`torch.FloatTensor` of shape `(batch_size, sequence_length, config.vocab_size)`) -- Prediction scores of the entity prediction head (scores for each entity vocabulary token before SoftMax).
-  - **hidden_states** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer)
-    of shape `(batch_size, sequence_length, hidden_size)`.
-
-    Hidden-states of the model at the output of each layer plus the initial embedding outputs.
-  - **entity_hidden_states** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer)
-    of shape `(batch_size, entity_length, hidden_size)`. Entity hidden-states of the model at the output
-    of each layer plus the initial entity embedding outputs.
-  - **attentions** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
-
-    Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
-    heads.</paramsdesc><paramgroups>0</paramgroups></docstring>
+  Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
+  heads.</retdesc></docstring>
 The [LukeForMaskedLM](/docs/transformers/master/en/model_doc/luke#transformers.LukeForMaskedLM) forward method, overrides the `__call__` special method.
 
 <Tip>
@@ -710,6 +704,10 @@ instance afterwards instead of this since the former takes care of running the p
 the latter silently ignores them.
 
 </Tip>
+
+
+
+
 
 
 
@@ -817,43 +815,20 @@ general usage and behavior.
   is used for the single-label classification. In this case, labels should contain the indices that should be
   in `[0, ..., config.num_labels - 1]`. If the shape is `(batch_size, num_labels)`, the binary
   cross entropy loss is used for the multi-label classification. In this case, labels should only contain
-  `[0, 1]`, where 0 and 1 indicate false and true, respectively.
+  `[0, 1]`, where 0 and 1 indicate false and true, respectively.</paramsdesc><paramgroups>0</paramgroups><rettype>`transformers.models.luke.modeling_luke.EntityClassificationOutput` or `tuple(torch.FloatTensor)`</rettype><retdesc>A `transformers.models.luke.modeling_luke.EntityClassificationOutput` or a tuple of
+`torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising various
+elements depending on the configuration ([LukeConfig](/docs/transformers/master/en/model_doc/luke#transformers.LukeConfig)) and inputs.
 
-
-  Returns --
-  `transformers.models.luke.modeling_luke.EntityClassificationOutput` or `tuple(torch.FloatTensor)`: A `transformers.models.luke.modeling_luke.EntityClassificationOutput` or a tuple of
-  `torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising various
-  elements depending on the configuration ([LukeConfig](/docs/transformers/master/en/model_doc/luke#transformers.LukeConfig)) and inputs.
-
-  - **loss** (`torch.FloatTensor` of shape `(1,)`, *optional*, returned when `labels` is provided) -- Classification loss.
-  - **logits** (`torch.FloatTensor` of shape `(batch_size, config.num_labels)`) -- Classification scores (before SoftMax).
-  - **hidden_states** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer)
-    of shape `(batch_size, sequence_length, hidden_size)`. Hidden-states of the model at the output of
-    each layer plus the initial embedding outputs.
-  - **entity_hidden_states** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer)
-    of shape `(batch_size, entity_length, hidden_size)`. Entity hidden-states of the model at the output
-    of each layer plus the initial entity embedding outputs.
-  - **attentions** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`. Attentions weights after the attention softmax, used to compute the
-    weighted average in the self-attention heads.
-
-
-Examples --
-
-```python --
- transformers import LukeTokenizer, LukeForEntityClassification
-
-nizer = LukeTokenizer.from_pretrained("studio-ousia/luke-large-finetuned-open-entity")
-l = LukeForEntityClassification.from_pretrained("studio-ousia/luke-large-finetuned-open-entity")
-
- = "Beyoncé lives in Los Angeles."
-ty_spans = [(0, 7)]  # character-based entity span corresponding to "Beyoncé"
-ts = tokenizer(text, entity_spans=entity_spans, return_tensors="pt")
-uts = model(**inputs)
-ts = outputs.logits
-icted_class_idx = logits.argmax(-1).item()
-t("Predicted class
-- **Predicted** class -- person
-``` --</paramsdesc><paramgroups>0</paramgroups></docstring>
+- **loss** (`torch.FloatTensor` of shape `(1,)`, *optional*, returned when `labels` is provided) -- Classification loss.
+- **logits** (`torch.FloatTensor` of shape `(batch_size, config.num_labels)`) -- Classification scores (before SoftMax).
+- **hidden_states** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer)
+  of shape `(batch_size, sequence_length, hidden_size)`. Hidden-states of the model at the output of
+  each layer plus the initial embedding outputs.
+- **entity_hidden_states** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer)
+  of shape `(batch_size, entity_length, hidden_size)`. Entity hidden-states of the model at the output
+  of each layer plus the initial entity embedding outputs.
+- **attentions** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`. Attentions weights after the attention softmax, used to compute the
+  weighted average in the self-attention heads.</retdesc></docstring>
 The [LukeForEntityClassification](/docs/transformers/master/en/model_doc/luke#transformers.LukeForEntityClassification) forward method, overrides the `__call__` special method.
 
 <Tip>
@@ -866,6 +841,27 @@ the latter silently ignores them.
 
 
 
+
+
+
+
+Examples:
+
+```python
+>>> from transformers import LukeTokenizer, LukeForEntityClassification
+
+>>> tokenizer = LukeTokenizer.from_pretrained("studio-ousia/luke-large-finetuned-open-entity")
+>>> model = LukeForEntityClassification.from_pretrained("studio-ousia/luke-large-finetuned-open-entity")
+
+>>> text = "Beyoncé lives in Los Angeles."
+>>> entity_spans = [(0, 7)]  # character-based entity span corresponding to "Beyoncé"
+>>> inputs = tokenizer(text, entity_spans=entity_spans, return_tensors="pt")
+>>> outputs = model(**inputs)
+>>> logits = outputs.logits
+>>> predicted_class_idx = logits.argmax(-1).item()
+>>> print("Predicted class:", model.config.id2label[predicted_class_idx])
+Predicted class: person
+```
 
 </div></div>
 
@@ -970,43 +966,20 @@ general usage and behavior.
   is used for the single-label classification. In this case, labels should contain the indices that should be
   in `[0, ..., config.num_labels - 1]`. If the shape is `(batch_size, num_labels)`, the binary
   cross entropy loss is used for the multi-label classification. In this case, labels should only contain
-  `[0, 1]`, where 0 and 1 indicate false and true, respectively.
+  `[0, 1]`, where 0 and 1 indicate false and true, respectively.</paramsdesc><paramgroups>0</paramgroups><rettype>`transformers.models.luke.modeling_luke.EntityPairClassificationOutput` or `tuple(torch.FloatTensor)`</rettype><retdesc>A `transformers.models.luke.modeling_luke.EntityPairClassificationOutput` or a tuple of
+`torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising various
+elements depending on the configuration ([LukeConfig](/docs/transformers/master/en/model_doc/luke#transformers.LukeConfig)) and inputs.
 
-
-  Returns --
-  `transformers.models.luke.modeling_luke.EntityPairClassificationOutput` or `tuple(torch.FloatTensor)`: A `transformers.models.luke.modeling_luke.EntityPairClassificationOutput` or a tuple of
-  `torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising various
-  elements depending on the configuration ([LukeConfig](/docs/transformers/master/en/model_doc/luke#transformers.LukeConfig)) and inputs.
-
-  - **loss** (`torch.FloatTensor` of shape `(1,)`, *optional*, returned when `labels` is provided) -- Classification loss.
-  - **logits** (`torch.FloatTensor` of shape `(batch_size, config.num_labels)`) -- Classification scores (before SoftMax).
-  - **hidden_states** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer)
-    of shape `(batch_size, sequence_length, hidden_size)`. Hidden-states of the model at the output of
-    each layer plus the initial embedding outputs.
-  - **entity_hidden_states** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer)
-    of shape `(batch_size, entity_length, hidden_size)`. Entity hidden-states of the model at the output
-    of each layer plus the initial entity embedding outputs.
-  - **attentions** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`. Attentions weights after the attention softmax, used to compute the
-    weighted average in the self-attention heads.
-
-
-Examples --
-
-```python --
- transformers import LukeTokenizer, LukeForEntityPairClassification
-
-nizer = LukeTokenizer.from_pretrained("studio-ousia/luke-large-finetuned-tacred")
-l = LukeForEntityPairClassification.from_pretrained("studio-ousia/luke-large-finetuned-tacred")
-
- = "Beyoncé lives in Los Angeles."
-ty_spans = [(0, 7), (17, 28)]  # character-based entity spans corresponding to "Beyoncé" and "Los Angeles"
-ts = tokenizer(text, entity_spans=entity_spans, return_tensors="pt")
-uts = model(**inputs)
-ts = outputs.logits
-icted_class_idx = logits.argmax(-1).item()
-t("Predicted class
-- **Predicted** class -- per:cities_of_residence
-``` --</paramsdesc><paramgroups>0</paramgroups></docstring>
+- **loss** (`torch.FloatTensor` of shape `(1,)`, *optional*, returned when `labels` is provided) -- Classification loss.
+- **logits** (`torch.FloatTensor` of shape `(batch_size, config.num_labels)`) -- Classification scores (before SoftMax).
+- **hidden_states** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer)
+  of shape `(batch_size, sequence_length, hidden_size)`. Hidden-states of the model at the output of
+  each layer plus the initial embedding outputs.
+- **entity_hidden_states** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer)
+  of shape `(batch_size, entity_length, hidden_size)`. Entity hidden-states of the model at the output
+  of each layer plus the initial entity embedding outputs.
+- **attentions** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`. Attentions weights after the attention softmax, used to compute the
+  weighted average in the self-attention heads.</retdesc></docstring>
 The [LukeForEntityPairClassification](/docs/transformers/master/en/model_doc/luke#transformers.LukeForEntityPairClassification) forward method, overrides the `__call__` special method.
 
 <Tip>
@@ -1019,6 +992,27 @@ the latter silently ignores them.
 
 
 
+
+
+
+
+Examples:
+
+```python
+>>> from transformers import LukeTokenizer, LukeForEntityPairClassification
+
+>>> tokenizer = LukeTokenizer.from_pretrained("studio-ousia/luke-large-finetuned-tacred")
+>>> model = LukeForEntityPairClassification.from_pretrained("studio-ousia/luke-large-finetuned-tacred")
+
+>>> text = "Beyoncé lives in Los Angeles."
+>>> entity_spans = [(0, 7), (17, 28)]  # character-based entity spans corresponding to "Beyoncé" and "Los Angeles"
+>>> inputs = tokenizer(text, entity_spans=entity_spans, return_tensors="pt")
+>>> outputs = model(**inputs)
+>>> logits = outputs.logits
+>>> predicted_class_idx = logits.argmax(-1).item()
+>>> print("Predicted class:", model.config.id2label[predicted_class_idx])
+Predicted class: per:cities_of_residence
+```
 
 </div></div>
 
@@ -1128,54 +1122,20 @@ general usage and behavior.
   Labels for computing the classification loss. If the shape is `(batch_size, entity_length)`, the cross
   entropy loss is used for the single-label classification. In this case, labels should contain the indices
   that should be in `[0, ..., config.num_labels - 1]`. If the shape is `(batch_size, entity_length, num_labels)`, the binary cross entropy loss is used for the multi-label classification. In this case,
-  labels should only contain `[0, 1]`, where 0 and 1 indicate false and true, respectively.
+  labels should only contain `[0, 1]`, where 0 and 1 indicate false and true, respectively.</paramsdesc><paramgroups>0</paramgroups><rettype>`transformers.models.luke.modeling_luke.EntitySpanClassificationOutput` or `tuple(torch.FloatTensor)`</rettype><retdesc>A `transformers.models.luke.modeling_luke.EntitySpanClassificationOutput` or a tuple of
+`torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising various
+elements depending on the configuration ([LukeConfig](/docs/transformers/master/en/model_doc/luke#transformers.LukeConfig)) and inputs.
 
-
-  Returns --
-  `transformers.models.luke.modeling_luke.EntitySpanClassificationOutput` or `tuple(torch.FloatTensor)`: A `transformers.models.luke.modeling_luke.EntitySpanClassificationOutput` or a tuple of
-  `torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising various
-  elements depending on the configuration ([LukeConfig](/docs/transformers/master/en/model_doc/luke#transformers.LukeConfig)) and inputs.
-
-  - **loss** (`torch.FloatTensor` of shape `(1,)`, *optional*, returned when `labels` is provided) -- Classification loss.
-  - **logits** (`torch.FloatTensor` of shape `(batch_size, config.num_labels)`) -- Classification scores (before SoftMax).
-  - **hidden_states** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer)
-    of shape `(batch_size, sequence_length, hidden_size)`. Hidden-states of the model at the output of
-    each layer plus the initial embedding outputs.
-  - **entity_hidden_states** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer)
-    of shape `(batch_size, entity_length, hidden_size)`. Entity hidden-states of the model at the output
-    of each layer plus the initial entity embedding outputs.
-  - **attentions** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`. Attentions weights after the attention softmax, used to compute the
-    weighted average in the self-attention heads.
-
-
-Examples --
-
-```python --
- transformers import LukeTokenizer, LukeForEntitySpanClassification
-
-nizer = LukeTokenizer.from_pretrained("studio-ousia/luke-large-finetuned-conll-2003")
-l = LukeForEntitySpanClassification.from_pretrained("studio-ousia/luke-large-finetuned-conll-2003")
-
- = "Beyoncé lives in Los Angeles"
-
-- **#** List all possible entity spans in the text --
-_start_positions = [0, 8, 14, 17, 21]  # character-based start positions of word tokens
-_end_positions = [7, 13, 16, 20, 28]  # character-based end positions of word tokens
-ty_spans = []
-i, start_pos in enumerate(word_start_positions)
-- **...**     for end_pos in word_end_positions[i --]:
-- **...**         entity_spans.append((start_pos, end_pos)) --
-
-ts = tokenizer(text, entity_spans=entity_spans, return_tensors="pt")
-uts = model(**inputs)
-ts = outputs.logits
-icted_class_indices = logits.argmax(-1).squeeze().tolist()
-span, predicted_class_idx in zip(entity_spans, predicted_class_indices)
-- **...**     if predicted_class_idx != 0 --
-- **...**        print(text[span[0] --span[1]], model.config.id2label[predicted_class_idx])
-- **Beyoncé** PER --
-- **Los** Angeles LOC --
-``` --</paramsdesc><paramgroups>0</paramgroups></docstring>
+- **loss** (`torch.FloatTensor` of shape `(1,)`, *optional*, returned when `labels` is provided) -- Classification loss.
+- **logits** (`torch.FloatTensor` of shape `(batch_size, config.num_labels)`) -- Classification scores (before SoftMax).
+- **hidden_states** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer)
+  of shape `(batch_size, sequence_length, hidden_size)`. Hidden-states of the model at the output of
+  each layer plus the initial embedding outputs.
+- **entity_hidden_states** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer)
+  of shape `(batch_size, entity_length, hidden_size)`. Entity hidden-states of the model at the output
+  of each layer plus the initial entity embedding outputs.
+- **attentions** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`. Attentions weights after the attention softmax, used to compute the
+  weighted average in the self-attention heads.</retdesc></docstring>
 The [LukeForEntitySpanClassification](/docs/transformers/master/en/model_doc/luke#transformers.LukeForEntitySpanClassification) forward method, overrides the `__call__` special method.
 
 <Tip>
@@ -1188,5 +1148,37 @@ the latter silently ignores them.
 
 
 
+
+
+
+
+Examples:
+
+```python
+>>> from transformers import LukeTokenizer, LukeForEntitySpanClassification
+
+>>> tokenizer = LukeTokenizer.from_pretrained("studio-ousia/luke-large-finetuned-conll-2003")
+>>> model = LukeForEntitySpanClassification.from_pretrained("studio-ousia/luke-large-finetuned-conll-2003")
+
+>>> text = "Beyoncé lives in Los Angeles"
+
+# List all possible entity spans in the text
+>>> word_start_positions = [0, 8, 14, 17, 21]  # character-based start positions of word tokens
+>>> word_end_positions = [7, 13, 16, 20, 28]  # character-based end positions of word tokens
+>>> entity_spans = []
+>>> for i, start_pos in enumerate(word_start_positions):
+...     for end_pos in word_end_positions[i:]:
+...         entity_spans.append((start_pos, end_pos))
+
+>>> inputs = tokenizer(text, entity_spans=entity_spans, return_tensors="pt")
+>>> outputs = model(**inputs)
+>>> logits = outputs.logits
+>>> predicted_class_indices = logits.argmax(-1).squeeze().tolist()
+>>> for span, predicted_class_idx in zip(entity_spans, predicted_class_indices):
+...     if predicted_class_idx != 0:
+...        print(text[span[0]:span[1]], model.config.id2label[predicted_class_idx])
+Beyoncé PER
+Los Angeles LOC
+```
 
 </div></div>

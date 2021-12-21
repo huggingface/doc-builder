@@ -318,55 +318,32 @@ general usage and behavior.
 - **labels** (`torch.LongTensor` of shape `(batch_size, sequence_length)`, *optional*) --
   Labels for language modeling. Note that the labels **are shifted** inside the model, i.e. you can set
   `labels = input_ids` Indices are selected in `[-100, 0, ..., config.vocab_size]` All labels set to
-  `-100` are ignored (masked), the loss is only computed for labels in `[0, ..., config.vocab_size]`
+  `-100` are ignored (masked), the loss is only computed for labels in `[0, ..., config.vocab_size]`</paramsdesc><paramgroups>0</paramgroups><rettype>[transformers.modeling_outputs.BaseModelOutputWithPastAndCrossAttentions](/docs/transformers/master/en/main_classes/output#transformers.modeling_outputs.BaseModelOutputWithPastAndCrossAttentions) or `tuple(torch.FloatTensor)`</rettype><retdesc>A [transformers.modeling_outputs.BaseModelOutputWithPastAndCrossAttentions](/docs/transformers/master/en/main_classes/output#transformers.modeling_outputs.BaseModelOutputWithPastAndCrossAttentions) or a tuple of
+`torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising various
+elements depending on the configuration ([ImageGPTConfig](/docs/transformers/master/en/model_doc/imagegpt#transformers.ImageGPTConfig)) and inputs.
 
+- **last_hidden_state** (`torch.FloatTensor` of shape `(batch_size, sequence_length, hidden_size)`) -- Sequence of hidden-states at the output of the last layer of the model.
 
-  Returns --
-  [transformers.modeling_outputs.BaseModelOutputWithPastAndCrossAttentions](/docs/transformers/master/en/main_classes/output#transformers.modeling_outputs.BaseModelOutputWithPastAndCrossAttentions) or `tuple(torch.FloatTensor)`: A [transformers.modeling_outputs.BaseModelOutputWithPastAndCrossAttentions](/docs/transformers/master/en/main_classes/output#transformers.modeling_outputs.BaseModelOutputWithPastAndCrossAttentions) or a tuple of
-  `torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising various
-  elements depending on the configuration ([ImageGPTConfig](/docs/transformers/master/en/model_doc/imagegpt#transformers.ImageGPTConfig)) and inputs.
+  If `past_key_values` is used only the last hidden-state of the sequences of shape `(batch_size, 1, hidden_size)` is output.
+- **past_key_values** (`tuple(tuple(torch.FloatTensor))`, *optional*, returned when `use_cache=True` is passed or when `config.use_cache=True`) -- Tuple of `tuple(torch.FloatTensor)` of length `config.n_layers`, with each tuple having 2 tensors
+  of shape `(batch_size, num_heads, sequence_length, embed_size_per_head)`) and optionally if
+  `config.is_encoder_decoder=True` 2 additional tensors of shape `(batch_size, num_heads, encoder_sequence_length, embed_size_per_head)`.
 
-  - **last_hidden_state** (`torch.FloatTensor` of shape `(batch_size, sequence_length, hidden_size)`) -- Sequence of hidden-states at the output of the last layer of the model.
+  Contains pre-computed hidden-states (key and values in the self-attention blocks and optionally if
+  `config.is_encoder_decoder=True` in the cross-attention blocks) that can be used (see
+  `past_key_values` input) to speed up sequential decoding.
+- **hidden_states** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer)
+  of shape `(batch_size, sequence_length, hidden_size)`.
 
-    If `past_key_values` is used only the last hidden-state of the sequences of shape `(batch_size, 1, hidden_size)` is output.
-  - **past_key_values** (`tuple(tuple(torch.FloatTensor))`, *optional*, returned when `use_cache=True` is passed or when `config.use_cache=True`) -- Tuple of `tuple(torch.FloatTensor)` of length `config.n_layers`, with each tuple having 2 tensors
-    of shape `(batch_size, num_heads, sequence_length, embed_size_per_head)`) and optionally if
-    `config.is_encoder_decoder=True` 2 additional tensors of shape `(batch_size, num_heads, encoder_sequence_length, embed_size_per_head)`.
+  Hidden-states of the model at the output of each layer plus the initial embedding outputs.
+- **attentions** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
 
-    Contains pre-computed hidden-states (key and values in the self-attention blocks and optionally if
-    `config.is_encoder_decoder=True` in the cross-attention blocks) that can be used (see
-    `past_key_values` input) to speed up sequential decoding.
-  - **hidden_states** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer)
-    of shape `(batch_size, sequence_length, hidden_size)`.
+  Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
+  heads.
+- **cross_attentions** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_attentions=True` and `config.add_cross_attention=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
 
-    Hidden-states of the model at the output of each layer plus the initial embedding outputs.
-  - **attentions** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
-
-    Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
-    heads.
-  - **cross_attentions** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_attentions=True` and `config.add_cross_attention=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
-
-    Attentions weights of the decoder's cross-attention layer, after the attention softmax, used to compute the
-    weighted average in the cross-attention heads.
-
-
-Examples --
-
-```python --
- transformers import ImageGPTFeatureExtractor, ImageGPTModel
- PIL import Image
-rt requests
-
-= 'http
-e = Image.open(requests.get(url, stream=True).raw)
-
-ure_extractor = ImageGPTFeatureExtractor.from_pretrained('openai/imagegpt-small')
-l = ImageGPTModel.from_pretrained('openai/imagegpt-small')
-
-ts = feature_extractor(images=image, return_tensors="pt")
-uts = model(**inputs)
-_hidden_states = outputs.last_hidden_state
-``` --</paramsdesc><paramgroups>0</paramgroups></docstring>
+  Attentions weights of the decoder's cross-attention layer, after the attention softmax, used to compute the
+  weighted average in the cross-attention heads.</retdesc></docstring>
 The [ImageGPTModel](/docs/transformers/master/en/model_doc/imagegpt#transformers.ImageGPTModel) forward method, overrides the `__call__` special method.
 
 <Tip>
@@ -379,6 +356,27 @@ the latter silently ignores them.
 
 
 
+
+
+
+
+Examples:
+
+```python
+>>> from transformers import ImageGPTFeatureExtractor, ImageGPTModel
+>>> from PIL import Image
+>>> import requests
+
+>>> url = 'http://images.cocodataset.org/val2017/000000039769.jpg'
+>>> image = Image.open(requests.get(url, stream=True).raw)
+
+>>> feature_extractor = ImageGPTFeatureExtractor.from_pretrained('openai/imagegpt-small')
+>>> model = ImageGPTModel.from_pretrained('openai/imagegpt-small')
+
+>>> inputs = feature_extractor(images=image, return_tensors="pt")
+>>> outputs = model(**inputs)
+>>> last_hidden_states = outputs.last_hidden_state
+```
 
 </div></div>
 
@@ -470,66 +468,30 @@ general usage and behavior.
 - **labels** (`torch.LongTensor` of shape `(batch_size, sequence_length)`, *optional*) --
   Labels for language modeling. Note that the labels **are shifted** inside the model, i.e. you can set
   `labels = input_ids` Indices are selected in `[-100, 0, ..., config.vocab_size]` All labels set to
-  `-100` are ignored (masked), the loss is only computed for labels in `[0, ..., config.vocab_size]`
+  `-100` are ignored (masked), the loss is only computed for labels in `[0, ..., config.vocab_size]`</paramsdesc><paramgroups>0</paramgroups><rettype>[transformers.modeling_outputs.CausalLMOutputWithCrossAttentions](/docs/transformers/master/en/main_classes/output#transformers.modeling_outputs.CausalLMOutputWithCrossAttentions) or `tuple(torch.FloatTensor)`</rettype><retdesc>A [transformers.modeling_outputs.CausalLMOutputWithCrossAttentions](/docs/transformers/master/en/main_classes/output#transformers.modeling_outputs.CausalLMOutputWithCrossAttentions) or a tuple of
+`torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising various
+elements depending on the configuration ([ImageGPTConfig](/docs/transformers/master/en/model_doc/imagegpt#transformers.ImageGPTConfig)) and inputs.
 
+- **loss** (`torch.FloatTensor` of shape `(1,)`, *optional*, returned when `labels` is provided) -- Language modeling loss (for next-token prediction).
+- **logits** (`torch.FloatTensor` of shape `(batch_size, sequence_length, config.vocab_size)`) -- Prediction scores of the language modeling head (scores for each vocabulary token before SoftMax).
+- **hidden_states** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer)
+  of shape `(batch_size, sequence_length, hidden_size)`.
 
-  Returns --
-  [transformers.modeling_outputs.CausalLMOutputWithCrossAttentions](/docs/transformers/master/en/main_classes/output#transformers.modeling_outputs.CausalLMOutputWithCrossAttentions) or `tuple(torch.FloatTensor)`: A [transformers.modeling_outputs.CausalLMOutputWithCrossAttentions](/docs/transformers/master/en/main_classes/output#transformers.modeling_outputs.CausalLMOutputWithCrossAttentions) or a tuple of
-  `torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising various
-  elements depending on the configuration ([ImageGPTConfig](/docs/transformers/master/en/model_doc/imagegpt#transformers.ImageGPTConfig)) and inputs.
+  Hidden-states of the model at the output of each layer plus the initial embedding outputs.
+- **attentions** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
 
-  - **loss** (`torch.FloatTensor` of shape `(1,)`, *optional*, returned when `labels` is provided) -- Language modeling loss (for next-token prediction).
-  - **logits** (`torch.FloatTensor` of shape `(batch_size, sequence_length, config.vocab_size)`) -- Prediction scores of the language modeling head (scores for each vocabulary token before SoftMax).
-  - **hidden_states** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer)
-    of shape `(batch_size, sequence_length, hidden_size)`.
+  Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
+  heads.
+- **cross_attentions** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
 
-    Hidden-states of the model at the output of each layer plus the initial embedding outputs.
-  - **attentions** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+  Cross attentions weights after the attention softmax, used to compute the weighted average in the
+  cross-attention heads.
+- **past_key_values** (`tuple(tuple(torch.FloatTensor))`, *optional*, returned when `use_cache=True` is passed or when `config.use_cache=True`) -- Tuple of `torch.FloatTensor` tuples of length `config.n_layers`, with each tuple containing the
+  cached key, value states of the self-attention and the cross-attention layers if model is used in
+  encoder-decoder setting. Only relevant if `config.is_decoder = True`.
 
-    Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
-    heads.
-  - **cross_attentions** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
-
-    Cross attentions weights after the attention softmax, used to compute the weighted average in the
-    cross-attention heads.
-  - **past_key_values** (`tuple(tuple(torch.FloatTensor))`, *optional*, returned when `use_cache=True` is passed or when `config.use_cache=True`) -- Tuple of `torch.FloatTensor` tuples of length `config.n_layers`, with each tuple containing the
-    cached key, value states of the self-attention and the cross-attention layers if model is used in
-    encoder-decoder setting. Only relevant if `config.is_decoder = True`.
-
-    Contains pre-computed hidden-states (key and values in the attention blocks) that can be used (see
-    `past_key_values` input) to speed up sequential decoding.
-
-
-Examples --
-
-```python --
- transformers import ImageGPTFeatureExtractor, ImageGPTForCausalImageModeling
-rt torch
-rt matplotlib.pyplot as plt
-rt numpy as np
-
-ure_extractor = ImageGPTFeatureExtractor.from_pretrained('openai/imagegpt-small')
-l = ImageGPTForCausalImageModeling.from_pretrained('openai/imagegpt-small')
-ce = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-l.to(device)
-
-conditional generation of 8 images
-h_size = 8
-ext = torch.full((batch_size, 1), model.config.vocab_size - 1) #initialize with SOS token
-ext = torch.tensor(context).to(device)
-ut = model.generate(input_ids=context, max_length=model.config.n_positions + 1, temperature=1.0, do_sample=True, top_k=40)
-
-ters = feature_extractor.clusters
- = feature_extractor.size
-
-les = output[
-les_img = [np.reshape(np.rint(127.5 * (clusters[s] + 1.0)), [n_px, n_px, 3]).astype(np.uint8) for s in samples] # convert color cluster tokens back to pixels
-xes = plt.subplots(1, batch_size, dpi=300)
-
-img, ax in zip(samples_img, axes)
-- **...**    ax.axis('off') --
-- **...**    ax.imshow(img) --
-``` --</paramsdesc><paramgroups>0</paramgroups></docstring>
+  Contains pre-computed hidden-states (key and values in the attention blocks) that can be used (see
+  `past_key_values` input) to speed up sequential decoding.</retdesc></docstring>
 The [ImageGPTForCausalImageModeling](/docs/transformers/master/en/model_doc/imagegpt#transformers.ImageGPTForCausalImageModeling) forward method, overrides the `__call__` special method.
 
 <Tip>
@@ -542,6 +504,40 @@ the latter silently ignores them.
 
 
 
+
+
+
+
+Examples:
+
+```python
+>>> from transformers import ImageGPTFeatureExtractor, ImageGPTForCausalImageModeling
+>>> import torch
+>>> import matplotlib.pyplot as plt
+>>> import numpy as np
+
+>>> feature_extractor = ImageGPTFeatureExtractor.from_pretrained('openai/imagegpt-small')
+>>> model = ImageGPTForCausalImageModeling.from_pretrained('openai/imagegpt-small')
+>>> device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+>>> model.to(device)
+
+>>> # unconditional generation of 8 images
+>>> batch_size = 8
+>>> context = torch.full((batch_size, 1), model.config.vocab_size - 1) #initialize with SOS token
+>>> context = torch.tensor(context).to(device)
+>>> output = model.generate(input_ids=context, max_length=model.config.n_positions + 1, temperature=1.0, do_sample=True, top_k=40)
+
+>>> clusters = feature_extractor.clusters
+>>> n_px = feature_extractor.size
+
+>>> samples = output[:,1:].cpu().detach().numpy()
+>>> samples_img = [np.reshape(np.rint(127.5 * (clusters[s] + 1.0)), [n_px, n_px, 3]).astype(np.uint8) for s in samples] # convert color cluster tokens back to pixels
+>>> f, axes = plt.subplots(1, batch_size, dpi=300)
+
+>>> for img, ax in zip(samples_img, axes):
+...    ax.axis('off')
+...    ax.imshow(img)
+```
 
 </div></div>
 
@@ -633,48 +629,25 @@ general usage and behavior.
 
 - **labels** (`torch.LongTensor` of shape `(batch_size,)`, *optional*) --
   Labels for computing the sequence classification/regression loss. Indices should be in `[0, ..., config.num_labels - 1]`. If `config.num_labels == 1` a regression loss is computed (Mean-Square loss),
-  If `config.num_labels > 1` a classification loss is computed (Cross-Entropy).
+  If `config.num_labels > 1` a classification loss is computed (Cross-Entropy).</paramsdesc><paramgroups>0</paramgroups><rettype>`transformers.modeling_outputs.SequenceClassifierOutputWithPast` or `tuple(torch.FloatTensor)`</rettype><retdesc>A `transformers.modeling_outputs.SequenceClassifierOutputWithPast` or a tuple of
+`torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising various
+elements depending on the configuration ([ImageGPTConfig](/docs/transformers/master/en/model_doc/imagegpt#transformers.ImageGPTConfig)) and inputs.
 
+- **loss** (`torch.FloatTensor` of shape `(1,)`, *optional*, returned when `labels` is provided) -- Classification (or regression if config.num_labels==1) loss.
+- **logits** (`torch.FloatTensor` of shape `(batch_size, config.num_labels)`) -- Classification (or regression if config.num_labels==1) scores (before SoftMax).
+- **past_key_values** (`tuple(tuple(torch.FloatTensor))`, *optional*, returned when `use_cache=True` is passed or when `config.use_cache=True`) -- Tuple of `tuple(torch.FloatTensor)` of length `config.n_layers`, with each tuple having 2 tensors
+  of shape `(batch_size, num_heads, sequence_length, embed_size_per_head)`)
 
-  Returns --
-  `transformers.modeling_outputs.SequenceClassifierOutputWithPast` or `tuple(torch.FloatTensor)`: A `transformers.modeling_outputs.SequenceClassifierOutputWithPast` or a tuple of
-  `torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising various
-  elements depending on the configuration ([ImageGPTConfig](/docs/transformers/master/en/model_doc/imagegpt#transformers.ImageGPTConfig)) and inputs.
+  Contains pre-computed hidden-states (key and values in the self-attention blocks) that can be used (see
+  `past_key_values` input) to speed up sequential decoding.
+- **hidden_states** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer)
+  of shape `(batch_size, sequence_length, hidden_size)`.
 
-  - **loss** (`torch.FloatTensor` of shape `(1,)`, *optional*, returned when `labels` is provided) -- Classification (or regression if config.num_labels==1) loss.
-  - **logits** (`torch.FloatTensor` of shape `(batch_size, config.num_labels)`) -- Classification (or regression if config.num_labels==1) scores (before SoftMax).
-  - **past_key_values** (`tuple(tuple(torch.FloatTensor))`, *optional*, returned when `use_cache=True` is passed or when `config.use_cache=True`) -- Tuple of `tuple(torch.FloatTensor)` of length `config.n_layers`, with each tuple having 2 tensors
-    of shape `(batch_size, num_heads, sequence_length, embed_size_per_head)`)
+  Hidden-states of the model at the output of each layer plus the initial embedding outputs.
+- **attentions** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
 
-    Contains pre-computed hidden-states (key and values in the self-attention blocks) that can be used (see
-    `past_key_values` input) to speed up sequential decoding.
-  - **hidden_states** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer)
-    of shape `(batch_size, sequence_length, hidden_size)`.
-
-    Hidden-states of the model at the output of each layer plus the initial embedding outputs.
-  - **attentions** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
-
-    Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
-    heads.
-
-
-Examples --
-
-```python --
- transformers import ImageGPTFeatureExtractor, ImageGPTForImageClassification
- PIL import Image
-rt requests
-
-= 'http
-e = Image.open(requests.get(url, stream=True).raw)
-
-ure_extractor = ImageGPTFeatureExtractor.from_pretrained('openai/imagegpt-small')
-l = ImageGPTForImageClassification.from_pretrained('openai/imagegpt-small')
-
-ts = feature_extractor(images=image, return_tensors="pt")
-uts = model(**inputs)
-ts = outputs.logits
-``` --</paramsdesc><paramgroups>0</paramgroups></docstring>
+  Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
+  heads.</retdesc></docstring>
 The [ImageGPTForImageClassification](/docs/transformers/master/en/model_doc/imagegpt#transformers.ImageGPTForImageClassification) forward method, overrides the `__call__` special method.
 
 <Tip>
@@ -687,5 +660,26 @@ the latter silently ignores them.
 
 
 
+
+
+
+
+Examples:
+
+```python
+>>> from transformers import ImageGPTFeatureExtractor, ImageGPTForImageClassification
+>>> from PIL import Image
+>>> import requests
+
+>>> url = 'http://images.cocodataset.org/val2017/000000039769.jpg'
+>>> image = Image.open(requests.get(url, stream=True).raw)
+
+>>> feature_extractor = ImageGPTFeatureExtractor.from_pretrained('openai/imagegpt-small')
+>>> model = ImageGPTForImageClassification.from_pretrained('openai/imagegpt-small')
+
+>>> inputs = feature_extractor(images=image, return_tensors="pt")
+>>> outputs = model(**inputs)
+>>> logits = outputs.logits
+```
 
 </div></div>
