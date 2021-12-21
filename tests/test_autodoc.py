@@ -245,19 +245,21 @@ Users should refer to this superclass for more information regarding those metho
         model_output_doc += f"{self.test_source_link}"
         model_output_doc += """</source><parameters>""</parameters></docstring>
 
-Base class for all model outputs as dataclass. Has a `__getitem__` that allows indexing by integer or slice (like
-a tuple) or strings (like a dictionary) that will ignore the `None` attributes. Otherwise behaves like a regular
+Base class for all model outputs as dataclass. Has a `__getitem__` that allows indexing by integer or slice (like a
+tuple) or strings (like a dictionary) that will ignore the `None` attributes. Otherwise behaves like a regular
 python dictionary.
 
-<Tip warning={true}>
+<Tip warning=&amp;lcub;true}>
 
-You can't unpack a `ModelOutput` directly. Use the [`~transformers.file_utils.ModelOutput.to_tuple`]
-method to convert it to a tuple before.
+You can't unpack a `ModelOutput` directly. Use the [`~file_utils.ModelOutput.to_tuple`] method to convert it to a
+tuple before.
 
 </Tip>
 
 
 """
+        print(model_output_doc)
+        print(document_object("file_utils.ModelOutput", transformers, page_info))
         self.assertEqual(document_object("file_utils.ModelOutput", transformers, page_info), model_output_doc)
 
     def test_find_document_methods(self):
