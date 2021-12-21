@@ -23,12 +23,8 @@ sections:
   title: TapasForQuestionAnswering
 - local: transformers.TFTapasModel
   title: TFTapasModel
-- local: transformers.TFTapasForMaskedLM
-  title: TFTapasForMaskedLM
 - local: transformers.TFTapasForSequenceClassification
   title: TFTapasForSequenceClassification
-- local: transformers.TFTapasForQuestionAnswering
-  title: TFTapasForQuestionAnswering
 title: TAPAS
 ---
 <script>
@@ -894,50 +890,23 @@ Llion Jones, Aidan N. Gomez, Lukasz Kaiser and Illia Polosukhin.
   Whether or not to return the hidden states of all layers. See `hidden_states` under returned tensors for
   more detail.
 - **return_dict** (`bool`, *optional*) --
-  Whether or not to return a [ModelOutput](/docs/transformers/master/en/main_classes/output#transformers.file_utils.ModelOutput) instead of a plain tuple.
+  Whether or not to return a [ModelOutput](/docs/transformers/master/en/main_classes/output#transformers.file_utils.ModelOutput) instead of a plain tuple.</paramsdesc><paramgroups>0</paramgroups><rettype>[transformers.modeling_outputs.BaseModelOutputWithPooling](/docs/transformers/master/en/main_classes/output#transformers.modeling_outputs.BaseModelOutputWithPooling) or `tuple(torch.FloatTensor)`</rettype><retdesc>A [transformers.modeling_outputs.BaseModelOutputWithPooling](/docs/transformers/master/en/main_classes/output#transformers.modeling_outputs.BaseModelOutputWithPooling) or a tuple of
+`torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising various
+elements depending on the configuration ([TapasConfig](/docs/transformers/master/en/model_doc/tapas#transformers.TapasConfig)) and inputs.
 
+- **last_hidden_state** (`torch.FloatTensor` of shape `(batch_size, sequence_length, hidden_size)`) -- Sequence of hidden-states at the output of the last layer of the model.
+- **pooler_output** (`torch.FloatTensor` of shape `(batch_size, hidden_size)`) -- Last layer hidden-state of the first token of the sequence (classification token) after further processing
+  through the layers used for the auxiliary pretraining task. E.g. for BERT-family of models, this returns
+  the classification token after processing through a linear layer and a tanh activation function. The linear
+  layer weights are trained from the next sentence prediction (classification) objective during pretraining.
+- **hidden_states** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer)
+  of shape `(batch_size, sequence_length, hidden_size)`.
 
-  Returns --
-  [transformers.modeling_outputs.BaseModelOutputWithPooling](/docs/transformers/master/en/main_classes/output#transformers.modeling_outputs.BaseModelOutputWithPooling) or `tuple(torch.FloatTensor)`: A [transformers.modeling_outputs.BaseModelOutputWithPooling](/docs/transformers/master/en/main_classes/output#transformers.modeling_outputs.BaseModelOutputWithPooling) or a tuple of
-  `torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising various
-  elements depending on the configuration ([TapasConfig](/docs/transformers/master/en/model_doc/tapas#transformers.TapasConfig)) and inputs.
+  Hidden-states of the model at the output of each layer plus the initial embedding outputs.
+- **attentions** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
 
-  - **last_hidden_state** (`torch.FloatTensor` of shape `(batch_size, sequence_length, hidden_size)`) -- Sequence of hidden-states at the output of the last layer of the model.
-  - **pooler_output** (`torch.FloatTensor` of shape `(batch_size, hidden_size)`) -- Last layer hidden-state of the first token of the sequence (classification token) after further processing
-    through the layers used for the auxiliary pretraining task. E.g. for BERT-family of models, this returns
-    the classification token after processing through a linear layer and a tanh activation function. The linear
-    layer weights are trained from the next sentence prediction (classification) objective during pretraining.
-  - **hidden_states** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer)
-    of shape `(batch_size, sequence_length, hidden_size)`.
-
-    Hidden-states of the model at the output of each layer plus the initial embedding outputs.
-  - **attentions** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
-
-    Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
-    heads.
-
-
-Examples --
-
-```python --
- transformers import TapasTokenizer, TapasModel
-rt pandas as pd
-
-nizer = TapasTokenizer.from_pretrained('google/tapas-base')
-l = TapasModel.from_pretrained('google/tapas-base')
-
- = &amp;lcub;'Actors'
-- **...**         'Age' -- ["56", "45", "59"],
-- **...**         'Number of movies' -- ["87", "53", "69"]
-- **...** } --
-e = pd.DataFrame.from_dict(data)
-ies = ["How many movies has George Clooney played in?", "How old is Brad Pitt?"]
-
-ts = tokenizer(table=table, queries=queries, padding="max_length", return_tensors="pt")
-uts = model(**inputs)
-
-_hidden_states = outputs.last_hidden_state
-``` --</paramsdesc><paramgroups>0</paramgroups></docstring>
+  Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
+  heads.</retdesc></docstring>
 The [TapasModel](/docs/transformers/master/en/model_doc/tapas#transformers.TapasModel) forward method, overrides the `__call__` special method.
 
 <Tip>
@@ -950,6 +919,31 @@ the latter silently ignores them.
 
 
 
+
+
+
+
+Examples:
+
+```python
+>>> from transformers import TapasTokenizer, TapasModel
+>>> import pandas as pd
+
+>>> tokenizer = TapasTokenizer.from_pretrained('google/tapas-base')
+>>> model = TapasModel.from_pretrained('google/tapas-base')
+
+>>> data = &amp;lcub;'Actors': ["Brad Pitt", "Leonardo Di Caprio", "George Clooney"],
+...         'Age': ["56", "45", "59"],
+...         'Number of movies': ["87", "53", "69"]
+... }
+>>> table = pd.DataFrame.from_dict(data)
+>>> queries = ["How many movies has George Clooney played in?", "How old is Brad Pitt?"]
+
+>>> inputs = tokenizer(table=table, queries=queries, padding="max_length", return_tensors="pt")
+>>> outputs = model(**inputs)
+
+>>> last_hidden_states = outputs.last_hidden_state
+```
 
 </div></div>
 
@@ -1016,47 +1010,20 @@ general usage and behavior.
 
 - **labels** (`torch.LongTensor` of shape `(batch_size, sequence_length)`, *optional*) --
   Labels for computing the masked language modeling loss. Indices should be in `[-100, 0, ..., config.vocab_size]` (see `input_ids` docstring) Tokens with indices set to `-100` are ignored
-  (masked), the loss is only computed for the tokens with labels in `[0, ..., config.vocab_size]`
+  (masked), the loss is only computed for the tokens with labels in `[0, ..., config.vocab_size]`</paramsdesc><paramgroups>0</paramgroups><rettype>[transformers.modeling_outputs.MaskedLMOutput](/docs/transformers/master/en/main_classes/output#transformers.modeling_outputs.MaskedLMOutput) or `tuple(torch.FloatTensor)`</rettype><retdesc>A [transformers.modeling_outputs.MaskedLMOutput](/docs/transformers/master/en/main_classes/output#transformers.modeling_outputs.MaskedLMOutput) or a tuple of
+`torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising various
+elements depending on the configuration ([TapasConfig](/docs/transformers/master/en/model_doc/tapas#transformers.TapasConfig)) and inputs.
 
+- **loss** (`torch.FloatTensor` of shape `(1,)`, *optional*, returned when `labels` is provided) -- Masked language modeling (MLM) loss.
+- **logits** (`torch.FloatTensor` of shape `(batch_size, sequence_length, config.vocab_size)`) -- Prediction scores of the language modeling head (scores for each vocabulary token before SoftMax).
+- **hidden_states** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer)
+  of shape `(batch_size, sequence_length, hidden_size)`.
 
-  Returns --
-  [transformers.modeling_outputs.MaskedLMOutput](/docs/transformers/master/en/main_classes/output#transformers.modeling_outputs.MaskedLMOutput) or `tuple(torch.FloatTensor)`: A [transformers.modeling_outputs.MaskedLMOutput](/docs/transformers/master/en/main_classes/output#transformers.modeling_outputs.MaskedLMOutput) or a tuple of
-  `torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising various
-  elements depending on the configuration ([TapasConfig](/docs/transformers/master/en/model_doc/tapas#transformers.TapasConfig)) and inputs.
+  Hidden-states of the model at the output of each layer plus the initial embedding outputs.
+- **attentions** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
 
-  - **loss** (`torch.FloatTensor` of shape `(1,)`, *optional*, returned when `labels` is provided) -- Masked language modeling (MLM) loss.
-  - **logits** (`torch.FloatTensor` of shape `(batch_size, sequence_length, config.vocab_size)`) -- Prediction scores of the language modeling head (scores for each vocabulary token before SoftMax).
-  - **hidden_states** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer)
-    of shape `(batch_size, sequence_length, hidden_size)`.
-
-    Hidden-states of the model at the output of each layer plus the initial embedding outputs.
-  - **attentions** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
-
-    Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
-    heads.
-
-
-Examples --
-
-```python --
- transformers import TapasTokenizer, TapasForMaskedLM
-rt pandas as pd
-
-nizer = TapasTokenizer.from_pretrained('google/tapas-base')
-l = TapasForMaskedLM.from_pretrained('google/tapas-base')
-
- = &amp;lcub;'Actors'
-- **...**         'Age' -- ["56", "45", "59"],
-- **...**         'Number of movies' -- ["87", "53", "69"]
-- **...** } --
-e = pd.DataFrame.from_dict(data)
-
-ts = tokenizer(table=table, queries="How many [MASK] has George [MASK] played in?", return_tensors="pt")
-ls = tokenizer(table=table, queries="How many movies has George Clooney played in?", return_tensors="pt")["input_ids"]
-
-uts = model(**inputs, labels=labels)
-ts = outputs.logits
-``` --</paramsdesc><paramgroups>0</paramgroups></docstring>
+  Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
+  heads.</retdesc></docstring>
 The [TapasForMaskedLM](/docs/transformers/master/en/model_doc/tapas#transformers.TapasForMaskedLM) forward method, overrides the `__call__` special method.
 
 <Tip>
@@ -1069,6 +1036,31 @@ the latter silently ignores them.
 
 
 
+
+
+
+
+Examples:
+
+```python
+>>> from transformers import TapasTokenizer, TapasForMaskedLM
+>>> import pandas as pd
+
+>>> tokenizer = TapasTokenizer.from_pretrained('google/tapas-base')
+>>> model = TapasForMaskedLM.from_pretrained('google/tapas-base')
+
+>>> data = &amp;lcub;'Actors': ["Brad Pitt", "Leonardo Di Caprio", "George Clooney"],
+...         'Age': ["56", "45", "59"],
+...         'Number of movies': ["87", "53", "69"]
+... }
+>>> table = pd.DataFrame.from_dict(data)
+
+>>> inputs = tokenizer(table=table, queries="How many [MASK] has George [MASK] played in?", return_tensors="pt")
+>>> labels = tokenizer(table=table, queries="How many movies has George Clooney played in?", return_tensors="pt")["input_ids"]
+
+>>> outputs = model(**inputs, labels=labels)
+>>> logits = outputs.logits
+```
 
 </div></div>
 
@@ -1139,50 +1131,20 @@ general usage and behavior.
 - **labels** (`torch.LongTensor` of shape `(batch_size,)`, *optional*) --
   Labels for computing the sequence classification/regression loss. Indices should be in `[0, ..., config.num_labels - 1]`. If `config.num_labels == 1` a regression loss is computed (Mean-Square loss),
   If `config.num_labels > 1` a classification loss is computed (Cross-Entropy). Note: this is called
-  "classification_class_index" in the original implementation.
+  "classification_class_index" in the original implementation.</paramsdesc><paramgroups>0</paramgroups><rettype>[transformers.modeling_outputs.SequenceClassifierOutput](/docs/transformers/master/en/main_classes/output#transformers.modeling_outputs.SequenceClassifierOutput) or `tuple(torch.FloatTensor)`</rettype><retdesc>A [transformers.modeling_outputs.SequenceClassifierOutput](/docs/transformers/master/en/main_classes/output#transformers.modeling_outputs.SequenceClassifierOutput) or a tuple of
+`torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising various
+elements depending on the configuration ([TapasConfig](/docs/transformers/master/en/model_doc/tapas#transformers.TapasConfig)) and inputs.
 
+- **loss** (`torch.FloatTensor` of shape `(1,)`, *optional*, returned when `labels` is provided) -- Classification (or regression if config.num_labels==1) loss.
+- **logits** (`torch.FloatTensor` of shape `(batch_size, config.num_labels)`) -- Classification (or regression if config.num_labels==1) scores (before SoftMax).
+- **hidden_states** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer)
+  of shape `(batch_size, sequence_length, hidden_size)`.
 
-  Returns --
-  [transformers.modeling_outputs.SequenceClassifierOutput](/docs/transformers/master/en/main_classes/output#transformers.modeling_outputs.SequenceClassifierOutput) or `tuple(torch.FloatTensor)`: A [transformers.modeling_outputs.SequenceClassifierOutput](/docs/transformers/master/en/main_classes/output#transformers.modeling_outputs.SequenceClassifierOutput) or a tuple of
-  `torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising various
-  elements depending on the configuration ([TapasConfig](/docs/transformers/master/en/model_doc/tapas#transformers.TapasConfig)) and inputs.
+  Hidden-states of the model at the output of each layer plus the initial embedding outputs.
+- **attentions** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
 
-  - **loss** (`torch.FloatTensor` of shape `(1,)`, *optional*, returned when `labels` is provided) -- Classification (or regression if config.num_labels==1) loss.
-  - **logits** (`torch.FloatTensor` of shape `(batch_size, config.num_labels)`) -- Classification (or regression if config.num_labels==1) scores (before SoftMax).
-  - **hidden_states** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer)
-    of shape `(batch_size, sequence_length, hidden_size)`.
-
-    Hidden-states of the model at the output of each layer plus the initial embedding outputs.
-  - **attentions** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
-
-    Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
-    heads.
-
-
-Examples --
-
-```python --
- transformers import TapasTokenizer, TapasForSequenceClassification
-rt torch
-rt pandas as pd
-
-nizer = TapasTokenizer.from_pretrained('google/tapas-base-finetuned-tabfact')
-l = TapasForSequenceClassification.from_pretrained('google/tapas-base-finetuned-tabfact')
-
- = &amp;lcub;'Actors'
-- **...**         'Age' -- ["56", "45", "59"],
-- **...**         'Number of movies' -- ["87", "53", "69"]
-- **...** } --
-e = pd.DataFrame.from_dict(data)
-ies = ["There is only one actor who is 45 years old", "There are 3 actors which played in more than 60 movies"]
-
-ts = tokenizer(table=table, queries=queries, padding="max_length", return_tensors="pt")
-ls = torch.tensor([1, 0]) # 1 means entailed, 0 means refuted
-
-uts = model(**inputs, labels=labels)
- = outputs.loss
-ts = outputs.logits
-``` --</paramsdesc><paramgroups>0</paramgroups></docstring>
+  Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
+  heads.</retdesc></docstring>
 The [TapasForSequenceClassification](/docs/transformers/master/en/model_doc/tapas#transformers.TapasForSequenceClassification) forward method, overrides the `__call__` special method.
 
 <Tip>
@@ -1195,6 +1157,34 @@ the latter silently ignores them.
 
 
 
+
+
+
+
+Examples:
+
+```python
+>>> from transformers import TapasTokenizer, TapasForSequenceClassification
+>>> import torch
+>>> import pandas as pd
+
+>>> tokenizer = TapasTokenizer.from_pretrained('google/tapas-base-finetuned-tabfact')
+>>> model = TapasForSequenceClassification.from_pretrained('google/tapas-base-finetuned-tabfact')
+
+>>> data = &amp;lcub;'Actors': ["Brad Pitt", "Leonardo Di Caprio", "George Clooney"],
+...         'Age': ["56", "45", "59"],
+...         'Number of movies': ["87", "53", "69"]
+... }
+>>> table = pd.DataFrame.from_dict(data)
+>>> queries = ["There is only one actor who is 45 years old", "There are 3 actors which played in more than 60 movies"]
+
+>>> inputs = tokenizer(table=table, queries=queries, padding="max_length", return_tensors="pt")
+>>> labels = torch.tensor([1, 0]) # 1 means entailed, 0 means refuted
+
+>>> outputs = model(**inputs, labels=labels)
+>>> loss = outputs.loss
+>>> logits = outputs.logits
+```
 
 </div></div>
 
@@ -1286,47 +1276,19 @@ general usage and behavior.
   calculate the regression loss.
 - **numeric_values_scale** (`torch.FloatTensor` of shape `(batch_size, seq_length)`, *optional*) --
   Scale of the numeric values of every token. Can be obtained using [TapasTokenizer](/docs/transformers/master/en/model_doc/tapas#transformers.TapasTokenizer).
-  Only required in case of weak supervision for aggregation (WTQ) to calculate the regression loss.
+  Only required in case of weak supervision for aggregation (WTQ) to calculate the regression loss.</paramsdesc><paramgroups>0</paramgroups><rettype>[transformers.models.tapas.modeling_tapas.TableQuestionAnsweringOutput](/docs/transformers/master/en/model_doc/tapas#transformers.models.tapas.modeling_tapas.TableQuestionAnsweringOutput) or `tuple(torch.FloatTensor)`</rettype><retdesc>A [transformers.models.tapas.modeling_tapas.TableQuestionAnsweringOutput](/docs/transformers/master/en/model_doc/tapas#transformers.models.tapas.modeling_tapas.TableQuestionAnsweringOutput) or a tuple of
+`torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising various
+elements depending on the configuration ([TapasConfig](/docs/transformers/master/en/model_doc/tapas#transformers.TapasConfig)) and inputs.
 
-
-  Returns --
-  [transformers.models.tapas.modeling_tapas.TableQuestionAnsweringOutput](/docs/transformers/master/en/model_doc/tapas#transformers.models.tapas.modeling_tapas.TableQuestionAnsweringOutput) or `tuple(torch.FloatTensor)`: A [transformers.models.tapas.modeling_tapas.TableQuestionAnsweringOutput](/docs/transformers/master/en/model_doc/tapas#transformers.models.tapas.modeling_tapas.TableQuestionAnsweringOutput) or a tuple of
-  `torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising various
-  elements depending on the configuration ([TapasConfig](/docs/transformers/master/en/model_doc/tapas#transformers.TapasConfig)) and inputs.
-
-  - **loss** (`torch.FloatTensor` of shape `(1,)`, *optional*, returned when `labels` (and possibly `answer`, `aggregation_labels`, `numeric_values` and `numeric_values_scale` are provided)) -- Total loss as the sum of the hierarchical cell selection log-likelihood loss and (optionally) the
-    semi-supervised regression loss and (optionally) supervised loss for aggregations.
-  - **logits** (`torch.FloatTensor` of shape `(batch_size, sequence_length)`) -- Prediction scores of the cell selection head, for every token.
-  - **logits_aggregation** (`torch.FloatTensor`, *optional*, of shape `(batch_size, num_aggregation_labels)`) -- Prediction scores of the aggregation head, for every aggregation operator.
-  - **hidden_states** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer)
-    of shape `(batch_size, sequence_length, hidden_size)`. Hidden-states of the model at the output of
-    each layer plus the initial embedding outputs.
-  - **attentions** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`. Attentions weights after the attention softmax, used to compute the
-    weighted average in the self-attention heads.
-
-
-Examples --
-
-```python --
- transformers import TapasTokenizer, TapasForQuestionAnswering
-rt pandas as pd
-
-nizer = TapasTokenizer.from_pretrained('google/tapas-base-finetuned-wtq')
-l = TapasForQuestionAnswering.from_pretrained('google/tapas-base-finetuned-wtq')
-
- = &amp;lcub;'Actors'
-- **...**         'Age' -- ["56", "45", "59"],
-- **...**         'Number of movies' -- ["87", "53", "69"]
-- **...** } --
-e = pd.DataFrame.from_dict(data)
-ies = ["How many movies has George Clooney played in?", "How old is Brad Pitt?"]
-
-ts = tokenizer(table=table, queries=queries, padding="max_length", return_tensors="pt")
-uts = model(**inputs)
-
-ts = outputs.logits
-ts_aggregation = outputs.logits_aggregation
-``` --</paramsdesc><paramgroups>0</paramgroups></docstring>
+- **loss** (`torch.FloatTensor` of shape `(1,)`, *optional*, returned when `labels` (and possibly `answer`, `aggregation_labels`, `numeric_values` and `numeric_values_scale` are provided)) -- Total loss as the sum of the hierarchical cell selection log-likelihood loss and (optionally) the
+  semi-supervised regression loss and (optionally) supervised loss for aggregations.
+- **logits** (`torch.FloatTensor` of shape `(batch_size, sequence_length)`) -- Prediction scores of the cell selection head, for every token.
+- **logits_aggregation** (`torch.FloatTensor`, *optional*, of shape `(batch_size, num_aggregation_labels)`) -- Prediction scores of the aggregation head, for every aggregation operator.
+- **hidden_states** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer)
+  of shape `(batch_size, sequence_length, hidden_size)`. Hidden-states of the model at the output of
+  each layer plus the initial embedding outputs.
+- **attentions** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`. Attentions weights after the attention softmax, used to compute the
+  weighted average in the self-attention heads.</retdesc></docstring>
 The [TapasForQuestionAnswering](/docs/transformers/master/en/model_doc/tapas#transformers.TapasForQuestionAnswering) forward method, overrides the `__call__` special method.
 
 <Tip>
@@ -1339,6 +1301,32 @@ the latter silently ignores them.
 
 
 
+
+
+
+
+Examples:
+
+```python
+>>> from transformers import TapasTokenizer, TapasForQuestionAnswering
+>>> import pandas as pd
+
+>>> tokenizer = TapasTokenizer.from_pretrained('google/tapas-base-finetuned-wtq')
+>>> model = TapasForQuestionAnswering.from_pretrained('google/tapas-base-finetuned-wtq')
+
+>>> data = &amp;lcub;'Actors': ["Brad Pitt", "Leonardo Di Caprio", "George Clooney"],
+...         'Age': ["56", "45", "59"],
+...         'Number of movies': ["87", "53", "69"]
+... }
+>>> table = pd.DataFrame.from_dict(data)
+>>> queries = ["How many movies has George Clooney played in?", "How old is Brad Pitt?"]
+
+>>> inputs = tokenizer(table=table, queries=queries, padding="max_length", return_tensors="pt")
+>>> outputs = model(**inputs)
+
+>>> logits = outputs.logits
+>>> logits_aggregation = outputs.logits_aggregation
+```
 
 </div></div>
 
@@ -1434,31 +1422,32 @@ the first positional argument :
   argument can be used in eager mode, in graph mode the value will always be set to True.
 - **training** (`bool`, *optional*, defaults to `False``) --
   Whether or not to use the model in training mode (some modules like dropout modules have different
-  behaviors between training and evaluation).
+  behaviors between training and evaluation).</paramsdesc><paramgroups>0</paramgroups><rettype>[transformers.modeling_tf_outputs.TFBaseModelOutputWithPooling](/docs/transformers/master/en/main_classes/output#transformers.modeling_tf_outputs.TFBaseModelOutputWithPooling) or `tuple(tf.Tensor)`</rettype><retdesc>```python
+>>> from transformers import TapasTokenizer, TapasModel
+>>> import pandas as pd
 
-  Returns --
+>>> tokenizer = TapasTokenizer.from_pretrained('google/tapas-base')
+>>> model = TapasModel.from_pretrained('google/tapas-base')
 
-  Examples --
+>>> data = &amp;lcub;'Actors': ["Brad Pitt", "Leonardo Di Caprio", "George Clooney"],
+...         'Age': ["56", "45", "59"],
+...         'Number of movies': ["87", "53", "69"]
+... }
+>>> table = pd.DataFrame.from_dict(data)
+>>> queries = ["How many movies has George Clooney played in?", "How old is Brad Pitt?"]
 
-```python --
- transformers import TapasTokenizer, TapasModel
-rt pandas as pd
+>>> inputs = tokenizer(table=table, queries=queries, padding="max_length", return_tensors="tf")
+>>> outputs = model(**inputs)
 
-nizer = TapasTokenizer.from_pretrained('google/tapas-base')
-l = TapasModel.from_pretrained('google/tapas-base')
+>>> last_hidden_states = outputs.last_hidden_state
+```
+</returns>
 
- = &amp;lcub;'Actors'
-- **...**         'Age' -- ["56", "45", "59"],
-- **...**         'Number of movies' -- ["87", "53", "69"]
-- **...** } --
-e = pd.DataFrame.from_dict(data)
-ies = ["How many movies has George Clooney played in?", "How old is Brad Pitt?"]
+<returntype>        Examples</returntype>
 
-ts = tokenizer(table=table, queries=queries, padding="max_length", return_tensors="tf")
-uts = model(**inputs)
+<returns>
 
-_hidden_states = outputs.last_hidden_state
-``` --</paramsdesc><paramgroups>0</paramgroups><rettype>[transformers.modeling_tf_outputs.TFBaseModelOutputWithPooling](/docs/transformers/master/en/main_classes/output#transformers.modeling_tf_outputs.TFBaseModelOutputWithPooling) or `tuple(tf.Tensor)`</rettype><retdesc>A [transformers.modeling_tf_outputs.TFBaseModelOutputWithPooling](/docs/transformers/master/en/main_classes/output#transformers.modeling_tf_outputs.TFBaseModelOutputWithPooling) or a tuple of `tf.Tensor` (if
+A [transformers.modeling_tf_outputs.TFBaseModelOutputWithPooling](/docs/transformers/master/en/main_classes/output#transformers.modeling_tf_outputs.TFBaseModelOutputWithPooling) or a tuple of `tf.Tensor` (if
 `return_dict=False` is passed or when `config.return_dict=False`) comprising various elements depending on the
 configuration ([TapasConfig](/docs/transformers/master/en/model_doc/tapas#transformers.TapasConfig)) and inputs.
 
@@ -1511,7 +1500,7 @@ Example:
 
 </div></div>
 
-<h2 id="transformers.TFTapasForMaskedLM">TFTapasForMaskedLM</h2>
+## TFTapasForMaskedLM[[transformers.TFTapasForMaskedLM]]
 <div class="docstring">
 
 <docstring><name>class transformers.TFTapasForMaskedLM</name><anchor>transformers.TFTapasForMaskedLM</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/tapas/modeling_tf_tapas.py#L1071</source><parameters>[{"name": "*args", "val": ""}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **config** ([TapasConfig](/docs/transformers/master/en/model_doc/tapas#transformers.TapasConfig)) -- Model configuration class with all the parameters of the model.
@@ -1607,31 +1596,32 @@ the first positional argument :
 
 - **labels** (`tf.Tensor` or `np.ndarray` of shape `(batch_size, sequence_length)`, *optional*) --
   Labels for computing the masked language modeling loss. Indices should be in `[-100, 0, ..., config.vocab_size]` (see `input_ids` docstring) Tokens with indices set to `-100` are ignored
-  (masked), the loss is only computed for the tokens with labels in `[0, ..., config.vocab_size]`
+  (masked), the loss is only computed for the tokens with labels in `[0, ..., config.vocab_size]`</paramsdesc><paramgroups>0</paramgroups><rettype>[transformers.modeling_tf_outputs.TFMaskedLMOutput](/docs/transformers/master/en/main_classes/output#transformers.modeling_tf_outputs.TFMaskedLMOutput) or `tuple(tf.Tensor)`</rettype><retdesc>```python
+>>> from transformers import TapasTokenizer, TapasForMaskedLM
+>>> import pandas as pd
 
-  Returns --
+>>> tokenizer = TapasTokenizer.from_pretrained('google/tapas-base')
+>>> model = TapasForMaskedLM.from_pretrained('google/tapas-base')
 
-  Examples --
+>>> data = &amp;lcub;'Actors': ["Brad Pitt", "Leonardo Di Caprio", "George Clooney"],
+...         'Age': ["56", "45", "59"],
+...         'Number of movies': ["87", "53", "69"]
+... }
+>>> table = pd.DataFrame.from_dict(data)
 
-```python --
- transformers import TapasTokenizer, TapasForMaskedLM
-rt pandas as pd
+>>> inputs = tokenizer(table=table, queries="How many [MASK] has George [MASK] played in?", return_tensors="tf")
+>>> labels = tokenizer(table=table, queries="How many movies has George Clooney played in?", return_tensors="tf")["input_ids"]
 
-nizer = TapasTokenizer.from_pretrained('google/tapas-base')
-l = TapasForMaskedLM.from_pretrained('google/tapas-base')
+>>> outputs = model(**inputs, labels=labels)
+>>> logits = outputs.logits
+```
+</returns>
 
- = &amp;lcub;'Actors'
-- **...**         'Age' -- ["56", "45", "59"],
-- **...**         'Number of movies' -- ["87", "53", "69"]
-- **...** } --
-e = pd.DataFrame.from_dict(data)
+<returntype>        Examples</returntype>
 
-ts = tokenizer(table=table, queries="How many [MASK] has George [MASK] played in?", return_tensors="tf")
-ls = tokenizer(table=table, queries="How many movies has George Clooney played in?", return_tensors="tf")["input_ids"]
+<returns>
 
-uts = model(**inputs, labels=labels)
-ts = outputs.logits
-``` --</paramsdesc><paramgroups>0</paramgroups><rettype>[transformers.modeling_tf_outputs.TFMaskedLMOutput](/docs/transformers/master/en/main_classes/output#transformers.modeling_tf_outputs.TFMaskedLMOutput) or `tuple(tf.Tensor)`</rettype><retdesc>A [transformers.modeling_tf_outputs.TFMaskedLMOutput](/docs/transformers/master/en/main_classes/output#transformers.modeling_tf_outputs.TFMaskedLMOutput) or a tuple of `tf.Tensor` (if
+A [transformers.modeling_tf_outputs.TFMaskedLMOutput](/docs/transformers/master/en/main_classes/output#transformers.modeling_tf_outputs.TFMaskedLMOutput) or a tuple of `tf.Tensor` (if
 `return_dict=False` is passed or when `config.return_dict=False`) comprising various elements depending on the
 configuration ([TapasConfig](/docs/transformers/master/en/model_doc/tapas#transformers.TapasConfig)) and inputs.
 
@@ -1781,34 +1771,35 @@ the first positional argument :
 - **labels** (`torch.LongTensor` of shape `(batch_size,)`, *optional*) --
   Labels for computing the sequence classification/regression loss. Indices should be in `[0, ..., config.num_labels - 1]`. If `config.num_labels == 1` a regression loss is computed (Mean-Square loss),
   If `config.num_labels > 1` a classification loss is computed (Cross-Entropy). Note: this is called
-  "classification_class_index" in the original implementation.
+  "classification_class_index" in the original implementation.</paramsdesc><paramgroups>0</paramgroups><rettype>[transformers.modeling_tf_outputs.TFSequenceClassifierOutput](/docs/transformers/master/en/main_classes/output#transformers.modeling_tf_outputs.TFSequenceClassifierOutput) or `tuple(tf.Tensor)`</rettype><retdesc>```python
+>>> from transformers import TapasTokenizer, TapasForSequenceClassification
+>>> import tensorflow as tf
+>>> import pandas as pd
 
-  Returns --
+>>> tokenizer = TapasTokenizer.from_pretrained('google/tapas-base-finetuned-tabfact')
+>>> model = TapasForSequenceClassification.from_pretrained('google/tapas-base-finetuned-tabfact')
 
-  Examples --
+>>> data = &amp;lcub;'Actors': ["Brad Pitt", "Leonardo Di Caprio", "George Clooney"],
+...         'Age': ["56", "45", "59"],
+...         'Number of movies': ["87", "53", "69"]
+... }
+>>> table = pd.DataFrame.from_dict(data)
+>>> queries = ["There is only one actor who is 45 years old", "There are 3 actors which played in more than 60 movies"]
 
-```python --
- transformers import TapasTokenizer, TapasForSequenceClassification
-rt tensorflow as tf
-rt pandas as pd
+>>> inputs = tokenizer(table=table, queries=queries, padding="max_length", return_tensors="tf")
+>>> labels = tf.convert_to_tensor([1, 0]) # 1 means entailed, 0 means refuted
 
-nizer = TapasTokenizer.from_pretrained('google/tapas-base-finetuned-tabfact')
-l = TapasForSequenceClassification.from_pretrained('google/tapas-base-finetuned-tabfact')
+>>> outputs = model(**inputs, labels=labels)
+>>> loss = outputs.loss
+>>> logits = outputs.logits
+```
+</returns>
 
- = &amp;lcub;'Actors'
-- **...**         'Age' -- ["56", "45", "59"],
-- **...**         'Number of movies' -- ["87", "53", "69"]
-- **...** } --
-e = pd.DataFrame.from_dict(data)
-ies = ["There is only one actor who is 45 years old", "There are 3 actors which played in more than 60 movies"]
+<returntype>        Examples</returntype>
 
-ts = tokenizer(table=table, queries=queries, padding="max_length", return_tensors="tf")
-ls = tf.convert_to_tensor([1, 0]) # 1 means entailed, 0 means refuted
+<returns>
 
-uts = model(**inputs, labels=labels)
- = outputs.loss
-ts = outputs.logits
-``` --</paramsdesc><paramgroups>0</paramgroups><rettype>[transformers.modeling_tf_outputs.TFSequenceClassifierOutput](/docs/transformers/master/en/main_classes/output#transformers.modeling_tf_outputs.TFSequenceClassifierOutput) or `tuple(tf.Tensor)`</rettype><retdesc>A [transformers.modeling_tf_outputs.TFSequenceClassifierOutput](/docs/transformers/master/en/main_classes/output#transformers.modeling_tf_outputs.TFSequenceClassifierOutput) or a tuple of `tf.Tensor` (if
+A [transformers.modeling_tf_outputs.TFSequenceClassifierOutput](/docs/transformers/master/en/main_classes/output#transformers.modeling_tf_outputs.TFSequenceClassifierOutput) or a tuple of `tf.Tensor` (if
 `return_dict=False` is passed or when `config.return_dict=False`) comprising various elements depending on the
 configuration ([TapasConfig](/docs/transformers/master/en/model_doc/tapas#transformers.TapasConfig)) and inputs.
 
@@ -1858,7 +1849,7 @@ Example:
 
 </div></div>
 
-<h2 id="transformers.TFTapasForQuestionAnswering">TFTapasForQuestionAnswering</h2>
+## TFTapasForQuestionAnswering[[transformers.TFTapasForQuestionAnswering]]
 <div class="docstring">
 
 <docstring><name>class transformers.TFTapasForQuestionAnswering</name><anchor>transformers.TFTapasForQuestionAnswering</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/tapas/modeling_tf_tapas.py#L1294</source><parameters>[{"name": "*args", "val": ""}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **config** ([TapasConfig](/docs/transformers/master/en/model_doc/tapas#transformers.TapasConfig)) -- Model configuration class with all the parameters of the model.
@@ -1979,32 +1970,33 @@ the first positional argument :
   calculate the regression loss.
 - **numeric_values_scale** (`tf.Tensor` of shape `(batch_size, seq_length)`, *optional*) --
   Scale of the numeric values of every token. Can be obtained using [TapasTokenizer](/docs/transformers/master/en/model_doc/tapas#transformers.TapasTokenizer).
-  Only required in case of weak supervision for aggregation (WTQ) to calculate the regression loss.
+  Only required in case of weak supervision for aggregation (WTQ) to calculate the regression loss.</paramsdesc><paramgroups>0</paramgroups><rettype>`transformers.models.tapas.modeling_tf_tapas.TFTableQuestionAnsweringOutput` or `tuple(tf.Tensor)`</rettype><retdesc>```python
+>>> from transformers import TapasTokenizer, TapasForQuestionAnswering
+>>> import pandas as pd
 
-  Returns --
+>>> tokenizer = TapasTokenizer.from_pretrained('google/tapas-base-finetuned-wtq')
+>>> model = TapasForQuestionAnswering.from_pretrained('google/tapas-base-finetuned-wtq')
 
-  Examples --
+>>> data = &amp;lcub;'Actors': ["Brad Pitt", "Leonardo Di Caprio", "George Clooney"],
+...         'Age': ["56", "45", "59"],
+...         'Number of movies': ["87", "53", "69"]
+... }
+>>> table = pd.DataFrame.from_dict(data)
+>>> queries = ["How many movies has George Clooney played in?", "How old is Brad Pitt?"]
 
-```python --
- transformers import TapasTokenizer, TapasForQuestionAnswering
-rt pandas as pd
+>>> inputs = tokenizer(table=table, queries=queries, padding="max_length", return_tensors="tf")
+>>> outputs = model(**inputs)
 
-nizer = TapasTokenizer.from_pretrained('google/tapas-base-finetuned-wtq')
-l = TapasForQuestionAnswering.from_pretrained('google/tapas-base-finetuned-wtq')
+>>> logits = outputs.logits
+>>> logits_aggregation = outputs.logits_aggregation
+```
+</returns>
 
- = &amp;lcub;'Actors'
-- **...**         'Age' -- ["56", "45", "59"],
-- **...**         'Number of movies' -- ["87", "53", "69"]
-- **...** } --
-e = pd.DataFrame.from_dict(data)
-ies = ["How many movies has George Clooney played in?", "How old is Brad Pitt?"]
+<returntype>        Examples</returntype>
 
-ts = tokenizer(table=table, queries=queries, padding="max_length", return_tensors="tf")
-uts = model(**inputs)
+<returns>
 
-ts = outputs.logits
-ts_aggregation = outputs.logits_aggregation
-``` --</paramsdesc><paramgroups>0</paramgroups><rettype>`transformers.models.tapas.modeling_tf_tapas.TFTableQuestionAnsweringOutput` or `tuple(tf.Tensor)`</rettype><retdesc>A `transformers.models.tapas.modeling_tf_tapas.TFTableQuestionAnsweringOutput` or a tuple of `tf.Tensor` (if
+A `transformers.models.tapas.modeling_tf_tapas.TFTableQuestionAnsweringOutput` or a tuple of `tf.Tensor` (if
 `return_dict=False` is passed or when `config.return_dict=False`) comprising various elements depending on the
 configuration ([TapasConfig](/docs/transformers/master/en/model_doc/tapas#transformers.TapasConfig)) and inputs.
 

@@ -678,44 +678,23 @@ general usage and behavior.
 - **sentence_order_label** (`torch.LongTensor` of shape `(batch_size,)`, *optional*) --
   Labels for computing the next sequence prediction (classification) loss. Input should be a sequence pair
   (see `input_ids` docstring) Indices should be in `[0, 1]`. `0` indicates original order (sequence
-  A, then sequence B), `1` indicates switched order (sequence B, then sequence A).
+  A, then sequence B), `1` indicates switched order (sequence B, then sequence A).</paramsdesc><paramgroups>0</paramgroups><rettype>[transformers.models.albert.modeling_albert.AlbertForPreTrainingOutput](/docs/transformers/master/en/model_doc/albert#transformers.models.albert.modeling_albert.AlbertForPreTrainingOutput) or `tuple(torch.FloatTensor)`</rettype><retdesc>A [transformers.models.albert.modeling_albert.AlbertForPreTrainingOutput](/docs/transformers/master/en/model_doc/albert#transformers.models.albert.modeling_albert.AlbertForPreTrainingOutput) or a tuple of
+`torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising various
+elements depending on the configuration ([AlbertConfig](/docs/transformers/master/en/model_doc/albert#transformers.AlbertConfig)) and inputs.
 
+- **loss** (*optional*, returned when `labels` is provided, `torch.FloatTensor` of shape `(1,)`) -- Total loss as the sum of the masked language modeling loss and the next sequence prediction
+  (classification) loss.
+- **prediction_logits** (`torch.FloatTensor` of shape `(batch_size, sequence_length, config.vocab_size)`) -- Prediction scores of the language modeling head (scores for each vocabulary token before SoftMax).
+- **sop_logits** (`torch.FloatTensor` of shape `(batch_size, 2)`) -- Prediction scores of the next sequence prediction (classification) head (scores of True/False continuation
+  before SoftMax).
+- **hidden_states** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer)
+  of shape `(batch_size, sequence_length, hidden_size)`.
 
-  Returns --
-  [transformers.models.albert.modeling_albert.AlbertForPreTrainingOutput](/docs/transformers/master/en/model_doc/albert#transformers.models.albert.modeling_albert.AlbertForPreTrainingOutput) or `tuple(torch.FloatTensor)`: A [transformers.models.albert.modeling_albert.AlbertForPreTrainingOutput](/docs/transformers/master/en/model_doc/albert#transformers.models.albert.modeling_albert.AlbertForPreTrainingOutput) or a tuple of
-  `torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising various
-  elements depending on the configuration ([AlbertConfig](/docs/transformers/master/en/model_doc/albert#transformers.AlbertConfig)) and inputs.
+  Hidden-states of the model at the output of each layer plus the initial embedding outputs.
+- **attentions** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
 
-  - **loss** (*optional*, returned when `labels` is provided, `torch.FloatTensor` of shape `(1,)`) -- Total loss as the sum of the masked language modeling loss and the next sequence prediction
-    (classification) loss.
-  - **prediction_logits** (`torch.FloatTensor` of shape `(batch_size, sequence_length, config.vocab_size)`) -- Prediction scores of the language modeling head (scores for each vocabulary token before SoftMax).
-  - **sop_logits** (`torch.FloatTensor` of shape `(batch_size, 2)`) -- Prediction scores of the next sequence prediction (classification) head (scores of True/False continuation
-    before SoftMax).
-  - **hidden_states** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer)
-    of shape `(batch_size, sequence_length, hidden_size)`.
-
-    Hidden-states of the model at the output of each layer plus the initial embedding outputs.
-  - **attentions** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
-
-    Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
-    heads.
-
-
-Example --
-
-```python --
- transformers import AlbertTokenizer, AlbertForPreTraining
-rt torch
-
-nizer = AlbertTokenizer.from_pretrained('albert-base-v2')
-l = AlbertForPreTraining.from_pretrained('albert-base-v2')
-
-t_ids = torch.tensor(tokenizer.encode("Hello, my dog is cute", add_special_tokens=True)).unsqueeze(0)  # Batch size 1
-uts = model(input_ids)
-
-iction_logits = outputs.prediction_logits
-logits = outputs.sop_logits
-``` --</paramsdesc><paramgroups>0</paramgroups></docstring>
+  Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
+  heads.</retdesc></docstring>
 The [AlbertForPreTraining](/docs/transformers/master/en/model_doc/albert#transformers.AlbertForPreTraining) forward method, overrides the `__call__` special method.
 
 <Tip>
@@ -728,6 +707,25 @@ the latter silently ignores them.
 
 
 
+
+
+
+
+Example:
+
+```python
+>>> from transformers import AlbertTokenizer, AlbertForPreTraining
+>>> import torch
+
+>>> tokenizer = AlbertTokenizer.from_pretrained('albert-base-v2')
+>>> model = AlbertForPreTraining.from_pretrained('albert-base-v2')
+
+>>> input_ids = torch.tensor(tokenizer.encode("Hello, my dog is cute", add_special_tokens=True)).unsqueeze(0)  # Batch size 1
+>>> outputs = model(input_ids)
+
+>>> prediction_logits = outputs.prediction_logits
+>>> sop_logits = outputs.sop_logits
+```
 
 </div></div>
 
@@ -1615,42 +1613,21 @@ the first positional argument :
   argument can be used in eager mode, in graph mode the value will always be set to True.
 - **training** (`bool`, *optional*, defaults to `False`) --
   Whether or not to use the model in training mode (some modules like dropout modules have different
-  behaviors between training and evaluation).
+  behaviors between training and evaluation).</paramsdesc><paramgroups>0</paramgroups><rettype>[transformers.models.albert.modeling_tf_albert.TFAlbertForPreTrainingOutput](/docs/transformers/master/en/model_doc/albert#transformers.models.albert.modeling_tf_albert.TFAlbertForPreTrainingOutput) or `tuple(tf.Tensor)`</rettype><retdesc>A [transformers.models.albert.modeling_tf_albert.TFAlbertForPreTrainingOutput](/docs/transformers/master/en/model_doc/albert#transformers.models.albert.modeling_tf_albert.TFAlbertForPreTrainingOutput) or a tuple of `tf.Tensor` (if
+`return_dict=False` is passed or when `config.return_dict=False`) comprising various elements depending on the
+configuration ([AlbertConfig](/docs/transformers/master/en/model_doc/albert#transformers.AlbertConfig)) and inputs.
 
+- **prediction_logits** (`tf.Tensor` of shape `(batch_size, sequence_length, config.vocab_size)`) -- Prediction scores of the language modeling head (scores for each vocabulary token before SoftMax).
+- **sop_logits** (`tf.Tensor` of shape `(batch_size, 2)`) -- Prediction scores of the next sequence prediction (classification) head (scores of True/False continuation
+  before SoftMax).
+- **hidden_states** (`tuple(tf.Tensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `tf.Tensor` (one for the output of the embeddings + one for the output of each layer) of
+  shape `(batch_size, sequence_length, hidden_size)`.
 
-  Returns --
-  [transformers.models.albert.modeling_tf_albert.TFAlbertForPreTrainingOutput](/docs/transformers/master/en/model_doc/albert#transformers.models.albert.modeling_tf_albert.TFAlbertForPreTrainingOutput) or `tuple(tf.Tensor)`: A [transformers.models.albert.modeling_tf_albert.TFAlbertForPreTrainingOutput](/docs/transformers/master/en/model_doc/albert#transformers.models.albert.modeling_tf_albert.TFAlbertForPreTrainingOutput) or a tuple of `tf.Tensor` (if
-  `return_dict=False` is passed or when `config.return_dict=False`) comprising various elements depending on the
-  configuration ([AlbertConfig](/docs/transformers/master/en/model_doc/albert#transformers.AlbertConfig)) and inputs.
+  Hidden-states of the model at the output of each layer plus the initial embedding outputs.
+- **attentions** (`tuple(tf.Tensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `tf.Tensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
 
-  - **prediction_logits** (`tf.Tensor` of shape `(batch_size, sequence_length, config.vocab_size)`) -- Prediction scores of the language modeling head (scores for each vocabulary token before SoftMax).
-  - **sop_logits** (`tf.Tensor` of shape `(batch_size, 2)`) -- Prediction scores of the next sequence prediction (classification) head (scores of True/False continuation
-    before SoftMax).
-  - **hidden_states** (`tuple(tf.Tensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `tf.Tensor` (one for the output of the embeddings + one for the output of each layer) of
-    shape `(batch_size, sequence_length, hidden_size)`.
-
-    Hidden-states of the model at the output of each layer plus the initial embedding outputs.
-  - **attentions** (`tuple(tf.Tensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `tf.Tensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
-
-    Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
-    heads.
-
-
-Example --
-
-```python --
-rt tensorflow as tf
- transformers import AlbertTokenizer, TFAlbertForPreTraining
-
-nizer = AlbertTokenizer.from_pretrained('albert-base-v2')
-l = TFAlbertForPreTraining.from_pretrained('albert-base-v2')
-
-t_ids = tf.constant(tokenizer.encode("Hello, my dog is cute", add_special_tokens=True))[None, 
-uts = model(input_ids)
-
-iction_logits = outputs.prediction_logits
-logits = outputs.sop_logits
-``` --</paramsdesc><paramgroups>0</paramgroups></docstring>
+  Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
+  heads.</retdesc></docstring>
 The [TFAlbertForPreTraining](/docs/transformers/master/en/model_doc/albert#transformers.TFAlbertForPreTraining) forward method, overrides the `__call__` special method.
 
 <Tip>
@@ -1663,6 +1640,25 @@ the latter silently ignores them.
 
 
 
+
+
+
+
+Example:
+
+```python
+>>> import tensorflow as tf
+>>> from transformers import AlbertTokenizer, TFAlbertForPreTraining
+
+>>> tokenizer = AlbertTokenizer.from_pretrained('albert-base-v2')
+>>> model = TFAlbertForPreTraining.from_pretrained('albert-base-v2')
+
+>>> input_ids = tf.constant(tokenizer.encode("Hello, my dog is cute", add_special_tokens=True))[None, :]  # Batch size 1
+>>> outputs = model(input_ids)
+
+>>> prediction_logits = outputs.prediction_logits
+>>> sop_logits = outputs.sop_logits
+```
 
 </div></div>
 

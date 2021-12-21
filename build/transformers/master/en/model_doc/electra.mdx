@@ -518,11 +518,7 @@ general usage and behavior.
   docstring) Indices should be in `[0, 1]`:
 
   - 0 indicates the token is an original token,
-  - 1 indicates the token was replaced.
-
-
-Returns --
-[transformers.models.electra.modeling_electra.ElectraForPreTrainingOutput](/docs/transformers/master/en/model_doc/electra#transformers.models.electra.modeling_electra.ElectraForPreTrainingOutput) or `tuple(torch.FloatTensor)`: A [transformers.models.electra.modeling_electra.ElectraForPreTrainingOutput](/docs/transformers/master/en/model_doc/electra#transformers.models.electra.modeling_electra.ElectraForPreTrainingOutput) or a tuple of
+  - 1 indicates the token was replaced.</paramsdesc><paramgroups>0</paramgroups><rettype>[transformers.models.electra.modeling_electra.ElectraForPreTrainingOutput](/docs/transformers/master/en/model_doc/electra#transformers.models.electra.modeling_electra.ElectraForPreTrainingOutput) or `tuple(torch.FloatTensor)`</rettype><retdesc>A [transformers.models.electra.modeling_electra.ElectraForPreTrainingOutput](/docs/transformers/master/en/model_doc/electra#transformers.models.electra.modeling_electra.ElectraForPreTrainingOutput) or a tuple of
 `torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising various
 elements depending on the configuration ([ElectraConfig](/docs/transformers/master/en/model_doc/electra#transformers.ElectraConfig)) and inputs.
 
@@ -535,21 +531,7 @@ elements depending on the configuration ([ElectraConfig](/docs/transformers/mast
 - **attentions** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
 
   Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
-  heads.
-
-
-Examples --
-
-```python --
- transformers import ElectraTokenizer, ElectraForPreTraining
-rt torch
-
-nizer = ElectraTokenizer.from_pretrained('google/electra-small-discriminator')
-l = ElectraForPreTraining.from_pretrained('google/electra-small-discriminator')
-
-t_ids = torch.tensor(tokenizer.encode("Hello, my dog is cute", add_special_tokens=True)).unsqueeze(0)  # Batch size 1
-ts = model(input_ids).logits
-``` --</paramsdesc><paramgroups>0</paramgroups></docstring>
+  heads.</retdesc></docstring>
 The [ElectraForPreTraining](/docs/transformers/master/en/model_doc/electra#transformers.ElectraForPreTraining) forward method, overrides the `__call__` special method.
 
 <Tip>
@@ -562,6 +544,22 @@ the latter silently ignores them.
 
 
 
+
+
+
+
+Examples:
+
+```python
+>>> from transformers import ElectraTokenizer, ElectraForPreTraining
+>>> import torch
+
+>>> tokenizer = ElectraTokenizer.from_pretrained('google/electra-small-discriminator')
+>>> model = ElectraForPreTraining.from_pretrained('google/electra-small-discriminator')
+
+>>> input_ids = torch.tensor(tokenizer.encode("Hello, my dog is cute", add_special_tokens=True)).unsqueeze(0)  # Batch size 1
+>>> logits = model(input_ids).logits
+```
 
 </div></div>
 
@@ -1516,38 +1514,20 @@ the first positional argument :
   argument can be used in eager mode, in graph mode the value will always be set to True.
 - **training** (`bool`, *optional*, defaults to `False`) --
   Whether or not to use the model in training mode (some modules like dropout modules have different
-  behaviors between training and evaluation).
+  behaviors between training and evaluation).</paramsdesc><paramgroups>0</paramgroups><rettype>[transformers.models.electra.modeling_tf_electra.TFElectraForPreTrainingOutput](/docs/transformers/master/en/model_doc/electra#transformers.models.electra.modeling_tf_electra.TFElectraForPreTrainingOutput) or `tuple(tf.Tensor)`</rettype><retdesc>A [transformers.models.electra.modeling_tf_electra.TFElectraForPreTrainingOutput](/docs/transformers/master/en/model_doc/electra#transformers.models.electra.modeling_tf_electra.TFElectraForPreTrainingOutput) or a tuple of `tf.Tensor` (if
+`return_dict=False` is passed or when `config.return_dict=False`) comprising various elements depending on the
+configuration ([ElectraConfig](/docs/transformers/master/en/model_doc/electra#transformers.ElectraConfig)) and inputs.
 
+- **loss** (*optional*, returned when `labels` is provided, `tf.Tensor` of shape `(1,)`) -- Total loss of the ELECTRA objective.
+- **logits** (`tf.Tensor` of shape `(batch_size, sequence_length)`) -- Prediction scores of the head (scores for each token before SoftMax).
+- **hidden_states** (`tuple(tf.Tensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `tf.Tensor` (one for the output of the embeddings + one for the output of each layer) of
+  shape `(batch_size, sequence_length, hidden_size)`.
 
-  Returns --
-  [transformers.models.electra.modeling_tf_electra.TFElectraForPreTrainingOutput](/docs/transformers/master/en/model_doc/electra#transformers.models.electra.modeling_tf_electra.TFElectraForPreTrainingOutput) or `tuple(tf.Tensor)`: A [transformers.models.electra.modeling_tf_electra.TFElectraForPreTrainingOutput](/docs/transformers/master/en/model_doc/electra#transformers.models.electra.modeling_tf_electra.TFElectraForPreTrainingOutput) or a tuple of `tf.Tensor` (if
-  `return_dict=False` is passed or when `config.return_dict=False`) comprising various elements depending on the
-  configuration ([ElectraConfig](/docs/transformers/master/en/model_doc/electra#transformers.ElectraConfig)) and inputs.
+  Hidden-states of the model at the output of each layer plus the initial embedding outputs.
+- **attentions** (`tuple(tf.Tensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `tf.Tensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
 
-  - **loss** (*optional*, returned when `labels` is provided, `tf.Tensor` of shape `(1,)`) -- Total loss of the ELECTRA objective.
-  - **logits** (`tf.Tensor` of shape `(batch_size, sequence_length)`) -- Prediction scores of the head (scores for each token before SoftMax).
-  - **hidden_states** (`tuple(tf.Tensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `tf.Tensor` (one for the output of the embeddings + one for the output of each layer) of
-    shape `(batch_size, sequence_length, hidden_size)`.
-
-    Hidden-states of the model at the output of each layer plus the initial embedding outputs.
-  - **attentions** (`tuple(tf.Tensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `tf.Tensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
-
-    Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
-    heads.
-
-
-Examples --
-
-```python --
-rt tensorflow as tf
- transformers import ElectraTokenizer, TFElectraForPreTraining
-
-nizer = ElectraTokenizer.from_pretrained('google/electra-small-discriminator')
-l = TFElectraForPreTraining.from_pretrained('google/electra-small-discriminator')
-t_ids = tf.constant(tokenizer.encode("Hello, my dog is cute"))[None, 
-uts = model(input_ids)
-es = outputs[0]
-``` --</paramsdesc><paramgroups>0</paramgroups></docstring>
+  Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
+  heads.</retdesc></docstring>
 The [TFElectraForPreTraining](/docs/transformers/master/en/model_doc/electra#transformers.TFElectraForPreTraining) forward method, overrides the `__call__` special method.
 
 <Tip>
@@ -1560,6 +1540,22 @@ the latter silently ignores them.
 
 
 
+
+
+
+
+Examples:
+
+```python
+>>> import tensorflow as tf
+>>> from transformers import ElectraTokenizer, TFElectraForPreTraining
+
+>>> tokenizer = ElectraTokenizer.from_pretrained('google/electra-small-discriminator')
+>>> model = TFElectraForPreTraining.from_pretrained('google/electra-small-discriminator')
+>>> input_ids = tf.constant(tokenizer.encode("Hello, my dog is cute"))[None, :]  # Batch size 1
+>>> outputs = model(input_ids)
+>>> scores = outputs[0]
+```
 
 </div></div>
 

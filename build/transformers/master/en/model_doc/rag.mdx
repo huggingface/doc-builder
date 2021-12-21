@@ -535,75 +535,55 @@ general usage and behavior.
   Whether or not to return the `retrieved_doc_embeds`, `retrieved_doc_ids`,
   `context_input_ids` and `context_attention_mask`. See returned tensors for more detail.
 - **n_docs** (`int`, *optional*, defaults to `config.n_docs``) --
-  Number of documents to retrieve and/or number of documents for which to generate an answer.
+  Number of documents to retrieve and/or number of documents for which to generate an answer.</paramsdesc><paramgroups>0</paramgroups><rettype>[transformers.models.rag.modeling_rag.RetrievAugLMOutput](/docs/transformers/master/en/model_doc/rag#transformers.models.rag.modeling_rag.RetrievAugLMOutput) or `tuple(torch.FloatTensor)`</rettype><retdesc>A [transformers.models.rag.modeling_rag.RetrievAugLMOutput](/docs/transformers/master/en/model_doc/rag#transformers.models.rag.modeling_rag.RetrievAugLMOutput) or a tuple of
+`torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising various
+elements depending on the configuration ([RagConfig](/docs/transformers/master/en/model_doc/rag#transformers.RagConfig)) and inputs.
 
+- **logits** (`torch.FloatTensor` of shape `(batch_size, sequence_length, config.vocab_size)`) -- Prediction scores of the language modeling head. The score is possibly marginalized over all documents for
+  each vocabulary token.
+- **doc_scores** (`torch.FloatTensor` of shape `(batch_size, config.n_docs)`) -- Score between each retrieved document embeddings (see `retrieved_doc_embeds`) and
+  `question_encoder_last_hidden_state`.
+- **past_key_values** (`List[torch.FloatTensor]`, *optional*, returned when `use_cache=True` is passed or when `config.use_cache=True`) -- List of `torch.FloatTensor` of length `config.n_layers`, with each tensor of shape `(2, batch_size, num_heads, sequence_length, embed_size_per_head)`).
 
-  Returns --
-  [transformers.models.rag.modeling_rag.RetrievAugLMOutput](/docs/transformers/master/en/model_doc/rag#transformers.models.rag.modeling_rag.RetrievAugLMOutput) or `tuple(torch.FloatTensor)`: A [transformers.models.rag.modeling_rag.RetrievAugLMOutput](/docs/transformers/master/en/model_doc/rag#transformers.models.rag.modeling_rag.RetrievAugLMOutput) or a tuple of
-  `torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising various
-  elements depending on the configuration ([RagConfig](/docs/transformers/master/en/model_doc/rag#transformers.RagConfig)) and inputs.
+  Contains precomputed hidden-states (key and values in the attention blocks) of the decoder that can be used
+  (see `past_key_values` input) to speed up sequential decoding.
+- **retrieved_doc_embeds** (`torch.FloatTensor` of shape `(batch_size, config.n_docs, hidden_size)`, *optional*, returned when *output_retrieved=True*) -- Embedded documents retrieved by the retriever. Is used with `question_encoder_last_hidden_state` to
+  compute the `doc_scores`.
+- **retrieved_doc_ids** (`torch.LongTensor` of shape `(batch_size, config.n_docs)`, *optional*, returned when *output_retrieved=True*) -- The indexes of the embedded documents retrieved by the retriever.
+- **context_input_ids** (`torch.LongTensor` of shape `(batch_size * config.n_docs, config.max_combined_length)`, *optional*, returned when *output_retrieved=True*) -- Input ids post-processed from the retrieved documents and the question encoder input_ids by the retriever.
+- **context_attention_mask** (`torch.LongTensor` of shape `(batch_size * config.n_docs, config.max_combined_length)`, *optional*, returned when *output_retrieved=True*) -- Attention mask post-processed from the retrieved documents and the question encoder `input_ids` by the
+  retriever.
+- **question_encoder_last_hidden_state** (`torch.FloatTensor` of shape `(batch_size, sequence_length, hidden_size)`, *optional*) -- Sequence of hidden states at the output of the last layer of the question encoder pooled output of the
+  model.
+- **question_enc_hidden_states** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `torch.FloatTensor` (one for the output of the embeddings and one for the output of each
+  layer) of shape `(batch_size, sequence_length, hidden_size)`.
 
-  - **logits** (`torch.FloatTensor` of shape `(batch_size, sequence_length, config.vocab_size)`) -- Prediction scores of the language modeling head. The score is possibly marginalized over all documents for
-    each vocabulary token.
-  - **doc_scores** (`torch.FloatTensor` of shape `(batch_size, config.n_docs)`) -- Score between each retrieved document embeddings (see `retrieved_doc_embeds`) and
-    `question_encoder_last_hidden_state`.
-  - **past_key_values** (`List[torch.FloatTensor]`, *optional*, returned when `use_cache=True` is passed or when `config.use_cache=True`) -- List of `torch.FloatTensor` of length `config.n_layers`, with each tensor of shape `(2, batch_size, num_heads, sequence_length, embed_size_per_head)`).
+  Hidden states of the question encoder at the output of each layer plus the initial embedding outputs.
+- **question_enc_attentions** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
 
-    Contains precomputed hidden-states (key and values in the attention blocks) of the decoder that can be used
-    (see `past_key_values` input) to speed up sequential decoding.
-  - **retrieved_doc_embeds** (`torch.FloatTensor` of shape `(batch_size, config.n_docs, hidden_size)`, *optional*, returned when *output_retrieved=True*) -- Embedded documents retrieved by the retriever. Is used with `question_encoder_last_hidden_state` to
-    compute the `doc_scores`.
-  - **retrieved_doc_ids** (`torch.LongTensor` of shape `(batch_size, config.n_docs)`, *optional*, returned when *output_retrieved=True*) -- The indexes of the embedded documents retrieved by the retriever.
-  - **context_input_ids** (`torch.LongTensor` of shape `(batch_size * config.n_docs, config.max_combined_length)`, *optional*, returned when *output_retrieved=True*) -- Input ids post-processed from the retrieved documents and the question encoder input_ids by the retriever.
-  - **context_attention_mask** (`torch.LongTensor` of shape `(batch_size * config.n_docs, config.max_combined_length)`, *optional*, returned when *output_retrieved=True*) -- Attention mask post-processed from the retrieved documents and the question encoder `input_ids` by the
-    retriever.
-  - **question_encoder_last_hidden_state** (`torch.FloatTensor` of shape `(batch_size, sequence_length, hidden_size)`, *optional*) -- Sequence of hidden states at the output of the last layer of the question encoder pooled output of the
-    model.
-  - **question_enc_hidden_states** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `torch.FloatTensor` (one for the output of the embeddings and one for the output of each
-    layer) of shape `(batch_size, sequence_length, hidden_size)`.
+  Attentions weights of the question encoder, after the attention softmax, used to compute the weighted
+  average in the self-attention heads.
+- **generator_enc_last_hidden_state** (`torch.FloatTensor` of shape `(batch_size, sequence_length, hidden_size)`, *optional*) -- Sequence of hidden-states at the output of the last layer of the generator encoder of the model.
+- **generator_enc_hidden_states** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `torch.FloatTensor` (one for the output of the embeddings and one for the output of each
+  layer) of shape `(batch_size, sequence_length, hidden_size)`.
 
-    Hidden states of the question encoder at the output of each layer plus the initial embedding outputs.
-  - **question_enc_attentions** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+  Hidden states of the generator encoder at the output of each layer plus the initial embedding outputs.
+- **generator_enc_attentions** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
 
-    Attentions weights of the question encoder, after the attention softmax, used to compute the weighted
-    average in the self-attention heads.
-  - **generator_enc_last_hidden_state** (`torch.FloatTensor` of shape `(batch_size, sequence_length, hidden_size)`, *optional*) -- Sequence of hidden-states at the output of the last layer of the generator encoder of the model.
-  - **generator_enc_hidden_states** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `torch.FloatTensor` (one for the output of the embeddings and one for the output of each
-    layer) of shape `(batch_size, sequence_length, hidden_size)`.
+  Attentions weights of the generator encoder, after the attention softmax, used to compute the weighted
+  average in the self-attention heads.
+- **generator_dec_hidden_states** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `torch.FloatTensor` (one for the output of the embeddings and one for the output of each
+  layer) of shape `(batch_size, sequence_length, hidden_size)`.
 
-    Hidden states of the generator encoder at the output of each layer plus the initial embedding outputs.
-  - **generator_enc_attentions** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+  Hidden states of the generator decoder at the output of each layer plus the initial embedding outputs.
+- **generator_dec_attentions** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
 
-    Attentions weights of the generator encoder, after the attention softmax, used to compute the weighted
-    average in the self-attention heads.
-  - **generator_dec_hidden_states** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `torch.FloatTensor` (one for the output of the embeddings and one for the output of each
-    layer) of shape `(batch_size, sequence_length, hidden_size)`.
+  Attentions weights of the generator decoder, after the attention softmax, used to compute the weighted
+  average in the self-attention heads.
+- **generator_cross_attentions** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
 
-    Hidden states of the generator decoder at the output of each layer plus the initial embedding outputs.
-  - **generator_dec_attentions** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
-
-    Attentions weights of the generator decoder, after the attention softmax, used to compute the weighted
-    average in the self-attention heads.
-  - **generator_cross_attentions** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
-
-    Cross-attentions weights of the generator decoder, after the attention softmax, used to compute the
-    weighted average in the cross-attention heads.
-
-
-Example --
-
-```python --
- transformers import RagTokenizer, RagRetriever, RagModel
-rt torch
-
-nizer = RagTokenizer.from_pretrained("facebook/rag-token-base")
-iever = RagRetriever.from_pretrained("facebook/rag-token-base", index_name="exact", use_dummy_dataset=True)
-itialize with RagRetriever to do everything in one forward call
-l = RagModel.from_pretrained("facebook/rag-token-base", retriever=retriever)
-
-ts = tokenizer("How many people live in Paris?", return_tensors="pt")
-uts = model(input_ids=inputs["input_ids"])
-``` --</paramsdesc><paramgroups>0</paramgroups></docstring>
+  Cross-attentions weights of the generator decoder, after the attention softmax, used to compute the
+  weighted average in the cross-attention heads.</retdesc></docstring>
 The [RagModel](/docs/transformers/master/en/model_doc/rag#transformers.RagModel) forward method, overrides the `__call__` special method.
 
 <Tip>
@@ -616,6 +596,24 @@ the latter silently ignores them.
 
 
 
+
+
+
+
+Example:
+
+```python
+>>> from transformers import RagTokenizer, RagRetriever, RagModel
+>>> import torch
+
+>>> tokenizer = RagTokenizer.from_pretrained("facebook/rag-token-base")
+>>> retriever = RagRetriever.from_pretrained("facebook/rag-token-base", index_name="exact", use_dummy_dataset=True)
+>>> # initialize with RagRetriever to do everything in one forward call
+>>> model = RagModel.from_pretrained("facebook/rag-token-base", retriever=retriever)
+
+>>> inputs = tokenizer("How many people live in Paris?", return_tensors="pt")
+>>> outputs = model(input_ids=inputs["input_ids"])
+```
 
 </div></div>
 
@@ -743,90 +741,56 @@ general usage and behavior.
   Only relevant if `labels` is passed. If `True`, the NLL loss is reduced using the
   `torch.Tensor.sum` operation.
 - **kwargs** (`Dict[str, any]`, optional, defaults to *&amp;lcub;}*) --
-  Legacy dictionary, which is required so that model can use *generate()* function.
+  Legacy dictionary, which is required so that model can use *generate()* function.</paramsdesc><paramgroups>0</paramgroups><rettype>[transformers.models.rag.modeling_rag.RetrievAugLMMarginOutput](/docs/transformers/master/en/model_doc/rag#transformers.models.rag.modeling_rag.RetrievAugLMMarginOutput) or `tuple(torch.FloatTensor)`</rettype><retdesc>A [transformers.models.rag.modeling_rag.RetrievAugLMMarginOutput](/docs/transformers/master/en/model_doc/rag#transformers.models.rag.modeling_rag.RetrievAugLMMarginOutput) or a tuple of
+`torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising various
+elements depending on the configuration ([RagConfig](/docs/transformers/master/en/model_doc/rag#transformers.RagConfig)) and inputs.
 
+- **loss** (`torch.FloatTensor` of shape `(1,)`, *optional*, returned when `labels` is provided) -- Language modeling loss.
+- **logits** (`torch.FloatTensor` of shape `(batch_size, sequence_length, config.vocab_size)`) -- Prediction scores of the language modeling head. The score is possibly marginalized over all documents for
+  each vocabulary token.
+- **doc_scores** (`torch.FloatTensor` of shape `(batch_size, config.n_docs)`) -- Score between each retrieved document embeddings (see `retrieved_doc_embeds`) and
+  `question_encoder_last_hidden_state`.
+- **past_key_values** (`List[torch.FloatTensor]`, *optional*, returned when `use_cache=True` is passed or when `config.use_cache=True`) -- List of `torch.FloatTensor` of length `config.n_layers`, with each tensor of shape `(2, batch_size, num_heads, sequence_length, embed_size_per_head)`).
 
-  Returns --
-  [transformers.models.rag.modeling_rag.RetrievAugLMMarginOutput](/docs/transformers/master/en/model_doc/rag#transformers.models.rag.modeling_rag.RetrievAugLMMarginOutput) or `tuple(torch.FloatTensor)`: A [transformers.models.rag.modeling_rag.RetrievAugLMMarginOutput](/docs/transformers/master/en/model_doc/rag#transformers.models.rag.modeling_rag.RetrievAugLMMarginOutput) or a tuple of
-  `torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising various
-  elements depending on the configuration ([RagConfig](/docs/transformers/master/en/model_doc/rag#transformers.RagConfig)) and inputs.
+  Contains precomputed hidden-states (key and values in the attention blocks) of the decoder that can be used
+  (see `past_key_values` input) to speed up sequential decoding.
+- **retrieved_doc_embeds** (`torch.FloatTensor` of shape `(batch_size, config.n_docs, hidden_size)`, *optional*, returned when *output_retrieved=True*) -- Embedded documents retrieved by the retriever. Is used with `question_encoder_last_hidden_state` to
+  compute the `doc_scores`.
+- **retrieved_doc_ids** (`torch.LongTensor` of shape `(batch_size, config.n_docs)`, *optional*, returned when *output_retrieved=True*) -- The indexes of the embedded documents retrieved by the retriever.
+- **context_input_ids** (`torch.LongTensor` of shape `(batch_size * config.n_docs, config.max_combined_length)`, *optional*, returned when *output_retrieved=True*) -- Input ids post-processed from the retrieved documents and the question encoder input_ids by the retriever.
+- **context_attention_mask** (`torch.LongTensor` of shape `(batch_size * config.n_docs, config.max_combined_length)`, *optional*, returned when *output_retrieved=True*) -- Attention mask post-processed from the retrieved documents and the question encoder `input_ids` by the
+  retriever.
+- **question_encoder_last_hidden_state** (`torch.FloatTensor` of shape `(batch_size, sequence_length, hidden_size)`, *optional*) -- Sequence of hidden states at the output of the last layer of the question encoder pooled output of the
+  model.
+- **question_enc_hidden_states** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `torch.FloatTensor` (one for the output of the embeddings and one for the output of each
+  layer) of shape `(batch_size, sequence_length, hidden_size)`.
 
-  - **loss** (`torch.FloatTensor` of shape `(1,)`, *optional*, returned when `labels` is provided) -- Language modeling loss.
-  - **logits** (`torch.FloatTensor` of shape `(batch_size, sequence_length, config.vocab_size)`) -- Prediction scores of the language modeling head. The score is possibly marginalized over all documents for
-    each vocabulary token.
-  - **doc_scores** (`torch.FloatTensor` of shape `(batch_size, config.n_docs)`) -- Score between each retrieved document embeddings (see `retrieved_doc_embeds`) and
-    `question_encoder_last_hidden_state`.
-  - **past_key_values** (`List[torch.FloatTensor]`, *optional*, returned when `use_cache=True` is passed or when `config.use_cache=True`) -- List of `torch.FloatTensor` of length `config.n_layers`, with each tensor of shape `(2, batch_size, num_heads, sequence_length, embed_size_per_head)`).
+  Hidden states of the question encoder at the output of each layer plus the initial embedding outputs.
+- **question_enc_attentions** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
 
-    Contains precomputed hidden-states (key and values in the attention blocks) of the decoder that can be used
-    (see `past_key_values` input) to speed up sequential decoding.
-  - **retrieved_doc_embeds** (`torch.FloatTensor` of shape `(batch_size, config.n_docs, hidden_size)`, *optional*, returned when *output_retrieved=True*) -- Embedded documents retrieved by the retriever. Is used with `question_encoder_last_hidden_state` to
-    compute the `doc_scores`.
-  - **retrieved_doc_ids** (`torch.LongTensor` of shape `(batch_size, config.n_docs)`, *optional*, returned when *output_retrieved=True*) -- The indexes of the embedded documents retrieved by the retriever.
-  - **context_input_ids** (`torch.LongTensor` of shape `(batch_size * config.n_docs, config.max_combined_length)`, *optional*, returned when *output_retrieved=True*) -- Input ids post-processed from the retrieved documents and the question encoder input_ids by the retriever.
-  - **context_attention_mask** (`torch.LongTensor` of shape `(batch_size * config.n_docs, config.max_combined_length)`, *optional*, returned when *output_retrieved=True*) -- Attention mask post-processed from the retrieved documents and the question encoder `input_ids` by the
-    retriever.
-  - **question_encoder_last_hidden_state** (`torch.FloatTensor` of shape `(batch_size, sequence_length, hidden_size)`, *optional*) -- Sequence of hidden states at the output of the last layer of the question encoder pooled output of the
-    model.
-  - **question_enc_hidden_states** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `torch.FloatTensor` (one for the output of the embeddings and one for the output of each
-    layer) of shape `(batch_size, sequence_length, hidden_size)`.
+  Attentions weights of the question encoder, after the attention softmax, used to compute the weighted
+  average in the self-attention heads.
+- **generator_enc_last_hidden_state** (`torch.FloatTensor` of shape `(batch_size, sequence_length, hidden_size)`, *optional*) -- Sequence of hidden-states at the output of the last layer of the generator encoder of the model.
+- **generator_enc_hidden_states** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `torch.FloatTensor` (one for the output of the embeddings and one for the output of each
+  layer) of shape `(batch_size, sequence_length, hidden_size)`.
 
-    Hidden states of the question encoder at the output of each layer plus the initial embedding outputs.
-  - **question_enc_attentions** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+  Hidden states of the generator encoder at the output of each layer plus the initial embedding outputs.
+- **generator_enc_attentions** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
 
-    Attentions weights of the question encoder, after the attention softmax, used to compute the weighted
-    average in the self-attention heads.
-  - **generator_enc_last_hidden_state** (`torch.FloatTensor` of shape `(batch_size, sequence_length, hidden_size)`, *optional*) -- Sequence of hidden-states at the output of the last layer of the generator encoder of the model.
-  - **generator_enc_hidden_states** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `torch.FloatTensor` (one for the output of the embeddings and one for the output of each
-    layer) of shape `(batch_size, sequence_length, hidden_size)`.
+  Attentions weights of the generator encoder, after the attention softmax, used to compute the weighted
+  average in the self-attention heads.
+- **generator_dec_hidden_states** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `torch.FloatTensor` (one for the output of the embeddings and one for the output of each
+  layer) of shape `(batch_size, sequence_length, hidden_size)`.
 
-    Hidden states of the generator encoder at the output of each layer plus the initial embedding outputs.
-  - **generator_enc_attentions** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+  Hidden states of the generator decoder at the output of each layer plus the initial embedding outputs.
+- **generator_dec_attentions** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
 
-    Attentions weights of the generator encoder, after the attention softmax, used to compute the weighted
-    average in the self-attention heads.
-  - **generator_dec_hidden_states** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `torch.FloatTensor` (one for the output of the embeddings and one for the output of each
-    layer) of shape `(batch_size, sequence_length, hidden_size)`.
+  Attentions weights of the generator decoder, after the attention softmax, used to compute the weighted
+  average in the self-attention heads.
+- **generator_cross_attentions** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
 
-    Hidden states of the generator decoder at the output of each layer plus the initial embedding outputs.
-  - **generator_dec_attentions** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
-
-    Attentions weights of the generator decoder, after the attention softmax, used to compute the weighted
-    average in the self-attention heads.
-  - **generator_cross_attentions** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
-
-    Cross-attentions weights of the generator decoder, after the attention softmax, used to compute the
-    weighted average in the cross-attention heads.
-
-
-Example --
-
-```python --
- transformers import RagTokenizer, RagRetriever, RagSequenceForGeneration
-rt torch
-
-nizer = RagTokenizer.from_pretrained("facebook/rag-sequence-nq")
-iever = RagRetriever.from_pretrained("facebook/rag-sequence-nq", index_name="exact", use_dummy_dataset=True)
-itialize with RagRetriever to do everything in one forward call
-l = RagSequenceForGeneration.from_pretrained("facebook/rag-token-nq", retriever=retriever)
-
-ts = tokenizer("How many people live in Paris?", return_tensors="pt")
- tokenizer.as_target_tokenizer()
-- **...**    targets = tokenizer("In Paris, there are 10 million people.", return_tensors="pt") --
-t_ids = inputs["input_ids"]
-ls = targets["input_ids"]
-uts = model(input_ids=input_ids, labels=labels)
-
- use retriever separately
-l = RagSequenceForGeneration.from_pretrained("facebook/rag-sequence-nq", use_dummy_dataset=True)
- Encode
-tion_hidden_states = model.question_encoder(input_ids)[0]
- Retrieve
-_dict = retriever(input_ids.numpy(), question_hidden_states.detach().numpy(), return_tensors="pt")
-scores = torch.bmm(question_hidden_states.unsqueeze(1), docs_dict["retrieved_doc_embeds"].float().transpose(1, 2)).squeeze(1)
- Forward to generator
-uts = model(context_input_ids=docs_dict["context_input_ids"], context_attention_mask=docs_dict["context_attention_mask"], doc_scores=doc_scores, decoder_input_ids=labels)
-``` --</paramsdesc><paramgroups>0</paramgroups></docstring>
+  Cross-attentions weights of the generator decoder, after the attention softmax, used to compute the
+  weighted average in the cross-attention heads.</retdesc></docstring>
 The [RagSequenceForGeneration](/docs/transformers/master/en/model_doc/rag#transformers.RagSequenceForGeneration) forward method, overrides the `__call__` special method.
 
 <Tip>
@@ -839,6 +803,38 @@ the latter silently ignores them.
 
 
 
+
+
+
+
+Example:
+
+```python
+>>> from transformers import RagTokenizer, RagRetriever, RagSequenceForGeneration
+>>> import torch
+
+>>> tokenizer = RagTokenizer.from_pretrained("facebook/rag-sequence-nq")
+>>> retriever = RagRetriever.from_pretrained("facebook/rag-sequence-nq", index_name="exact", use_dummy_dataset=True)
+>>> # initialize with RagRetriever to do everything in one forward call
+>>> model = RagSequenceForGeneration.from_pretrained("facebook/rag-token-nq", retriever=retriever)
+
+>>> inputs = tokenizer("How many people live in Paris?", return_tensors="pt")
+>>> with tokenizer.as_target_tokenizer():
+...    targets = tokenizer("In Paris, there are 10 million people.", return_tensors="pt")
+>>> input_ids = inputs["input_ids"]
+>>> labels = targets["input_ids"]
+>>> outputs = model(input_ids=input_ids, labels=labels)
+
+>>> # or use retriever separately
+>>> model = RagSequenceForGeneration.from_pretrained("facebook/rag-sequence-nq", use_dummy_dataset=True)
+>>> # 1. Encode
+>>> question_hidden_states = model.question_encoder(input_ids)[0]
+>>> # 2. Retrieve
+>>> docs_dict = retriever(input_ids.numpy(), question_hidden_states.detach().numpy(), return_tensors="pt")
+>>> doc_scores = torch.bmm(question_hidden_states.unsqueeze(1), docs_dict["retrieved_doc_embeds"].float().transpose(1, 2)).squeeze(1)
+>>> # 3. Forward to generator
+>>> outputs = model(context_input_ids=docs_dict["context_input_ids"], context_attention_mask=docs_dict["context_attention_mask"], doc_scores=doc_scores, decoder_input_ids=labels)
+```
 
 </div>
 <div class="docstring">
@@ -1023,94 +1019,56 @@ general usage and behavior.
   Only relevant if `labels` is passed. If `True`, the NLL loss is reduced using the
   `torch.Tensor.sum` operation.
 - **kwargs** (`Dict[str, any]`, optional, defaults to *&amp;lcub;}*) --
-  Legacy dictionary, which is required so that model can use *generate()* function.
+  Legacy dictionary, which is required so that model can use *generate()* function.</paramsdesc><paramgroups>0</paramgroups><rettype>[transformers.models.rag.modeling_rag.RetrievAugLMMarginOutput](/docs/transformers/master/en/model_doc/rag#transformers.models.rag.modeling_rag.RetrievAugLMMarginOutput) or `tuple(torch.FloatTensor)`</rettype><retdesc>A [transformers.models.rag.modeling_rag.RetrievAugLMMarginOutput](/docs/transformers/master/en/model_doc/rag#transformers.models.rag.modeling_rag.RetrievAugLMMarginOutput) or a tuple of
+`torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising various
+elements depending on the configuration ([RagConfig](/docs/transformers/master/en/model_doc/rag#transformers.RagConfig)) and inputs.
 
+- **loss** (`torch.FloatTensor` of shape `(1,)`, *optional*, returned when `labels` is provided) -- Language modeling loss.
+- **logits** (`torch.FloatTensor` of shape `(batch_size, sequence_length, config.vocab_size)`) -- Prediction scores of the language modeling head. The score is possibly marginalized over all documents for
+  each vocabulary token.
+- **doc_scores** (`torch.FloatTensor` of shape `(batch_size, config.n_docs)`) -- Score between each retrieved document embeddings (see `retrieved_doc_embeds`) and
+  `question_encoder_last_hidden_state`.
+- **past_key_values** (`List[torch.FloatTensor]`, *optional*, returned when `use_cache=True` is passed or when `config.use_cache=True`) -- List of `torch.FloatTensor` of length `config.n_layers`, with each tensor of shape `(2, batch_size, num_heads, sequence_length, embed_size_per_head)`).
 
-  Returns --
-  [transformers.models.rag.modeling_rag.RetrievAugLMMarginOutput](/docs/transformers/master/en/model_doc/rag#transformers.models.rag.modeling_rag.RetrievAugLMMarginOutput) or `tuple(torch.FloatTensor)`: A [transformers.models.rag.modeling_rag.RetrievAugLMMarginOutput](/docs/transformers/master/en/model_doc/rag#transformers.models.rag.modeling_rag.RetrievAugLMMarginOutput) or a tuple of
-  `torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising various
-  elements depending on the configuration ([RagConfig](/docs/transformers/master/en/model_doc/rag#transformers.RagConfig)) and inputs.
+  Contains precomputed hidden-states (key and values in the attention blocks) of the decoder that can be used
+  (see `past_key_values` input) to speed up sequential decoding.
+- **retrieved_doc_embeds** (`torch.FloatTensor` of shape `(batch_size, config.n_docs, hidden_size)`, *optional*, returned when *output_retrieved=True*) -- Embedded documents retrieved by the retriever. Is used with `question_encoder_last_hidden_state` to
+  compute the `doc_scores`.
+- **retrieved_doc_ids** (`torch.LongTensor` of shape `(batch_size, config.n_docs)`, *optional*, returned when *output_retrieved=True*) -- The indexes of the embedded documents retrieved by the retriever.
+- **context_input_ids** (`torch.LongTensor` of shape `(batch_size * config.n_docs, config.max_combined_length)`, *optional*, returned when *output_retrieved=True*) -- Input ids post-processed from the retrieved documents and the question encoder input_ids by the retriever.
+- **context_attention_mask** (`torch.LongTensor` of shape `(batch_size * config.n_docs, config.max_combined_length)`, *optional*, returned when *output_retrieved=True*) -- Attention mask post-processed from the retrieved documents and the question encoder `input_ids` by the
+  retriever.
+- **question_encoder_last_hidden_state** (`torch.FloatTensor` of shape `(batch_size, sequence_length, hidden_size)`, *optional*) -- Sequence of hidden states at the output of the last layer of the question encoder pooled output of the
+  model.
+- **question_enc_hidden_states** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `torch.FloatTensor` (one for the output of the embeddings and one for the output of each
+  layer) of shape `(batch_size, sequence_length, hidden_size)`.
 
-  - **loss** (`torch.FloatTensor` of shape `(1,)`, *optional*, returned when `labels` is provided) -- Language modeling loss.
-  - **logits** (`torch.FloatTensor` of shape `(batch_size, sequence_length, config.vocab_size)`) -- Prediction scores of the language modeling head. The score is possibly marginalized over all documents for
-    each vocabulary token.
-  - **doc_scores** (`torch.FloatTensor` of shape `(batch_size, config.n_docs)`) -- Score between each retrieved document embeddings (see `retrieved_doc_embeds`) and
-    `question_encoder_last_hidden_state`.
-  - **past_key_values** (`List[torch.FloatTensor]`, *optional*, returned when `use_cache=True` is passed or when `config.use_cache=True`) -- List of `torch.FloatTensor` of length `config.n_layers`, with each tensor of shape `(2, batch_size, num_heads, sequence_length, embed_size_per_head)`).
+  Hidden states of the question encoder at the output of each layer plus the initial embedding outputs.
+- **question_enc_attentions** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
 
-    Contains precomputed hidden-states (key and values in the attention blocks) of the decoder that can be used
-    (see `past_key_values` input) to speed up sequential decoding.
-  - **retrieved_doc_embeds** (`torch.FloatTensor` of shape `(batch_size, config.n_docs, hidden_size)`, *optional*, returned when *output_retrieved=True*) -- Embedded documents retrieved by the retriever. Is used with `question_encoder_last_hidden_state` to
-    compute the `doc_scores`.
-  - **retrieved_doc_ids** (`torch.LongTensor` of shape `(batch_size, config.n_docs)`, *optional*, returned when *output_retrieved=True*) -- The indexes of the embedded documents retrieved by the retriever.
-  - **context_input_ids** (`torch.LongTensor` of shape `(batch_size * config.n_docs, config.max_combined_length)`, *optional*, returned when *output_retrieved=True*) -- Input ids post-processed from the retrieved documents and the question encoder input_ids by the retriever.
-  - **context_attention_mask** (`torch.LongTensor` of shape `(batch_size * config.n_docs, config.max_combined_length)`, *optional*, returned when *output_retrieved=True*) -- Attention mask post-processed from the retrieved documents and the question encoder `input_ids` by the
-    retriever.
-  - **question_encoder_last_hidden_state** (`torch.FloatTensor` of shape `(batch_size, sequence_length, hidden_size)`, *optional*) -- Sequence of hidden states at the output of the last layer of the question encoder pooled output of the
-    model.
-  - **question_enc_hidden_states** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `torch.FloatTensor` (one for the output of the embeddings and one for the output of each
-    layer) of shape `(batch_size, sequence_length, hidden_size)`.
+  Attentions weights of the question encoder, after the attention softmax, used to compute the weighted
+  average in the self-attention heads.
+- **generator_enc_last_hidden_state** (`torch.FloatTensor` of shape `(batch_size, sequence_length, hidden_size)`, *optional*) -- Sequence of hidden-states at the output of the last layer of the generator encoder of the model.
+- **generator_enc_hidden_states** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `torch.FloatTensor` (one for the output of the embeddings and one for the output of each
+  layer) of shape `(batch_size, sequence_length, hidden_size)`.
 
-    Hidden states of the question encoder at the output of each layer plus the initial embedding outputs.
-  - **question_enc_attentions** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+  Hidden states of the generator encoder at the output of each layer plus the initial embedding outputs.
+- **generator_enc_attentions** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
 
-    Attentions weights of the question encoder, after the attention softmax, used to compute the weighted
-    average in the self-attention heads.
-  - **generator_enc_last_hidden_state** (`torch.FloatTensor` of shape `(batch_size, sequence_length, hidden_size)`, *optional*) -- Sequence of hidden-states at the output of the last layer of the generator encoder of the model.
-  - **generator_enc_hidden_states** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `torch.FloatTensor` (one for the output of the embeddings and one for the output of each
-    layer) of shape `(batch_size, sequence_length, hidden_size)`.
+  Attentions weights of the generator encoder, after the attention softmax, used to compute the weighted
+  average in the self-attention heads.
+- **generator_dec_hidden_states** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `torch.FloatTensor` (one for the output of the embeddings and one for the output of each
+  layer) of shape `(batch_size, sequence_length, hidden_size)`.
 
-    Hidden states of the generator encoder at the output of each layer plus the initial embedding outputs.
-  - **generator_enc_attentions** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+  Hidden states of the generator decoder at the output of each layer plus the initial embedding outputs.
+- **generator_dec_attentions** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
 
-    Attentions weights of the generator encoder, after the attention softmax, used to compute the weighted
-    average in the self-attention heads.
-  - **generator_dec_hidden_states** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `torch.FloatTensor` (one for the output of the embeddings and one for the output of each
-    layer) of shape `(batch_size, sequence_length, hidden_size)`.
+  Attentions weights of the generator decoder, after the attention softmax, used to compute the weighted
+  average in the self-attention heads.
+- **generator_cross_attentions** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
 
-    Hidden states of the generator decoder at the output of each layer plus the initial embedding outputs.
-  - **generator_dec_attentions** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
-
-    Attentions weights of the generator decoder, after the attention softmax, used to compute the weighted
-    average in the self-attention heads.
-  - **generator_cross_attentions** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
-
-    Cross-attentions weights of the generator decoder, after the attention softmax, used to compute the
-    weighted average in the cross-attention heads.
-
-
-Example --
-
-```python --
- transformers import RagTokenizer, RagRetriever, RagTokenForGeneration
-rt torch
-
-nizer = RagTokenizer.from_pretrained("facebook/rag-token-nq")
-iever = RagRetriever.from_pretrained("facebook/rag-token-nq", index_name="exact", use_dummy_dataset=True)
-itialize with RagRetriever to do everything in one forward call
-l = RagTokenForGeneration.from_pretrained("facebook/rag-token-nq", retriever=retriever)
-
-ts = tokenizer("How many people live in Paris?", return_tensors="pt")
- tokenizer.as_target_tokenizer()
-- **...**    targets = tokenizer("In Paris, there are 10 million people.", return_tensors="pt") --
-t_ids = inputs["input_ids"]
-ls = targets["input_ids"]
-uts = model(input_ids=input_ids, labels=labels)
-
- use retriever separately
-l = RagTokenForGeneration.from_pretrained("facebook/rag-token-nq", use_dummy_dataset=True)
- Encode
-tion_hidden_states = model.question_encoder(input_ids)[0]
- Retrieve
-_dict = retriever(input_ids.numpy(), question_hidden_states.detach().numpy(), return_tensors="pt")
-scores = torch.bmm(question_hidden_states.unsqueeze(1), docs_dict["retrieved_doc_embeds"].float().transpose(1, 2)).squeeze(1)
- Forward to generator
-uts = model(context_input_ids=docs_dict["context_input_ids"], context_attention_mask=docs_dict["context_attention_mask"], doc_scores=doc_scores, decoder_input_ids=labels)
-
- directly generate
-rated = model.generate(context_input_ids=docs_dict["context_input_ids"], context_attention_mask=docs_dict["context_attention_mask"], doc_scores=doc_scores)
-rated_string = tokenizer.batch_decode(generated, skip_special_tokens=True)
-``` --</paramsdesc><paramgroups>0</paramgroups></docstring>
+  Cross-attentions weights of the generator decoder, after the attention softmax, used to compute the
+  weighted average in the cross-attention heads.</retdesc></docstring>
 The [RagTokenForGeneration](/docs/transformers/master/en/model_doc/rag#transformers.RagTokenForGeneration) forward method, overrides the `__call__` special method.
 
 <Tip>
@@ -1123,6 +1081,42 @@ the latter silently ignores them.
 
 
 
+
+
+
+
+Example:
+
+```python
+>>> from transformers import RagTokenizer, RagRetriever, RagTokenForGeneration
+>>> import torch
+
+>>> tokenizer = RagTokenizer.from_pretrained("facebook/rag-token-nq")
+>>> retriever = RagRetriever.from_pretrained("facebook/rag-token-nq", index_name="exact", use_dummy_dataset=True)
+>>> # initialize with RagRetriever to do everything in one forward call
+>>> model = RagTokenForGeneration.from_pretrained("facebook/rag-token-nq", retriever=retriever)
+
+>>> inputs = tokenizer("How many people live in Paris?", return_tensors="pt")
+>>> with tokenizer.as_target_tokenizer():
+...    targets = tokenizer("In Paris, there are 10 million people.", return_tensors="pt")
+>>> input_ids = inputs["input_ids"]
+>>> labels = targets["input_ids"]
+>>> outputs = model(input_ids=input_ids, labels=labels)
+
+>>> # or use retriever separately
+>>> model = RagTokenForGeneration.from_pretrained("facebook/rag-token-nq", use_dummy_dataset=True)
+>>> # 1. Encode
+>>> question_hidden_states = model.question_encoder(input_ids)[0]
+>>> # 2. Retrieve
+>>> docs_dict = retriever(input_ids.numpy(), question_hidden_states.detach().numpy(), return_tensors="pt")
+>>> doc_scores = torch.bmm(question_hidden_states.unsqueeze(1), docs_dict["retrieved_doc_embeds"].float().transpose(1, 2)).squeeze(1)
+>>> # 3. Forward to generator
+>>> outputs = model(context_input_ids=docs_dict["context_input_ids"], context_attention_mask=docs_dict["context_attention_mask"], doc_scores=doc_scores, decoder_input_ids=labels)
+
+>>> # or directly generate
+>>> generated = model.generate(context_input_ids=docs_dict["context_input_ids"], context_attention_mask=docs_dict["context_attention_mask"], doc_scores=doc_scores)
+>>> generated_string = tokenizer.batch_decode(generated, skip_special_tokens=True)
+```
 
 </div>
 <div class="docstring">
@@ -1355,72 +1349,51 @@ SavedModel format.
 - **return_dict** (`bool`, *optional*) --
   Whether or not to return a `TFRetrievAugLMOutput` instead of a plain tuple.
 - **n_docs** (`int`, *optional*, defaults to `config.n_docs``) --
-  Number of documents to retrieve and/or number of documents for which to generate an answer.
+  Number of documents to retrieve and/or number of documents for which to generate an answer.</paramsdesc><paramgroups>0</paramgroups><rettype>`transformers.models.rag.modeling_tf_rag.TFRetrievAugLMOutput` or `tuple(tf.Tensor)`</rettype><retdesc>A `transformers.models.rag.modeling_tf_rag.TFRetrievAugLMOutput` or a tuple of `tf.Tensor` (if
+`return_dict=False` is passed or when `config.return_dict=False`) comprising various elements depending on the
+configuration ([RagConfig](/docs/transformers/master/en/model_doc/rag#transformers.RagConfig)) and inputs.
 
+- **logits** (`tf.Tensor` of shape `(batch_size, sequence_length, config.vocab_size)`) -- Prediction scores of the language modeling head. The score is possibly marginalized over all documents for
+  each vocabulary token.
+- **past_key_values** (`List[tf.Tensor]`, *optional*, returned when `use_cache=True` is passed or when `config.use_cache=True`) -- List of `tf.Tensor` of length `config.n_layers`, with each tensor of shape `(2, batch_size, num_heads, sequence_length, embed_size_per_head)`).
 
-  Returns --
-  `transformers.models.rag.modeling_tf_rag.TFRetrievAugLMOutput` or `tuple(tf.Tensor)`: A `transformers.models.rag.modeling_tf_rag.TFRetrievAugLMOutput` or a tuple of `tf.Tensor` (if
-  `return_dict=False` is passed or when `config.return_dict=False`) comprising various elements depending on the
-  configuration ([RagConfig](/docs/transformers/master/en/model_doc/rag#transformers.RagConfig)) and inputs.
+  Contains precomputed hidden-states (key and values in the attention blocks) of the decoder that can be used
+  (see `past_key_values` input) to speed up sequential decoding.
+- **doc_scores** (`tf.Tensor` of shape `(batch_size, config.n_docs)`) -- Score between each retrieved document embeddings (see `retrieved_doc_embeds`) and
+  `question_encoder_last_hidden_state`.
+- **retrieved_doc_embeds** (`tf.Tensor` of shape `(batch_size, config.n_docs, hidden_size)`, *optional*, returned when *output_retrieved=True*) -- Embedded documents retrieved by the retriever. Is used with `question_encoder_last_hidden_state` to
+  compute the `doc_scores`.
+- **retrieved_doc_ids** (`tf.Tensor` of shape `(batch_size, config.n_docs)`, *optional*, returned when *output_retrieved=True*) -- The indexes of the embedded documents retrieved by the retriever.
+- **context_input_ids** (`tf.Tensor` of shape `(batch_size * config.n_docs, config.max_combined_length)`, *optional*, returned when *output_retrieved=True*) -- Input ids post-processed from the retrieved documents and the question encoder input_ids by the retriever.
+- **context_attention_mask** (`tf.Tensor` of shape `(batch_size * config.n_docs, config.max_combined_length)`, *optional*, returned when *output_retrieved=True*) -- Attention mask post-processed from the retrieved documents and the question encoder `input_ids` by the
+  retriever.
+- **question_encoder_last_hidden_state** (`tf.Tensor` of shape `(batch_size, sequence_length, hidden_size)`, *optional*) -- Sequence of hidden states at the output of the last layer of the question encoder pooled output of the
+  model.
+- **question_enc_hidden_states** (`tuple(tf.Tensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `tf.Tensor` (one for the output of the embeddings and one for the output of each layer) of
+  shape `(batch_size, sequence_length, hidden_size)`.
 
-  - **logits** (`tf.Tensor` of shape `(batch_size, sequence_length, config.vocab_size)`) -- Prediction scores of the language modeling head. The score is possibly marginalized over all documents for
-    each vocabulary token.
-  - **past_key_values** (`List[tf.Tensor]`, *optional*, returned when `use_cache=True` is passed or when `config.use_cache=True`) -- List of `tf.Tensor` of length `config.n_layers`, with each tensor of shape `(2, batch_size, num_heads, sequence_length, embed_size_per_head)`).
+  Hidden states of the question encoder at the output of each layer plus the initial embedding outputs.
+- **question_enc_attentions** (`tuple(tf.Tensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `tf.Tensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
 
-    Contains precomputed hidden-states (key and values in the attention blocks) of the decoder that can be used
-    (see `past_key_values` input) to speed up sequential decoding.
-  - **doc_scores** (`tf.Tensor` of shape `(batch_size, config.n_docs)`) -- Score between each retrieved document embeddings (see `retrieved_doc_embeds`) and
-    `question_encoder_last_hidden_state`.
-  - **retrieved_doc_embeds** (`tf.Tensor` of shape `(batch_size, config.n_docs, hidden_size)`, *optional*, returned when *output_retrieved=True*) -- Embedded documents retrieved by the retriever. Is used with `question_encoder_last_hidden_state` to
-    compute the `doc_scores`.
-  - **retrieved_doc_ids** (`tf.Tensor` of shape `(batch_size, config.n_docs)`, *optional*, returned when *output_retrieved=True*) -- The indexes of the embedded documents retrieved by the retriever.
-  - **context_input_ids** (`tf.Tensor` of shape `(batch_size * config.n_docs, config.max_combined_length)`, *optional*, returned when *output_retrieved=True*) -- Input ids post-processed from the retrieved documents and the question encoder input_ids by the retriever.
-  - **context_attention_mask** (`tf.Tensor` of shape `(batch_size * config.n_docs, config.max_combined_length)`, *optional*, returned when *output_retrieved=True*) -- Attention mask post-processed from the retrieved documents and the question encoder `input_ids` by the
-    retriever.
-  - **question_encoder_last_hidden_state** (`tf.Tensor` of shape `(batch_size, sequence_length, hidden_size)`, *optional*) -- Sequence of hidden states at the output of the last layer of the question encoder pooled output of the
-    model.
-  - **question_enc_hidden_states** (`tuple(tf.Tensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `tf.Tensor` (one for the output of the embeddings and one for the output of each layer) of
-    shape `(batch_size, sequence_length, hidden_size)`.
+  Attentions weights of the question encoder, after the attention softmax, used to compute the weighted
+  average in the self-attention heads.
+- **generator_enc_last_hidden_state** (`tf.Tensor` of shape `(batch_size, sequence_length, hidden_size)`, *optional*) -- Sequence of hidden-states at the output of the last layer of the generator encoder of the model.
+- **generator_enc_hidden_states** (`tuple(tf.Tensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `tf.Tensor` (one for the output of the embeddings and one for the output of each layer) of
+  shape `(batch_size, sequence_length, hidden_size)`.
 
-    Hidden states of the question encoder at the output of each layer plus the initial embedding outputs.
-  - **question_enc_attentions** (`tuple(tf.Tensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `tf.Tensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+  Hidden states of the generator encoder at the output of each layer plus the initial embedding outputs.
+- **generator_enc_attentions** (`tuple(tf.Tensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `tf.Tensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
 
-    Attentions weights of the question encoder, after the attention softmax, used to compute the weighted
-    average in the self-attention heads.
-  - **generator_enc_last_hidden_state** (`tf.Tensor` of shape `(batch_size, sequence_length, hidden_size)`, *optional*) -- Sequence of hidden-states at the output of the last layer of the generator encoder of the model.
-  - **generator_enc_hidden_states** (`tuple(tf.Tensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `tf.Tensor` (one for the output of the embeddings and one for the output of each layer) of
-    shape `(batch_size, sequence_length, hidden_size)`.
+  Attentions weights of the generator encoder, after the attention softmax, used to compute the weighted
+  average in the self-attention heads.
+- **generator_dec_hidden_states** (`tuple(tf.Tensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `tf.Tensor` (one for the output of the embeddings and one for the output of each layer) of
+  shape `(batch_size, sequence_length, hidden_size)`.
 
-    Hidden states of the generator encoder at the output of each layer plus the initial embedding outputs.
-  - **generator_enc_attentions** (`tuple(tf.Tensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `tf.Tensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+  Hidden states of the generator decoder at the output of each layer plus the initial embedding outputs.
+- **generator_dec_attentions** (`tuple(tf.Tensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `tf.Tensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
 
-    Attentions weights of the generator encoder, after the attention softmax, used to compute the weighted
-    average in the self-attention heads.
-  - **generator_dec_hidden_states** (`tuple(tf.Tensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `tf.Tensor` (one for the output of the embeddings and one for the output of each layer) of
-    shape `(batch_size, sequence_length, hidden_size)`.
-
-    Hidden states of the generator decoder at the output of each layer plus the initial embedding outputs.
-  - **generator_dec_attentions** (`tuple(tf.Tensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `tf.Tensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
-
-    Attentions weights of the generator decoder, after the attention softmax, used to compute the weighted
-    average in the self-attention heads.
-
-
-Example --
-
-```python --
- transformers import RagTokenizer, RagRetriever, RagModel
-rt torch
-
-nizer = RagTokenizer.from_pretrained("facebook/rag-token-base")
-iever = RagRetriever.from_pretrained("facebook/rag-token-base", index_name="exact", use_dummy_dataset=True)
-itialize with RagRetriever to do everything in one forward call
-l = TFRagModel.from_pretrained("facebook/rag-token-base", retriever=retriever, from_pt=True)
-
-t_dict = tokenizer.prepare_seq2seq_batch("How many people live in Paris?", "In Paris, there are 10 million people.", return_tensors="tf")
-t_ids = input_dict["input_ids"]
-uts = model(input_ids)
-``` --</paramsdesc><paramgroups>0</paramgroups></docstring>
+  Attentions weights of the generator decoder, after the attention softmax, used to compute the weighted
+  average in the self-attention heads.</retdesc></docstring>
 The [TFRagModel](/docs/transformers/master/en/model_doc/rag#transformers.TFRagModel) forward method, overrides the `__call__` special method.
 
 <Tip>
@@ -1433,6 +1406,25 @@ the latter silently ignores them.
 
 
 
+
+
+
+
+Example:
+
+```python
+>>> from transformers import RagTokenizer, RagRetriever, RagModel
+>>> import torch
+
+>>> tokenizer = RagTokenizer.from_pretrained("facebook/rag-token-base")
+>>> retriever = RagRetriever.from_pretrained("facebook/rag-token-base", index_name="exact", use_dummy_dataset=True)
+>>> # initialize with RagRetriever to do everything in one forward call
+>>> model = TFRagModel.from_pretrained("facebook/rag-token-base", retriever=retriever, from_pt=True)
+
+>>> input_dict = tokenizer.prepare_seq2seq_batch("How many people live in Paris?", "In Paris, there are 10 million people.", return_tensors="tf")
+>>> input_ids = input_dict["input_ids"]
+>>> outputs = model(input_ids)
+```
 
 </div></div>
 
@@ -1566,85 +1558,52 @@ SavedModel format.
   Only relevant if `labels` is passed. If `True`, the NLL loss is reduced using the `tf.Tensor.sum`
   operation.
 - **kwargs** (`Dict[str, any]`, optional, defaults to *&amp;lcub;}*) --
-  Legacy dictionary, which is required so that model can use *generate()* function.
+  Legacy dictionary, which is required so that model can use *generate()* function.</paramsdesc><paramgroups>0</paramgroups><rettype>`transformers.models.rag.modeling_tf_rag.TFRetrievAugLMMarginOutput` or `tuple(tf.Tensor)`</rettype><retdesc>A `transformers.models.rag.modeling_tf_rag.TFRetrievAugLMMarginOutput` or a tuple of `tf.Tensor` (if
+`return_dict=False` is passed or when `config.return_dict=False`) comprising various elements depending on the
+configuration ([RagConfig](/docs/transformers/master/en/model_doc/rag#transformers.RagConfig)) and inputs.
 
+- **loss** (`tf.Tensor` of shape `(1,)`, *optional*, returned when `labels` is provided) -- Language modeling loss.
+- **logits** (`tf.Tensor` of shape `(batch_size, sequence_length, config.vocab_size)`) -- Prediction scores of the language modeling head. The score is possibly marginalized over all documents for
+  each vocabulary token.
+- **past_key_values** (`List[tf.Tensor]`, *optional*, returned when `use_cache=True` is passed or when `config.use_cache=True`) -- List of `tf.Tensor` of length `config.n_layers`, with each tensor of shape `(2, batch_size, num_heads, sequence_length, embed_size_per_head)`).
 
-  Returns --
-  `transformers.models.rag.modeling_tf_rag.TFRetrievAugLMMarginOutput` or `tuple(tf.Tensor)`: A `transformers.models.rag.modeling_tf_rag.TFRetrievAugLMMarginOutput` or a tuple of `tf.Tensor` (if
-  `return_dict=False` is passed or when `config.return_dict=False`) comprising various elements depending on the
-  configuration ([RagConfig](/docs/transformers/master/en/model_doc/rag#transformers.RagConfig)) and inputs.
+  Contains precomputed hidden-states (key and values in the attention blocks) of the decoder that can be used
+  (see `past_key_values` input) to speed up sequential decoding.
+- **doc_scores** (`tf.Tensor` of shape `(batch_size, config.n_docs)`) -- Score between each retrieved document embeddings (see `retrieved_doc_embeds`) and
+  `question_encoder_last_hidden_state`.
+- **retrieved_doc_embeds** (`tf.Tensor` of shape `(batch_size, config.n_docs, hidden_size)`, *optional*, returned when *output_retrieved=True*) -- Embedded documents retrieved by the retriever. Is used with `question_encoder_last_hidden_state` to
+  compute the `doc_scores`.
+- **retrieved_doc_ids** (`tf.Tensor` (int32) of shape `(batch_size, config.n_docs)`, *optional*, returned when *output_retrieved=True*) -- The indexes of the embedded documents retrieved by the retriever.
+- **context_input_ids** (`tf.Tensor`(int32) of shape `(batch_size * config.n_docs, config.max_combined_length)`, *optional*, returned when *output_retrieved=True*) -- Input ids post-processed from the retrieved documents and the question encoder input_ids by the retriever.
+- **context_attention_mask** (`tf.Tensor` (int32) of shape `(batch_size * config.n_docs, config.max_combined_length)`, *optional*, returned when *output_retrieved=True*) -- Attention mask post-processed from the retrieved documents and the question encoder `input_ids` by the
+  retriever.
+- **question_encoder_last_hidden_state** (`tf.Tensor` of shape `(batch_size, sequence_length, hidden_size)`, *optional*) -- Sequence of hidden states at the output of the last layer of the question encoder pooled output of the
+  model.
+- **question_enc_hidden_states** (`tuple(tf.Tensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `tf.Tensor` (one for the output of the embeddings and one for the output of each layer) of
+  shape `(batch_size, sequence_length, hidden_size)`.
 
-  - **loss** (`tf.Tensor` of shape `(1,)`, *optional*, returned when `labels` is provided) -- Language modeling loss.
-  - **logits** (`tf.Tensor` of shape `(batch_size, sequence_length, config.vocab_size)`) -- Prediction scores of the language modeling head. The score is possibly marginalized over all documents for
-    each vocabulary token.
-  - **past_key_values** (`List[tf.Tensor]`, *optional*, returned when `use_cache=True` is passed or when `config.use_cache=True`) -- List of `tf.Tensor` of length `config.n_layers`, with each tensor of shape `(2, batch_size, num_heads, sequence_length, embed_size_per_head)`).
+  Hidden states of the question encoder at the output of each layer plus the initial embedding outputs.
+- **question_enc_attentions** (`tuple(tf.Tensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `tf.Tensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
 
-    Contains precomputed hidden-states (key and values in the attention blocks) of the decoder that can be used
-    (see `past_key_values` input) to speed up sequential decoding.
-  - **doc_scores** (`tf.Tensor` of shape `(batch_size, config.n_docs)`) -- Score between each retrieved document embeddings (see `retrieved_doc_embeds`) and
-    `question_encoder_last_hidden_state`.
-  - **retrieved_doc_embeds** (`tf.Tensor` of shape `(batch_size, config.n_docs, hidden_size)`, *optional*, returned when *output_retrieved=True*) -- Embedded documents retrieved by the retriever. Is used with `question_encoder_last_hidden_state` to
-    compute the `doc_scores`.
-  - **retrieved_doc_ids** (`tf.Tensor` (int32) of shape `(batch_size, config.n_docs)`, *optional*, returned when *output_retrieved=True*) -- The indexes of the embedded documents retrieved by the retriever.
-  - **context_input_ids** (`tf.Tensor`(int32) of shape `(batch_size * config.n_docs, config.max_combined_length)`, *optional*, returned when *output_retrieved=True*) -- Input ids post-processed from the retrieved documents and the question encoder input_ids by the retriever.
-  - **context_attention_mask** (`tf.Tensor` (int32) of shape `(batch_size * config.n_docs, config.max_combined_length)`, *optional*, returned when *output_retrieved=True*) -- Attention mask post-processed from the retrieved documents and the question encoder `input_ids` by the
-    retriever.
-  - **question_encoder_last_hidden_state** (`tf.Tensor` of shape `(batch_size, sequence_length, hidden_size)`, *optional*) -- Sequence of hidden states at the output of the last layer of the question encoder pooled output of the
-    model.
-  - **question_enc_hidden_states** (`tuple(tf.Tensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `tf.Tensor` (one for the output of the embeddings and one for the output of each layer) of
-    shape `(batch_size, sequence_length, hidden_size)`.
+  Attentions weights of the question encoder, after the attention softmax, used to compute the weighted
+  average in the self-attention heads.
+- **generator_enc_last_hidden_state** (`tf.Tensor` of shape `(batch_size, sequence_length, hidden_size)`, *optional*) -- Sequence of hidden-states at the output of the last layer of the generator encoder of the model.
+- **generator_enc_hidden_states** (`tuple(tf.Tensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `tf.Tensor` (one for the output of the embeddings and one for the output of each layer) of
+  shape `(batch_size, sequence_length, hidden_size)`.
 
-    Hidden states of the question encoder at the output of each layer plus the initial embedding outputs.
-  - **question_enc_attentions** (`tuple(tf.Tensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `tf.Tensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+  Hidden states of the generator encoder at the output of each layer plus the initial embedding outputs.
+- **generator_enc_attentions** (`tuple(tf.Tensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `tf.Tensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
 
-    Attentions weights of the question encoder, after the attention softmax, used to compute the weighted
-    average in the self-attention heads.
-  - **generator_enc_last_hidden_state** (`tf.Tensor` of shape `(batch_size, sequence_length, hidden_size)`, *optional*) -- Sequence of hidden-states at the output of the last layer of the generator encoder of the model.
-  - **generator_enc_hidden_states** (`tuple(tf.Tensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `tf.Tensor` (one for the output of the embeddings and one for the output of each layer) of
-    shape `(batch_size, sequence_length, hidden_size)`.
+  Attentions weights of the generator encoder, after the attention softmax, used to compute the weighted
+  average in the self-attention heads.
+- **generator_dec_hidden_states** (`tuple(tf.Tensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `tf.Tensor` (one for the output of the embeddings and one for the output of each layer) of
+  shape `(batch_size, sequence_length, hidden_size)`.
 
-    Hidden states of the generator encoder at the output of each layer plus the initial embedding outputs.
-  - **generator_enc_attentions** (`tuple(tf.Tensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `tf.Tensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+  Hidden states of the generator decoder at the output of each layer plus the initial embedding outputs.
+- **generator_dec_attentions** (`tuple(tf.Tensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `tf.Tensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
 
-    Attentions weights of the generator encoder, after the attention softmax, used to compute the weighted
-    average in the self-attention heads.
-  - **generator_dec_hidden_states** (`tuple(tf.Tensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `tf.Tensor` (one for the output of the embeddings and one for the output of each layer) of
-    shape `(batch_size, sequence_length, hidden_size)`.
-
-    Hidden states of the generator decoder at the output of each layer plus the initial embedding outputs.
-  - **generator_dec_attentions** (`tuple(tf.Tensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `tf.Tensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
-
-    Attentions weights of the generator decoder, after the attention softmax, used to compute the weighted
-    average in the self-attention heads.
-
-
-Example --
-
-```python --
- transformers import RagTokenizer, RagRetriever, TFRagSequenceForGeneration
-
-nizer = RagTokenizer.from_pretrained("facebook/rag-sequence-nq")
-iever = RagRetriever.from_pretrained("facebook/rag-sequence-nq", index_name="exact", use_dummy_dataset=True)
-itialize with RagRetriever to do everything in one forward call
-l = TFRagRagSequenceForGeneration.from_pretrained("facebook/rag-sequence-nq", retriever=retriever, from_pt=True)
-
-t_dict = tokenizer.prepare_seq2seq_batch("How many people live in Paris?", "In Paris, there are 10 million people.", return_tensors="tf")
-uts = model(input_dict, output_retrieved=True)
-
- use retriever separately
- Encode
-t_ids = input_dict["input_ids"]
-tion_hidden_states = model.question_encoder(input_ids)[0]
- Retrieve
-_dict = retriever(input_ids.numpy(), question_hidden_states.numpy(), return_tensors="tf")
-scores = tf.squeeze(tf.matmul(tf.expand_dims(question_hidden_states, axis=1), docs_dict["retrieved_doc_embeds"], transpose_b=True), axis=1)
- Forward to generator
-uts = model(inputs=None, context_input_ids=docs_dict["context_input_ids"], context_attention_mask=docs_dict["context_attention_mask"], doc_scores=doc_scores, decoder_input_ids=input_dict["labels"])
-
- directly generate
-rated = model.generate(context_input_ids=docs_dict["context_input_ids"], context_attention_mask=docs_dict["context_attention_mask"], doc_scores=doc_scores)
-rated_string = tokenizer.batch_decode(generated, skip_special_tokens=True)
-``` --</paramsdesc><paramgroups>0</paramgroups></docstring>
+  Attentions weights of the generator decoder, after the attention softmax, used to compute the weighted
+  average in the self-attention heads.</retdesc></docstring>
 The [TFRagSequenceForGeneration](/docs/transformers/master/en/model_doc/rag#transformers.TFRagSequenceForGeneration) forward method, overrides the `__call__` special method.
 
 <Tip>
@@ -1657,6 +1616,37 @@ the latter silently ignores them.
 
 
 
+
+
+
+
+Example:
+
+```python
+>>> from transformers import RagTokenizer, RagRetriever, TFRagSequenceForGeneration
+
+>>> tokenizer = RagTokenizer.from_pretrained("facebook/rag-sequence-nq")
+>>> retriever = RagRetriever.from_pretrained("facebook/rag-sequence-nq", index_name="exact", use_dummy_dataset=True)
+>>> # initialize with RagRetriever to do everything in one forward call
+>>> model = TFRagRagSequenceForGeneration.from_pretrained("facebook/rag-sequence-nq", retriever=retriever, from_pt=True)
+
+>>> input_dict = tokenizer.prepare_seq2seq_batch("How many people live in Paris?", "In Paris, there are 10 million people.", return_tensors="tf")
+>>> outputs = model(input_dict, output_retrieved=True)
+
+>>> # or use retriever separately
+>>> # 1. Encode
+>>> input_ids = input_dict["input_ids"]
+>>> question_hidden_states = model.question_encoder(input_ids)[0]
+>>> # 2. Retrieve
+>>> docs_dict = retriever(input_ids.numpy(), question_hidden_states.numpy(), return_tensors="tf")
+>>> doc_scores = tf.squeeze(tf.matmul(tf.expand_dims(question_hidden_states, axis=1), docs_dict["retrieved_doc_embeds"], transpose_b=True), axis=1)
+>>> # 3. Forward to generator
+>>> outputs = model(inputs=None, context_input_ids=docs_dict["context_input_ids"], context_attention_mask=docs_dict["context_attention_mask"], doc_scores=doc_scores, decoder_input_ids=input_dict["labels"])
+
+>>> # or directly generate
+>>> generated = model.generate(context_input_ids=docs_dict["context_input_ids"], context_attention_mask=docs_dict["context_attention_mask"], doc_scores=doc_scores)
+>>> generated_string = tokenizer.batch_decode(generated, skip_special_tokens=True)
+```
 
 </div>
 <div class="docstring">
@@ -1839,85 +1829,52 @@ SavedModel format.
   Only relevant if `labels` is passed. If `True`, the NLL loss is reduced using the `tf.Tensor.sum`
   operation.
 - **kwargs** (`Dict[str, any]`, optional, defaults to *&amp;lcub;}*) --
-  Legacy dictionary, which is required so that model can use *generate()* function.
+  Legacy dictionary, which is required so that model can use *generate()* function.</paramsdesc><paramgroups>0</paramgroups><rettype>`transformers.models.rag.modeling_tf_rag.TFRetrievAugLMMarginOutput` or `tuple(tf.Tensor)`</rettype><retdesc>A `transformers.models.rag.modeling_tf_rag.TFRetrievAugLMMarginOutput` or a tuple of `tf.Tensor` (if
+`return_dict=False` is passed or when `config.return_dict=False`) comprising various elements depending on the
+configuration ([RagConfig](/docs/transformers/master/en/model_doc/rag#transformers.RagConfig)) and inputs.
 
+- **loss** (`tf.Tensor` of shape `(1,)`, *optional*, returned when `labels` is provided) -- Language modeling loss.
+- **logits** (`tf.Tensor` of shape `(batch_size, sequence_length, config.vocab_size)`) -- Prediction scores of the language modeling head. The score is possibly marginalized over all documents for
+  each vocabulary token.
+- **past_key_values** (`List[tf.Tensor]`, *optional*, returned when `use_cache=True` is passed or when `config.use_cache=True`) -- List of `tf.Tensor` of length `config.n_layers`, with each tensor of shape `(2, batch_size, num_heads, sequence_length, embed_size_per_head)`).
 
-  Returns --
-  `transformers.models.rag.modeling_tf_rag.TFRetrievAugLMMarginOutput` or `tuple(tf.Tensor)`: A `transformers.models.rag.modeling_tf_rag.TFRetrievAugLMMarginOutput` or a tuple of `tf.Tensor` (if
-  `return_dict=False` is passed or when `config.return_dict=False`) comprising various elements depending on the
-  configuration ([RagConfig](/docs/transformers/master/en/model_doc/rag#transformers.RagConfig)) and inputs.
+  Contains precomputed hidden-states (key and values in the attention blocks) of the decoder that can be used
+  (see `past_key_values` input) to speed up sequential decoding.
+- **doc_scores** (`tf.Tensor` of shape `(batch_size, config.n_docs)`) -- Score between each retrieved document embeddings (see `retrieved_doc_embeds`) and
+  `question_encoder_last_hidden_state`.
+- **retrieved_doc_embeds** (`tf.Tensor` of shape `(batch_size, config.n_docs, hidden_size)`, *optional*, returned when *output_retrieved=True*) -- Embedded documents retrieved by the retriever. Is used with `question_encoder_last_hidden_state` to
+  compute the `doc_scores`.
+- **retrieved_doc_ids** (`tf.Tensor` (int32) of shape `(batch_size, config.n_docs)`, *optional*, returned when *output_retrieved=True*) -- The indexes of the embedded documents retrieved by the retriever.
+- **context_input_ids** (`tf.Tensor`(int32) of shape `(batch_size * config.n_docs, config.max_combined_length)`, *optional*, returned when *output_retrieved=True*) -- Input ids post-processed from the retrieved documents and the question encoder input_ids by the retriever.
+- **context_attention_mask** (`tf.Tensor` (int32) of shape `(batch_size * config.n_docs, config.max_combined_length)`, *optional*, returned when *output_retrieved=True*) -- Attention mask post-processed from the retrieved documents and the question encoder `input_ids` by the
+  retriever.
+- **question_encoder_last_hidden_state** (`tf.Tensor` of shape `(batch_size, sequence_length, hidden_size)`, *optional*) -- Sequence of hidden states at the output of the last layer of the question encoder pooled output of the
+  model.
+- **question_enc_hidden_states** (`tuple(tf.Tensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `tf.Tensor` (one for the output of the embeddings and one for the output of each layer) of
+  shape `(batch_size, sequence_length, hidden_size)`.
 
-  - **loss** (`tf.Tensor` of shape `(1,)`, *optional*, returned when `labels` is provided) -- Language modeling loss.
-  - **logits** (`tf.Tensor` of shape `(batch_size, sequence_length, config.vocab_size)`) -- Prediction scores of the language modeling head. The score is possibly marginalized over all documents for
-    each vocabulary token.
-  - **past_key_values** (`List[tf.Tensor]`, *optional*, returned when `use_cache=True` is passed or when `config.use_cache=True`) -- List of `tf.Tensor` of length `config.n_layers`, with each tensor of shape `(2, batch_size, num_heads, sequence_length, embed_size_per_head)`).
+  Hidden states of the question encoder at the output of each layer plus the initial embedding outputs.
+- **question_enc_attentions** (`tuple(tf.Tensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `tf.Tensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
 
-    Contains precomputed hidden-states (key and values in the attention blocks) of the decoder that can be used
-    (see `past_key_values` input) to speed up sequential decoding.
-  - **doc_scores** (`tf.Tensor` of shape `(batch_size, config.n_docs)`) -- Score between each retrieved document embeddings (see `retrieved_doc_embeds`) and
-    `question_encoder_last_hidden_state`.
-  - **retrieved_doc_embeds** (`tf.Tensor` of shape `(batch_size, config.n_docs, hidden_size)`, *optional*, returned when *output_retrieved=True*) -- Embedded documents retrieved by the retriever. Is used with `question_encoder_last_hidden_state` to
-    compute the `doc_scores`.
-  - **retrieved_doc_ids** (`tf.Tensor` (int32) of shape `(batch_size, config.n_docs)`, *optional*, returned when *output_retrieved=True*) -- The indexes of the embedded documents retrieved by the retriever.
-  - **context_input_ids** (`tf.Tensor`(int32) of shape `(batch_size * config.n_docs, config.max_combined_length)`, *optional*, returned when *output_retrieved=True*) -- Input ids post-processed from the retrieved documents and the question encoder input_ids by the retriever.
-  - **context_attention_mask** (`tf.Tensor` (int32) of shape `(batch_size * config.n_docs, config.max_combined_length)`, *optional*, returned when *output_retrieved=True*) -- Attention mask post-processed from the retrieved documents and the question encoder `input_ids` by the
-    retriever.
-  - **question_encoder_last_hidden_state** (`tf.Tensor` of shape `(batch_size, sequence_length, hidden_size)`, *optional*) -- Sequence of hidden states at the output of the last layer of the question encoder pooled output of the
-    model.
-  - **question_enc_hidden_states** (`tuple(tf.Tensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `tf.Tensor` (one for the output of the embeddings and one for the output of each layer) of
-    shape `(batch_size, sequence_length, hidden_size)`.
+  Attentions weights of the question encoder, after the attention softmax, used to compute the weighted
+  average in the self-attention heads.
+- **generator_enc_last_hidden_state** (`tf.Tensor` of shape `(batch_size, sequence_length, hidden_size)`, *optional*) -- Sequence of hidden-states at the output of the last layer of the generator encoder of the model.
+- **generator_enc_hidden_states** (`tuple(tf.Tensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `tf.Tensor` (one for the output of the embeddings and one for the output of each layer) of
+  shape `(batch_size, sequence_length, hidden_size)`.
 
-    Hidden states of the question encoder at the output of each layer plus the initial embedding outputs.
-  - **question_enc_attentions** (`tuple(tf.Tensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `tf.Tensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+  Hidden states of the generator encoder at the output of each layer plus the initial embedding outputs.
+- **generator_enc_attentions** (`tuple(tf.Tensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `tf.Tensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
 
-    Attentions weights of the question encoder, after the attention softmax, used to compute the weighted
-    average in the self-attention heads.
-  - **generator_enc_last_hidden_state** (`tf.Tensor` of shape `(batch_size, sequence_length, hidden_size)`, *optional*) -- Sequence of hidden-states at the output of the last layer of the generator encoder of the model.
-  - **generator_enc_hidden_states** (`tuple(tf.Tensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `tf.Tensor` (one for the output of the embeddings and one for the output of each layer) of
-    shape `(batch_size, sequence_length, hidden_size)`.
+  Attentions weights of the generator encoder, after the attention softmax, used to compute the weighted
+  average in the self-attention heads.
+- **generator_dec_hidden_states** (`tuple(tf.Tensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `tf.Tensor` (one for the output of the embeddings and one for the output of each layer) of
+  shape `(batch_size, sequence_length, hidden_size)`.
 
-    Hidden states of the generator encoder at the output of each layer plus the initial embedding outputs.
-  - **generator_enc_attentions** (`tuple(tf.Tensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `tf.Tensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+  Hidden states of the generator decoder at the output of each layer plus the initial embedding outputs.
+- **generator_dec_attentions** (`tuple(tf.Tensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `tf.Tensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
 
-    Attentions weights of the generator encoder, after the attention softmax, used to compute the weighted
-    average in the self-attention heads.
-  - **generator_dec_hidden_states** (`tuple(tf.Tensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `tf.Tensor` (one for the output of the embeddings and one for the output of each layer) of
-    shape `(batch_size, sequence_length, hidden_size)`.
-
-    Hidden states of the generator decoder at the output of each layer plus the initial embedding outputs.
-  - **generator_dec_attentions** (`tuple(tf.Tensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `tf.Tensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
-
-    Attentions weights of the generator decoder, after the attention softmax, used to compute the weighted
-    average in the self-attention heads.
-
-
-Example --
-
-```python --
- transformers import RagTokenizer, RagRetriever, TFRagTokenForGeneration
-
-nizer = RagTokenizer.from_pretrained("facebook/rag-token-nq")
-iever = RagRetriever.from_pretrained("facebook/rag-token-nq", index_name="exact", use_dummy_dataset=True)
-itialize with RagRetriever to do everything in one forward call
-l = TFRagTokenForGeneration.from_pretrained("facebook/rag-token-nq", retriever=retriever, from_pt=True)
-
-t_dict = tokenizer.prepare_seq2seq_batch("How many people live in Paris?", "In Paris, there are 10 million people.", return_tensors="tf")
-uts = model(input_dict, output_retrieved=True)
-
- use retriever separately
- Encode
-t_ids = input_dict["input_ids"]
-tion_hidden_states = model.question_encoder(input_ids)[0]
- Retrieve
-_dict = retriever(input_ids.numpy(), question_hidden_states.numpy(), return_tensors="tf")
-scores = tf.squeeze(tf.matmul(tf.expand_dims(question_hidden_states, axis=1), docs_dict["retrieved_doc_embeds"], transpose_b=True), axis=1)
- Forward to generator
-uts = model(inputs=None, context_input_ids=docs_dict["context_input_ids"], context_attention_mask=docs_dict["context_attention_mask"], doc_scores=doc_scores, decoder_input_ids=input_dict["labels"])
-
- directly generate
-rated = model.generate(context_input_ids=docs_dict["context_input_ids"], context_attention_mask=docs_dict["context_attention_mask"], doc_scores=doc_scores)
-rated_string = tokenizer.batch_decode(generated, skip_special_tokens=True)
-``` --</paramsdesc><paramgroups>0</paramgroups></docstring>
+  Attentions weights of the generator decoder, after the attention softmax, used to compute the weighted
+  average in the self-attention heads.</retdesc></docstring>
 The [TFRagTokenForGeneration](/docs/transformers/master/en/model_doc/rag#transformers.TFRagTokenForGeneration) forward method, overrides the `__call__` special method.
 
 <Tip>
@@ -1930,6 +1887,37 @@ the latter silently ignores them.
 
 
 
+
+
+
+
+Example:
+
+```python
+>>> from transformers import RagTokenizer, RagRetriever, TFRagTokenForGeneration
+
+>>> tokenizer = RagTokenizer.from_pretrained("facebook/rag-token-nq")
+>>> retriever = RagRetriever.from_pretrained("facebook/rag-token-nq", index_name="exact", use_dummy_dataset=True)
+>>> # initialize with RagRetriever to do everything in one forward call
+>>> model = TFRagTokenForGeneration.from_pretrained("facebook/rag-token-nq", retriever=retriever, from_pt=True)
+
+>>> input_dict = tokenizer.prepare_seq2seq_batch("How many people live in Paris?", "In Paris, there are 10 million people.", return_tensors="tf")
+>>> outputs = model(input_dict, output_retrieved=True)
+
+>>> # or use retriever separately
+>>> # 1. Encode
+>>> input_ids = input_dict["input_ids"]
+>>> question_hidden_states = model.question_encoder(input_ids)[0]
+>>> # 2. Retrieve
+>>> docs_dict = retriever(input_ids.numpy(), question_hidden_states.numpy(), return_tensors="tf")
+>>> doc_scores = tf.squeeze(tf.matmul(tf.expand_dims(question_hidden_states, axis=1), docs_dict["retrieved_doc_embeds"], transpose_b=True), axis=1)
+>>> # 3. Forward to generator
+>>> outputs = model(inputs=None, context_input_ids=docs_dict["context_input_ids"], context_attention_mask=docs_dict["context_attention_mask"], doc_scores=doc_scores, decoder_input_ids=input_dict["labels"])
+
+>>> # or directly generate
+>>> generated = model.generate(context_input_ids=docs_dict["context_input_ids"], context_attention_mask=docs_dict["context_attention_mask"], doc_scores=doc_scores)
+>>> generated_string = tokenizer.batch_decode(generated, skip_special_tokens=True)
+```
 
 </div>
 <div class="docstring">

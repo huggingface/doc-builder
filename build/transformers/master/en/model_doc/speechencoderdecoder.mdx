@@ -237,11 +237,7 @@ when created with the :meth*~transformers.AutoModel.from_pretrained* class metho
   kwargs -- (*optional*) Remaining dictionary of keyword arguments. Keyword arguments come in two flavors:
 
   - Without a prefix which will be input as `**encoder_kwargs` for the encoder forward function.
-  - With a *decoder_* prefix which will be input as `**decoder_kwargs` for the decoder forward function.
-
-
-Returns --
-[transformers.modeling_outputs.Seq2SeqLMOutput](/docs/transformers/master/en/main_classes/output#transformers.modeling_outputs.Seq2SeqLMOutput) or `tuple(torch.FloatTensor)`: A [transformers.modeling_outputs.Seq2SeqLMOutput](/docs/transformers/master/en/main_classes/output#transformers.modeling_outputs.Seq2SeqLMOutput) or a tuple of
+  - With a *decoder_* prefix which will be input as `**decoder_kwargs` for the decoder forward function.</paramsdesc><paramgroups>0</paramgroups><rettype>[transformers.modeling_outputs.Seq2SeqLMOutput](/docs/transformers/master/en/main_classes/output#transformers.modeling_outputs.Seq2SeqLMOutput) or `tuple(torch.FloatTensor)`</rettype><retdesc>A [transformers.modeling_outputs.Seq2SeqLMOutput](/docs/transformers/master/en/main_classes/output#transformers.modeling_outputs.Seq2SeqLMOutput) or a tuple of
 `torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising various
 elements depending on the configuration ([SpeechEncoderDecoderConfig](/docs/transformers/master/en/model_doc/speechencoderdecoder#transformers.SpeechEncoderDecoderConfig)) and inputs.
 
@@ -273,29 +269,7 @@ elements depending on the configuration ([SpeechEncoderDecoderConfig](/docs/tran
 - **encoder_attentions** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
 
   Attentions weights of the encoder, after the attention softmax, used to compute the weighted average in the
-  self-attention heads.
-
-
-Examples --
-
-```python --
- transformers import SpeechEncoderDecoderModel, Speech2Text2Processor
- datasets import load_dataset
-rt torch
-
-essor = Speech2Text2Processor.from_pretrained('facebook/s2t-wav2vec2-large-en-de')
-l = SpeechEncoderDecoderModel.from_pretrained('facebook/s2t-wav2vec2-large-en-de')
-
- load_dataset("hf-internal-testing/librispeech_asr_dummy", "clean", split="validation")
-
-t_values = processor(ds[0]["audio"]["array"], return_tensors="pt").input_values
-der_input_ids = torch.tensor([[model.config.decoder.decoder_start_token_id]])
-uts = model(input_values=input_values, decoder_input_ids=decoder_input_ids)
-
-ference (generation)
-rated = model.generate(input_values)
-slation = processor.batch_decode(generated)
-``` --</paramsdesc><paramgroups>0</paramgroups></docstring>
+  self-attention heads.</retdesc></docstring>
 The [SpeechEncoderDecoderModel](/docs/transformers/master/en/model_doc/speechencoderdecoder#transformers.SpeechEncoderDecoderModel) forward method, overrides the `__call__` special method.
 
 <Tip>
@@ -308,6 +282,30 @@ the latter silently ignores them.
 
 
 
+
+
+
+
+Examples:
+
+```python
+>>> from transformers import SpeechEncoderDecoderModel, Speech2Text2Processor
+>>> from datasets import load_dataset
+>>> import torch
+
+>>> processor = Speech2Text2Processor.from_pretrained('facebook/s2t-wav2vec2-large-en-de')
+>>> model = SpeechEncoderDecoderModel.from_pretrained('facebook/s2t-wav2vec2-large-en-de')
+
+>>> ds = load_dataset("hf-internal-testing/librispeech_asr_dummy", "clean", split="validation")
+
+>>> input_values = processor(ds[0]["audio"]["array"], return_tensors="pt").input_values
+>>> decoder_input_ids = torch.tensor([[model.config.decoder.decoder_start_token_id]])
+>>> outputs = model(input_values=input_values, decoder_input_ids=decoder_input_ids)
+
+>>> # inference (generation)
+>>> generated = model.generate(input_values)
+>>> translation = processor.batch_decode(generated)
+```
 
 </div>
 <div class="docstring">

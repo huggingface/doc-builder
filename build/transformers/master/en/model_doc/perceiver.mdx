@@ -47,16 +47,6 @@ sections:
   title: PerceiverForMaskedLM
 - local: transformers.PerceiverForSequenceClassification
   title: PerceiverForSequenceClassification
-- local: transformers.PerceiverForImageClassificationLearned
-  title: PerceiverForImageClassificationLearned
-- local: transformers.PerceiverForImageClassificationFourier
-  title: PerceiverForImageClassificationFourier
-- local: transformers.PerceiverForImageClassificationConvProcessing
-  title: PerceiverForImageClassificationConvProcessing
-- local: transformers.PerceiverForOpticalFlow
-  title: PerceiverForOpticalFlow
-- local: transformers.PerceiverForMultimodalAutoencoding
-  title: PerceiverForMultimodalAutoencoding
 title: Perceiver
 ---
 <script>
@@ -460,35 +450,36 @@ Users should refer to this superclass for more information regarding those metho
   Whether or not to return the lengths of the encoded inputs.
 - **verbose** (`bool`, *optional*, defaults to `True`) --
   Whether or not to print more information and warnings.
-  **kwargs -- passed to the `self.tokenize()` method
+  **kwargs -- passed to the `self.tokenize()` method</paramsdesc><paramgroups>0</paramgroups><rettype>[BatchEncoding](/docs/transformers/master/en/main_classes/tokenizer#transformers.BatchEncoding)</rettype><retdesc>A [BatchEncoding](/docs/transformers/master/en/main_classes/tokenizer#transformers.BatchEncoding) with the following fields:
 
-  Return --
-  [BatchEncoding](/docs/transformers/master/en/main_classes/tokenizer#transformers.BatchEncoding) -- A [BatchEncoding](/docs/transformers/master/en/main_classes/tokenizer#transformers.BatchEncoding) with the following fields:
-
-- **-** **input_ids** -- List of token ids to be fed to a model. --
+- **input_ids** -- List of token ids to be fed to a model.
 
   [What are input IDs?](../glossary#input-ids)
 
-- **-** **token_type_ids** -- List of token type ids to be fed to a model (when `return_token_type_ids=True` --
+- **token_type_ids** -- List of token type ids to be fed to a model (when `return_token_type_ids=True`
   or if *"token_type_ids"* is in `self.model_input_names`).
 
   [What are token type IDs?](../glossary#token-type-ids)
 
-- **-** **attention_mask** -- List of indices specifying which tokens should be attended to by the model (when --
+- **attention_mask** -- List of indices specifying which tokens should be attended to by the model (when
   `return_attention_mask=True` or if *"attention_mask"* is in `self.model_input_names`).
 
   [What are attention masks?](../glossary#attention-mask)
 
-- **-** **overflowing_tokens** -- List of overflowing tokens sequences (when a `max_length` is specified and --
+- **overflowing_tokens** -- List of overflowing tokens sequences (when a `max_length` is specified and
   `return_overflowing_tokens=True`).
-- **-** **num_truncated_tokens** -- Number of tokens truncated (when a `max_length` is specified and --
+- **num_truncated_tokens** -- Number of tokens truncated (when a `max_length` is specified and
   `return_overflowing_tokens=True`).
-- **-** **special_tokens_mask** -- List of 0s and 1s, with 1 specifying added special tokens and 0 specifying --
+- **special_tokens_mask** -- List of 0s and 1s, with 1 specifying added special tokens and 0 specifying
   regular sequence tokens (when `add_special_tokens=True` and `return_special_tokens_mask=True`).
-- **-** **length** -- The length of the inputs (when `return_length=True`) --</paramsdesc><paramgroups>0</paramgroups></docstring>
+- **length** -- The length of the inputs (when `return_length=True`)</retdesc></docstring>
 
 Main method to tokenize and prepare for the model one or several sequence(s) or one or several pair(s) of
 sequences.
+
+
+
+
 
 
 
@@ -947,103 +938,19 @@ behavior.
   Whether or not to return the hidden states of all layers. See `hidden_states` under returned tensors for
   more detail.
 - **return_dict** (`bool`, *optional*) --
-  Whether or not to return a [ModelOutput](/docs/transformers/master/en/main_classes/output#transformers.file_utils.ModelOutput) instead of a plain tuple.
+  Whether or not to return a [ModelOutput](/docs/transformers/master/en/main_classes/output#transformers.file_utils.ModelOutput) instead of a plain tuple.</paramsdesc><paramgroups>0</paramgroups><rettype>[transformers.models.perceiver.modeling_perceiver.PerceiverModelOutput](/docs/transformers/master/en/model_doc/perceiver#transformers.models.perceiver.modeling_perceiver.PerceiverModelOutput) or `tuple(torch.FloatTensor)`</rettype><retdesc>A [transformers.models.perceiver.modeling_perceiver.PerceiverModelOutput](/docs/transformers/master/en/model_doc/perceiver#transformers.models.perceiver.modeling_perceiver.PerceiverModelOutput) or a tuple of
+`torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising various
+elements depending on the configuration ([PerceiverConfig](/docs/transformers/master/en/model_doc/perceiver#transformers.PerceiverConfig)) and inputs.
 
-
-  Returns --
-  [transformers.models.perceiver.modeling_perceiver.PerceiverModelOutput](/docs/transformers/master/en/model_doc/perceiver#transformers.models.perceiver.modeling_perceiver.PerceiverModelOutput) or `tuple(torch.FloatTensor)`: A [transformers.models.perceiver.modeling_perceiver.PerceiverModelOutput](/docs/transformers/master/en/model_doc/perceiver#transformers.models.perceiver.modeling_perceiver.PerceiverModelOutput) or a tuple of
-  `torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising various
-  elements depending on the configuration ([PerceiverConfig](/docs/transformers/master/en/model_doc/perceiver#transformers.PerceiverConfig)) and inputs.
-
-  - **logits** (`torch.FloatTensor` of shape `(batch_size, num_labels)`) -- Classification (or regression if config.num_labels==1) scores (before SoftMax).
-  - **last_hidden_state** (`torch.FloatTensor` of shape `(batch_size, sequence_length, hidden_size)`) -- Sequence of hidden-states at the output of the last layer of the model.
-  - **hidden_states** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer)
-    of shape `(batch_size, sequence_length, hidden_size)`. Hidden-states of the model at the output of
-    each layer plus the initial embedding outputs.
-  - **attentions** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`. Attentions weights after the attention softmax, used to compute the
-    weighted average in the self-attention heads.
-  - **cross_attentions** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`. Attentions weights of the decoder's cross-attention layer, after the
-    attention softmax, used to compute the weighted average in the cross-attention heads.
-
-
-Examples --
-
-```python --
- transformers import PerceiverConfig, PerceiverTokenizer, PerceiverFeatureExtractor, PerceiverModel
- transformers.models.perceiver.modeling_perceiver import PerceiverTextPreprocessor, PerceiverImagePreprocessor, PerceiverClassificationDecoder
-rt torch
-rt requests
- PIL import Image
-
-AMPLE 1
-we define a TextPreprocessor, which can be used to embed tokens
-we define a ClassificationDecoder, which can be used to decode the
-nal hidden states of the latents to classification logits
-ing trainable position embeddings
-ig = PerceiverConfig()
-rocessor = PerceiverTextPreprocessor(config)
-der = PerceiverClassificationDecoder(config,
-- **...**                                          num_channels=config.d_latents, --
-- **...**                                          trainable_position_encoding_kwargs=dict(num_channels=config.d_latents, index_dims=1), --
-- **...**                                          use_query_residual=True) --
-l = PerceiverModel(config, input_preprocessor=preprocessor, decoder=decoder)
-
-u can then do a forward pass as follows
-nizer = PerceiverTokenizer()
- = "hello world"
-ts = tokenizer(text, return_tensors="pt").input_ids
-
- torch.no_grad()
-utputs = model(inputs=inputs)
-ts = outputs.logits
-
- train, one can train the model using standard cross-entropy
-erion = torch.nn.CrossEntropyLoss()
-
-ls = torch.tensor([1])
- = criterion(logits, labels)
-
-AMPLE 2
-we define an ImagePreprocessor, which can be used to embed images
-rocessor=PerceiverImagePreprocessor(
-- **...**              config, --
-- **...**              prep_type="conv1x1", --
-- **...**              spatial_downsample=1, --
-- **...**              out_channels=256, --
-- **...**              position_encoding_type="trainable", --
-- **...**              concat_or_add_pos="concat", --
-- **...**              project_pos_dim=256, --
-- **...**              trainable_position_encoding_kwargs=dict(num_channels=256, index_dims=config.image_size ** 2, --
-- **...**              ), --
-- **...** ) --
-
-l = PerceiverModel(
-- **...**         config, --
-- **...**         input_preprocessor=preprocessor, --
-- **...**         decoder=PerceiverClassificationDecoder( --
-- **...**              config, --
-- **...**              num_channels=config.d_latents, --
-- **...**              trainable_position_encoding_kwargs=dict(num_channels=config.d_latents, index_dims=1), --
-- **...**              use_query_residual=True, --
-- **...**          ), --
-- **...** ) --
-
-u can then do a forward pass as follows
-ure_extractor = PerceiverFeatureExtractor()
-= 'http
-e = Image.open(requests.get(url, stream=True).raw)
-ts = feature_extractor(image, return_tensors="pt").pixel_values
-
- torch.no_grad()
-utputs = model(inputs=inputs)
-ts = outputs.logits
-
- train, one can train the model using standard cross-entropy
-erion = torch.nn.CrossEntropyLoss()
-
-ls = torch.tensor([1])
- = criterion(logits, labels)
-``` --</paramsdesc><paramgroups>0</paramgroups></docstring>
+- **logits** (`torch.FloatTensor` of shape `(batch_size, num_labels)`) -- Classification (or regression if config.num_labels==1) scores (before SoftMax).
+- **last_hidden_state** (`torch.FloatTensor` of shape `(batch_size, sequence_length, hidden_size)`) -- Sequence of hidden-states at the output of the last layer of the model.
+- **hidden_states** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer)
+  of shape `(batch_size, sequence_length, hidden_size)`. Hidden-states of the model at the output of
+  each layer plus the initial embedding outputs.
+- **attentions** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`. Attentions weights after the attention softmax, used to compute the
+  weighted average in the self-attention heads.
+- **cross_attentions** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`. Attentions weights of the decoder's cross-attention layer, after the
+  attention softmax, used to compute the weighted average in the cross-attention heads.</retdesc></docstring>
 The [PerceiverModel](/docs/transformers/master/en/model_doc/perceiver#transformers.PerceiverModel) forward method, overrides the `__call__` special method.
 
 <Tip>
@@ -1056,6 +963,88 @@ the latter silently ignores them.
 
 
 
+
+
+
+
+Examples:
+
+```python
+>>> from transformers import PerceiverConfig, PerceiverTokenizer, PerceiverFeatureExtractor, PerceiverModel
+>>> from transformers.models.perceiver.modeling_perceiver import PerceiverTextPreprocessor, PerceiverImagePreprocessor, PerceiverClassificationDecoder
+>>> import torch
+>>> import requests
+>>> from PIL import Image
+
+>>> # EXAMPLE 1: using the Perceiver to classify texts
+>>> # - we define a TextPreprocessor, which can be used to embed tokens
+>>> # - we define a ClassificationDecoder, which can be used to decode the
+>>> # final hidden states of the latents to classification logits
+>>> # using trainable position embeddings
+>>> config = PerceiverConfig()
+>>> preprocessor = PerceiverTextPreprocessor(config)
+>>> decoder = PerceiverClassificationDecoder(config,
+...                                          num_channels=config.d_latents,
+...                                          trainable_position_encoding_kwargs=dict(num_channels=config.d_latents, index_dims=1),
+...                                          use_query_residual=True)
+>>> model = PerceiverModel(config, input_preprocessor=preprocessor, decoder=decoder)
+
+>>> # you can then do a forward pass as follows:
+>>> tokenizer = PerceiverTokenizer()
+>>> text = "hello world"
+>>> inputs = tokenizer(text, return_tensors="pt").input_ids
+
+>>> with torch.no_grad():
+>>>    outputs = model(inputs=inputs)
+>>> logits = outputs.logits
+
+>>> # to train, one can train the model using standard cross-entropy:
+>>> criterion = torch.nn.CrossEntropyLoss()
+
+>>> labels = torch.tensor([1])
+>>> loss = criterion(logits, labels)
+
+>>> # EXAMPLE 2: using the Perceiver to classify images
+>>> # - we define an ImagePreprocessor, which can be used to embed images
+>>> preprocessor=PerceiverImagePreprocessor(
+...              config,
+...              prep_type="conv1x1",
+...              spatial_downsample=1,
+...              out_channels=256,
+...              position_encoding_type="trainable",
+...              concat_or_add_pos="concat",
+...              project_pos_dim=256,
+...              trainable_position_encoding_kwargs=dict(num_channels=256, index_dims=config.image_size ** 2,
+...              ),
+... )
+
+>>> model = PerceiverModel(
+...         config,
+...         input_preprocessor=preprocessor,
+...         decoder=PerceiverClassificationDecoder(
+...              config,
+...              num_channels=config.d_latents,
+...              trainable_position_encoding_kwargs=dict(num_channels=config.d_latents, index_dims=1),
+...              use_query_residual=True,
+...          ),
+... )
+
+>>> # you can then do a forward pass as follows:
+>>> feature_extractor = PerceiverFeatureExtractor()
+>>> url = 'http://images.cocodataset.org/val2017/000000039769.jpg'
+>>> image = Image.open(requests.get(url, stream=True).raw)
+>>> inputs = feature_extractor(image, return_tensors="pt").pixel_values
+
+>>> with torch.no_grad():
+>>>    outputs = model(inputs=inputs)
+>>> logits = outputs.logits
+
+>>> # to train, one can train the model using standard cross-entropy:
+>>> criterion = torch.nn.CrossEntropyLoss()
+
+>>> labels = torch.tensor([1])
+>>> loss = criterion(logits, labels)
+```
 
 </div></div>
 
@@ -1103,61 +1092,19 @@ behavior.
 
 - **labels** (`torch.LongTensor` of shape `(batch_size, sequence_length)`, *optional*) --
   Labels for computing the masked language modeling loss. Indices should be in `[-100, 0, ..., config.vocab_size]` (see `input_ids` docstring) Tokens with indices set to `-100` are ignored
-  (masked), the loss is only computed for the tokens with labels in `[0, ..., config.vocab_size]`
+  (masked), the loss is only computed for the tokens with labels in `[0, ..., config.vocab_size]`</paramsdesc><paramgroups>0</paramgroups><rettype>[transformers.models.perceiver.modeling_perceiver.PerceiverMaskedLMOutput](/docs/transformers/master/en/model_doc/perceiver#transformers.models.perceiver.modeling_perceiver.PerceiverMaskedLMOutput) or `tuple(torch.FloatTensor)`</rettype><retdesc>A [transformers.models.perceiver.modeling_perceiver.PerceiverMaskedLMOutput](/docs/transformers/master/en/model_doc/perceiver#transformers.models.perceiver.modeling_perceiver.PerceiverMaskedLMOutput) or a tuple of
+`torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising various
+elements depending on the configuration ([PerceiverConfig](/docs/transformers/master/en/model_doc/perceiver#transformers.PerceiverConfig)) and inputs.
 
-
-  Returns --
-  [transformers.models.perceiver.modeling_perceiver.PerceiverMaskedLMOutput](/docs/transformers/master/en/model_doc/perceiver#transformers.models.perceiver.modeling_perceiver.PerceiverMaskedLMOutput) or `tuple(torch.FloatTensor)`: A [transformers.models.perceiver.modeling_perceiver.PerceiverMaskedLMOutput](/docs/transformers/master/en/model_doc/perceiver#transformers.models.perceiver.modeling_perceiver.PerceiverMaskedLMOutput) or a tuple of
-  `torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising various
-  elements depending on the configuration ([PerceiverConfig](/docs/transformers/master/en/model_doc/perceiver#transformers.PerceiverConfig)) and inputs.
-
-  - **loss** (`torch.FloatTensor` of shape `(1,)`, *optional*, returned when `labels` is provided) -- Masked language modeling (MLM) loss.
-  - **logits** (`torch.FloatTensor` of shape `(batch_size, sequence_length, config.vocab_size)`) -- Prediction scores of the language modeling head (scores for each vocabulary token before SoftMax).
-  - **hidden_states** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer)
-    of shape `(batch_size, sequence_length, hidden_size)`. Hidden-states of the model at the output of
-    each layer plus the initial embedding outputs.
-  - **attentions** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, num_latents, num_latents)`. Attentions weights after the attention softmax, used to compute the weighted average in the
-    self-attention heads.
-  - **cross_attentions** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`. Attentions weights of the decoder's cross-attention layer, after the
-    attention softmax, used to compute the weighted average in the cross-attention heads.
-
-
-Examples --
-
-```python --
- transformers import PerceiverTokenizer, PerceiverForMaskedLM
-rt torch
-
-nizer = PerceiverTokenizer.from_pretrained('deepmind/language-perceiver')
-l = PerceiverForMaskedLM.from_pretrained('deepmind/language-perceiver')
-
-aining
- = "This is an incomplete sentence where some words are missing."
-ts = tokenizer(text, padding="max_length", return_tensors="pt")
-sk " missing."
-ts['input_ids'][0, 52
-ls = tokenizer(text, padding="max_length", return_tensors="pt").input_ids
-
-uts = model(**inputs, labels=labels)
- = outputs.loss
-ts = outputs.logits
-
-ference
- = "This is an incomplete sentence where some words are missing."
-ding = tokenizer(text, padding="max_length", return_tensors="pt")
-
-sk bytes corresponding to " missing.". Note that the model performs much better if the masked span starts with a space.
-ding['input_ids'][0, 52
-
-rward pass
- torch.no_grad()
-utputs = model(**encoding)
-ts = outputs.logits
-
-ed_tokens_predictions = logits[0, 52
-nizer.decode(masked_tokens_predictions)
-- **'** missing.' --
-``` --</paramsdesc><paramgroups>0</paramgroups></docstring>
+- **loss** (`torch.FloatTensor` of shape `(1,)`, *optional*, returned when `labels` is provided) -- Masked language modeling (MLM) loss.
+- **logits** (`torch.FloatTensor` of shape `(batch_size, sequence_length, config.vocab_size)`) -- Prediction scores of the language modeling head (scores for each vocabulary token before SoftMax).
+- **hidden_states** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer)
+  of shape `(batch_size, sequence_length, hidden_size)`. Hidden-states of the model at the output of
+  each layer plus the initial embedding outputs.
+- **attentions** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, num_latents, num_latents)`. Attentions weights after the attention softmax, used to compute the weighted average in the
+  self-attention heads.
+- **cross_attentions** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`. Attentions weights of the decoder's cross-attention layer, after the
+  attention softmax, used to compute the weighted average in the cross-attention heads.</retdesc></docstring>
 The [PerceiverForMaskedLM](/docs/transformers/master/en/model_doc/perceiver#transformers.PerceiverForMaskedLM) forward method, overrides the `__call__` special method.
 
 <Tip>
@@ -1170,6 +1117,46 @@ the latter silently ignores them.
 
 
 
+
+
+
+
+Examples:
+
+```python
+>>> from transformers import PerceiverTokenizer, PerceiverForMaskedLM
+>>> import torch
+
+>>> tokenizer = PerceiverTokenizer.from_pretrained('deepmind/language-perceiver')
+>>> model = PerceiverForMaskedLM.from_pretrained('deepmind/language-perceiver')
+
+>>> # training
+>>> text = "This is an incomplete sentence where some words are missing."
+>>> inputs = tokenizer(text, padding="max_length", return_tensors="pt")
+>>> # mask " missing."
+>>> inputs['input_ids'][0, 52:61] = tokenizer.mask_token_id
+>>> labels = tokenizer(text, padding="max_length", return_tensors="pt").input_ids
+
+>>> outputs = model(**inputs, labels=labels)
+>>> loss = outputs.loss
+>>> logits = outputs.logits
+
+>>> # inference
+>>> text = "This is an incomplete sentence where some words are missing."
+>>> encoding = tokenizer(text, padding="max_length", return_tensors="pt")
+
+>>> # mask bytes corresponding to " missing.". Note that the model performs much better if the masked span starts with a space.
+>>> encoding['input_ids'][0, 52:61] = tokenizer.mask_token_id
+
+>>> # forward pass
+>>> with torch.no_grad():
+>>>    outputs = model(**encoding)
+>>> logits = outputs.logits
+
+>>> masked_tokens_predictions = logits[0, 52:61].argmax(dim=-1).tolist()
+>>> tokenizer.decode(masked_tokens_predictions)
+' missing.'
+```
 
 </div></div>
 
@@ -1217,23 +1204,24 @@ behavior.
 
 - **labels** (`torch.LongTensor` of shape `(batch_size,)`, *optional*) --
   Labels for computing the classification/regression loss. Indices should be in `[0, ..., config.num_labels - 1]`. If `config.num_labels == 1` a regression loss is computed (Mean-Square loss),
-  If `config.num_labels > 1` a classification loss is computed (Cross-Entropy).
+  If `config.num_labels > 1` a classification loss is computed (Cross-Entropy).</paramsdesc><paramgroups>0</paramgroups><rettype>[transformers.models.perceiver.modeling_perceiver.PerceiverClassifierOutput](/docs/transformers/master/en/model_doc/perceiver#transformers.models.perceiver.modeling_perceiver.PerceiverClassifierOutput) or `tuple(torch.FloatTensor)`</rettype><retdesc>```python
+>>> from transformers import PerceiverTokenizer, PerceiverForSequenceClassification
 
-  Returns --
+>>> tokenizer = PerceiverTokenizer.from_pretrained('deepmind/language-perceiver')
+>>> model = PerceiverForSequenceClassification.from_pretrained('deepmind/language-perceiver')
 
-  Examples --
+>>> text = "hello world"
+>>> inputs = tokenizer(images=image, return_tensors="pt").input_ids
+>>> outputs = model(inputs=inputs)
+>>> logits = outputs.logits
+```
+</returns>
 
-```python --
- transformers import PerceiverTokenizer, PerceiverForSequenceClassification
+<returntype>        Examples</returntype>
 
-nizer = PerceiverTokenizer.from_pretrained('deepmind/language-perceiver')
-l = PerceiverForSequenceClassification.from_pretrained('deepmind/language-perceiver')
+<returns>
 
- = "hello world"
-ts = tokenizer(images=image, return_tensors="pt").input_ids
-uts = model(inputs=inputs)
-ts = outputs.logits
-``` --</paramsdesc><paramgroups>0</paramgroups><rettype>[transformers.models.perceiver.modeling_perceiver.PerceiverClassifierOutput](/docs/transformers/master/en/model_doc/perceiver#transformers.models.perceiver.modeling_perceiver.PerceiverClassifierOutput) or `tuple(torch.FloatTensor)`</rettype><retdesc>A [transformers.models.perceiver.modeling_perceiver.PerceiverClassifierOutput](/docs/transformers/master/en/model_doc/perceiver#transformers.models.perceiver.modeling_perceiver.PerceiverClassifierOutput) or a tuple of
+A [transformers.models.perceiver.modeling_perceiver.PerceiverClassifierOutput](/docs/transformers/master/en/model_doc/perceiver#transformers.models.perceiver.modeling_perceiver.PerceiverClassifierOutput) or a tuple of
 `torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising various
 elements depending on the configuration ([PerceiverConfig](/docs/transformers/master/en/model_doc/perceiver#transformers.PerceiverConfig)) and inputs.
 
@@ -1297,7 +1285,7 @@ Example of multi-label classification:
 
 </div></div>
 
-<h2 id="transformers.PerceiverForImageClassificationLearned">PerceiverForImageClassificationLearned</h2>
+## PerceiverForImageClassificationLearned[[transformers.PerceiverForImageClassificationLearned]]
 
 <div class="docstring">
 
@@ -1352,45 +1340,19 @@ behavior.
 
 - **labels** (`torch.LongTensor` of shape `(batch_size,)`, *optional*) --
   Labels for computing the image classification/regression loss. Indices should be in `[0, ..., config.num_labels - 1]`. If `config.num_labels == 1` a regression loss is computed (Mean-Square loss),
-  If `config.num_labels > 1` a classification loss is computed (Cross-Entropy).
+  If `config.num_labels > 1` a classification loss is computed (Cross-Entropy).</paramsdesc><paramgroups>0</paramgroups><rettype>[transformers.models.perceiver.modeling_perceiver.PerceiverClassifierOutput](/docs/transformers/master/en/model_doc/perceiver#transformers.models.perceiver.modeling_perceiver.PerceiverClassifierOutput) or `tuple(torch.FloatTensor)`</rettype><retdesc>A [transformers.models.perceiver.modeling_perceiver.PerceiverClassifierOutput](/docs/transformers/master/en/model_doc/perceiver#transformers.models.perceiver.modeling_perceiver.PerceiverClassifierOutput) or a tuple of
+`torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising various
+elements depending on the configuration ([PerceiverConfig](/docs/transformers/master/en/model_doc/perceiver#transformers.PerceiverConfig)) and inputs.
 
-
-  Returns --
-  [transformers.models.perceiver.modeling_perceiver.PerceiverClassifierOutput](/docs/transformers/master/en/model_doc/perceiver#transformers.models.perceiver.modeling_perceiver.PerceiverClassifierOutput) or `tuple(torch.FloatTensor)`: A [transformers.models.perceiver.modeling_perceiver.PerceiverClassifierOutput](/docs/transformers/master/en/model_doc/perceiver#transformers.models.perceiver.modeling_perceiver.PerceiverClassifierOutput) or a tuple of
-  `torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising various
-  elements depending on the configuration ([PerceiverConfig](/docs/transformers/master/en/model_doc/perceiver#transformers.PerceiverConfig)) and inputs.
-
-  - **loss** (`torch.FloatTensor` of shape `(1,)`, *optional*, returned when `labels` is provided) -- Classification (or regression if config.num_labels==1) loss.
-  - **logits** (`torch.FloatTensor` of shape `(batch_size, config.num_labels)`) -- Classification (or regression if config.num_labels==1) scores (before SoftMax).
-  - **hidden_states** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer)
-    of shape `(batch_size, sequence_length, hidden_size)`. Hidden-states of the model at the output of
-    each layer plus the initial embedding outputs.
-  - **attentions** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`. Attentions weights after the attention softmax, used to compute the
-    weighted average in the self-attention heads.
-  - **cross_attentions** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`. Attentions weights of the decoder's cross-attention layer, after the
-    attention softmax, used to compute the weighted average in the cross-attention heads.
-
-
-Examples --
-
-```python --
- transformers import PerceiverFeatureExtractor, PerceiverForImageClassificationLearned
- PIL import Image
-rt requests
-
-= 'http
-e = Image.open(requests.get(url, stream=True).raw)
-
-ure_extractor = PerceiverFeatureExtractor.from_pretrained('deepmind/vision-perceiver-learned')
-l = PerceiverForImageClassificationLearned.from_pretrained('deepmind/vision-perceiver-learned')
-
-ts = feature_extractor(images=image, return_tensors="pt").pixel_values
-uts = model(inputs=inputs)
-ts = outputs.logits
-del predicts one of the 1000 ImageNet classes
-icted_class_idx = logits.argmax(-1).item()
-t("Predicted class
-``` --</paramsdesc><paramgroups>0</paramgroups></docstring>
+- **loss** (`torch.FloatTensor` of shape `(1,)`, *optional*, returned when `labels` is provided) -- Classification (or regression if config.num_labels==1) loss.
+- **logits** (`torch.FloatTensor` of shape `(batch_size, config.num_labels)`) -- Classification (or regression if config.num_labels==1) scores (before SoftMax).
+- **hidden_states** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer)
+  of shape `(batch_size, sequence_length, hidden_size)`. Hidden-states of the model at the output of
+  each layer plus the initial embedding outputs.
+- **attentions** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`. Attentions weights after the attention softmax, used to compute the
+  weighted average in the self-attention heads.
+- **cross_attentions** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`. Attentions weights of the decoder's cross-attention layer, after the
+  attention softmax, used to compute the weighted average in the cross-attention heads.</retdesc></docstring>
 The [PerceiverForImageClassificationLearned](/docs/transformers/master/en/model_doc/perceiver#transformers.PerceiverForImageClassificationLearned) forward method, overrides the `__call__` special method.
 
 <Tip>
@@ -1404,9 +1366,33 @@ the latter silently ignores them.
 
 
 
+
+
+
+Examples:
+
+```python
+>>> from transformers import PerceiverFeatureExtractor, PerceiverForImageClassificationLearned
+>>> from PIL import Image
+>>> import requests
+
+>>> url = 'http://images.cocodataset.org/val2017/000000039769.jpg'
+>>> image = Image.open(requests.get(url, stream=True).raw)
+
+>>> feature_extractor = PerceiverFeatureExtractor.from_pretrained('deepmind/vision-perceiver-learned')
+>>> model = PerceiverForImageClassificationLearned.from_pretrained('deepmind/vision-perceiver-learned')
+
+>>> inputs = feature_extractor(images=image, return_tensors="pt").pixel_values
+>>> outputs = model(inputs=inputs)
+>>> logits = outputs.logits
+>>> # model predicts one of the 1000 ImageNet classes
+>>> predicted_class_idx = logits.argmax(-1).item()
+>>> print("Predicted class:", model.config.id2label[predicted_class_idx])
+```
+
 </div></div>
 
-<h2 id="transformers.PerceiverForImageClassificationFourier">PerceiverForImageClassificationFourier</h2>
+## PerceiverForImageClassificationFourier[[transformers.PerceiverForImageClassificationFourier]]
 
 <div class="docstring">
 
@@ -1461,45 +1447,19 @@ behavior.
 
 - **labels** (`torch.LongTensor` of shape `(batch_size,)`, *optional*) --
   Labels for computing the image classification/regression loss. Indices should be in `[0, ..., config.num_labels - 1]`. If `config.num_labels == 1` a regression loss is computed (Mean-Square loss),
-  If `config.num_labels > 1` a classification loss is computed (Cross-Entropy).
+  If `config.num_labels > 1` a classification loss is computed (Cross-Entropy).</paramsdesc><paramgroups>0</paramgroups><rettype>[transformers.models.perceiver.modeling_perceiver.PerceiverClassifierOutput](/docs/transformers/master/en/model_doc/perceiver#transformers.models.perceiver.modeling_perceiver.PerceiverClassifierOutput) or `tuple(torch.FloatTensor)`</rettype><retdesc>A [transformers.models.perceiver.modeling_perceiver.PerceiverClassifierOutput](/docs/transformers/master/en/model_doc/perceiver#transformers.models.perceiver.modeling_perceiver.PerceiverClassifierOutput) or a tuple of
+`torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising various
+elements depending on the configuration ([PerceiverConfig](/docs/transformers/master/en/model_doc/perceiver#transformers.PerceiverConfig)) and inputs.
 
-
-  Returns --
-  [transformers.models.perceiver.modeling_perceiver.PerceiverClassifierOutput](/docs/transformers/master/en/model_doc/perceiver#transformers.models.perceiver.modeling_perceiver.PerceiverClassifierOutput) or `tuple(torch.FloatTensor)`: A [transformers.models.perceiver.modeling_perceiver.PerceiverClassifierOutput](/docs/transformers/master/en/model_doc/perceiver#transformers.models.perceiver.modeling_perceiver.PerceiverClassifierOutput) or a tuple of
-  `torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising various
-  elements depending on the configuration ([PerceiverConfig](/docs/transformers/master/en/model_doc/perceiver#transformers.PerceiverConfig)) and inputs.
-
-  - **loss** (`torch.FloatTensor` of shape `(1,)`, *optional*, returned when `labels` is provided) -- Classification (or regression if config.num_labels==1) loss.
-  - **logits** (`torch.FloatTensor` of shape `(batch_size, config.num_labels)`) -- Classification (or regression if config.num_labels==1) scores (before SoftMax).
-  - **hidden_states** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer)
-    of shape `(batch_size, sequence_length, hidden_size)`. Hidden-states of the model at the output of
-    each layer plus the initial embedding outputs.
-  - **attentions** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`. Attentions weights after the attention softmax, used to compute the
-    weighted average in the self-attention heads.
-  - **cross_attentions** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`. Attentions weights of the decoder's cross-attention layer, after the
-    attention softmax, used to compute the weighted average in the cross-attention heads.
-
-
-Examples --
-
-```python --
- transformers import PerceiverFeatureExtractor, PerceiverForImageClassificationFourier
- PIL import Image
-rt requests
-
-= 'http
-e = Image.open(requests.get(url, stream=True).raw)
-
-ure_extractor = PerceiverFeatureExtractor.from_pretrained('deepmind/vision-perceiver-fourier')
-l = PerceiverForImageClassificationFourier.from_pretrained('deepmind/vision-perceiver-fourier')
-
-ts = feature_extractor(images=image, return_tensors="pt").pixel_values
-uts = model(inputs=inputs)
-ts = outputs.logits
-del predicts one of the 1000 ImageNet classes
-icted_class_idx = logits.argmax(-1).item()
-t("Predicted class
-``` --</paramsdesc><paramgroups>0</paramgroups></docstring>
+- **loss** (`torch.FloatTensor` of shape `(1,)`, *optional*, returned when `labels` is provided) -- Classification (or regression if config.num_labels==1) loss.
+- **logits** (`torch.FloatTensor` of shape `(batch_size, config.num_labels)`) -- Classification (or regression if config.num_labels==1) scores (before SoftMax).
+- **hidden_states** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer)
+  of shape `(batch_size, sequence_length, hidden_size)`. Hidden-states of the model at the output of
+  each layer plus the initial embedding outputs.
+- **attentions** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`. Attentions weights after the attention softmax, used to compute the
+  weighted average in the self-attention heads.
+- **cross_attentions** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`. Attentions weights of the decoder's cross-attention layer, after the
+  attention softmax, used to compute the weighted average in the cross-attention heads.</retdesc></docstring>
 The [PerceiverForImageClassificationFourier](/docs/transformers/master/en/model_doc/perceiver#transformers.PerceiverForImageClassificationFourier) forward method, overrides the `__call__` special method.
 
 <Tip>
@@ -1513,9 +1473,33 @@ the latter silently ignores them.
 
 
 
+
+
+
+Examples:
+
+```python
+>>> from transformers import PerceiverFeatureExtractor, PerceiverForImageClassificationFourier
+>>> from PIL import Image
+>>> import requests
+
+>>> url = 'http://images.cocodataset.org/val2017/000000039769.jpg'
+>>> image = Image.open(requests.get(url, stream=True).raw)
+
+>>> feature_extractor = PerceiverFeatureExtractor.from_pretrained('deepmind/vision-perceiver-fourier')
+>>> model = PerceiverForImageClassificationFourier.from_pretrained('deepmind/vision-perceiver-fourier')
+
+>>> inputs = feature_extractor(images=image, return_tensors="pt").pixel_values
+>>> outputs = model(inputs=inputs)
+>>> logits = outputs.logits
+>>> # model predicts one of the 1000 ImageNet classes
+>>> predicted_class_idx = logits.argmax(-1).item()
+>>> print("Predicted class:", model.config.id2label[predicted_class_idx])
+```
+
 </div></div>
 
-<h2 id="transformers.PerceiverForImageClassificationConvProcessing">PerceiverForImageClassificationConvProcessing</h2>
+## PerceiverForImageClassificationConvProcessing[[transformers.PerceiverForImageClassificationConvProcessing]]
 
 <div class="docstring">
 
@@ -1570,45 +1554,19 @@ behavior.
 
 - **labels** (`torch.LongTensor` of shape `(batch_size,)`, *optional*) --
   Labels for computing the image classification/regression loss. Indices should be in `[0, ..., config.num_labels - 1]`. If `config.num_labels == 1` a regression loss is computed (Mean-Square loss),
-  If `config.num_labels > 1` a classification loss is computed (Cross-Entropy).
+  If `config.num_labels > 1` a classification loss is computed (Cross-Entropy).</paramsdesc><paramgroups>0</paramgroups><rettype>[transformers.models.perceiver.modeling_perceiver.PerceiverClassifierOutput](/docs/transformers/master/en/model_doc/perceiver#transformers.models.perceiver.modeling_perceiver.PerceiverClassifierOutput) or `tuple(torch.FloatTensor)`</rettype><retdesc>A [transformers.models.perceiver.modeling_perceiver.PerceiverClassifierOutput](/docs/transformers/master/en/model_doc/perceiver#transformers.models.perceiver.modeling_perceiver.PerceiverClassifierOutput) or a tuple of
+`torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising various
+elements depending on the configuration ([PerceiverConfig](/docs/transformers/master/en/model_doc/perceiver#transformers.PerceiverConfig)) and inputs.
 
-
-  Returns --
-  [transformers.models.perceiver.modeling_perceiver.PerceiverClassifierOutput](/docs/transformers/master/en/model_doc/perceiver#transformers.models.perceiver.modeling_perceiver.PerceiverClassifierOutput) or `tuple(torch.FloatTensor)`: A [transformers.models.perceiver.modeling_perceiver.PerceiverClassifierOutput](/docs/transformers/master/en/model_doc/perceiver#transformers.models.perceiver.modeling_perceiver.PerceiverClassifierOutput) or a tuple of
-  `torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising various
-  elements depending on the configuration ([PerceiverConfig](/docs/transformers/master/en/model_doc/perceiver#transformers.PerceiverConfig)) and inputs.
-
-  - **loss** (`torch.FloatTensor` of shape `(1,)`, *optional*, returned when `labels` is provided) -- Classification (or regression if config.num_labels==1) loss.
-  - **logits** (`torch.FloatTensor` of shape `(batch_size, config.num_labels)`) -- Classification (or regression if config.num_labels==1) scores (before SoftMax).
-  - **hidden_states** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer)
-    of shape `(batch_size, sequence_length, hidden_size)`. Hidden-states of the model at the output of
-    each layer plus the initial embedding outputs.
-  - **attentions** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`. Attentions weights after the attention softmax, used to compute the
-    weighted average in the self-attention heads.
-  - **cross_attentions** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`. Attentions weights of the decoder's cross-attention layer, after the
-    attention softmax, used to compute the weighted average in the cross-attention heads.
-
-
-Examples --
-
-```python --
- transformers import PerceiverFeatureExtractor, PerceiverForImageClassificationConvProcessing
- PIL import Image
-rt requests
-
-= 'http
-e = Image.open(requests.get(url, stream=True).raw)
-
-ure_extractor = PerceiverFeatureExtractor.from_pretrained('deepmind/vision-perceiver-conv')
-l = PerceiverForImageClassificationConvProcessing.from_pretrained('deepmind/vision-perceiver-conv')
-
-ts = feature_extractor(images=image, return_tensors="pt").pixel_values
-uts = model(inputs=inputs)
-ts = outputs.logits
-del predicts one of the 1000 ImageNet classes
-icted_class_idx = logits.argmax(-1).item()
-t("Predicted class
-``` --</paramsdesc><paramgroups>0</paramgroups></docstring>
+- **loss** (`torch.FloatTensor` of shape `(1,)`, *optional*, returned when `labels` is provided) -- Classification (or regression if config.num_labels==1) loss.
+- **logits** (`torch.FloatTensor` of shape `(batch_size, config.num_labels)`) -- Classification (or regression if config.num_labels==1) scores (before SoftMax).
+- **hidden_states** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer)
+  of shape `(batch_size, sequence_length, hidden_size)`. Hidden-states of the model at the output of
+  each layer plus the initial embedding outputs.
+- **attentions** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`. Attentions weights after the attention softmax, used to compute the
+  weighted average in the self-attention heads.
+- **cross_attentions** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`. Attentions weights of the decoder's cross-attention layer, after the
+  attention softmax, used to compute the weighted average in the cross-attention heads.</retdesc></docstring>
 The [PerceiverForImageClassificationConvProcessing](/docs/transformers/master/en/model_doc/perceiver#transformers.PerceiverForImageClassificationConvProcessing) forward method, overrides the `__call__` special method.
 
 <Tip>
@@ -1622,9 +1580,33 @@ the latter silently ignores them.
 
 
 
+
+
+
+Examples:
+
+```python
+>>> from transformers import PerceiverFeatureExtractor, PerceiverForImageClassificationConvProcessing
+>>> from PIL import Image
+>>> import requests
+
+>>> url = 'http://images.cocodataset.org/val2017/000000039769.jpg'
+>>> image = Image.open(requests.get(url, stream=True).raw)
+
+>>> feature_extractor = PerceiverFeatureExtractor.from_pretrained('deepmind/vision-perceiver-conv')
+>>> model = PerceiverForImageClassificationConvProcessing.from_pretrained('deepmind/vision-perceiver-conv')
+
+>>> inputs = feature_extractor(images=image, return_tensors="pt").pixel_values
+>>> outputs = model(inputs=inputs)
+>>> logits = outputs.logits
+>>> # model predicts one of the 1000 ImageNet classes
+>>> predicted_class_idx = logits.argmax(-1).item()
+>>> print("Predicted class:", model.config.id2label[predicted_class_idx])
+```
+
 </div></div>
 
-<h2 id="transformers.PerceiverForOpticalFlow">PerceiverForOpticalFlow</h2>
+## PerceiverForOpticalFlow[[transformers.PerceiverForOpticalFlow]]
 
 <div class="docstring">
 
@@ -1678,41 +1660,19 @@ behavior.
   Whether or not to return a [ModelOutput](/docs/transformers/master/en/main_classes/output#transformers.file_utils.ModelOutput) instead of a plain tuple.
 
 - **labels** (`torch.LongTensor` of shape `(batch_size,)`, *optional*) --
-  Labels for computing the optical flow loss. Indices should be in `[0, ..., config.num_labels - 1]`.
+  Labels for computing the optical flow loss. Indices should be in `[0, ..., config.num_labels - 1]`.</paramsdesc><paramgroups>0</paramgroups><rettype>[transformers.models.perceiver.modeling_perceiver.PerceiverClassifierOutput](/docs/transformers/master/en/model_doc/perceiver#transformers.models.perceiver.modeling_perceiver.PerceiverClassifierOutput) or `tuple(torch.FloatTensor)`</rettype><retdesc>A [transformers.models.perceiver.modeling_perceiver.PerceiverClassifierOutput](/docs/transformers/master/en/model_doc/perceiver#transformers.models.perceiver.modeling_perceiver.PerceiverClassifierOutput) or a tuple of
+`torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising various
+elements depending on the configuration ([PerceiverConfig](/docs/transformers/master/en/model_doc/perceiver#transformers.PerceiverConfig)) and inputs.
 
-
-  Returns --
-  [transformers.models.perceiver.modeling_perceiver.PerceiverClassifierOutput](/docs/transformers/master/en/model_doc/perceiver#transformers.models.perceiver.modeling_perceiver.PerceiverClassifierOutput) or `tuple(torch.FloatTensor)`: A [transformers.models.perceiver.modeling_perceiver.PerceiverClassifierOutput](/docs/transformers/master/en/model_doc/perceiver#transformers.models.perceiver.modeling_perceiver.PerceiverClassifierOutput) or a tuple of
-  `torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising various
-  elements depending on the configuration ([PerceiverConfig](/docs/transformers/master/en/model_doc/perceiver#transformers.PerceiverConfig)) and inputs.
-
-  - **loss** (`torch.FloatTensor` of shape `(1,)`, *optional*, returned when `labels` is provided) -- Classification (or regression if config.num_labels==1) loss.
-  - **logits** (`torch.FloatTensor` of shape `(batch_size, config.num_labels)`) -- Classification (or regression if config.num_labels==1) scores (before SoftMax).
-  - **hidden_states** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer)
-    of shape `(batch_size, sequence_length, hidden_size)`. Hidden-states of the model at the output of
-    each layer plus the initial embedding outputs.
-  - **attentions** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`. Attentions weights after the attention softmax, used to compute the
-    weighted average in the self-attention heads.
-  - **cross_attentions** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`. Attentions weights of the decoder's cross-attention layer, after the
-    attention softmax, used to compute the weighted average in the cross-attention heads.
-
-
-Examples --
-
-```python --
- transformers import PerceiverForOpticalFlow
-rt torch
-
-l = PerceiverForOpticalFlow.from_pretrained('deepmind/optical-flow-perceiver')
-
- the Perceiver IO paper, the authors extract a 3 x 3 patch around each pixel,
-ading to 3 x 3 x 3 = 27 values for each pixel (as each pixel also has 3 color channels)
-tches have shape (batch_size, num_frames, num_channels, height, width)
-e authors train on resolutions of 368 x 496
-hes = torch.randn(1, 2, 27, 368, 496)
-uts = model(inputs=patches)
-ts = outputs.logits
-``` --</paramsdesc><paramgroups>0</paramgroups></docstring>
+- **loss** (`torch.FloatTensor` of shape `(1,)`, *optional*, returned when `labels` is provided) -- Classification (or regression if config.num_labels==1) loss.
+- **logits** (`torch.FloatTensor` of shape `(batch_size, config.num_labels)`) -- Classification (or regression if config.num_labels==1) scores (before SoftMax).
+- **hidden_states** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer)
+  of shape `(batch_size, sequence_length, hidden_size)`. Hidden-states of the model at the output of
+  each layer plus the initial embedding outputs.
+- **attentions** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`. Attentions weights after the attention softmax, used to compute the
+  weighted average in the self-attention heads.
+- **cross_attentions** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`. Attentions weights of the decoder's cross-attention layer, after the
+  attention softmax, used to compute the weighted average in the cross-attention heads.</retdesc></docstring>
 The [PerceiverForOpticalFlow](/docs/transformers/master/en/model_doc/perceiver#transformers.PerceiverForOpticalFlow) forward method, overrides the `__call__` special method.
 
 <Tip>
@@ -1726,9 +1686,29 @@ the latter silently ignores them.
 
 
 
+
+
+
+Examples:
+
+```python
+>>> from transformers import PerceiverForOpticalFlow
+>>> import torch
+
+>>> model = PerceiverForOpticalFlow.from_pretrained('deepmind/optical-flow-perceiver')
+
+>>> # in the Perceiver IO paper, the authors extract a 3 x 3 patch around each pixel,
+>>> # leading to 3 x 3 x 3 = 27 values for each pixel (as each pixel also has 3 color channels)
+>>> # patches have shape (batch_size, num_frames, num_channels, height, width)
+>>> # the authors train on resolutions of 368 x 496
+>>> patches = torch.randn(1, 2, 27, 368, 496)
+>>> outputs = model(inputs=patches)
+>>> logits = outputs.logits
+```
+
 </div></div>
 
-<h2 id="transformers.PerceiverForMultimodalAutoencoding">PerceiverForMultimodalAutoencoding</h2>
+## PerceiverForMultimodalAutoencoding[[transformers.PerceiverForMultimodalAutoencoding]]
 
 <div class="docstring">
 
@@ -1799,40 +1779,19 @@ behavior.
 
 - **labels** (`torch.LongTensor` of shape `(batch_size,)`, *optional*) --
   Labels for computing the image classification/regression loss. Indices should be in `[0, ..., config.num_labels - 1]`. If `config.num_labels == 1` a regression loss is computed (Mean-Square loss),
-  If `config.num_labels > 1` a classification loss is computed (Cross-Entropy).
+  If `config.num_labels > 1` a classification loss is computed (Cross-Entropy).</paramsdesc><paramgroups>0</paramgroups><rettype>[transformers.models.perceiver.modeling_perceiver.PerceiverClassifierOutput](/docs/transformers/master/en/model_doc/perceiver#transformers.models.perceiver.modeling_perceiver.PerceiverClassifierOutput) or `tuple(torch.FloatTensor)`</rettype><retdesc>A [transformers.models.perceiver.modeling_perceiver.PerceiverClassifierOutput](/docs/transformers/master/en/model_doc/perceiver#transformers.models.perceiver.modeling_perceiver.PerceiverClassifierOutput) or a tuple of
+`torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising various
+elements depending on the configuration ([PerceiverConfig](/docs/transformers/master/en/model_doc/perceiver#transformers.PerceiverConfig)) and inputs.
 
-
-  Returns --
-  [transformers.models.perceiver.modeling_perceiver.PerceiverClassifierOutput](/docs/transformers/master/en/model_doc/perceiver#transformers.models.perceiver.modeling_perceiver.PerceiverClassifierOutput) or `tuple(torch.FloatTensor)`: A [transformers.models.perceiver.modeling_perceiver.PerceiverClassifierOutput](/docs/transformers/master/en/model_doc/perceiver#transformers.models.perceiver.modeling_perceiver.PerceiverClassifierOutput) or a tuple of
-  `torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising various
-  elements depending on the configuration ([PerceiverConfig](/docs/transformers/master/en/model_doc/perceiver#transformers.PerceiverConfig)) and inputs.
-
-  - **loss** (`torch.FloatTensor` of shape `(1,)`, *optional*, returned when `labels` is provided) -- Classification (or regression if config.num_labels==1) loss.
-  - **logits** (`torch.FloatTensor` of shape `(batch_size, config.num_labels)`) -- Classification (or regression if config.num_labels==1) scores (before SoftMax).
-  - **hidden_states** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer)
-    of shape `(batch_size, sequence_length, hidden_size)`. Hidden-states of the model at the output of
-    each layer plus the initial embedding outputs.
-  - **attentions** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`. Attentions weights after the attention softmax, used to compute the
-    weighted average in the self-attention heads.
-  - **cross_attentions** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`. Attentions weights of the decoder's cross-attention layer, after the
-    attention softmax, used to compute the weighted average in the cross-attention heads.
-
-
-Examples --
-
-```python --
- transformers import PerceiverForMultimodalAutoencoding
-rt torch
-
-es = torch.randn((1, 16, 3, 224, 224))
-o = torch.randn((1, 30720, 1))
-ts = dict(image=images, audio=audio, label=torch.zeros((images.shape[0], 700)))
-
-l = PerceiverForMultimodalAutoencoding.from_pretrained('deepmind/multimodal-perceiver')
-
-uts = model(inputs=inputs)
-ts = outputs.logits
-``` --</paramsdesc><paramgroups>0</paramgroups></docstring>
+- **loss** (`torch.FloatTensor` of shape `(1,)`, *optional*, returned when `labels` is provided) -- Classification (or regression if config.num_labels==1) loss.
+- **logits** (`torch.FloatTensor` of shape `(batch_size, config.num_labels)`) -- Classification (or regression if config.num_labels==1) scores (before SoftMax).
+- **hidden_states** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer)
+  of shape `(batch_size, sequence_length, hidden_size)`. Hidden-states of the model at the output of
+  each layer plus the initial embedding outputs.
+- **attentions** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`. Attentions weights after the attention softmax, used to compute the
+  weighted average in the self-attention heads.
+- **cross_attentions** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`. Attentions weights of the decoder's cross-attention layer, after the
+  attention softmax, used to compute the weighted average in the cross-attention heads.</retdesc></docstring>
 The [PerceiverForMultimodalAutoencoding](/docs/transformers/master/en/model_doc/perceiver#transformers.PerceiverForMultimodalAutoencoding) forward method, overrides the `__call__` special method.
 
 <Tip>
@@ -1845,5 +1804,24 @@ the latter silently ignores them.
 
 
 
+
+
+
+
+Examples:
+
+```python
+>>> from transformers import PerceiverForMultimodalAutoencoding
+>>> import torch
+
+>>> images = torch.randn((1, 16, 3, 224, 224))
+>>> audio = torch.randn((1, 30720, 1))
+>>> inputs = dict(image=images, audio=audio, label=torch.zeros((images.shape[0], 700)))
+
+>>> model = PerceiverForMultimodalAutoencoding.from_pretrained('deepmind/multimodal-perceiver')
+
+>>> outputs = model(inputs=inputs)
+>>> logits = outputs.logits
+```
 
 </div></div>

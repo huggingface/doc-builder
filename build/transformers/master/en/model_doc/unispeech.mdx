@@ -684,74 +684,24 @@ behavior.
   masked extracted features in *config.proj_codevector_dim* space.
 - **sampled_negative_indices** (`torch.BoolTensor` of shape `(batch_size, sequence_length, num_negatives)`, *optional*) --
   Indices indicating which quantized target vectors are used as negative sampled vectors in contrastive loss.
-  Required input for pre-training.
+  Required input for pre-training.</paramsdesc><paramgroups>0</paramgroups><rettype>[transformers.models.unispeech.modeling_unispeech.UniSpeechForPreTrainingOutput](/docs/transformers/master/en/model_doc/unispeech#transformers.models.unispeech.modeling_unispeech.UniSpeechForPreTrainingOutput) or `tuple(torch.FloatTensor)`</rettype><retdesc>A [transformers.models.unispeech.modeling_unispeech.UniSpeechForPreTrainingOutput](/docs/transformers/master/en/model_doc/unispeech#transformers.models.unispeech.modeling_unispeech.UniSpeechForPreTrainingOutput) or a tuple of
+`torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising various
+elements depending on the configuration ([UniSpeechConfig](/docs/transformers/master/en/model_doc/unispeech#transformers.UniSpeechConfig)) and inputs.
 
+- **loss** (*optional*, returned when model is in train mode, `torch.FloatTensor` of shape `(1,)`) -- Total loss as the sum of the contrastive loss (L_m) and the diversity loss (L_d) as stated in the [official
+  paper](https://arxiv.org/pdf/2006.11477.pdf) . (classification) loss.
+- **projected_states** (`torch.FloatTensor` of shape `(batch_size, sequence_length, config.proj_codevector_dim)`) -- Hidden-states of the model projected to *config.proj_codevector_dim* that can be used to predict the masked
+  projected quantized states.
+- **projected_quantized_states** (`torch.FloatTensor` of shape `(batch_size, sequence_length, config.proj_codevector_dim)`) -- Quantized extracted feature vectors projected to *config.proj_codevector_dim* representing the positive
+  target vectors for contrastive loss.
+- **hidden_states** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer)
+  of shape `(batch_size, sequence_length, hidden_size)`.
 
-  Returns --
-  [transformers.models.unispeech.modeling_unispeech.UniSpeechForPreTrainingOutput](/docs/transformers/master/en/model_doc/unispeech#transformers.models.unispeech.modeling_unispeech.UniSpeechForPreTrainingOutput) or `tuple(torch.FloatTensor)`: A [transformers.models.unispeech.modeling_unispeech.UniSpeechForPreTrainingOutput](/docs/transformers/master/en/model_doc/unispeech#transformers.models.unispeech.modeling_unispeech.UniSpeechForPreTrainingOutput) or a tuple of
-  `torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising various
-  elements depending on the configuration ([UniSpeechConfig](/docs/transformers/master/en/model_doc/unispeech#transformers.UniSpeechConfig)) and inputs.
+  Hidden-states of the model at the output of each layer plus the initial embedding outputs.
+- **attentions** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
 
-  - **loss** (*optional*, returned when model is in train mode, `torch.FloatTensor` of shape `(1,)`) -- Total loss as the sum of the contrastive loss (L_m) and the diversity loss (L_d) as stated in the [official
-    paper](https://arxiv.org/pdf/2006.11477.pdf) . (classification) loss.
-  - **projected_states** (`torch.FloatTensor` of shape `(batch_size, sequence_length, config.proj_codevector_dim)`) -- Hidden-states of the model projected to *config.proj_codevector_dim* that can be used to predict the masked
-    projected quantized states.
-  - **projected_quantized_states** (`torch.FloatTensor` of shape `(batch_size, sequence_length, config.proj_codevector_dim)`) -- Quantized extracted feature vectors projected to *config.proj_codevector_dim* representing the positive
-    target vectors for contrastive loss.
-  - **hidden_states** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer)
-    of shape `(batch_size, sequence_length, hidden_size)`.
-
-    Hidden-states of the model at the output of each layer plus the initial embedding outputs.
-  - **attentions** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
-
-    Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
-    heads.
-
-
-Example --
-
-```python --
-rt torch
- transformers import Wav2Vec2FeatureExtractor, Wav2Vec2ForPreTraining
- transformers.models.wav2vec2.modeling_wav2vec2 import _compute_mask_indices
- datasets import load_dataset
-rt soundfile as sf
-
-ure_extractor = Wav2Vec2FeatureExtractor.from_pretrained("patrickvonplaten/wav2vec2-base")
-l = Wav2Vec2ForPreTraining.from_pretrained("patrickvonplaten/wav2vec2-base")
-
-
-map_to_array(batch)
-- **...**     speech, _ = sf.read(batch["file"]) --
-- **...**     batch["speech"] = speech --
-- **...**     return batch --
-
-
- load_dataset("patrickvonplaten/librispeech_asr_dummy", "clean", split="validation")
- ds.map(map_to_array)
-
-t_values = feature_extractor(ds["speech"][0], return_tensors="pt").input_values  # Batch size 1
-
-mpute masked indices
-h_size, raw_sequence_length = input_values.shape
-ence_length = model._get_feat_extract_output_lengths(raw_sequence_length)
-_time_indices = _compute_mask_indices((batch_size, sequence_length), mask_prob=0.2, mask_length=2)
-
- torch.no_grad()
-- **...**     outputs = model(input_values, mask_time_indices=mask_time_indices) --
-
-mpute cosine similarity between predicted (=projected_states) and target (=projected_quantized_states)
-ne_sim = torch.cosine_similarity(
-- **...**     outputs.projected_states, outputs.projected_quantized_states, dim=-1 --
-- **...** ) --
-
-ow that cosine similarity is much higher than random
-rt cosine_sim[mask_time_indices].mean() > 0.5
-
-r contrastive loss training model should be put into train mode
-l.train()
- = model(input_values, mask_time_indices=mask_time_indices).loss
-``` --</paramsdesc><paramgroups>0</paramgroups></docstring>
+  Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
+  heads.</retdesc></docstring>
 The [UniSpeechForPreTraining](/docs/transformers/master/en/model_doc/unispeech#transformers.UniSpeechForPreTraining) forward method, overrides the `__call__` special method.
 
 <Tip>
@@ -764,5 +714,53 @@ the latter silently ignores them.
 
 
 
+
+
+
+
+Example:
+
+```python
+>>> import torch
+>>> from transformers import Wav2Vec2FeatureExtractor, Wav2Vec2ForPreTraining
+>>> from transformers.models.wav2vec2.modeling_wav2vec2 import _compute_mask_indices
+>>> from datasets import load_dataset
+>>> import soundfile as sf
+
+>>> feature_extractor = Wav2Vec2FeatureExtractor.from_pretrained("patrickvonplaten/wav2vec2-base")
+>>> model = Wav2Vec2ForPreTraining.from_pretrained("patrickvonplaten/wav2vec2-base")
+
+
+>>> def map_to_array(batch):
+...     speech, _ = sf.read(batch["file"])
+...     batch["speech"] = speech
+...     return batch
+
+
+>>> ds = load_dataset("patrickvonplaten/librispeech_asr_dummy", "clean", split="validation")
+>>> ds = ds.map(map_to_array)
+
+>>> input_values = feature_extractor(ds["speech"][0], return_tensors="pt").input_values  # Batch size 1
+
+>>> # compute masked indices
+>>> batch_size, raw_sequence_length = input_values.shape
+>>> sequence_length = model._get_feat_extract_output_lengths(raw_sequence_length)
+>>> mask_time_indices = _compute_mask_indices((batch_size, sequence_length), mask_prob=0.2, mask_length=2)
+
+>>> with torch.no_grad():
+...     outputs = model(input_values, mask_time_indices=mask_time_indices)
+
+>>> # compute cosine similarity between predicted (=projected_states) and target (=projected_quantized_states)
+>>> cosine_sim = torch.cosine_similarity(
+...     outputs.projected_states, outputs.projected_quantized_states, dim=-1
+... )
+
+>>> # show that cosine similarity is much higher than random
+>>> assert cosine_sim[mask_time_indices].mean() > 0.5
+
+>>> # for contrastive loss training model should be put into train mode
+>>> model.train()
+>>> loss = model(input_values, mask_time_indices=mask_time_indices).loss
+```
 
 </div></div>

@@ -218,11 +218,7 @@ decoder when created with the :meth*~transformers.AutoModel.from_pretrained* cla
   kwargs -- (*optional*) Remaining dictionary of keyword arguments. Keyword arguments come in two flavors:
 
   - Without a prefix which will be input as `**encoder_kwargs` for the encoder forward function.
-  - With a *decoder_* prefix which will be input as `**decoder_kwargs` for the decoder forward function.
-
-
-Returns --
-[transformers.modeling_outputs.Seq2SeqLMOutput](/docs/transformers/master/en/main_classes/output#transformers.modeling_outputs.Seq2SeqLMOutput) or `tuple(torch.FloatTensor)`: A [transformers.modeling_outputs.Seq2SeqLMOutput](/docs/transformers/master/en/main_classes/output#transformers.modeling_outputs.Seq2SeqLMOutput) or a tuple of
+  - With a *decoder_* prefix which will be input as `**decoder_kwargs` for the decoder forward function.</paramsdesc><paramgroups>0</paramgroups><rettype>[transformers.modeling_outputs.Seq2SeqLMOutput](/docs/transformers/master/en/main_classes/output#transformers.modeling_outputs.Seq2SeqLMOutput) or `tuple(torch.FloatTensor)`</rettype><retdesc>A [transformers.modeling_outputs.Seq2SeqLMOutput](/docs/transformers/master/en/main_classes/output#transformers.modeling_outputs.Seq2SeqLMOutput) or a tuple of
 `torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising various
 elements depending on the configuration ([VisionEncoderDecoderConfig](/docs/transformers/master/en/model_doc/visionencoderdecoder#transformers.VisionEncoderDecoderConfig)) and inputs.
 
@@ -254,39 +250,7 @@ elements depending on the configuration ([VisionEncoderDecoderConfig](/docs/tran
 - **encoder_attentions** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
 
   Attentions weights of the encoder, after the attention softmax, used to compute the weighted average in the
-  self-attention heads.
-
-
-Examples --
-
-```python --
- transformers import TrOCRProcessor, VisionEncoderDecoderModel
-rt requests
- PIL import Image
-rt torch
-
-essor = TrOCRProcessor.from_pretrained('microsoft/trocr-base-handwritten')
-l = VisionEncoderDecoderModel.from_pretrained('microsoft/trocr-base-handwritten')
-
-ad image from the IAM dataset
-= "https
-e = Image.open(requests.get(url, stream=True).raw).convert("RGB")
-
-aining
-l.config.decoder_start_token_id = processor.tokenizer.cls_token_id
-l.config.pad_token_id = processor.tokenizer.pad_token_id
-l.config.vocab_size = model.config.decoder.vocab_size
-
-l_values = processor(image, return_tensors="pt").pixel_values
- = "hello world"
-ls = processor.tokenizer(text, return_tensors="pt").input_ids
-uts = model(pixel_values=pixel_values, labels=labels)
- = outputs.loss
-
-ference (generation)
-rated_ids = model.generate(pixel_values)
-rated_text = processor.batch_decode(generated_ids, skip_special_tokens=True)[0]
-``` --</paramsdesc><paramgroups>0</paramgroups></docstring>
+  self-attention heads.</retdesc></docstring>
 The [VisionEncoderDecoderModel](/docs/transformers/master/en/model_doc/visionencoderdecoder#transformers.VisionEncoderDecoderModel) forward method, overrides the `__call__` special method.
 
 <Tip>
@@ -299,6 +263,40 @@ the latter silently ignores them.
 
 
 
+
+
+
+
+Examples:
+
+```python
+>>> from transformers import TrOCRProcessor, VisionEncoderDecoderModel
+>>> import requests
+>>> from PIL import Image
+>>> import torch
+
+>>> processor = TrOCRProcessor.from_pretrained('microsoft/trocr-base-handwritten')
+>>> model = VisionEncoderDecoderModel.from_pretrained('microsoft/trocr-base-handwritten')
+
+>>> # load image from the IAM dataset
+>>> url = "https://fki.tic.heia-fr.ch/static/img/a01-122-02.jpg"
+>>> image = Image.open(requests.get(url, stream=True).raw).convert("RGB")
+
+>>> # training
+>>> model.config.decoder_start_token_id = processor.tokenizer.cls_token_id
+>>> model.config.pad_token_id = processor.tokenizer.pad_token_id
+>>> model.config.vocab_size = model.config.decoder.vocab_size
+
+>>> pixel_values = processor(image, return_tensors="pt").pixel_values
+>>> text = "hello world"
+>>> labels = processor.tokenizer(text, return_tensors="pt").input_ids
+>>> outputs = model(pixel_values=pixel_values, labels=labels)
+>>> loss = outputs.loss
+
+>>> # inference (generation)
+>>> generated_ids = model.generate(pixel_values)
+>>> generated_text = processor.batch_decode(generated_ids, skip_special_tokens=True)[0]
+```
 
 </div>
 <div class="docstring">
@@ -445,73 +443,38 @@ encoder module and another one as decoder module when created with the
   more detail.
 - **return_dict** (`bool`, *optional*) --
   If set to `True`, the model will return a `FlaxSeq2SeqLMOutput` instead
-  of a plain tuple.
+  of a plain tuple.</paramsdesc><paramgroups>0</paramgroups><rettype>[transformers.modeling_flax_outputs.FlaxSeq2SeqLMOutput](/docs/transformers/master/en/main_classes/output#transformers.modeling_flax_outputs.FlaxSeq2SeqLMOutput) or `tuple(torch.FloatTensor)`</rettype><retdesc>A [transformers.modeling_flax_outputs.FlaxSeq2SeqLMOutput](/docs/transformers/master/en/main_classes/output#transformers.modeling_flax_outputs.FlaxSeq2SeqLMOutput) or a tuple of
+`torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising various
+elements depending on the configuration ([VisionEncoderDecoderConfig](/docs/transformers/master/en/model_doc/visionencoderdecoder#transformers.VisionEncoderDecoderConfig)) and inputs.
 
+- **logits** (`jnp.ndarray` of shape `(batch_size, sequence_length, config.vocab_size)`) -- Prediction scores of the language modeling head (scores for each vocabulary token before SoftMax).
+- **past_key_values** (`tuple(tuple(jnp.ndarray))`, *optional*, returned when `use_cache=True` is passed or when `config.use_cache=True`) -- Tuple of `tuple(jnp.ndarray)` of length `config.n_layers`, with each tuple having 2 tensors of
+  shape `(batch_size, num_heads, sequence_length, embed_size_per_head)`) and 2 additional tensors of
+  shape `(batch_size, num_heads, encoder_sequence_length, embed_size_per_head)`.
 
-  Returns --
-  [transformers.modeling_flax_outputs.FlaxSeq2SeqLMOutput](/docs/transformers/master/en/main_classes/output#transformers.modeling_flax_outputs.FlaxSeq2SeqLMOutput) or `tuple(torch.FloatTensor)`: A [transformers.modeling_flax_outputs.FlaxSeq2SeqLMOutput](/docs/transformers/master/en/main_classes/output#transformers.modeling_flax_outputs.FlaxSeq2SeqLMOutput) or a tuple of
-  `torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising various
-  elements depending on the configuration ([VisionEncoderDecoderConfig](/docs/transformers/master/en/model_doc/visionencoderdecoder#transformers.VisionEncoderDecoderConfig)) and inputs.
+  Contains pre-computed hidden-states (key and values in the self-attention blocks and in the cross-attention
+  blocks) that can be used (see `past_key_values` input) to speed up sequential decoding.
+- **decoder_hidden_states** (`tuple(jnp.ndarray)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `jnp.ndarray` (one for the output of the embeddings + one for the output of each layer) of
+  shape `(batch_size, sequence_length, hidden_size)`.
 
-  - **logits** (`jnp.ndarray` of shape `(batch_size, sequence_length, config.vocab_size)`) -- Prediction scores of the language modeling head (scores for each vocabulary token before SoftMax).
-  - **past_key_values** (`tuple(tuple(jnp.ndarray))`, *optional*, returned when `use_cache=True` is passed or when `config.use_cache=True`) -- Tuple of `tuple(jnp.ndarray)` of length `config.n_layers`, with each tuple having 2 tensors of
-    shape `(batch_size, num_heads, sequence_length, embed_size_per_head)`) and 2 additional tensors of
-    shape `(batch_size, num_heads, encoder_sequence_length, embed_size_per_head)`.
+  Hidden-states of the decoder at the output of each layer plus the initial embedding outputs.
+- **decoder_attentions** (`tuple(jnp.ndarray)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `jnp.ndarray` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
 
-    Contains pre-computed hidden-states (key and values in the self-attention blocks and in the cross-attention
-    blocks) that can be used (see `past_key_values` input) to speed up sequential decoding.
-  - **decoder_hidden_states** (`tuple(jnp.ndarray)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `jnp.ndarray` (one for the output of the embeddings + one for the output of each layer) of
-    shape `(batch_size, sequence_length, hidden_size)`.
+  Attentions weights of the decoder, after the attention softmax, used to compute the weighted average in the
+  self-attention heads.
+- **cross_attentions** (`tuple(jnp.ndarray)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `jnp.ndarray` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
 
-    Hidden-states of the decoder at the output of each layer plus the initial embedding outputs.
-  - **decoder_attentions** (`tuple(jnp.ndarray)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `jnp.ndarray` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+  Attentions weights of the decoder's cross-attention layer, after the attention softmax, used to compute the
+  weighted average in the cross-attention heads.
+- **encoder_last_hidden_state** (`jnp.ndarray` of shape `(batch_size, sequence_length, hidden_size)`, *optional*) -- Sequence of hidden-states at the output of the last layer of the encoder of the model.
+- **encoder_hidden_states** (`tuple(jnp.ndarray)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `jnp.ndarray` (one for the output of the embeddings + one for the output of each layer) of
+  shape `(batch_size, sequence_length, hidden_size)`.
 
-    Attentions weights of the decoder, after the attention softmax, used to compute the weighted average in the
-    self-attention heads.
-  - **cross_attentions** (`tuple(jnp.ndarray)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `jnp.ndarray` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
+  Hidden-states of the encoder at the output of each layer plus the initial embedding outputs.
+- **encoder_attentions** (`tuple(jnp.ndarray)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `jnp.ndarray` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
 
-    Attentions weights of the decoder's cross-attention layer, after the attention softmax, used to compute the
-    weighted average in the cross-attention heads.
-  - **encoder_last_hidden_state** (`jnp.ndarray` of shape `(batch_size, sequence_length, hidden_size)`, *optional*) -- Sequence of hidden-states at the output of the last layer of the encoder of the model.
-  - **encoder_hidden_states** (`tuple(jnp.ndarray)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `jnp.ndarray` (one for the output of the embeddings + one for the output of each layer) of
-    shape `(batch_size, sequence_length, hidden_size)`.
-
-    Hidden-states of the encoder at the output of each layer plus the initial embedding outputs.
-  - **encoder_attentions** (`tuple(jnp.ndarray)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `jnp.ndarray` (one for each layer) of shape `(batch_size, num_heads, sequence_length, sequence_length)`.
-
-    Attentions weights of the encoder, after the attention softmax, used to compute the weighted average in the
-    self-attention heads.
-
-
-Examples --
-
-```python --
- transformers import FlaxVisionEncoderDecoderModel, ViTFeatureExtractor, GPT2Tokenizer
- PIL import Image
-rt requests
-
-= 'http
-e = Image.open(requests.get(url, stream=True).raw)
-
-ure_extractor = ViTFeatureExtractor.from_pretrained('google/vit-base-patch16-224-in21k')
-
-ad output tokenizer
-nizer_output = GPT2Tokenizer.from_pretrained('gpt2')
-
-itialize a vit-gpt2 from pretrained ViT and GPT2 models. Note that the cross-attention layers will be randomly initialized
-l = FlaxVisionEncoderDecoderModel.from_encoder_decoder_pretrained('vit', 'gpt2')
-
-l_values = feature_extractor(images=image, return_tensors="np").pixel_values
-
-e GPT2's eos_token as the pad as well as eos token
-l.config.eos_token_id = model.config.decoder.eos_token_id
-l.config.pad_token_id = model.config.eos_token_id
-
-neration
-ences = model.generate(pixel_values, num_beams=4, max_length=12).sequences
-
-ions = tokenizer_output.batch_decode(sequences, skip_special_tokens=True)
-``` --</paramsdesc><paramgroups>0</paramgroups></docstring>
+  Attentions weights of the encoder, after the attention softmax, used to compute the weighted average in the
+  self-attention heads.</retdesc></docstring>
 The [FlaxVisionEncoderDecoderModel](/docs/transformers/master/en/model_doc/visionencoderdecoder#transformers.FlaxVisionEncoderDecoderModel) forward method, overrides the `__call__` special method.
 
 <Tip>
@@ -524,6 +487,39 @@ the latter silently ignores them.
 
 
 
+
+
+
+
+Examples:
+
+```python
+>>> from transformers import FlaxVisionEncoderDecoderModel, ViTFeatureExtractor, GPT2Tokenizer
+>>> from PIL import Image
+>>> import requests
+
+>>> url = 'http://images.cocodataset.org/val2017/000000039769.jpg'
+>>> image = Image.open(requests.get(url, stream=True).raw)
+
+>>> feature_extractor = ViTFeatureExtractor.from_pretrained('google/vit-base-patch16-224-in21k')
+
+>>> # load output tokenizer
+>>> tokenizer_output = GPT2Tokenizer.from_pretrained('gpt2')
+
+>>> # initialize a vit-gpt2 from pretrained ViT and GPT2 models. Note that the cross-attention layers will be randomly initialized
+>>> model = FlaxVisionEncoderDecoderModel.from_encoder_decoder_pretrained('vit', 'gpt2')
+
+>>> pixel_values = feature_extractor(images=image, return_tensors="np").pixel_values
+
+>>> # use GPT2's eos_token as the pad as well as eos token
+>>> model.config.eos_token_id = model.config.decoder.eos_token_id
+>>> model.config.pad_token_id = model.config.eos_token_id
+
+>>> # generation
+>>> sequences = model.generate(pixel_values, num_beams=4, max_length=12).sequences
+
+>>> captions = tokenizer_output.batch_decode(sequences, skip_special_tokens=True)
+```
 
 </div>
 <div class="docstring">
