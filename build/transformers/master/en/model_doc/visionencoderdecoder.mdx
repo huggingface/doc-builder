@@ -97,9 +97,8 @@ Examples:
 ```
 
 
-
 <div class="docstring">
-<docstring><name>from\_encoder\_decoder\_configs</name><anchor>transformers.VisionEncoderDecoderConfig.from_encoder_decoder_configs</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/vision_encoder_decoder/configuration_vision_encoder_decoder.py#L92</source><parameters>[{"name": "encoder_config", "val": ": PretrainedConfig"}, {"name": "decoder_config", "val": ": PretrainedConfig"}, {"name": "**kwargs", "val": ""}]</parameters><rettype>[VisionEncoderDecoderConfig](/docs/transformers/master/en/model_doc/visionencoderdecoder#transformers.VisionEncoderDecoderConfig)</rettype><retdesc>An instance of a configuration object</retdesc></docstring>
+<docstring><name>from\_encoder\_decoder\_configs</name><anchor>transformers.VisionEncoderDecoderConfig.from_encoder_decoder_configs</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/vision_encoder_decoder/configuration_vision_encoder_decoder.py#L93</source><parameters>[{"name": "encoder_config", "val": ": PretrainedConfig"}, {"name": "decoder_config", "val": ": PretrainedConfig"}, {"name": "**kwargs", "val": ""}]</parameters><rettype>[VisionEncoderDecoderConfig](/docs/transformers/master/en/model_doc/visionencoderdecoder#transformers.VisionEncoderDecoderConfig)</rettype><retdesc>An instance of a configuration object</retdesc></docstring>
 
 Instantiate a [VisionEncoderDecoderConfig](/docs/transformers/master/en/model_doc/visionencoderdecoder#transformers.VisionEncoderDecoderConfig) (or a derived class) from a pre-trained encoder
 model configuration and decoder model configuration.
@@ -111,7 +110,7 @@ model configuration and decoder model configuration.
 
 </div>
 <div class="docstring">
-<docstring><name>to\_dict</name><anchor>transformers.VisionEncoderDecoderConfig.to_dict</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/vision_encoder_decoder/configuration_vision_encoder_decoder.py#L109</source><parameters>[]</parameters><rettype>`Dict[str, any]`</rettype><retdesc>Dictionary of all the attributes that make up this configuration instance,</retdesc></docstring>
+<docstring><name>to\_dict</name><anchor>transformers.VisionEncoderDecoderConfig.to_dict</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/vision_encoder_decoder/configuration_vision_encoder_decoder.py#L110</source><parameters>[]</parameters><rettype>`Dict[str, any]`</rettype><retdesc>Dictionary of all the attributes that make up this configuration instance,</retdesc></docstring>
 
 Serializes this instance to a Python dictionary. Override the default *to_dict()* from *PretrainedConfig*.
 
@@ -258,34 +257,36 @@ elements depending on the configuration ([VisionEncoderDecoderConfig](/docs/tran
   self-attention heads.
 
 
-Examples --:
+Examples --
 
->>> from transformers import TrOCRProcessor, VisionEncoderDecoderModel
->>> import requests
->>> from PIL import Image
->>> import torch
+```python --
+ transformers import TrOCRProcessor, VisionEncoderDecoderModel
+rt requests
+ PIL import Image
+rt torch
 
->>> processor = TrOCRProcessor.from_pretrained('microsoft/trocr-base-handwritten')
->>> model = VisionEncoderDecoderModel.from_pretrained('microsoft/trocr-base-handwritten')
+essor = TrOCRProcessor.from_pretrained('microsoft/trocr-base-handwritten')
+l = VisionEncoderDecoderModel.from_pretrained('microsoft/trocr-base-handwritten')
 
->>> # load image from the IAM dataset
->>> url = "https://fki.tic.heia-fr.ch/static/img/a01-122-02.jpg"
->>> image = Image.open(requests.get(url, stream=True).raw).convert("RGB")
+ad image from the IAM dataset
+= "https
+e = Image.open(requests.get(url, stream=True).raw).convert("RGB")
 
->>> # training
->>> model.config.decoder_start_token_id = processor.tokenizer.cls_token_id
->>> model.config.pad_token_id = processor.tokenizer.pad_token_id
->>> model.config.vocab_size = model.config.decoder.vocab_size
+aining
+l.config.decoder_start_token_id = processor.tokenizer.cls_token_id
+l.config.pad_token_id = processor.tokenizer.pad_token_id
+l.config.vocab_size = model.config.decoder.vocab_size
 
->>> pixel_values = processor(image, return_tensors="pt").pixel_values
->>> text = "hello world"
->>> labels = processor.tokenizer(text, return_tensors="pt").input_ids
->>> outputs = model(pixel_values=pixel_values, labels=labels)
->>> loss = outputs.loss
+l_values = processor(image, return_tensors="pt").pixel_values
+ = "hello world"
+ls = processor.tokenizer(text, return_tensors="pt").input_ids
+uts = model(pixel_values=pixel_values, labels=labels)
+ = outputs.loss
 
->>> # inference (generation)
->>> generated_ids = model.generate(pixel_values)
->>> generated_text = processor.batch_decode(generated_ids, skip_special_tokens=True)[0]</paramsdesc><paramgroups>0</paramgroups></docstring>
+ference (generation)
+rated_ids = model.generate(pixel_values)
+rated_text = processor.batch_decode(generated_ids, skip_special_tokens=True)[0]
+``` --</paramsdesc><paramgroups>0</paramgroups></docstring>
 The [VisionEncoderDecoderModel](/docs/transformers/master/en/model_doc/visionencoderdecoder#transformers.VisionEncoderDecoderModel) forward method, overrides the `__call__` special method.
 
 <Tip>
@@ -482,33 +483,35 @@ encoder module and another one as decoder module when created with the
     self-attention heads.
 
 
-Examples --:
+Examples --
 
->>> from transformers import FlaxVisionEncoderDecoderModel, ViTFeatureExtractor, GPT2Tokenizer
->>> from PIL import Image
->>> import requests
+```python --
+ transformers import FlaxVisionEncoderDecoderModel, ViTFeatureExtractor, GPT2Tokenizer
+ PIL import Image
+rt requests
 
->>> url = 'http://images.cocodataset.org/val2017/000000039769.jpg'
->>> image = Image.open(requests.get(url, stream=True).raw)
+= 'http
+e = Image.open(requests.get(url, stream=True).raw)
 
->>> feature_extractor = ViTFeatureExtractor.from_pretrained('google/vit-base-patch16-224-in21k')
+ure_extractor = ViTFeatureExtractor.from_pretrained('google/vit-base-patch16-224-in21k')
 
->>> # load output tokenizer
->>> tokenizer_output = GPT2Tokenizer.from_pretrained('gpt2')
+ad output tokenizer
+nizer_output = GPT2Tokenizer.from_pretrained('gpt2')
 
->>> # initialize a vit-gpt2 from pretrained ViT and GPT2 models. Note that the cross-attention layers will be randomly initialized
->>> model = FlaxVisionEncoderDecoderModel.from_encoder_decoder_pretrained('vit', 'gpt2')
+itialize a vit-gpt2 from pretrained ViT and GPT2 models. Note that the cross-attention layers will be randomly initialized
+l = FlaxVisionEncoderDecoderModel.from_encoder_decoder_pretrained('vit', 'gpt2')
 
->>> pixel_values = feature_extractor(images=image, return_tensors="np").pixel_values
+l_values = feature_extractor(images=image, return_tensors="np").pixel_values
 
->>> # use GPT2's eos_token as the pad as well as eos token
->>> model.config.eos_token_id = model.config.decoder.eos_token_id
->>> model.config.pad_token_id = model.config.eos_token_id
+e GPT2's eos_token as the pad as well as eos token
+l.config.eos_token_id = model.config.decoder.eos_token_id
+l.config.pad_token_id = model.config.eos_token_id
 
->>> # generation
->>> sequences = model.generate(pixel_values, num_beams=4, max_length=12).sequences
+neration
+ences = model.generate(pixel_values, num_beams=4, max_length=12).sequences
 
->>> captions = tokenizer_output.batch_decode(sequences, skip_special_tokens=True)</paramsdesc><paramgroups>0</paramgroups></docstring>
+ions = tokenizer_output.batch_decode(sequences, skip_special_tokens=True)
+``` --</paramsdesc><paramgroups>0</paramgroups></docstring>
 The [FlaxVisionEncoderDecoderModel](/docs/transformers/master/en/model_doc/visionencoderdecoder#transformers.FlaxVisionEncoderDecoderModel) forward method, overrides the `__call__` special method.
 
 <Tip>
@@ -524,7 +527,7 @@ the latter silently ignores them.
 
 </div>
 <div class="docstring">
-<docstring><name>from\_encoder\_decoder\_pretrained</name><anchor>transformers.FlaxVisionEncoderDecoderModel.from_encoder_decoder_pretrained</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/vision_encoder_decoder/modeling_flax_vision_encoder_decoder.py#L706</source><parameters>[{"name": "encoder_pretrained_model_name_or_path", "val": ": typing.Union[str, os.PathLike, NoneType] = None"}, {"name": "decoder_pretrained_model_name_or_path", "val": ": typing.Union[str, os.PathLike, NoneType] = None"}, {"name": "*model_args", "val": ""}, {"name": "**kwargs", "val": ""}]</parameters></docstring>
+<docstring><name>from\_encoder\_decoder\_pretrained</name><anchor>transformers.FlaxVisionEncoderDecoderModel.from_encoder_decoder_pretrained</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/vision_encoder_decoder/modeling_flax_vision_encoder_decoder.py#L707</source><parameters>[{"name": "encoder_pretrained_model_name_or_path", "val": ": typing.Union[str, os.PathLike, NoneType] = None"}, {"name": "decoder_pretrained_model_name_or_path", "val": ": typing.Union[str, os.PathLike, NoneType] = None"}, {"name": "*model_args", "val": ""}, {"name": "**kwargs", "val": ""}]</parameters></docstring>
 
 Instantiate an encoder and a decoder from one or two base classes of the library from pretrained model
 checkpoints.
