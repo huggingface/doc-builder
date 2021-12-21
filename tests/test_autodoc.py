@@ -258,8 +258,6 @@ tuple before.
 
 
 """
-        print(model_output_doc)
-        print(document_object("file_utils.ModelOutput", transformers, page_info))
         self.assertEqual(document_object("file_utils.ModelOutput", transformers, page_info), model_output_doc)
 
     def test_find_document_methods(self):
