@@ -31,10 +31,8 @@ import CodeBlock from "./CodeBlock.svelte";
 import CodeBlockFw from "./CodeBlockFw.svelte";
 import ColabDropdown from "./ColabDropdown.svelte";
 import IconCopyLink from "./IconCopyLink.svelte";
-
 export let fw: "pt" | "tf"
 </script>
-
 <!--Copyright 2020 The HuggingFace Team. All rights reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
@@ -82,11 +80,11 @@ chance that you don't agree with some of the library's philosophies or design ch
 found that the fundamental design choices and philosophies of the library are crucial to efficiently scale 🤗
 Transformers while keeping maintenance costs at a reasonable level.
 
-A good first starting point to better understand the library is to read the [documentation of our philosophy](/docs/transformers/master/en/philosophy). As a result of our way of working, there are some choices that we try to apply to all models:
+A good first starting point to better understand the library is to read the [documentation of our philosophy](philosophy). As a result of our way of working, there are some choices that we try to apply to all models:
 
--  Composition is generally favored over-abstraction
--  Duplicating code is not always bad if it strongly improves the readability or accessibility of a model
--  Model files are as self-contained as possible so that when you read the code of a specific model, you ideally only
+- Composition is generally favored over-abstraction
+- Duplicating code is not always bad if it strongly improves the readability or accessibility of a model
+- Model files are as self-contained as possible so that when you read the code of a specific model, you ideally only
   have to look into the respective `modeling_....py` file.
 
 In our opinion, the library's code is not just a means to provide a product, *e.g.* the ability to use BERT for
@@ -193,7 +191,7 @@ effectively re-implement the model in 🤗 Transformers. That being said, you do
 theoretical aspects, but rather focus on the practical ones, namely:
 
 -  What type of model is *brand_new_bert*? BERT-like encoder-only model? GPT2-like decoder-only model? BART-like
-  encoder-decoder model? Look at the [model_summary](/docs/transformers/master/en/model_summary) if you're not familiar with the differences between those.
+  encoder-decoder model? Look at the [model_summary](model_summary) if you're not familiar with the differences between those.
 -  What are the applications of *brand_new_bert*? Text classification? Text generation? Seq2Seq tasks, *e.g.,*
   summarization?
 -  What is the novel feature of the model making it different from BERT/GPT-2/BART?
@@ -263,15 +261,15 @@ Successfully running the official pretrained model in the original repository is
 From our experience, it is very important to spend some time getting familiar with the original code-base. You need to
 figure out the following:
 
--  Where to find the pretrained weights?
--  How to load the pretrained weights into the corresponding model?
--  How to run the tokenizer independently from the model?
--  Trace one forward pass so that you know which classes and functions are required for a simple forward pass. Usually,
+- Where to find the pretrained weights?
+- How to load the pretrained weights into the corresponding model?
+- How to run the tokenizer independently from the model?
+- Trace one forward pass so that you know which classes and functions are required for a simple forward pass. Usually,
   you only have to reimplement those functions.
--  Be able to locate the important components of the model: Where is the model's class? Are there model sub-classes,
+- Be able to locate the important components of the model: Where is the model's class? Are there model sub-classes,
   *e.g.* EncoderModel, DecoderModel? Where is the self-attention layer? Are there multiple different attention layers,
   *e.g.* *self-attention*, *cross-attention*...?
--  How can you debug the model in the original environment of the repo? Do you have to add *print* statements, can you
+- How can you debug the model in the original environment of the repo? Do you have to add *print* statements, can you
   work with an interactive debugger like *ipdb*, or should you use an efficient IDE to debug the model, like PyCharm?
 
 It is very important that before you start the porting process, that you can **efficiently** debug code in the original
@@ -303,7 +301,7 @@ For each code-base, a good first step is always to load a **small** pretrained c
 single forward pass using a dummy integer vector of input IDs as an input. Such a script could look like this (in
 pseudocode):
 
-```bash
+```python
 model = BrandNewBertModel.load_pretrained_checkpoint(/path/to/checkpoint/)
 input_ids = [0, 4, 5, 2, 3, 7, 9]  # vector of input ids
 original_output = model.predict(input_ids)
@@ -311,9 +309,9 @@ original_output = model.predict(input_ids)
 
 Next, regarding the debugging strategy, there are generally a few from which to choose from:
 
--  Decompose the original model into many small testable components and run a forward pass on each of those for
+- Decompose the original model into many small testable components and run a forward pass on each of those for
   verification
--  Decompose the original model only into the original *tokenizer* and the original *model*, run a forward pass on
+- Decompose the original model only into the original *tokenizer* and the original *model*, run a forward pass on
   those, and use intermediate print statements or breakpoints for verification
 
 Again, it is up to you which strategy to choose. Often, one or the other is advantageous depending on the original code
@@ -348,18 +346,18 @@ starting layers first and the ending layers last.
 It is recommended that you retrieve the output, either by print statements or sub-component functions, of the following
 layers in the following order:
 
-1.  Retrieve the input IDs passed to the model
-2.  Retrieve the word embeddings
-3.  Retrieve the input of the first Transformer layer
-4.  Retrieve the output of the first Transformer layer
-5.  Retrieve the output of the following n - 1 Transformer layers
-6.  Retrieve the output of the whole BrandNewBert Model
+1. Retrieve the input IDs passed to the model
+2. Retrieve the word embeddings
+3. Retrieve the input of the first Transformer layer
+4. Retrieve the output of the first Transformer layer
+5. Retrieve the output of the following n - 1 Transformer layers
+6. Retrieve the output of the whole BrandNewBert Model
 
 Input IDs should thereby consists of an array of integers, *e.g.* `input_ids = [0, 4, 4, 3, 2, 4, 1, 7, 19]`
 
 The outputs of the following layers often consist of multi-dimensional float arrays and can look like this:
 
-```bash
+```
 [[
  [-0.1465, -0.6501,  0.1993,  ...,  0.1451,  0.3430,  0.6024],
  [-0.4417, -0.5920,  0.3450,  ..., -0.3062,  0.6182,  0.7132],
@@ -379,26 +377,26 @@ outputs of the 🤗 Transformers version multiple times against the intermediate
 *brand_new_bert* in which case an **efficient** debugging environment of the original repository is absolutely
 important. Here is some advice is to make your debugging environment as efficient as possible.
 
--  Find the best way of debugging intermediate results. Is the original repository written in PyTorch? Then you should
+- Find the best way of debugging intermediate results. Is the original repository written in PyTorch? Then you should
   probably take the time to write a longer script that decomposes the original model into smaller sub-components to
   retrieve intermediate values. Is the original repository written in Tensorflow 1? Then you might have to rely on
   TensorFlow print operations like [tf.print](https://www.tensorflow.org/api_docs/python/tf/print) to output
   intermediate values. Is the original repository written in Jax? Then make sure that the model is **not jitted** when
   running the forward pass, *e.g.* check-out [this link](https://github.com/google/jax/issues/196).
--  Use the smallest pretrained checkpoint you can find. The smaller the checkpoint, the faster your debug cycle
+- Use the smallest pretrained checkpoint you can find. The smaller the checkpoint, the faster your debug cycle
   becomes. It is not efficient if your pretrained model is so big that your forward pass takes more than 10 seconds.
   In case only very large checkpoints are available, it might make more sense to create a dummy model in the new
   environment with randomly initialized weights and save those weights for comparison with the 🤗 Transformers version
   of your model
--  Make sure you are using the easiest way of calling a forward pass in the original repository. Ideally, you want to
+- Make sure you are using the easiest way of calling a forward pass in the original repository. Ideally, you want to
   find the function in the original repository that **only** calls a single forward pass, *i.e.* that is often called
   `predict`, `evaluate`, `forward` or `__call__`. You don't want to debug a function that calls `forward`
   multiple times, *e.g.* to generate text, like `autoregressive_sample`, `generate`.
--  Try to separate the tokenization from the model's *forward* pass. If the original repository shows examples where
+- Try to separate the tokenization from the model's *forward* pass. If the original repository shows examples where
   you have to input a string, then try to find out where in the forward call the string input is changed to input ids
   and start from this point. This might mean that you have to possibly write a small script yourself or change the
   original code so that you can directly input the ids instead of an input string.
--  Make sure that the model in your debugging setup is **not** in training mode, which often causes the model to yield
+- Make sure that the model in your debugging setup is **not** in training mode, which often causes the model to yield
   random outputs due to multiple dropout layers in the model. Make sure that the forward pass in your debugging
   environment is **deterministic** so that the dropout layers are not used. Or use *transformers.file_utils.set_seed*
   if the old and new implementations are in the same framework.
@@ -409,7 +407,7 @@ The following section gives you more specific details/tips on how you can do thi
 
 Next, you can finally start adding new code to 🤗 Transformers. Go into the clone of your 🤗 Transformers' fork:
 
-```
+```bash
 cd transformers
 ```
 
@@ -437,27 +435,27 @@ You should do the following:
 
 1. Create a branch with a descriptive name from your master branch
 
-```
+```bash
 git checkout -b add_brand_new_bert
 ```
 
 2. Commit the automatically generated code:
 
-```
+```bash
 git add .
 git commit
 ```
 
 3. Fetch and rebase to current master
 
-```
+```bash
 git fetch upstream
 git rebase upstream/master
 ```
 
 4. Push the changes to your account using:
 
-```
+```bash
 git push -u origin a-descriptive-name-for-my-changes
 ```
 
@@ -471,7 +469,7 @@ In the following, whenever you have done some progress, don't forget to commit y
 that it shows in the pull request. Additionally, you should make sure to update your work with the current master from
 time to time by doing:
 
-```
+```bash
 git fetch upstream
 git merge upstream/master
 ```
@@ -529,8 +527,8 @@ the same framework as *brand_new_bert*. Usually, it is enough to copy an already
 slightly adapt it for your use case. Don't hesitate to ask the Hugging Face team to point you to a similar already
 existing conversion script for your model.
 
--  If you are porting a model from TensorFlow to PyTorch, a good starting point might be BERT's conversion script [here](https://github.com/huggingface/transformers/blob/7acfa95afb8194f8f9c1f4d2c6028224dbed35a2/src/transformers/models/bert/modeling_bert.py#L91)
--  If you are porting a model from PyTorch to PyTorch, a good starting point might be BART's conversion script [here](https://github.com/huggingface/transformers/blob/master/src/transformers/models/bart/convert_bart_original_pytorch_checkpoint_to_pytorch.py)
+- If you are porting a model from TensorFlow to PyTorch, a good starting point might be BERT's conversion script [here](https://github.com/huggingface/transformers/blob/7acfa95afb8194f8f9c1f4d2c6028224dbed35a2/src/transformers/models/bert/modeling_bert.py#L91)
+- If you are porting a model from PyTorch to PyTorch, a good starting point might be BART's conversion script [here](https://github.com/huggingface/transformers/blob/master/src/transformers/models/bart/convert_bart_original_pytorch_checkpoint_to_pytorch.py)
 
 In the following, we'll quickly explain how PyTorch models store layer weights and define layer names. In PyTorch, the
 name of a layer is defined by the name of the class attribute you give the layer. Let's define a dummy model in
@@ -558,7 +556,7 @@ print(model)
 
 This will print out the following:
 
-```bash
+```
 SimpleModel(
   (dense): Linear(in_features=10, out_features=10, bias=True)
   (intermediate): Linear(in_features=10, out_features=10, bias=True)
@@ -575,7 +573,7 @@ print(model.dense.weight.data)
 
 to see that the weights were randomly initialized
 
-```bash
+```
 tensor([[-0.0818,  0.2207, -0.0749, -0.0030,  0.0045, -0.1569, -0.1598,  0.0212,
          -0.2077,  0.2157],
         [ 0.1044,  0.0201,  0.0990,  0.2482,  0.3116,  0.2509,  0.2866, -0.2190,
@@ -618,7 +616,7 @@ statements for the shape and print out the names of the checkpoints weights. E.g
 
 ```python
 assert (
-     model_pointer.weight.shape == pretrained_weight.shape
+    model_pointer.weight.shape == pretrained_weight.shape
 ), f"Pointer shape of random weight &amp;lcub;model_pointer.shape} and array shape of checkpoint weight &amp;lcub;pretrained_weight.shape} mismatched"
 ```
 
@@ -677,10 +675,10 @@ equivalent to a precision of `1e-3`. First, you should ensure that the output sh
 implementation. Next, you should make sure that the output values are identical as well. This one of the most difficult
 parts of adding a new model. Common mistakes why the outputs are not identical are:
 
--  Some layers were not added, *i.e.* an *activation* layer was not added, or the residual connection was forgotten
--  The word embedding matrix was not tied
--  The wrong positional embeddings are used because the original implementation uses on offset
--  Dropout is applied during the forward pass. To fix this make sure *model.training is False* and that no dropout
+- Some layers were not added, *i.e.* an *activation* layer was not added, or the residual connection was forgotten
+- The word embedding matrix was not tied
+- The wrong positional embeddings are used because the original implementation uses on offset
+- Dropout is applied during the forward pass. To fix this make sure *model.training is False* and that no dropout
   layer is falsely activated during the forward pass, *i.e.* pass *self.training* to [PyTorch's functional dropout](https://pytorch.org/docs/stable/nn.functional.html?highlight=dropout#torch.nn.functional.dropout)
 
 The best way to fix the problem is usually to look at the forward pass of the original implementation and the 🤗
@@ -711,20 +709,15 @@ pytest tests/test_modeling_brand_new_bert.py
 
 Having fixed all common tests, it is now crucial to ensure that all the nice work you have done is well tested, so that
 
--  
-
-  a) The community can easily understand your work by looking at specific tests of *brand_new_bert*
-
--  
-
-  b) Future changes to your model will not break any important feature of the model.
+- a) The community can easily understand your work by looking at specific tests of *brand_new_bert*
+- b) Future changes to your model will not break any important feature of the model.
 
 At first, integration tests should be added. Those integration tests essentially do the same as the debugging scripts
 you used earlier to implement the model to 🤗 Transformers. A template of those model tests is already added by the
 Cookiecutter, called `BrandNewBertModelIntegrationTests` and only has to be filled out by you. To ensure that those
 tests are passing, run
 
-```python
+```bash
 RUN_SLOW=1 pytest -sv tests/test_modeling_brand_new_bert.py::BrandNewBertModelIntegrationTests
 ```
 
@@ -738,9 +731,9 @@ Second, all features that are special to *brand_new_bert* should be tested addit
 `BrandNewBertModelTester`/``BrandNewBertModelTest`. This part is often forgotten but is extremely useful in two
 ways:
 
--  It helps to transfer the knowledge you have acquired during the model addition to the community by showing how the
+- It helps to transfer the knowledge you have acquired during the model addition to the community by showing how the
   special features of *brand_new_bert* should work.
--  Future contributors can quickly test changes to the model by running those special tests.
+- Future contributors can quickly test changes to the model by running those special tests.
 
 
 **9. Implement the tokenizer**
@@ -754,7 +747,7 @@ Transformers' implementation of the tokenizer.
 To ensure that the tokenizer works correctly, it is recommended to first create a script in the original repository
 that inputs a string and returns the `input_ids``. It could look similar to this (in pseudo-code):
 
-```bash
+```python
 input_str = "This is a long example input string containing special characters .$?-, numbers 2872 234 12 and words."
 model = BrandNewBertModel.load_pretrained_checkpoint(/path/to/checkpoint/)
 input_ids = model.tokenize(input_str)
