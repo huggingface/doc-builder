@@ -38,10 +38,8 @@ import CodeBlock from "./CodeBlock.svelte";
 import CodeBlockFw from "./CodeBlockFw.svelte";
 import ColabDropdown from "./ColabDropdown.svelte";
 import IconCopyLink from "./IconCopyLink.svelte";
-
 export let fw: "pt" | "tf"
 </script>
-
 <!--Copyright 2021 NVIDIA Corporation and The HuggingFace Team. All rights reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
@@ -96,9 +94,10 @@ for quantizing tensors, with `QuantDescriptor` defining how the tensor should be
 Quantization Toolkit userguide](https://docs.nvidia.com/deeplearning/tensorrt/pytorch-quantization-toolkit/docs/userguide.html) for more details.
 
 Before creating QDQBERT model, one has to set the default `QuantDescriptor` defining default tensor quantizers.
+
 Example:
 
-```
+```python
 >>> import pytorch_quantization.nn as quant_nn
 >>> from pytorch_quantization.tensor_quant import QuantDescriptor
 
@@ -115,7 +114,7 @@ Example:
 Calibration is the terminology of passing data samples to the quantizer and deciding the best scaling factors for
 tensors. After setting up the tensor quantizers, one can use the following example to calibrate the model:
 
-```
+```python
 >>> # Find the TensorQuantizer and enable calibration
 >>> for name, module in model.named_modules():
 >>>     if name.endswith('_input_quantizer'):
@@ -146,7 +145,7 @@ quantization will be broken into a pair of QuantizeLinear/DequantizeLinear ONNX 
 TensorQuantizer to use Pytorch’s own fake quantization functions, fake quantized model can be exported to ONNX, follow
 the instructions in [torch.onnx](https://pytorch.org/docs/stable/onnx.html). Example:
 
-```
+```python
 >>> from pytorch_quantization.nn import TensorQuantizer
 >>> TensorQuantizer.use_fb_fake_quant = True
 

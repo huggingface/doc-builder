@@ -15,10 +15,8 @@ import CodeBlock from "./CodeBlock.svelte";
 import CodeBlockFw from "./CodeBlockFw.svelte";
 import ColabDropdown from "./ColabDropdown.svelte";
 import IconCopyLink from "./IconCopyLink.svelte";
-
 export let fw: "pt" | "tf"
 </script>
-
 <!--Copyright 2020 The HuggingFace Team. All rights reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
@@ -44,7 +42,7 @@ Start by inheriting the base class `Pipeline`. with the 4 methods needed to impl
 `_forward`, `postprocess` and `_sanitize_parameters`.
 
 
-```
+```python
 from transformers import Pipeline
 
 class MyPipeline(Pipeline):
@@ -91,7 +89,7 @@ allows to keep the default arguments in the function definition which is always 
 
 A classic example would be a `top_k` argument in the post processing in classification tasks.
 
-```
+```python
 >>> pipe = pipeline("my-new-task")
 >>> pipe("This is a test")
 [&amp;lcub;"label": "1-star", "score": 0.8}, &amp;lcub;"label": "2-star", "score": 0.1}, &amp;lcub;"label": "3-star", "score": 0.05}
@@ -105,7 +103,7 @@ In order to achieve that, we'll update our `postprocess` method with a default p
 `_sanitize_parameters` to allow this new parameter.
 
 
-```
+```python
 def postprocess(self, model_outputs, top_k=5):
     best_class = model_outputs["logits"].softmax(-1)
     # Add logic to handle top_k

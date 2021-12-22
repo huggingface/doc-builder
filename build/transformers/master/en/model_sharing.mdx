@@ -40,10 +40,8 @@ import CodeBlock from "./CodeBlock.svelte";
 import CodeBlockFw from "./CodeBlockFw.svelte";
 import ColabDropdown from "./ColabDropdown.svelte";
 import IconCopyLink from "./IconCopyLink.svelte";
-
 export let fw: "pt" | "tf"
 </script>
-
 <!--Copyright 2020 The HuggingFace Team. All rights reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
@@ -73,9 +71,9 @@ Optionally, you can join an existing organization or create a new one.
 
 </Tip>
 
-We have seen in the [training tutorial](/docs/transformers/master/en/training): how to fine-tune a model on a given task. You have probably
-done something similar on your task, either using the model directly in your own training loop or using the
-`Trainer`/`TFTrainer` class. Let's see how you can share the result on the
+We have seen in the [training tutorial](training): how to fine-tune a model on a given task. You have probably
+done something similar on your task, either using the model `fit()` method, directly in your own training loop or using the
+[Trainer](/docs/transformers/master/en/main_classes/trainer#transformers.Trainer) class. Let's see how you can share the result on the
 [model hub](https://huggingface.co/models).
 
 <h2 id="model-versioning">Model versioning</h2>
@@ -94,10 +92,10 @@ branch.
 
 For instance:
 
-```
+```python
 >>> model = AutoModel.from_pretrained(
->>>   "julien-c/EsperBERTo-small",
->>>   revision="v2.0.1" # tag name, or branch name, or commit hash
+>>>     "julien-c/EsperBERTo-small",
+>>>     revision="v2.0.1" # tag name, or branch name, or commit hash
 >>> )
 ```
 
@@ -110,21 +108,19 @@ have access to a terminal, you cam just run the following command in the virtual
 Transformers:
 
 ```bash
-transformers-cli login
+huggingface-cli login
 ```
 
 It will store your access token in the Hugging Face cache folder (by default `~/.cache/`).
 
 If you don't have an easy access to a terminal (for instance in a Colab session), you can find a token linked to your
-account by going on *huggingface.co &amp;lt;https://huggingface.co/>*, click on your avatar on the top left corner, then on
+account by going on [huggingface.co](https://huggingface.co/), click on your avatar on the top left corner, then on
 *Edit profile* on the left, just beneath your profile picture. In the submenu *API Tokens*, you will find your API
 token that you can just copy.
 
 <h3 id="directly-push-your-model-to-the-hub">Directly push your model to the hub</h3>
 
-<iframe width="560" height="315" src="https://www.youtube.com/embed/Z1-XMy-GNLQ" title="YouTube video player"
-frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope;
-picture-in-picture" allowfullscreen></iframe>
+<Youtube id="Z1-XMy-GNLQ"/>
 
 Once you have an API token (either stored in the cache or copied and pasted in your notebook), you can directly push a
 finetuned model you saved in `save_directory` by calling:
@@ -198,9 +194,7 @@ model.push_to_hub(repo_url=my_repo_url)
 
 <h2 id="use-your-terminal-and-git">Use your terminal and git</h2>
 
-<iframe width="560" height="315" src="https://www.youtube.com/embed/rkCly_cbMBk" title="YouTube video player"
-frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope;
-picture-in-picture" allowfullscreen></iframe>
+<Youtube id="rkCly_cbMBk"/>
 
 <h3 id="basic-steps">Basic steps</h3>
 
@@ -275,13 +269,13 @@ installation page](https://pytorch.org/get-started/locally/#start-locally) to se
 First check that your model class exists in the other framework, that is try to import the same model by either adding
 or removing TF. For instance, if you trained a [DistilBertForSequenceClassification](/docs/transformers/master/en/model_doc/distilbert#transformers.DistilBertForSequenceClassification), try to type
 
-```
+```python
 >>> from transformers import TFDistilBertForSequenceClassification
 ```
 
 and if you trained a [TFDistilBertForSequenceClassification](/docs/transformers/master/en/model_doc/distilbert#transformers.TFDistilBertForSequenceClassification), try to type
 
-```
+```python
 >>> from transformers import DistilBertForSequenceClassification
 ```
 
@@ -291,7 +285,7 @@ since we're aiming for full parity between the two frameworks). In this case, sk
 Now, if you trained your model in PyTorch and have to create a TensorFlow version, adapt the following code to your
 model class:
 
-```
+```python
 >>> tf_model = TFDistilBertForSequenceClassification.from_pretrained("path/to/awesome-name-you-picked", from_pt=True)
 >>> tf_model.save_pretrained("path/to/awesome-name-you-picked")
 ```
@@ -299,7 +293,7 @@ model class:
 and if you trained your model in TensorFlow and have to create a PyTorch version, adapt the following code to your
 model class:
 
-```
+```python
 >>> pt_model = DistilBertForSequenceClassification.from_pretrained("path/to/awesome-name-you-picked", from_tf=True)
 >>> pt_model.save_pretrained("path/to/awesome-name-you-picked")
 ```
@@ -310,14 +304,14 @@ That's all there is to it!
 
 Make sure there are no garbage files in the directory you'll upload. It should only have:
 
-- a *config.json* file, which saves the [configuration](/docs/transformers/master/en/main_classes/configuration) of your model ;
+- a *config.json* file, which saves the [configuration](main_classes/configuration) of your model ;
 - a *pytorch_model.bin* file, which is the PyTorch checkpoint (unless you can't have it for some reason) ;
 - a *tf_model.h5* file, which is the TensorFlow checkpoint (unless you can't have it for some reason) ;
-- a *special_tokens_map.json*, which is part of your [tokenizer](/docs/transformers/master/en/main_classes/tokenizer) save;
-- a *tokenizer_config.json*, which is part of your [tokenizer](/docs/transformers/master/en/main_classes/tokenizer) save;
+- a *special_tokens_map.json*, which is part of your [tokenizer](main_classes/tokenizer) save;
+- a *tokenizer_config.json*, which is part of your [tokenizer](main_classes/tokenizer) save;
 - files named *vocab.json*, *vocab.txt*, *merges.txt*, or similar, which contain the vocabulary of your tokenizer, part
-  of your [tokenizer](/docs/transformers/master/en/main_classes/tokenizer) save;
-- maybe a *added_tokens.json*, which is part of your [tokenizer](/docs/transformers/master/en/main_classes/tokenizer) save.
+  of your [tokenizer](main_classes/tokenizer) save;
+- maybe a *added_tokens.json*, which is part of your [tokenizer](main_classes/tokenizer) save.
 
 Other files can safely be deleted.
 
@@ -327,14 +321,14 @@ Other files can safely be deleted.
 Once the repo is cloned, you can add the model, configuration and tokenizer files. For instance, saving the model and
 tokenizer files:
 
-```
+```python
 >>> model.save_pretrained("path/to/repo/clone/your-model-name")
 >>> tokenizer.save_pretrained("path/to/repo/clone/your-model-name")
 ```
 
 Or, if you're using the Trainer API
 
-```
+```python
 >>> trainer.save_model("path/to/awesome-name-you-picked")
 >>> tokenizer.save_pretrained("path/to/repo/clone/your-model-name")
 ```
@@ -385,14 +379,14 @@ Your model now has a page on huggingface.co/models 🔥
 
 Anyone can load it from code:
 
-```
+```python
 >>> tokenizer = AutoTokenizer.from_pretrained("namespace/awesome-name-you-picked")
 >>> model = AutoModel.from_pretrained("namespace/awesome-name-you-picked")
 ```
 
 You may specify a revision by using the `revision` flag in the `from_pretrained` method:
 
-```
+```python
 >>> tokenizer = AutoTokenizer.from_pretrained(
 >>>   "julien-c/EsperBERTo-small",
 >>>   revision="v2.0.1" # tag name, or branch name, or commit hash

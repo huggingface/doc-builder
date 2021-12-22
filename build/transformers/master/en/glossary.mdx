@@ -30,10 +30,8 @@ import CodeBlock from "./CodeBlock.svelte";
 import CodeBlockFw from "./CodeBlockFw.svelte";
 import ColabDropdown from "./ColabDropdown.svelte";
 import IconCopyLink from "./IconCopyLink.svelte";
-
 export let fw: "pt" | "tf"
 </script>
-
 <!--Copyright 2020 The HuggingFace Team. All rights reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
@@ -70,7 +68,7 @@ specific language governing permissions and limitations under the License.
 - RNN: recurrent neural network, a type of model that uses a loop over a layer to process texts.
 - self-attention: each element of the input finds out which other elements of the input they should attend to.
 - seq2seq or sequence-to-sequence: models that generate a new sequence from an input, like translation models, or
-  summarization models (such as [Bart](/docs/transformers/master/en/model_doc/bart) or [T5](/docs/transformers/master/en/model_doc/t5)).
+  summarization models (such as [Bart](model_doc/bart) or [T5](model_doc/t5)).
 - token: a part of a sentence, usually a word, but can also be a subword (non-common words are often split in subwords)
   or a punctuation symbol.
 - transformer: self-attention based deep learning model architecture.
@@ -87,14 +85,12 @@ detailed here alongside usage examples.
 The input ids are often the only required parameters to be passed to the model as input. *They are token indices,
 numerical representations of tokens building the sequences that will be used as input by the model*.
 
-<iframe width="560" height="315" src="https://www.youtube.com/embed/VFp38yj8h3A" title="YouTube video player"
-frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope;
-picture-in-picture" allowfullscreen></iframe>
+<Youtube id="VFp38yj8h3A"/>
 
 Each tokenizer works differently but the underlying mechanism remains the same. Here's an example using the BERT
 tokenizer, which is a [WordPiece](https://arxiv.org/pdf/1609.08144.pdf) tokenizer:
 
-```
+```python
 >>> from transformers import BertTokenizer
 >>> tokenizer = BertTokenizer.from_pretrained("bert-base-cased")
 
@@ -103,7 +99,7 @@ tokenizer, which is a [WordPiece](https://arxiv.org/pdf/1609.08144.pdf) tokenize
 
 The tokenizer takes care of splitting the sequence into tokens available in the tokenizer vocabulary.
 
-```
+```python
 >>> tokenized_sequence = tokenizer.tokenize(sequence)
 ```
 
@@ -111,22 +107,22 @@ The tokens are either words or subwords. Here for instance, "VRAM" wasn't in the
 in "V", "RA" and "M". To indicate those tokens are not separate words but parts of the same word, a double-hash prefix
 is added for "RA" and "M":
 
-```
+```python
 >>> print(tokenized_sequence)
 ['A', 'Titan', 'R', '##T', '##X', 'has', '24', '##GB', 'of', 'V', '##RA', '##M']
 ```
 
 These tokens can then be converted into IDs which are understandable by the model. This can be done by directly feeding
-the sentence to the tokenizer, which leverages the Rust implementation of [huggingface/tokenizers](https://github.com/huggingface/tokenizers) for peak performance.
+the sentence to the tokenizer, which leverages the Rust implementation of [🤗 Tokenizers](https://github.com/huggingface/tokenizers) for peak performance.
 
-```
+```python
 >>> inputs = tokenizer(sequence)
 ```
 
 The tokenizer returns a dictionary with all the arguments necessary for its corresponding model to work properly. The
 token indices are under the key "input_ids":
 
-```
+```python
 >>> encoded_sequence = inputs["input_ids"]
 >>> print(encoded_sequence)
 [101, 138, 18696, 155, 1942, 3190, 1144, 1572, 13745, 1104, 159, 9664, 2107, 102]
@@ -137,13 +133,13 @@ IDs the model sometimes uses.
 
 If we decode the previous sequence of ids,
 
-```
+```python
 >>> decoded_sequence = tokenizer.decode(encoded_sequence)
 ```
 
 we will see
 
-```
+```python
 >>> print(decoded_sequence)
 [CLS] A Titan RTX has 24GB of VRAM [SEP]
 ```
@@ -156,15 +152,13 @@ because this is the way a [BertModel](/docs/transformers/master/en/model_doc/ber
 
 The attention mask is an optional argument used when batching sequences together.
 
-<iframe width="560" height="315" src="https://www.youtube.com/embed/M6adb1j2jPI" title="YouTube video player"
-frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope;
-picture-in-picture" allowfullscreen></iframe>
+<Youtube id="M6adb1j2jPI"/>
 
 This argument indicates to the model which tokens should be attended to, and which should not.
 
 For example, consider these two sequences:
 
-```
+```python
 >>> from transformers import BertTokenizer
 >>> tokenizer = BertTokenizer.from_pretrained("bert-base-cased")
 
@@ -177,7 +171,7 @@ For example, consider these two sequences:
 
 The encoded versions have different lengths:
 
-```
+```python
 >>> len(encoded_sequence_a), len(encoded_sequence_b)
 (8, 19)
 ```
@@ -188,13 +182,13 @@ of the second one, or the second one needs to be truncated down to the length of
 In the first case, the list of IDs will be extended by the padding indices. We can pass a list to the tokenizer and ask
 it to pad like this:
 
-```
+```python
 >>> padded_sequences = tokenizer([sequence_a, sequence_b], padding=True)
 ```
 
 We can see that 0s have been added on the right of the first sentence to make it the same length as the second one:
 
-```
+```python
 >>> padded_sequences["input_ids"]
 [[101, 1188, 1110, 170, 1603, 4954, 119, 102, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [101, 1188, 1110, 170, 1897, 1263, 4954, 119, 1135, 1110, 1120, 1655, 2039, 1190, 1103, 4954, 138, 119, 102]]
 ```
@@ -204,7 +198,7 @@ position of the padded indices so that the model does not attend to them. For th
 `1` indicates a value that should be attended to, while `0` indicates a padded value. This attention mask is
 in the dictionary returned by the tokenizer under the key "attention_mask":
 
-```
+```python
 >>> padded_sequences["attention_mask"]
 [[1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]]
 ```
@@ -215,22 +209,20 @@ in the dictionary returned by the tokenizer under the key "attention_mask":
 
 Some models' purpose is to do classification on pairs of sentences or question answering.
 
-<iframe width="560" height="315" src="https://www.youtube.com/embed/0u3ioSwev3s" title="YouTube video player"
-frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope;
-picture-in-picture" allowfullscreen></iframe>
+<Youtube id="0u3ioSwev3s"/>
 
 These require two different sequences to be joined in a single "input_ids" entry, which usually is performed with the
 help of special tokens, such as the classifier (`[CLS]`) and separator (`[SEP]`) tokens. For example, the BERT
 model builds its two sequence input as such:
 
-```
+```python
 >>> # [CLS] SEQUENCE_A [SEP] SEQUENCE_B [SEP]
 ```
 
 We can use our tokenizer to automatically generate such a sentence by passing the two sequences to `tokenizer` as two
 arguments (and not a list, like before) like this:
 
-```
+```python
 >>> from transformers import BertTokenizer
 >>> tokenizer = BertTokenizer.from_pretrained("bert-base-cased")
 >>> sequence_a = "HuggingFace is based in NYC"
@@ -242,7 +234,7 @@ arguments (and not a list, like before) like this:
 
 which will return:
 
-```
+```python
 >>> print(decoded)
 [CLS] HuggingFace is based in NYC [SEP] Where is HuggingFace based? [SEP]
 ```
@@ -253,7 +245,7 @@ the two types of sequence in the model.
 
 The tokenizer returns this mask as the "token_type_ids" entry:
 
-```
+```python
 >>> encoded_dict['token_type_ids']
 [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1]
 ```
@@ -334,6 +326,6 @@ embeddings of both feed forward layers `[batch_size, config.hidden_size]_0, ...,
 individually and concat them afterward to `[batch_size, sequence_length, config.hidden_size]` with `n = sequence_length`, which trades increased computation time against reduced memory use, but yields a mathematically
 **equivalent** result.
 
-For models employing the function `apply_chunking_to_forward`, the `chunk_size` defines the
+For models employing the function [apply_chunking_to_forward()](/docs/transformers/master/en/internal/modeling_utils#transformers.apply_chunking_to_forward), the `chunk_size` defines the
 number of output embeddings that are computed in parallel and thus defines the trade-off between memory and time
 complexity. If `chunk_size` is set to 0, no feed forward chunking is done.
