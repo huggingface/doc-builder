@@ -323,7 +323,7 @@ def convert_rst_blocks(text, page_info):
 
 
 # Re pattern that catches rst args blocks of the form `Parameters:`.
-_re_args = re.compile("^\s*(Args?|Arguments?|Parameters?):\s*$")
+_re_args = re.compile("^\s*(Args?|Arguments?|Params?|Parameters?):\s*$")
 # Re pattern that catches return blocks of the form `Return:`.
 _re_returns = re.compile("^\s*Returns?:\s*$")
 
