@@ -23,8 +23,12 @@ sections:
   title: TapasForQuestionAnswering
 - local: transformers.TFTapasModel
   title: TFTapasModel
+- local: transformers.TFTapasForMaskedLM
+  title: TFTapasForMaskedLM
 - local: transformers.TFTapasForSequenceClassification
   title: TFTapasForSequenceClassification
+- local: transformers.TFTapasForQuestionAnswering
+  title: TFTapasForQuestionAnswering
 title: TAPAS
 ---
 <script>
@@ -1422,32 +1426,7 @@ the first positional argument :
   argument can be used in eager mode, in graph mode the value will always be set to True.
 - **training** (`bool`, *optional*, defaults to `False``) --
   Whether or not to use the model in training mode (some modules like dropout modules have different
-  behaviors between training and evaluation).</paramsdesc><paramgroups>0</paramgroups><rettype>[transformers.modeling_tf_outputs.TFBaseModelOutputWithPooling](/docs/transformers/master/en/main_classes/output#transformers.modeling_tf_outputs.TFBaseModelOutputWithPooling) or `tuple(tf.Tensor)`</rettype><retdesc>```python
->>> from transformers import TapasTokenizer, TapasModel
->>> import pandas as pd
-
->>> tokenizer = TapasTokenizer.from_pretrained('google/tapas-base')
->>> model = TapasModel.from_pretrained('google/tapas-base')
-
->>> data = &amp;lcub;'Actors': ["Brad Pitt", "Leonardo Di Caprio", "George Clooney"],
-...         'Age': ["56", "45", "59"],
-...         'Number of movies': ["87", "53", "69"]
-... }
->>> table = pd.DataFrame.from_dict(data)
->>> queries = ["How many movies has George Clooney played in?", "How old is Brad Pitt?"]
-
->>> inputs = tokenizer(table=table, queries=queries, padding="max_length", return_tensors="tf")
->>> outputs = model(**inputs)
-
->>> last_hidden_states = outputs.last_hidden_state
-```
-</returns>
-
-<returntype>        Examples</returntype>
-
-<returns>
-
-A [transformers.modeling_tf_outputs.TFBaseModelOutputWithPooling](/docs/transformers/master/en/main_classes/output#transformers.modeling_tf_outputs.TFBaseModelOutputWithPooling) or a tuple of `tf.Tensor` (if
+  behaviors between training and evaluation).</paramsdesc><paramgroups>0</paramgroups><rettype>[transformers.modeling_tf_outputs.TFBaseModelOutputWithPooling](/docs/transformers/master/en/main_classes/output#transformers.modeling_tf_outputs.TFBaseModelOutputWithPooling) or `tuple(tf.Tensor)`</rettype><retdesc>A [transformers.modeling_tf_outputs.TFBaseModelOutputWithPooling](/docs/transformers/master/en/main_classes/output#transformers.modeling_tf_outputs.TFBaseModelOutputWithPooling) or a tuple of `tf.Tensor` (if
 `return_dict=False` is passed or when `config.return_dict=False`) comprising various elements depending on the
 configuration ([TapasConfig](/docs/transformers/master/en/model_doc/tapas#transformers.TapasConfig)) and inputs.
 
@@ -1482,28 +1461,34 @@ the latter silently ignores them.
 
 
 
-Example:
+Examples:
 
 ```python
->>> from transformers import TapasTokenizer, TFTapasModel
->>> import tensorflow as tf
+>>> from transformers import TapasTokenizer, TapasModel
+>>> import pandas as pd
 
 >>> tokenizer = TapasTokenizer.from_pretrained('google/tapas-base')
->>> model = TFTapasModel.from_pretrained('google/tapas-base')
+>>> model = TapasModel.from_pretrained('google/tapas-base')
 
->>> inputs = tokenizer("Hello, my dog is cute", return_tensors="tf")
->>> outputs = model(inputs)
+>>> data = &amp;lcub;'Actors': ["Brad Pitt", "Leonardo Di Caprio", "George Clooney"],
+...         'Age': ["56", "45", "59"],
+...         'Number of movies': ["87", "53", "69"]
+... }
+>>> table = pd.DataFrame.from_dict(data)
+>>> queries = ["How many movies has George Clooney played in?", "How old is Brad Pitt?"]
+
+>>> inputs = tokenizer(table=table, queries=queries, padding="max_length", return_tensors="tf")
+>>> outputs = model(**inputs)
 
 >>> last_hidden_states = outputs.last_hidden_state
 ```
 
-
 </div></div>
 
-## TFTapasForMaskedLM[[transformers.TFTapasForMaskedLM]]
+<h2 id="transformers.TFTapasForMaskedLM">TFTapasForMaskedLM</h2>
 <div class="docstring">
 
-<docstring><name>class transformers.TFTapasForMaskedLM</name><anchor>transformers.TFTapasForMaskedLM</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/tapas/modeling_tf_tapas.py#L1071</source><parameters>[{"name": "*args", "val": ""}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **config** ([TapasConfig](/docs/transformers/master/en/model_doc/tapas#transformers.TapasConfig)) -- Model configuration class with all the parameters of the model.
+<docstring><name>class transformers.TFTapasForMaskedLM</name><anchor>transformers.TFTapasForMaskedLM</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/tapas/modeling_tf_tapas.py#L1066</source><parameters>[{"name": "*args", "val": ""}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **config** ([TapasConfig](/docs/transformers/master/en/model_doc/tapas#transformers.TapasConfig)) -- Model configuration class with all the parameters of the model.
   Initializing with a config file does not load the weights associated with the model, only the
   configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel.from_pretrained) method to load the model
   weights.</paramsdesc><paramgroups>0</paramgroups></docstring>
@@ -1543,7 +1528,7 @@ the first positional argument :
 
 
 <div class="docstring">
-<docstring><name>call</name><anchor>transformers.TFTapasForMaskedLM.call</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/tapas/modeling_tf_tapas.py#L1087</source><parameters>[{"name": "input_ids", "val": ": typing.Union[typing.List[tensorflow.python.framework.ops.Tensor], typing.List[numpy.ndarray], typing.List[tensorflow.python.keras.engine.keras_tensor.KerasTensor], typing.Dict[str, tensorflow.python.framework.ops.Tensor], typing.Dict[str, numpy.ndarray], typing.Dict[str, tensorflow.python.keras.engine.keras_tensor.KerasTensor], tensorflow.python.framework.ops.Tensor, numpy.ndarray, tensorflow.python.keras.engine.keras_tensor.KerasTensor, NoneType] = None"}, {"name": "attention_mask", "val": ": typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None"}, {"name": "token_type_ids", "val": ": typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None"}, {"name": "position_ids", "val": ": typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None"}, {"name": "head_mask", "val": ": typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None"}, {"name": "inputs_embeds", "val": ": typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None"}, {"name": "output_attentions", "val": ": typing.Optional[bool] = None"}, {"name": "output_hidden_states", "val": ": typing.Optional[bool] = None"}, {"name": "return_dict", "val": ": typing.Optional[bool] = None"}, {"name": "labels", "val": ": typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None"}, {"name": "training", "val": ": typing.Optional[bool] = False"}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **input_ids** (`np.ndarray`, `tf.Tensor`, `List[tf.Tensor]` ``Dict[str, tf.Tensor]` or `Dict[str, np.ndarray]` and each example must have the shape `(batch_size, sequence_length)`) --
+<docstring><name>call</name><anchor>transformers.TFTapasForMaskedLM.call</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/tapas/modeling_tf_tapas.py#L1082</source><parameters>[{"name": "input_ids", "val": ": typing.Union[typing.List[tensorflow.python.framework.ops.Tensor], typing.List[numpy.ndarray], typing.List[tensorflow.python.keras.engine.keras_tensor.KerasTensor], typing.Dict[str, tensorflow.python.framework.ops.Tensor], typing.Dict[str, numpy.ndarray], typing.Dict[str, tensorflow.python.keras.engine.keras_tensor.KerasTensor], tensorflow.python.framework.ops.Tensor, numpy.ndarray, tensorflow.python.keras.engine.keras_tensor.KerasTensor, NoneType] = None"}, {"name": "attention_mask", "val": ": typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None"}, {"name": "token_type_ids", "val": ": typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None"}, {"name": "position_ids", "val": ": typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None"}, {"name": "head_mask", "val": ": typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None"}, {"name": "inputs_embeds", "val": ": typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None"}, {"name": "output_attentions", "val": ": typing.Optional[bool] = None"}, {"name": "output_hidden_states", "val": ": typing.Optional[bool] = None"}, {"name": "return_dict", "val": ": typing.Optional[bool] = None"}, {"name": "labels", "val": ": typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None"}, {"name": "training", "val": ": typing.Optional[bool] = False"}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **input_ids** (`np.ndarray`, `tf.Tensor`, `List[tf.Tensor]` ``Dict[str, tf.Tensor]` or `Dict[str, np.ndarray]` and each example must have the shape `(batch_size, sequence_length)`) --
   Indices of input sequence tokens in the vocabulary.
 
   Indices can be obtained using [TapasTokenizer](/docs/transformers/master/en/model_doc/tapas#transformers.TapasTokenizer). See
@@ -1596,32 +1581,7 @@ the first positional argument :
 
 - **labels** (`tf.Tensor` or `np.ndarray` of shape `(batch_size, sequence_length)`, *optional*) --
   Labels for computing the masked language modeling loss. Indices should be in `[-100, 0, ..., config.vocab_size]` (see `input_ids` docstring) Tokens with indices set to `-100` are ignored
-  (masked), the loss is only computed for the tokens with labels in `[0, ..., config.vocab_size]`</paramsdesc><paramgroups>0</paramgroups><rettype>[transformers.modeling_tf_outputs.TFMaskedLMOutput](/docs/transformers/master/en/main_classes/output#transformers.modeling_tf_outputs.TFMaskedLMOutput) or `tuple(tf.Tensor)`</rettype><retdesc>```python
->>> from transformers import TapasTokenizer, TapasForMaskedLM
->>> import pandas as pd
-
->>> tokenizer = TapasTokenizer.from_pretrained('google/tapas-base')
->>> model = TapasForMaskedLM.from_pretrained('google/tapas-base')
-
->>> data = &amp;lcub;'Actors': ["Brad Pitt", "Leonardo Di Caprio", "George Clooney"],
-...         'Age': ["56", "45", "59"],
-...         'Number of movies': ["87", "53", "69"]
-... }
->>> table = pd.DataFrame.from_dict(data)
-
->>> inputs = tokenizer(table=table, queries="How many [MASK] has George [MASK] played in?", return_tensors="tf")
->>> labels = tokenizer(table=table, queries="How many movies has George Clooney played in?", return_tensors="tf")["input_ids"]
-
->>> outputs = model(**inputs, labels=labels)
->>> logits = outputs.logits
-```
-</returns>
-
-<returntype>        Examples</returntype>
-
-<returns>
-
-A [transformers.modeling_tf_outputs.TFMaskedLMOutput](/docs/transformers/master/en/main_classes/output#transformers.modeling_tf_outputs.TFMaskedLMOutput) or a tuple of `tf.Tensor` (if
+  (masked), the loss is only computed for the tokens with labels in `[0, ..., config.vocab_size]`</paramsdesc><paramgroups>0</paramgroups><rettype>[transformers.modeling_tf_outputs.TFMaskedLMOutput](/docs/transformers/master/en/main_classes/output#transformers.modeling_tf_outputs.TFMaskedLMOutput) or `tuple(tf.Tensor)`</rettype><retdesc>A [transformers.modeling_tf_outputs.TFMaskedLMOutput](/docs/transformers/master/en/main_classes/output#transformers.modeling_tf_outputs.TFMaskedLMOutput) or a tuple of `tf.Tensor` (if
 `return_dict=False` is passed or when `config.return_dict=False`) comprising various elements depending on the
 configuration ([TapasConfig](/docs/transformers/master/en/model_doc/tapas#transformers.TapasConfig)) and inputs.
 
@@ -1651,30 +1611,34 @@ the latter silently ignores them.
 
 
 
-Example:
+Examples:
 
 ```python
->>> from transformers import TapasTokenizer, TFTapasForMaskedLM
->>> import tensorflow as tf
+>>> from transformers import TapasTokenizer, TapasForMaskedLM
+>>> import pandas as pd
 
 >>> tokenizer = TapasTokenizer.from_pretrained('google/tapas-base')
->>> model = TFTapasForMaskedLM.from_pretrained('google/tapas-base')
+>>> model = TapasForMaskedLM.from_pretrained('google/tapas-base')
 
->>> inputs = tokenizer("The capital of France is [MASK].", return_tensors="tf")
->>> inputs["labels"] = tokenizer("The capital of France is Paris.", return_tensors="tf")["input_ids"]
+>>> data = &amp;lcub;'Actors': ["Brad Pitt", "Leonardo Di Caprio", "George Clooney"],
+...         'Age': ["56", "45", "59"],
+...         'Number of movies': ["87", "53", "69"]
+... }
+>>> table = pd.DataFrame.from_dict(data)
 
->>> outputs = model(inputs)
->>> loss = outputs.loss
+>>> inputs = tokenizer(table=table, queries="How many [MASK] has George [MASK] played in?", return_tensors="tf")
+>>> labels = tokenizer(table=table, queries="How many movies has George Clooney played in?", return_tensors="tf")["input_ids"]
+
+>>> outputs = model(**inputs, labels=labels)
 >>> logits = outputs.logits
 ```
-
 
 </div></div>
 
 <h2 id="transformers.TFTapasForSequenceClassification">TFTapasForSequenceClassification</h2>
 <div class="docstring">
 
-<docstring><name>class transformers.TFTapasForSequenceClassification</name><anchor>transformers.TFTapasForSequenceClassification</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/tapas/modeling_tf_tapas.py#L1655</source><parameters>[{"name": "*args", "val": ""}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **config** ([TapasConfig](/docs/transformers/master/en/model_doc/tapas#transformers.TapasConfig)) -- Model configuration class with all the parameters of the model.
+<docstring><name>class transformers.TFTapasForSequenceClassification</name><anchor>transformers.TFTapasForSequenceClassification</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/tapas/modeling_tf_tapas.py#L1640</source><parameters>[{"name": "*args", "val": ""}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **config** ([TapasConfig](/docs/transformers/master/en/model_doc/tapas#transformers.TapasConfig)) -- Model configuration class with all the parameters of the model.
   Initializing with a config file does not load the weights associated with the model, only the
   configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel.from_pretrained) method to load the model
   weights.</paramsdesc><paramgroups>0</paramgroups></docstring>
@@ -1717,7 +1681,7 @@ the first positional argument :
 
 
 <div class="docstring">
-<docstring><name>call</name><anchor>transformers.TFTapasForSequenceClassification.call</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/tapas/modeling_tf_tapas.py#L1666</source><parameters>[{"name": "input_ids", "val": ": typing.Union[typing.List[tensorflow.python.framework.ops.Tensor], typing.List[numpy.ndarray], typing.List[tensorflow.python.keras.engine.keras_tensor.KerasTensor], typing.Dict[str, tensorflow.python.framework.ops.Tensor], typing.Dict[str, numpy.ndarray], typing.Dict[str, tensorflow.python.keras.engine.keras_tensor.KerasTensor], tensorflow.python.framework.ops.Tensor, numpy.ndarray, tensorflow.python.keras.engine.keras_tensor.KerasTensor, NoneType] = None"}, {"name": "attention_mask", "val": ": typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None"}, {"name": "token_type_ids", "val": ": typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None"}, {"name": "position_ids", "val": ": typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None"}, {"name": "head_mask", "val": ": typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None"}, {"name": "inputs_embeds", "val": ": typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None"}, {"name": "output_attentions", "val": ": typing.Optional[bool] = None"}, {"name": "output_hidden_states", "val": ": typing.Optional[bool] = None"}, {"name": "return_dict", "val": ": typing.Optional[bool] = None"}, {"name": "labels", "val": ": typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None"}, {"name": "training", "val": ": typing.Optional[bool] = False"}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **input_ids** (`np.ndarray`, `tf.Tensor`, `List[tf.Tensor]` ``Dict[str, tf.Tensor]` or `Dict[str, np.ndarray]` and each example must have the shape `(batch_size, num_choices, sequence_length)`) --
+<docstring><name>call</name><anchor>transformers.TFTapasForSequenceClassification.call</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/tapas/modeling_tf_tapas.py#L1651</source><parameters>[{"name": "input_ids", "val": ": typing.Union[typing.List[tensorflow.python.framework.ops.Tensor], typing.List[numpy.ndarray], typing.List[tensorflow.python.keras.engine.keras_tensor.KerasTensor], typing.Dict[str, tensorflow.python.framework.ops.Tensor], typing.Dict[str, numpy.ndarray], typing.Dict[str, tensorflow.python.keras.engine.keras_tensor.KerasTensor], tensorflow.python.framework.ops.Tensor, numpy.ndarray, tensorflow.python.keras.engine.keras_tensor.KerasTensor, NoneType] = None"}, {"name": "attention_mask", "val": ": typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None"}, {"name": "token_type_ids", "val": ": typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None"}, {"name": "position_ids", "val": ": typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None"}, {"name": "head_mask", "val": ": typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None"}, {"name": "inputs_embeds", "val": ": typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None"}, {"name": "output_attentions", "val": ": typing.Optional[bool] = None"}, {"name": "output_hidden_states", "val": ": typing.Optional[bool] = None"}, {"name": "return_dict", "val": ": typing.Optional[bool] = None"}, {"name": "labels", "val": ": typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None"}, {"name": "training", "val": ": typing.Optional[bool] = False"}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **input_ids** (`np.ndarray`, `tf.Tensor`, `List[tf.Tensor]` ``Dict[str, tf.Tensor]` or `Dict[str, np.ndarray]` and each example must have the shape `(batch_size, num_choices, sequence_length)`) --
   Indices of input sequence tokens in the vocabulary.
 
   Indices can be obtained using [TapasTokenizer](/docs/transformers/master/en/model_doc/tapas#transformers.TapasTokenizer). See
@@ -1771,35 +1735,7 @@ the first positional argument :
 - **labels** (`torch.LongTensor` of shape `(batch_size,)`, *optional*) --
   Labels for computing the sequence classification/regression loss. Indices should be in `[0, ..., config.num_labels - 1]`. If `config.num_labels == 1` a regression loss is computed (Mean-Square loss),
   If `config.num_labels > 1` a classification loss is computed (Cross-Entropy). Note: this is called
-  "classification_class_index" in the original implementation.</paramsdesc><paramgroups>0</paramgroups><rettype>[transformers.modeling_tf_outputs.TFSequenceClassifierOutput](/docs/transformers/master/en/main_classes/output#transformers.modeling_tf_outputs.TFSequenceClassifierOutput) or `tuple(tf.Tensor)`</rettype><retdesc>```python
->>> from transformers import TapasTokenizer, TapasForSequenceClassification
->>> import tensorflow as tf
->>> import pandas as pd
-
->>> tokenizer = TapasTokenizer.from_pretrained('google/tapas-base-finetuned-tabfact')
->>> model = TapasForSequenceClassification.from_pretrained('google/tapas-base-finetuned-tabfact')
-
->>> data = &amp;lcub;'Actors': ["Brad Pitt", "Leonardo Di Caprio", "George Clooney"],
-...         'Age': ["56", "45", "59"],
-...         'Number of movies': ["87", "53", "69"]
-... }
->>> table = pd.DataFrame.from_dict(data)
->>> queries = ["There is only one actor who is 45 years old", "There are 3 actors which played in more than 60 movies"]
-
->>> inputs = tokenizer(table=table, queries=queries, padding="max_length", return_tensors="tf")
->>> labels = tf.convert_to_tensor([1, 0]) # 1 means entailed, 0 means refuted
-
->>> outputs = model(**inputs, labels=labels)
->>> loss = outputs.loss
->>> logits = outputs.logits
-```
-</returns>
-
-<returntype>        Examples</returntype>
-
-<returns>
-
-A [transformers.modeling_tf_outputs.TFSequenceClassifierOutput](/docs/transformers/master/en/main_classes/output#transformers.modeling_tf_outputs.TFSequenceClassifierOutput) or a tuple of `tf.Tensor` (if
+  "classification_class_index" in the original implementation.</paramsdesc><paramgroups>0</paramgroups><rettype>[transformers.modeling_tf_outputs.TFSequenceClassifierOutput](/docs/transformers/master/en/main_classes/output#transformers.modeling_tf_outputs.TFSequenceClassifierOutput) or `tuple(tf.Tensor)`</rettype><retdesc>A [transformers.modeling_tf_outputs.TFSequenceClassifierOutput](/docs/transformers/master/en/main_classes/output#transformers.modeling_tf_outputs.TFSequenceClassifierOutput) or a tuple of `tf.Tensor` (if
 `return_dict=False` is passed or when `config.return_dict=False`) comprising various elements depending on the
 configuration ([TapasConfig](/docs/transformers/master/en/model_doc/tapas#transformers.TapasConfig)) and inputs.
 
@@ -1829,30 +1765,37 @@ the latter silently ignores them.
 
 
 
-Example:
+Examples:
 
 ```python
->>> from transformers import TapasTokenizer, TFTapasForSequenceClassification
+>>> from transformers import TapasTokenizer, TapasForSequenceClassification
 >>> import tensorflow as tf
+>>> import pandas as pd
 
->>> tokenizer = TapasTokenizer.from_pretrained('google/tapas-base')
->>> model = TFTapasForSequenceClassification.from_pretrained('google/tapas-base')
+>>> tokenizer = TapasTokenizer.from_pretrained('google/tapas-base-finetuned-tabfact')
+>>> model = TapasForSequenceClassification.from_pretrained('google/tapas-base-finetuned-tabfact')
 
->>> inputs = tokenizer("Hello, my dog is cute", return_tensors="tf")
->>> inputs["labels"] = tf.reshape(tf.constant(1), (-1, 1)) # Batch size 1
+>>> data = &amp;lcub;'Actors': ["Brad Pitt", "Leonardo Di Caprio", "George Clooney"],
+...         'Age': ["56", "45", "59"],
+...         'Number of movies': ["87", "53", "69"]
+... }
+>>> table = pd.DataFrame.from_dict(data)
+>>> queries = ["There is only one actor who is 45 years old", "There are 3 actors which played in more than 60 movies"]
 
->>> outputs = model(inputs)
+>>> inputs = tokenizer(table=table, queries=queries, padding="max_length", return_tensors="tf")
+>>> labels = tf.convert_to_tensor([1, 0]) # 1 means entailed, 0 means refuted
+
+>>> outputs = model(**inputs, labels=labels)
 >>> loss = outputs.loss
 >>> logits = outputs.logits
 ```
 
-
 </div></div>
 
-## TFTapasForQuestionAnswering[[transformers.TFTapasForQuestionAnswering]]
+<h2 id="transformers.TFTapasForQuestionAnswering">TFTapasForQuestionAnswering</h2>
 <div class="docstring">
 
-<docstring><name>class transformers.TFTapasForQuestionAnswering</name><anchor>transformers.TFTapasForQuestionAnswering</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/tapas/modeling_tf_tapas.py#L1294</source><parameters>[{"name": "*args", "val": ""}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **config** ([TapasConfig](/docs/transformers/master/en/model_doc/tapas#transformers.TapasConfig)) -- Model configuration class with all the parameters of the model.
+<docstring><name>class transformers.TFTapasForQuestionAnswering</name><anchor>transformers.TFTapasForQuestionAnswering</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/tapas/modeling_tf_tapas.py#L1284</source><parameters>[{"name": "*args", "val": ""}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **config** ([TapasConfig](/docs/transformers/master/en/model_doc/tapas#transformers.TapasConfig)) -- Model configuration class with all the parameters of the model.
   Initializing with a config file does not load the weights associated with the model, only the
   configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel.from_pretrained) method to load the model
   weights.</paramsdesc><paramgroups>0</paramgroups></docstring>
@@ -1896,7 +1839,7 @@ the first positional argument :
 
 
 <div class="docstring">
-<docstring><name>call</name><anchor>transformers.TFTapasForQuestionAnswering.call</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/tapas/modeling_tf_tapas.py#L1316</source><parameters>[{"name": "input_ids", "val": ": typing.Union[typing.List[tensorflow.python.framework.ops.Tensor], typing.List[numpy.ndarray], typing.List[tensorflow.python.keras.engine.keras_tensor.KerasTensor], typing.Dict[str, tensorflow.python.framework.ops.Tensor], typing.Dict[str, numpy.ndarray], typing.Dict[str, tensorflow.python.keras.engine.keras_tensor.KerasTensor], tensorflow.python.framework.ops.Tensor, numpy.ndarray, tensorflow.python.keras.engine.keras_tensor.KerasTensor, NoneType] = None"}, {"name": "attention_mask", "val": ": typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None"}, {"name": "token_type_ids", "val": ": typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None"}, {"name": "position_ids", "val": ": typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None"}, {"name": "head_mask", "val": ": typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None"}, {"name": "inputs_embeds", "val": ": typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None"}, {"name": "table_mask", "val": ": typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None"}, {"name": "aggregation_labels", "val": ": typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None"}, {"name": "float_answer", "val": ": typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None"}, {"name": "numeric_values", "val": ": typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None"}, {"name": "numeric_values_scale", "val": ": typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None"}, {"name": "output_attentions", "val": ": typing.Optional[bool] = None"}, {"name": "output_hidden_states", "val": ": typing.Optional[bool] = None"}, {"name": "return_dict", "val": ": typing.Optional[bool] = None"}, {"name": "labels", "val": ": typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None"}, {"name": "training", "val": ": typing.Optional[bool] = False"}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **input_ids** (`np.ndarray`, `tf.Tensor`, `List[tf.Tensor]` ``Dict[str, tf.Tensor]` or `Dict[str, np.ndarray]` and each example must have the shape `(batch_size, sequence_length)`) --
+<docstring><name>call</name><anchor>transformers.TFTapasForQuestionAnswering.call</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/tapas/modeling_tf_tapas.py#L1306</source><parameters>[{"name": "input_ids", "val": ": typing.Union[typing.List[tensorflow.python.framework.ops.Tensor], typing.List[numpy.ndarray], typing.List[tensorflow.python.keras.engine.keras_tensor.KerasTensor], typing.Dict[str, tensorflow.python.framework.ops.Tensor], typing.Dict[str, numpy.ndarray], typing.Dict[str, tensorflow.python.keras.engine.keras_tensor.KerasTensor], tensorflow.python.framework.ops.Tensor, numpy.ndarray, tensorflow.python.keras.engine.keras_tensor.KerasTensor, NoneType] = None"}, {"name": "attention_mask", "val": ": typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None"}, {"name": "token_type_ids", "val": ": typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None"}, {"name": "position_ids", "val": ": typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None"}, {"name": "head_mask", "val": ": typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None"}, {"name": "inputs_embeds", "val": ": typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None"}, {"name": "table_mask", "val": ": typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None"}, {"name": "aggregation_labels", "val": ": typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None"}, {"name": "float_answer", "val": ": typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None"}, {"name": "numeric_values", "val": ": typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None"}, {"name": "numeric_values_scale", "val": ": typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None"}, {"name": "output_attentions", "val": ": typing.Optional[bool] = None"}, {"name": "output_hidden_states", "val": ": typing.Optional[bool] = None"}, {"name": "return_dict", "val": ": typing.Optional[bool] = None"}, {"name": "labels", "val": ": typing.Union[numpy.ndarray, tensorflow.python.framework.ops.Tensor, NoneType] = None"}, {"name": "training", "val": ": typing.Optional[bool] = False"}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **input_ids** (`np.ndarray`, `tf.Tensor`, `List[tf.Tensor]` ``Dict[str, tf.Tensor]` or `Dict[str, np.ndarray]` and each example must have the shape `(batch_size, sequence_length)`) --
   Indices of input sequence tokens in the vocabulary.
 
   Indices can be obtained using [TapasTokenizer](/docs/transformers/master/en/model_doc/tapas#transformers.TapasTokenizer). See
@@ -1970,33 +1913,7 @@ the first positional argument :
   calculate the regression loss.
 - **numeric_values_scale** (`tf.Tensor` of shape `(batch_size, seq_length)`, *optional*) --
   Scale of the numeric values of every token. Can be obtained using [TapasTokenizer](/docs/transformers/master/en/model_doc/tapas#transformers.TapasTokenizer).
-  Only required in case of weak supervision for aggregation (WTQ) to calculate the regression loss.</paramsdesc><paramgroups>0</paramgroups><rettype>`transformers.models.tapas.modeling_tf_tapas.TFTableQuestionAnsweringOutput` or `tuple(tf.Tensor)`</rettype><retdesc>```python
->>> from transformers import TapasTokenizer, TapasForQuestionAnswering
->>> import pandas as pd
-
->>> tokenizer = TapasTokenizer.from_pretrained('google/tapas-base-finetuned-wtq')
->>> model = TapasForQuestionAnswering.from_pretrained('google/tapas-base-finetuned-wtq')
-
->>> data = &amp;lcub;'Actors': ["Brad Pitt", "Leonardo Di Caprio", "George Clooney"],
-...         'Age': ["56", "45", "59"],
-...         'Number of movies': ["87", "53", "69"]
-... }
->>> table = pd.DataFrame.from_dict(data)
->>> queries = ["How many movies has George Clooney played in?", "How old is Brad Pitt?"]
-
->>> inputs = tokenizer(table=table, queries=queries, padding="max_length", return_tensors="tf")
->>> outputs = model(**inputs)
-
->>> logits = outputs.logits
->>> logits_aggregation = outputs.logits_aggregation
-```
-</returns>
-
-<returntype>        Examples</returntype>
-
-<returns>
-
-A `transformers.models.tapas.modeling_tf_tapas.TFTableQuestionAnsweringOutput` or a tuple of `tf.Tensor` (if
+  Only required in case of weak supervision for aggregation (WTQ) to calculate the regression loss.</paramsdesc><paramgroups>0</paramgroups><rettype>`transformers.models.tapas.modeling_tf_tapas.TFTableQuestionAnsweringOutput` or `tuple(tf.Tensor)`</rettype><retdesc>A `transformers.models.tapas.modeling_tf_tapas.TFTableQuestionAnsweringOutput` or a tuple of `tf.Tensor` (if
 `return_dict=False` is passed or when `config.return_dict=False`) comprising various elements depending on the
 configuration ([TapasConfig](/docs/transformers/master/en/model_doc/tapas#transformers.TapasConfig)) and inputs.
 
@@ -2025,24 +1942,27 @@ the latter silently ignores them.
 
 
 
-Example:
+Examples:
 
 ```python
->>> from transformers import TapasTokenizer, TFTapasForQuestionAnswering
->>> import tensorflow as tf
+>>> from transformers import TapasTokenizer, TapasForQuestionAnswering
+>>> import pandas as pd
 
->>> tokenizer = TapasTokenizer.from_pretrained('google/tapas-base')
->>> model = TFTapasForQuestionAnswering.from_pretrained('google/tapas-base')
+>>> tokenizer = TapasTokenizer.from_pretrained('google/tapas-base-finetuned-wtq')
+>>> model = TapasForQuestionAnswering.from_pretrained('google/tapas-base-finetuned-wtq')
 
->>> question, text = "Who was Jim Henson?", "Jim Henson was a nice puppet"
->>> input_dict = tokenizer(question, text, return_tensors='tf')
->>> outputs = model(input_dict)
->>> start_logits = outputs.start_logits
->>> end_logits = outputs.end_logits
+>>> data = &amp;lcub;'Actors': ["Brad Pitt", "Leonardo Di Caprio", "George Clooney"],
+...         'Age': ["56", "45", "59"],
+...         'Number of movies': ["87", "53", "69"]
+... }
+>>> table = pd.DataFrame.from_dict(data)
+>>> queries = ["How many movies has George Clooney played in?", "How old is Brad Pitt?"]
 
->>> all_tokens = tokenizer.convert_ids_to_tokens(input_dict["input_ids"].numpy()[0])
->>> answer = ' '.join(all_tokens[tf.math.argmax(start_logits, 1)[0] : tf.math.argmax(end_logits, 1)[0]+1])
+>>> inputs = tokenizer(table=table, queries=queries, padding="max_length", return_tensors="tf")
+>>> outputs = model(**inputs)
+
+>>> logits = outputs.logits
+>>> logits_aggregation = outputs.logits_aggregation
 ```
-
 
 </div></div>
