@@ -82,6 +82,7 @@ def resolve_autodoc(content, package, return_anchors=False, page_info=None):
     new_lines = []
     if return_anchors:
         anchors = []
+        errors = []
     idx = 0
     while idx < len(lines):
         if _re_autodoc.search(lines[idx]) is not None:
@@ -114,6 +115,7 @@ def resolve_autodoc(content, package, return_anchors=False, page_info=None):
                     new_lines[idx_last_heading] += f"[[{object_anchor}]]"
                     idx_last_heading = None
                 anchors.extend(doc[1])
+                errors.extend(doc[2])
                 doc = doc[0]
             new_lines.append(doc)
         else:
@@ -127,7 +129,7 @@ def resolve_autodoc(content, package, return_anchors=False, page_info=None):
     new_content = "\n".join(new_lines)
     new_content = remove_example_tags(new_content)
 
-    return (new_content, anchors) if return_anchors else new_content
+    return (new_content, anchors, errors) if return_anchors else new_content
 
 
 def build_mdx_files(package, doc_folder, output_dir, page_info):
@@ -149,8 +151,10 @@ def build_mdx_files(package, doc_folder, output_dir, page_info):
         page_info["package_name"] = package.__name__
 
     all_files = list(doc_folder.glob("**/*"))
+    all_errors = []
     for file in tqdm(all_files, desc="Building the MDX files"):
         new_anchors = None
+        errors = None
         try:
             if file.suffix in [".md", ".mdx"]:
                 dest_file = output_dir / (file.with_suffix(".mdx").relative_to(doc_folder))
@@ -160,7 +164,9 @@ def build_mdx_files(package, doc_folder, output_dir, page_info):
                     content = reader.read()
                 content = convert_md_to_mdx(content, page_info)
                 content = resolve_open_in_colab(content, page_info)
-                content, new_anchors = resolve_autodoc(content, package, return_anchors=True, page_info=page_info)
+                content, new_anchors, errors = resolve_autodoc(
+                    content, package, return_anchors=True, page_info=page_info
+                )
                 with open(dest_file, "w", encoding="utf-8") as writer:
                     writer.write(content)
                 # Make sure we clean up for next page.
@@ -173,7 +179,9 @@ def build_mdx_files(package, doc_folder, output_dir, page_info):
                     content = reader.read()
                 content = convert_rst_to_mdx(content, page_info)
                 content = resolve_open_in_colab(content, page_info)
-                content, new_anchors = resolve_autodoc(content, package, return_anchors=True, page_info=page_info)
+                content, new_anchors, errors = resolve_autodoc(
+                    content, package, return_anchors=True, page_info=page_info
+                )
                 with open(dest_file, "w", encoding="utf-8") as writer:
                     writer.write(content)
                 # Make sure we clean up for next page.
@@ -189,6 +197,14 @@ def build_mdx_files(package, doc_folder, output_dir, page_info):
         if new_anchors is not None:
             page_name = str(file.with_suffix("").relative_to(doc_folder))
             anchor_mapping.update({anchor: page_name for anchor in new_anchors})
+
+        if errors is not None:
+            all_errors.extend(errors)
+
+    if len(all_errors) > 0:
+        raise ValueError(
+            "The deployment of the documentation will fail because of the following errors:\n" + "\n".join(all_errors)
+        )
 
     return anchor_mapping
 

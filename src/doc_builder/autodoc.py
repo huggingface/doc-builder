@@ -19,7 +19,7 @@ import json
 import re
 
 from .convert_md_to_mdx import convert_md_docstring_to_mdx
-from .convert_rst_to_mdx import convert_rst_docstring_to_mdx
+from .convert_rst_to_mdx import convert_rst_docstring_to_mdx, find_indent, is_empty_line
 
 
 def find_object_in_package(object_name, package):
@@ -260,17 +260,19 @@ def document_object(object_name, package, page_info, full_name=True):
     documentation = ""
     signature_name = prefix + name
     signature = format_signature(obj)
+    check = None
     if getattr(obj, "__doc__", None) is not None and len(obj.__doc__) > 0:
         object_doc = obj.__doc__
         if is_rst_docstring(object_doc):
             object_doc = convert_rst_docstring_to_mdx(obj.__doc__, page_info)
         else:
+            check = quality_check_docstring(object_doc, object_name=object_name)
             object_doc = convert_md_docstring_to_mdx(obj.__doc__, page_info)
 
         source_link = get_source_link(obj, page_info)
         component = get_signature_component(signature_name, anchor_name, signature, object_doc, source_link)
         documentation += "\n" + component + "\n"
-    return documentation
+    return documentation, check
 
 
 def find_documented_methods(clas):
@@ -318,12 +320,18 @@ def autodoc(object_name, package, methods=None, return_anchors=False, page_info=
     if "package_name" not in page_info:
         page_info["package_name"] = package.__name__
 
+    errors = []
     obj = find_object_in_package(object_name=object_name, package=package)
-    documentation = document_object(object_name=object_name, package=package, page_info=page_info)
+    documentation, check = document_object(object_name=object_name, package=package, page_info=page_info)
+    if check is not None:
+        errors.append(check)
+
     if return_anchors:
         anchors = [get_shortest_path(obj, package)]
     if isinstance(obj, type):
-        documentation = document_object(object_name=object_name, package=package, page_info=page_info)
+        documentation, check = document_object(object_name=object_name, package=package, page_info=page_info)
+        if check is not None:
+            errors.append(check)
         if methods is None:
             methods = find_documented_methods(obj)
         elif "all" in methods:
@@ -331,15 +339,17 @@ def autodoc(object_name, package, methods=None, return_anchors=False, page_info=
             methods_to_add = find_documented_methods(obj)
             methods.extend([m for m in methods_to_add if m not in methods])
         for method in methods:
-            method_doc = document_object(
+            method_doc, check = document_object(
                 object_name=f"{object_name}.{method}", package=package, page_info=page_info, full_name=False
             )
+            if check is not None:
+                errors.append(check)
             documentation += '\n<div class="docstring">' + method_doc + "</div>"
             if return_anchors:
                 anchors.append(f"{anchors[0]}.{method}")
     documentation = '<div class="docstring">\n' + documentation + "</div>\n"
 
-    return (documentation, anchors) if return_anchors else documentation
+    return (documentation, anchors, errors) if return_anchors else documentation
 
 
 def resolve_links_in_text(text, package, mapping, page_info):
@@ -381,3 +391,66 @@ def resolve_links_in_text(text, package, mapping, page_info):
         return f"[{object_name}]({page}#{anchor})"
 
     return re.sub(r"\[`([^`]+)`\]", _resolve_link, text)
+
+
+# Re pattern that catches the start of a block code with potential indent.
+_re_start_code_block = re.compile(r"^\s*```.*$", flags=re.MULTILINE)
+# Re pattern that catches return blocks of the form `Return:`.
+_re_returns_block = re.compile("^\s*Returns?:\s*$")
+
+
+def quality_check_docstring(docstring, object_name=None):
+    """
+    Check if a docstring is not going to generate a common error on moon-landing, by asserting it does not have:
+
+    - an empty Return block
+    - two (or more) Return blocks
+    - a code sample not properly closed.
+
+    This function only returns an error message and does not raise an exception, as we will raise one single exception
+    with all the problems at the end.
+
+    Args:
+        docstring (`str`): The docstring to check.
+        obejct_name (`str`, *optional*): The name of the object being documented.
+            Will be added to the error message if passed.
+
+    Returns:
+        Optional `str`: Returns `None` if the docstring is correct and an error message otherwise.
+    """
+
+    lines = docstring.split("\n")
+    in_code = False
+    code_indent = 0
+    return_blocks = 0
+    error_message = ""
+
+    for idx, line in enumerate(lines):
+        if not in_code and _re_start_code_block.search(line) is not None:
+            in_code = True
+            code_indent = find_indent(line)
+        elif in_code and line.rstrip() == " " * code_indent + "```":
+            in_code = False
+        elif _re_returns_block.search(line) is not None:
+            next_line_idx = idx + 1
+            while next_line_idx < len(lines) and is_empty_line(lines[next_line_idx]):
+                next_line_idx += 1
+            if next_line_idx >= len(lines) or find_indent(lines[next_line_idx]) <= find_indent(line):
+                error_message += "- The return block is empty.\n"
+            else:
+                return_blocks += 1
+
+    if in_code:
+        error_message += "- A code block has been opened but is not closed.\n"
+    if return_blocks >= 2:
+        error_message += f"- There are {return_blocks} Returns block. Only one max is supported.\n"
+
+    if len(error_message) == 0:
+        return
+
+    if object_name is not None:
+        error_message = (
+            f"The docstring of {object_name} comports the following issue(s) and needs fixing:\n" + error_message
+        )
+
+    return error_message
