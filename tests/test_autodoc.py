@@ -258,7 +258,7 @@ tuple before.
 
 
 """
-        self.assertEqual(document_object("file_utils.ModelOutput", transformers, page_info), model_output_doc)
+        self.assertEqual(document_object("file_utils.ModelOutput", transformers, page_info)[0], model_output_doc)
 
     def test_find_document_methods(self):
         self.assertListEqual(find_documented_methods(BertModel), ["forward"])
@@ -277,7 +277,7 @@ tuple before.
         )
 
     def test_autodoc_return_anchors(self):
-        _, anchors = autodoc("BertTokenizer", transformers, return_anchors=True)
+        _, anchors, _ = autodoc("BertTokenizer", transformers, return_anchors=True)
         self.assertListEqual(
             anchors,
             [
@@ -289,7 +289,7 @@ tuple before.
             ],
         )
 
-        _, anchors = autodoc("BertTokenizer", transformers, methods=["__call__", "all"], return_anchors=True)
+        _, anchors, _ = autodoc("BertTokenizer", transformers, methods=["__call__", "all"], return_anchors=True)
         self.assertListEqual(
             anchors,
             [
@@ -302,7 +302,7 @@ tuple before.
             ],
         )
 
-        _, anchors = autodoc("BertTokenizer", transformers, methods=["__call__"], return_anchors=True)
+        _, anchors, _ = autodoc("BertTokenizer", transformers, methods=["__call__"], return_anchors=True)
         self.assertListEqual(anchors, ["transformers.BertTokenizer", "transformers.BertTokenizer.__call__"])
 
     def test_resolve_links_in_text(self):
