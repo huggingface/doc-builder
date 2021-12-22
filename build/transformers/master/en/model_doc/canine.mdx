@@ -32,10 +32,8 @@ import CodeBlock from "./CodeBlock.svelte";
 import CodeBlockFw from "./CodeBlockFw.svelte";
 import ColabDropdown from "./ColabDropdown.svelte";
 import IconCopyLink from "./IconCopyLink.svelte";
-
 export let fw: "pt" | "tf"
 </script>
-
 <!--Copyright 2021 The HuggingFace Team. All rights reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
@@ -98,36 +96,36 @@ This model was contributed by [nielsr](https://huggingface.co/nielsr). The origi
 
 CANINE works on raw characters, so it can be used without a tokenizer:
 
-```
-from transformers import CanineModel
-import torch
+```python
+>>> from transformers import CanineModel
+>>> import torch
 
-model = CanineModel.from_pretrained('google/canine-c') # model pre-trained with autoregressive character loss
+>>> model = CanineModel.from_pretrained('google/canine-c') # model pre-trained with autoregressive character loss
 
-text = "hello world"
-# use Python's built-in ord() function to turn each character into its unicode code point id
-input_ids = torch.tensor([[ord(char) for char in text]])
+>>> text = "hello world"
+>>> # use Python's built-in ord() function to turn each character into its unicode code point id
+>>> input_ids = torch.tensor([[ord(char) for char in text]])
 
-outputs = model(input_ids) # forward pass
-pooled_output = outputs.pooler_output
-sequence_output = outputs.last_hidden_state
+>>> outputs = model(input_ids) # forward pass
+>>> pooled_output = outputs.pooler_output
+>>> sequence_output = outputs.last_hidden_state
 ```
 
 For batched inference and training, it is however recommended to make use of the tokenizer (to pad/truncate all
 sequences to the same length):
 
-```
-from transformers import CanineTokenizer, CanineModel
+```python
+>>> from transformers import CanineTokenizer, CanineModel
 
-model = CanineModel.from_pretrained('google/canine-c')
-tokenizer = CanineTokenizer.from_pretrained('google/canine-c')
+>>> model = CanineModel.from_pretrained('google/canine-c')
+>>> tokenizer = CanineTokenizer.from_pretrained('google/canine-c')
 
-inputs = ["Life is like a box of chocolates.", "You never know what you gonna get."]
-encoding = tokenizer(inputs, padding="longest", truncation=True, return_tensors="pt")
+>>> inputs = ["Life is like a box of chocolates.", "You never know what you gonna get."]
+>>> encoding = tokenizer(inputs, padding="longest", truncation=True, return_tensors="pt")
 
-outputs = model(**encoding) # forward pass
-pooled_output = outputs.pooler_output
-sequence_output = outputs.last_hidden_state
+>>> outputs = model(**encoding) # forward pass
+>>> pooled_output = outputs.pooler_output
+>>> sequence_output = outputs.last_hidden_state
 ```
 
 <h2 id="transformers.models.canine.modeling_canine.CanineModelOutputWithPooling">CANINE specific outputs</h2>

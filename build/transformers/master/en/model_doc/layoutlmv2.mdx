@@ -33,10 +33,8 @@ import CodeBlock from "./CodeBlock.svelte";
 import CodeBlockFw from "./CodeBlockFw.svelte";
 import ColabDropdown from "./ColabDropdown.svelte";
 import IconCopyLink from "./IconCopyLink.svelte";
-
 export let fw: "pt" | "tf"
 </script>
-
 <!--Copyright 2021 The HuggingFace Team. All rights reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
@@ -93,21 +91,21 @@ Tips:
 - LayoutLMv2 uses Facebook AI's [Detectron2](https://github.com/facebookresearch/detectron2/) package for its visual
   backbone. See [this link](https://detectron2.readthedocs.io/en/latest/tutorials/install.html) for installation
   instructions.
-- In addition to `input_ids`, `forward` expects 2 additional inputs, namely
+- In addition to `input_ids`, [forward()](/docs/transformers/master/en/model_doc/layoutlmv2#transformers.LayoutLMv2Model.forward) expects 2 additional inputs, namely
   `image` and `bbox`. The `image` input corresponds to the original document image in which the text
   tokens occur. The model expects each document image to be of size 224x224. This means that if you have a batch of
   document images, `image` should be a tensor of shape (batch_size, 3, 224, 224). This can be either a
   `torch.Tensor` or a `Detectron2.structures.ImageList`. You don't need to normalize the channels, as this is
   done by the model. Important to note is that the visual backbone expects BGR channels instead of RGB, as all models
   in Detectron2 are pre-trained using the BGR format. The `bbox` input are the bounding boxes (i.e. 2D-positions)
-  of the input text tokens. This is identical to `LayoutLMModel`. These can be obtained using an
+  of the input text tokens. This is identical to [LayoutLMModel](/docs/transformers/master/en/model_doc/layoutlm#transformers.LayoutLMModel). These can be obtained using an
   external OCR engine such as Google's [Tesseract](https://github.com/tesseract-ocr/tesseract) (there's a [Python
   wrapper](https://pypi.org/project/pytesseract/) available). Each bounding box should be in (x0, y0, x1, y1)
   format, where (x0, y0) corresponds to the position of the upper left corner in the bounding box, and (x1, y1)
   represents the position of the lower right corner. Note that one first needs to normalize the bounding boxes to be on
   a 0-1000 scale. To normalize, you can use the following function:
 
-```
+```python
 def normalize_bbox(bbox, width, height):
      return [
          int(1000 * (bbox[0] / width)),
@@ -121,7 +119,7 @@ Here, `width` and `height` correspond to the width and height of the original do
 occurs (before resizing the image). Those can be obtained using the Python Image Library (PIL) library for example, as
 follows:
 
-```
+```python
 from PIL import Image
 
 image = Image.open("name_of_your_document - can be a png file, pdf, etc.")
@@ -129,37 +127,37 @@ image = Image.open("name_of_your_document - can be a png file, pdf, etc.")
 width, height = image.size
 ```
 
-However, this model includes a brand new `LayoutLMv2Processor` which can be used to directly
+However, this model includes a brand new [LayoutLMv2Processor](/docs/transformers/master/en/model_doc/layoutlmv2#transformers.LayoutLMv2Processor) which can be used to directly
 prepare data for the model (including applying OCR under the hood). More information can be found in the "Usage"
 section below.
 
-- Internally, `LayoutLMv2Model` will send the `image` input through its visual backbone to
+- Internally, [LayoutLMv2Model](/docs/transformers/master/en/model_doc/layoutlmv2#transformers.LayoutLMv2Model) will send the `image` input through its visual backbone to
   obtain a lower-resolution feature map, whose shape is equal to the `image_feature_pool_shape` attribute of
-  `LayoutLMv2Config`. This feature map is then flattened to obtain a sequence of image tokens. As
+  [LayoutLMv2Config](/docs/transformers/master/en/model_doc/layoutlmv2#transformers.LayoutLMv2Config). This feature map is then flattened to obtain a sequence of image tokens. As
   the size of the feature map is 7x7 by default, one obtains 49 image tokens. These are then concatenated with the text
   tokens, and send through the Transformer encoder. This means that the last hidden states of the model will have a
   length of 512 + 49 = 561, if you pad the text tokens up to the max length. More generally, the last hidden states
   will have a shape of `seq_length` + `image_feature_pool_shape[0]` *
   `config.image_feature_pool_shape[1]`.
-- When calling `from_pretrained`, a warning will be printed with a long list of
+- When calling [from_pretrained()](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel.from_pretrained), a warning will be printed with a long list of
   parameter names that are not initialized. This is not a problem, as these parameters are batch normalization
   statistics, which are going to have values when fine-tuning on a custom dataset.
 - If you want to train the model in a distributed environment, make sure to call `synchronize_batch_norm` on the
   model in order to properly synchronize the batch normalization layers of the visual backbone.
 
 In addition, there's LayoutXLM, which is a multilingual version of LayoutLMv2. More information can be found on
-[LayoutXLM's documentation page](/docs/transformers/master/en/layoutxlm).
+[LayoutXLM's documentation page](layoutxlm).
 
 <h2 id="usage-layoutlmv2processor">Usage: LayoutLMv2Processor</h2>
 
-The easiest way to prepare data for the model is to use `LayoutLMv2Processor`, which internally
-combines a feature extractor (`LayoutLMv2FeatureExtractor`) and a tokenizer
-(`LayoutLMv2Tokenizer` or `LayoutLMv2TokenizerFast`). The feature extractor
+The easiest way to prepare data for the model is to use [LayoutLMv2Processor](/docs/transformers/master/en/model_doc/layoutlmv2#transformers.LayoutLMv2Processor), which internally
+combines a feature extractor ([LayoutLMv2FeatureExtractor](/docs/transformers/master/en/model_doc/layoutlmv2#transformers.LayoutLMv2FeatureExtractor)) and a tokenizer
+([LayoutLMv2Tokenizer](/docs/transformers/master/en/model_doc/layoutlmv2#transformers.LayoutLMv2Tokenizer) or [LayoutLMv2TokenizerFast](/docs/transformers/master/en/model_doc/layoutlmv2#transformers.LayoutLMv2TokenizerFast)). The feature extractor
 handles the image modality, while the tokenizer handles the text modality. A processor combines both, which is ideal
 for a multi-modal model like LayoutLMv2. Note that you can still use both separately, if you only want to handle one
 modality.
 
-```
+```python
 from transformers import LayoutLMv2FeatureExtractor, LayoutLMv2TokenizerFast, LayoutLMv2Processor
 
 feature_extractor = LayoutLMv2FeatureExtractor() # apply_ocr is set to True by default
@@ -167,19 +165,19 @@ tokenizer = LayoutLMv2TokenizerFast.from_pretrained("microsoft/layoutlmv2-base-u
 processor = LayoutLMv2Processor(feature_extractor, tokenizer)
 ```
 
-In short, one can provide a document image (and possibly additional data) to `LayoutLMv2Processor`,
+In short, one can provide a document image (and possibly additional data) to [LayoutLMv2Processor](/docs/transformers/master/en/model_doc/layoutlmv2#transformers.LayoutLMv2Processor),
 and it will create the inputs expected by the model. Internally, the processor first uses
-`LayoutLMv2FeatureExtractor` to apply OCR on the image to get a list of words and normalized
+[LayoutLMv2FeatureExtractor](/docs/transformers/master/en/model_doc/layoutlmv2#transformers.LayoutLMv2FeatureExtractor) to apply OCR on the image to get a list of words and normalized
 bounding boxes, as well to resize the image to a given size in order to get the `image` input. The words and
-normalized bounding boxes are then provided to `LayoutLMv2Tokenizer` or
-`LayoutLMv2TokenizerFast`, which converts them to token-level `input_ids`,
+normalized bounding boxes are then provided to [LayoutLMv2Tokenizer](/docs/transformers/master/en/model_doc/layoutlmv2#transformers.LayoutLMv2Tokenizer) or
+[LayoutLMv2TokenizerFast](/docs/transformers/master/en/model_doc/layoutlmv2#transformers.LayoutLMv2TokenizerFast), which converts them to token-level `input_ids`,
 `attention_mask`, `token_type_ids`, `bbox`. Optionally, one can provide word labels to the processor,
 which are turned into token-level `labels`.
 
-`LayoutLMv2Processor` uses [PyTesseract](https://pypi.org/project/pytesseract/), a Python
+[LayoutLMv2Processor](/docs/transformers/master/en/model_doc/layoutlmv2#transformers.LayoutLMv2Processor) uses [PyTesseract](https://pypi.org/project/pytesseract/), a Python
 wrapper around Google's Tesseract OCR engine, under the hood. Note that you can still use your own OCR engine of
 choice, and provide the words and normalized boxes yourself. This requires initializing
-`LayoutLMv2FeatureExtractor` with `apply_ocr` set to `False`.
+[LayoutLMv2FeatureExtractor](/docs/transformers/master/en/model_doc/layoutlmv2#transformers.LayoutLMv2FeatureExtractor) with `apply_ocr` set to `False`.
 
 In total, there are 5 use cases that are supported by the processor. Below, we list them all. Note that each of these
 use cases work for both batched and non-batched inputs (we illustrate them for non-batched inputs).
@@ -190,7 +188,7 @@ True**
 This is the simplest case, in which the processor (actually the feature extractor) will perform OCR on the image to get
 the words and normalized bounding boxes.
 
-```
+```python
 from transformers import LayoutLMv2Processor
 from PIL import Image
 
@@ -208,7 +206,7 @@ In case one wants to do OCR themselves, one can initialize the feature extractor
 `False`. In that case, one should provide the words and corresponding (normalized) bounding boxes themselves to
 the processor.
 
-```
+```python
 from transformers import LayoutLMv2Processor
 from PIL import Image
 
@@ -230,7 +228,7 @@ will only label the first wordpiece of a word, and label the remaining wordpiece
 `ignore_index` of PyTorch's CrossEntropyLoss. In case you want all wordpieces of a word to be labeled, you can
 initialize the tokenizer with `only_label_first_subword` set to `False`.
 
-```
+```python
 from transformers import LayoutLMv2Processor
 from PIL import Image
 
@@ -250,7 +248,7 @@ print(encoding.keys())
 For visual question answering tasks (such as DocVQA), you can provide a question to the processor. By default, the
 processor will apply OCR on the image, and create [CLS] question tokens [SEP] word tokens [SEP].
 
-```
+```python
 from transformers import LayoutLMv2Processor
 from PIL import Image
 
@@ -268,7 +266,7 @@ print(encoding.keys())
 For visual question answering tasks (such as DocVQA), you can provide a question to the processor. If you want to
 perform OCR yourself, you can provide your own words and (normalized) bounding boxes to the processor.
 
-```
+```python
 from transformers import LayoutLMv2Processor
 from PIL import Image
 
