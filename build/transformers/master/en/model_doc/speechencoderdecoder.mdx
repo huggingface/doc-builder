@@ -122,7 +122,7 @@ Serializes this instance to a Python dictionary. Override the default *to_dict()
 
 <div class="docstring">
 
-<docstring><name>class transformers.SpeechEncoderDecoderModel</name><anchor>transformers.SpeechEncoderDecoderModel</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/speech_encoder_decoder/modeling_speech_encoder_decoder.py#L170</source><parameters>[{"name": "config", "val": ": typing.Optional[transformers.configuration_utils.PretrainedConfig] = None"}, {"name": "encoder", "val": ": typing.Optional[transformers.modeling_utils.PreTrainedModel] = None"}, {"name": "decoder", "val": ": typing.Optional[transformers.modeling_utils.PreTrainedModel] = None"}]</parameters><paramsdesc>- **config** ([SpeechEncoderDecoderConfig](/docs/transformers/master/en/model_doc/speechencoderdecoder#transformers.SpeechEncoderDecoderConfig)) -- Model configuration class with all the parameters of the model.
+<docstring><name>class transformers.SpeechEncoderDecoderModel</name><anchor>transformers.SpeechEncoderDecoderModel</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/speech_encoder_decoder/modeling_speech_encoder_decoder.py#L175</source><parameters>[{"name": "config", "val": ": typing.Optional[transformers.configuration_utils.PretrainedConfig] = None"}, {"name": "encoder", "val": ": typing.Optional[transformers.modeling_utils.PreTrainedModel] = None"}, {"name": "decoder", "val": ": typing.Optional[transformers.modeling_utils.PreTrainedModel] = None"}]</parameters><paramsdesc>- **config** ([SpeechEncoderDecoderConfig](/docs/transformers/master/en/model_doc/speechencoderdecoder#transformers.SpeechEncoderDecoderConfig)) -- Model configuration class with all the parameters of the model.
   Initializing with a config file does not load the weights associated with the model, only the
   configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel.from_pretrained) method to load the model
   weights.</paramsdesc><paramgroups>0</paramgroups></docstring>
@@ -161,19 +161,11 @@ when created with the :meth*~transformers.AutoModel.from_pretrained* class metho
 
 
 <div class="docstring">
-<docstring><name>forward</name><anchor>transformers.SpeechEncoderDecoderModel.forward</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/speech_encoder_decoder/modeling_speech_encoder_decoder.py#L416</source><parameters>[{"name": "input_values", "val": " = None"}, {"name": "input_features", "val": " = None"}, {"name": "attention_mask", "val": " = None"}, {"name": "decoder_input_ids", "val": " = None"}, {"name": "decoder_attention_mask", "val": " = None"}, {"name": "encoder_outputs", "val": " = None"}, {"name": "past_key_values", "val": " = None"}, {"name": "decoder_inputs_embeds", "val": " = None"}, {"name": "labels", "val": " = None"}, {"name": "use_cache", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "return_dict", "val": " = None"}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **input_values** (`torch.FloatTensor` of shape `(batch_size, sequence_length)`, *optional*) --
-  Float values of input raw speech waveform. Values can be obtained by loading a *.flac* or *.wav* audio file
+<docstring><name>forward</name><anchor>transformers.SpeechEncoderDecoderModel.forward</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/speech_encoder_decoder/modeling_speech_encoder_decoder.py#L421</source><parameters>[{"name": "inputs", "val": " = None"}, {"name": "attention_mask", "val": " = None"}, {"name": "decoder_input_ids", "val": " = None"}, {"name": "decoder_attention_mask", "val": " = None"}, {"name": "encoder_outputs", "val": " = None"}, {"name": "past_key_values", "val": " = None"}, {"name": "decoder_inputs_embeds", "val": " = None"}, {"name": "labels", "val": " = None"}, {"name": "use_cache", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "input_values", "val": " = None"}, {"name": "input_features", "val": " = None"}, {"name": "return_dict", "val": " = None"}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **inputs** (`torch.FloatTensor` of shape `(batch_size, sequence_length)` or `(batch_size, sequence_length, feature_dim)`, *optional*) --
+  Float values of input raw speech waveform or speech features. Values can be obtained by loading a *.flac* or *.wav* audio file
   into an array of type *List[float]* or a *numpy.ndarray*, *e.g.* via the soundfile library (*pip install
-  soundfile*). To prepare the array into *input_values*, the [Wav2Vec2Processor](/docs/transformers/master/en/model_doc/wav2vec2#transformers.Wav2Vec2Processor) should
-  be used for padding and conversion into a tensor of type *torch.FloatTensor*. See
-  [Wav2Vec2Processor.__call__()](/docs/transformers/master/en/model_doc/wav2vec2#transformers.Wav2Vec2Processor.__call__) for details.
-- **input_features** (`torch.LongTensor` of shape `(batch_size, sequence_length, feature_size)`, *optional*) --
-  Float values of fbank features extracted from the raw speech waveform. Raw speech waveform can be obtained
-  by loading a `.flac` or `.wav` audio file into an array of type `List[float]` or a
-  `numpy.ndarray`, *e.g.* via the soundfile library (`pip install soundfile`). To prepare the array
-  into `input_features`, the [Speech2TextTokenizer](/docs/transformers/master/en/model_doc/speech_to_text#transformers.Speech2TextTokenizer) should be used for extracting
-  the fbank features, padding and conversion into a tensor of type `torch.FloatTensor`. See
-  [__call__()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.__call__)
+  soundfile*). To prepare the array into *inputs*, either the [Wav2Vec2Processor](/docs/transformers/master/en/model_doc/wav2vec2#transformers.Wav2Vec2Processor) or [Speech2TextProcessor](/docs/transformers/master/en/model_doc/speech_to_text#transformers.Speech2TextProcessor) should
+  be used for padding and conversion into a tensor of type *torch.FloatTensor*.
 - **attention_mask** (`torch.FloatTensor` of shape `(batch_size, sequence_length)`, *optional*) --
   Mask to avoid performing attention on padding token indices. Mask values selected in `[0, 1]`:
 
@@ -229,6 +221,19 @@ when created with the :meth*~transformers.AutoModel.from_pretrained* class metho
 - **output_hidden_states** (`bool`, *optional*) --
   Whether or not to return the hidden states of all layers. See `hidden_states` under returned tensors for
   more detail.
+- **input_values** (`torch.FloatTensor` of shape `(batch_size, sequence_length)`, *optional*) --
+  Float values of input raw speech waveform. Values can be obtained by loading a *.flac* or *.wav* audio file
+  into an array of type *List[float]* or a *numpy.ndarray*, *e.g.* via the soundfile library (*pip install
+  soundfile*). To prepare the array into *input_values*, the [Wav2Vec2Processor](/docs/transformers/master/en/model_doc/wav2vec2#transformers.Wav2Vec2Processor) should
+  be used for padding and conversion into a tensor of type *torch.FloatTensor*. See
+  [Wav2Vec2Processor.__call__()](/docs/transformers/master/en/model_doc/wav2vec2#transformers.Wav2Vec2Processor.__call__) for details.
+- **input_features** (`torch.LongTensor` of shape `(batch_size, sequence_length, feature_size)`, *optional*) --
+  Float values of fbank features extracted from the raw speech waveform. Raw speech waveform can be obtained
+  by loading a `.flac` or `.wav` audio file into an array of type `List[float]` or a
+  `numpy.ndarray`, *e.g.* via the soundfile library (`pip install soundfile`). To prepare the array
+  into `input_features`, the [Speech2TextTokenizer](/docs/transformers/master/en/model_doc/speech_to_text#transformers.Speech2TextTokenizer) should be used for extracting
+  the fbank features, padding and conversion into a tensor of type `torch.FloatTensor`. See
+  [__call__()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.__call__)
 - **return_dict** (`bool`, *optional*) --
   If set to `True`, the model will return a `Seq2SeqLMOutput` instead of a
   plain tuple.
@@ -307,7 +312,7 @@ Examples:
 
 </div>
 <div class="docstring">
-<docstring><name>from\_encoder\_decoder\_pretrained</name><anchor>transformers.SpeechEncoderDecoderModel.from_encoder_decoder_pretrained</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/speech_encoder_decoder/modeling_speech_encoder_decoder.py#L269</source><parameters>[{"name": "encoder_pretrained_model_name_or_path", "val": ": str = None"}, {"name": "decoder_pretrained_model_name_or_path", "val": ": str = None"}, {"name": "*model_args", "val": ""}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **encoder_pretrained_model_name_or_path** (:obj: *str*, *optional*) --
+<docstring><name>from\_encoder\_decoder\_pretrained</name><anchor>transformers.SpeechEncoderDecoderModel.from_encoder_decoder_pretrained</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/speech_encoder_decoder/modeling_speech_encoder_decoder.py#L274</source><parameters>[{"name": "encoder_pretrained_model_name_or_path", "val": ": str = None"}, {"name": "decoder_pretrained_model_name_or_path", "val": ": str = None"}, {"name": "*model_args", "val": ""}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **encoder_pretrained_model_name_or_path** (:obj: *str*, *optional*) --
   Information necessary to initiate the encoder. Can be either:
 
   - A string, the *model id* of a pretrained model hosted inside a model repo on huggingface.co.
