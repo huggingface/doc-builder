@@ -5,6 +5,8 @@ sections:
   title: The pipeline abstraction
 - local: pipeline-batching
   title: Pipeline batching
+- local: pipeline-chunk-batching
+  title: Pipeline chunk batching
 - local: pipeline-custom-code
   title: Pipeline custom code
 - local: implementing-a-pipeline
@@ -157,6 +159,30 @@ for out in tqdm.tqdm(pipe(KeyDataset(dataset, "file"))):
     # ....
 ```
 
+For ease of use, a generator is also possible:
+
+
+```python
+from transformers import pipeline
+
+pipe = pipeline("text-classification")
+
+def data():
+    while True:
+        # This could come from a dataset, a database, a queue or HTTP request
+        # in a server
+        # Caveat: because this is iterative, you cannot use `num_workers > 1` variable
+        # to use multiple threads to preprocess data. You can still have 1 thread that
+        # does the preprocessing while the main runs the big inference
+        yield "This is a test"
+
+for out in pipe(data()):
+    print(out)
+    # &amp;lcub;"text": "NUMBER TEN FRESH NELLY IS WAITING ON YOU GOOD NIGHT HUSBAND"}
+    # &amp;lcub;"text": ....}
+    # ....
+```
+
 <div class="docstring">
 
 <docstring><name>transformers.pipeline</name><anchor>transformers.pipeline</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/pipelines.py#L362</source><parameters>[{"name": "task", "val": ": str = None"}, {"name": "model", "val": ": typing.Optional = None"}, {"name": "config", "val": ": typing.Union[str, transformers.configuration_utils.PretrainedConfig, NoneType] = None"}, {"name": "tokenizer", "val": ": typing.Union[str, transformers.tokenization_utils.PreTrainedTokenizer, NoneType] = None"}, {"name": "feature_extractor", "val": ": typing.Union[str, ForwardRef('SequenceFeatureExtractor'), NoneType] = None"}, {"name": "framework", "val": ": typing.Optional[str] = None"}, {"name": "revision", "val": ": typing.Optional[str] = None"}, {"name": "use_fast", "val": ": bool = True"}, {"name": "use_auth_token", "val": ": typing.Union[bool, str, NoneType] = None"}, {"name": "model_kwargs", "val": ": typing.Dict[str, typing.Any] = None"}, {"name": "pipeline_class", "val": ": typing.Optional[typing.Any] = None"}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **task** (`str`) --
@@ -274,8 +300,8 @@ Examples:
 
 <h2 id="pipeline-batching">Pipeline batching</h2>
 
-All pipelines (except *zero-shot-classification* and *question-answering* currently) can use batching. This will work
-whenever the pipeline uses its streaming ability (so when passing lists or `Dataset`).
+All pipelines can use batching. This will work
+whenever the pipeline uses its streaming ability (so when passing lists or `Dataset` or `generator`).
 
 ```python
 from transformers import pipeline                                                   
@@ -297,7 +323,7 @@ for out in pipe(KeyDataset(dataset, "text"), batch_size=8, truncation="only_firs
 However, this is not automatically a win for performance. It can be either a 10x speedup or 5x slowdown depending
 on hardware, data and the actual model being used.
 
-Example where it's most a speedup:
+Example where it's mostly a speedup:
 
 </Tip>
 
@@ -403,6 +429,39 @@ For users, a rule of thumb is:
     it until you get OOMs.
   - The larger the GPU the more likely batching is going to be more interesting
 - As soon as you enable batching, make sure you can handle OOMs nicely.
+
+<h2 id="pipeline-chunk-batching">Pipeline chunk batching</h2>
+
+`zero-shot-classification` and `question-answering` are slightly specific in the sense, that a single input might yield
+mutliple forward pass of a model. Under normal circumstances, this would yield issues with `batch_size` argument.
+
+In order to circumvent this issue, both of these pipelines are a bit specific, they are `ChunkPipeline` instead of
+regular `Pipeline`. In short:
+
+
+```python
+preprocessed = pipe.preprocess(inputs)
+model_outputs = pipe.forward(preprocessed)
+outputs = pipe.postprocess(model_ouputs)
+```
+
+Now becomes:
+
+
+```python
+all_model_outputs = []
+for preprocessed in pipe.preprocess(inputs):
+    model_outputs = pipe.forward(preprocessed)
+    all_model_outputs.append(model_outputs)
+outputs = pipe.postprocess(all_model_ouputs)
+```
+
+This should be very transparent to your code because the pipelines are used in
+the same way.
+
+This is a simplified view, since the pipeline can handle automatically the batch to ! Meaning you don't have to care
+about how many forward passes you inputs are actually going to trigger, you can optimize the `batch_size`
+independantly of the inputs. The caveats from the previous section still apply.
 
 <h2 id="pipeline-custom-code">Pipeline custom code</h2>
 
@@ -1027,7 +1086,7 @@ Perform segmentation (detect masks & classes) in the image(s) passed as inputs.
 
 <div class="docstring">
 
-<docstring><name>class transformers.TokenClassificationPipeline</name><anchor>transformers.TokenClassificationPipeline</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/pipelines/token_classification.py#L86</source><parameters>[{"name": "args_parser", "val": " = <transformers.pipelines.token_classification.TokenClassificationArgumentHandler object at 0x7fdf97eaaf70>"}, {"name": "*args", "val": ""}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **model** ([PreTrainedModel](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel) or [TFPreTrainedModel](/docs/transformers/master/en/main_classes/model#transformers.TFPreTrainedModel)) --
+<docstring><name>class transformers.TokenClassificationPipeline</name><anchor>transformers.TokenClassificationPipeline</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/pipelines/token_classification.py#L86</source><parameters>[{"name": "args_parser", "val": " = <transformers.pipelines.token_classification.TokenClassificationArgumentHandler object at 0x7efcfafac0a0>"}, {"name": "*args", "val": ""}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **model** ([PreTrainedModel](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel) or [TFPreTrainedModel](/docs/transformers/master/en/main_classes/model#transformers.TFPreTrainedModel)) --
   The model that will be used by the pipeline to make predictions. This needs to be a model inheriting from
   [PreTrainedModel](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel) for PyTorch and [TFPreTrainedModel](/docs/transformers/master/en/main_classes/model#transformers.TFPreTrainedModel) for
   TensorFlow.
@@ -1326,7 +1385,7 @@ We currently support extractive question answering.
 
 </div>
 <div class="docstring">
-<docstring><name>decode</name><anchor>transformers.QuestionAnsweringPipeline.decode</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/pipelines/question_answering.py#L477</source><parameters>[{"name": "start", "val": ": ndarray"}, {"name": "end", "val": ": ndarray"}, {"name": "topk", "val": ": int"}, {"name": "max_answer_len", "val": ": int"}, {"name": "undesired_tokens", "val": ": ndarray"}]</parameters><paramsdesc>- **start** (`np.ndarray`) -- Individual start probabilities for each token.
+<docstring><name>decode</name><anchor>transformers.QuestionAnsweringPipeline.decode</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/pipelines/question_answering.py#L468</source><parameters>[{"name": "start", "val": ": ndarray"}, {"name": "end", "val": ": ndarray"}, {"name": "topk", "val": ": int"}, {"name": "max_answer_len", "val": ": int"}, {"name": "undesired_tokens", "val": ": ndarray"}]</parameters><paramsdesc>- **start** (`np.ndarray`) -- Individual start probabilities for each token.
 - **end** (`np.ndarray`) -- Individual end probabilities for each token.
 - **topk** (`int`) -- Indicates how many possible answer span(s) to extract from the model output.
 - **max_answer_len** (`int`) -- Maximum size of the answer to extract from the model's output.
@@ -1344,7 +1403,7 @@ the topk argument.
 
 </div>
 <div class="docstring">
-<docstring><name>span\_to\_answer</name><anchor>transformers.QuestionAnsweringPipeline.span_to_answer</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/pipelines/question_answering.py#L526</source><parameters>[{"name": "text", "val": ": str"}, {"name": "start", "val": ": int"}, {"name": "end", "val": ": int"}]</parameters><paramsdesc>- **text** (`str`) -- The actual context to extract the answer from.
+<docstring><name>span\_to\_answer</name><anchor>transformers.QuestionAnsweringPipeline.span_to_answer</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/pipelines/question_answering.py#L517</source><parameters>[{"name": "text", "val": ": str"}, {"name": "start", "val": ": int"}, {"name": "end", "val": ": int"}]</parameters><paramsdesc>- **text** (`str`) -- The actual context to extract the answer from.
 - **start** (`int`) -- The answer starting token index.
 - **end** (`int`) -- The answer end token index.</paramsdesc><paramgroups>0</paramgroups><rettype>Dictionary like `&amp;lcub;'answer'</rettype><retdesc>str, 'start': int, 'end': int}`</retdesc></docstring>
 
@@ -1452,7 +1511,7 @@ Summarize the text(s) given as inputs.
 
 <div class="docstring">
 
-<docstring><name>class transformers.TableQuestionAnsweringPipeline</name><anchor>transformers.TableQuestionAnsweringPipeline</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/pipelines/table_question_answering.py#L83</source><parameters>[{"name": "args_parser", "val": " = <transformers.pipelines.table_question_answering.TableQuestionAnsweringArgumentHandler object at 0x7fdf97f18790>"}, {"name": "*args", "val": ""}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **model** ([PreTrainedModel](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel) or [TFPreTrainedModel](/docs/transformers/master/en/main_classes/model#transformers.TFPreTrainedModel)) --
+<docstring><name>class transformers.TableQuestionAnsweringPipeline</name><anchor>transformers.TableQuestionAnsweringPipeline</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/pipelines/table_question_answering.py#L83</source><parameters>[{"name": "args_parser", "val": " = <transformers.pipelines.table_question_answering.TableQuestionAnsweringArgumentHandler object at 0x7efcfaf90880>"}, {"name": "*args", "val": ""}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **model** ([PreTrainedModel](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel) or [TFPreTrainedModel](/docs/transformers/master/en/main_classes/model#transformers.TFPreTrainedModel)) --
   The model that will be used by the pipeline to make predictions. This needs to be a model inheriting from
   [PreTrainedModel](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel) for PyTorch and [TFPreTrainedModel](/docs/transformers/master/en/main_classes/model#transformers.TFPreTrainedModel) for
   TensorFlow.
@@ -1865,7 +1924,7 @@ Checks whether there might be something wrong with given input with regard to th
 
 <div class="docstring">
 
-<docstring><name>class transformers.TokenClassificationPipeline</name><anchor>transformers.TokenClassificationPipeline</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/pipelines/token_classification.py#L86</source><parameters>[{"name": "args_parser", "val": " = <transformers.pipelines.token_classification.TokenClassificationArgumentHandler object at 0x7fdf97eaaf70>"}, {"name": "*args", "val": ""}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **model** ([PreTrainedModel](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel) or [TFPreTrainedModel](/docs/transformers/master/en/main_classes/model#transformers.TFPreTrainedModel)) --
+<docstring><name>class transformers.TokenClassificationPipeline</name><anchor>transformers.TokenClassificationPipeline</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/pipelines/token_classification.py#L86</source><parameters>[{"name": "args_parser", "val": " = <transformers.pipelines.token_classification.TokenClassificationArgumentHandler object at 0x7efcfafac0a0>"}, {"name": "*args", "val": ""}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **model** ([PreTrainedModel](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel) or [TFPreTrainedModel](/docs/transformers/master/en/main_classes/model#transformers.TFPreTrainedModel)) --
   The model that will be used by the pipeline to make predictions. This needs to be a model inheriting from
   [PreTrainedModel](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel) for PyTorch and [TFPreTrainedModel](/docs/transformers/master/en/main_classes/model#transformers.TFPreTrainedModel) for
   TensorFlow.
@@ -2090,7 +2149,7 @@ Translate the text(s) given as inputs.
 
 <div class="docstring">
 
-<docstring><name>class transformers.ZeroShotClassificationPipeline</name><anchor>transformers.ZeroShotClassificationPipeline</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/pipelines/zero_shot_classification.py#L47</source><parameters>[{"name": "args_parser", "val": " = <transformers.pipelines.zero_shot_classification.ZeroShotClassificationArgumentHandler object at 0x7fdf97eb6820>"}, {"name": "*args", "val": ""}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **model** ([PreTrainedModel](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel) or [TFPreTrainedModel](/docs/transformers/master/en/main_classes/model#transformers.TFPreTrainedModel)) --
+<docstring><name>class transformers.ZeroShotClassificationPipeline</name><anchor>transformers.ZeroShotClassificationPipeline</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/pipelines/zero_shot_classification.py#L47</source><parameters>[{"name": "args_parser", "val": " = <transformers.pipelines.zero_shot_classification.ZeroShotClassificationArgumentHandler object at 0x7efcfafaca00>"}, {"name": "*args", "val": ""}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **model** ([PreTrainedModel](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel) or [TFPreTrainedModel](/docs/transformers/master/en/main_classes/model#transformers.TFPreTrainedModel)) --
   The model that will be used by the pipeline to make predictions. This needs to be a model inheriting from
   [PreTrainedModel](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel) for PyTorch and [TFPreTrainedModel](/docs/transformers/master/en/main_classes/model#transformers.TFPreTrainedModel) for
   TensorFlow.
@@ -2141,7 +2200,7 @@ of available models on [huggingface.co/models](https://huggingface.co/models?sea
 
 
 <div class="docstring">
-<docstring><name>\_\_call\_\_</name><anchor>transformers.ZeroShotClassificationPipeline.__call__</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/pipelines/zero_shot_classification.py#L150</source><parameters>[{"name": "sequences", "val": ": typing.Union[str, typing.List[str]]"}, {"name": "*args", "val": ""}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **sequences** (`str` or `List[str]`) --
+<docstring><name>\_\_call\_\_</name><anchor>transformers.ZeroShotClassificationPipeline.__call__</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/pipelines/zero_shot_classification.py#L139</source><parameters>[{"name": "sequences", "val": ": typing.Union[str, typing.List[str]]"}, {"name": "*args", "val": ""}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **sequences** (`str` or `List[str]`) --
   The sequence(s) to classify, will be truncated if the model input is too large.
 - **candidate_labels** (`str` or `List[str]`) --
   The set of possible class labels to classify each sequence into. Can be a single label, a string of
@@ -2179,7 +2238,7 @@ documentation for more information.
 
 <div class="docstring">
 
-<docstring><name>class transformers.Pipeline</name><anchor>transformers.Pipeline</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/pipelines/base.py#L803</source><parameters>[{"name": "model", "val": ": typing.Union[ForwardRef('PreTrainedModel'), ForwardRef('TFPreTrainedModel')]"}, {"name": "tokenizer", "val": ": typing.Optional[transformers.tokenization_utils.PreTrainedTokenizer] = None"}, {"name": "feature_extractor", "val": ": typing.Optional[ForwardRef('SequenceFeatureExtractor')] = None"}, {"name": "modelcard", "val": ": typing.Optional[transformers.modelcard.ModelCard] = None"}, {"name": "framework", "val": ": typing.Optional[str] = None"}, {"name": "task", "val": ": str = ''"}, {"name": "args_parser", "val": ": ArgumentHandler = None"}, {"name": "device", "val": ": int = -1"}, {"name": "binary_output", "val": ": bool = False"}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **model** ([PreTrainedModel](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel) or [TFPreTrainedModel](/docs/transformers/master/en/main_classes/model#transformers.TFPreTrainedModel)) --
+<docstring><name>class transformers.Pipeline</name><anchor>transformers.Pipeline</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/pipelines/base.py#L693</source><parameters>[{"name": "model", "val": ": typing.Union[ForwardRef('PreTrainedModel'), ForwardRef('TFPreTrainedModel')]"}, {"name": "tokenizer", "val": ": typing.Optional[transformers.tokenization_utils.PreTrainedTokenizer] = None"}, {"name": "feature_extractor", "val": ": typing.Optional[ForwardRef('SequenceFeatureExtractor')] = None"}, {"name": "modelcard", "val": ": typing.Optional[transformers.modelcard.ModelCard] = None"}, {"name": "framework", "val": ": typing.Optional[str] = None"}, {"name": "task", "val": ": str = ''"}, {"name": "args_parser", "val": ": ArgumentHandler = None"}, {"name": "device", "val": ": int = -1"}, {"name": "binary_output", "val": ": bool = False"}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **model** ([PreTrainedModel](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel) or [TFPreTrainedModel](/docs/transformers/master/en/main_classes/model#transformers.TFPreTrainedModel)) --
   The model that will be used by the pipeline to make predictions. This needs to be a model inheriting from
   [PreTrainedModel](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel) for PyTorch and [TFPreTrainedModel](/docs/transformers/master/en/main_classes/model#transformers.TFPreTrainedModel) for
   TensorFlow.
@@ -2231,7 +2290,7 @@ pickle format.
 
 
 <div class="docstring">
-<docstring><name>check\_model\_type</name><anchor>transformers.Pipeline.check_model_type</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/pipelines/base.py#L954</source><parameters>[{"name": "supported_models", "val": ": typing.Union[typing.List[str], dict]"}]</parameters><paramsdesc>- **supported_models** (`List[str]` or `dict`) --
+<docstring><name>check\_model\_type</name><anchor>transformers.Pipeline.check_model_type</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/pipelines/base.py#L844</source><parameters>[{"name": "supported_models", "val": ": typing.Union[typing.List[str], dict]"}]</parameters><paramsdesc>- **supported_models** (`List[str]` or `dict`) --
   The list of models supported by the pipeline, or a dictionary with model class values.</paramsdesc><paramgroups>0</paramgroups></docstring>
 
 Check if the model class is in supported by the pipeline.
@@ -2241,7 +2300,7 @@ Check if the model class is in supported by the pipeline.
 
 </div>
 <div class="docstring">
-<docstring><name>device\_placement</name><anchor>transformers.Pipeline.device_placement</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/pipelines/base.py#L897</source><parameters>[]</parameters><retdesc>Context manager</retdesc></docstring>
+<docstring><name>device\_placement</name><anchor>transformers.Pipeline.device_placement</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/pipelines/base.py#L787</source><parameters>[]</parameters><retdesc>Context manager</retdesc></docstring>
 
 Context Manager allowing tensor allocation on the user-specified device in framework agnostic way.
 
@@ -2259,7 +2318,7 @@ with pipe.device_placement():
 
 </div>
 <div class="docstring">
-<docstring><name>ensure\_tensor\_on\_device</name><anchor>transformers.Pipeline.ensure_tensor_on_device</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/pipelines/base.py#L923</source><parameters>[{"name": "**inputs", "val": ""}]</parameters><paramsdesc>- **inputs** (keyword arguments that should be `torch.Tensor`, the rest is ignored) -- The tensors to place on `self.device`.
+<docstring><name>ensure\_tensor\_on\_device</name><anchor>transformers.Pipeline.ensure_tensor_on_device</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/pipelines/base.py#L813</source><parameters>[{"name": "**inputs", "val": ""}]</parameters><paramsdesc>- **inputs** (keyword arguments that should be `torch.Tensor`, the rest is ignored) -- The tensors to place on `self.device`.
 - **Recursive** on lists **only**. --</paramsdesc><paramgroups>0</paramgroups><rettype>`Dict[str, torch.Tensor]`</rettype><retdesc>The same as `inputs` but on the proper device.</retdesc></docstring>
 
 Ensure PyTorch tensors are on the specified device.
@@ -2273,7 +2332,7 @@ Ensure PyTorch tensors are on the specified device.
 
 </div>
 <div class="docstring">
-<docstring><name>postprocess</name><anchor>transformers.Pipeline.postprocess</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/pipelines/base.py#L1010</source><parameters>[{"name": "model_outputs", "val": ": ModelOutput"}, {"name": "**postprocess_parameters", "val": ": typing.Dict"}]</parameters></docstring>
+<docstring><name>postprocess</name><anchor>transformers.Pipeline.postprocess</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/pipelines/base.py#L900</source><parameters>[{"name": "model_outputs", "val": ": ModelOutput"}, {"name": "**postprocess_parameters", "val": ": typing.Dict"}]</parameters></docstring>
 
 Postprocess will receive the raw outputs of the `_forward` method, generally tensors, and reformat them into
 something more friendly. Generally it will output a list or a dict or results (containing just strings and
@@ -2282,14 +2341,14 @@ numbers).
 
 </div>
 <div class="docstring">
-<docstring><name>predict</name><anchor>transformers.Pipeline.predict</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/pipelines/base.py#L891</source><parameters>[{"name": "X", "val": ""}]</parameters></docstring>
+<docstring><name>predict</name><anchor>transformers.Pipeline.predict</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/pipelines/base.py#L781</source><parameters>[{"name": "X", "val": ""}]</parameters></docstring>
 
 Scikit / Keras interface to transformers' pipelines. This method will forward to __call__().
 
 
 </div>
 <div class="docstring">
-<docstring><name>preprocess</name><anchor>transformers.Pipeline.preprocess</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/pipelines/base.py#L989</source><parameters>[{"name": "input_", "val": ": typing.Any"}, {"name": "**preprocess_parameters", "val": ": typing.Dict"}]</parameters></docstring>
+<docstring><name>preprocess</name><anchor>transformers.Pipeline.preprocess</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/pipelines/base.py#L879</source><parameters>[{"name": "input_", "val": ": typing.Any"}, {"name": "**preprocess_parameters", "val": ": typing.Dict"}]</parameters></docstring>
 
 Preprocess will take the `input_` of a specific pipeline and return a dictionnary of everything necessary for
 `_forward` to run properly. It should contain at least one tensor, but might have arbitrary other items.
@@ -2297,7 +2356,7 @@ Preprocess will take the `input_` of a specific pipeline and return a dictionnar
 
 </div>
 <div class="docstring">
-<docstring><name>save\_pretrained</name><anchor>transformers.Pipeline.save_pretrained</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/pipelines/base.py#L861</source><parameters>[{"name": "save_directory", "val": ": str"}]</parameters><paramsdesc>- **save_directory** (`str`) --
+<docstring><name>save\_pretrained</name><anchor>transformers.Pipeline.save_pretrained</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/pipelines/base.py#L751</source><parameters>[{"name": "save_directory", "val": ": str"}]</parameters><paramsdesc>- **save_directory** (`str`) --
   A path to the directory where to saved. It will be created if it doesn't exist.</paramsdesc><paramgroups>0</paramgroups></docstring>
 
 Save the pipeline's model and tokenizer.
@@ -2307,7 +2366,7 @@ Save the pipeline's model and tokenizer.
 
 </div>
 <div class="docstring">
-<docstring><name>transform</name><anchor>transformers.Pipeline.transform</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/pipelines/base.py#L885</source><parameters>[{"name": "X", "val": ""}]</parameters></docstring>
+<docstring><name>transform</name><anchor>transformers.Pipeline.transform</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/pipelines/base.py#L775</source><parameters>[{"name": "X", "val": ""}]</parameters></docstring>
 
 Scikit / Keras interface to transformers' pipelines. This method will forward to __call__().
 
