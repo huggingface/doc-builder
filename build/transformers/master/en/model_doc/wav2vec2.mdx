@@ -118,24 +118,24 @@ This model was contributed by [patrickvonplaten](https://huggingface.co/patrickv
 - **layer_norm_eps** (`float`, *optional*, defaults to 1e-12) --
   The epsilon used by the layer normalization layers.
 - **feat_extract_norm** (`str`, *optional*, defaults to `"group"`) --
-  The norm to be applied to 1D convolutional layers in feature extractor. One of `"group"` for group
+  The norm to be applied to 1D convolutional layers in feature encoder. One of `"group"` for group
   normalization of only the first 1D convolutional layer or `"layer"` for layer normalization of all 1D
   convolutional layers.
 - **feat_proj_dropout** (`float`, *optional*, defaults to 0.0) --
-  The dropout probability for output of the feature extractor.
+  The dropout probability for output of the feature encoder.
 - **feat_extract_activation** (`str, `optional`, defaults to `"gelu"`) --
   The non-linear activation function (function or string) in the 1D convolutional layers of the feature
   extractor. If string, `"gelu"`, `"relu"`, `"selu"` and `"gelu_new"` are supported.
 - **feat_quantizer_dropout** (`float`, *optional*, defaults to 0.0) --
-  The dropout probabilitiy for quantized feature extractor states.
+  The dropout probabilitiy for quantized feature encoder states.
 - **conv_dim** (`Tuple[int]`, *optional*, defaults to `(512, 512, 512, 512, 512, 512, 512)`) --
   A tuple of integers defining the number of input and output channels of each 1D convolutional layer in the
-  feature extractor. The length of *conv_dim* defines the number of 1D convolutional layers.
+  feature encoder. The length of *conv_dim* defines the number of 1D convolutional layers.
 - **conv_stride** (`Tuple[int]`, *optional*, defaults to `(5, 2, 2, 2, 2, 2, 2)`) --
-  A tuple of integers defining the stride of each 1D convolutional layer in the feature extractor. The length
+  A tuple of integers defining the stride of each 1D convolutional layer in the feature encoder. The length
   of *conv_stride* defines the number of convolutional layers and has to match the length of *conv_dim*.
 - **conv_kernel** (`Tuple[int]`, *optional*, defaults to `(10, 3, 3, 3, 3, 3, 3)`) --
-  A tuple of integers defining the kernel size of each 1D convolutional layer in the feature extractor. The
+  A tuple of integers defining the kernel size of each 1D convolutional layer in the feature encoder. The
   length of *conv_kernel* defines the number of convolutional layers and has to match the length of
   *conv_dim*.
 - **conv_bias** (`bool`, *optional*, defaults to `False`) --
@@ -150,7 +150,7 @@ This model was contributed by [patrickvonplaten](https://huggingface.co/patrickv
   True` corresponds to applying layer norm before the attention layer, whereas `do_stable_layer_norm is
   False` corresponds to applying layer norm after the attention layer.
 - **apply_spec_augment** (`bool`, *optional*, defaults to `True`) --
-  Whether to apply *SpecAugment* data augmentation to the outputs of the feature extractor. For reference see
+  Whether to apply *SpecAugment* data augmentation to the outputs of the feature encoder. For reference see
   [SpecAugment: A Simple Data Augmentation Method for Automatic Speech
   Recognition](https://arxiv.org/abs/1904.08779).
 - **mask_time_prob** (`float`, *optional*, defaults to 0.05) --
@@ -185,7 +185,7 @@ This model was contributed by [patrickvonplaten](https://huggingface.co/patrickv
 - **contrastive_logits_temperature** (`float`, *optional*, defaults to 0.1) --
   The temperature *kappa* in the contrastive loss.
 - **feat_quantizer_dropout** (`float`, *optional*, defaults to 0.0) --
-  The dropout probabilitiy for the output of the feature extractor that's used by the quantizer.
+  The dropout probabilitiy for the output of the feature encoder that's used by the quantizer.
 - **num_negatives** (`int`, *optional*, defaults to 100) --
   Number of negative samples for the contrastive loss.
 - **codevector_dim** (`int`, *optional*, defaults to 256) --
@@ -930,7 +930,7 @@ Output type of `FlaxWav2Vec2ForPreTrainingOutput`, with potential hidden states 
 
 <div class="docstring">
 
-<docstring><name>class transformers.Wav2Vec2Model</name><anchor>transformers.Wav2Vec2Model</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/wav2vec2/modeling_wav2vec2.py#L1193</source><parameters>[{"name": "config", "val": ": Wav2Vec2Config"}]</parameters><paramsdesc>- **config** ([Wav2Vec2Config](/docs/transformers/master/en/model_doc/wav2vec2#transformers.Wav2Vec2Config)) -- Model configuration class with all the parameters of the model.
+<docstring><name>class transformers.Wav2Vec2Model</name><anchor>transformers.Wav2Vec2Model</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/wav2vec2/modeling_wav2vec2.py#L1204</source><parameters>[{"name": "config", "val": ": Wav2Vec2Config"}]</parameters><paramsdesc>- **config** ([Wav2Vec2Config](/docs/transformers/master/en/model_doc/wav2vec2#transformers.Wav2Vec2Config)) -- Model configuration class with all the parameters of the model.
   Initializing with a config file does not load the weights associated with the model, only the
   configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel.from_pretrained) method to load the model weights.</paramsdesc><paramgroups>0</paramgroups></docstring>
 The bare Wav2Vec2 Model transformer outputting raw hidden-states without any specific head on top.
@@ -950,7 +950,7 @@ behavior.
 
 
 <div class="docstring">
-<docstring><name>forward</name><anchor>transformers.Wav2Vec2Model.forward</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/wav2vec2/modeling_wav2vec2.py#L1267</source><parameters>[{"name": "input_values", "val": ""}, {"name": "attention_mask", "val": " = None"}, {"name": "mask_time_indices", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "return_dict", "val": " = None"}]</parameters><paramsdesc>- **input_values** (`torch.FloatTensor` of shape `(batch_size, sequence_length)`) --
+<docstring><name>forward</name><anchor>transformers.Wav2Vec2Model.forward</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/wav2vec2/modeling_wav2vec2.py#L1290</source><parameters>[{"name": "input_values", "val": ""}, {"name": "attention_mask", "val": " = None"}, {"name": "mask_time_indices", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "return_dict", "val": " = None"}]</parameters><paramsdesc>- **input_values** (`torch.FloatTensor` of shape `(batch_size, sequence_length)`) --
   Float values of input raw speech waveform. Values can be obtained by loading a *.flac* or *.wav* audio file
   into an array of type *List[float]* or a *numpy.ndarray*, *e.g.* via the soundfile library (*pip install
   soundfile*). To prepare the array into *input_values*, the [Wav2Vec2Processor](/docs/transformers/master/en/model_doc/wav2vec2#transformers.Wav2Vec2Processor) should be used for padding
@@ -1039,7 +1039,7 @@ Example:
 
 <div class="docstring">
 
-<docstring><name>class transformers.Wav2Vec2ForCTC</name><anchor>transformers.Wav2Vec2ForCTC</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/wav2vec2/modeling_wav2vec2.py#L1619</source><parameters>[{"name": "config", "val": ""}]</parameters><paramsdesc>- **config** ([Wav2Vec2Config](/docs/transformers/master/en/model_doc/wav2vec2#transformers.Wav2Vec2Config)) -- Model configuration class with all the parameters of the model.
+<docstring><name>class transformers.Wav2Vec2ForCTC</name><anchor>transformers.Wav2Vec2ForCTC</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/wav2vec2/modeling_wav2vec2.py#L1654</source><parameters>[{"name": "config", "val": ""}]</parameters><paramsdesc>- **config** ([Wav2Vec2Config](/docs/transformers/master/en/model_doc/wav2vec2#transformers.Wav2Vec2Config)) -- Model configuration class with all the parameters of the model.
   Initializing with a config file does not load the weights associated with the model, only the
   configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel.from_pretrained) method to load the model weights.</paramsdesc><paramgroups>0</paramgroups></docstring>
 Wav2Vec2 Model with a `language modeling` head on top for Connectionist Temporal Classification (CTC).
@@ -1059,7 +1059,7 @@ behavior.
 
 
 <div class="docstring">
-<docstring><name>forward</name><anchor>transformers.Wav2Vec2ForCTC.forward</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/wav2vec2/modeling_wav2vec2.py#L1645</source><parameters>[{"name": "input_values", "val": ""}, {"name": "attention_mask", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "return_dict", "val": " = None"}, {"name": "labels", "val": " = None"}]</parameters><paramsdesc>- **input_values** (`torch.FloatTensor` of shape `(batch_size, sequence_length)`) --
+<docstring><name>forward</name><anchor>transformers.Wav2Vec2ForCTC.forward</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/wav2vec2/modeling_wav2vec2.py#L1692</source><parameters>[{"name": "input_values", "val": ""}, {"name": "attention_mask", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "return_dict", "val": " = None"}, {"name": "labels", "val": " = None"}]</parameters><paramsdesc>- **input_values** (`torch.FloatTensor` of shape `(batch_size, sequence_length)`) --
   Float values of input raw speech waveform. Values can be obtained by loading a *.flac* or *.wav* audio file
   into an array of type *List[float]* or a *numpy.ndarray*, *e.g.* via the soundfile library (*pip install
   soundfile*). To prepare the array into *input_values*, the [Wav2Vec2Processor](/docs/transformers/master/en/model_doc/wav2vec2#transformers.Wav2Vec2Processor) should be used for padding
@@ -1163,7 +1163,7 @@ Example:
 
 <div class="docstring">
 
-<docstring><name>class transformers.Wav2Vec2ForSequenceClassification</name><anchor>transformers.Wav2Vec2ForSequenceClassification</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/wav2vec2/modeling_wav2vec2.py#L1732</source><parameters>[{"name": "config", "val": ""}]</parameters><paramsdesc>- **config** ([Wav2Vec2Config](/docs/transformers/master/en/model_doc/wav2vec2#transformers.Wav2Vec2Config)) -- Model configuration class with all the parameters of the model.
+<docstring><name>class transformers.Wav2Vec2ForSequenceClassification</name><anchor>transformers.Wav2Vec2ForSequenceClassification</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/wav2vec2/modeling_wav2vec2.py#L1779</source><parameters>[{"name": "config", "val": ""}]</parameters><paramsdesc>- **config** ([Wav2Vec2Config](/docs/transformers/master/en/model_doc/wav2vec2#transformers.Wav2Vec2Config)) -- Model configuration class with all the parameters of the model.
   Initializing with a config file does not load the weights associated with the model, only the
   configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel.from_pretrained) method to load the model weights.</paramsdesc><paramgroups>0</paramgroups></docstring>
 
@@ -1186,7 +1186,7 @@ behavior.
 
 
 <div class="docstring">
-<docstring><name>forward</name><anchor>transformers.Wav2Vec2ForSequenceClassification.forward</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/wav2vec2/modeling_wav2vec2.py#L1761</source><parameters>[{"name": "input_values", "val": ""}, {"name": "attention_mask", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "return_dict", "val": " = None"}, {"name": "labels", "val": " = None"}]</parameters><paramsdesc>- **input_values** (`torch.FloatTensor` of shape `(batch_size, sequence_length)`) --
+<docstring><name>forward</name><anchor>transformers.Wav2Vec2ForSequenceClassification.forward</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/wav2vec2/modeling_wav2vec2.py#L1820</source><parameters>[{"name": "input_values", "val": ""}, {"name": "attention_mask", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "return_dict", "val": " = None"}, {"name": "labels", "val": " = None"}]</parameters><paramsdesc>- **input_values** (`torch.FloatTensor` of shape `(batch_size, sequence_length)`) --
   Float values of input raw speech waveform. Values can be obtained by loading a *.flac* or *.wav* audio file
   into an array of type *List[float]* or a *numpy.ndarray*, *e.g.* via the soundfile library (*pip install
   soundfile*). To prepare the array into *input_values*, the [Wav2Vec2Processor](/docs/transformers/master/en/model_doc/wav2vec2#transformers.Wav2Vec2Processor) should be used for padding
@@ -1286,7 +1286,7 @@ Example:
 
 <div class="docstring">
 
-<docstring><name>class transformers.Wav2Vec2ForAudioFrameClassification</name><anchor>transformers.Wav2Vec2ForAudioFrameClassification</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/wav2vec2/modeling_wav2vec2.py#L1837</source><parameters>[{"name": "config", "val": ""}]</parameters><paramsdesc>- **config** ([Wav2Vec2Config](/docs/transformers/master/en/model_doc/wav2vec2#transformers.Wav2Vec2Config)) -- Model configuration class with all the parameters of the model.
+<docstring><name>class transformers.Wav2Vec2ForAudioFrameClassification</name><anchor>transformers.Wav2Vec2ForAudioFrameClassification</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/wav2vec2/modeling_wav2vec2.py#L1896</source><parameters>[{"name": "config", "val": ""}]</parameters><paramsdesc>- **config** ([Wav2Vec2Config](/docs/transformers/master/en/model_doc/wav2vec2#transformers.Wav2Vec2Config)) -- Model configuration class with all the parameters of the model.
   Initializing with a config file does not load the weights associated with the model, only the
   configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel.from_pretrained) method to load the model weights.</paramsdesc><paramgroups>0</paramgroups></docstring>
 
@@ -1308,7 +1308,7 @@ behavior.
 
 
 <div class="docstring">
-<docstring><name>forward</name><anchor>transformers.Wav2Vec2ForAudioFrameClassification.forward</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/wav2vec2/modeling_wav2vec2.py#L1864</source><parameters>[{"name": "input_values", "val": ""}, {"name": "attention_mask", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "return_dict", "val": " = None"}]</parameters><paramsdesc>- **input_values** (`torch.FloatTensor` of shape `(batch_size, sequence_length)`) --
+<docstring><name>forward</name><anchor>transformers.Wav2Vec2ForAudioFrameClassification.forward</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/wav2vec2/modeling_wav2vec2.py#L1935</source><parameters>[{"name": "input_values", "val": ""}, {"name": "attention_mask", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "return_dict", "val": " = None"}]</parameters><paramsdesc>- **input_values** (`torch.FloatTensor` of shape `(batch_size, sequence_length)`) --
   Float values of input raw speech waveform. Values can be obtained by loading a *.flac* or *.wav* audio file
   into an array of type *List[float]* or a *numpy.ndarray*, *e.g.* via the soundfile library (*pip install
   soundfile*). To prepare the array into *input_values*, the [Wav2Vec2Processor](/docs/transformers/master/en/model_doc/wav2vec2#transformers.Wav2Vec2Processor) should be used for padding
@@ -1404,7 +1404,7 @@ Example:
 
 <div class="docstring">
 
-<docstring><name>class transformers.Wav2Vec2ForXVector</name><anchor>transformers.Wav2Vec2ForXVector</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/wav2vec2/modeling_wav2vec2.py#L1975</source><parameters>[{"name": "config", "val": ""}]</parameters><paramsdesc>- **config** ([Wav2Vec2Config](/docs/transformers/master/en/model_doc/wav2vec2#transformers.Wav2Vec2Config)) -- Model configuration class with all the parameters of the model.
+<docstring><name>class transformers.Wav2Vec2ForXVector</name><anchor>transformers.Wav2Vec2ForXVector</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/wav2vec2/modeling_wav2vec2.py#L2046</source><parameters>[{"name": "config", "val": ""}]</parameters><paramsdesc>- **config** ([Wav2Vec2Config](/docs/transformers/master/en/model_doc/wav2vec2#transformers.Wav2Vec2Config)) -- Model configuration class with all the parameters of the model.
   Initializing with a config file does not load the weights associated with the model, only the
   configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel.from_pretrained) method to load the model weights.</paramsdesc><paramgroups>0</paramgroups></docstring>
 
@@ -1426,7 +1426,7 @@ behavior.
 
 
 <div class="docstring">
-<docstring><name>forward</name><anchor>transformers.Wav2Vec2ForXVector.forward</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/wav2vec2/modeling_wav2vec2.py#L2025</source><parameters>[{"name": "input_values", "val": ""}, {"name": "attention_mask", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "return_dict", "val": " = None"}, {"name": "labels", "val": " = None"}]</parameters><paramsdesc>- **input_values** (`torch.FloatTensor` of shape `(batch_size, sequence_length)`) --
+<docstring><name>forward</name><anchor>transformers.Wav2Vec2ForXVector.forward</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/wav2vec2/modeling_wav2vec2.py#L2108</source><parameters>[{"name": "input_values", "val": ""}, {"name": "attention_mask", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "return_dict", "val": " = None"}, {"name": "labels", "val": " = None"}]</parameters><paramsdesc>- **input_values** (`torch.FloatTensor` of shape `(batch_size, sequence_length)`) --
   Float values of input raw speech waveform. Values can be obtained by loading a *.flac* or *.wav* audio file
   into an array of type *List[float]* or a *numpy.ndarray*, *e.g.* via the soundfile library (*pip install
   soundfile*). To prepare the array into *input_values*, the [Wav2Vec2Processor](/docs/transformers/master/en/model_doc/wav2vec2#transformers.Wav2Vec2Processor) should be used for padding
@@ -1528,7 +1528,7 @@ Example:
 
 <div class="docstring">
 
-<docstring><name>class transformers.Wav2Vec2ForPreTraining</name><anchor>transformers.Wav2Vec2ForPreTraining</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/wav2vec2/modeling_wav2vec2.py#L1329</source><parameters>[{"name": "config", "val": ": Wav2Vec2Config"}]</parameters><paramsdesc>- **config** ([Wav2Vec2Config](/docs/transformers/master/en/model_doc/wav2vec2#transformers.Wav2Vec2Config)) -- Model configuration class with all the parameters of the model.
+<docstring><name>class transformers.Wav2Vec2ForPreTraining</name><anchor>transformers.Wav2Vec2ForPreTraining</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/wav2vec2/modeling_wav2vec2.py#L1352</source><parameters>[{"name": "config", "val": ": Wav2Vec2Config"}]</parameters><paramsdesc>- **config** ([Wav2Vec2Config](/docs/transformers/master/en/model_doc/wav2vec2#transformers.Wav2Vec2Config)) -- Model configuration class with all the parameters of the model.
   Initializing with a config file does not load the weights associated with the model, only the
   configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel.from_pretrained) method to load the model weights.</paramsdesc><paramgroups>0</paramgroups></docstring>
 Wav2Vec2 Model with a quantizer and `VQ` head on top.
@@ -1548,7 +1548,7 @@ behavior.
 
 
 <div class="docstring">
-<docstring><name>forward</name><anchor>transformers.Wav2Vec2ForPreTraining.forward</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/wav2vec2/modeling_wav2vec2.py#L1378</source><parameters>[{"name": "input_values", "val": ""}, {"name": "attention_mask", "val": " = None"}, {"name": "mask_time_indices", "val": " = None"}, {"name": "sampled_negative_indices", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "return_dict", "val": " = None"}]</parameters><paramsdesc>- **input_values** (`torch.FloatTensor` of shape `(batch_size, sequence_length)`) --
+<docstring><name>forward</name><anchor>transformers.Wav2Vec2ForPreTraining.forward</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/wav2vec2/modeling_wav2vec2.py#L1413</source><parameters>[{"name": "input_values", "val": ""}, {"name": "attention_mask", "val": " = None"}, {"name": "mask_time_indices", "val": " = None"}, {"name": "sampled_negative_indices", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "return_dict", "val": " = None"}]</parameters><paramsdesc>- **input_values** (`torch.FloatTensor` of shape `(batch_size, sequence_length)`) --
   Float values of input raw speech waveform. Values can be obtained by loading a *.flac* or *.wav* audio file
   into an array of type *List[float]* or a *numpy.ndarray*, *e.g.* via the soundfile library (*pip install
   soundfile*). To prepare the array into *input_values*, the [Wav2Vec2Processor](/docs/transformers/master/en/model_doc/wav2vec2#transformers.Wav2Vec2Processor) should be used for padding
@@ -1673,7 +1673,7 @@ Example:
 
 <div class="docstring">
 
-<docstring><name>class transformers.TFWav2Vec2Model</name><anchor>transformers.TFWav2Vec2Model</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/wav2vec2/modeling_tf_wav2vec2.py#L1376</source><parameters>[{"name": "*args", "val": ""}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **config** ([Wav2Vec2Config](/docs/transformers/master/en/model_doc/wav2vec2#transformers.Wav2Vec2Config)) -- Model configuration class with all the parameters of the model.
+<docstring><name>class transformers.TFWav2Vec2Model</name><anchor>transformers.TFWav2Vec2Model</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/wav2vec2/modeling_tf_wav2vec2.py#L1387</source><parameters>[{"name": "*args", "val": ""}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **config** ([Wav2Vec2Config](/docs/transformers/master/en/model_doc/wav2vec2#transformers.Wav2Vec2Config)) -- Model configuration class with all the parameters of the model.
   Initializing with a config file does not load the weights associated with the model, only the
   configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel.from_pretrained) method to load the model weights.</paramsdesc><paramgroups>0</paramgroups></docstring>
 The bare TFWav2Vec2 Model transformer outputing raw hidden-states without any specific head on top.
@@ -1712,7 +1712,7 @@ first positional argument :
 
 
 <div class="docstring">
-<docstring><name>call</name><anchor>transformers.TFWav2Vec2Model.call</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/wav2vec2/modeling_tf_wav2vec2.py#L1382</source><parameters>[{"name": "input_values", "val": ": Tensor"}, {"name": "attention_mask", "val": ": typing.Optional[tensorflow.python.framework.ops.Tensor] = None"}, {"name": "token_type_ids", "val": ": typing.Optional[tensorflow.python.framework.ops.Tensor] = None"}, {"name": "position_ids", "val": ": typing.Optional[tensorflow.python.framework.ops.Tensor] = None"}, {"name": "head_mask", "val": ": typing.Optional[tensorflow.python.framework.ops.Tensor] = None"}, {"name": "inputs_embeds", "val": ": typing.Optional[tensorflow.python.framework.ops.Tensor] = None"}, {"name": "output_attentions", "val": ": typing.Optional[bool] = None"}, {"name": "output_hidden_states", "val": ": typing.Optional[bool] = None"}, {"name": "return_dict", "val": ": typing.Optional[bool] = None"}, {"name": "training", "val": ": bool = False"}]</parameters><paramsdesc>- **input_values** (`np.ndarray`, `tf.Tensor`, `List[tf.Tensor]` ``Dict[str, tf.Tensor]` or `Dict[str, np.ndarray]` and each example must have the shape `(&amp;lcub;0})`) --
+<docstring><name>call</name><anchor>transformers.TFWav2Vec2Model.call</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/wav2vec2/modeling_tf_wav2vec2.py#L1393</source><parameters>[{"name": "input_values", "val": ": Tensor"}, {"name": "attention_mask", "val": ": typing.Optional[tensorflow.python.framework.ops.Tensor] = None"}, {"name": "token_type_ids", "val": ": typing.Optional[tensorflow.python.framework.ops.Tensor] = None"}, {"name": "position_ids", "val": ": typing.Optional[tensorflow.python.framework.ops.Tensor] = None"}, {"name": "head_mask", "val": ": typing.Optional[tensorflow.python.framework.ops.Tensor] = None"}, {"name": "inputs_embeds", "val": ": typing.Optional[tensorflow.python.framework.ops.Tensor] = None"}, {"name": "output_attentions", "val": ": typing.Optional[bool] = None"}, {"name": "output_hidden_states", "val": ": typing.Optional[bool] = None"}, {"name": "return_dict", "val": ": typing.Optional[bool] = None"}, {"name": "training", "val": ": bool = False"}]</parameters><paramsdesc>- **input_values** (`np.ndarray`, `tf.Tensor`, `List[tf.Tensor]` ``Dict[str, tf.Tensor]` or `Dict[str, np.ndarray]` and each example must have the shape `(&amp;lcub;0})`) --
   Indices of input sequence tokens in the vocabulary.
 
   Indices can be obtained using [BertTokenizer](/docs/transformers/master/en/model_doc/bert#transformers.BertTokenizer). See [PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.__call__) and
@@ -1822,7 +1822,7 @@ Example:
 
 <div class="docstring">
 
-<docstring><name>class transformers.TFWav2Vec2ForCTC</name><anchor>transformers.TFWav2Vec2ForCTC</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/wav2vec2/modeling_tf_wav2vec2.py#L1474</source><parameters>[{"name": "*args", "val": ""}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **config** ([Wav2Vec2Config](/docs/transformers/master/en/model_doc/wav2vec2#transformers.Wav2Vec2Config)) -- Model configuration class with all the parameters of the model.
+<docstring><name>class transformers.TFWav2Vec2ForCTC</name><anchor>transformers.TFWav2Vec2ForCTC</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/wav2vec2/modeling_tf_wav2vec2.py#L1485</source><parameters>[{"name": "*args", "val": ""}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **config** ([Wav2Vec2Config](/docs/transformers/master/en/model_doc/wav2vec2#transformers.Wav2Vec2Config)) -- Model configuration class with all the parameters of the model.
   Initializing with a config file does not load the weights associated with the model, only the
   configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel.from_pretrained) method to load the model weights.</paramsdesc><paramgroups>0</paramgroups></docstring>
 TFWav2Vec2 Model with a `language modeling` head on top for Connectionist Temporal Classification (CTC).
@@ -1861,7 +1861,7 @@ first positional argument :
 
 
 <div class="docstring">
-<docstring><name>call</name><anchor>transformers.TFWav2Vec2ForCTC.call</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/wav2vec2/modeling_tf_wav2vec2.py#L1489</source><parameters>[{"name": "input_values", "val": ": Tensor"}, {"name": "attention_mask", "val": ": typing.Optional[tensorflow.python.framework.ops.Tensor] = None"}, {"name": "token_type_ids", "val": ": typing.Optional[tensorflow.python.framework.ops.Tensor] = None"}, {"name": "position_ids", "val": ": typing.Optional[tensorflow.python.framework.ops.Tensor] = None"}, {"name": "head_mask", "val": ": typing.Optional[tensorflow.python.framework.ops.Tensor] = None"}, {"name": "inputs_embeds", "val": ": typing.Optional[tensorflow.python.framework.ops.Tensor] = None"}, {"name": "output_attentions", "val": ": typing.Optional[bool] = None"}, {"name": "labels", "val": ": typing.Optional[tensorflow.python.framework.ops.Tensor] = None"}, {"name": "output_hidden_states", "val": ": typing.Optional[bool] = None"}, {"name": "return_dict", "val": ": typing.Optional[bool] = None"}, {"name": "training", "val": ": typing.Optional[bool] = False"}]</parameters><paramsdesc>- **input_values** (`np.ndarray`, `tf.Tensor`, `List[tf.Tensor]` ``Dict[str, tf.Tensor]` or `Dict[str, np.ndarray]` and each example must have the shape `(&amp;lcub;0})`) --
+<docstring><name>call</name><anchor>transformers.TFWav2Vec2ForCTC.call</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/wav2vec2/modeling_tf_wav2vec2.py#L1512</source><parameters>[{"name": "input_values", "val": ": Tensor"}, {"name": "attention_mask", "val": ": typing.Optional[tensorflow.python.framework.ops.Tensor] = None"}, {"name": "token_type_ids", "val": ": typing.Optional[tensorflow.python.framework.ops.Tensor] = None"}, {"name": "position_ids", "val": ": typing.Optional[tensorflow.python.framework.ops.Tensor] = None"}, {"name": "head_mask", "val": ": typing.Optional[tensorflow.python.framework.ops.Tensor] = None"}, {"name": "inputs_embeds", "val": ": typing.Optional[tensorflow.python.framework.ops.Tensor] = None"}, {"name": "output_attentions", "val": ": typing.Optional[bool] = None"}, {"name": "labels", "val": ": typing.Optional[tensorflow.python.framework.ops.Tensor] = None"}, {"name": "output_hidden_states", "val": ": typing.Optional[bool] = None"}, {"name": "return_dict", "val": ": typing.Optional[bool] = None"}, {"name": "training", "val": ": typing.Optional[bool] = False"}]</parameters><paramsdesc>- **input_values** (`np.ndarray`, `tf.Tensor`, `List[tf.Tensor]` ``Dict[str, tf.Tensor]` or `Dict[str, np.ndarray]` and each example must have the shape `(&amp;lcub;0})`) --
   Indices of input sequence tokens in the vocabulary.
 
   Indices can be obtained using [BertTokenizer](/docs/transformers/master/en/model_doc/bert#transformers.BertTokenizer). See [PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.__call__) and
