@@ -128,8 +128,8 @@ For more information, please refer to the official [paper](https://arxiv.org/pdf
 trained and should be used as follows:
 
 ```python
-input_ids = tokenizer.encode('This is a sentence from [MASK] training data', return_tensors='pt')
-mlm_labels = tokenizer.encode('This is a sentence from the training data', return_tensors='pt')
+input_ids = tokenizer.encode("This is a sentence from [MASK] training data", return_tensors="pt")
+mlm_labels = tokenizer.encode("This is a sentence from the training data", return_tensors="pt")
 
 loss = model(input_ids, labels=input_ids, masked_lm_labels=mlm_labels)[0]
 ```
@@ -788,7 +788,7 @@ Base class for outputs of token classification models.
 
 <div class="docstring">
 
-<docstring><name>class transformers.LongformerModel</name><anchor>transformers.LongformerModel</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/longformer/modeling_longformer.py#L1472</source><parameters>[{"name": "config", "val": ""}, {"name": "add_pooling_layer", "val": " = True"}]</parameters><paramsdesc>- **config** ([LongformerConfig](/docs/transformers/master/en/model_doc/longformer#transformers.LongformerConfig)) -- Model configuration class with all the parameters of the
+<docstring><name>class transformers.LongformerModel</name><anchor>transformers.LongformerModel</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/longformer/modeling_longformer.py#L1486</source><parameters>[{"name": "config", "val": ""}, {"name": "add_pooling_layer", "val": " = True"}]</parameters><paramsdesc>- **config** ([LongformerConfig](/docs/transformers/master/en/model_doc/longformer#transformers.LongformerConfig)) -- Model configuration class with all the parameters of the
   model. Initializing with a config file does not load the weights associated with the model, only the
   configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel.from_pretrained) method to load the model weights.</paramsdesc><paramgroups>0</paramgroups></docstring>
 The bare Longformer Model outputting raw hidden-states without any specific head on top.
@@ -819,7 +819,7 @@ kernel to be memory and compute efficient.
 
 
 <div class="docstring">
-<docstring><name>forward</name><anchor>transformers.LongformerModel.forward</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/longformer/modeling_longformer.py#L1583</source><parameters>[{"name": "input_ids", "val": " = None"}, {"name": "attention_mask", "val": " = None"}, {"name": "global_attention_mask", "val": " = None"}, {"name": "head_mask", "val": " = None"}, {"name": "token_type_ids", "val": " = None"}, {"name": "position_ids", "val": " = None"}, {"name": "inputs_embeds", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "return_dict", "val": " = None"}]</parameters><paramsdesc>- **input_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`) --
+<docstring><name>forward</name><anchor>transformers.LongformerModel.forward</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/longformer/modeling_longformer.py#L1597</source><parameters>[{"name": "input_ids", "val": " = None"}, {"name": "attention_mask", "val": " = None"}, {"name": "global_attention_mask", "val": " = None"}, {"name": "head_mask", "val": " = None"}, {"name": "token_type_ids", "val": " = None"}, {"name": "position_ids", "val": " = None"}, {"name": "inputs_embeds", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "return_dict", "val": " = None"}]</parameters><paramsdesc>- **input_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`) --
   Indices of input sequence tokens in the vocabulary.
 
   Indices can be obtained using [LongformerTokenizer](/docs/transformers/master/en/model_doc/longformer#transformers.LongformerTokenizer). See [PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.encode) and
@@ -934,19 +934,30 @@ Examples:
 >>> import torch
 >>> from transformers import LongformerModel, LongformerTokenizer
 
->>> model = LongformerModel.from_pretrained('allenai/longformer-base-4096')
->>> tokenizer = LongformerTokenizer.from_pretrained('allenai/longformer-base-4096')
+>>> model = LongformerModel.from_pretrained("allenai/longformer-base-4096")
+>>> tokenizer = LongformerTokenizer.from_pretrained("allenai/longformer-base-4096")
 
->>> SAMPLE_TEXT = ' '.join(['Hello world! '] * 1000)  # long input document
+>>> SAMPLE_TEXT = " ".join(["Hello world! "] * 1000)  # long input document
 >>> input_ids = torch.tensor(tokenizer.encode(SAMPLE_TEXT)).unsqueeze(0)  # batch of size 1
 
->>> attention_mask = torch.ones(input_ids.shape, dtype=torch.long, device=input_ids.device) # initialize to local attention
->>> global_attention_mask = torch.zeros(input_ids.shape, dtype=torch.long, device=input_ids.device) # initialize to global attention to be deactivated for all tokens
->>> global_attention_mask[:, [1, 4, 21,]] = 1  # Set global attention to random tokens for the sake of this example
-...                                     # Usually, set global attention based on the task. For example,
-...                                     # classification: the &amp;lt;s> token
-...                                     # QA: question tokens
-...                                     # LM: potentially on the beginning of sentences and paragraphs
+>>> attention_mask = torch.ones(
+...     input_ids.shape, dtype=torch.long, device=input_ids.device
+>>> )  # initialize to local attention
+>>> global_attention_mask = torch.zeros(
+...     input_ids.shape, dtype=torch.long, device=input_ids.device
+>>> )  # initialize to global attention to be deactivated for all tokens
+>>> global_attention_mask[
+...     :,
+...     [
+...         1,
+...         4,
+...         21,
+...     ],
+>>> ] = 1  # Set global attention to random tokens for the sake of this example
+>>> # Usually, set global attention based on the task. For example,
+>>> # classification: the &amp;lt;s> token
+>>> # QA: question tokens
+>>> # LM: potentially on the beginning of sentences and paragraphs
 >>> outputs = model(input_ids, attention_mask=attention_mask, global_attention_mask=global_attention_mask)
 >>> sequence_output = outputs.last_hidden_state
 >>> pooled_output = outputs.pooler_output
@@ -958,7 +969,7 @@ Examples:
 
 <div class="docstring">
 
-<docstring><name>class transformers.LongformerForMaskedLM</name><anchor>transformers.LongformerForMaskedLM</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/longformer/modeling_longformer.py#L1700</source><parameters>[{"name": "config", "val": ""}]</parameters><paramsdesc>- **config** ([LongformerConfig](/docs/transformers/master/en/model_doc/longformer#transformers.LongformerConfig)) -- Model configuration class with all the parameters of the
+<docstring><name>class transformers.LongformerForMaskedLM</name><anchor>transformers.LongformerForMaskedLM</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/longformer/modeling_longformer.py#L1725</source><parameters>[{"name": "config", "val": ""}]</parameters><paramsdesc>- **config** ([LongformerConfig](/docs/transformers/master/en/model_doc/longformer#transformers.LongformerConfig)) -- Model configuration class with all the parameters of the
   model. Initializing with a config file does not load the weights associated with the model, only the
   configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel.from_pretrained) method to load the model weights.</paramsdesc><paramgroups>0</paramgroups></docstring>
 Longformer Model with a `language modeling` head on top.
@@ -976,7 +987,7 @@ and behavior.
 
 
 <div class="docstring">
-<docstring><name>forward</name><anchor>transformers.LongformerForMaskedLM.forward</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/longformer/modeling_longformer.py#L1719</source><parameters>[{"name": "input_ids", "val": " = None"}, {"name": "attention_mask", "val": " = None"}, {"name": "global_attention_mask", "val": " = None"}, {"name": "head_mask", "val": " = None"}, {"name": "token_type_ids", "val": " = None"}, {"name": "position_ids", "val": " = None"}, {"name": "inputs_embeds", "val": " = None"}, {"name": "labels", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "return_dict", "val": " = None"}]</parameters><paramsdesc>- **input_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`) --
+<docstring><name>forward</name><anchor>transformers.LongformerForMaskedLM.forward</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/longformer/modeling_longformer.py#L1744</source><parameters>[{"name": "input_ids", "val": " = None"}, {"name": "attention_mask", "val": " = None"}, {"name": "global_attention_mask", "val": " = None"}, {"name": "head_mask", "val": " = None"}, {"name": "token_type_ids", "val": " = None"}, {"name": "position_ids", "val": " = None"}, {"name": "inputs_embeds", "val": " = None"}, {"name": "labels", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "return_dict", "val": " = None"}]</parameters><paramsdesc>- **input_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`) --
   Indices of input sequence tokens in the vocabulary.
 
   Indices can be obtained using [LongformerTokenizer](/docs/transformers/master/en/model_doc/longformer#transformers.LongformerTokenizer). See [PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.encode) and
@@ -1096,14 +1107,14 @@ Examples:
 >>> import torch
 >>> from transformers import LongformerForMaskedLM, LongformerTokenizer
 
->>> model = LongformerForMaskedLM.from_pretrained('allenai/longformer-base-4096')
->>> tokenizer = LongformerTokenizer.from_pretrained('allenai/longformer-base-4096')
+>>> model = LongformerForMaskedLM.from_pretrained("allenai/longformer-base-4096")
+>>> tokenizer = LongformerTokenizer.from_pretrained("allenai/longformer-base-4096")
 
->>> SAMPLE_TEXT = ' '.join(['Hello world! '] * 1000)  # long input document
+>>> SAMPLE_TEXT = " ".join(["Hello world! "] * 1000)  # long input document
 >>> input_ids = torch.tensor(tokenizer.encode(SAMPLE_TEXT)).unsqueeze(0)  # batch of size 1
 
 >>> attention_mask = None  # default is local attention everywhere, which is a good choice for MaskedLM
-...                        # check `LongformerModel.forward` for more details how to set *attention_mask*
+>>> # check `LongformerModel.forward` for more details how to set *attention_mask*
 >>> outputs = model(input_ids, attention_mask=attention_mask, labels=input_ids)
 >>> loss = outputs.loss
 >>> prediction_logits = outputs.logits
@@ -1115,7 +1126,7 @@ Examples:
 
 <div class="docstring">
 
-<docstring><name>class transformers.LongformerForSequenceClassification</name><anchor>transformers.LongformerForSequenceClassification</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/longformer/modeling_longformer.py#L1805</source><parameters>[{"name": "config", "val": ""}]</parameters><paramsdesc>- **config** ([LongformerConfig](/docs/transformers/master/en/model_doc/longformer#transformers.LongformerConfig)) -- Model configuration class with all the parameters of the
+<docstring><name>class transformers.LongformerForSequenceClassification</name><anchor>transformers.LongformerForSequenceClassification</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/longformer/modeling_longformer.py#L1830</source><parameters>[{"name": "config", "val": ""}]</parameters><paramsdesc>- **config** ([LongformerConfig](/docs/transformers/master/en/model_doc/longformer#transformers.LongformerConfig)) -- Model configuration class with all the parameters of the
   model. Initializing with a config file does not load the weights associated with the model, only the
   configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel.from_pretrained) method to load the model weights.</paramsdesc><paramgroups>0</paramgroups></docstring>
 
@@ -1136,7 +1147,7 @@ and behavior.
 
 
 <div class="docstring">
-<docstring><name>forward</name><anchor>transformers.LongformerForSequenceClassification.forward</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/longformer/modeling_longformer.py#L1820</source><parameters>[{"name": "input_ids", "val": " = None"}, {"name": "attention_mask", "val": " = None"}, {"name": "global_attention_mask", "val": " = None"}, {"name": "head_mask", "val": " = None"}, {"name": "token_type_ids", "val": " = None"}, {"name": "position_ids", "val": " = None"}, {"name": "inputs_embeds", "val": " = None"}, {"name": "labels", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "return_dict", "val": " = None"}]</parameters><paramsdesc>- **input_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`) --
+<docstring><name>forward</name><anchor>transformers.LongformerForSequenceClassification.forward</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/longformer/modeling_longformer.py#L1845</source><parameters>[{"name": "input_ids", "val": " = None"}, {"name": "attention_mask", "val": " = None"}, {"name": "global_attention_mask", "val": " = None"}, {"name": "head_mask", "val": " = None"}, {"name": "token_type_ids", "val": " = None"}, {"name": "position_ids", "val": " = None"}, {"name": "inputs_embeds", "val": " = None"}, {"name": "labels", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "return_dict", "val": " = None"}]</parameters><paramsdesc>- **input_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`) --
   Indices of input sequence tokens in the vocabulary.
 
   Indices can be obtained using [LongformerTokenizer](/docs/transformers/master/en/model_doc/longformer#transformers.LongformerTokenizer). See [PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.encode) and
@@ -1254,11 +1265,11 @@ Example of single-label classification:
 >>> from transformers import LongformerTokenizer, LongformerForSequenceClassification
 >>> import torch
 
->>> tokenizer = LongformerTokenizer.from_pretrained('allenai/longformer-base-4096')
->>> model = LongformerForSequenceClassification.from_pretrained('allenai/longformer-base-4096')
+>>> tokenizer = LongformerTokenizer.from_pretrained("allenai/longformer-base-4096")
+>>> model = LongformerForSequenceClassification.from_pretrained("allenai/longformer-base-4096")
 
 >>> inputs = tokenizer("Hello, my dog is cute", return_tensors="pt")
->>> labels = torch.tensor([1]).unsqueeze(0) # Batch size 1
+>>> labels = torch.tensor([1]).unsqueeze(0)  # Batch size 1
 >>> outputs = model(**inputs, labels=labels)
 >>> loss = outputs.loss
 >>> logits = outputs.logits
@@ -1270,11 +1281,11 @@ Example of multi-label classification:
 >>> from transformers import LongformerTokenizer, LongformerForSequenceClassification
 >>> import torch
 
->>> tokenizer = LongformerTokenizer.from_pretrained('allenai/longformer-base-4096')
->>> model = LongformerForSequenceClassification.from_pretrained('allenai/longformer-base-4096', problem_type="multi_label_classification")
+>>> tokenizer = LongformerTokenizer.from_pretrained("allenai/longformer-base-4096")
+>>> model = LongformerForSequenceClassification.from_pretrained("allenai/longformer-base-4096", problem_type="multi_label_classification")
 
 >>> inputs = tokenizer("Hello, my dog is cute", return_tensors="pt")
->>> labels = torch.tensor([[1, 1]], dtype=torch.float) # need dtype=float for BCEWithLogitsLoss
+>>> labels = torch.tensor([[1, 1]], dtype=torch.float)  # need dtype=float for BCEWithLogitsLoss
 >>> outputs = model(**inputs, labels=labels)
 >>> loss = outputs.loss
 >>> logits = outputs.logits
@@ -1287,7 +1298,7 @@ Example of multi-label classification:
 
 <div class="docstring">
 
-<docstring><name>class transformers.LongformerForMultipleChoice</name><anchor>transformers.LongformerForMultipleChoice</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/longformer/modeling_longformer.py#L2163</source><parameters>[{"name": "config", "val": ""}]</parameters><paramsdesc>- **config** ([LongformerConfig](/docs/transformers/master/en/model_doc/longformer#transformers.LongformerConfig)) -- Model configuration class with all the parameters of the
+<docstring><name>class transformers.LongformerForMultipleChoice</name><anchor>transformers.LongformerForMultipleChoice</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/longformer/modeling_longformer.py#L2190</source><parameters>[{"name": "config", "val": ""}]</parameters><paramsdesc>- **config** ([LongformerConfig](/docs/transformers/master/en/model_doc/longformer#transformers.LongformerConfig)) -- Model configuration class with all the parameters of the
   model. Initializing with a config file does not load the weights associated with the model, only the
   configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel.from_pretrained) method to load the model weights.</paramsdesc><paramgroups>0</paramgroups></docstring>
 
@@ -1308,7 +1319,7 @@ and behavior.
 
 
 <div class="docstring">
-<docstring><name>forward</name><anchor>transformers.LongformerForMultipleChoice.forward</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/longformer/modeling_longformer.py#L2174</source><parameters>[{"name": "input_ids", "val": " = None"}, {"name": "token_type_ids", "val": " = None"}, {"name": "attention_mask", "val": " = None"}, {"name": "global_attention_mask", "val": " = None"}, {"name": "head_mask", "val": " = None"}, {"name": "labels", "val": " = None"}, {"name": "position_ids", "val": " = None"}, {"name": "inputs_embeds", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "return_dict", "val": " = None"}]</parameters><paramsdesc>- **input_ids** (`torch.LongTensor` of shape `(batch_size, num_choices, sequence_length)`) --
+<docstring><name>forward</name><anchor>transformers.LongformerForMultipleChoice.forward</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/longformer/modeling_longformer.py#L2201</source><parameters>[{"name": "input_ids", "val": " = None"}, {"name": "token_type_ids", "val": " = None"}, {"name": "attention_mask", "val": " = None"}, {"name": "global_attention_mask", "val": " = None"}, {"name": "head_mask", "val": " = None"}, {"name": "labels", "val": " = None"}, {"name": "position_ids", "val": " = None"}, {"name": "inputs_embeds", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "return_dict", "val": " = None"}]</parameters><paramsdesc>- **input_ids** (`torch.LongTensor` of shape `(batch_size, num_choices, sequence_length)`) --
   Indices of input sequence tokens in the vocabulary.
 
   Indices can be obtained using [LongformerTokenizer](/docs/transformers/master/en/model_doc/longformer#transformers.LongformerTokenizer). See [PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.encode) and
@@ -1428,16 +1439,16 @@ Example:
 >>> from transformers import LongformerTokenizer, LongformerForMultipleChoice
 >>> import torch
 
->>> tokenizer = LongformerTokenizer.from_pretrained('allenai/longformer-base-4096')
->>> model = LongformerForMultipleChoice.from_pretrained('allenai/longformer-base-4096')
+>>> tokenizer = LongformerTokenizer.from_pretrained("allenai/longformer-base-4096")
+>>> model = LongformerForMultipleChoice.from_pretrained("allenai/longformer-base-4096")
 
 >>> prompt = "In Italy, pizza served in formal settings, such as at a restaurant, is presented unsliced."
 >>> choice0 = "It is eaten with a fork and a knife."
 >>> choice1 = "It is eaten while held in the hand."
->>> labels = torch.tensor(0).unsqueeze(0) # choice0 is correct (according to Wikipedia ;)), batch size 1
+>>> labels = torch.tensor(0).unsqueeze(0)  # choice0 is correct (according to Wikipedia ;)), batch size 1
 
->>> encoding = tokenizer([prompt, prompt], [choice0, choice1], return_tensors='pt', padding=True)
->>> outputs = model(**&amp;lcub;k: v.unsqueeze(0) for k,v in encoding.items()}, labels=labels) # batch size is 1
+>>> encoding = tokenizer([prompt, prompt], [choice0, choice1], return_tensors="pt", padding=True)
+>>> outputs = model(**&amp;lcub;k: v.unsqueeze(0) for k, v in encoding.items()}, labels=labels)  # batch size is 1
 
 >>> # the linear classifier still needs to be trained
 >>> loss = outputs.loss
@@ -1451,7 +1462,7 @@ Example:
 
 <div class="docstring">
 
-<docstring><name>class transformers.LongformerForTokenClassification</name><anchor>transformers.LongformerForTokenClassification</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/longformer/modeling_longformer.py#L2069</source><parameters>[{"name": "config", "val": ""}]</parameters><paramsdesc>- **config** ([LongformerConfig](/docs/transformers/master/en/model_doc/longformer#transformers.LongformerConfig)) -- Model configuration class with all the parameters of the
+<docstring><name>class transformers.LongformerForTokenClassification</name><anchor>transformers.LongformerForTokenClassification</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/longformer/modeling_longformer.py#L2096</source><parameters>[{"name": "config", "val": ""}]</parameters><paramsdesc>- **config** ([LongformerConfig](/docs/transformers/master/en/model_doc/longformer#transformers.LongformerConfig)) -- Model configuration class with all the parameters of the
   model. Initializing with a config file does not load the weights associated with the model, only the
   configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel.from_pretrained) method to load the model weights.</paramsdesc><paramgroups>0</paramgroups></docstring>
 
@@ -1472,7 +1483,7 @@ and behavior.
 
 
 <div class="docstring">
-<docstring><name>forward</name><anchor>transformers.LongformerForTokenClassification.forward</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/longformer/modeling_longformer.py#L2084</source><parameters>[{"name": "input_ids", "val": " = None"}, {"name": "attention_mask", "val": " = None"}, {"name": "global_attention_mask", "val": " = None"}, {"name": "head_mask", "val": " = None"}, {"name": "token_type_ids", "val": " = None"}, {"name": "position_ids", "val": " = None"}, {"name": "inputs_embeds", "val": " = None"}, {"name": "labels", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "return_dict", "val": " = None"}]</parameters><paramsdesc>- **input_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`) --
+<docstring><name>forward</name><anchor>transformers.LongformerForTokenClassification.forward</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/longformer/modeling_longformer.py#L2111</source><parameters>[{"name": "input_ids", "val": " = None"}, {"name": "attention_mask", "val": " = None"}, {"name": "global_attention_mask", "val": " = None"}, {"name": "head_mask", "val": " = None"}, {"name": "token_type_ids", "val": " = None"}, {"name": "position_ids", "val": " = None"}, {"name": "inputs_embeds", "val": " = None"}, {"name": "labels", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "return_dict", "val": " = None"}]</parameters><paramsdesc>- **input_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`) --
   Indices of input sequence tokens in the vocabulary.
 
   Indices can be obtained using [LongformerTokenizer](/docs/transformers/master/en/model_doc/longformer#transformers.LongformerTokenizer). See [PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.encode) and
@@ -1588,11 +1599,11 @@ Example:
 >>> from transformers import LongformerTokenizer, LongformerForTokenClassification
 >>> import torch
 
->>> tokenizer = LongformerTokenizer.from_pretrained('allenai/longformer-base-4096')
->>> model = LongformerForTokenClassification.from_pretrained('allenai/longformer-base-4096')
+>>> tokenizer = LongformerTokenizer.from_pretrained("allenai/longformer-base-4096")
+>>> model = LongformerForTokenClassification.from_pretrained("allenai/longformer-base-4096")
 
 >>> inputs = tokenizer("Hello, my dog is cute", return_tensors="pt")
->>> labels = torch.tensor([1] * inputs["input_ids"].size(1)).unsqueeze(0) # Batch size 1
+>>> labels = torch.tensor([1] * inputs["input_ids"].size(1)).unsqueeze(0)  # Batch size 1
 
 >>> outputs = model(**inputs, labels=labels)
 >>> loss = outputs.loss
@@ -1606,7 +1617,7 @@ Example:
 
 <div class="docstring">
 
-<docstring><name>class transformers.LongformerForQuestionAnswering</name><anchor>transformers.LongformerForQuestionAnswering</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/longformer/modeling_longformer.py#L1932</source><parameters>[{"name": "config", "val": ""}]</parameters><paramsdesc>- **config** ([LongformerConfig](/docs/transformers/master/en/model_doc/longformer#transformers.LongformerConfig)) -- Model configuration class with all the parameters of the
+<docstring><name>class transformers.LongformerForQuestionAnswering</name><anchor>transformers.LongformerForQuestionAnswering</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/longformer/modeling_longformer.py#L1957</source><parameters>[{"name": "config", "val": ""}]</parameters><paramsdesc>- **config** ([LongformerConfig](/docs/transformers/master/en/model_doc/longformer#transformers.LongformerConfig)) -- Model configuration class with all the parameters of the
   model. Initializing with a config file does not load the weights associated with the model, only the
   configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel.from_pretrained) method to load the model weights.</paramsdesc><paramgroups>0</paramgroups></docstring>
 
@@ -1627,7 +1638,7 @@ and behavior.
 
 
 <div class="docstring">
-<docstring><name>forward</name><anchor>transformers.LongformerForQuestionAnswering.forward</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/longformer/modeling_longformer.py#L1946</source><parameters>[{"name": "input_ids", "val": " = None"}, {"name": "attention_mask", "val": " = None"}, {"name": "global_attention_mask", "val": " = None"}, {"name": "head_mask", "val": " = None"}, {"name": "token_type_ids", "val": " = None"}, {"name": "position_ids", "val": " = None"}, {"name": "inputs_embeds", "val": " = None"}, {"name": "start_positions", "val": " = None"}, {"name": "end_positions", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "return_dict", "val": " = None"}]</parameters><paramsdesc>- **input_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`) --
+<docstring><name>forward</name><anchor>transformers.LongformerForQuestionAnswering.forward</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/longformer/modeling_longformer.py#L1971</source><parameters>[{"name": "input_ids", "val": " = None"}, {"name": "attention_mask", "val": " = None"}, {"name": "global_attention_mask", "val": " = None"}, {"name": "head_mask", "val": " = None"}, {"name": "token_type_ids", "val": " = None"}, {"name": "position_ids", "val": " = None"}, {"name": "inputs_embeds", "val": " = None"}, {"name": "start_positions", "val": " = None"}, {"name": "end_positions", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "return_dict", "val": " = None"}]</parameters><paramsdesc>- **input_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`) --
   Indices of input sequence tokens in the vocabulary.
 
   Indices can be obtained using [LongformerTokenizer](/docs/transformers/master/en/model_doc/longformer#transformers.LongformerTokenizer). See [PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.encode) and
@@ -1766,8 +1777,10 @@ Examples:
 >>> end_logits = outputs.end_logits
 >>> all_tokens = tokenizer.convert_ids_to_tokens(input_ids[0].tolist())
 
->>> answer_tokens = all_tokens[torch.argmax(start_logits) :torch.argmax(end_logits)+1]
->>> answer = tokenizer.decode(tokenizer.convert_tokens_to_ids(answer_tokens)) # remove space prepending space token
+>>> answer_tokens = all_tokens[torch.argmax(start_logits) : torch.argmax(end_logits) + 1]
+>>> answer = tokenizer.decode(
+...     tokenizer.convert_tokens_to_ids(answer_tokens)
+>>> )  # remove space prepending space token
 ```
 
 </div></div>
@@ -1776,7 +1789,7 @@ Examples:
 
 <div class="docstring">
 
-<docstring><name>class transformers.TFLongformerModel</name><anchor>transformers.TFLongformerModel</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/longformer/modeling_tf_longformer.py#L1983</source><parameters>[{"name": "*args", "val": ""}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **config** ([LongformerConfig](/docs/transformers/master/en/model_doc/longformer#transformers.LongformerConfig)) -- Model configuration class with all the parameters of the model.
+<docstring><name>class transformers.TFLongformerModel</name><anchor>transformers.TFLongformerModel</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/longformer/modeling_tf_longformer.py#L1997</source><parameters>[{"name": "*args", "val": ""}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **config** ([LongformerConfig](/docs/transformers/master/en/model_doc/longformer#transformers.LongformerConfig)) -- Model configuration class with all the parameters of the model.
   Initializing with a config file does not load the weights associated with the model, only the
   configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel.from_pretrained) method to load the model weights.</paramsdesc><paramgroups>0</paramgroups></docstring>
 The bare Longformer Model outputting raw hidden-states without any specific head on top.
@@ -1828,7 +1841,7 @@ kernel to be memory and compute efficient.
 
 
 <div class="docstring">
-<docstring><name>call</name><anchor>transformers.TFLongformerModel.call</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/longformer/modeling_tf_longformer.py#L2005</source><parameters>[{"name": "input_ids", "val": " = None"}, {"name": "attention_mask", "val": " = None"}, {"name": "head_mask", "val": " = None"}, {"name": "global_attention_mask", "val": " = None"}, {"name": "token_type_ids", "val": " = None"}, {"name": "position_ids", "val": " = None"}, {"name": "inputs_embeds", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "return_dict", "val": " = None"}, {"name": "training", "val": " = False"}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **input_ids** (`tf.Tensor` of shape `(batch_size, sequence_length)`) --
+<docstring><name>call</name><anchor>transformers.TFLongformerModel.call</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/longformer/modeling_tf_longformer.py#L2019</source><parameters>[{"name": "input_ids", "val": " = None"}, {"name": "attention_mask", "val": " = None"}, {"name": "head_mask", "val": " = None"}, {"name": "global_attention_mask", "val": " = None"}, {"name": "token_type_ids", "val": " = None"}, {"name": "position_ids", "val": " = None"}, {"name": "inputs_embeds", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "return_dict", "val": " = None"}, {"name": "training", "val": " = False"}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **input_ids** (`tf.Tensor` of shape `(batch_size, sequence_length)`) --
   Indices of input sequence tokens in the vocabulary.
 
   Indices can be obtained using [LongformerTokenizer](/docs/transformers/master/en/model_doc/longformer#transformers.LongformerTokenizer). See [PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.__call__) and
@@ -1909,7 +1922,7 @@ the latter silently ignores them.
 
 <div class="docstring">
 
-<docstring><name>class transformers.TFLongformerForMaskedLM</name><anchor>transformers.TFLongformerForMaskedLM</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/longformer/modeling_tf_longformer.py#L2071</source><parameters>[{"name": "*args", "val": ""}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **config** ([LongformerConfig](/docs/transformers/master/en/model_doc/longformer#transformers.LongformerConfig)) -- Model configuration class with all the parameters of the model.
+<docstring><name>class transformers.TFLongformerForMaskedLM</name><anchor>transformers.TFLongformerForMaskedLM</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/longformer/modeling_tf_longformer.py#L2085</source><parameters>[{"name": "*args", "val": ""}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **config** ([LongformerConfig](/docs/transformers/master/en/model_doc/longformer#transformers.LongformerConfig)) -- Model configuration class with all the parameters of the model.
   Initializing with a config file does not load the weights associated with the model, only the
   configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel.from_pretrained) method to load the model weights.</paramsdesc><paramgroups>0</paramgroups></docstring>
 Longformer Model with a `language modeling` head on top.
@@ -1948,7 +1961,7 @@ first positional argument :
 
 
 <div class="docstring">
-<docstring><name>call</name><anchor>transformers.TFLongformerForMaskedLM.call</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/longformer/modeling_tf_longformer.py#L2088</source><parameters>[{"name": "input_ids", "val": " = None"}, {"name": "attention_mask", "val": " = None"}, {"name": "head_mask", "val": " = None"}, {"name": "global_attention_mask", "val": " = None"}, {"name": "token_type_ids", "val": " = None"}, {"name": "position_ids", "val": " = None"}, {"name": "inputs_embeds", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "return_dict", "val": " = None"}, {"name": "labels", "val": " = None"}, {"name": "training", "val": " = False"}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **input_ids** (`tf.Tensor` of shape `(batch_size, sequence_length)`) --
+<docstring><name>call</name><anchor>transformers.TFLongformerForMaskedLM.call</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/longformer/modeling_tf_longformer.py#L2102</source><parameters>[{"name": "input_ids", "val": " = None"}, {"name": "attention_mask", "val": " = None"}, {"name": "head_mask", "val": " = None"}, {"name": "global_attention_mask", "val": " = None"}, {"name": "token_type_ids", "val": " = None"}, {"name": "position_ids", "val": " = None"}, {"name": "inputs_embeds", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "return_dict", "val": " = None"}, {"name": "labels", "val": " = None"}, {"name": "training", "val": " = False"}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **input_ids** (`tf.Tensor` of shape `(batch_size, sequence_length)`) --
   Indices of input sequence tokens in the vocabulary.
 
   Indices can be obtained using [LongformerTokenizer](/docs/transformers/master/en/model_doc/longformer#transformers.LongformerTokenizer). See [PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.__call__) and
@@ -2066,8 +2079,8 @@ Example:
 >>> from transformers import LongformerTokenizer, TFLongformerForMaskedLM
 >>> import tensorflow as tf
 
->>> tokenizer = LongformerTokenizer.from_pretrained('allenai/longformer-base-4096')
->>> model = TFLongformerForMaskedLM.from_pretrained('allenai/longformer-base-4096')
+>>> tokenizer = LongformerTokenizer.from_pretrained("allenai/longformer-base-4096")
+>>> model = TFLongformerForMaskedLM.from_pretrained("allenai/longformer-base-4096")
 
 >>> inputs = tokenizer("The capital of France is &amp;lt;mask>.", return_tensors="tf")
 >>> inputs["labels"] = tokenizer("The capital of France is Paris.", return_tensors="tf")["input_ids"]
@@ -2084,7 +2097,7 @@ Example:
 
 <div class="docstring">
 
-<docstring><name>class transformers.TFLongformerForQuestionAnswering</name><anchor>transformers.TFLongformerForQuestionAnswering</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/longformer/modeling_tf_longformer.py#L2182</source><parameters>[{"name": "*args", "val": ""}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **config** ([LongformerConfig](/docs/transformers/master/en/model_doc/longformer#transformers.LongformerConfig)) -- Model configuration class with all the parameters of the model.
+<docstring><name>class transformers.TFLongformerForQuestionAnswering</name><anchor>transformers.TFLongformerForQuestionAnswering</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/longformer/modeling_tf_longformer.py#L2196</source><parameters>[{"name": "*args", "val": ""}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **config** ([LongformerConfig](/docs/transformers/master/en/model_doc/longformer#transformers.LongformerConfig)) -- Model configuration class with all the parameters of the model.
   Initializing with a config file does not load the weights associated with the model, only the
   configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel.from_pretrained) method to load the model weights.</paramsdesc><paramgroups>0</paramgroups></docstring>
 
@@ -2126,7 +2139,7 @@ first positional argument :
 
 
 <div class="docstring">
-<docstring><name>call</name><anchor>transformers.TFLongformerForQuestionAnswering.call</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/longformer/modeling_tf_longformer.py#L2197</source><parameters>[{"name": "input_ids", "val": " = None"}, {"name": "attention_mask", "val": " = None"}, {"name": "head_mask", "val": " = None"}, {"name": "global_attention_mask", "val": " = None"}, {"name": "token_type_ids", "val": " = None"}, {"name": "position_ids", "val": " = None"}, {"name": "inputs_embeds", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "return_dict", "val": " = None"}, {"name": "start_positions", "val": " = None"}, {"name": "end_positions", "val": " = None"}, {"name": "training", "val": " = False"}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **input_ids** (`tf.Tensor` of shape `(batch_size, sequence_length)`) --
+<docstring><name>call</name><anchor>transformers.TFLongformerForQuestionAnswering.call</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/longformer/modeling_tf_longformer.py#L2211</source><parameters>[{"name": "input_ids", "val": " = None"}, {"name": "attention_mask", "val": " = None"}, {"name": "head_mask", "val": " = None"}, {"name": "global_attention_mask", "val": " = None"}, {"name": "token_type_ids", "val": " = None"}, {"name": "position_ids", "val": " = None"}, {"name": "inputs_embeds", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "return_dict", "val": " = None"}, {"name": "start_positions", "val": " = None"}, {"name": "end_positions", "val": " = None"}, {"name": "training", "val": " = False"}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **input_ids** (`tf.Tensor` of shape `(batch_size, sequence_length)`) --
   Indices of input sequence tokens in the vocabulary.
 
   Indices can be obtained using [LongformerTokenizer](/docs/transformers/master/en/model_doc/longformer#transformers.LongformerTokenizer). See [PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.__call__) and
@@ -2249,17 +2262,17 @@ Example:
 >>> from transformers import LongformerTokenizer, TFLongformerForQuestionAnswering
 >>> import tensorflow as tf
 
->>> tokenizer = LongformerTokenizer.from_pretrained('allenai/longformer-large-4096-finetuned-triviaqa')
->>> model = TFLongformerForQuestionAnswering.from_pretrained('allenai/longformer-large-4096-finetuned-triviaqa')
+>>> tokenizer = LongformerTokenizer.from_pretrained("allenai/longformer-large-4096-finetuned-triviaqa")
+>>> model = TFLongformerForQuestionAnswering.from_pretrained("allenai/longformer-large-4096-finetuned-triviaqa")
 
 >>> question, text = "Who was Jim Henson?", "Jim Henson was a nice puppet"
->>> input_dict = tokenizer(question, text, return_tensors='tf')
+>>> input_dict = tokenizer(question, text, return_tensors="tf")
 >>> outputs = model(input_dict)
 >>> start_logits = outputs.start_logits
 >>> end_logits = outputs.end_logits
 
 >>> all_tokens = tokenizer.convert_ids_to_tokens(input_dict["input_ids"].numpy()[0])
->>> answer = ' '.join(all_tokens[tf.math.argmax(start_logits, 1)[0] : tf.math.argmax(end_logits, 1)[0]+1])
+>>> answer = " ".join(all_tokens[tf.math.argmax(start_logits, 1)[0] : tf.math.argmax(end_logits, 1)[0] + 1])
 ```
 
 
@@ -2269,7 +2282,7 @@ Example:
 
 <div class="docstring">
 
-<docstring><name>class transformers.TFLongformerForSequenceClassification</name><anchor>transformers.TFLongformerForSequenceClassification</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/longformer/modeling_tf_longformer.py#L2354</source><parameters>[{"name": "*args", "val": ""}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **config** ([LongformerConfig](/docs/transformers/master/en/model_doc/longformer#transformers.LongformerConfig)) -- Model configuration class with all the parameters of the model.
+<docstring><name>class transformers.TFLongformerForSequenceClassification</name><anchor>transformers.TFLongformerForSequenceClassification</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/longformer/modeling_tf_longformer.py#L2368</source><parameters>[{"name": "*args", "val": ""}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **config** ([LongformerConfig](/docs/transformers/master/en/model_doc/longformer#transformers.LongformerConfig)) -- Model configuration class with all the parameters of the model.
   Initializing with a config file does not load the weights associated with the model, only the
   configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel.from_pretrained) method to load the model weights.</paramsdesc><paramgroups>0</paramgroups></docstring>
 
@@ -2311,7 +2324,7 @@ first positional argument :
 
 
 <div class="docstring">
-<docstring><name>call</name><anchor>transformers.TFLongformerForSequenceClassification.call</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/longformer/modeling_tf_longformer.py#L2366</source><parameters>[{"name": "input_ids", "val": " = None"}, {"name": "attention_mask", "val": " = None"}, {"name": "head_mask", "val": " = None"}, {"name": "token_type_ids", "val": " = None"}, {"name": "position_ids", "val": " = None"}, {"name": "global_attention_mask", "val": " = None"}, {"name": "inputs_embeds", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "return_dict", "val": " = None"}, {"name": "labels", "val": " = None"}, {"name": "training", "val": " = False"}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **input_ids** (`tf.Tensor` of shape `(batch_size, sequence_length)`) --
+<docstring><name>call</name><anchor>transformers.TFLongformerForSequenceClassification.call</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/longformer/modeling_tf_longformer.py#L2380</source><parameters>[{"name": "input_ids", "val": " = None"}, {"name": "attention_mask", "val": " = None"}, {"name": "head_mask", "val": " = None"}, {"name": "token_type_ids", "val": " = None"}, {"name": "position_ids", "val": " = None"}, {"name": "global_attention_mask", "val": " = None"}, {"name": "inputs_embeds", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "return_dict", "val": " = None"}, {"name": "labels", "val": " = None"}, {"name": "training", "val": " = False"}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **input_ids** (`tf.Tensor` of shape `(batch_size, sequence_length)`) --
   Indices of input sequence tokens in the vocabulary.
 
   Indices can be obtained using [LongformerTokenizer](/docs/transformers/master/en/model_doc/longformer#transformers.LongformerTokenizer). See [PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.__call__) and
@@ -2424,11 +2437,11 @@ Example:
 >>> from transformers import LongformerTokenizer, TFLongformerForSequenceClassification
 >>> import tensorflow as tf
 
->>> tokenizer = LongformerTokenizer.from_pretrained('allenai/longformer-base-4096')
->>> model = TFLongformerForSequenceClassification.from_pretrained('allenai/longformer-base-4096')
+>>> tokenizer = LongformerTokenizer.from_pretrained("allenai/longformer-base-4096")
+>>> model = TFLongformerForSequenceClassification.from_pretrained("allenai/longformer-base-4096")
 
 >>> inputs = tokenizer("Hello, my dog is cute", return_tensors="tf")
->>> inputs["labels"] = tf.reshape(tf.constant(1), (-1, 1)) # Batch size 1
+>>> inputs["labels"] = tf.reshape(tf.constant(1), (-1, 1))  # Batch size 1
 
 >>> outputs = model(inputs)
 >>> loss = outputs.loss
@@ -2442,7 +2455,7 @@ Example:
 
 <div class="docstring">
 
-<docstring><name>class transformers.TFLongformerForTokenClassification</name><anchor>transformers.TFLongformerForTokenClassification</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/longformer/modeling_tf_longformer.py#L2629</source><parameters>[{"name": "*args", "val": ""}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **config** ([LongformerConfig](/docs/transformers/master/en/model_doc/longformer#transformers.LongformerConfig)) -- Model configuration class with all the parameters of the model.
+<docstring><name>class transformers.TFLongformerForTokenClassification</name><anchor>transformers.TFLongformerForTokenClassification</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/longformer/modeling_tf_longformer.py#L2643</source><parameters>[{"name": "*args", "val": ""}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **config** ([LongformerConfig](/docs/transformers/master/en/model_doc/longformer#transformers.LongformerConfig)) -- Model configuration class with all the parameters of the model.
   Initializing with a config file does not load the weights associated with the model, only the
   configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel.from_pretrained) method to load the model weights.</paramsdesc><paramgroups>0</paramgroups></docstring>
 
@@ -2484,7 +2497,7 @@ first positional argument :
 
 
 <div class="docstring">
-<docstring><name>call</name><anchor>transformers.TFLongformerForTokenClassification.call</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/longformer/modeling_tf_longformer.py#L2644</source><parameters>[{"name": "input_ids", "val": " = None"}, {"name": "attention_mask", "val": " = None"}, {"name": "head_mask", "val": " = None"}, {"name": "token_type_ids", "val": " = None"}, {"name": "position_ids", "val": " = None"}, {"name": "global_attention_mask", "val": " = None"}, {"name": "inputs_embeds", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "return_dict", "val": " = None"}, {"name": "labels", "val": " = None"}, {"name": "training", "val": " = False"}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **input_ids** (`tf.Tensor` of shape `(batch_size, sequence_length)`) --
+<docstring><name>call</name><anchor>transformers.TFLongformerForTokenClassification.call</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/longformer/modeling_tf_longformer.py#L2658</source><parameters>[{"name": "input_ids", "val": " = None"}, {"name": "attention_mask", "val": " = None"}, {"name": "head_mask", "val": " = None"}, {"name": "token_type_ids", "val": " = None"}, {"name": "position_ids", "val": " = None"}, {"name": "global_attention_mask", "val": " = None"}, {"name": "inputs_embeds", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "return_dict", "val": " = None"}, {"name": "labels", "val": " = None"}, {"name": "training", "val": " = False"}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **input_ids** (`tf.Tensor` of shape `(batch_size, sequence_length)`) --
   Indices of input sequence tokens in the vocabulary.
 
   Indices can be obtained using [LongformerTokenizer](/docs/transformers/master/en/model_doc/longformer#transformers.LongformerTokenizer). See [PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.__call__) and
@@ -2600,12 +2613,14 @@ Example:
 >>> from transformers import LongformerTokenizer, TFLongformerForTokenClassification
 >>> import tensorflow as tf
 
->>> tokenizer = LongformerTokenizer.from_pretrained('allenai/longformer-base-4096')
->>> model = TFLongformerForTokenClassification.from_pretrained('allenai/longformer-base-4096')
+>>> tokenizer = LongformerTokenizer.from_pretrained("allenai/longformer-base-4096")
+>>> model = TFLongformerForTokenClassification.from_pretrained("allenai/longformer-base-4096")
 
 >>> inputs = tokenizer("Hello, my dog is cute", return_tensors="tf")
 >>> input_ids = inputs["input_ids"]
->>> inputs["labels"] = tf.reshape(tf.constant([1] * tf.size(input_ids).numpy()), (-1, tf.size(input_ids))) # Batch size 1
+>>> inputs["labels"] = tf.reshape(
+...     tf.constant([1] * tf.size(input_ids).numpy()), (-1, tf.size(input_ids))
+>>> )  # Batch size 1
 
 >>> outputs = model(inputs)
 >>> loss = outputs.loss
@@ -2619,7 +2634,7 @@ Example:
 
 <div class="docstring">
 
-<docstring><name>class transformers.TFLongformerForMultipleChoice</name><anchor>transformers.TFLongformerForMultipleChoice</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/longformer/modeling_tf_longformer.py#L2470</source><parameters>[{"name": "*args", "val": ""}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **config** ([LongformerConfig](/docs/transformers/master/en/model_doc/longformer#transformers.LongformerConfig)) -- Model configuration class with all the parameters of the model.
+<docstring><name>class transformers.TFLongformerForMultipleChoice</name><anchor>transformers.TFLongformerForMultipleChoice</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/longformer/modeling_tf_longformer.py#L2484</source><parameters>[{"name": "*args", "val": ""}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **config** ([LongformerConfig](/docs/transformers/master/en/model_doc/longformer#transformers.LongformerConfig)) -- Model configuration class with all the parameters of the model.
   Initializing with a config file does not load the weights associated with the model, only the
   configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel.from_pretrained) method to load the model weights.</paramsdesc><paramgroups>0</paramgroups></docstring>
 
@@ -2661,7 +2676,7 @@ first positional argument :
 
 
 <div class="docstring">
-<docstring><name>call</name><anchor>transformers.TFLongformerForMultipleChoice.call</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/longformer/modeling_tf_longformer.py#L2490</source><parameters>[{"name": "input_ids", "val": " = None"}, {"name": "attention_mask", "val": " = None"}, {"name": "head_mask", "val": " = None"}, {"name": "token_type_ids", "val": " = None"}, {"name": "position_ids", "val": " = None"}, {"name": "global_attention_mask", "val": " = None"}, {"name": "inputs_embeds", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "return_dict", "val": " = None"}, {"name": "labels", "val": " = None"}, {"name": "training", "val": " = False"}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **input_ids** (`tf.Tensor` of shape `(batch_size, num_choices, sequence_length)`) --
+<docstring><name>call</name><anchor>transformers.TFLongformerForMultipleChoice.call</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/longformer/modeling_tf_longformer.py#L2504</source><parameters>[{"name": "input_ids", "val": " = None"}, {"name": "attention_mask", "val": " = None"}, {"name": "head_mask", "val": " = None"}, {"name": "token_type_ids", "val": " = None"}, {"name": "position_ids", "val": " = None"}, {"name": "global_attention_mask", "val": " = None"}, {"name": "inputs_embeds", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "return_dict", "val": " = None"}, {"name": "labels", "val": " = None"}, {"name": "training", "val": " = False"}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **input_ids** (`tf.Tensor` of shape `(batch_size, num_choices, sequence_length)`) --
   Indices of input sequence tokens in the vocabulary.
 
   Indices can be obtained using [LongformerTokenizer](/docs/transformers/master/en/model_doc/longformer#transformers.LongformerTokenizer). See [PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.__call__) and
@@ -2780,16 +2795,16 @@ Example:
 >>> from transformers import LongformerTokenizer, TFLongformerForMultipleChoice
 >>> import tensorflow as tf
 
->>> tokenizer = LongformerTokenizer.from_pretrained('allenai/longformer-base-4096')
->>> model = TFLongformerForMultipleChoice.from_pretrained('allenai/longformer-base-4096')
+>>> tokenizer = LongformerTokenizer.from_pretrained("allenai/longformer-base-4096")
+>>> model = TFLongformerForMultipleChoice.from_pretrained("allenai/longformer-base-4096")
 
 >>> prompt = "In Italy, pizza served in formal settings, such as at a restaurant, is presented unsliced."
 >>> choice0 = "It is eaten with a fork and a knife."
 >>> choice1 = "It is eaten while held in the hand."
 
->>> encoding = tokenizer([prompt, prompt], [choice0, choice1], return_tensors='tf', padding=True)
+>>> encoding = tokenizer([prompt, prompt], [choice0, choice1], return_tensors="tf", padding=True)
 >>> inputs = &amp;lcub;k: tf.expand_dims(v, 0) for k, v in encoding.items()}
->>> outputs = model(inputs) # batch size is 1
+>>> outputs = model(inputs)  # batch size is 1
 
 >>> # the linear classifier still needs to be trained
 >>> logits = outputs.logits

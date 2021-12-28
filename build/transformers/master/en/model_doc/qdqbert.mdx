@@ -117,9 +117,9 @@ tensors. After setting up the tensor quantizers, one can use the following examp
 ```python
 >>> # Find the TensorQuantizer and enable calibration
 >>> for name, module in model.named_modules():
->>>     if name.endswith('_input_quantizer'):
->>>         module.enable_calib()
->>>         module.disable_quant()  # Use full precision data to calibrate
+...     if name.endswith("_input_quantizer"):
+...         module.enable_calib()
+...         module.disable_quant()  # Use full precision data to calibrate
 
 >>> # Feeding data samples
 >>> model(x)
@@ -127,9 +127,9 @@ tensors. After setting up the tensor quantizers, one can use the following examp
 
 >>> # Finalize calibration
 >>> for name, module in model.named_modules():
->>>     if name.endswith('_input_quantizer'):
->>>         module.load_calib_amax()
->>>         module.enable_quant()
+...     if name.endswith("_input_quantizer"):
+...         module.load_calib_amax()
+...         module.enable_quant()
 
 >>> # If running on GPU, it needs to call .cuda() again because new tensors will be created by calibration process
 >>> model.cuda()
@@ -147,6 +147,7 @@ the instructions in [torch.onnx](https://pytorch.org/docs/stable/onnx.html). Exa
 
 ```python
 >>> from pytorch_quantization.nn import TensorQuantizer
+
 >>> TensorQuantizer.use_fb_fake_quant = True
 
 >>> # Load the calibrated model
@@ -365,8 +366,8 @@ Example:
 >>> from transformers import BertTokenizer, QDQBertModel
 >>> import torch
 
->>> tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
->>> model = QDQBertModel.from_pretrained('bert-base-uncased')
+>>> tokenizer = BertTokenizer.from_pretrained("bert-base-uncased")
+>>> model = QDQBertModel.from_pretrained("bert-base-uncased")
 
 >>> inputs = tokenizer("Hello, my dog is cute", return_tensors="pt")
 >>> outputs = model(**inputs)
@@ -514,10 +515,10 @@ Example:
 >>> from transformers import BertTokenizer, QDQBertLMHeadModel, QDQBertConfig
 >>> import torch
 
->>> tokenizer = BertTokenizer.from_pretrained('bert-base-cased')
+>>> tokenizer = BertTokenizer.from_pretrained("bert-base-cased")
 >>> config = QDQBertConfig.from_pretrained("bert-base-cased")
 >>> config.is_decoder = True
->>> model = QDQBertLMHeadModel.from_pretrained('bert-base-cased', config=config)
+>>> model = QDQBertLMHeadModel.from_pretrained("bert-base-cased", config=config)
 
 >>> inputs = tokenizer("Hello, my dog is cute", return_tensors="pt")
 >>> outputs = model(**inputs)
@@ -635,8 +636,8 @@ Example:
 >>> from transformers import BertTokenizer, QDQBertForMaskedLM
 >>> import torch
 
->>> tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
->>> model = QDQBertForMaskedLM.from_pretrained('bert-base-uncased')
+>>> tokenizer = BertTokenizer.from_pretrained("bert-base-uncased")
+>>> model = QDQBertForMaskedLM.from_pretrained("bert-base-uncased")
 
 >>> inputs = tokenizer("The capital of France is [MASK].", return_tensors="pt")
 >>> labels = tokenizer("The capital of France is Paris.", return_tensors="pt")["input_ids"]
@@ -760,11 +761,11 @@ Example of single-label classification:
 >>> from transformers import BertTokenizer, QDQBertForSequenceClassification
 >>> import torch
 
->>> tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
->>> model = QDQBertForSequenceClassification.from_pretrained('bert-base-uncased')
+>>> tokenizer = BertTokenizer.from_pretrained("bert-base-uncased")
+>>> model = QDQBertForSequenceClassification.from_pretrained("bert-base-uncased")
 
 >>> inputs = tokenizer("Hello, my dog is cute", return_tensors="pt")
->>> labels = torch.tensor([1]).unsqueeze(0) # Batch size 1
+>>> labels = torch.tensor([1]).unsqueeze(0)  # Batch size 1
 >>> outputs = model(**inputs, labels=labels)
 >>> loss = outputs.loss
 >>> logits = outputs.logits
@@ -776,11 +777,11 @@ Example of multi-label classification:
 >>> from transformers import BertTokenizer, QDQBertForSequenceClassification
 >>> import torch
 
->>> tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
->>> model = QDQBertForSequenceClassification.from_pretrained('bert-base-uncased', problem_type="multi_label_classification")
+>>> tokenizer = BertTokenizer.from_pretrained("bert-base-uncased")
+>>> model = QDQBertForSequenceClassification.from_pretrained("bert-base-uncased", problem_type="multi_label_classification")
 
 >>> inputs = tokenizer("Hello, my dog is cute", return_tensors="pt")
->>> labels = torch.tensor([[1, 1]], dtype=torch.float) # need dtype=float for BCEWithLogitsLoss
+>>> labels = torch.tensor([[1, 1]], dtype=torch.float)  # need dtype=float for BCEWithLogitsLoss
 >>> outputs = model(**inputs, labels=labels)
 >>> loss = outputs.loss
 >>> logits = outputs.logits
@@ -900,16 +901,16 @@ Example:
 >>> from transformers import BertTokenizer, QDQBertForNextSentencePrediction
 >>> import torch
 
->>> tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
->>> model = QDQBertForNextSentencePrediction.from_pretrained('bert-base-uncased')
+>>> tokenizer = BertTokenizer.from_pretrained("bert-base-uncased")
+>>> model = QDQBertForNextSentencePrediction.from_pretrained("bert-base-uncased")
 
 >>> prompt = "In Italy, pizza served in formal settings, such as at a restaurant, is presented unsliced."
 >>> next_sentence = "The sky is blue due to the shorter wavelength of blue light."
->>> encoding = tokenizer(prompt, next_sentence, return_tensors='pt')
+>>> encoding = tokenizer(prompt, next_sentence, return_tensors="pt")
 
 >>> outputs = model(**encoding, labels=torch.LongTensor([1]))
 >>> logits = outputs.logits
->>> assert logits[0, 0] &amp;lt; logits[0, 1] # next sentence was random
+>>> assert logits[0, 0] &amp;lt; logits[0, 1]  # next sentence was random
 ```
 
 </div></div>
@@ -1027,16 +1028,16 @@ Example:
 >>> from transformers import BertTokenizer, QDQBertForMultipleChoice
 >>> import torch
 
->>> tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
->>> model = QDQBertForMultipleChoice.from_pretrained('bert-base-uncased')
+>>> tokenizer = BertTokenizer.from_pretrained("bert-base-uncased")
+>>> model = QDQBertForMultipleChoice.from_pretrained("bert-base-uncased")
 
 >>> prompt = "In Italy, pizza served in formal settings, such as at a restaurant, is presented unsliced."
 >>> choice0 = "It is eaten with a fork and a knife."
 >>> choice1 = "It is eaten while held in the hand."
->>> labels = torch.tensor(0).unsqueeze(0) # choice0 is correct (according to Wikipedia ;)), batch size 1
+>>> labels = torch.tensor(0).unsqueeze(0)  # choice0 is correct (according to Wikipedia ;)), batch size 1
 
->>> encoding = tokenizer([prompt, prompt], [choice0, choice1], return_tensors='pt', padding=True)
->>> outputs = model(**&amp;lcub;k: v.unsqueeze(0) for k,v in encoding.items()}, labels=labels) # batch size is 1
+>>> encoding = tokenizer([prompt, prompt], [choice0, choice1], return_tensors="pt", padding=True)
+>>> outputs = model(**&amp;lcub;k: v.unsqueeze(0) for k, v in encoding.items()}, labels=labels)  # batch size is 1
 
 >>> # the linear classifier still needs to be trained
 >>> loss = outputs.loss
@@ -1155,11 +1156,11 @@ Example:
 >>> from transformers import BertTokenizer, QDQBertForTokenClassification
 >>> import torch
 
->>> tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
->>> model = QDQBertForTokenClassification.from_pretrained('bert-base-uncased')
+>>> tokenizer = BertTokenizer.from_pretrained("bert-base-uncased")
+>>> model = QDQBertForTokenClassification.from_pretrained("bert-base-uncased")
 
 >>> inputs = tokenizer("Hello, my dog is cute", return_tensors="pt")
->>> labels = torch.tensor([1] * inputs["input_ids"].size(1)).unsqueeze(0) # Batch size 1
+>>> labels = torch.tensor([1] * inputs["input_ids"].size(1)).unsqueeze(0)  # Batch size 1
 
 >>> outputs = model(**inputs, labels=labels)
 >>> loss = outputs.loss
@@ -1285,11 +1286,11 @@ Example:
 >>> from transformers import BertTokenizer, QDQBertForQuestionAnswering
 >>> import torch
 
->>> tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
->>> model = QDQBertForQuestionAnswering.from_pretrained('bert-base-uncased')
+>>> tokenizer = BertTokenizer.from_pretrained("bert-base-uncased")
+>>> model = QDQBertForQuestionAnswering.from_pretrained("bert-base-uncased")
 
 >>> question, text = "Who was Jim Henson?", "Jim Henson was a nice puppet"
->>> inputs = tokenizer(question, text, return_tensors='pt')
+>>> inputs = tokenizer(question, text, return_tensors="pt")
 >>> start_positions = torch.tensor([1])
 >>> end_positions = torch.tensor([3])
 

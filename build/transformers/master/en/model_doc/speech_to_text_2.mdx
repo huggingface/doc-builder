@@ -85,10 +85,12 @@ predicted token ids.
 >>> model = SpeechEncoderDecoderModel.from_pretrained("facebook/s2t-wav2vec2-large-en-de")
 >>> processor = Speech2Text2Processor.from_pretrained("facebook/s2t-wav2vec2-large-en-de")
 
+
 >>> def map_to_array(batch):
 ...     speech, _ = sf.read(batch["file"])
 ...     batch["speech"] = speech
 ...     return batch
+
 
 >>> ds = load_dataset("hf-internal-testing/librispeech_asr_dummy", "clean", split="validation")
 >>> ds = ds.map(map_to_array)
@@ -108,7 +110,11 @@ predicted token ids.
 >>> from transformers import pipeline
 
 >>> librispeech_en = load_dataset("hf-internal-testing/librispeech_asr_dummy", "clean", split="validation")
->>> asr = pipeline("automatic-speech-recognition", model="facebook/s2t-wav2vec2-large-en-de", feature_extractor="facebook/s2t-wav2vec2-large-en-de")
+>>> asr = pipeline(
+...     "automatic-speech-recognition",
+...     model="facebook/s2t-wav2vec2-large-en-de",
+...     feature_extractor="facebook/s2t-wav2vec2-large-en-de",
+... )
 
 >>> translation_de = asr(librispeech_en[0]["file"])
 ```
@@ -481,12 +487,18 @@ elements depending on the configuration ([Speech2Text2Config](/docs/transformers
 Example:
 
 ```python
->>> from transformers import SpeechEncoderDecoderModel, Speech2Text2ForCausalLM, Wav2Vec2Model, Speech2Text2Config, Wav2Vec2Config
+>>> from transformers import (
+...     SpeechEncoderDecoderModel,
+...     Speech2Text2ForCausalLM,
+...     Wav2Vec2Model,
+...     Speech2Text2Config,
+...     Wav2Vec2Config,
+... )
 
 >>> encoder = Wav2Vec2Model(Wav2Vec2Config())
 >>> decoder = Speech2Text2ForCausalLM(Speech2Text2Config())
-
 # init speech2text model
+
 >>> model = SpeechEncoderDecoderModel(encoder=encoder, decoder=decoder)
 ```
 

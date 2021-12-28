@@ -999,8 +999,8 @@ Example:
 >>> from transformers import XLNetTokenizer, XLNetModel
 >>> import torch
 
->>> tokenizer = XLNetTokenizer.from_pretrained('xlnet-base-cased')
->>> model = XLNetModel.from_pretrained('xlnet-base-cased')
+>>> tokenizer = XLNetTokenizer.from_pretrained("xlnet-base-cased")
+>>> model = XLNetModel.from_pretrained("xlnet-base-cased")
 
 >>> inputs = tokenizer("Hello, my dog is cute", return_tensors="pt")
 >>> outputs = model(**inputs)
@@ -1157,31 +1157,53 @@ Examples:
 >>> from transformers import XLNetTokenizer, XLNetLMHeadModel
 >>> import torch
 
->>> tokenizer = XLNetTokenizer.from_pretrained('xlnet-large-cased')
->>> model = XLNetLMHeadModel.from_pretrained('xlnet-large-cased')
+>>> tokenizer = XLNetTokenizer.from_pretrained("xlnet-large-cased")
+>>> model = XLNetLMHeadModel.from_pretrained("xlnet-large-cased")
 
 >>> # We show how to setup inputs to predict a next token using a bi-directional context.
->>> input_ids = torch.tensor(tokenizer.encode("Hello, my dog is very &amp;lt;mask>", add_special_tokens=False)).unsqueeze(0)  # We will predict the masked token
+>>> input_ids = torch.tensor(
+...     tokenizer.encode("Hello, my dog is very &amp;lt;mask>", add_special_tokens=False)
+>>> ).unsqueeze(
+...     0
+>>> )  # We will predict the masked token
 >>> perm_mask = torch.zeros((1, input_ids.shape[1], input_ids.shape[1]), dtype=torch.float)
 >>> perm_mask[:, :, -1] = 1.0  # Previous tokens don't see last token
->>> target_mapping = torch.zeros((1, 1, input_ids.shape[1]), dtype=torch.float)  # Shape [1, 1, seq_length] => let's predict one token
->>> target_mapping[0, 0, -1] = 1.0  # Our first (and only) prediction will be the last token of the sequence (the masked token)
+>>> target_mapping = torch.zeros(
+...     (1, 1, input_ids.shape[1]), dtype=torch.float
+>>> )  # Shape [1, 1, seq_length] => let's predict one token
+>>> target_mapping[
+...     0, 0, -1
+>>> ] = 1.0  # Our first (and only) prediction will be the last token of the sequence (the masked token)
 
 >>> outputs = model(input_ids, perm_mask=perm_mask, target_mapping=target_mapping)
->>> next_token_logits = outputs[0]  # Output has shape [target_mapping.size(0), target_mapping.size(1), config.vocab_size]
+>>> next_token_logits = outputs[
+...     0
+>>> ]  # Output has shape [target_mapping.size(0), target_mapping.size(1), config.vocab_size]
 
 >>> # The same way can the XLNetLMHeadModel be used to be trained by standard auto-regressive language modeling.
->>> input_ids = torch.tensor(tokenizer.encode("Hello, my dog is very &amp;lt;mask>", add_special_tokens=False)).unsqueeze(0)  # We will predict the masked token
+>>> input_ids = torch.tensor(
+...     tokenizer.encode("Hello, my dog is very &amp;lt;mask>", add_special_tokens=False)
+>>> ).unsqueeze(
+...     0
+>>> )  # We will predict the masked token
 >>> labels = torch.tensor(tokenizer.encode("cute", add_special_tokens=False)).unsqueeze(0)
->>> assert labels.shape[0] == 1, 'only one word will be predicted'
+>>> assert labels.shape[0] == 1, "only one word will be predicted"
 >>> perm_mask = torch.zeros((1, input_ids.shape[1], input_ids.shape[1]), dtype=torch.float)
->>> perm_mask[:, :, -1] = 1.0  # Previous tokens don't see last token as is done in standard auto-regressive lm training
->>> target_mapping = torch.zeros((1, 1, input_ids.shape[1]), dtype=torch.float)  # Shape [1, 1, seq_length] => let's predict one token
->>> target_mapping[0, 0, -1] = 1.0  # Our first (and only) prediction will be the last token of the sequence (the masked token)
+>>> perm_mask[
+...     :, :, -1
+>>> ] = 1.0  # Previous tokens don't see last token as is done in standard auto-regressive lm training
+>>> target_mapping = torch.zeros(
+...     (1, 1, input_ids.shape[1]), dtype=torch.float
+>>> )  # Shape [1, 1, seq_length] => let's predict one token
+>>> target_mapping[
+...     0, 0, -1
+>>> ] = 1.0  # Our first (and only) prediction will be the last token of the sequence (the masked token)
 
 >>> outputs = model(input_ids, perm_mask=perm_mask, target_mapping=target_mapping, labels=labels)
 >>> loss = outputs.loss
->>> next_token_logits = outputs.logits  # Logits have shape [target_mapping.size(0), target_mapping.size(1), config.vocab_size]
+>>> next_token_logits = (
+...     outputs.logits
+>>> )  # Logits have shape [target_mapping.size(0), target_mapping.size(1), config.vocab_size]
 ```
 
 </div></div>
@@ -1190,7 +1212,7 @@ Examples:
 
 <div class="docstring">
 
-<docstring><name>class transformers.XLNetForSequenceClassification</name><anchor>transformers.XLNetForSequenceClassification</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/xlnet/modeling_xlnet.py#L1485</source><parameters>[{"name": "config", "val": ""}]</parameters><paramsdesc>- **config** ([XLNetConfig](/docs/transformers/master/en/model_doc/xlnet#transformers.XLNetConfig)) -- Model configuration class with all the parameters of the model.
+<docstring><name>class transformers.XLNetForSequenceClassification</name><anchor>transformers.XLNetForSequenceClassification</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/xlnet/modeling_xlnet.py#L1507</source><parameters>[{"name": "config", "val": ""}]</parameters><paramsdesc>- **config** ([XLNetConfig](/docs/transformers/master/en/model_doc/xlnet#transformers.XLNetConfig)) -- Model configuration class with all the parameters of the model.
   Initializing with a config file does not load the weights associated with the model, only the
   configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel.from_pretrained) method to load the model weights.</paramsdesc><paramgroups>0</paramgroups></docstring>
 
@@ -1211,7 +1233,7 @@ and behavior.
 
 
 <div class="docstring">
-<docstring><name>forward</name><anchor>transformers.XLNetForSequenceClassification.forward</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/xlnet/modeling_xlnet.py#L1498</source><parameters>[{"name": "input_ids", "val": " = None"}, {"name": "attention_mask", "val": " = None"}, {"name": "mems", "val": " = None"}, {"name": "perm_mask", "val": " = None"}, {"name": "target_mapping", "val": " = None"}, {"name": "token_type_ids", "val": " = None"}, {"name": "input_mask", "val": " = None"}, {"name": "head_mask", "val": " = None"}, {"name": "inputs_embeds", "val": " = None"}, {"name": "labels", "val": " = None"}, {"name": "use_mems", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "return_dict", "val": " = None"}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **input_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`) --
+<docstring><name>forward</name><anchor>transformers.XLNetForSequenceClassification.forward</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/xlnet/modeling_xlnet.py#L1520</source><parameters>[{"name": "input_ids", "val": " = None"}, {"name": "attention_mask", "val": " = None"}, {"name": "mems", "val": " = None"}, {"name": "perm_mask", "val": " = None"}, {"name": "target_mapping", "val": " = None"}, {"name": "token_type_ids", "val": " = None"}, {"name": "input_mask", "val": " = None"}, {"name": "head_mask", "val": " = None"}, {"name": "inputs_embeds", "val": " = None"}, {"name": "labels", "val": " = None"}, {"name": "use_mems", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "return_dict", "val": " = None"}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **input_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`) --
   Indices of input sequence tokens in the vocabulary.
 
   Indices can be obtained using [XLNetTokenizer](/docs/transformers/master/en/model_doc/xlnet#transformers.XLNetTokenizer). See [PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.encode) and
@@ -1323,11 +1345,11 @@ Example of single-label classification:
 >>> from transformers import XLNetTokenizer, XLNetForSequenceClassification
 >>> import torch
 
->>> tokenizer = XLNetTokenizer.from_pretrained('xlnet-base-cased')
->>> model = XLNetForSequenceClassification.from_pretrained('xlnet-base-cased')
+>>> tokenizer = XLNetTokenizer.from_pretrained("xlnet-base-cased")
+>>> model = XLNetForSequenceClassification.from_pretrained("xlnet-base-cased")
 
 >>> inputs = tokenizer("Hello, my dog is cute", return_tensors="pt")
->>> labels = torch.tensor([1]).unsqueeze(0) # Batch size 1
+>>> labels = torch.tensor([1]).unsqueeze(0)  # Batch size 1
 >>> outputs = model(**inputs, labels=labels)
 >>> loss = outputs.loss
 >>> logits = outputs.logits
@@ -1339,11 +1361,11 @@ Example of multi-label classification:
 >>> from transformers import XLNetTokenizer, XLNetForSequenceClassification
 >>> import torch
 
->>> tokenizer = XLNetTokenizer.from_pretrained('xlnet-base-cased')
->>> model = XLNetForSequenceClassification.from_pretrained('xlnet-base-cased', problem_type="multi_label_classification")
+>>> tokenizer = XLNetTokenizer.from_pretrained("xlnet-base-cased")
+>>> model = XLNetForSequenceClassification.from_pretrained("xlnet-base-cased", problem_type="multi_label_classification")
 
 >>> inputs = tokenizer("Hello, my dog is cute", return_tensors="pt")
->>> labels = torch.tensor([[1, 1]], dtype=torch.float) # need dtype=float for BCEWithLogitsLoss
+>>> labels = torch.tensor([[1, 1]], dtype=torch.float)  # need dtype=float for BCEWithLogitsLoss
 >>> outputs = model(**inputs, labels=labels)
 >>> loss = outputs.loss
 >>> logits = outputs.logits
@@ -1356,7 +1378,7 @@ Example of multi-label classification:
 
 <div class="docstring">
 
-<docstring><name>class transformers.XLNetForMultipleChoice</name><anchor>transformers.XLNetForMultipleChoice</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/xlnet/modeling_xlnet.py#L1692</source><parameters>[{"name": "config", "val": ""}]</parameters><paramsdesc>- **config** ([XLNetConfig](/docs/transformers/master/en/model_doc/xlnet#transformers.XLNetConfig)) -- Model configuration class with all the parameters of the model.
+<docstring><name>class transformers.XLNetForMultipleChoice</name><anchor>transformers.XLNetForMultipleChoice</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/xlnet/modeling_xlnet.py#L1714</source><parameters>[{"name": "config", "val": ""}]</parameters><paramsdesc>- **config** ([XLNetConfig](/docs/transformers/master/en/model_doc/xlnet#transformers.XLNetConfig)) -- Model configuration class with all the parameters of the model.
   Initializing with a config file does not load the weights associated with the model, only the
   configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel.from_pretrained) method to load the model weights.</paramsdesc><paramgroups>0</paramgroups></docstring>
 
@@ -1377,7 +1399,7 @@ and behavior.
 
 
 <div class="docstring">
-<docstring><name>forward</name><anchor>transformers.XLNetForMultipleChoice.forward</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/xlnet/modeling_xlnet.py#L1703</source><parameters>[{"name": "input_ids", "val": " = None"}, {"name": "token_type_ids", "val": " = None"}, {"name": "input_mask", "val": " = None"}, {"name": "attention_mask", "val": " = None"}, {"name": "mems", "val": " = None"}, {"name": "perm_mask", "val": " = None"}, {"name": "target_mapping", "val": " = None"}, {"name": "head_mask", "val": " = None"}, {"name": "inputs_embeds", "val": " = None"}, {"name": "labels", "val": " = None"}, {"name": "use_mems", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "return_dict", "val": " = None"}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **input_ids** (`torch.LongTensor` of shape `(batch_size, num_choices, sequence_length)`) --
+<docstring><name>forward</name><anchor>transformers.XLNetForMultipleChoice.forward</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/xlnet/modeling_xlnet.py#L1725</source><parameters>[{"name": "input_ids", "val": " = None"}, {"name": "token_type_ids", "val": " = None"}, {"name": "input_mask", "val": " = None"}, {"name": "attention_mask", "val": " = None"}, {"name": "mems", "val": " = None"}, {"name": "perm_mask", "val": " = None"}, {"name": "target_mapping", "val": " = None"}, {"name": "head_mask", "val": " = None"}, {"name": "inputs_embeds", "val": " = None"}, {"name": "labels", "val": " = None"}, {"name": "use_mems", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "return_dict", "val": " = None"}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **input_ids** (`torch.LongTensor` of shape `(batch_size, num_choices, sequence_length)`) --
   Indices of input sequence tokens in the vocabulary.
 
   Indices can be obtained using [XLNetTokenizer](/docs/transformers/master/en/model_doc/xlnet#transformers.XLNetTokenizer). See [PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.encode) and
@@ -1491,16 +1513,16 @@ Example:
 >>> from transformers import XLNetTokenizer, XLNetForMultipleChoice
 >>> import torch
 
->>> tokenizer = XLNetTokenizer.from_pretrained('xlnet-base-cased')
->>> model = XLNetForMultipleChoice.from_pretrained('xlnet-base-cased')
+>>> tokenizer = XLNetTokenizer.from_pretrained("xlnet-base-cased")
+>>> model = XLNetForMultipleChoice.from_pretrained("xlnet-base-cased")
 
 >>> prompt = "In Italy, pizza served in formal settings, such as at a restaurant, is presented unsliced."
 >>> choice0 = "It is eaten with a fork and a knife."
 >>> choice1 = "It is eaten while held in the hand."
->>> labels = torch.tensor(0).unsqueeze(0) # choice0 is correct (according to Wikipedia ;)), batch size 1
+>>> labels = torch.tensor(0).unsqueeze(0)  # choice0 is correct (according to Wikipedia ;)), batch size 1
 
->>> encoding = tokenizer([prompt, prompt], [choice0, choice1], return_tensors='pt', padding=True)
->>> outputs = model(**&amp;lcub;k: v.unsqueeze(0) for k,v in encoding.items()}, labels=labels) # batch size is 1
+>>> encoding = tokenizer([prompt, prompt], [choice0, choice1], return_tensors="pt", padding=True)
+>>> outputs = model(**&amp;lcub;k: v.unsqueeze(0) for k, v in encoding.items()}, labels=labels)  # batch size is 1
 
 >>> # the linear classifier still needs to be trained
 >>> loss = outputs.loss
@@ -1514,7 +1536,7 @@ Example:
 
 <div class="docstring">
 
-<docstring><name>class transformers.XLNetForTokenClassification</name><anchor>transformers.XLNetForTokenClassification</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/xlnet/modeling_xlnet.py#L1595</source><parameters>[{"name": "config", "val": ""}]</parameters><paramsdesc>- **config** ([XLNetConfig](/docs/transformers/master/en/model_doc/xlnet#transformers.XLNetConfig)) -- Model configuration class with all the parameters of the model.
+<docstring><name>class transformers.XLNetForTokenClassification</name><anchor>transformers.XLNetForTokenClassification</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/xlnet/modeling_xlnet.py#L1617</source><parameters>[{"name": "config", "val": ""}]</parameters><paramsdesc>- **config** ([XLNetConfig](/docs/transformers/master/en/model_doc/xlnet#transformers.XLNetConfig)) -- Model configuration class with all the parameters of the model.
   Initializing with a config file does not load the weights associated with the model, only the
   configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel.from_pretrained) method to load the model weights.</paramsdesc><paramgroups>0</paramgroups></docstring>
 
@@ -1535,7 +1557,7 @@ and behavior.
 
 
 <div class="docstring">
-<docstring><name>forward</name><anchor>transformers.XLNetForTokenClassification.forward</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/xlnet/modeling_xlnet.py#L1606</source><parameters>[{"name": "input_ids", "val": " = None"}, {"name": "attention_mask", "val": " = None"}, {"name": "mems", "val": " = None"}, {"name": "perm_mask", "val": " = None"}, {"name": "target_mapping", "val": " = None"}, {"name": "token_type_ids", "val": " = None"}, {"name": "input_mask", "val": " = None"}, {"name": "head_mask", "val": " = None"}, {"name": "inputs_embeds", "val": " = None"}, {"name": "labels", "val": " = None"}, {"name": "use_mems", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "return_dict", "val": " = None"}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **input_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`) --
+<docstring><name>forward</name><anchor>transformers.XLNetForTokenClassification.forward</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/xlnet/modeling_xlnet.py#L1628</source><parameters>[{"name": "input_ids", "val": " = None"}, {"name": "attention_mask", "val": " = None"}, {"name": "mems", "val": " = None"}, {"name": "perm_mask", "val": " = None"}, {"name": "target_mapping", "val": " = None"}, {"name": "token_type_ids", "val": " = None"}, {"name": "input_mask", "val": " = None"}, {"name": "head_mask", "val": " = None"}, {"name": "inputs_embeds", "val": " = None"}, {"name": "labels", "val": " = None"}, {"name": "use_mems", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "return_dict", "val": " = None"}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **input_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`) --
   Indices of input sequence tokens in the vocabulary.
 
   Indices can be obtained using [XLNetTokenizer](/docs/transformers/master/en/model_doc/xlnet#transformers.XLNetTokenizer). See [PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.encode) and
@@ -1646,11 +1668,11 @@ Example:
 >>> from transformers import XLNetTokenizer, XLNetForTokenClassification
 >>> import torch
 
->>> tokenizer = XLNetTokenizer.from_pretrained('xlnet-base-cased')
->>> model = XLNetForTokenClassification.from_pretrained('xlnet-base-cased')
+>>> tokenizer = XLNetTokenizer.from_pretrained("xlnet-base-cased")
+>>> model = XLNetForTokenClassification.from_pretrained("xlnet-base-cased")
 
 >>> inputs = tokenizer("Hello, my dog is cute", return_tensors="pt")
->>> labels = torch.tensor([1] * inputs["input_ids"].size(1)).unsqueeze(0) # Batch size 1
+>>> labels = torch.tensor([1] * inputs["input_ids"].size(1)).unsqueeze(0)  # Batch size 1
 
 >>> outputs = model(**inputs, labels=labels)
 >>> loss = outputs.loss
@@ -1664,7 +1686,7 @@ Example:
 
 <div class="docstring">
 
-<docstring><name>class transformers.XLNetForQuestionAnsweringSimple</name><anchor>transformers.XLNetForQuestionAnsweringSimple</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/xlnet/modeling_xlnet.py#L1796</source><parameters>[{"name": "config", "val": ""}]</parameters><paramsdesc>- **config** ([XLNetConfig](/docs/transformers/master/en/model_doc/xlnet#transformers.XLNetConfig)) -- Model configuration class with all the parameters of the model.
+<docstring><name>class transformers.XLNetForQuestionAnsweringSimple</name><anchor>transformers.XLNetForQuestionAnsweringSimple</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/xlnet/modeling_xlnet.py#L1818</source><parameters>[{"name": "config", "val": ""}]</parameters><paramsdesc>- **config** ([XLNetConfig](/docs/transformers/master/en/model_doc/xlnet#transformers.XLNetConfig)) -- Model configuration class with all the parameters of the model.
   Initializing with a config file does not load the weights associated with the model, only the
   configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel.from_pretrained) method to load the model weights.</paramsdesc><paramgroups>0</paramgroups></docstring>
 
@@ -1685,7 +1707,7 @@ and behavior.
 
 
 <div class="docstring">
-<docstring><name>forward</name><anchor>transformers.XLNetForQuestionAnsweringSimple.forward</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/xlnet/modeling_xlnet.py#L1807</source><parameters>[{"name": "input_ids", "val": " = None"}, {"name": "attention_mask", "val": " = None"}, {"name": "mems", "val": " = None"}, {"name": "perm_mask", "val": " = None"}, {"name": "target_mapping", "val": " = None"}, {"name": "token_type_ids", "val": " = None"}, {"name": "input_mask", "val": " = None"}, {"name": "head_mask", "val": " = None"}, {"name": "inputs_embeds", "val": " = None"}, {"name": "start_positions", "val": " = None"}, {"name": "end_positions", "val": " = None"}, {"name": "use_mems", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "return_dict", "val": " = None"}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **input_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`) --
+<docstring><name>forward</name><anchor>transformers.XLNetForQuestionAnsweringSimple.forward</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/xlnet/modeling_xlnet.py#L1829</source><parameters>[{"name": "input_ids", "val": " = None"}, {"name": "attention_mask", "val": " = None"}, {"name": "mems", "val": " = None"}, {"name": "perm_mask", "val": " = None"}, {"name": "target_mapping", "val": " = None"}, {"name": "token_type_ids", "val": " = None"}, {"name": "input_mask", "val": " = None"}, {"name": "head_mask", "val": " = None"}, {"name": "inputs_embeds", "val": " = None"}, {"name": "start_positions", "val": " = None"}, {"name": "end_positions", "val": " = None"}, {"name": "use_mems", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "return_dict", "val": " = None"}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **input_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`) --
   Indices of input sequence tokens in the vocabulary.
 
   Indices can be obtained using [XLNetTokenizer](/docs/transformers/master/en/model_doc/xlnet#transformers.XLNetTokenizer). See [PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.encode) and
@@ -1802,11 +1824,11 @@ Example:
 >>> from transformers import XLNetTokenizer, XLNetForQuestionAnsweringSimple
 >>> import torch
 
->>> tokenizer = XLNetTokenizer.from_pretrained('xlnet-base-cased')
->>> model = XLNetForQuestionAnsweringSimple.from_pretrained('xlnet-base-cased')
+>>> tokenizer = XLNetTokenizer.from_pretrained("xlnet-base-cased")
+>>> model = XLNetForQuestionAnsweringSimple.from_pretrained("xlnet-base-cased")
 
 >>> question, text = "Who was Jim Henson?", "Jim Henson was a nice puppet"
->>> inputs = tokenizer(question, text, return_tensors='pt')
+>>> inputs = tokenizer(question, text, return_tensors="pt")
 >>> start_positions = torch.tensor([1])
 >>> end_positions = torch.tensor([3])
 
@@ -1823,7 +1845,7 @@ Example:
 
 <div class="docstring">
 
-<docstring><name>class transformers.XLNetForQuestionAnswering</name><anchor>transformers.XLNetForQuestionAnswering</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/xlnet/modeling_xlnet.py#L1907</source><parameters>[{"name": "config", "val": ""}]</parameters><paramsdesc>- **config** ([XLNetConfig](/docs/transformers/master/en/model_doc/xlnet#transformers.XLNetConfig)) -- Model configuration class with all the parameters of the model.
+<docstring><name>class transformers.XLNetForQuestionAnswering</name><anchor>transformers.XLNetForQuestionAnswering</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/xlnet/modeling_xlnet.py#L1929</source><parameters>[{"name": "config", "val": ""}]</parameters><paramsdesc>- **config** ([XLNetConfig](/docs/transformers/master/en/model_doc/xlnet#transformers.XLNetConfig)) -- Model configuration class with all the parameters of the model.
   Initializing with a config file does not load the weights associated with the model, only the
   configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel.from_pretrained) method to load the model weights.</paramsdesc><paramgroups>0</paramgroups></docstring>
 
@@ -1844,7 +1866,7 @@ and behavior.
 
 
 <div class="docstring">
-<docstring><name>forward</name><anchor>transformers.XLNetForQuestionAnswering.forward</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/xlnet/modeling_xlnet.py#L1921</source><parameters>[{"name": "input_ids", "val": " = None"}, {"name": "attention_mask", "val": " = None"}, {"name": "mems", "val": " = None"}, {"name": "perm_mask", "val": " = None"}, {"name": "target_mapping", "val": " = None"}, {"name": "token_type_ids", "val": " = None"}, {"name": "input_mask", "val": " = None"}, {"name": "head_mask", "val": " = None"}, {"name": "inputs_embeds", "val": " = None"}, {"name": "start_positions", "val": " = None"}, {"name": "end_positions", "val": " = None"}, {"name": "is_impossible", "val": " = None"}, {"name": "cls_index", "val": " = None"}, {"name": "p_mask", "val": " = None"}, {"name": "use_mems", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "return_dict", "val": " = None"}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **input_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`) --
+<docstring><name>forward</name><anchor>transformers.XLNetForQuestionAnswering.forward</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/xlnet/modeling_xlnet.py#L1943</source><parameters>[{"name": "input_ids", "val": " = None"}, {"name": "attention_mask", "val": " = None"}, {"name": "mems", "val": " = None"}, {"name": "perm_mask", "val": " = None"}, {"name": "target_mapping", "val": " = None"}, {"name": "token_type_ids", "val": " = None"}, {"name": "input_mask", "val": " = None"}, {"name": "head_mask", "val": " = None"}, {"name": "inputs_embeds", "val": " = None"}, {"name": "start_positions", "val": " = None"}, {"name": "end_positions", "val": " = None"}, {"name": "is_impossible", "val": " = None"}, {"name": "cls_index", "val": " = None"}, {"name": "p_mask", "val": " = None"}, {"name": "use_mems", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "return_dict", "val": " = None"}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **input_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`) --
   Indices of input sequence tokens in the vocabulary.
 
   Indices can be obtained using [XLNetTokenizer](/docs/transformers/master/en/model_doc/xlnet#transformers.XLNetTokenizer). See [PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.encode) and
@@ -1974,10 +1996,12 @@ Example:
 >>> from transformers import XLNetTokenizer, XLNetForQuestionAnswering
 >>> import torch
 
->>> tokenizer =  XLNetTokenizer.from_pretrained('xlnet-base-cased')
->>> model = XLNetForQuestionAnswering.from_pretrained('xlnet-base-cased')
+>>> tokenizer = XLNetTokenizer.from_pretrained("xlnet-base-cased")
+>>> model = XLNetForQuestionAnswering.from_pretrained("xlnet-base-cased")
 
->>> input_ids = torch.tensor(tokenizer.encode("Hello, my dog is cute", add_special_tokens=True)).unsqueeze(0)  # Batch size 1
+>>> input_ids = torch.tensor(tokenizer.encode("Hello, my dog is cute", add_special_tokens=True)).unsqueeze(
+...     0
+>>> )  # Batch size 1
 >>> start_positions = torch.tensor([1])
 >>> end_positions = torch.tensor([3])
 >>> outputs = model(input_ids, start_positions=start_positions, end_positions=end_positions)
@@ -2139,8 +2163,8 @@ Example:
 >>> from transformers import XLNetTokenizer, TFXLNetModel
 >>> import tensorflow as tf
 
->>> tokenizer = XLNetTokenizer.from_pretrained('xlnet-base-cased')
->>> model = TFXLNetModel.from_pretrained('xlnet-base-cased')
+>>> tokenizer = XLNetTokenizer.from_pretrained("xlnet-base-cased")
+>>> model = TFXLNetModel.from_pretrained("xlnet-base-cased")
 
 >>> inputs = tokenizer("Hello, my dog is cute", return_tensors="tf")
 >>> outputs = model(inputs)
@@ -2312,21 +2336,33 @@ Examples:
 >>> import numpy as np
 >>> from transformers import XLNetTokenizer, TFXLNetLMHeadModel
 
->>> tokenizer = XLNetTokenizer.from_pretrained('xlnet-large-cased')
->>> model = TFXLNetLMHeadModel.from_pretrained('xlnet-large-cased')
+>>> tokenizer = XLNetTokenizer.from_pretrained("xlnet-large-cased")
+>>> model = TFXLNetLMHeadModel.from_pretrained("xlnet-large-cased")
 
 >>> # We show how to setup inputs to predict a next token using a bi-directional context.
->>> input_ids = tf.constant(tokenizer.encode("Hello, my dog is very &amp;lt;mask>", add_special_tokens=True))[None, :]  # We will predict the masked token
+>>> input_ids = tf.constant(tokenizer.encode("Hello, my dog is very &amp;lt;mask>", add_special_tokens=True))[
+...     None, :
+>>> ]  # We will predict the masked token
 
 >>> perm_mask = np.zeros((1, input_ids.shape[1], input_ids.shape[1]))
 >>> perm_mask[:, :, -1] = 1.0  # Previous tokens don't see last token
 
->>> target_mapping = np.zeros((1, 1, input_ids.shape[1]))  # Shape [1, 1, seq_length] => let's predict one token
->>> target_mapping[0, 0, -1] = 1.0  # Our first (and only) prediction will be the last token of the sequence (the masked token)
+>>> target_mapping = np.zeros(
+...     (1, 1, input_ids.shape[1])
+>>> )  # Shape [1, 1, seq_length] => let's predict one token
+>>> target_mapping[
+...     0, 0, -1
+>>> ] = 1.0  # Our first (and only) prediction will be the last token of the sequence (the masked token)
 
->>> outputs = model(input_ids, perm_mask=tf.constant(perm_mask, dtype=tf.float32), target_mapping=tf.constant(target_mapping, dtype=tf.float32))
+>>> outputs = model(
+...     input_ids,
+...     perm_mask=tf.constant(perm_mask, dtype=tf.float32),
+...     target_mapping=tf.constant(target_mapping, dtype=tf.float32),
+... )
 
->>> next_token_logits = outputs[0]  # Output has shape [target_mapping.size(0), target_mapping.size(1), config.vocab_size]
+>>> next_token_logits = outputs[
+...     0
+>>> ]  # Output has shape [target_mapping.size(0), target_mapping.size(1), config.vocab_size]
 ```
 
 </div></div>
@@ -2335,7 +2371,7 @@ Examples:
 
 <div class="docstring">
 
-<docstring><name>class transformers.TFXLNetForSequenceClassification</name><anchor>transformers.TFXLNetForSequenceClassification</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/xlnet/modeling_tf_xlnet.py#L1413</source><parameters>[{"name": "*args", "val": ""}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **config** ([XLNetConfig](/docs/transformers/master/en/model_doc/xlnet#transformers.XLNetConfig)) -- Model configuration class with all the parameters of the model.
+<docstring><name>class transformers.TFXLNetForSequenceClassification</name><anchor>transformers.TFXLNetForSequenceClassification</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/xlnet/modeling_tf_xlnet.py#L1425</source><parameters>[{"name": "*args", "val": ""}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **config** ([XLNetConfig](/docs/transformers/master/en/model_doc/xlnet#transformers.XLNetConfig)) -- Model configuration class with all the parameters of the model.
   Initializing with a config file does not load the weights associated with the model, only the
   configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel.from_pretrained) method to load the model weights.</paramsdesc><paramgroups>0</paramgroups></docstring>
 
@@ -2377,7 +2413,7 @@ first positional argument :
 
 
 <div class="docstring">
-<docstring><name>call</name><anchor>transformers.TFXLNetForSequenceClassification.call</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/xlnet/modeling_tf_xlnet.py#L1426</source><parameters>[{"name": "input_ids", "val": " = None"}, {"name": "attention_mask", "val": " = None"}, {"name": "mems", "val": " = None"}, {"name": "perm_mask", "val": " = None"}, {"name": "target_mapping", "val": " = None"}, {"name": "token_type_ids", "val": " = None"}, {"name": "input_mask", "val": " = None"}, {"name": "head_mask", "val": " = None"}, {"name": "inputs_embeds", "val": " = None"}, {"name": "use_mems", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "return_dict", "val": " = None"}, {"name": "labels", "val": " = None"}, {"name": "training", "val": " = False"}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **input_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`) --
+<docstring><name>call</name><anchor>transformers.TFXLNetForSequenceClassification.call</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/xlnet/modeling_tf_xlnet.py#L1438</source><parameters>[{"name": "input_ids", "val": " = None"}, {"name": "attention_mask", "val": " = None"}, {"name": "mems", "val": " = None"}, {"name": "perm_mask", "val": " = None"}, {"name": "target_mapping", "val": " = None"}, {"name": "token_type_ids", "val": " = None"}, {"name": "input_mask", "val": " = None"}, {"name": "head_mask", "val": " = None"}, {"name": "inputs_embeds", "val": " = None"}, {"name": "use_mems", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "return_dict", "val": " = None"}, {"name": "labels", "val": " = None"}, {"name": "training", "val": " = False"}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **input_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`) --
   Indices of input sequence tokens in the vocabulary.
 
   Indices can be obtained using [XLNetTokenizer](/docs/transformers/master/en/model_doc/xlnet#transformers.XLNetTokenizer). See [PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.encode) and
@@ -2489,11 +2525,11 @@ Example:
 >>> from transformers import XLNetTokenizer, TFXLNetForSequenceClassification
 >>> import tensorflow as tf
 
->>> tokenizer = XLNetTokenizer.from_pretrained('xlnet-base-cased')
->>> model = TFXLNetForSequenceClassification.from_pretrained('xlnet-base-cased')
+>>> tokenizer = XLNetTokenizer.from_pretrained("xlnet-base-cased")
+>>> model = TFXLNetForSequenceClassification.from_pretrained("xlnet-base-cased")
 
 >>> inputs = tokenizer("Hello, my dog is cute", return_tensors="tf")
->>> inputs["labels"] = tf.reshape(tf.constant(1), (-1, 1)) # Batch size 1
+>>> inputs["labels"] = tf.reshape(tf.constant(1), (-1, 1))  # Batch size 1
 
 >>> outputs = model(inputs)
 >>> loss = outputs.loss
@@ -2507,7 +2543,7 @@ Example:
 
 <div class="docstring">
 
-<docstring><name>class transformers.TFXLNetForMultipleChoice</name><anchor>transformers.TFXLNetForMultipleChoice</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/xlnet/modeling_tf_xlnet.py#L1530</source><parameters>[{"name": "*args", "val": ""}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **config** ([XLNetConfig](/docs/transformers/master/en/model_doc/xlnet#transformers.XLNetConfig)) -- Model configuration class with all the parameters of the model.
+<docstring><name>class transformers.TFXLNetForMultipleChoice</name><anchor>transformers.TFXLNetForMultipleChoice</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/xlnet/modeling_tf_xlnet.py#L1542</source><parameters>[{"name": "*args", "val": ""}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **config** ([XLNetConfig](/docs/transformers/master/en/model_doc/xlnet#transformers.XLNetConfig)) -- Model configuration class with all the parameters of the model.
   Initializing with a config file does not load the weights associated with the model, only the
   configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel.from_pretrained) method to load the model weights.</paramsdesc><paramgroups>0</paramgroups></docstring>
 
@@ -2549,7 +2585,7 @@ first positional argument :
 
 
 <div class="docstring">
-<docstring><name>call</name><anchor>transformers.TFXLNetForMultipleChoice.call</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/xlnet/modeling_tf_xlnet.py#L1552</source><parameters>[{"name": "input_ids", "val": " = None"}, {"name": "token_type_ids", "val": " = None"}, {"name": "input_mask", "val": " = None"}, {"name": "attention_mask", "val": " = None"}, {"name": "mems", "val": " = None"}, {"name": "perm_mask", "val": " = None"}, {"name": "target_mapping", "val": " = None"}, {"name": "head_mask", "val": " = None"}, {"name": "inputs_embeds", "val": " = None"}, {"name": "use_mems", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "return_dict", "val": " = None"}, {"name": "labels", "val": " = None"}, {"name": "training", "val": " = False"}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **input_ids** (`torch.LongTensor` of shape `(batch_size, num_choices, sequence_length)`) --
+<docstring><name>call</name><anchor>transformers.TFXLNetForMultipleChoice.call</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/xlnet/modeling_tf_xlnet.py#L1564</source><parameters>[{"name": "input_ids", "val": " = None"}, {"name": "token_type_ids", "val": " = None"}, {"name": "input_mask", "val": " = None"}, {"name": "attention_mask", "val": " = None"}, {"name": "mems", "val": " = None"}, {"name": "perm_mask", "val": " = None"}, {"name": "target_mapping", "val": " = None"}, {"name": "head_mask", "val": " = None"}, {"name": "inputs_embeds", "val": " = None"}, {"name": "use_mems", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "return_dict", "val": " = None"}, {"name": "labels", "val": " = None"}, {"name": "training", "val": " = False"}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **input_ids** (`torch.LongTensor` of shape `(batch_size, num_choices, sequence_length)`) --
   Indices of input sequence tokens in the vocabulary.
 
   Indices can be obtained using [XLNetTokenizer](/docs/transformers/master/en/model_doc/xlnet#transformers.XLNetTokenizer). See [PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.encode) and
@@ -2662,16 +2698,16 @@ Example:
 >>> from transformers import XLNetTokenizer, TFXLNetForMultipleChoice
 >>> import tensorflow as tf
 
->>> tokenizer = XLNetTokenizer.from_pretrained('xlnet-base-cased')
->>> model = TFXLNetForMultipleChoice.from_pretrained('xlnet-base-cased')
+>>> tokenizer = XLNetTokenizer.from_pretrained("xlnet-base-cased")
+>>> model = TFXLNetForMultipleChoice.from_pretrained("xlnet-base-cased")
 
 >>> prompt = "In Italy, pizza served in formal settings, such as at a restaurant, is presented unsliced."
 >>> choice0 = "It is eaten with a fork and a knife."
 >>> choice1 = "It is eaten while held in the hand."
 
->>> encoding = tokenizer([prompt, prompt], [choice0, choice1], return_tensors='tf', padding=True)
+>>> encoding = tokenizer([prompt, prompt], [choice0, choice1], return_tensors="tf", padding=True)
 >>> inputs = &amp;lcub;k: tf.expand_dims(v, 0) for k, v in encoding.items()}
->>> outputs = model(inputs) # batch size is 1
+>>> outputs = model(inputs)  # batch size is 1
 
 >>> # the linear classifier still needs to be trained
 >>> logits = outputs.logits
@@ -2684,7 +2720,7 @@ Example:
 
 <div class="docstring">
 
-<docstring><name>class transformers.TFXLNetForTokenClassification</name><anchor>transformers.TFXLNetForTokenClassification</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/xlnet/modeling_tf_xlnet.py#L1690</source><parameters>[{"name": "*args", "val": ""}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **config** ([XLNetConfig](/docs/transformers/master/en/model_doc/xlnet#transformers.XLNetConfig)) -- Model configuration class with all the parameters of the model.
+<docstring><name>class transformers.TFXLNetForTokenClassification</name><anchor>transformers.TFXLNetForTokenClassification</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/xlnet/modeling_tf_xlnet.py#L1702</source><parameters>[{"name": "*args", "val": ""}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **config** ([XLNetConfig](/docs/transformers/master/en/model_doc/xlnet#transformers.XLNetConfig)) -- Model configuration class with all the parameters of the model.
   Initializing with a config file does not load the weights associated with the model, only the
   configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel.from_pretrained) method to load the model weights.</paramsdesc><paramgroups>0</paramgroups></docstring>
 
@@ -2726,7 +2762,7 @@ first positional argument :
 
 
 <div class="docstring">
-<docstring><name>call</name><anchor>transformers.TFXLNetForTokenClassification.call</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/xlnet/modeling_tf_xlnet.py#L1700</source><parameters>[{"name": "input_ids", "val": " = None"}, {"name": "attention_mask", "val": " = None"}, {"name": "mems", "val": " = None"}, {"name": "perm_mask", "val": " = None"}, {"name": "target_mapping", "val": " = None"}, {"name": "token_type_ids", "val": " = None"}, {"name": "input_mask", "val": " = None"}, {"name": "head_mask", "val": " = None"}, {"name": "inputs_embeds", "val": " = None"}, {"name": "use_mems", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "return_dict", "val": " = None"}, {"name": "labels", "val": " = None"}, {"name": "training", "val": " = False"}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **input_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`) --
+<docstring><name>call</name><anchor>transformers.TFXLNetForTokenClassification.call</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/xlnet/modeling_tf_xlnet.py#L1712</source><parameters>[{"name": "input_ids", "val": " = None"}, {"name": "attention_mask", "val": " = None"}, {"name": "mems", "val": " = None"}, {"name": "perm_mask", "val": " = None"}, {"name": "target_mapping", "val": " = None"}, {"name": "token_type_ids", "val": " = None"}, {"name": "input_mask", "val": " = None"}, {"name": "head_mask", "val": " = None"}, {"name": "inputs_embeds", "val": " = None"}, {"name": "use_mems", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "return_dict", "val": " = None"}, {"name": "labels", "val": " = None"}, {"name": "training", "val": " = False"}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **input_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`) --
   Indices of input sequence tokens in the vocabulary.
 
   Indices can be obtained using [XLNetTokenizer](/docs/transformers/master/en/model_doc/xlnet#transformers.XLNetTokenizer). See [PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.encode) and
@@ -2836,12 +2872,14 @@ Example:
 >>> from transformers import XLNetTokenizer, TFXLNetForTokenClassification
 >>> import tensorflow as tf
 
->>> tokenizer = XLNetTokenizer.from_pretrained('xlnet-base-cased')
->>> model = TFXLNetForTokenClassification.from_pretrained('xlnet-base-cased')
+>>> tokenizer = XLNetTokenizer.from_pretrained("xlnet-base-cased")
+>>> model = TFXLNetForTokenClassification.from_pretrained("xlnet-base-cased")
 
 >>> inputs = tokenizer("Hello, my dog is cute", return_tensors="tf")
 >>> input_ids = inputs["input_ids"]
->>> inputs["labels"] = tf.reshape(tf.constant([1] * tf.size(input_ids).numpy()), (-1, tf.size(input_ids))) # Batch size 1
+>>> inputs["labels"] = tf.reshape(
+...     tf.constant([1] * tf.size(input_ids).numpy()), (-1, tf.size(input_ids))
+>>> )  # Batch size 1
 
 >>> outputs = model(inputs)
 >>> loss = outputs.loss
@@ -2855,7 +2893,7 @@ Example:
 
 <div class="docstring">
 
-<docstring><name>class transformers.TFXLNetForQuestionAnsweringSimple</name><anchor>transformers.TFXLNetForQuestionAnsweringSimple</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/xlnet/modeling_tf_xlnet.py#L1798</source><parameters>[{"name": "*args", "val": ""}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **config** ([XLNetConfig](/docs/transformers/master/en/model_doc/xlnet#transformers.XLNetConfig)) -- Model configuration class with all the parameters of the model.
+<docstring><name>class transformers.TFXLNetForQuestionAnsweringSimple</name><anchor>transformers.TFXLNetForQuestionAnsweringSimple</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/xlnet/modeling_tf_xlnet.py#L1810</source><parameters>[{"name": "*args", "val": ""}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **config** ([XLNetConfig](/docs/transformers/master/en/model_doc/xlnet#transformers.XLNetConfig)) -- Model configuration class with all the parameters of the model.
   Initializing with a config file does not load the weights associated with the model, only the
   configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel.from_pretrained) method to load the model weights.</paramsdesc><paramgroups>0</paramgroups></docstring>
 
@@ -2897,7 +2935,7 @@ first positional argument :
 
 
 <div class="docstring">
-<docstring><name>call</name><anchor>transformers.TFXLNetForQuestionAnsweringSimple.call</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/xlnet/modeling_tf_xlnet.py#L1806</source><parameters>[{"name": "input_ids", "val": " = None"}, {"name": "attention_mask", "val": " = None"}, {"name": "mems", "val": " = None"}, {"name": "perm_mask", "val": " = None"}, {"name": "target_mapping", "val": " = None"}, {"name": "token_type_ids", "val": " = None"}, {"name": "input_mask", "val": " = None"}, {"name": "head_mask", "val": " = None"}, {"name": "inputs_embeds", "val": " = None"}, {"name": "use_mems", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "return_dict", "val": " = None"}, {"name": "start_positions", "val": " = None"}, {"name": "end_positions", "val": " = None"}, {"name": "training", "val": " = False"}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **input_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`) --
+<docstring><name>call</name><anchor>transformers.TFXLNetForQuestionAnsweringSimple.call</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/xlnet/modeling_tf_xlnet.py#L1818</source><parameters>[{"name": "input_ids", "val": " = None"}, {"name": "attention_mask", "val": " = None"}, {"name": "mems", "val": " = None"}, {"name": "perm_mask", "val": " = None"}, {"name": "target_mapping", "val": " = None"}, {"name": "token_type_ids", "val": " = None"}, {"name": "input_mask", "val": " = None"}, {"name": "head_mask", "val": " = None"}, {"name": "inputs_embeds", "val": " = None"}, {"name": "use_mems", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "return_dict", "val": " = None"}, {"name": "start_positions", "val": " = None"}, {"name": "end_positions", "val": " = None"}, {"name": "training", "val": " = False"}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **input_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`) --
   Indices of input sequence tokens in the vocabulary.
 
   Indices can be obtained using [XLNetTokenizer](/docs/transformers/master/en/model_doc/xlnet#transformers.XLNetTokenizer). See [PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.encode) and
@@ -3014,17 +3052,17 @@ Example:
 >>> from transformers import XLNetTokenizer, TFXLNetForQuestionAnsweringSimple
 >>> import tensorflow as tf
 
->>> tokenizer = XLNetTokenizer.from_pretrained('xlnet-base-cased')
->>> model = TFXLNetForQuestionAnsweringSimple.from_pretrained('xlnet-base-cased')
+>>> tokenizer = XLNetTokenizer.from_pretrained("xlnet-base-cased")
+>>> model = TFXLNetForQuestionAnsweringSimple.from_pretrained("xlnet-base-cased")
 
 >>> question, text = "Who was Jim Henson?", "Jim Henson was a nice puppet"
->>> input_dict = tokenizer(question, text, return_tensors='tf')
+>>> input_dict = tokenizer(question, text, return_tensors="tf")
 >>> outputs = model(input_dict)
 >>> start_logits = outputs.start_logits
 >>> end_logits = outputs.end_logits
 
 >>> all_tokens = tokenizer.convert_ids_to_tokens(input_dict["input_ids"].numpy()[0])
->>> answer = ' '.join(all_tokens[tf.math.argmax(start_logits, 1)[0] : tf.math.argmax(end_logits, 1)[0]+1])
+>>> answer = " ".join(all_tokens[tf.math.argmax(start_logits, 1)[0] : tf.math.argmax(end_logits, 1)[0] + 1])
 ```
 
 

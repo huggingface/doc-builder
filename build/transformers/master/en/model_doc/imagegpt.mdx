@@ -370,11 +370,11 @@ Examples:
 >>> from PIL import Image
 >>> import requests
 
->>> url = 'http://images.cocodataset.org/val2017/000000039769.jpg'
+>>> url = "http://images.cocodataset.org/val2017/000000039769.jpg"
 >>> image = Image.open(requests.get(url, stream=True).raw)
 
->>> feature_extractor = ImageGPTFeatureExtractor.from_pretrained('openai/imagegpt-small')
->>> model = ImageGPTModel.from_pretrained('openai/imagegpt-small')
+>>> feature_extractor = ImageGPTFeatureExtractor.from_pretrained("openai/imagegpt-small")
+>>> model = ImageGPTModel.from_pretrained("openai/imagegpt-small")
 
 >>> inputs = feature_extractor(images=image, return_tensors="pt")
 >>> outputs = model(**inputs)
@@ -521,27 +521,31 @@ Examples:
 >>> import matplotlib.pyplot as plt
 >>> import numpy as np
 
->>> feature_extractor = ImageGPTFeatureExtractor.from_pretrained('openai/imagegpt-small')
->>> model = ImageGPTForCausalImageModeling.from_pretrained('openai/imagegpt-small')
+>>> feature_extractor = ImageGPTFeatureExtractor.from_pretrained("openai/imagegpt-small")
+>>> model = ImageGPTForCausalImageModeling.from_pretrained("openai/imagegpt-small")
 >>> device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 >>> model.to(device)
 
 >>> # unconditional generation of 8 images
 >>> batch_size = 8
->>> context = torch.full((batch_size, 1), model.config.vocab_size - 1) #initialize with SOS token
+>>> context = torch.full((batch_size, 1), model.config.vocab_size - 1)  # initialize with SOS token
 >>> context = torch.tensor(context).to(device)
->>> output = model.generate(input_ids=context, max_length=model.config.n_positions + 1, temperature=1.0, do_sample=True, top_k=40)
+>>> output = model.generate(
+...     input_ids=context, max_length=model.config.n_positions + 1, temperature=1.0, do_sample=True, top_k=40
+... )
 
 >>> clusters = feature_extractor.clusters
 >>> n_px = feature_extractor.size
 
->>> samples = output[:,1:].cpu().detach().numpy()
->>> samples_img = [np.reshape(np.rint(127.5 * (clusters[s] + 1.0)), [n_px, n_px, 3]).astype(np.uint8) for s in samples] # convert color cluster tokens back to pixels
+>>> samples = output[:, 1:].cpu().detach().numpy()
+>>> samples_img = [
+...     np.reshape(np.rint(127.5 * (clusters[s] + 1.0)), [n_px, n_px, 3]).astype(np.uint8) for s in samples
+>>> ]  # convert color cluster tokens back to pixels
 >>> f, axes = plt.subplots(1, batch_size, dpi=300)
 
 >>> for img, ax in zip(samples_img, axes):
-...    ax.axis('off')
-...    ax.imshow(img)
+...     ax.axis("off")
+...     ax.imshow(img)
 ```
 
 </div></div>
@@ -550,7 +554,7 @@ Examples:
 
 <div class="docstring">
 
-<docstring><name>class transformers.ImageGPTForImageClassification</name><anchor>transformers.ImageGPTForImageClassification</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/imagegpt/modeling_imagegpt.py#L1084</source><parameters>[{"name": "config", "val": ""}]</parameters><paramsdesc>- **config** ([ImageGPTConfig](/docs/transformers/master/en/model_doc/imagegpt#transformers.ImageGPTConfig)) -- Model configuration class with all the parameters of the model.
+<docstring><name>class transformers.ImageGPTForImageClassification</name><anchor>transformers.ImageGPTForImageClassification</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/imagegpt/modeling_imagegpt.py#L1088</source><parameters>[{"name": "config", "val": ""}]</parameters><paramsdesc>- **config** ([ImageGPTConfig](/docs/transformers/master/en/model_doc/imagegpt#transformers.ImageGPTConfig)) -- Model configuration class with all the parameters of the model.
   Initializing with a config file does not load the weights associated with the model, only the
   configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel.from_pretrained) method to load the model weights.</paramsdesc><paramgroups>0</paramgroups></docstring>
 
@@ -571,7 +575,7 @@ and behavior.
 
 
 <div class="docstring">
-<docstring><name>forward</name><anchor>transformers.ImageGPTForImageClassification.forward</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/imagegpt/modeling_imagegpt.py#L1096</source><parameters>[{"name": "input_ids", "val": " = None"}, {"name": "past_key_values", "val": " = None"}, {"name": "attention_mask", "val": " = None"}, {"name": "token_type_ids", "val": " = None"}, {"name": "position_ids", "val": " = None"}, {"name": "head_mask", "val": " = None"}, {"name": "inputs_embeds", "val": " = None"}, {"name": "labels", "val": " = None"}, {"name": "use_cache", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "return_dict", "val": " = None"}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **input_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`) --
+<docstring><name>forward</name><anchor>transformers.ImageGPTForImageClassification.forward</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/imagegpt/modeling_imagegpt.py#L1100</source><parameters>[{"name": "input_ids", "val": " = None"}, {"name": "past_key_values", "val": " = None"}, {"name": "attention_mask", "val": " = None"}, {"name": "token_type_ids", "val": " = None"}, {"name": "position_ids", "val": " = None"}, {"name": "head_mask", "val": " = None"}, {"name": "inputs_embeds", "val": " = None"}, {"name": "labels", "val": " = None"}, {"name": "use_cache", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "return_dict", "val": " = None"}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **input_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`) --
   `input_ids_length` = `sequence_length` if `past_key_values` is `None` else
   `past_key_values[0][0].shape[-2]` (`sequence_length` of input past key value states). Indices of input
   sequence tokens in the vocabulary.
@@ -677,11 +681,11 @@ Examples:
 >>> from PIL import Image
 >>> import requests
 
->>> url = 'http://images.cocodataset.org/val2017/000000039769.jpg'
+>>> url = "http://images.cocodataset.org/val2017/000000039769.jpg"
 >>> image = Image.open(requests.get(url, stream=True).raw)
 
->>> feature_extractor = ImageGPTFeatureExtractor.from_pretrained('openai/imagegpt-small')
->>> model = ImageGPTForImageClassification.from_pretrained('openai/imagegpt-small')
+>>> feature_extractor = ImageGPTFeatureExtractor.from_pretrained("openai/imagegpt-small")
+>>> model = ImageGPTForImageClassification.from_pretrained("openai/imagegpt-small")
 
 >>> inputs = feature_extractor(images=image, return_tensors="pt")
 >>> outputs = model(**inputs)

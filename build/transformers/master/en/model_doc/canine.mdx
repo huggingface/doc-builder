@@ -100,13 +100,13 @@ CANINE works on raw characters, so it can be used without a tokenizer:
 >>> from transformers import CanineModel
 >>> import torch
 
->>> model = CanineModel.from_pretrained('google/canine-c') # model pre-trained with autoregressive character loss
+>>> model = CanineModel.from_pretrained("google/canine-c")  # model pre-trained with autoregressive character loss
 
 >>> text = "hello world"
 >>> # use Python's built-in ord() function to turn each character into its unicode code point id
 >>> input_ids = torch.tensor([[ord(char) for char in text]])
 
->>> outputs = model(input_ids) # forward pass
+>>> outputs = model(input_ids)  # forward pass
 >>> pooled_output = outputs.pooler_output
 >>> sequence_output = outputs.last_hidden_state
 ```
@@ -117,13 +117,13 @@ sequences to the same length):
 ```python
 >>> from transformers import CanineTokenizer, CanineModel
 
->>> model = CanineModel.from_pretrained('google/canine-c')
->>> tokenizer = CanineTokenizer.from_pretrained('google/canine-c')
+>>> model = CanineModel.from_pretrained("google/canine-c")
+>>> tokenizer = CanineTokenizer.from_pretrained("google/canine-c")
 
 >>> inputs = ["Life is like a box of chocolates.", "You never know what you gonna get."]
 >>> encoding = tokenizer(inputs, padding="longest", truncation=True, return_tensors="pt")
 
->>> outputs = model(**encoding) # forward pass
+>>> outputs = model(**encoding)  # forward pass
 >>> pooled_output = outputs.pooler_output
 >>> sequence_output = outputs.last_hidden_state
 ```
@@ -414,8 +414,8 @@ Example:
 >>> from transformers import CanineTokenizer, CanineModel
 >>> import torch
 
->>> tokenizer = CanineTokenizer.from_pretrained('google/canine-s')
->>> model = CanineModel.from_pretrained('google/canine-s')
+>>> tokenizer = CanineTokenizer.from_pretrained("google/canine-s")
+>>> model = CanineModel.from_pretrained("google/canine-s")
 
 >>> inputs = tokenizer("Hello, my dog is cute", return_tensors="pt")
 >>> outputs = model(**inputs)
@@ -532,11 +532,11 @@ Example of single-label classification:
 >>> from transformers import CanineTokenizer, CanineForSequenceClassification
 >>> import torch
 
->>> tokenizer = CanineTokenizer.from_pretrained('google/canine-s')
->>> model = CanineForSequenceClassification.from_pretrained('google/canine-s')
+>>> tokenizer = CanineTokenizer.from_pretrained("google/canine-s")
+>>> model = CanineForSequenceClassification.from_pretrained("google/canine-s")
 
 >>> inputs = tokenizer("Hello, my dog is cute", return_tensors="pt")
->>> labels = torch.tensor([1]).unsqueeze(0) # Batch size 1
+>>> labels = torch.tensor([1]).unsqueeze(0)  # Batch size 1
 >>> outputs = model(**inputs, labels=labels)
 >>> loss = outputs.loss
 >>> logits = outputs.logits
@@ -548,11 +548,11 @@ Example of multi-label classification:
 >>> from transformers import CanineTokenizer, CanineForSequenceClassification
 >>> import torch
 
->>> tokenizer = CanineTokenizer.from_pretrained('google/canine-s')
->>> model = CanineForSequenceClassification.from_pretrained('google/canine-s', problem_type="multi_label_classification")
+>>> tokenizer = CanineTokenizer.from_pretrained("google/canine-s")
+>>> model = CanineForSequenceClassification.from_pretrained("google/canine-s", problem_type="multi_label_classification")
 
 >>> inputs = tokenizer("Hello, my dog is cute", return_tensors="pt")
->>> labels = torch.tensor([[1, 1]], dtype=torch.float) # need dtype=float for BCEWithLogitsLoss
+>>> labels = torch.tensor([[1, 1]], dtype=torch.float)  # need dtype=float for BCEWithLogitsLoss
 >>> outputs = model(**inputs, labels=labels)
 >>> loss = outputs.loss
 >>> logits = outputs.logits
@@ -669,16 +669,16 @@ Example:
 >>> from transformers import CanineTokenizer, CanineForMultipleChoice
 >>> import torch
 
->>> tokenizer = CanineTokenizer.from_pretrained('google/canine-s')
->>> model = CanineForMultipleChoice.from_pretrained('google/canine-s')
+>>> tokenizer = CanineTokenizer.from_pretrained("google/canine-s")
+>>> model = CanineForMultipleChoice.from_pretrained("google/canine-s")
 
 >>> prompt = "In Italy, pizza served in formal settings, such as at a restaurant, is presented unsliced."
 >>> choice0 = "It is eaten with a fork and a knife."
 >>> choice1 = "It is eaten while held in the hand."
->>> labels = torch.tensor(0).unsqueeze(0) # choice0 is correct (according to Wikipedia ;)), batch size 1
+>>> labels = torch.tensor(0).unsqueeze(0)  # choice0 is correct (according to Wikipedia ;)), batch size 1
 
->>> encoding = tokenizer([prompt, prompt], [choice0, choice1], return_tensors='pt', padding=True)
->>> outputs = model(**&amp;lcub;k: v.unsqueeze(0) for k,v in encoding.items()}, labels=labels) # batch size is 1
+>>> encoding = tokenizer([prompt, prompt], [choice0, choice1], return_tensors="pt", padding=True)
+>>> outputs = model(**&amp;lcub;k: v.unsqueeze(0) for k, v in encoding.items()}, labels=labels)  # batch size is 1
 
 >>> # the linear classifier still needs to be trained
 >>> loss = outputs.loss
@@ -792,11 +792,11 @@ Example:
 >>> from transformers import CanineTokenizer, CanineForTokenClassification
 >>> import torch
 
->>> tokenizer = CanineTokenizer.from_pretrained('google/canine-s')
->>> model = CanineForTokenClassification.from_pretrained('google/canine-s')
+>>> tokenizer = CanineTokenizer.from_pretrained("google/canine-s")
+>>> model = CanineForTokenClassification.from_pretrained("google/canine-s")
 
 >>> inputs = tokenizer("Hello, my dog is cute", return_tensors="pt")
->>> labels = torch.tensor([1] * inputs["input_ids"].size(1)).unsqueeze(0) # Batch size 1
+>>> labels = torch.tensor([1] * inputs["input_ids"].size(1)).unsqueeze(0)  # Batch size 1
 
 >>> outputs = model(**inputs, labels=labels)
 >>> loss = outputs.loss
@@ -917,11 +917,11 @@ Example:
 >>> from transformers import CanineTokenizer, CanineForQuestionAnswering
 >>> import torch
 
->>> tokenizer = CanineTokenizer.from_pretrained('google/canine-s')
->>> model = CanineForQuestionAnswering.from_pretrained('google/canine-s')
+>>> tokenizer = CanineTokenizer.from_pretrained("google/canine-s")
+>>> model = CanineForQuestionAnswering.from_pretrained("google/canine-s")
 
 >>> question, text = "Who was Jim Henson?", "Jim Henson was a nice puppet"
->>> inputs = tokenizer(question, text, return_tensors='pt')
+>>> inputs = tokenizer(question, text, return_tensors="pt")
 >>> start_positions = torch.tensor([1])
 >>> end_positions = torch.tensor([3])
 

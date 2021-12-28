@@ -230,7 +230,7 @@ Common attributes (present in all subclasses):
 
 
 <div class="docstring">
-<docstring><name>push\_to\_hub</name><anchor>transformers.file_utils.PushToHubMixin.push_to_hub</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/file_utils.py#L2490</source><parameters>[{"name": "repo_path_or_name", "val": ": typing.Optional[str] = None"}, {"name": "repo_url", "val": ": typing.Optional[str] = None"}, {"name": "use_temp_dir", "val": ": bool = False"}, {"name": "commit_message", "val": ": typing.Optional[str] = None"}, {"name": "organization", "val": ": typing.Optional[str] = None"}, {"name": "private", "val": ": typing.Optional[bool] = None"}, {"name": "use_auth_token", "val": ": typing.Union[bool, str, NoneType] = None"}, {"name": "**model_card_kwargs", "val": ""}]</parameters><paramsdesc>- **repo_path_or_name** (`str`, *optional*) --
+<docstring><name>push\_to\_hub</name><anchor>transformers.file_utils.PushToHubMixin.push_to_hub</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/file_utils.py#L2492</source><parameters>[{"name": "repo_path_or_name", "val": ": typing.Optional[str] = None"}, {"name": "repo_url", "val": ": typing.Optional[str] = None"}, {"name": "use_temp_dir", "val": ": bool = False"}, {"name": "commit_message", "val": ": typing.Optional[str] = None"}, {"name": "organization", "val": ": typing.Optional[str] = None"}, {"name": "private", "val": ": typing.Optional[bool] = None"}, {"name": "use_auth_token", "val": ": typing.Union[bool, str, NoneType] = None"}, {"name": "**model_card_kwargs", "val": ""}]</parameters><paramsdesc>- **repo_path_or_name** (`str`, *optional*) --
   Can either be a repository name for your config in the Hub or a path to a local folder (in which case
   the repository will have the name of that local folder). If not specified, will default to the name
   given by `repo_url` and a local directory with that name will be created.
@@ -286,7 +286,7 @@ config.push_to_hub("my-finetuned-bert", repo_url="https://huggingface.co/sgugger
 
 </div>
 <div class="docstring">
-<docstring><name>dict\_torch\_dtype\_to\_str</name><anchor>transformers.PretrainedConfig.dict_torch_dtype_to_str</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/configuration_utils.py#L804</source><parameters>[{"name": "d", "val": ": typing.Dict[str, typing.Any]"}]</parameters></docstring>
+<docstring><name>dict\_torch\_dtype\_to\_str</name><anchor>transformers.PretrainedConfig.dict_torch_dtype_to_str</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/configuration_utils.py#L809</source><parameters>[{"name": "d", "val": ": typing.Dict[str, typing.Any]"}]</parameters></docstring>
 
 Checks whether the passed dictionary has a *torch_dtype* key and if it's not None, converts torch.dtype to a
 string of just the type. For example, `torch.float32` get converted into *"float32"* string, which can then be
@@ -295,7 +295,7 @@ stored in the json format.
 
 </div>
 <div class="docstring">
-<docstring><name>from\_dict</name><anchor>transformers.PretrainedConfig.from_dict</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/configuration_utils.py#L608</source><parameters>[{"name": "config_dict", "val": ": typing.Dict[str, typing.Any]"}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **config_dict** (`Dict[str, Any]`) --
+<docstring><name>from\_dict</name><anchor>transformers.PretrainedConfig.from_dict</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/configuration_utils.py#L613</source><parameters>[{"name": "config_dict", "val": ": typing.Dict[str, typing.Any]"}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **config_dict** (`Dict[str, Any]`) --
   Dictionary that will be used to instantiate the configuration object. Such a dictionary can be
   retrieved from a pretrained checkpoint by leveraging the [get_config_dict()](/docs/transformers/master/en/main_classes/configuration#transformers.PretrainedConfig.get_config_dict) method.
 - **kwargs** (`Dict[str, Any]`) --
@@ -312,7 +312,7 @@ Instantiates a [PretrainedConfig](/docs/transformers/master/en/main_classes/conf
 
 </div>
 <div class="docstring">
-<docstring><name>from\_json\_file</name><anchor>transformers.PretrainedConfig.from_json_file</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/configuration_utils.py#L646</source><parameters>[{"name": "json_file", "val": ": typing.Union[str, os.PathLike]"}]</parameters><paramsdesc>- **json_file** (`str` or `os.PathLike`) --
+<docstring><name>from\_json\_file</name><anchor>transformers.PretrainedConfig.from_json_file</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/configuration_utils.py#L651</source><parameters>[{"name": "json_file", "val": ": typing.Union[str, os.PathLike]"}]</parameters><paramsdesc>- **json_file** (`str` or `os.PathLike`) --
   Path to the JSON file containing the parameters.</paramsdesc><paramgroups>0</paramgroups><rettype>[PretrainedConfig](/docs/transformers/master/en/main_classes/configuration#transformers.PretrainedConfig)</rettype><retdesc>The configuration object instantiated from that JSON file.</retdesc></docstring>
 
 Instantiates a [PretrainedConfig](/docs/transformers/master/en/main_classes/configuration#transformers.PretrainedConfig) from the path to a JSON file of parameters.
@@ -384,20 +384,25 @@ Examples:
 ```python
 # We can't instantiate directly the base class *PretrainedConfig* so let's show the examples on a
 # derived class: BertConfig
-config = BertConfig.from_pretrained('bert-base-uncased')    # Download configuration from huggingface.co and cache.
-config = BertConfig.from_pretrained('./test/saved_model/')  # E.g. config (or model) was saved using *save_pretrained('./test/saved_model/')*
-config = BertConfig.from_pretrained('./test/saved_model/my_configuration.json')
-config = BertConfig.from_pretrained('bert-base-uncased', output_attentions=True, foo=False)
+config = BertConfig.from_pretrained(
+    "bert-base-uncased"
+)  # Download configuration from huggingface.co and cache.
+config = BertConfig.from_pretrained(
+    "./test/saved_model/"
+)  # E.g. config (or model) was saved using *save_pretrained('./test/saved_model/')*
+config = BertConfig.from_pretrained("./test/saved_model/my_configuration.json")
+config = BertConfig.from_pretrained("bert-base-uncased", output_attentions=True, foo=False)
 assert config.output_attentions == True
-config, unused_kwargs = BertConfig.from_pretrained('bert-base-uncased', output_attentions=True,
-                                           foo=False, return_unused_kwargs=True)
+config, unused_kwargs = BertConfig.from_pretrained(
+    "bert-base-uncased", output_attentions=True, foo=False, return_unused_kwargs=True
+)
 assert config.output_attentions == True
-assert unused_kwargs == &amp;lcub;'foo': False}
+assert unused_kwargs == &amp;lcub;"foo": False}
 ```
 
 </div>
 <div class="docstring">
-<docstring><name>get\_config\_dict</name><anchor>transformers.PretrainedConfig.get_config_dict</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/configuration_utils.py#L510</source><parameters>[{"name": "pretrained_model_name_or_path", "val": ": typing.Union[str, os.PathLike]"}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **pretrained_model_name_or_path** (`str` or `os.PathLike`) --
+<docstring><name>get\_config\_dict</name><anchor>transformers.PretrainedConfig.get_config_dict</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/configuration_utils.py#L515</source><parameters>[{"name": "pretrained_model_name_or_path", "val": ": typing.Union[str, os.PathLike]"}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **pretrained_model_name_or_path** (`str` or `os.PathLike`) --
   The identifier of the pre-trained checkpoint from which we want the dictionary of parameters.</paramsdesc><paramgroups>0</paramgroups><rettype>`Tuple[Dict, Dict]`</rettype><retdesc>The dictionary(ies) that will be used to instantiate the configuration object.</retdesc></docstring>
 
 From a `pretrained_model_name_or_path`, resolve to a dictionary of parameters, to be used for instantiating a
@@ -438,7 +443,7 @@ Save a configuration object to the directory `save_directory`, so that it can be
 
 </div>
 <div class="docstring">
-<docstring><name>to\_dict</name><anchor>transformers.PretrainedConfig.to_dict</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/configuration_utils.py#L706</source><parameters>[]</parameters><rettype>`Dict[str, Any]`</rettype><retdesc>Dictionary of all the attributes that make up this configuration instance.</retdesc></docstring>
+<docstring><name>to\_dict</name><anchor>transformers.PretrainedConfig.to_dict</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/configuration_utils.py#L711</source><parameters>[]</parameters><rettype>`Dict[str, Any]`</rettype><retdesc>Dictionary of all the attributes that make up this configuration instance.</retdesc></docstring>
 
 Serializes this instance to a Python dictionary.
 
@@ -449,7 +454,7 @@ Serializes this instance to a Python dictionary.
 
 </div>
 <div class="docstring">
-<docstring><name>to\_diff\_dict</name><anchor>transformers.PretrainedConfig.to_diff_dict</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/configuration_utils.py#L674</source><parameters>[]</parameters><rettype>`Dict[str, Any]`</rettype><retdesc>Dictionary of all the attributes that make up this configuration instance,</retdesc></docstring>
+<docstring><name>to\_diff\_dict</name><anchor>transformers.PretrainedConfig.to_diff_dict</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/configuration_utils.py#L679</source><parameters>[]</parameters><rettype>`Dict[str, Any]`</rettype><retdesc>Dictionary of all the attributes that make up this configuration instance,</retdesc></docstring>
 
 Removes all attributes from config which correspond to the default config attributes for better readability and
 serializes to a Python dictionary.
@@ -461,7 +466,7 @@ serializes to a Python dictionary.
 
 </div>
 <div class="docstring">
-<docstring><name>to\_json\_file</name><anchor>transformers.PretrainedConfig.to_json_file</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/configuration_utils.py#L742</source><parameters>[{"name": "json_file_path", "val": ": typing.Union[str, os.PathLike]"}, {"name": "use_diff", "val": ": bool = True"}]</parameters><paramsdesc>- **json_file_path** (`str` or `os.PathLike`) --
+<docstring><name>to\_json\_file</name><anchor>transformers.PretrainedConfig.to_json_file</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/configuration_utils.py#L747</source><parameters>[{"name": "json_file_path", "val": ": typing.Union[str, os.PathLike]"}, {"name": "use_diff", "val": ": bool = True"}]</parameters><paramsdesc>- **json_file_path** (`str` or `os.PathLike`) --
   Path to the JSON file in which this configuration instance's parameters will be saved.
 - **use_diff** (`bool`, *optional*, defaults to `True`) --
   If set to `True`, only the difference between the config instance and the default `PretrainedConfig()`
@@ -474,7 +479,7 @@ Save this instance to a JSON file.
 
 </div>
 <div class="docstring">
-<docstring><name>to\_json\_string</name><anchor>transformers.PretrainedConfig.to_json_string</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/configuration_utils.py#L724</source><parameters>[{"name": "use_diff", "val": ": bool = True"}]</parameters><paramsdesc>- **use_diff** (`bool`, *optional*, defaults to `True`) --
+<docstring><name>to\_json\_string</name><anchor>transformers.PretrainedConfig.to_json_string</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/configuration_utils.py#L729</source><parameters>[{"name": "use_diff", "val": ": bool = True"}]</parameters><paramsdesc>- **use_diff** (`bool`, *optional*, defaults to `True`) --
   If set to `True`, only the difference between the config instance and the default `PretrainedConfig()`
   is serialized to JSON string.</paramsdesc><paramgroups>0</paramgroups><rettype>`str`</rettype><retdesc>String containing all the attributes that make up this configuration instance in JSON format.</retdesc></docstring>
 
@@ -489,7 +494,7 @@ Serializes this instance to a JSON string.
 
 </div>
 <div class="docstring">
-<docstring><name>update</name><anchor>transformers.PretrainedConfig.update</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/configuration_utils.py#L756</source><parameters>[{"name": "config_dict", "val": ": typing.Dict[str, typing.Any]"}]</parameters><paramsdesc>- **config_dict** (`Dict[str, Any]`) -- Dictionary of attributes that should be updated for this class.</paramsdesc><paramgroups>0</paramgroups></docstring>
+<docstring><name>update</name><anchor>transformers.PretrainedConfig.update</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/configuration_utils.py#L761</source><parameters>[{"name": "config_dict", "val": ": typing.Dict[str, typing.Any]"}]</parameters><paramsdesc>- **config_dict** (`Dict[str, Any]`) -- Dictionary of attributes that should be updated for this class.</paramsdesc><paramgroups>0</paramgroups></docstring>
 
 Updates attributes of this class with attributes from `config_dict`.
 
@@ -498,7 +503,7 @@ Updates attributes of this class with attributes from `config_dict`.
 
 </div>
 <div class="docstring">
-<docstring><name>update\_from\_string</name><anchor>transformers.PretrainedConfig.update_from_string</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/configuration_utils.py#L766</source><parameters>[{"name": "update_str", "val": ": str"}]</parameters><paramsdesc>- **update_str** (`str`) -- String with attributes that should be updated for this class.</paramsdesc><paramgroups>0</paramgroups></docstring>
+<docstring><name>update\_from\_string</name><anchor>transformers.PretrainedConfig.update_from_string</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/configuration_utils.py#L771</source><parameters>[{"name": "update_str", "val": ": str"}]</parameters><paramsdesc>- **update_str** (`str`) -- String with attributes that should be updated for this class.</paramsdesc><paramgroups>0</paramgroups></docstring>
 
 Updates attributes of this class with attributes from `update_str`.
 

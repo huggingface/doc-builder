@@ -317,8 +317,8 @@ Example:
 >>> from transformers import PegasusTokenizer, BigBirdPegasusModel
 >>> import torch
 
->>> tokenizer = PegasusTokenizer.from_pretrained('google/bigbird-pegasus-large-arxiv')
->>> model = BigBirdPegasusModel.from_pretrained('google/bigbird-pegasus-large-arxiv')
+>>> tokenizer = PegasusTokenizer.from_pretrained("google/bigbird-pegasus-large-arxiv")
+>>> model = BigBirdPegasusModel.from_pretrained("google/bigbird-pegasus-large-arxiv")
 
 >>> inputs = tokenizer("Hello, my dog is cute", return_tensors="pt")
 >>> outputs = model(**inputs)
@@ -648,11 +648,11 @@ Example of single-label classification:
 >>> from transformers import PegasusTokenizer, BigBirdPegasusForSequenceClassification
 >>> import torch
 
->>> tokenizer = PegasusTokenizer.from_pretrained('google/bigbird-pegasus-large-arxiv')
->>> model = BigBirdPegasusForSequenceClassification.from_pretrained('google/bigbird-pegasus-large-arxiv')
+>>> tokenizer = PegasusTokenizer.from_pretrained("google/bigbird-pegasus-large-arxiv")
+>>> model = BigBirdPegasusForSequenceClassification.from_pretrained("google/bigbird-pegasus-large-arxiv")
 
 >>> inputs = tokenizer("Hello, my dog is cute", return_tensors="pt")
->>> labels = torch.tensor([1]).unsqueeze(0) # Batch size 1
+>>> labels = torch.tensor([1]).unsqueeze(0)  # Batch size 1
 >>> outputs = model(**inputs, labels=labels)
 >>> loss = outputs.loss
 >>> logits = outputs.logits
@@ -664,11 +664,11 @@ Example of multi-label classification:
 >>> from transformers import PegasusTokenizer, BigBirdPegasusForSequenceClassification
 >>> import torch
 
->>> tokenizer = PegasusTokenizer.from_pretrained('google/bigbird-pegasus-large-arxiv')
->>> model = BigBirdPegasusForSequenceClassification.from_pretrained('google/bigbird-pegasus-large-arxiv', problem_type="multi_label_classification")
+>>> tokenizer = PegasusTokenizer.from_pretrained("google/bigbird-pegasus-large-arxiv")
+>>> model = BigBirdPegasusForSequenceClassification.from_pretrained("google/bigbird-pegasus-large-arxiv", problem_type="multi_label_classification")
 
 >>> inputs = tokenizer("Hello, my dog is cute", return_tensors="pt")
->>> labels = torch.tensor([[1, 1]], dtype=torch.float) # need dtype=float for BCEWithLogitsLoss
+>>> labels = torch.tensor([[1, 1]], dtype=torch.float)  # need dtype=float for BCEWithLogitsLoss
 >>> outputs = model(**inputs, labels=labels)
 >>> loss = outputs.loss
 >>> logits = outputs.logits
@@ -838,11 +838,11 @@ Example:
 >>> from transformers import PegasusTokenizer, BigBirdPegasusForQuestionAnswering
 >>> import torch
 
->>> tokenizer = PegasusTokenizer.from_pretrained('google/bigbird-pegasus-large-arxiv')
->>> model = BigBirdPegasusForQuestionAnswering.from_pretrained('google/bigbird-pegasus-large-arxiv')
+>>> tokenizer = PegasusTokenizer.from_pretrained("google/bigbird-pegasus-large-arxiv")
+>>> model = BigBirdPegasusForQuestionAnswering.from_pretrained("google/bigbird-pegasus-large-arxiv")
 
 >>> question, text = "Who was Jim Henson?", "Jim Henson was a nice puppet"
->>> inputs = tokenizer(question, text, return_tensors='pt')
+>>> inputs = tokenizer(question, text, return_tensors="pt")
 >>> start_positions = torch.tensor([1])
 >>> end_positions = torch.tensor([3])
 
@@ -860,7 +860,7 @@ Example:
 <div class="docstring">
 
 <div class="docstring">
-<docstring><name>forward</name><anchor>transformers.BigBirdPegasusForCausalLM.forward</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/bigbird_pegasus/modeling_bigbird_pegasus.py#L2896</source><parameters>[{"name": "input_ids", "val": " = None"}, {"name": "attention_mask", "val": " = None"}, {"name": "encoder_hidden_states", "val": " = None"}, {"name": "encoder_attention_mask", "val": " = None"}, {"name": "head_mask", "val": " = None"}, {"name": "cross_attn_head_mask", "val": " = None"}, {"name": "past_key_values", "val": " = None"}, {"name": "inputs_embeds", "val": " = None"}, {"name": "labels", "val": " = None"}, {"name": "use_cache", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "return_dict", "val": " = None"}]</parameters><paramsdesc>- **input_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`) --
+<docstring><name>forward</name><anchor>transformers.BigBirdPegasusForCausalLM.forward</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/bigbird_pegasus/modeling_bigbird_pegasus.py#L2895</source><parameters>[{"name": "input_ids", "val": " = None"}, {"name": "attention_mask", "val": " = None"}, {"name": "encoder_hidden_states", "val": " = None"}, {"name": "encoder_attention_mask", "val": " = None"}, {"name": "head_mask", "val": " = None"}, {"name": "cross_attn_head_mask", "val": " = None"}, {"name": "past_key_values", "val": " = None"}, {"name": "inputs_embeds", "val": " = None"}, {"name": "labels", "val": " = None"}, {"name": "use_cache", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "return_dict", "val": " = None"}]</parameters><paramsdesc>- **input_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`) --
   Indices of input sequence tokens in the vocabulary. Padding will be ignored by default should you
   provide it.
 
@@ -961,7 +961,9 @@ Example:
 >>> from transformers import PegasusTokenizer, BigBirdPegasusForCausalLM
 
 >>> tokenizer = PegasusTokenizer.from_pretrained("google/bigbird-pegasus-large-arxiv")
->>> model = BigBirdPegasusForCausalLM.from_pretrained("google/bigbird-pegasus-large-arxiv", add_cross_attention=False)
+>>> model = BigBirdPegasusForCausalLM.from_pretrained(
+...     "google/bigbird-pegasus-large-arxiv", add_cross_attention=False
+... )
 >>> assert model.config.is_decoder, f"&amp;lcub;model.__class__} has to be configured as a decoder."
 >>> inputs = tokenizer("Hello, my dog is cute", return_tensors="pt")
 >>> outputs = model(**inputs)

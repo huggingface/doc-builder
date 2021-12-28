@@ -107,12 +107,12 @@ Tips:
 
 ```python
 def normalize_bbox(bbox, width, height):
-     return [
-         int(1000 * (bbox[0] / width)),
-         int(1000 * (bbox[1] / height)),
-         int(1000 * (bbox[2] / width)),
-         int(1000 * (bbox[3] / height)),
-     ]
+    return [
+        int(1000 * (bbox[0] / width)),
+        int(1000 * (bbox[1] / height)),
+        int(1000 * (bbox[2] / width)),
+        int(1000 * (bbox[3] / height)),
+    ]
 ```
 
 Here, `width` and `height` correspond to the width and height of the original document in which the token
@@ -160,7 +160,7 @@ modality.
 ```python
 from transformers import LayoutLMv2FeatureExtractor, LayoutLMv2TokenizerFast, LayoutLMv2Processor
 
-feature_extractor = LayoutLMv2FeatureExtractor() # apply_ocr is set to True by default
+feature_extractor = LayoutLMv2FeatureExtractor()  # apply_ocr is set to True by default
 tokenizer = LayoutLMv2TokenizerFast.from_pretrained("microsoft/layoutlmv2-base-uncased")
 processor = LayoutLMv2Processor(feature_extractor, tokenizer)
 ```
@@ -195,7 +195,9 @@ from PIL import Image
 processor = LayoutLMv2Processor.from_pretrained("microsoft/layoutlmv2-base-uncased")
 
 image = Image.open("name_of_your_document - can be a png file, pdf, etc.").convert("RGB")
-encoding = processor(image, return_tensors="pt") # you can also add all tokenizer parameters here such as padding, truncation
+encoding = processor(
+    image, return_tensors="pt"
+)  # you can also add all tokenizer parameters here such as padding, truncation
 print(encoding.keys())
 # dict_keys(['input_ids', 'token_type_ids', 'attention_mask', 'bbox', 'image'])
 ```
@@ -214,7 +216,7 @@ processor = LayoutLMv2Processor.from_pretrained("microsoft/layoutlmv2-base-uncas
 
 image = Image.open("name_of_your_document - can be a png file, pdf, etc.").convert("RGB")
 words = ["hello", "world"]
-boxes = [[1, 2, 3, 4], [5, 6, 7, 8]] # make sure to normalize your bounding boxes
+boxes = [[1, 2, 3, 4], [5, 6, 7, 8]]  # make sure to normalize your bounding boxes
 encoding = processor(image, words, boxes=boxes, return_tensors="pt")
 print(encoding.keys())
 # dict_keys(['input_ids', 'token_type_ids', 'attention_mask', 'bbox', 'image'])
@@ -236,7 +238,7 @@ processor = LayoutLMv2Processor.from_pretrained("microsoft/layoutlmv2-base-uncas
 
 image = Image.open("name_of_your_document - can be a png file, pdf, etc.").convert("RGB")
 words = ["hello", "world"]
-boxes = [[1, 2, 3, 4], [5, 6, 7, 8]] # make sure to normalize your bounding boxes
+boxes = [[1, 2, 3, 4], [5, 6, 7, 8]]  # make sure to normalize your bounding boxes
 word_labels = [1, 2]
 encoding = processor(image, words, boxes=boxes, word_labels=word_labels, return_tensors="pt")
 print(encoding.keys())
@@ -256,7 +258,7 @@ processor = LayoutLMv2Processor.from_pretrained("microsoft/layoutlmv2-base-uncas
 
 image = Image.open("name_of_your_document - can be a png file, pdf, etc.").convert("RGB")
 question = "What's his name?"
-encoding = processor(image, question, return_tensors="pt") 
+encoding = processor(image, question, return_tensors="pt")
 print(encoding.keys())
 # dict_keys(['input_ids', 'token_type_ids', 'attention_mask', 'bbox', 'image'])
 ```
@@ -275,8 +277,8 @@ processor = LayoutLMv2Processor.from_pretrained("microsoft/layoutlmv2-base-uncas
 image = Image.open("name_of_your_document - can be a png file, pdf, etc.").convert("RGB")
 question = "What's his name?"
 words = ["hello", "world"]
-boxes = [[1, 2, 3, 4], [5, 6, 7, 8]] # make sure to normalize your bounding boxes
-encoding = processor(image, question, words, boxes=boxes, return_tensors="pt")  
+boxes = [[1, 2, 3, 4], [5, 6, 7, 8]]  # make sure to normalize your bounding boxes
+encoding = processor(image, question, words, boxes=boxes, return_tensors="pt")
 print(encoding.keys())
 # dict_keys(['input_ids', 'token_type_ids', 'attention_mask', 'bbox', 'image'])
 ```
@@ -909,8 +911,8 @@ Examples:
 >>> from transformers import LayoutLMv2Processor, LayoutLMv2Model
 >>> from PIL import Image
 
->>> processor = LayoutLMv2Processor.from_pretrained('microsoft/layoutlmv2-base-uncased')
->>> model = LayoutLMv2Model.from_pretrained('microsoft/layoutlmv2-base-uncased')
+>>> processor = LayoutLMv2Processor.from_pretrained("microsoft/layoutlmv2-base-uncased")
+>>> model = LayoutLMv2Model.from_pretrained("microsoft/layoutlmv2-base-uncased")
 
 >>> image = Image.open("name_of_your_document - can be a png file, pdf, etc.").convert("RGB")
 
@@ -1041,8 +1043,8 @@ Examples:
 >>> from PIL import Image
 >>> import torch
 
->>> processor = LayoutLMv2Processor.from_pretrained('microsoft/layoutlmv2-base-uncased')
->>> model = LayoutLMv2ForSequenceClassification.from_pretrained('microsoft/layoutlmv2-base-uncased')
+>>> processor = LayoutLMv2Processor.from_pretrained("microsoft/layoutlmv2-base-uncased")
+>>> model = LayoutLMv2ForSequenceClassification.from_pretrained("microsoft/layoutlmv2-base-uncased")
 
 >>> image = Image.open("name_of_your_document - can be a png file, pdf, etc.").convert("RGB")
 
@@ -1172,12 +1174,12 @@ Examples:
 >>> from transformers import LayoutLMv2Processor, LayoutLMv2ForTokenClassification
 >>> from PIL import Image
 
->>> processor = LayoutLMv2Processor.from_pretrained('microsoft/layoutlmv2-base-uncased', revision="no_ocr")
->>> model = LayoutLMv2ForTokenClassification.from_pretrained('microsoft/layoutlmv2-base-uncased')
+>>> processor = LayoutLMv2Processor.from_pretrained("microsoft/layoutlmv2-base-uncased", revision="no_ocr")
+>>> model = LayoutLMv2ForTokenClassification.from_pretrained("microsoft/layoutlmv2-base-uncased")
 
 >>> image = Image.open("name_of_your_document - can be a png file, pdf, etc.").convert("RGB")
 >>> words = ["hello", "world"]
->>> boxes = [[1, 2, 3, 4], [5, 6, 7, 8]] # make sure to normalize your bounding boxes
+>>> boxes = [[1, 2, 3, 4], [5, 6, 7, 8]]  # make sure to normalize your bounding boxes
 >>> word_labels = [0, 1]
 
 >>> encoding = processor(image, words, boxes=boxes, word_labels=word_labels, return_tensors="pt")
@@ -1312,8 +1314,8 @@ Examples:
 >>> from PIL import Image
 >>> import torch
 
->>> processor = LayoutLMv2Processor.from_pretrained('microsoft/layoutlmv2-base-uncased')
->>> model = LayoutLMv2ForQuestionAnswering.from_pretrained('microsoft/layoutlmv2-base-uncased')
+>>> processor = LayoutLMv2Processor.from_pretrained("microsoft/layoutlmv2-base-uncased")
+>>> model = LayoutLMv2ForQuestionAnswering.from_pretrained("microsoft/layoutlmv2-base-uncased")
 
 >>> image = Image.open("name_of_your_document - can be a png file, pdf, etc.").convert("RGB")
 >>> question = "what's his name?"

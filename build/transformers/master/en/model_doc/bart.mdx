@@ -116,12 +116,15 @@ The `facebook/bart-base` and `facebook/bart-large` checkpoints can be used to fi
 
 ```python
 from transformers import BartForConditionalGeneration, BartTokenizer
+
 model = BartForConditionalGeneration.from_pretrained("facebook/bart-large", forced_bos_token_id=0)
 tok = BartTokenizer.from_pretrained("facebook/bart-large")
 example_english_phrase = "UN Chief Says There Is No &amp;lt;mask> in Syria"
-batch = tok(example_english_phrase, return_tensors='pt')
-generated_ids = model.generate(batch['input_ids'])
-assert tok.batch_decode(generated_ids, skip_special_tokens=True) == ['UN Chief Says There Is No Plan to Stop Chemical Weapons in Syria']
+batch = tok(example_english_phrase, return_tensors="pt")
+generated_ids = model.generate(batch["input_ids"])
+assert tok.batch_decode(generated_ids, skip_special_tokens=True) == [
+    "UN Chief Says There Is No Plan to Stop Chemical Weapons in Syria"
+]
 ```
 
 <h2 id="transformers.BartConfig">BartConfig</h2>
@@ -407,8 +410,8 @@ Example:
 >>> from transformers import BartTokenizer, BartModel
 >>> import torch
 
->>> tokenizer = BartTokenizer.from_pretrained('facebook/bart-large')
->>> model = BartModel.from_pretrained('facebook/bart-large')
+>>> tokenizer = BartTokenizer.from_pretrained("facebook/bart-large")
+>>> model = BartModel.from_pretrained("facebook/bart-large")
 
 >>> inputs = tokenizer("Hello, my dog is cute", return_tensors="pt")
 >>> outputs = model(**inputs)
@@ -800,11 +803,11 @@ Example of single-label classification:
 >>> from transformers import BartTokenizer, BartForSequenceClassification
 >>> import torch
 
->>> tokenizer = BartTokenizer.from_pretrained('facebook/bart-large')
->>> model = BartForSequenceClassification.from_pretrained('facebook/bart-large')
+>>> tokenizer = BartTokenizer.from_pretrained("facebook/bart-large")
+>>> model = BartForSequenceClassification.from_pretrained("facebook/bart-large")
 
 >>> inputs = tokenizer("Hello, my dog is cute", return_tensors="pt")
->>> labels = torch.tensor([1]).unsqueeze(0) # Batch size 1
+>>> labels = torch.tensor([1]).unsqueeze(0)  # Batch size 1
 >>> outputs = model(**inputs, labels=labels)
 >>> loss = outputs.loss
 >>> logits = outputs.logits
@@ -816,11 +819,11 @@ Example of multi-label classification:
 >>> from transformers import BartTokenizer, BartForSequenceClassification
 >>> import torch
 
->>> tokenizer = BartTokenizer.from_pretrained('facebook/bart-large')
->>> model = BartForSequenceClassification.from_pretrained('facebook/bart-large', problem_type="multi_label_classification")
+>>> tokenizer = BartTokenizer.from_pretrained("facebook/bart-large")
+>>> model = BartForSequenceClassification.from_pretrained("facebook/bart-large", problem_type="multi_label_classification")
 
 >>> inputs = tokenizer("Hello, my dog is cute", return_tensors="pt")
->>> labels = torch.tensor([[1, 1]], dtype=torch.float) # need dtype=float for BCEWithLogitsLoss
+>>> labels = torch.tensor([[1, 1]], dtype=torch.float)  # need dtype=float for BCEWithLogitsLoss
 >>> outputs = model(**inputs, labels=labels)
 >>> loss = outputs.loss
 >>> logits = outputs.logits
@@ -1014,11 +1017,11 @@ Example:
 >>> from transformers import BartTokenizer, BartForQuestionAnswering
 >>> import torch
 
->>> tokenizer = BartTokenizer.from_pretrained('facebook/bart-large')
->>> model = BartForQuestionAnswering.from_pretrained('facebook/bart-large')
+>>> tokenizer = BartTokenizer.from_pretrained("facebook/bart-large")
+>>> model = BartForQuestionAnswering.from_pretrained("facebook/bart-large")
 
 >>> question, text = "Who was Jim Henson?", "Jim Henson was a nice puppet"
->>> inputs = tokenizer(question, text, return_tensors='pt')
+>>> inputs = tokenizer(question, text, return_tensors="pt")
 >>> start_positions = torch.tensor([1])
 >>> end_positions = torch.tensor([3])
 
@@ -1136,8 +1139,8 @@ Example:
 ```python
 >>> from transformers import BartTokenizer, BartForCausalLM
 
->>> tokenizer = BartTokenizer.from_pretrained('facebook/bart-large')
->>> model = BartForCausalLM.from_pretrained('facebook/bart-large', add_cross_attention=False)
+>>> tokenizer = BartTokenizer.from_pretrained("facebook/bart-large")
+>>> model = BartForCausalLM.from_pretrained("facebook/bart-large", add_cross_attention=False)
 >>> assert model.config.is_decoder, f"&amp;lcub;model.__class__} has to be configured as a decoder."
 >>> inputs = tokenizer("Hello, my dog is cute", return_tensors="pt")
 >>> outputs = model(**inputs)
@@ -1320,8 +1323,8 @@ Example:
 >>> from transformers import BartTokenizer, TFBartModel
 >>> import tensorflow as tf
 
->>> tokenizer = BartTokenizer.from_pretrained('facebook/bart-large')
->>> model = TFBartModel.from_pretrained('facebook/bart-large')
+>>> tokenizer = BartTokenizer.from_pretrained("facebook/bart-large")
+>>> model = TFBartModel.from_pretrained("facebook/bart-large")
 
 >>> inputs = tokenizer("Hello, my dog is cute", return_tensors="tf")
 >>> outputs = model(inputs)
@@ -1673,10 +1676,10 @@ Example:
 ```python
 >>> from transformers import BartTokenizer, FlaxBartModel
 
->>> tokenizer = BartTokenizer.from_pretrained('facebook/bart-base')
->>> model = FlaxBartModel.from_pretrained('facebook/bart-base')
+>>> tokenizer = BartTokenizer.from_pretrained("facebook/bart-base")
+>>> model = FlaxBartModel.from_pretrained("facebook/bart-base")
 
->>> inputs = tokenizer("Hello, my dog is cute", return_tensors='jax')
+>>> inputs = tokenizer("Hello, my dog is cute", return_tensors="jax")
 >>> outputs = model(**inputs)
 
 >>> last_hidden_states = outputs.last_hidden_state
@@ -1736,11 +1739,11 @@ Example:
 ```python
 >>> from transformers import BartTokenizer, FlaxBartForConditionalGeneration
 
->>> model = FlaxBartForConditionalGeneration.from_pretrained('facebook/bart-large-cnn')
->>> tokenizer = BartTokenizer.from_pretrained('facebook/bart-large-cnn')
+>>> model = FlaxBartForConditionalGeneration.from_pretrained("facebook/bart-large-cnn")
+>>> tokenizer = BartTokenizer.from_pretrained("facebook/bart-large-cnn")
 
 >>> text = "My friends are cool but they eat too many carbs."
->>> inputs = tokenizer(text, max_length=1024, return_tensors='jax')
+>>> inputs = tokenizer(text, max_length=1024, return_tensors="jax")
 >>> encoder_outputs = model.encode(**inputs)
 ```
 
@@ -1829,11 +1832,11 @@ Example:
 ```python
 >>> from transformers import BartTokenizer, FlaxBartForConditionalGeneration
 
->>> model = FlaxBartForConditionalGeneration.from_pretrained('facebook/bart-large-cnn')
->>> tokenizer = BartTokenizer.from_pretrained('facebook/bart-large-cnn')
+>>> model = FlaxBartForConditionalGeneration.from_pretrained("facebook/bart-large-cnn")
+>>> tokenizer = BartTokenizer.from_pretrained("facebook/bart-large-cnn")
 
 >>> text = "My friends are cool but they eat too many carbs."
->>> inputs = tokenizer(text, max_length=1024, return_tensors='jax')
+>>> inputs = tokenizer(text, max_length=1024, return_tensors="jax")
 >>> encoder_outputs = model.encode(**inputs)
 
 >>> decoder_start_token_id = model.config.decoder_start_token_id
@@ -2062,11 +2065,11 @@ Example:
 ```python
 >>> from transformers import BartTokenizer, FlaxBartForConditionalGeneration
 
->>> model = FlaxBartForConditionalGeneration.from_pretrained('facebook/bart-large-cnn')
->>> tokenizer = BartTokenizer.from_pretrained('facebook/bart-large-cnn')
+>>> model = FlaxBartForConditionalGeneration.from_pretrained("facebook/bart-large-cnn")
+>>> tokenizer = BartTokenizer.from_pretrained("facebook/bart-large-cnn")
 
 >>> text = "My friends are cool but they eat too many carbs."
->>> inputs = tokenizer(text, max_length=1024, return_tensors='jax')
+>>> inputs = tokenizer(text, max_length=1024, return_tensors="jax")
 >>> encoder_outputs = model.encode(**inputs)
 ```
 
@@ -2150,11 +2153,11 @@ Example:
 ```python
 >>> from transformers import BartTokenizer, FlaxBartForConditionalGeneration
 
->>> model = FlaxBartForConditionalGeneration.from_pretrained('facebook/bart-large-cnn')
->>> tokenizer = BartTokenizer.from_pretrained('facebook/bart-large-cnn')
+>>> model = FlaxBartForConditionalGeneration.from_pretrained("facebook/bart-large-cnn")
+>>> tokenizer = BartTokenizer.from_pretrained("facebook/bart-large-cnn")
 
 >>> text = "My friends are cool but they eat too many carbs."
->>> inputs = tokenizer(text, max_length=1024, return_tensors='jax')
+>>> inputs = tokenizer(text, max_length=1024, return_tensors="jax")
 >>> encoder_outputs = model.encode(**inputs)
 
 >>> decoder_start_token_id = model.config.decoder_start_token_id
@@ -2310,10 +2313,10 @@ Example:
 ```python
 >>> from transformers import BartTokenizer, FlaxBartForSequenceClassification
 
->>> tokenizer = BartTokenizer.from_pretrained('facebook/bart-base')
->>> model = FlaxBartForSequenceClassification.from_pretrained('facebook/bart-base')
+>>> tokenizer = BartTokenizer.from_pretrained("facebook/bart-base")
+>>> model = FlaxBartForSequenceClassification.from_pretrained("facebook/bart-base")
 
->>> inputs = tokenizer("Hello, my dog is cute", return_tensors='jax')
+>>> inputs = tokenizer("Hello, my dog is cute", return_tensors="jax")
 
 >>> outputs = model(**inputs)
 >>> logits = outputs.logits
@@ -2373,11 +2376,11 @@ Example:
 ```python
 >>> from transformers import BartTokenizer, FlaxBartForConditionalGeneration
 
->>> model = FlaxBartForConditionalGeneration.from_pretrained('facebook/bart-large-cnn')
->>> tokenizer = BartTokenizer.from_pretrained('facebook/bart-large-cnn')
+>>> model = FlaxBartForConditionalGeneration.from_pretrained("facebook/bart-large-cnn")
+>>> tokenizer = BartTokenizer.from_pretrained("facebook/bart-large-cnn")
 
 >>> text = "My friends are cool but they eat too many carbs."
->>> inputs = tokenizer(text, max_length=1024, return_tensors='jax')
+>>> inputs = tokenizer(text, max_length=1024, return_tensors="jax")
 >>> encoder_outputs = model.encode(**inputs)
 ```
 
@@ -2466,11 +2469,11 @@ Example:
 ```python
 >>> from transformers import BartTokenizer, FlaxBartForConditionalGeneration
 
->>> model = FlaxBartForConditionalGeneration.from_pretrained('facebook/bart-large-cnn')
->>> tokenizer = BartTokenizer.from_pretrained('facebook/bart-large-cnn')
+>>> model = FlaxBartForConditionalGeneration.from_pretrained("facebook/bart-large-cnn")
+>>> tokenizer = BartTokenizer.from_pretrained("facebook/bart-large-cnn")
 
 >>> text = "My friends are cool but they eat too many carbs."
->>> inputs = tokenizer(text, max_length=1024, return_tensors='jax')
+>>> inputs = tokenizer(text, max_length=1024, return_tensors="jax")
 >>> encoder_outputs = model.encode(**inputs)
 
 >>> decoder_start_token_id = model.config.decoder_start_token_id
@@ -2627,11 +2630,11 @@ Example:
 ```python
 >>> from transformers import BartTokenizer, FlaxBartForQuestionAnswering
 
->>> tokenizer = BartTokenizer.from_pretrained('facebook/bart-base')
->>> model = FlaxBartForQuestionAnswering.from_pretrained('facebook/bart-base')
+>>> tokenizer = BartTokenizer.from_pretrained("facebook/bart-base")
+>>> model = FlaxBartForQuestionAnswering.from_pretrained("facebook/bart-base")
 
 >>> question, text = "Who was Jim Henson?", "Jim Henson was a nice puppet"
->>> inputs = tokenizer(question, text, return_tensors='jax')
+>>> inputs = tokenizer(question, text, return_tensors="jax")
 
 >>> outputs = model(**inputs)
 >>> start_scores = outputs.start_logits
@@ -2692,11 +2695,11 @@ Example:
 ```python
 >>> from transformers import BartTokenizer, FlaxBartForConditionalGeneration
 
->>> model = FlaxBartForConditionalGeneration.from_pretrained('facebook/bart-large-cnn')
->>> tokenizer = BartTokenizer.from_pretrained('facebook/bart-large-cnn')
+>>> model = FlaxBartForConditionalGeneration.from_pretrained("facebook/bart-large-cnn")
+>>> tokenizer = BartTokenizer.from_pretrained("facebook/bart-large-cnn")
 
 >>> text = "My friends are cool but they eat too many carbs."
->>> inputs = tokenizer(text, max_length=1024, return_tensors='jax')
+>>> inputs = tokenizer(text, max_length=1024, return_tensors="jax")
 >>> encoder_outputs = model.encode(**inputs)
 ```
 
@@ -2785,11 +2788,11 @@ Example:
 ```python
 >>> from transformers import BartTokenizer, FlaxBartForConditionalGeneration
 
->>> model = FlaxBartForConditionalGeneration.from_pretrained('facebook/bart-large-cnn')
->>> tokenizer = BartTokenizer.from_pretrained('facebook/bart-large-cnn')
+>>> model = FlaxBartForConditionalGeneration.from_pretrained("facebook/bart-large-cnn")
+>>> tokenizer = BartTokenizer.from_pretrained("facebook/bart-large-cnn")
 
 >>> text = "My friends are cool but they eat too many carbs."
->>> inputs = tokenizer(text, max_length=1024, return_tensors='jax')
+>>> inputs = tokenizer(text, max_length=1024, return_tensors="jax")
 >>> encoder_outputs = model.encode(**inputs)
 
 >>> decoder_start_token_id = model.config.decoder_start_token_id

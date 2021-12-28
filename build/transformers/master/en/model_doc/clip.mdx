@@ -120,8 +120,8 @@ encode the text and prepare the images. The following example shows how to get t
 >>> inputs = processor(text=["a photo of a cat", "a photo of a dog"], images=image, return_tensors="pt", padding=True)
 
 >>> outputs = model(**inputs)
->>> logits_per_image = outputs.logits_per_image # this is the image-text similarity score
->>> probs = logits_per_image.softmax(dim=1) # we can take the softmax to get the label probabilities
+>>> logits_per_image = outputs.logits_per_image  # this is the image-text similarity score
+>>> probs = logits_per_image.softmax(dim=1)  # we can take the softmax to get the label probabilities
 ```
 
 This model was contributed by [valhalla](https://huggingface.co/valhalla). The original code can be found [here](https://github.com/openai/CLIP).
@@ -680,11 +680,13 @@ Examples:
 >>> url = "http://images.cocodataset.org/val2017/000000039769.jpg"
 >>> image = Image.open(requests.get(url, stream=True).raw)
 
->>> inputs = processor(text=["a photo of a cat", "a photo of a dog"], images=image, return_tensors="pt", padding=True)
+>>> inputs = processor(
+...     text=["a photo of a cat", "a photo of a dog"], images=image, return_tensors="pt", padding=True
+... )
 
 >>> outputs = model(**inputs)
->>> logits_per_image = outputs.logits_per_image # this is the image-text similarity score
->>> probs = logits_per_image.softmax(dim=1) # we can take the softmax to get the label probabilities
+>>> logits_per_image = outputs.logits_per_image  # this is the image-text similarity score
+>>> probs = logits_per_image.softmax(dim=1)  # we can take the softmax to get the label probabilities
 ```
 
 </div>
@@ -742,7 +744,7 @@ Examples:
 >>> model = CLIPModel.from_pretrained("openai/clip-vit-base-patch32")
 >>> tokenizer = CLIPTokenizer.from_pretrained("openai/clip-vit-base-patch32")
 
->>> inputs = tokenizer(["a photo of a cat", "a photo of a dog"],  padding=True, return_tensors="pt")
+>>> inputs = tokenizer(["a photo of a cat", "a photo of a dog"], padding=True, return_tensors="pt")
 >>> text_features = model.get_text_features(**inputs)
 ```
 
@@ -870,11 +872,11 @@ Examples:
 >>> model = CLIPTextModel.from_pretrained("openai/clip-vit-base-patch32")
 >>> tokenizer = CLIPTokenizer.from_pretrained("openai/clip-vit-base-patch32")
 
->>> inputs = tokenizer(["a photo of a cat", "a photo of a dog"],  padding=True, return_tensors="pt")
+>>> inputs = tokenizer(["a photo of a cat", "a photo of a dog"], padding=True, return_tensors="pt")
 
 >>> outputs = model(**inputs)
 >>> last_hidden_state = outputs.last_hidden_state
->>> pooled_output = outputs.pooler_output # pooled (EOS token) states
+>>> pooled_output = outputs.pooler_output  # pooled (EOS token) states
 ```
 
 </div></div>
@@ -945,7 +947,7 @@ Examples:
 
 >>> outputs = model(**inputs)
 >>> last_hidden_state = outputs.last_hidden_state
->>> pooled_output = outputs.pooler_output # pooled CLS states
+>>> pooled_output = outputs.pooler_output  # pooled CLS states
 ```
 
 </div></div>
@@ -1076,11 +1078,13 @@ Examples:
 >>> url = "http://images.cocodataset.org/val2017/000000039769.jpg"
 >>> image = Image.open(requests.get(url, stream=True).raw)
 
->>> inputs = processor(text=["a photo of a cat", "a photo of a dog"], images=image, return_tensors="tf", padding=True)
+>>> inputs = processor(
+...     text=["a photo of a cat", "a photo of a dog"], images=image, return_tensors="tf", padding=True
+... )
 
 >>> outputs = model(**inputs)
->>> logits_per_image = outputs.logits_per_image # this is the image-text similarity score
->>> probs = tf.nn.softmax(logits_per_image, axis=1) # we can take the softmax to get the label probabilities
+>>> logits_per_image = outputs.logits_per_image  # this is the image-text similarity score
+>>> probs = tf.nn.softmax(logits_per_image, axis=1)  # we can take the softmax to get the label probabilities
 ```
 
 </div>
@@ -1143,7 +1147,7 @@ Examples:
 >>> model = TFCLIPModel.from_pretrained("openai/clip-vit-base-patch32")
 >>> tokenizer = CLIPTokenizer.from_pretrained("openai/clip-vit-base-patch32")
 
->>> inputs = tokenizer(["a photo of a cat", "a photo of a dog"],  padding=True, return_tensors="tf")
+>>> inputs = tokenizer(["a photo of a cat", "a photo of a dog"], padding=True, return_tensors="tf")
 >>> text_features = model.get_text_features(**inputs)
 ```
 
@@ -1283,11 +1287,11 @@ Examples:
 >>> model = TFCLIPTextModel.from_pretrained("openai/clip-vit-base-patch32")
 >>> tokenizer = CLIPTokenizer.from_pretrained("openai/clip-vit-base-patch32")
 
->>> inputs = tokenizer(["a photo of a cat", "a photo of a dog"],  padding=True, return_tensors="tf")
+>>> inputs = tokenizer(["a photo of a cat", "a photo of a dog"], padding=True, return_tensors="tf")
 
 >>> outputs = model(**inputs)
 >>> last_hidden_state = outputs.last_hidden_state
->>> pooled_output = outputs.pooler_output # pooled (EOS token) states
+>>> pooled_output = outputs.pooler_output  # pooled (EOS token) states
 ```
 
 </div></div>
@@ -1365,7 +1369,7 @@ Examples:
 
 >>> outputs = model(**inputs)
 >>> last_hidden_state = outputs.last_hidden_state
->>> pooled_output = outputs.pooler_output # pooled CLS states
+>>> pooled_output = outputs.pooler_output  # pooled CLS states
 ```
 
 </div></div>
@@ -1488,11 +1492,13 @@ Example:
 >>> url = "http://images.cocodataset.org/val2017/000000039769.jpg"
 >>> image = Image.open(requests.get(url, stream=True).raw)
 
->>> inputs = processor(text=["a photo of a cat", "a photo of a dog"], images=image, return_tensors="np", padding=True)
+>>> inputs = processor(
+...     text=["a photo of a cat", "a photo of a dog"], images=image, return_tensors="np", padding=True
+... )
 
 >>> outputs = model(**inputs)
->>> logits_per_image = outputs.logits_per_image # this is the image-text similarity score
->>> probs = jax.nn.softmax(logits_per_image, axis=1) # we can take the softmax to get the label probabilities
+>>> logits_per_image = outputs.logits_per_image  # this is the image-text similarity score
+>>> probs = jax.nn.softmax(logits_per_image, axis=1)  # we can take the softmax to get the label probabilities
 ```
 
 
@@ -1522,7 +1528,7 @@ Examples:
 >>> model = FlaxCLIPModel.from_pretrained("openai/clip-vit-base-patch32")
 >>> tokenizer = CLIPTokenizer.from_pretrained("openai/clip-vit-base-patch32")
 
->>> inputs = tokenizer(["a photo of a cat", "a photo of a dog"],  padding=True, return_tensors="np")
+>>> inputs = tokenizer(["a photo of a cat", "a photo of a dog"], padding=True, return_tensors="np")
 >>> text_features = model.get_text_features(**inputs)
 ```
 
@@ -1632,11 +1638,11 @@ Example:
 >>> model = FlaxCLIPTextModel.from_pretrained("openai/clip-vit-base-patch32")
 >>> tokenizer = CLIPTokenizer.from_pretrained("openai/clip-vit-base-patch32")
 
->>> inputs = tokenizer(["a photo of a cat", "a photo of a dog"],  padding=True, return_tensors="np")
+>>> inputs = tokenizer(["a photo of a cat", "a photo of a dog"], padding=True, return_tensors="np")
 
 >>> outputs = model(**inputs)
 >>> last_hidden_state = outputs.last_hidden_state
->>> pooler_output = outputs.pooler_output # pooled (EOS token) states
+>>> pooler_output = outputs.pooler_output  # pooled (EOS token) states
 ```
 
 
@@ -1707,7 +1713,7 @@ Example:
 
 >>> outputs = model(**inputs)
 >>> last_hidden_state = outputs.last_hidden_state
->>> pooler_output = outputs.pooler_output # pooled CLS states
+>>> pooler_output = outputs.pooler_output  # pooled CLS states
 ```
 
 
