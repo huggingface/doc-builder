@@ -359,34 +359,47 @@ Examples:
 ```python
 >>> # To load the default "wiki_dpr" dataset with 21M passages from wikipedia (index name is 'compressed' or 'exact')
 >>> from transformers import RagRetriever
->>> retriever = RagRetriever.from_pretrained('facebook/dpr-ctx_encoder-single-nq-base', dataset="wiki_dpr", index_name='compressed')
+
+>>> retriever = RagRetriever.from_pretrained(
+...     "facebook/dpr-ctx_encoder-single-nq-base", dataset="wiki_dpr", index_name="compressed"
+... )
 
 >>> # To load your own indexed dataset built with the datasets library. More info on how to build the indexed dataset in examples/rag/use_own_knowledge_dataset.py
 >>> from transformers import RagRetriever
->>> dataset = ...  # dataset must be a datasets.Datasets object with columns "title", "text" and "embeddings", and it must have a faiss index
->>> retriever = RagRetriever.from_pretrained('facebook/dpr-ctx_encoder-single-nq-base', indexed_dataset=dataset)
+
+>>> dataset = (
+...     ...
+>>> )  # dataset must be a datasets.Datasets object with columns "title", "text" and "embeddings", and it must have a faiss index
+>>> retriever = RagRetriever.from_pretrained("facebook/dpr-ctx_encoder-single-nq-base", indexed_dataset=dataset)
 
 >>> # To load your own indexed dataset built with the datasets library that was saved on disk. More info in examples/rag/use_own_knowledge_dataset.py
 >>> from transformers import RagRetriever
+
 >>> dataset_path = "path/to/my/dataset"  # dataset saved via *dataset.save_to_disk(...)*
 >>> index_path = "path/to/my/index.faiss"  # faiss index saved via *dataset.get_index("embeddings").save(...)*
->>> retriever = RagRetriever.from_pretrained('facebook/dpr-ctx_encoder-single-nq-base', index_name='custom', passages_path=dataset_path, index_path=index_path)
+>>> retriever = RagRetriever.from_pretrained(
+...     "facebook/dpr-ctx_encoder-single-nq-base",
+...     index_name="custom",
+...     passages_path=dataset_path,
+...     index_path=index_path,
+... )
 
 >>> # To load the legacy index built originally for Rag's paper
 >>> from transformers import RagRetriever
->>> retriever = RagRetriever.from_pretrained('facebook/dpr-ctx_encoder-single-nq-base', index_name='legacy')
+
+>>> retriever = RagRetriever.from_pretrained("facebook/dpr-ctx_encoder-single-nq-base", index_name="legacy")
 ```
 
 
 <div class="docstring">
-<docstring><name>init\_retrieval</name><anchor>transformers.RagRetriever.init_retrieval</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/rag/retrieval_rag.py#L446</source><parameters>[]</parameters></docstring>
+<docstring><name>init\_retrieval</name><anchor>transformers.RagRetriever.init_retrieval</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/rag/retrieval_rag.py#L459</source><parameters>[]</parameters></docstring>
 
 Retriever initialization function. It loads the index into memory.
 
 
 </div>
 <div class="docstring">
-<docstring><name>postprocess\_docs</name><anchor>transformers.RagRetriever.postprocess_docs</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/rag/retrieval_rag.py#L454</source><parameters>[{"name": "docs", "val": ""}, {"name": "input_strings", "val": ""}, {"name": "prefix", "val": ""}, {"name": "n_docs", "val": ""}, {"name": "return_tensors", "val": " = None"}]</parameters><paramsdesc>- **docs**  (`dict`) --
+<docstring><name>postprocess\_docs</name><anchor>transformers.RagRetriever.postprocess_docs</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/rag/retrieval_rag.py#L467</source><parameters>[{"name": "docs", "val": ""}, {"name": "input_strings", "val": ""}, {"name": "prefix", "val": ""}, {"name": "n_docs", "val": ""}, {"name": "return_tensors", "val": " = None"}]</parameters><paramsdesc>- **docs**  (`dict`) --
   Retrieved documents.
 - **input_strings** (`str`) --
   Input strings decoded by `preprocess_query`.
@@ -405,7 +418,7 @@ Postprocessing retrieved `docs` and combining them with `input_strings`.
 
 </div>
 <div class="docstring">
-<docstring><name>retrieve</name><anchor>transformers.RagRetriever.retrieve</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/rag/retrieval_rag.py#L526</source><parameters>[{"name": "question_hidden_states", "val": ": ndarray"}, {"name": "n_docs", "val": ": int"}]</parameters><paramsdesc>- **question_hidden_states** (`np.ndarray` of shape `(batch_size, vector_size)`) --
+<docstring><name>retrieve</name><anchor>transformers.RagRetriever.retrieve</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/rag/retrieval_rag.py#L539</source><parameters>[{"name": "question_hidden_states", "val": ": ndarray"}, {"name": "n_docs", "val": ": int"}]</parameters><paramsdesc>- **question_hidden_states** (`np.ndarray` of shape `(batch_size, vector_size)`) --
   A batch of query vectors to retrieve with.
 - **n_docs** (`int`) --
   The number of docs retrieved per query.</paramsdesc><paramgroups>0</paramgroups><rettype>`Tuple[np.ndarray, np.ndarray, List[dict]]`</rettype><retdesc>A tuple with the following objects:
@@ -430,7 +443,7 @@ Retrieves documents for specified `question_hidden_states`.
 
 <div class="docstring">
 
-<docstring><name>class transformers.RagModel</name><anchor>transformers.RagModel</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/rag/modeling_rag.py#L491</source><parameters>[{"name": "config", "val": ": typing.Optional[transformers.configuration_utils.PretrainedConfig] = None"}, {"name": "question_encoder", "val": ": typing.Optional[transformers.modeling_utils.PreTrainedModel] = None"}, {"name": "generator", "val": ": typing.Optional[transformers.modeling_utils.PreTrainedModel] = None"}, {"name": "retriever", "val": ": typing.Optional = None"}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **config** ([RagConfig](/docs/transformers/master/en/model_doc/rag#transformers.RagConfig)) --
+<docstring><name>class transformers.RagModel</name><anchor>transformers.RagModel</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/rag/modeling_rag.py#L494</source><parameters>[{"name": "config", "val": ": typing.Optional[transformers.configuration_utils.PretrainedConfig] = None"}, {"name": "question_encoder", "val": ": typing.Optional[transformers.modeling_utils.PreTrainedModel] = None"}, {"name": "generator", "val": ": typing.Optional[transformers.modeling_utils.PreTrainedModel] = None"}, {"name": "retriever", "val": ": typing.Optional = None"}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **config** ([RagConfig](/docs/transformers/master/en/model_doc/rag#transformers.RagConfig)) --
   Model configuration class with all the parameters of the model. Initializing with a config file does not
   load the weights associated with the model, only the configuration. Check out the
   [from_pretrained()](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel.from_pretrained) method to load the model weights.
@@ -478,7 +491,7 @@ and behavior.
 
 
 <div class="docstring">
-<docstring><name>forward</name><anchor>transformers.RagModel.forward</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/rag/modeling_rag.py#L534</source><parameters>[{"name": "input_ids", "val": " = None"}, {"name": "attention_mask", "val": " = None"}, {"name": "encoder_outputs", "val": " = None"}, {"name": "decoder_input_ids", "val": " = None"}, {"name": "decoder_attention_mask", "val": " = None"}, {"name": "past_key_values", "val": " = None"}, {"name": "doc_scores", "val": " = None"}, {"name": "context_input_ids", "val": " = None"}, {"name": "context_attention_mask", "val": " = None"}, {"name": "use_cache", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "output_retrieved", "val": " = None"}, {"name": "n_docs", "val": " = None"}]</parameters><paramsdesc>- **input_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`) --
+<docstring><name>forward</name><anchor>transformers.RagModel.forward</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/rag/modeling_rag.py#L537</source><parameters>[{"name": "input_ids", "val": " = None"}, {"name": "attention_mask", "val": " = None"}, {"name": "encoder_outputs", "val": " = None"}, {"name": "decoder_input_ids", "val": " = None"}, {"name": "decoder_attention_mask", "val": " = None"}, {"name": "past_key_values", "val": " = None"}, {"name": "doc_scores", "val": " = None"}, {"name": "context_input_ids", "val": " = None"}, {"name": "context_attention_mask", "val": " = None"}, {"name": "use_cache", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "output_retrieved", "val": " = None"}, {"name": "n_docs", "val": " = None"}]</parameters><paramsdesc>- **input_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`) --
   Indices of input sequence tokens in the vocabulary. [RagConfig](/docs/transformers/master/en/model_doc/rag#transformers.RagConfig), used to initialize the model, specifies
   which generator to use, it also specifies a compatible generator tokenizer. Use that tokenizer class to
   obtain the indices.
@@ -615,7 +628,9 @@ Example:
 >>> import torch
 
 >>> tokenizer = RagTokenizer.from_pretrained("facebook/rag-token-base")
->>> retriever = RagRetriever.from_pretrained("facebook/rag-token-base", index_name="exact", use_dummy_dataset=True)
+>>> retriever = RagRetriever.from_pretrained(
+...     "facebook/rag-token-base", index_name="exact", use_dummy_dataset=True
+... )
 >>> # initialize with RagRetriever to do everything in one forward call
 >>> model = RagModel.from_pretrained("facebook/rag-token-base", retriever=retriever)
 
@@ -629,7 +644,7 @@ Example:
 
 <div class="docstring">
 
-<docstring><name>class transformers.RagSequenceForGeneration</name><anchor>transformers.RagSequenceForGeneration</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/rag/modeling_rag.py#L733</source><parameters>[{"name": "config", "val": ": typing.Optional[transformers.configuration_utils.PretrainedConfig] = None"}, {"name": "question_encoder", "val": ": typing.Optional[transformers.modeling_utils.PreTrainedModel] = None"}, {"name": "generator", "val": ": typing.Optional[transformers.modeling_utils.PreTrainedModel] = None"}, {"name": "retriever", "val": ": typing.Optional = None"}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **config** ([RagConfig](/docs/transformers/master/en/model_doc/rag#transformers.RagConfig)) --
+<docstring><name>class transformers.RagSequenceForGeneration</name><anchor>transformers.RagSequenceForGeneration</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/rag/modeling_rag.py#L738</source><parameters>[{"name": "config", "val": ": typing.Optional[transformers.configuration_utils.PretrainedConfig] = None"}, {"name": "question_encoder", "val": ": typing.Optional[transformers.modeling_utils.PreTrainedModel] = None"}, {"name": "generator", "val": ": typing.Optional[transformers.modeling_utils.PreTrainedModel] = None"}, {"name": "retriever", "val": ": typing.Optional = None"}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **config** ([RagConfig](/docs/transformers/master/en/model_doc/rag#transformers.RagConfig)) --
   Model configuration class with all the parameters of the model. Initializing with a config file does not
   load the weights associated with the model, only the configuration. Check out the
   [from_pretrained()](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel.from_pretrained) method to load the model weights.
@@ -679,7 +694,7 @@ and behavior.
 
 
 <div class="docstring">
-<docstring><name>forward</name><anchor>transformers.RagSequenceForGeneration.forward</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/rag/modeling_rag.py#L762</source><parameters>[{"name": "input_ids", "val": " = None"}, {"name": "attention_mask", "val": " = None"}, {"name": "encoder_outputs", "val": " = None"}, {"name": "decoder_input_ids", "val": " = None"}, {"name": "decoder_attention_mask", "val": " = None"}, {"name": "past_key_values", "val": " = None"}, {"name": "context_input_ids", "val": " = None"}, {"name": "context_attention_mask", "val": " = None"}, {"name": "doc_scores", "val": " = None"}, {"name": "use_cache", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "output_retrieved", "val": " = None"}, {"name": "exclude_bos_score", "val": " = None"}, {"name": "reduce_loss", "val": " = None"}, {"name": "labels", "val": " = None"}, {"name": "n_docs", "val": " = None"}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **input_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`) --
+<docstring><name>forward</name><anchor>transformers.RagSequenceForGeneration.forward</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/rag/modeling_rag.py#L767</source><parameters>[{"name": "input_ids", "val": " = None"}, {"name": "attention_mask", "val": " = None"}, {"name": "encoder_outputs", "val": " = None"}, {"name": "decoder_input_ids", "val": " = None"}, {"name": "decoder_attention_mask", "val": " = None"}, {"name": "past_key_values", "val": " = None"}, {"name": "context_input_ids", "val": " = None"}, {"name": "context_attention_mask", "val": " = None"}, {"name": "doc_scores", "val": " = None"}, {"name": "use_cache", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "output_retrieved", "val": " = None"}, {"name": "exclude_bos_score", "val": " = None"}, {"name": "reduce_loss", "val": " = None"}, {"name": "labels", "val": " = None"}, {"name": "n_docs", "val": " = None"}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **input_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`) --
   Indices of input sequence tokens in the vocabulary. [RagConfig](/docs/transformers/master/en/model_doc/rag#transformers.RagConfig), used to initialize the model, specifies
   which generator to use, it also specifies a compatible generator tokenizer. Use that tokenizer class to
   obtain the indices.
@@ -826,13 +841,15 @@ Example:
 >>> import torch
 
 >>> tokenizer = RagTokenizer.from_pretrained("facebook/rag-sequence-nq")
->>> retriever = RagRetriever.from_pretrained("facebook/rag-sequence-nq", index_name="exact", use_dummy_dataset=True)
+>>> retriever = RagRetriever.from_pretrained(
+...     "facebook/rag-sequence-nq", index_name="exact", use_dummy_dataset=True
+... )
 >>> # initialize with RagRetriever to do everything in one forward call
 >>> model = RagSequenceForGeneration.from_pretrained("facebook/rag-token-nq", retriever=retriever)
 
 >>> inputs = tokenizer("How many people live in Paris?", return_tensors="pt")
 >>> with tokenizer.as_target_tokenizer():
-...    targets = tokenizer("In Paris, there are 10 million people.", return_tensors="pt")
+...     targets = tokenizer("In Paris, there are 10 million people.", return_tensors="pt")
 >>> input_ids = inputs["input_ids"]
 >>> labels = targets["input_ids"]
 >>> outputs = model(input_ids=input_ids, labels=labels)
@@ -843,14 +860,21 @@ Example:
 >>> question_hidden_states = model.question_encoder(input_ids)[0]
 >>> # 2. Retrieve
 >>> docs_dict = retriever(input_ids.numpy(), question_hidden_states.detach().numpy(), return_tensors="pt")
->>> doc_scores = torch.bmm(question_hidden_states.unsqueeze(1), docs_dict["retrieved_doc_embeds"].float().transpose(1, 2)).squeeze(1)
+>>> doc_scores = torch.bmm(
+...     question_hidden_states.unsqueeze(1), docs_dict["retrieved_doc_embeds"].float().transpose(1, 2)
+>>> ).squeeze(1)
 >>> # 3. Forward to generator
->>> outputs = model(context_input_ids=docs_dict["context_input_ids"], context_attention_mask=docs_dict["context_attention_mask"], doc_scores=doc_scores, decoder_input_ids=labels)
+>>> outputs = model(
+...     context_input_ids=docs_dict["context_input_ids"],
+...     context_attention_mask=docs_dict["context_attention_mask"],
+...     doc_scores=doc_scores,
+...     decoder_input_ids=labels,
+... )
 ```
 
 </div>
 <div class="docstring">
-<docstring><name>generate</name><anchor>transformers.RagSequenceForGeneration.generate</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/rag/modeling_rag.py#L895</source><parameters>[{"name": "input_ids", "val": ": typing.Optional[torch.LongTensor] = None"}, {"name": "attention_mask", "val": ": typing.Optional[torch.LongTensor] = None"}, {"name": "context_input_ids", "val": " = None"}, {"name": "context_attention_mask", "val": " = None"}, {"name": "doc_scores", "val": " = None"}, {"name": "do_deduplication", "val": " = None"}, {"name": "num_return_sequences", "val": " = None"}, {"name": "num_beams", "val": " = None"}, {"name": "n_docs", "val": " = None"}, {"name": "**model_kwargs", "val": ""}]</parameters><paramsdesc>- **input_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`, *optional*) --
+<docstring><name>generate</name><anchor>transformers.RagSequenceForGeneration.generate</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/rag/modeling_rag.py#L909</source><parameters>[{"name": "input_ids", "val": ": typing.Optional[torch.LongTensor] = None"}, {"name": "attention_mask", "val": ": typing.Optional[torch.LongTensor] = None"}, {"name": "context_input_ids", "val": " = None"}, {"name": "context_attention_mask", "val": " = None"}, {"name": "doc_scores", "val": " = None"}, {"name": "do_deduplication", "val": " = None"}, {"name": "num_return_sequences", "val": " = None"}, {"name": "num_beams", "val": " = None"}, {"name": "n_docs", "val": " = None"}, {"name": "**model_kwargs", "val": ""}]</parameters><paramsdesc>- **input_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`, *optional*) --
   The sequence used as a prompt for the generation. If `input_ids` is not passed, then
   `context_input_ids` has to be provided.
 - **attention_mask** (`torch.Tensor` of shape `(batch_size, sequence_length)`, *optional*) --
@@ -908,7 +932,7 @@ documentation for more information on how to set other generate input parameters
 
 <div class="docstring">
 
-<docstring><name>class transformers.RagTokenForGeneration</name><anchor>transformers.RagTokenForGeneration</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/rag/modeling_rag.py#L1121</source><parameters>[{"name": "config", "val": ": typing.Optional[transformers.configuration_utils.PretrainedConfig] = None"}, {"name": "question_encoder", "val": ": typing.Optional[transformers.modeling_utils.PreTrainedModel] = None"}, {"name": "generator", "val": ": typing.Optional[transformers.modeling_utils.PreTrainedModel] = None"}, {"name": "retriever", "val": ": typing.Optional = None"}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **config** ([RagConfig](/docs/transformers/master/en/model_doc/rag#transformers.RagConfig)) --
+<docstring><name>class transformers.RagTokenForGeneration</name><anchor>transformers.RagTokenForGeneration</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/rag/modeling_rag.py#L1135</source><parameters>[{"name": "config", "val": ": typing.Optional[transformers.configuration_utils.PretrainedConfig] = None"}, {"name": "question_encoder", "val": ": typing.Optional[transformers.modeling_utils.PreTrainedModel] = None"}, {"name": "generator", "val": ": typing.Optional[transformers.modeling_utils.PreTrainedModel] = None"}, {"name": "retriever", "val": ": typing.Optional = None"}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **config** ([RagConfig](/docs/transformers/master/en/model_doc/rag#transformers.RagConfig)) --
   Model configuration class with all the parameters of the model. Initializing with a config file does not
   load the weights associated with the model, only the configuration. Check out the
   [from_pretrained()](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel.from_pretrained) method to load the model weights.
@@ -958,7 +982,7 @@ and behavior.
 
 
 <div class="docstring">
-<docstring><name>forward</name><anchor>transformers.RagTokenForGeneration.forward</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/rag/modeling_rag.py#L1220</source><parameters>[{"name": "input_ids", "val": " = None"}, {"name": "attention_mask", "val": " = None"}, {"name": "encoder_outputs", "val": " = None"}, {"name": "decoder_input_ids", "val": " = None"}, {"name": "decoder_attention_mask", "val": " = None"}, {"name": "past_key_values", "val": " = None"}, {"name": "context_input_ids", "val": " = None"}, {"name": "context_attention_mask", "val": " = None"}, {"name": "doc_scores", "val": " = None"}, {"name": "use_cache", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "output_retrieved", "val": " = None"}, {"name": "do_marginalize", "val": " = None"}, {"name": "reduce_loss", "val": " = None"}, {"name": "labels", "val": " = None"}, {"name": "n_docs", "val": " = None"}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **input_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`) --
+<docstring><name>forward</name><anchor>transformers.RagTokenForGeneration.forward</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/rag/modeling_rag.py#L1234</source><parameters>[{"name": "input_ids", "val": " = None"}, {"name": "attention_mask", "val": " = None"}, {"name": "encoder_outputs", "val": " = None"}, {"name": "decoder_input_ids", "val": " = None"}, {"name": "decoder_attention_mask", "val": " = None"}, {"name": "past_key_values", "val": " = None"}, {"name": "context_input_ids", "val": " = None"}, {"name": "context_attention_mask", "val": " = None"}, {"name": "doc_scores", "val": " = None"}, {"name": "use_cache", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "output_retrieved", "val": " = None"}, {"name": "do_marginalize", "val": " = None"}, {"name": "reduce_loss", "val": " = None"}, {"name": "labels", "val": " = None"}, {"name": "n_docs", "val": " = None"}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **input_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`) --
   Indices of input sequence tokens in the vocabulary. [RagConfig](/docs/transformers/master/en/model_doc/rag#transformers.RagConfig), used to initialize the model, specifies
   which generator to use, it also specifies a compatible generator tokenizer. Use that tokenizer class to
   obtain the indices.
@@ -1105,13 +1129,15 @@ Example:
 >>> import torch
 
 >>> tokenizer = RagTokenizer.from_pretrained("facebook/rag-token-nq")
->>> retriever = RagRetriever.from_pretrained("facebook/rag-token-nq", index_name="exact", use_dummy_dataset=True)
+>>> retriever = RagRetriever.from_pretrained(
+...     "facebook/rag-token-nq", index_name="exact", use_dummy_dataset=True
+... )
 >>> # initialize with RagRetriever to do everything in one forward call
 >>> model = RagTokenForGeneration.from_pretrained("facebook/rag-token-nq", retriever=retriever)
 
 >>> inputs = tokenizer("How many people live in Paris?", return_tensors="pt")
 >>> with tokenizer.as_target_tokenizer():
-...    targets = tokenizer("In Paris, there are 10 million people.", return_tensors="pt")
+...     targets = tokenizer("In Paris, there are 10 million people.", return_tensors="pt")
 >>> input_ids = inputs["input_ids"]
 >>> labels = targets["input_ids"]
 >>> outputs = model(input_ids=input_ids, labels=labels)
@@ -1122,18 +1148,29 @@ Example:
 >>> question_hidden_states = model.question_encoder(input_ids)[0]
 >>> # 2. Retrieve
 >>> docs_dict = retriever(input_ids.numpy(), question_hidden_states.detach().numpy(), return_tensors="pt")
->>> doc_scores = torch.bmm(question_hidden_states.unsqueeze(1), docs_dict["retrieved_doc_embeds"].float().transpose(1, 2)).squeeze(1)
+>>> doc_scores = torch.bmm(
+...     question_hidden_states.unsqueeze(1), docs_dict["retrieved_doc_embeds"].float().transpose(1, 2)
+>>> ).squeeze(1)
 >>> # 3. Forward to generator
->>> outputs = model(context_input_ids=docs_dict["context_input_ids"], context_attention_mask=docs_dict["context_attention_mask"], doc_scores=doc_scores, decoder_input_ids=labels)
+>>> outputs = model(
+...     context_input_ids=docs_dict["context_input_ids"],
+...     context_attention_mask=docs_dict["context_attention_mask"],
+...     doc_scores=doc_scores,
+...     decoder_input_ids=labels,
+... )
 
 >>> # or directly generate
->>> generated = model.generate(context_input_ids=docs_dict["context_input_ids"], context_attention_mask=docs_dict["context_attention_mask"], doc_scores=doc_scores)
+>>> generated = model.generate(
+...     context_input_ids=docs_dict["context_input_ids"],
+...     context_attention_mask=docs_dict["context_attention_mask"],
+...     doc_scores=doc_scores,
+... )
 >>> generated_string = tokenizer.batch_decode(generated, skip_special_tokens=True)
 ```
 
 </div>
 <div class="docstring">
-<docstring><name>generate</name><anchor>transformers.RagTokenForGeneration.generate</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/rag/modeling_rag.py#L1349</source><parameters>[{"name": "input_ids", "val": ": typing.Optional[torch.LongTensor] = None"}, {"name": "attention_mask", "val": ": typing.Optional[torch.LongTensor] = None"}, {"name": "context_input_ids", "val": " = None"}, {"name": "context_attention_mask", "val": " = None"}, {"name": "doc_scores", "val": " = None"}, {"name": "max_length", "val": " = None"}, {"name": "min_length", "val": " = None"}, {"name": "early_stopping", "val": " = None"}, {"name": "use_cache", "val": " = None"}, {"name": "num_beams", "val": " = None"}, {"name": "num_beam_groups", "val": " = None"}, {"name": "diversity_penalty", "val": " = None"}, {"name": "bos_token_id", "val": " = None"}, {"name": "pad_token_id", "val": " = None"}, {"name": "eos_token_id", "val": " = None"}, {"name": "length_penalty", "val": " = None"}, {"name": "no_repeat_ngram_size", "val": " = None"}, {"name": "encoder_no_repeat_ngram_size", "val": " = None"}, {"name": "repetition_penalty", "val": " = None"}, {"name": "bad_words_ids", "val": " = None"}, {"name": "num_return_sequences", "val": " = None"}, {"name": "decoder_start_token_id", "val": " = None"}, {"name": "n_docs", "val": " = None"}, {"name": "prefix_allowed_tokens_fn", "val": ": typing.Callable[[int, torch.Tensor], typing.List[int]] = None"}, {"name": "logits_processor", "val": ": typing.Optional[transformers.generation_logits_process.LogitsProcessorList] = []"}, {"name": "stopping_criteria", "val": ": typing.Optional[transformers.generation_stopping_criteria.StoppingCriteriaList] = []"}, {"name": "forced_bos_token_id", "val": ": typing.Optional[int] = None"}, {"name": "forced_eos_token_id", "val": ": typing.Optional[int] = None"}, {"name": "remove_invalid_values", "val": ": typing.Optional[bool] = None"}, {"name": "**model_kwargs", "val": ""}]</parameters><paramsdesc>- **input_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`, *optional*) --
+<docstring><name>generate</name><anchor>transformers.RagTokenForGeneration.generate</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/rag/modeling_rag.py#L1376</source><parameters>[{"name": "input_ids", "val": ": typing.Optional[torch.LongTensor] = None"}, {"name": "attention_mask", "val": ": typing.Optional[torch.LongTensor] = None"}, {"name": "context_input_ids", "val": " = None"}, {"name": "context_attention_mask", "val": " = None"}, {"name": "doc_scores", "val": " = None"}, {"name": "max_length", "val": " = None"}, {"name": "min_length", "val": " = None"}, {"name": "early_stopping", "val": " = None"}, {"name": "use_cache", "val": " = None"}, {"name": "num_beams", "val": " = None"}, {"name": "num_beam_groups", "val": " = None"}, {"name": "diversity_penalty", "val": " = None"}, {"name": "bos_token_id", "val": " = None"}, {"name": "pad_token_id", "val": " = None"}, {"name": "eos_token_id", "val": " = None"}, {"name": "length_penalty", "val": " = None"}, {"name": "no_repeat_ngram_size", "val": " = None"}, {"name": "encoder_no_repeat_ngram_size", "val": " = None"}, {"name": "repetition_penalty", "val": " = None"}, {"name": "bad_words_ids", "val": " = None"}, {"name": "num_return_sequences", "val": " = None"}, {"name": "decoder_start_token_id", "val": " = None"}, {"name": "n_docs", "val": " = None"}, {"name": "prefix_allowed_tokens_fn", "val": ": typing.Callable[[int, torch.Tensor], typing.List[int]] = None"}, {"name": "logits_processor", "val": ": typing.Optional[transformers.generation_logits_process.LogitsProcessorList] = []"}, {"name": "stopping_criteria", "val": ": typing.Optional[transformers.generation_stopping_criteria.StoppingCriteriaList] = []"}, {"name": "forced_bos_token_id", "val": ": typing.Optional[int] = None"}, {"name": "forced_eos_token_id", "val": ": typing.Optional[int] = None"}, {"name": "remove_invalid_values", "val": ": typing.Optional[bool] = None"}, {"name": "**model_kwargs", "val": ""}]</parameters><paramsdesc>- **input_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`, *optional*) --
   The sequence used as a prompt for the generation. If `input_ids` is not passed, then
   `context_input_ids` has to be provided.
 - **attention_mask** (`torch.Tensor` of shape `(batch_size, sequence_length)`, *optional*) --
@@ -1248,7 +1285,7 @@ Implements RAG token decoding.
 
 <div class="docstring">
 
-<docstring><name>class transformers.TFRagModel</name><anchor>transformers.TFRagModel</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/rag/modeling_tf_rag.py#L475</source><parameters>[{"name": "*args", "val": ""}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **config** ([RagConfig](/docs/transformers/master/en/model_doc/rag#transformers.RagConfig)) --
+<docstring><name>class transformers.TFRagModel</name><anchor>transformers.TFRagModel</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/rag/modeling_tf_rag.py#L483</source><parameters>[{"name": "*args", "val": ""}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **config** ([RagConfig](/docs/transformers/master/en/model_doc/rag#transformers.RagConfig)) --
   Model configuration class with all the parameters of the model. Initializing with a config file does not
   load the weights associated with the model, only the configuration. Check out the
   [from_pretrained()](/docs/transformers/master/en/main_classes/model#transformers.TFPreTrainedModel.from_pretrained) method to load the model weights.
@@ -1299,7 +1336,7 @@ SavedModel format.
 
 
 <div class="docstring">
-<docstring><name>call</name><anchor>transformers.TFRagModel.call</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/rag/modeling_tf_rag.py#L526</source><parameters>[{"name": "input_ids", "val": " = None"}, {"name": "attention_mask", "val": " = None"}, {"name": "encoder_outputs", "val": " = None"}, {"name": "decoder_input_ids", "val": " = None"}, {"name": "decoder_attention_mask", "val": " = None"}, {"name": "past_key_values", "val": " = None"}, {"name": "doc_scores", "val": " = None"}, {"name": "context_input_ids", "val": " = None"}, {"name": "context_attention_mask", "val": " = None"}, {"name": "use_cache", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "output_retrieved", "val": " = None"}, {"name": "n_docs", "val": " = None"}, {"name": "return_dict", "val": " = None"}, {"name": "training", "val": " = False"}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **input_ids** (`tf.Tensor` of shape `(batch_size, sequence_length)`) --
+<docstring><name>call</name><anchor>transformers.TFRagModel.call</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/rag/modeling_tf_rag.py#L534</source><parameters>[{"name": "input_ids", "val": " = None"}, {"name": "attention_mask", "val": " = None"}, {"name": "encoder_outputs", "val": " = None"}, {"name": "decoder_input_ids", "val": " = None"}, {"name": "decoder_attention_mask", "val": " = None"}, {"name": "past_key_values", "val": " = None"}, {"name": "doc_scores", "val": " = None"}, {"name": "context_input_ids", "val": " = None"}, {"name": "context_attention_mask", "val": " = None"}, {"name": "use_cache", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "output_retrieved", "val": " = None"}, {"name": "n_docs", "val": " = None"}, {"name": "return_dict", "val": " = None"}, {"name": "training", "val": " = False"}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **input_ids** (`tf.Tensor` of shape `(batch_size, sequence_length)`) --
   Indices of input sequence tokens in the vocabulary. [RagConfig](/docs/transformers/master/en/model_doc/rag#transformers.RagConfig), used to initialize the model, specifies
   which generator to use, it also specifies a compatible generator tokenizer. Use that tokenizer class to
   obtain the indices.
@@ -1431,11 +1468,15 @@ Example:
 >>> import torch
 
 >>> tokenizer = RagTokenizer.from_pretrained("facebook/rag-token-base")
->>> retriever = RagRetriever.from_pretrained("facebook/rag-token-base", index_name="exact", use_dummy_dataset=True)
+>>> retriever = RagRetriever.from_pretrained(
+...     "facebook/rag-token-base", index_name="exact", use_dummy_dataset=True
+... )
 >>> # initialize with RagRetriever to do everything in one forward call
 >>> model = TFRagModel.from_pretrained("facebook/rag-token-base", retriever=retriever, from_pt=True)
 
->>> input_dict = tokenizer.prepare_seq2seq_batch("How many people live in Paris?", "In Paris, there are 10 million people.", return_tensors="tf")
+>>> input_dict = tokenizer.prepare_seq2seq_batch(
+...     "How many people live in Paris?", "In Paris, there are 10 million people.", return_tensors="tf"
+... )
 >>> input_ids = input_dict["input_ids"]
 >>> outputs = model(input_ids)
 ```
@@ -1446,7 +1487,7 @@ Example:
 
 <div class="docstring">
 
-<docstring><name>class transformers.TFRagSequenceForGeneration</name><anchor>transformers.TFRagSequenceForGeneration</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/rag/modeling_tf_rag.py#L1427</source><parameters>[{"name": "*args", "val": ""}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **config** ([RagConfig](/docs/transformers/master/en/model_doc/rag#transformers.RagConfig)) --
+<docstring><name>class transformers.TFRagSequenceForGeneration</name><anchor>transformers.TFRagSequenceForGeneration</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/rag/modeling_tf_rag.py#L1458</source><parameters>[{"name": "*args", "val": ""}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **config** ([RagConfig](/docs/transformers/master/en/model_doc/rag#transformers.RagConfig)) --
   Model configuration class with all the parameters of the model. Initializing with a config file does not
   load the weights associated with the model, only the configuration. Check out the
   [from_pretrained()](/docs/transformers/master/en/main_classes/model#transformers.TFPreTrainedModel.from_pretrained) method to load the model weights.
@@ -1499,7 +1540,7 @@ SavedModel format.
 
 
 <div class="docstring">
-<docstring><name>call</name><anchor>transformers.TFRagSequenceForGeneration.call</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/rag/modeling_tf_rag.py#L1475</source><parameters>[{"name": "input_ids", "val": " = None"}, {"name": "attention_mask", "val": " = None"}, {"name": "decoder_input_ids", "val": " = None"}, {"name": "decoder_attention_mask", "val": " = None"}, {"name": "encoder_outputs", "val": " = None"}, {"name": "past_key_values", "val": " = None"}, {"name": "doc_scores", "val": " = None"}, {"name": "context_input_ids", "val": " = None"}, {"name": "context_attention_mask", "val": " = None"}, {"name": "use_cache", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "output_retrieved", "val": " = None"}, {"name": "n_docs", "val": " = None"}, {"name": "exclude_bos_score", "val": " = None"}, {"name": "labels", "val": " = None"}, {"name": "reduce_loss", "val": " = None"}, {"name": "return_dict", "val": " = None"}, {"name": "training", "val": " = False"}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **input_ids** (`tf.Tensor` of shape `(batch_size, sequence_length)`) --
+<docstring><name>call</name><anchor>transformers.TFRagSequenceForGeneration.call</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/rag/modeling_tf_rag.py#L1506</source><parameters>[{"name": "input_ids", "val": " = None"}, {"name": "attention_mask", "val": " = None"}, {"name": "decoder_input_ids", "val": " = None"}, {"name": "decoder_attention_mask", "val": " = None"}, {"name": "encoder_outputs", "val": " = None"}, {"name": "past_key_values", "val": " = None"}, {"name": "doc_scores", "val": " = None"}, {"name": "context_input_ids", "val": " = None"}, {"name": "context_attention_mask", "val": " = None"}, {"name": "use_cache", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "output_retrieved", "val": " = None"}, {"name": "n_docs", "val": " = None"}, {"name": "exclude_bos_score", "val": " = None"}, {"name": "labels", "val": " = None"}, {"name": "reduce_loss", "val": " = None"}, {"name": "return_dict", "val": " = None"}, {"name": "training", "val": " = False"}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **input_ids** (`tf.Tensor` of shape `(batch_size, sequence_length)`) --
   Indices of input sequence tokens in the vocabulary. [RagConfig](/docs/transformers/master/en/model_doc/rag#transformers.RagConfig), used to initialize the model, specifies
   which generator to use, it also specifies a compatible generator tokenizer. Use that tokenizer class to
   obtain the indices.
@@ -1644,11 +1685,17 @@ Example:
 >>> from transformers import RagTokenizer, RagRetriever, TFRagSequenceForGeneration
 
 >>> tokenizer = RagTokenizer.from_pretrained("facebook/rag-sequence-nq")
->>> retriever = RagRetriever.from_pretrained("facebook/rag-sequence-nq", index_name="exact", use_dummy_dataset=True)
+>>> retriever = RagRetriever.from_pretrained(
+...     "facebook/rag-sequence-nq", index_name="exact", use_dummy_dataset=True
+... )
 >>> # initialize with RagRetriever to do everything in one forward call
->>> model = TFRagRagSequenceForGeneration.from_pretrained("facebook/rag-sequence-nq", retriever=retriever, from_pt=True)
+>>> model = TFRagRagSequenceForGeneration.from_pretrained(
+...     "facebook/rag-sequence-nq", retriever=retriever, from_pt=True
+... )
 
->>> input_dict = tokenizer.prepare_seq2seq_batch("How many people live in Paris?", "In Paris, there are 10 million people.", return_tensors="tf")
+>>> input_dict = tokenizer.prepare_seq2seq_batch(
+...     "How many people live in Paris?", "In Paris, there are 10 million people.", return_tensors="tf"
+... )
 >>> outputs = model(input_dict, output_retrieved=True)
 
 >>> # or use retriever separately
@@ -1657,18 +1704,33 @@ Example:
 >>> question_hidden_states = model.question_encoder(input_ids)[0]
 >>> # 2. Retrieve
 >>> docs_dict = retriever(input_ids.numpy(), question_hidden_states.numpy(), return_tensors="tf")
->>> doc_scores = tf.squeeze(tf.matmul(tf.expand_dims(question_hidden_states, axis=1), docs_dict["retrieved_doc_embeds"], transpose_b=True), axis=1)
+>>> doc_scores = tf.squeeze(
+...     tf.matmul(
+...         tf.expand_dims(question_hidden_states, axis=1), docs_dict["retrieved_doc_embeds"], transpose_b=True
+...     ),
+...     axis=1,
+... )
 >>> # 3. Forward to generator
->>> outputs = model(inputs=None, context_input_ids=docs_dict["context_input_ids"], context_attention_mask=docs_dict["context_attention_mask"], doc_scores=doc_scores, decoder_input_ids=input_dict["labels"])
+>>> outputs = model(
+...     inputs=None,
+...     context_input_ids=docs_dict["context_input_ids"],
+...     context_attention_mask=docs_dict["context_attention_mask"],
+...     doc_scores=doc_scores,
+...     decoder_input_ids=input_dict["labels"],
+... )
 
 >>> # or directly generate
->>> generated = model.generate(context_input_ids=docs_dict["context_input_ids"], context_attention_mask=docs_dict["context_attention_mask"], doc_scores=doc_scores)
+>>> generated = model.generate(
+...     context_input_ids=docs_dict["context_input_ids"],
+...     context_attention_mask=docs_dict["context_attention_mask"],
+...     doc_scores=doc_scores,
+... )
 >>> generated_string = tokenizer.batch_decode(generated, skip_special_tokens=True)
 ```
 
 </div>
 <div class="docstring">
-<docstring><name>generate</name><anchor>transformers.TFRagSequenceForGeneration.generate</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/rag/modeling_tf_rag.py#L1712</source><parameters>[{"name": "input_ids", "val": ": typing.Optional[tensorflow.python.framework.ops.Tensor] = None"}, {"name": "attention_mask", "val": ": typing.Optional[tensorflow.python.framework.ops.Tensor] = None"}, {"name": "context_input_ids", "val": " = None"}, {"name": "context_attention_mask", "val": " = None"}, {"name": "doc_scores", "val": " = None"}, {"name": "do_deduplication", "val": " = None"}, {"name": "num_return_sequences", "val": " = None"}, {"name": "num_beams", "val": " = None"}, {"name": "n_docs", "val": " = None"}, {"name": "**model_kwargs", "val": ""}]</parameters><paramsdesc>- **input_ids** (`tf.Tensor` of shape `(batch_size, sequence_length)`, *optional*) --
+<docstring><name>generate</name><anchor>transformers.TFRagSequenceForGeneration.generate</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/rag/modeling_tf_rag.py#L1764</source><parameters>[{"name": "input_ids", "val": ": typing.Optional[tensorflow.python.framework.ops.Tensor] = None"}, {"name": "attention_mask", "val": ": typing.Optional[tensorflow.python.framework.ops.Tensor] = None"}, {"name": "context_input_ids", "val": " = None"}, {"name": "context_attention_mask", "val": " = None"}, {"name": "doc_scores", "val": " = None"}, {"name": "do_deduplication", "val": " = None"}, {"name": "num_return_sequences", "val": " = None"}, {"name": "num_beams", "val": " = None"}, {"name": "n_docs", "val": " = None"}, {"name": "**model_kwargs", "val": ""}]</parameters><paramsdesc>- **input_ids** (`tf.Tensor` of shape `(batch_size, sequence_length)`, *optional*) --
   The sequence used as a prompt for the generation. If `input_ids` is not passed, then
   `context_input_ids` has to be provided.
 - **attention_mask** (`tf.Tensor` of shape `(batch_size, sequence_length)`, *optional*) --
@@ -1720,7 +1782,7 @@ documentation for more information on how to set other generate input parameters
 
 <div class="docstring">
 
-<docstring><name>class transformers.TFRagTokenForGeneration</name><anchor>transformers.TFRagTokenForGeneration</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/rag/modeling_tf_rag.py#L739</source><parameters>[{"name": "*args", "val": ""}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **config** ([RagConfig](/docs/transformers/master/en/model_doc/rag#transformers.RagConfig)) --
+<docstring><name>class transformers.TFRagTokenForGeneration</name><anchor>transformers.TFRagTokenForGeneration</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/rag/modeling_tf_rag.py#L751</source><parameters>[{"name": "*args", "val": ""}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **config** ([RagConfig](/docs/transformers/master/en/model_doc/rag#transformers.RagConfig)) --
   Model configuration class with all the parameters of the model. Initializing with a config file does not
   load the weights associated with the model, only the configuration. Check out the
   [from_pretrained()](/docs/transformers/master/en/main_classes/model#transformers.TFPreTrainedModel.from_pretrained) method to load the model weights.
@@ -1773,7 +1835,7 @@ SavedModel format.
 
 
 <div class="docstring">
-<docstring><name>call</name><anchor>transformers.TFRagTokenForGeneration.call</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/rag/modeling_tf_rag.py#L886</source><parameters>[{"name": "input_ids", "val": " = None"}, {"name": "attention_mask", "val": " = None"}, {"name": "decoder_input_ids", "val": " = None"}, {"name": "decoder_attention_mask", "val": " = None"}, {"name": "encoder_outputs", "val": " = None"}, {"name": "past_key_values", "val": " = None"}, {"name": "doc_scores", "val": " = None"}, {"name": "context_input_ids", "val": " = None"}, {"name": "context_attention_mask", "val": " = None"}, {"name": "use_cache", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "output_retrieved", "val": " = None"}, {"name": "n_docs", "val": " = None"}, {"name": "do_marginalize", "val": " = None"}, {"name": "labels", "val": " = None"}, {"name": "reduce_loss", "val": " = None"}, {"name": "return_dict", "val": " = None"}, {"name": "training", "val": " = False"}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **input_ids** (`tf.Tensor` of shape `(batch_size, sequence_length)`) --
+<docstring><name>call</name><anchor>transformers.TFRagTokenForGeneration.call</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/rag/modeling_tf_rag.py#L898</source><parameters>[{"name": "input_ids", "val": " = None"}, {"name": "attention_mask", "val": " = None"}, {"name": "decoder_input_ids", "val": " = None"}, {"name": "decoder_attention_mask", "val": " = None"}, {"name": "encoder_outputs", "val": " = None"}, {"name": "past_key_values", "val": " = None"}, {"name": "doc_scores", "val": " = None"}, {"name": "context_input_ids", "val": " = None"}, {"name": "context_attention_mask", "val": " = None"}, {"name": "use_cache", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "output_retrieved", "val": " = None"}, {"name": "n_docs", "val": " = None"}, {"name": "do_marginalize", "val": " = None"}, {"name": "labels", "val": " = None"}, {"name": "reduce_loss", "val": " = None"}, {"name": "return_dict", "val": " = None"}, {"name": "training", "val": " = False"}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **input_ids** (`tf.Tensor` of shape `(batch_size, sequence_length)`) --
   Indices of input sequence tokens in the vocabulary. [RagConfig](/docs/transformers/master/en/model_doc/rag#transformers.RagConfig), used to initialize the model, specifies
   which generator to use, it also specifies a compatible generator tokenizer. Use that tokenizer class to
   obtain the indices.
@@ -1918,11 +1980,15 @@ Example:
 >>> from transformers import RagTokenizer, RagRetriever, TFRagTokenForGeneration
 
 >>> tokenizer = RagTokenizer.from_pretrained("facebook/rag-token-nq")
->>> retriever = RagRetriever.from_pretrained("facebook/rag-token-nq", index_name="exact", use_dummy_dataset=True)
+>>> retriever = RagRetriever.from_pretrained(
+...     "facebook/rag-token-nq", index_name="exact", use_dummy_dataset=True
+... )
 >>> # initialize with RagRetriever to do everything in one forward call
 >>> model = TFRagTokenForGeneration.from_pretrained("facebook/rag-token-nq", retriever=retriever, from_pt=True)
 
->>> input_dict = tokenizer.prepare_seq2seq_batch("How many people live in Paris?", "In Paris, there are 10 million people.", return_tensors="tf")
+>>> input_dict = tokenizer.prepare_seq2seq_batch(
+...     "How many people live in Paris?", "In Paris, there are 10 million people.", return_tensors="tf"
+... )
 >>> outputs = model(input_dict, output_retrieved=True)
 
 >>> # or use retriever separately
@@ -1931,18 +1997,33 @@ Example:
 >>> question_hidden_states = model.question_encoder(input_ids)[0]
 >>> # 2. Retrieve
 >>> docs_dict = retriever(input_ids.numpy(), question_hidden_states.numpy(), return_tensors="tf")
->>> doc_scores = tf.squeeze(tf.matmul(tf.expand_dims(question_hidden_states, axis=1), docs_dict["retrieved_doc_embeds"], transpose_b=True), axis=1)
+>>> doc_scores = tf.squeeze(
+...     tf.matmul(
+...         tf.expand_dims(question_hidden_states, axis=1), docs_dict["retrieved_doc_embeds"], transpose_b=True
+...     ),
+...     axis=1,
+... )
 >>> # 3. Forward to generator
->>> outputs = model(inputs=None, context_input_ids=docs_dict["context_input_ids"], context_attention_mask=docs_dict["context_attention_mask"], doc_scores=doc_scores, decoder_input_ids=input_dict["labels"])
+>>> outputs = model(
+...     inputs=None,
+...     context_input_ids=docs_dict["context_input_ids"],
+...     context_attention_mask=docs_dict["context_attention_mask"],
+...     doc_scores=doc_scores,
+...     decoder_input_ids=input_dict["labels"],
+... )
 
 >>> # or directly generate
->>> generated = model.generate(context_input_ids=docs_dict["context_input_ids"], context_attention_mask=docs_dict["context_attention_mask"], doc_scores=doc_scores)
+>>> generated = model.generate(
+...     context_input_ids=docs_dict["context_input_ids"],
+...     context_attention_mask=docs_dict["context_attention_mask"],
+...     doc_scores=doc_scores,
+... )
 >>> generated_string = tokenizer.batch_decode(generated, skip_special_tokens=True)
 ```
 
 </div>
 <div class="docstring">
-<docstring><name>generate</name><anchor>transformers.TFRagTokenForGeneration.generate</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/rag/modeling_tf_rag.py#L1045</source><parameters>[{"name": "input_ids", "val": ": typing.Optional[tensorflow.python.framework.ops.Tensor] = None"}, {"name": "attention_mask", "val": ": typing.Optional[tensorflow.python.framework.ops.Tensor] = None"}, {"name": "context_input_ids", "val": " = None"}, {"name": "context_attention_mask", "val": " = None"}, {"name": "doc_scores", "val": " = None"}, {"name": "max_length", "val": " = None"}, {"name": "min_length", "val": " = None"}, {"name": "early_stopping", "val": " = None"}, {"name": "use_cache", "val": " = None"}, {"name": "num_beams", "val": " = None"}, {"name": "bos_token_id", "val": " = None"}, {"name": "pad_token_id", "val": " = None"}, {"name": "eos_token_id", "val": " = None"}, {"name": "length_penalty", "val": " = None"}, {"name": "no_repeat_ngram_size", "val": " = None"}, {"name": "bad_words_ids", "val": " = None"}, {"name": "num_return_sequences", "val": " = None"}, {"name": "decoder_start_token_id", "val": " = None"}, {"name": "n_docs", "val": " = None"}, {"name": "output_scores", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "return_dict_in_generate", "val": " = None"}, {"name": "**model_kwargs", "val": ""}]</parameters><paramsdesc>- **input_ids** (`tf.Tensor` of shape `(batch_size, sequence_length)`, *optional*) --
+<docstring><name>generate</name><anchor>transformers.TFRagTokenForGeneration.generate</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/rag/modeling_tf_rag.py#L1076</source><parameters>[{"name": "input_ids", "val": ": typing.Optional[tensorflow.python.framework.ops.Tensor] = None"}, {"name": "attention_mask", "val": ": typing.Optional[tensorflow.python.framework.ops.Tensor] = None"}, {"name": "context_input_ids", "val": " = None"}, {"name": "context_attention_mask", "val": " = None"}, {"name": "doc_scores", "val": " = None"}, {"name": "max_length", "val": " = None"}, {"name": "min_length", "val": " = None"}, {"name": "early_stopping", "val": " = None"}, {"name": "use_cache", "val": " = None"}, {"name": "num_beams", "val": " = None"}, {"name": "bos_token_id", "val": " = None"}, {"name": "pad_token_id", "val": " = None"}, {"name": "eos_token_id", "val": " = None"}, {"name": "length_penalty", "val": " = None"}, {"name": "no_repeat_ngram_size", "val": " = None"}, {"name": "bad_words_ids", "val": " = None"}, {"name": "num_return_sequences", "val": " = None"}, {"name": "decoder_start_token_id", "val": " = None"}, {"name": "n_docs", "val": " = None"}, {"name": "output_scores", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "return_dict_in_generate", "val": " = None"}, {"name": "**model_kwargs", "val": ""}]</parameters><paramsdesc>- **input_ids** (`tf.Tensor` of shape `(batch_size, sequence_length)`, *optional*) --
   The sequence used as a prompt for the generation. If `input_ids` is not passed, then
   `context_input_ids` has to be provided.
 - **attention_mask** (`tf.Tensor` of shape `(batch_size, sequence_length)`, *optional*) --

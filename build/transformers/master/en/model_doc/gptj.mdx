@@ -67,7 +67,9 @@ Tips:
 >>> from transformers import GPTJForCausalLM
 >>> import torch
 
->>> model = GPTJForCausalLM.from_pretrained("EleutherAI/gpt-j-6B", revision="float16", torch_dtype=torch.float16, low_cpu_mem_usage=True)
+>>> model = GPTJForCausalLM.from_pretrained(
+...     "EleutherAI/gpt-j-6B", revision="float16", torch_dtype=torch.float16, low_cpu_mem_usage=True
+... )
 ```
 
 - The model should fit on 16GB GPU for inference. For training/fine-tuning it would take much more GPU RAM. Adam
@@ -90,16 +92,24 @@ model.
 
 ```python
 >>> from transformers import AutoModelForCausalLM, AutoTokenizer
+
 >>> model = AutoModelForCausalLM.from_pretrained("EleutherAI/gpt-j-6B")
 >>> tokenizer = AutoTokenizer.from_pretrained("EleutherAI/gpt-j-6B")
 
->>> prompt = "In a shocking finding, scientists discovered a herd of unicorns living in a remote, " \
-...          "previously unexplored valley, in the Andes Mountains. Even more surprising to the " \
-...          "researchers was the fact that the unicorns spoke perfect English."
+>>> prompt = (
+...     "In a shocking finding, scientists discovered a herd of unicorns living in a remote, "
+...     "previously unexplored valley, in the Andes Mountains. Even more surprising to the "
+...     "researchers was the fact that the unicorns spoke perfect English."
+... )
 
 >>> input_ids = tokenizer(prompt, return_tensors="pt").input_ids
 
->>> gen_tokens = model.generate(input_ids, do_sample=True, temperature=0.9, max_length=100,)
+>>> gen_tokens = model.generate(
+...     input_ids,
+...     do_sample=True,
+...     temperature=0.9,
+...     max_length=100,
+... )
 >>> gen_text = tokenizer.batch_decode(gen_tokens)[0]
 ```
 
@@ -112,13 +122,20 @@ model.
 >>> model = GPTJForCausalLM.from_pretrained("EleutherAI/gpt-j-6B", torch_dtype=torch.float16)
 >>> tokenizer = AutoTokenizer.from_pretrained("EleutherAI/gpt-j-6B")
 
->>> prompt = "In a shocking finding, scientists discovered a herd of unicorns living in a remote, " \
-...          "previously unexplored valley, in the Andes Mountains. Even more surprising to the " \
-...          "researchers was the fact that the unicorns spoke perfect English."
+>>> prompt = (
+...     "In a shocking finding, scientists discovered a herd of unicorns living in a remote, "
+...     "previously unexplored valley, in the Andes Mountains. Even more surprising to the "
+...     "researchers was the fact that the unicorns spoke perfect English."
+... )
 
 >>> input_ids = tokenizer(prompt, return_tensors="pt").input_ids
 
->>> gen_tokens = model.generate(input_ids, do_sample=True, temperature=0.9, max_length=100,)
+>>> gen_tokens = model.generate(
+...     input_ids,
+...     do_sample=True,
+...     temperature=0.9,
+...     max_length=100,
+... )
 >>> gen_text = tokenizer.batch_decode(gen_tokens)[0]
 ```
 
@@ -189,7 +206,7 @@ Example:
 
 <div class="docstring">
 
-<docstring><name>class transformers.GPTJModel</name><anchor>transformers.GPTJModel</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/gptj/modeling_gptj.py#L446</source><parameters>[{"name": "config", "val": ""}]</parameters><paramsdesc>- **config** ([GPTJConfig](/docs/transformers/master/en/model_doc/gptj#transformers.GPTJConfig)) -- Model configuration class with all the parameters of the model.
+<docstring><name>class transformers.GPTJModel</name><anchor>transformers.GPTJModel</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/gptj/modeling_gptj.py#L450</source><parameters>[{"name": "config", "val": ""}]</parameters><paramsdesc>- **config** ([GPTJConfig](/docs/transformers/master/en/model_doc/gptj#transformers.GPTJConfig)) -- Model configuration class with all the parameters of the model.
   Initializing with a config file does not load the weights associated with the model, only the
   configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel.from_pretrained) method to load the model weights.</paramsdesc><paramgroups>0</paramgroups></docstring>
 The bare GPT-J Model transformer outputting raw hidden-states without any specific head on top.
@@ -202,7 +219,7 @@ behavior.
 
 
 <div class="docstring">
-<docstring><name>forward</name><anchor>transformers.GPTJModel.forward</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/gptj/modeling_gptj.py#L502</source><parameters>[{"name": "input_ids", "val": " = None"}, {"name": "past_key_values", "val": " = None"}, {"name": "attention_mask", "val": " = None"}, {"name": "token_type_ids", "val": " = None"}, {"name": "position_ids", "val": " = None"}, {"name": "head_mask", "val": " = None"}, {"name": "inputs_embeds", "val": " = None"}, {"name": "use_cache", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "return_dict", "val": " = None"}]</parameters><paramsdesc>- **input_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`) --
+<docstring><name>forward</name><anchor>transformers.GPTJModel.forward</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/gptj/modeling_gptj.py#L506</source><parameters>[{"name": "input_ids", "val": " = None"}, {"name": "past_key_values", "val": " = None"}, {"name": "attention_mask", "val": " = None"}, {"name": "token_type_ids", "val": " = None"}, {"name": "position_ids", "val": " = None"}, {"name": "head_mask", "val": " = None"}, {"name": "inputs_embeds", "val": " = None"}, {"name": "use_cache", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "return_dict", "val": " = None"}]</parameters><paramsdesc>- **input_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`) --
   Indices of input sequence tokens in the vocabulary.
 
   Indices can be obtained using `GPTJTokenizer`. See [PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.encode) and
@@ -293,8 +310,8 @@ Example:
 >>> from transformers import GPT2Tokenizer, GPTJModel
 >>> import torch
 
->>> tokenizer = GPT2Tokenizer.from_pretrained('EleutherAI/gpt-j-6B')
->>> model = GPTJModel.from_pretrained('EleutherAI/gpt-j-6B')
+>>> tokenizer = GPT2Tokenizer.from_pretrained("EleutherAI/gpt-j-6B")
+>>> model = GPTJModel.from_pretrained("EleutherAI/gpt-j-6B")
 
 >>> inputs = tokenizer("Hello, my dog is cute", return_tensors="pt")
 >>> outputs = model(**inputs)
@@ -309,7 +326,7 @@ Example:
 
 <div class="docstring">
 
-<docstring><name>class transformers.GPTJForCausalLM</name><anchor>transformers.GPTJForCausalLM</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/gptj/modeling_gptj.py#L687</source><parameters>[{"name": "config", "val": ""}]</parameters><paramsdesc>- **config** ([GPTJConfig](/docs/transformers/master/en/model_doc/gptj#transformers.GPTJConfig)) -- Model configuration class with all the parameters of the model.
+<docstring><name>class transformers.GPTJForCausalLM</name><anchor>transformers.GPTJForCausalLM</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/gptj/modeling_gptj.py#L691</source><parameters>[{"name": "config", "val": ""}]</parameters><paramsdesc>- **config** ([GPTJConfig](/docs/transformers/master/en/model_doc/gptj#transformers.GPTJConfig)) -- Model configuration class with all the parameters of the model.
   Initializing with a config file does not load the weights associated with the model, only the
   configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel.from_pretrained) method to load the model weights.</paramsdesc><paramgroups>0</paramgroups></docstring>
 
@@ -325,7 +342,7 @@ behavior.
 
 
 <div class="docstring">
-<docstring><name>forward</name><anchor>transformers.GPTJForCausalLM.forward</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/gptj/modeling_gptj.py#L756</source><parameters>[{"name": "input_ids", "val": " = None"}, {"name": "past_key_values", "val": " = None"}, {"name": "attention_mask", "val": " = None"}, {"name": "token_type_ids", "val": " = None"}, {"name": "position_ids", "val": " = None"}, {"name": "head_mask", "val": " = None"}, {"name": "inputs_embeds", "val": " = None"}, {"name": "labels", "val": " = None"}, {"name": "use_cache", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "return_dict", "val": " = None"}]</parameters><paramsdesc>- **input_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`) --
+<docstring><name>forward</name><anchor>transformers.GPTJForCausalLM.forward</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/gptj/modeling_gptj.py#L760</source><parameters>[{"name": "input_ids", "val": " = None"}, {"name": "past_key_values", "val": " = None"}, {"name": "attention_mask", "val": " = None"}, {"name": "token_type_ids", "val": " = None"}, {"name": "position_ids", "val": " = None"}, {"name": "head_mask", "val": " = None"}, {"name": "inputs_embeds", "val": " = None"}, {"name": "labels", "val": " = None"}, {"name": "use_cache", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "return_dict", "val": " = None"}]</parameters><paramsdesc>- **input_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`) --
   Indices of input sequence tokens in the vocabulary.
 
   Indices can be obtained using `GPTJTokenizer`. See [PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.encode) and
@@ -416,8 +433,8 @@ Example:
 >>> import torch
 >>> from transformers import GPT2Tokenizer, GPTJForCausalLM
 
->>> tokenizer = GPT2Tokenizer.from_pretrained('EleutherAI/gpt-j-6B')
->>> model = GPTJForCausalLM.from_pretrained('EleutherAI/gpt-j-6B')
+>>> tokenizer = GPT2Tokenizer.from_pretrained("EleutherAI/gpt-j-6B")
+>>> model = GPTJForCausalLM.from_pretrained("EleutherAI/gpt-j-6B")
 
 >>> inputs = tokenizer("Hello, my dog is cute", return_tensors="pt")
 >>> outputs = model(**inputs, labels=inputs["input_ids"])
@@ -432,7 +449,7 @@ Example:
 
 <div class="docstring">
 
-<docstring><name>class transformers.GPTJForSequenceClassification</name><anchor>transformers.GPTJForSequenceClassification</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/gptj/modeling_gptj.py#L862</source><parameters>[{"name": "config", "val": ""}]</parameters><paramsdesc>- **config** ([GPTJConfig](/docs/transformers/master/en/model_doc/gptj#transformers.GPTJConfig)) -- Model configuration class with all the parameters of the model.
+<docstring><name>class transformers.GPTJForSequenceClassification</name><anchor>transformers.GPTJForSequenceClassification</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/gptj/modeling_gptj.py#L866</source><parameters>[{"name": "config", "val": ""}]</parameters><paramsdesc>- **config** ([GPTJConfig](/docs/transformers/master/en/model_doc/gptj#transformers.GPTJConfig)) -- Model configuration class with all the parameters of the model.
   Initializing with a config file does not load the weights associated with the model, only the
   configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel.from_pretrained) method to load the model weights.</paramsdesc><paramgroups>0</paramgroups></docstring>
 
@@ -456,7 +473,7 @@ behavior.
 
 
 <div class="docstring">
-<docstring><name>forward</name><anchor>transformers.GPTJForSequenceClassification.forward</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/gptj/modeling_gptj.py#L878</source><parameters>[{"name": "input_ids", "val": " = None"}, {"name": "past_key_values", "val": " = None"}, {"name": "attention_mask", "val": " = None"}, {"name": "token_type_ids", "val": " = None"}, {"name": "position_ids", "val": " = None"}, {"name": "head_mask", "val": " = None"}, {"name": "inputs_embeds", "val": " = None"}, {"name": "labels", "val": " = None"}, {"name": "use_cache", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "return_dict", "val": " = None"}]</parameters><paramsdesc>- **input_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`) --
+<docstring><name>forward</name><anchor>transformers.GPTJForSequenceClassification.forward</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/gptj/modeling_gptj.py#L882</source><parameters>[{"name": "input_ids", "val": " = None"}, {"name": "past_key_values", "val": " = None"}, {"name": "attention_mask", "val": " = None"}, {"name": "token_type_ids", "val": " = None"}, {"name": "position_ids", "val": " = None"}, {"name": "head_mask", "val": " = None"}, {"name": "inputs_embeds", "val": " = None"}, {"name": "labels", "val": " = None"}, {"name": "use_cache", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "return_dict", "val": " = None"}]</parameters><paramsdesc>- **input_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`) --
   Indices of input sequence tokens in the vocabulary.
 
   Indices can be obtained using `GPTJTokenizer`. See [PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.encode) and
@@ -547,11 +564,11 @@ Example of single-label classification:
 >>> from transformers import GPT2Tokenizer, GPTJForSequenceClassification
 >>> import torch
 
->>> tokenizer = GPT2Tokenizer.from_pretrained('EleutherAI/gpt-j-6B')
->>> model = GPTJForSequenceClassification.from_pretrained('EleutherAI/gpt-j-6B')
+>>> tokenizer = GPT2Tokenizer.from_pretrained("EleutherAI/gpt-j-6B")
+>>> model = GPTJForSequenceClassification.from_pretrained("EleutherAI/gpt-j-6B")
 
 >>> inputs = tokenizer("Hello, my dog is cute", return_tensors="pt")
->>> labels = torch.tensor([1]).unsqueeze(0) # Batch size 1
+>>> labels = torch.tensor([1]).unsqueeze(0)  # Batch size 1
 >>> outputs = model(**inputs, labels=labels)
 >>> loss = outputs.loss
 >>> logits = outputs.logits
@@ -563,11 +580,11 @@ Example of multi-label classification:
 >>> from transformers import GPT2Tokenizer, GPTJForSequenceClassification
 >>> import torch
 
->>> tokenizer = GPT2Tokenizer.from_pretrained('EleutherAI/gpt-j-6B')
->>> model = GPTJForSequenceClassification.from_pretrained('EleutherAI/gpt-j-6B', problem_type="multi_label_classification")
+>>> tokenizer = GPT2Tokenizer.from_pretrained("EleutherAI/gpt-j-6B")
+>>> model = GPTJForSequenceClassification.from_pretrained("EleutherAI/gpt-j-6B", problem_type="multi_label_classification")
 
 >>> inputs = tokenizer("Hello, my dog is cute", return_tensors="pt")
->>> labels = torch.tensor([[1, 1]], dtype=torch.float) # need dtype=float for BCEWithLogitsLoss
+>>> labels = torch.tensor([[1, 1]], dtype=torch.float)  # need dtype=float for BCEWithLogitsLoss
 >>> outputs = model(**inputs, labels=labels)
 >>> loss = outputs.loss
 >>> logits = outputs.logits
@@ -580,7 +597,7 @@ Example of multi-label classification:
 
 <div class="docstring">
 
-<docstring><name>class transformers.GPTJForQuestionAnswering</name><anchor>transformers.GPTJForQuestionAnswering</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/gptj/modeling_gptj.py#L988</source><parameters>[{"name": "config", "val": ""}]</parameters><paramsdesc>- **config** ([GPTJConfig](/docs/transformers/master/en/model_doc/gptj#transformers.GPTJConfig)) -- Model configuration class with all the parameters of the model.
+<docstring><name>class transformers.GPTJForQuestionAnswering</name><anchor>transformers.GPTJForQuestionAnswering</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/gptj/modeling_gptj.py#L992</source><parameters>[{"name": "config", "val": ""}]</parameters><paramsdesc>- **config** ([GPTJConfig](/docs/transformers/master/en/model_doc/gptj#transformers.GPTJConfig)) -- Model configuration class with all the parameters of the model.
   Initializing with a config file does not load the weights associated with the model, only the
   configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel.from_pretrained) method to load the model weights.</paramsdesc><paramgroups>0</paramgroups></docstring>
 
@@ -596,7 +613,7 @@ behavior.
 
 
 <div class="docstring">
-<docstring><name>forward</name><anchor>transformers.GPTJForQuestionAnswering.forward</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/gptj/modeling_gptj.py#L1004</source><parameters>[{"name": "input_ids", "val": " = None"}, {"name": "attention_mask", "val": " = None"}, {"name": "token_type_ids", "val": " = None"}, {"name": "position_ids", "val": " = None"}, {"name": "head_mask", "val": " = None"}, {"name": "inputs_embeds", "val": " = None"}, {"name": "start_positions", "val": " = None"}, {"name": "end_positions", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "return_dict", "val": " = None"}]</parameters><paramsdesc>- **input_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`) --
+<docstring><name>forward</name><anchor>transformers.GPTJForQuestionAnswering.forward</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/gptj/modeling_gptj.py#L1008</source><parameters>[{"name": "input_ids", "val": " = None"}, {"name": "attention_mask", "val": " = None"}, {"name": "token_type_ids", "val": " = None"}, {"name": "position_ids", "val": " = None"}, {"name": "head_mask", "val": " = None"}, {"name": "inputs_embeds", "val": " = None"}, {"name": "start_positions", "val": " = None"}, {"name": "end_positions", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "return_dict", "val": " = None"}]</parameters><paramsdesc>- **input_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`) --
   Indices of input sequence tokens in the vocabulary.
 
   Indices can be obtained using `GPTJTokenizer`. See [PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.encode) and
@@ -687,11 +704,11 @@ Example:
 >>> from transformers import GPT2Tokenizer, GPTJForQuestionAnswering
 >>> import torch
 
->>> tokenizer = GPT2Tokenizer.from_pretrained('EleutherAI/gpt-j-6B')
->>> model = GPTJForQuestionAnswering.from_pretrained('EleutherAI/gpt-j-6B')
+>>> tokenizer = GPT2Tokenizer.from_pretrained("EleutherAI/gpt-j-6B")
+>>> model = GPTJForQuestionAnswering.from_pretrained("EleutherAI/gpt-j-6B")
 
 >>> question, text = "Who was Jim Henson?", "Jim Henson was a nice puppet"
->>> inputs = tokenizer(question, text, return_tensors='pt')
+>>> inputs = tokenizer(question, text, return_tensors="pt")
 >>> start_positions = torch.tensor([1])
 >>> end_positions = torch.tensor([3])
 
@@ -807,10 +824,10 @@ Example:
 ```python
 >>> from transformers import GPTJTokenizer, FlaxGPTJModel
 
->>> tokenizer = GPTJTokenizer.from_pretrained('gptj')
->>> model = FlaxGPTJModel.from_pretrained('gptj')
+>>> tokenizer = GPTJTokenizer.from_pretrained("gptj")
+>>> model = FlaxGPTJModel.from_pretrained("gptj")
 
->>> inputs = tokenizer("Hello, my dog is cute", return_tensors='jax')
+>>> inputs = tokenizer("Hello, my dog is cute", return_tensors="jax")
 >>> outputs = model(**inputs)
 
 >>> last_hidden_states = outputs.last_hidden_state
@@ -925,8 +942,8 @@ Example:
 ```python
 >>> from transformers import GPTJTokenizer, FlaxGPTJForCausalLM
 
->>> tokenizer = GPTJTokenizer.from_pretrained('gptj')
->>> model = FlaxGPTJForCausalLM.from_pretrained('gptj')
+>>> tokenizer = GPTJTokenizer.from_pretrained("gptj")
+>>> model = FlaxGPTJForCausalLM.from_pretrained("gptj")
 
 >>> inputs = tokenizer("Hello, my dog is cute", return_tensors="np")
 >>> outputs = model(**inputs)

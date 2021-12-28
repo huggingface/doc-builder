@@ -1022,8 +1022,8 @@ Example:
 >>> dataset = load_dataset("hf-internal-testing/librispeech_asr_demo", "clean", split="validation")
 >>> sampling_rate = dataset.features["audio"].sampling_rate
 
->>> processor = Wav2Vec2Processor.from_pretrained('facebook/wav2vec2-base-960h')
->>> model = Wav2Vec2Model.from_pretrained('facebook/wav2vec2-base-960h')
+>>> processor = Wav2Vec2Processor.from_pretrained("facebook/wav2vec2-base-960h")
+>>> model = Wav2Vec2Model.from_pretrained("facebook/wav2vec2-base-960h")
 
 >>> # audio file is decoded on the fly
 >>> inputs = processor(dataset[0]["audio"]["array"], sampling_rate=sampling_rate, return_tensors="pt")
@@ -1138,8 +1138,8 @@ Example:
 >>> dataset = load_dataset("hf-internal-testing/librispeech_asr_demo", "clean", split="validation")
 >>> sampling_rate = dataset.features["audio"].sampling_rate
 
->>> processor = Wav2Vec2Processor.from_pretrained('facebook/wav2vec2-base-960h')
->>> model = Wav2Vec2ForCTC.from_pretrained('facebook/wav2vec2-base-960h')
+>>> processor = Wav2Vec2Processor.from_pretrained("facebook/wav2vec2-base-960h")
+>>> model = Wav2Vec2ForCTC.from_pretrained("facebook/wav2vec2-base-960h")
 
 >>> # audio file is decoded on the fly
 >>> inputs = processor(dataset[0]["audio"]["array"], sampling_rate=sampling_rate, return_tensors="pt")
@@ -1264,8 +1264,8 @@ Example:
 >>> dataset = load_dataset("hf-internal-testing/librispeech_asr_demo", "clean", split="validation")
 >>> sampling_rate = dataset.features["audio"].sampling_rate
 
->>> feature_extractor = Wav2Vec2FeatureExtractor.from_pretrained('superb/wav2vec2-base-superb-ks')
->>> model = Wav2Vec2ForSequenceClassification.from_pretrained('superb/wav2vec2-base-superb-ks')
+>>> feature_extractor = Wav2Vec2FeatureExtractor.from_pretrained("superb/wav2vec2-base-superb-ks")
+>>> model = Wav2Vec2ForSequenceClassification.from_pretrained("superb/wav2vec2-base-superb-ks")
 
 >>> # audio file is decoded on the fly
 >>> inputs = feature_extractor(dataset[0]["audio"]["array"], return_tensors="pt")
@@ -1386,8 +1386,8 @@ Example:
 >>> dataset = load_dataset("hf-internal-testing/librispeech_asr_demo", "clean", split="validation")
 >>> sampling_rate = dataset.features["audio"].sampling_rate
 
->>> feature_extractor = Wav2Vec2FeatureExtractor.from_pretrained('superb/wav2vec2-base-superb-sd')
->>> model = Wav2Vec2ForAudioFrameClassification.from_pretrained('superb/wav2vec2-base-superb-sd')
+>>> feature_extractor = Wav2Vec2FeatureExtractor.from_pretrained("superb/wav2vec2-base-superb-sd")
+>>> model = Wav2Vec2ForAudioFrameClassification.from_pretrained("superb/wav2vec2-base-superb-sd")
 
 >>> # audio file is decoded on the fly
 >>> inputs = feature_extractor(dataset[0]["audio"]["array"], return_tensors="pt")
@@ -1505,8 +1505,8 @@ Example:
 >>> dataset = load_dataset("hf-internal-testing/librispeech_asr_demo", "clean", split="validation")
 >>> sampling_rate = dataset.features["audio"].sampling_rate
 
->>> feature_extractor = Wav2Vec2FeatureExtractor.from_pretrained('superb/wav2vec2-base-superb-sv')
->>> model = Wav2Vec2ForXVector.from_pretrained('superb/wav2vec2-base-superb-sv')
+>>> feature_extractor = Wav2Vec2FeatureExtractor.from_pretrained("superb/wav2vec2-base-superb-sv")
+>>> model = Wav2Vec2ForXVector.from_pretrained("superb/wav2vec2-base-superb-sv")
 
 >>> # audio file is decoded on the fly
 >>> inputs = feature_extractor(dataset[:2]["audio"]["array"], return_tensors="pt")
@@ -1516,7 +1516,7 @@ Example:
 >>> # the resulting embeddings can be used for cosine similarity-based retrieval
 >>> cosine_sim = torch.nn.CosineSimilarity(dim=-1)
 >>> similarity = cosine_sim(embeddings[0], embeddings[1])
->>> threshold = 0.7 # the optimal threshold is dataset-dependent
+>>> threshold = 0.7  # the optimal threshold is dataset-dependent
 >>> if similarity &amp;lt; threshold:
 ...     print("Speakers are not the same!")
 ```
@@ -1657,9 +1657,7 @@ Example:
 ...     outputs = model(input_values, mask_time_indices=mask_time_indices)
 
 >>> # compute cosine similarity between predicted (=projected_states) and target (=projected_quantized_states)
->>> cosine_sim = torch.cosine_similarity(
-...     outputs.projected_states, outputs.projected_quantized_states, dim=-1
-... )
+>>> cosine_sim = torch.cosine_similarity(outputs.projected_states, outputs.projected_quantized_states, dim=-1)
 
 >>> # show that cosine similarity is much higher than random
 >>> assert cosine_sim[mask_time_indices].mean() > 0.5
@@ -1804,10 +1802,12 @@ Example:
 >>> processor = Wav2Vec2Processor.from_pretrained("facebook/wav2vec2-base-960h")
 >>> model = TFWav2Vec2Model.from_pretrained("facebook/wav2vec2-base-960h")
 
+
 >>> def map_to_array(batch):
->>>     speech, _ = sf.read(batch["file"])
->>>     batch["speech"] = speech
->>>     return batch
+...     speech, _ = sf.read(batch["file"])
+...     batch["speech"] = speech
+...     return batch
+
 
 >>> ds = load_dataset("hf-internal-testing/librispeech_asr_dummy", "clean", split="validation")
 >>> ds = ds.map(map_to_array)
@@ -1822,7 +1822,7 @@ Example:
 
 <div class="docstring">
 
-<docstring><name>class transformers.TFWav2Vec2ForCTC</name><anchor>transformers.TFWav2Vec2ForCTC</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/wav2vec2/modeling_tf_wav2vec2.py#L1472</source><parameters>[{"name": "*args", "val": ""}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **config** ([Wav2Vec2Config](/docs/transformers/master/en/model_doc/wav2vec2#transformers.Wav2Vec2Config)) -- Model configuration class with all the parameters of the model.
+<docstring><name>class transformers.TFWav2Vec2ForCTC</name><anchor>transformers.TFWav2Vec2ForCTC</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/wav2vec2/modeling_tf_wav2vec2.py#L1474</source><parameters>[{"name": "*args", "val": ""}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **config** ([Wav2Vec2Config](/docs/transformers/master/en/model_doc/wav2vec2#transformers.Wav2Vec2Config)) -- Model configuration class with all the parameters of the model.
   Initializing with a config file does not load the weights associated with the model, only the
   configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel.from_pretrained) method to load the model weights.</paramsdesc><paramgroups>0</paramgroups></docstring>
 TFWav2Vec2 Model with a `language modeling` head on top for Connectionist Temporal Classification (CTC).
@@ -1861,7 +1861,7 @@ first positional argument :
 
 
 <div class="docstring">
-<docstring><name>call</name><anchor>transformers.TFWav2Vec2ForCTC.call</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/wav2vec2/modeling_tf_wav2vec2.py#L1487</source><parameters>[{"name": "input_values", "val": ": Tensor"}, {"name": "attention_mask", "val": ": typing.Optional[tensorflow.python.framework.ops.Tensor] = None"}, {"name": "token_type_ids", "val": ": typing.Optional[tensorflow.python.framework.ops.Tensor] = None"}, {"name": "position_ids", "val": ": typing.Optional[tensorflow.python.framework.ops.Tensor] = None"}, {"name": "head_mask", "val": ": typing.Optional[tensorflow.python.framework.ops.Tensor] = None"}, {"name": "inputs_embeds", "val": ": typing.Optional[tensorflow.python.framework.ops.Tensor] = None"}, {"name": "output_attentions", "val": ": typing.Optional[bool] = None"}, {"name": "labels", "val": ": typing.Optional[tensorflow.python.framework.ops.Tensor] = None"}, {"name": "output_hidden_states", "val": ": typing.Optional[bool] = None"}, {"name": "return_dict", "val": ": typing.Optional[bool] = None"}, {"name": "training", "val": ": typing.Optional[bool] = False"}]</parameters><paramsdesc>- **input_values** (`np.ndarray`, `tf.Tensor`, `List[tf.Tensor]` ``Dict[str, tf.Tensor]` or `Dict[str, np.ndarray]` and each example must have the shape `(&amp;lcub;0})`) --
+<docstring><name>call</name><anchor>transformers.TFWav2Vec2ForCTC.call</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/wav2vec2/modeling_tf_wav2vec2.py#L1489</source><parameters>[{"name": "input_values", "val": ": Tensor"}, {"name": "attention_mask", "val": ": typing.Optional[tensorflow.python.framework.ops.Tensor] = None"}, {"name": "token_type_ids", "val": ": typing.Optional[tensorflow.python.framework.ops.Tensor] = None"}, {"name": "position_ids", "val": ": typing.Optional[tensorflow.python.framework.ops.Tensor] = None"}, {"name": "head_mask", "val": ": typing.Optional[tensorflow.python.framework.ops.Tensor] = None"}, {"name": "inputs_embeds", "val": ": typing.Optional[tensorflow.python.framework.ops.Tensor] = None"}, {"name": "output_attentions", "val": ": typing.Optional[bool] = None"}, {"name": "labels", "val": ": typing.Optional[tensorflow.python.framework.ops.Tensor] = None"}, {"name": "output_hidden_states", "val": ": typing.Optional[bool] = None"}, {"name": "return_dict", "val": ": typing.Optional[bool] = None"}, {"name": "training", "val": ": typing.Optional[bool] = False"}]</parameters><paramsdesc>- **input_values** (`np.ndarray`, `tf.Tensor`, `List[tf.Tensor]` ``Dict[str, tf.Tensor]` or `Dict[str, np.ndarray]` and each example must have the shape `(&amp;lcub;0})`) --
   Indices of input sequence tokens in the vocabulary.
 
   Indices can be obtained using [BertTokenizer](/docs/transformers/master/en/model_doc/bert#transformers.BertTokenizer). See [PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.__call__) and
@@ -1958,15 +1958,17 @@ Example:
 >>> processor = Wav2Vec2Processor.from_pretrained("facebook/wav2vec2-base-960h")
 >>> model = TFWav2Vec2ForCTC.from_pretrained("facebook/wav2vec2-base-960h")
 
+
 >>> def map_to_array(batch):
->>>     speech, _ = sf.read(batch["file"])
->>>     batch["speech"] = speech
->>>     return batch
+...     speech, _ = sf.read(batch["file"])
+...     batch["speech"] = speech
+...     return batch
+
 
 >>> ds = load_dataset("hf-internal-testing/librispeech_asr_dummy", "clean", split="validation")
 >>> ds = ds.map(map_to_array)
 
->>> input_values = processor(ds["speech"][0], return_tensors="tf").input_values # Batch size 1
+>>> input_values = processor(ds["speech"][0], return_tensors="tf").input_values  # Batch size 1
 >>> logits = model(input_values).logits
 >>> predicted_ids = tf.argmax(logits, axis=-1)
 
@@ -1977,7 +1979,7 @@ Example:
 
 >>> # wrap processor as target processor to encode labels
 >>> with processor.as_target_processor():
->>>     labels = processor(transcription, return_tensors="tf").input_ids
+...     labels = processor(transcription, return_tensors="tf").input_ids
 
 >>> loss = model(input_values, labels=labels).loss
 ```
@@ -2099,15 +2101,19 @@ Example:
 >>> processor = Wav2Vec2Processor.from_pretrained("facebook/wav2vec2-large-lv60")
 >>> model = FlaxWav2Vec2Model.from_pretrained("facebook/wav2vec2-large-lv60")
 
+
 >>> def map_to_array(batch):
->>>     speech, _ = sf.read(batch["file"])
->>>     batch["speech"] = speech
->>>     return batch
+...     speech, _ = sf.read(batch["file"])
+...     batch["speech"] = speech
+...     return batch
+
 
 >>> ds = load_dataset("hf-internal-testing/librispeech_asr_dummy", "clean", split="validation")
 >>> ds = ds.map(map_to_array)
 
->>> input_values = processor(ds["speech"][0], sampling_rate=16_000, return_tensors="np").input_values  # Batch size 1
+>>> input_values = processor(
+...     ds["speech"][0], sampling_rate=16_000, return_tensors="np"
+>>> ).input_values  # Batch size 1
 >>> hidden_states = model(input_values).last_hidden_state
 ```
 
@@ -2118,7 +2124,7 @@ Example:
 
 <div class="docstring">
 
-<docstring><name>class transformers.FlaxWav2Vec2ForCTC</name><anchor>transformers.FlaxWav2Vec2ForCTC</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/wav2vec2/modeling_flax_wav2vec2.py#L1040</source><parameters>[{"name": "config", "val": ": Wav2Vec2Config"}, {"name": "input_shape", "val": ": typing.Tuple = (1, 1024)"}, {"name": "seed", "val": ": int = 0"}, {"name": "dtype", "val": ": dtype = <class 'jax._src.numpy.lax_numpy.float32'>"}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **config** ([Wav2Vec2Config](/docs/transformers/master/en/model_doc/wav2vec2#transformers.Wav2Vec2Config)) -- Model configuration class with all the parameters of the model.
+<docstring><name>class transformers.FlaxWav2Vec2ForCTC</name><anchor>transformers.FlaxWav2Vec2ForCTC</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/wav2vec2/modeling_flax_wav2vec2.py#L1044</source><parameters>[{"name": "config", "val": ": Wav2Vec2Config"}, {"name": "input_shape", "val": ": typing.Tuple = (1, 1024)"}, {"name": "seed", "val": ": int = 0"}, {"name": "dtype", "val": ": dtype = <class 'jax._src.numpy.lax_numpy.float32'>"}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **config** ([Wav2Vec2Config](/docs/transformers/master/en/model_doc/wav2vec2#transformers.Wav2Vec2Config)) -- Model configuration class with all the parameters of the model.
   Initializing with a config file does not load the weights associated with the model, only the
   configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model#transformers.FlaxPreTrainedModel.from_pretrained) method to load the model weights.
 - **dtype** (`jax.numpy.dtype`, *optional*, defaults to `jax.numpy.float32`) --
@@ -2228,15 +2234,19 @@ Example:
 >>> processor = Wav2Vec2Processor.from_pretrained("facebook/wav2vec2-large-960h-lv60")
 >>> model = FlaxWav2Vec2ForCTC.from_pretrained("facebook/wav2vec2-large-960h-lv60")
 
+
 >>> def map_to_array(batch):
->>>     speech, _ = sf.read(batch["file"])
->>>     batch["speech"] = speech
->>>     return batch
+...     speech, _ = sf.read(batch["file"])
+...     batch["speech"] = speech
+...     return batch
+
 
 >>> ds = load_dataset("hf-internal-testing/librispeech_asr_dummy", "clean", split="validation")
 >>> ds = ds.map(map_to_array)
 
->>> input_values = processor(ds["speech"][0], sampling_rate=16_000, return_tensors="np").input_values  # Batch size 1
+>>> input_values = processor(
+...     ds["speech"][0], sampling_rate=16_000, return_tensors="np"
+>>> ).input_values  # Batch size 1
 >>> logits = model(input_values).logits
 >>> predicted_ids = jnp.argmax(logits, axis=-1)
 
@@ -2251,7 +2261,7 @@ Example:
 
 <div class="docstring">
 
-<docstring><name>class transformers.FlaxWav2Vec2ForPreTraining</name><anchor>transformers.FlaxWav2Vec2ForPreTraining</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/wav2vec2/modeling_flax_wav2vec2.py#L1176</source><parameters>[{"name": "config", "val": ": Wav2Vec2Config"}, {"name": "input_shape", "val": ": typing.Tuple = (1, 1024)"}, {"name": "seed", "val": ": int = 0"}, {"name": "dtype", "val": ": dtype = <class 'jax._src.numpy.lax_numpy.float32'>"}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **config** ([Wav2Vec2Config](/docs/transformers/master/en/model_doc/wav2vec2#transformers.Wav2Vec2Config)) -- Model configuration class with all the parameters of the model.
+<docstring><name>class transformers.FlaxWav2Vec2ForPreTraining</name><anchor>transformers.FlaxWav2Vec2ForPreTraining</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/wav2vec2/modeling_flax_wav2vec2.py#L1184</source><parameters>[{"name": "config", "val": ": Wav2Vec2Config"}, {"name": "input_shape", "val": ": typing.Tuple = (1, 1024)"}, {"name": "seed", "val": ": int = 0"}, {"name": "dtype", "val": ": dtype = <class 'jax._src.numpy.lax_numpy.float32'>"}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **config** ([Wav2Vec2Config](/docs/transformers/master/en/model_doc/wav2vec2#transformers.Wav2Vec2Config)) -- Model configuration class with all the parameters of the model.
   Initializing with a config file does not load the weights associated with the model, only the
   configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model#transformers.FlaxPreTrainedModel.from_pretrained) method to load the model weights.
 - **dtype** (`jax.numpy.dtype`, *optional*, defaults to `jax.numpy.float32`) --
@@ -2291,7 +2301,7 @@ Finally, this model supports inherent JAX features such as:
 
 
 <div class="docstring">
-<docstring><name>\_\_call\_\_</name><anchor>transformers.FlaxWav2Vec2ForPreTraining.__call__</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/wav2vec2/modeling_flax_wav2vec2.py#L1179</source><parameters>[{"name": "input_values", "val": ""}, {"name": "attention_mask", "val": " = None"}, {"name": "mask_time_indices", "val": " = None"}, {"name": "gumbel_temperature", "val": ": int = 1"}, {"name": "params", "val": ": dict = None"}, {"name": "dropout_rng", "val": ": PRNGKey = None"}, {"name": "gumbel_rng", "val": ": PRNGKey = None"}, {"name": "train", "val": ": bool = False"}, {"name": "output_attentions", "val": ": typing.Optional[bool] = None"}, {"name": "output_hidden_states", "val": ": typing.Optional[bool] = None"}, {"name": "return_dict", "val": ": typing.Optional[bool] = None"}]</parameters><paramsdesc>- **input_values** (`jnp.ndarray` of shape `(batch_size, sequence_length)`) --
+<docstring><name>\_\_call\_\_</name><anchor>transformers.FlaxWav2Vec2ForPreTraining.__call__</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/wav2vec2/modeling_flax_wav2vec2.py#L1187</source><parameters>[{"name": "input_values", "val": ""}, {"name": "attention_mask", "val": " = None"}, {"name": "mask_time_indices", "val": " = None"}, {"name": "gumbel_temperature", "val": ": int = 1"}, {"name": "params", "val": ": dict = None"}, {"name": "dropout_rng", "val": ": PRNGKey = None"}, {"name": "gumbel_rng", "val": ": PRNGKey = None"}, {"name": "train", "val": ": bool = False"}, {"name": "output_attentions", "val": ": typing.Optional[bool] = None"}, {"name": "output_hidden_states", "val": ": typing.Optional[bool] = None"}, {"name": "return_dict", "val": ": typing.Optional[bool] = None"}]</parameters><paramsdesc>- **input_values** (`jnp.ndarray` of shape `(batch_size, sequence_length)`) --
   Float values of input raw speech waveform. Values can be obtained by loading a *.flac* or *.wav* audio file
   into an array of type *List[float]* or a *numpy.ndarray*, *e.g.* via the soundfile library (*pip install
   soundfile*). To prepare the array into *input_values*, the [Wav2Vec2Processor](/docs/transformers/master/en/model_doc/wav2vec2#transformers.Wav2Vec2Processor) should be used for padding
@@ -2389,9 +2399,7 @@ Example:
 >>> outputs = model(input_values, mask_time_indices=mask_time_indices)
 
 >>> # compute cosine similarity between predicted (=projected_states) and target (=projected_quantized_states)
->>> cosine_sim = optax.cosine_similarity(
-...     outputs.projected_states, outputs.projected_quantized_states
-... )
+>>> cosine_sim = optax.cosine_similarity(outputs.projected_states, outputs.projected_quantized_states)
 
 >>> # show that cosine similarity is much higher than random
 >>> assert np.asarray(cosine_sim)[mask_time_indices].mean() > 0.5

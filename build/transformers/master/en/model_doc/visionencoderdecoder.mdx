@@ -81,17 +81,17 @@ Examples:
 
 >>> # Accessing the model configuration
 >>> config_encoder = model.config.encoder
->>> config_decoder  = model.config.decoder
+>>> config_decoder = model.config.decoder
 >>> # set decoder config to causal lm
 >>> config_decoder.is_decoder = True
 >>> config_decoder.add_cross_attention = True
 
 >>> # Saving the model, including its configuration
->>> model.save_pretrained('my-model')
+>>> model.save_pretrained("my-model")
 
 >>> # loading model and config from pretrained folder
->>> encoder_decoder_config = VisionEncoderDecoderConfig.from_pretrained('my-model')
->>> model = VisionEncoderDecoderModel.from_pretrained('my-model', config=encoder_decoder_config)
+>>> encoder_decoder_config = VisionEncoderDecoderConfig.from_pretrained("my-model")
+>>> model = VisionEncoderDecoderModel.from_pretrained("my-model", config=encoder_decoder_config)
 ```
 
 
@@ -163,7 +163,7 @@ one of the base vision model classes of the library as encoder and another one a
 
 
 <div class="docstring">
-<docstring><name>forward</name><anchor>transformers.VisionEncoderDecoderModel.forward</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/vision_encoder_decoder/modeling_vision_encoder_decoder.py#L392</source><parameters>[{"name": "pixel_values", "val": " = None"}, {"name": "decoder_input_ids", "val": " = None"}, {"name": "decoder_attention_mask", "val": " = None"}, {"name": "encoder_outputs", "val": " = None"}, {"name": "past_key_values", "val": " = None"}, {"name": "decoder_inputs_embeds", "val": " = None"}, {"name": "labels", "val": " = None"}, {"name": "use_cache", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "return_dict", "val": " = None"}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **pixel_values** (`torch.FloatTensor` of shape `(batch_size, num_channels, height, width)`) --
+<docstring><name>forward</name><anchor>transformers.VisionEncoderDecoderModel.forward</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/vision_encoder_decoder/modeling_vision_encoder_decoder.py#L395</source><parameters>[{"name": "pixel_values", "val": " = None"}, {"name": "decoder_input_ids", "val": " = None"}, {"name": "decoder_attention_mask", "val": " = None"}, {"name": "encoder_outputs", "val": " = None"}, {"name": "past_key_values", "val": " = None"}, {"name": "decoder_inputs_embeds", "val": " = None"}, {"name": "labels", "val": " = None"}, {"name": "use_cache", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "return_dict", "val": " = None"}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **pixel_values** (`torch.FloatTensor` of shape `(batch_size, num_channels, height, width)`) --
   Pixel values. Pixel values can be obtained using a feature extractor (e.g. if you use ViT as the encoder,
   you should use [ViTFeatureExtractor](/docs/transformers/master/en/model_doc/vit#transformers.ViTFeatureExtractor)). See [ViTFeatureExtractor.__call__()](/docs/transformers/master/en/model_doc/vit#transformers.ViTFeatureExtractor.__call__) for details.
 - **decoder_input_ids** (`torch.LongTensor` of shape `(batch_size, target_sequence_length)`, *optional*) --
@@ -275,8 +275,8 @@ Examples:
 >>> from PIL import Image
 >>> import torch
 
->>> processor = TrOCRProcessor.from_pretrained('microsoft/trocr-base-handwritten')
->>> model = VisionEncoderDecoderModel.from_pretrained('microsoft/trocr-base-handwritten')
+>>> processor = TrOCRProcessor.from_pretrained("microsoft/trocr-base-handwritten")
+>>> model = VisionEncoderDecoderModel.from_pretrained("microsoft/trocr-base-handwritten")
 
 >>> # load image from the IAM dataset
 >>> url = "https://fki.tic.heia-fr.ch/static/img/a01-122-02.jpg"
@@ -351,8 +351,11 @@ Example:
 
 ```python
 >>> from transformers import VisionEncoderDecoderModel
+
 >>> # initialize a vit-bert from a pretrained ViT and a pretrained BERT model. Note that the cross-attention layers will be randomly initialized
->>> model = VisionEncoderDecoderModel.from_encoder_decoder_pretrained('google/vit-base-patch16-224-in21k', 'bert-base-uncased')
+>>> model = VisionEncoderDecoderModel.from_encoder_decoder_pretrained(
+...     "google/vit-base-patch16-224-in21k", "bert-base-uncased"
+... )
 >>> # saving model after fine-tuning
 >>> model.save_pretrained("./vit-bert")
 >>> # load fine-tuned model
@@ -498,16 +501,16 @@ Examples:
 >>> from PIL import Image
 >>> import requests
 
->>> url = 'http://images.cocodataset.org/val2017/000000039769.jpg'
+>>> url = "http://images.cocodataset.org/val2017/000000039769.jpg"
 >>> image = Image.open(requests.get(url, stream=True).raw)
 
->>> feature_extractor = ViTFeatureExtractor.from_pretrained('google/vit-base-patch16-224-in21k')
+>>> feature_extractor = ViTFeatureExtractor.from_pretrained("google/vit-base-patch16-224-in21k")
 
 >>> # load output tokenizer
->>> tokenizer_output = GPT2Tokenizer.from_pretrained('gpt2')
+>>> tokenizer_output = GPT2Tokenizer.from_pretrained("gpt2")
 
 >>> # initialize a vit-gpt2 from pretrained ViT and GPT2 models. Note that the cross-attention layers will be randomly initialized
->>> model = FlaxVisionEncoderDecoderModel.from_encoder_decoder_pretrained('vit', 'gpt2')
+>>> model = FlaxVisionEncoderDecoderModel.from_encoder_decoder_pretrained("vit", "gpt2")
 
 >>> pixel_values = feature_extractor(images=image, return_tensors="np").pixel_values
 
@@ -562,8 +565,11 @@ Example:
 
 ```python
 >>> from transformers import FlaxVisionEncoderDecoderModel
+
 >>> # initialize a vit-gpt2 from a pretrained ViT and a pretrained GPT2 model. Note that the cross-attention layers will be randomly initialized
->>> model = FlaxVisionEncoderDecoderModel.from_encoder_decoder_pretrained('google/vit-base-patch16-224-in21k', 'gpt2')
+>>> model = FlaxVisionEncoderDecoderModel.from_encoder_decoder_pretrained(
+...     "google/vit-base-patch16-224-in21k", "gpt2"
+... )
 >>> # saving model after fine-tuning
 >>> model.save_pretrained("./vit-gpt2")
 >>> # load fine-tuned model

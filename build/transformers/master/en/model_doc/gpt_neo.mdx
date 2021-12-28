@@ -61,16 +61,24 @@ The `generate()` method can be used to generate text using GPT Neo model.
 
 ```python
 >>> from transformers import GPTNeoForCausalLM, GPT2Tokenizer
+
 >>> model = GPTNeoForCausalLM.from_pretrained("EleutherAI/gpt-neo-1.3B")
 >>> tokenizer = GPT2Tokenizer.from_pretrained("EleutherAI/gpt-neo-1.3B")
 
->>> prompt = "In a shocking finding, scientists discovered a herd of unicorns living in a remote, " \
-...          "previously unexplored valley, in the Andes Mountains. Even more surprising to the " \
-...          "researchers was the fact that the unicorns spoke perfect English."
+>>> prompt = (
+...     "In a shocking finding, scientists discovered a herd of unicorns living in a remote, "
+...     "previously unexplored valley, in the Andes Mountains. Even more surprising to the "
+...     "researchers was the fact that the unicorns spoke perfect English."
+... )
 
 >>> input_ids = tokenizer(prompt, return_tensors="pt").input_ids
 
->>> gen_tokens = model.generate(input_ids, do_sample=True, temperature=0.9, max_length=100,)
+>>> gen_tokens = model.generate(
+...     input_ids,
+...     do_sample=True,
+...     temperature=0.9,
+...     max_length=100,
+... )
 >>> gen_text = tokenizer.batch_decode(gen_tokens)[0]
 ```
 
@@ -275,8 +283,8 @@ Example:
 >>> from transformers import GPT2Tokenizer, GPTNeoModel
 >>> import torch
 
->>> tokenizer = GPT2Tokenizer.from_pretrained('EleutherAI/gpt-neo-1.3B')
->>> model = GPTNeoModel.from_pretrained('EleutherAI/gpt-neo-1.3B')
+>>> tokenizer = GPT2Tokenizer.from_pretrained("EleutherAI/gpt-neo-1.3B")
+>>> model = GPTNeoModel.from_pretrained("EleutherAI/gpt-neo-1.3B")
 
 >>> inputs = tokenizer("Hello, my dog is cute", return_tensors="pt")
 >>> outputs = model(**inputs)
@@ -424,8 +432,8 @@ Example:
 >>> import torch
 >>> from transformers import GPT2Tokenizer, GPTNeoForCausalLM
 
->>> tokenizer = GPT2Tokenizer.from_pretrained('EleutherAI/gpt-neo-1.3B')
->>> model = GPTNeoForCausalLM.from_pretrained('EleutherAI/gpt-neo-1.3B')
+>>> tokenizer = GPT2Tokenizer.from_pretrained("EleutherAI/gpt-neo-1.3B")
+>>> model = GPTNeoForCausalLM.from_pretrained("EleutherAI/gpt-neo-1.3B")
 
 >>> inputs = tokenizer("Hello, my dog is cute", return_tensors="pt")
 >>> outputs = model(**inputs, labels=inputs["input_ids"])
@@ -575,11 +583,11 @@ Example of single-label classification:
 >>> from transformers import GPT2Tokenizer, GPTNeoForSequenceClassification
 >>> import torch
 
->>> tokenizer = GPT2Tokenizer.from_pretrained('EleutherAI/gpt-neo-1.3B')
->>> model = GPTNeoForSequenceClassification.from_pretrained('EleutherAI/gpt-neo-1.3B')
+>>> tokenizer = GPT2Tokenizer.from_pretrained("EleutherAI/gpt-neo-1.3B")
+>>> model = GPTNeoForSequenceClassification.from_pretrained("EleutherAI/gpt-neo-1.3B")
 
 >>> inputs = tokenizer("Hello, my dog is cute", return_tensors="pt")
->>> labels = torch.tensor([1]).unsqueeze(0) # Batch size 1
+>>> labels = torch.tensor([1]).unsqueeze(0)  # Batch size 1
 >>> outputs = model(**inputs, labels=labels)
 >>> loss = outputs.loss
 >>> logits = outputs.logits
@@ -591,11 +599,11 @@ Example of multi-label classification:
 >>> from transformers import GPT2Tokenizer, GPTNeoForSequenceClassification
 >>> import torch
 
->>> tokenizer = GPT2Tokenizer.from_pretrained('EleutherAI/gpt-neo-1.3B')
->>> model = GPTNeoForSequenceClassification.from_pretrained('EleutherAI/gpt-neo-1.3B', problem_type="multi_label_classification")
+>>> tokenizer = GPT2Tokenizer.from_pretrained("EleutherAI/gpt-neo-1.3B")
+>>> model = GPTNeoForSequenceClassification.from_pretrained("EleutherAI/gpt-neo-1.3B", problem_type="multi_label_classification")
 
 >>> inputs = tokenizer("Hello, my dog is cute", return_tensors="pt")
->>> labels = torch.tensor([[1, 1]], dtype=torch.float) # need dtype=float for BCEWithLogitsLoss
+>>> labels = torch.tensor([[1, 1]], dtype=torch.float)  # need dtype=float for BCEWithLogitsLoss
 >>> outputs = model(**inputs, labels=labels)
 >>> loss = outputs.loss
 >>> logits = outputs.logits
@@ -707,10 +715,10 @@ Example:
 ```python
 >>> from transformers import GPT2Tokenizer, FlaxGPTNeoModel
 
->>> tokenizer = GPT2Tokenizer.from_pretrained('EleutherAI/gpt-neo-1.3B')
->>> model = FlaxGPTNeoModel.from_pretrained('EleutherAI/gpt-neo-1.3B')
+>>> tokenizer = GPT2Tokenizer.from_pretrained("EleutherAI/gpt-neo-1.3B")
+>>> model = FlaxGPTNeoModel.from_pretrained("EleutherAI/gpt-neo-1.3B")
 
->>> inputs = tokenizer("Hello, my dog is cute", return_tensors='jax')
+>>> inputs = tokenizer("Hello, my dog is cute", return_tensors="jax")
 >>> outputs = model(**inputs)
 
 >>> last_hidden_states = outputs.last_hidden_state
@@ -825,8 +833,8 @@ Example:
 ```python
 >>> from transformers import GPT2Tokenizer, FlaxGPTNeoForCausalLM
 
->>> tokenizer = GPT2Tokenizer.from_pretrained('EleutherAI/gpt-neo-1.3B')
->>> model = FlaxGPTNeoForCausalLM.from_pretrained('EleutherAI/gpt-neo-1.3B')
+>>> tokenizer = GPT2Tokenizer.from_pretrained("EleutherAI/gpt-neo-1.3B")
+>>> model = FlaxGPTNeoForCausalLM.from_pretrained("EleutherAI/gpt-neo-1.3B")
 
 >>> inputs = tokenizer("Hello, my dog is cute", return_tensors="np")
 >>> outputs = model(**inputs)

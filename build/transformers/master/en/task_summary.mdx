@@ -228,11 +228,15 @@ positions of the extracted answer in the text.
 
 ```py
 >>> result = question_answerer(question="What is extractive question answering?", context=context)
->>> print(f"Answer: '&amp;lcub;result['answer']}', score: &amp;lcub;round(result['score'], 4)}, start: &amp;lcub;result['start']}, end: &amp;lcub;result['end']}")
+>>> print(
+...     f"Answer: '&amp;lcub;result['answer']}', score: &amp;lcub;round(result['score'], 4)}, start: &amp;lcub;result['start']}, end: &amp;lcub;result['end']}"
+... )
 Answer: 'the task of extracting an answer from a text given a question', score: 0.6177, start: 34, end: 95
 
 >>> result = question_answerer(question="What is a good example of a question answering dataset?", context=context)
->>> print(f"Answer: '&amp;lcub;result['answer']}', score: &amp;lcub;round(result['score'], 4)}, start: &amp;lcub;result['start']}, end: &amp;lcub;result['end']}")
+>>> print(
+...     f"Answer: '&amp;lcub;result['answer']}', score: &amp;lcub;round(result['score'], 4)}, start: &amp;lcub;result['start']}, end: &amp;lcub;result['end']}"
+... )
 Answer: 'SQuAD dataset', score: 0.5152, start: 147, end: 160
 ```
 
@@ -272,18 +276,20 @@ Here is an example of question answering using a model and a tokenizer. The proc
 >>> for question in questions:
 ...     inputs = tokenizer(question, text, add_special_tokens=True, return_tensors="pt")
 ...     input_ids = inputs["input_ids"].tolist()[0]
-...
+
 ...     outputs = model(**inputs)
 ...     answer_start_scores = outputs.start_logits
 ...     answer_end_scores = outputs.end_logits
-...
+
 ...     # Get the most likely beginning of answer with the argmax of the score
 ...     answer_start = torch.argmax(answer_start_scores)
-...     # Get the most likely end of answer with the argmax of the score 
+...     # Get the most likely end of answer with the argmax of the score
 ...     answer_end = torch.argmax(answer_end_scores) + 1
-...
-...     answer = tokenizer.convert_tokens_to_string(tokenizer.convert_ids_to_tokens(input_ids[answer_start:answer_end]))
-...
+
+...     answer = tokenizer.convert_tokens_to_string(
+...         tokenizer.convert_ids_to_tokens(input_ids[answer_start:answer_end])
+...     )
+
 ...     print(f"Question: &amp;lcub;question}")
 ...     print(f"Answer: &amp;lcub;answer}")
 Question: How many pretrained models are available in 🤗 Transformers?
@@ -315,18 +321,20 @@ Answer: tensorflow 2. 0 and pytorch
 >>> for question in questions:
 ...     inputs = tokenizer(question, text, add_special_tokens=True, return_tensors="tf")
 ...     input_ids = inputs["input_ids"].numpy()[0]
-...
+
 ...     outputs = model(inputs)
 ...     answer_start_scores = outputs.start_logits
 ...     answer_end_scores = outputs.end_logits
-...
+
 ...     # Get the most likely beginning of answer with the argmax of the score
 ...     answer_start = tf.argmax(answer_start_scores, axis=1).numpy()[0]
 ...     # Get the most likely end of answer with the argmax of the score
 ...     answer_end = tf.argmax(answer_end_scores, axis=1).numpy()[0] + 1
-...
-...     answer = tokenizer.convert_tokens_to_string(tokenizer.convert_ids_to_tokens(input_ids[answer_start:answer_end]))
-...
+
+...     answer = tokenizer.convert_tokens_to_string(
+...         tokenizer.convert_ids_to_tokens(input_ids[answer_start:answer_end])
+...     )
+
 ...     print(f"Question: &amp;lcub;question}")
 ...     print(f"Answer: &amp;lcub;answer}")
 Question: How many pretrained models are available in 🤗 Transformers?
@@ -367,7 +375,12 @@ This outputs the sequences with the mask filled, the confidence score, and the t
 
 ```py
 >>> from pprint import pprint
->>> pprint(unmasker(f"HuggingFace is creating a &amp;lcub;unmasker.tokenizer.mask_token} that the community uses to solve NLP tasks."))
+
+>>> pprint(
+...     unmasker(
+...         f"HuggingFace is creating a &amp;lcub;unmasker.tokenizer.mask_token} that the community uses to solve NLP tasks."
+...     )
+... )
 [&amp;lcub;'score': 0.1793,
   'sequence': 'HuggingFace is creating a tool that the community uses to solve '
               'NLP tasks.',
@@ -414,8 +427,10 @@ Here is an example of doing masked language modeling using a model and a tokeniz
 >>> tokenizer = AutoTokenizer.from_pretrained("distilbert-base-cased")
 >>> model = AutoModelForMaskedLM.from_pretrained("distilbert-base-cased")
 
->>> sequence = "Distilled models are smaller than the models they mimic. Using them instead of the large " \
+>>> sequence = (
+...     "Distilled models are smaller than the models they mimic. Using them instead of the large "
 ...     f"versions would help &amp;lcub;tokenizer.mask_token} our carbon footprint."
+... )
 
 >>> inputs = tokenizer(sequence, return_tensors="pt")
 >>> mask_token_index = torch.where(inputs["input_ids"] == tokenizer.mask_token_id)[1]
@@ -439,8 +454,10 @@ Distilled models are smaller than the models they mimic. Using them instead of t
 >>> tokenizer = AutoTokenizer.from_pretrained("distilbert-base-cased")
 >>> model = TFAutoModelForMaskedLM.from_pretrained("distilbert-base-cased")
 
->>> sequence = "Distilled models are smaller than the models they mimic. Using them instead of the large " \
+>>> sequence = (
+...     "Distilled models are smaller than the models they mimic. Using them instead of the large "
 ...     f"versions would help &amp;lcub;tokenizer.mask_token} our carbon footprint."
+... )
 
 >>> inputs = tokenizer(sequence, return_tensors="tf")
 >>> mask_token_index = tf.where(inputs["input_ids"] == tokenizer.mask_token_id)[0, 1]
@@ -584,7 +601,7 @@ Below is an example of text generation using `XLNet` and its tokenizer, which in
 
 >>> prompt_length = len(tokenizer.decode(inputs[0]))
 >>> outputs = model.generate(inputs, max_length=250, do_sample=True, top_p=0.95, top_k=60)
->>> generated = prompt + tokenizer.decode(outputs[0])[prompt_length+1:]
+>>> generated = prompt + tokenizer.decode(outputs[0])[prompt_length + 1 :]
 
 >>> print(generated)
 Today the weather is really nice and I am planning ...
@@ -611,7 +628,7 @@ Today the weather is really nice and I am planning ...
 
 >>> prompt_length = len(tokenizer.decode(inputs[0]))
 >>> outputs = model.generate(inputs, max_length=250, do_sample=True, top_p=0.95, top_k=60)
->>> generated = prompt + tokenizer.decode(outputs[0])[prompt_length+1:]
+>>> generated = prompt + tokenizer.decode(outputs[0])[prompt_length + 1 :]
 
 >>> print(generated)
 Today the weather is really nice and I am planning ...
@@ -700,8 +717,10 @@ Here is an example of doing named entity recognition, using a model and a tokeni
 >>> model = AutoModelForTokenClassification.from_pretrained("dbmdz/bert-large-cased-finetuned-conll03-english")
 >>> tokenizer = AutoTokenizer.from_pretrained("bert-base-cased")
 
->>> sequence = "Hugging Face Inc. is a company based in New York City. Its headquarters are in DUMBO, " \
-...            "therefore very close to the Manhattan Bridge."
+>>> sequence = (
+...     "Hugging Face Inc. is a company based in New York City. Its headquarters are in DUMBO, "
+...     "therefore very close to the Manhattan Bridge."
+... )
 
 >>> inputs = tokenizer(sequence, return_tensors="pt")
 >>> tokens = inputs.tokens()
@@ -715,8 +734,10 @@ Here is an example of doing named entity recognition, using a model and a tokeni
 >>> model = TFAutoModelForTokenClassification.from_pretrained("dbmdz/bert-large-cased-finetuned-conll03-english")
 >>> tokenizer = AutoTokenizer.from_pretrained("bert-base-cased")
 
->>> sequence = "Hugging Face Inc. is a company based in New York City. Its headquarters are in DUMBO, " \
-...            "therefore very close to the Manhattan Bridge."
+>>> sequence = (
+...     "Hugging Face Inc. is a company based in New York City. Its headquarters are in DUMBO, "
+...     "therefore very close to the Manhattan Bridge."
+... )
 
 >>> inputs = tokenizer(sequence, return_tensors="tf")
 >>> tokens = inputs.tokens()
@@ -903,7 +924,7 @@ Here is an example of doing translation using a model and a tokenizer. The proce
 
 >>> inputs = tokenizer(
 ...     "translate English to German: Hugging Face is a technology company based in New York and Paris",
-...     return_tensors="pt"
+...     return_tensors="pt",
 ... )
 >>> outputs = model.generate(inputs["input_ids"], max_length=40, num_beams=4, early_stopping=True)
 
@@ -917,7 +938,7 @@ Here is an example of doing translation using a model and a tokenizer. The proce
 
 >>> inputs = tokenizer(
 ...     "translate English to German: Hugging Face is a technology company based in New York and Paris",
-...     return_tensors="tf"
+...     return_tensors="tf",
 ... )
 >>> outputs = model.generate(inputs["input_ids"], max_length=40, num_beams=4, early_stopping=True)
 

@@ -115,24 +115,27 @@ Example:
 
 >>> model = LukeModel.from_pretrained("studio-ousia/luke-base")
 >>> tokenizer = LukeTokenizer.from_pretrained("studio-ousia/luke-base")
-
 # Example 1: Computing the contextualized entity representation corresponding to the entity mention "Beyoncé"
+
 >>> text = "Beyoncé lives in Los Angeles."
 >>> entity_spans = [(0, 7)]  # character-based entity span corresponding to "Beyoncé"
 >>> inputs = tokenizer(text, entity_spans=entity_spans, add_prefix_space=True, return_tensors="pt")
 >>> outputs = model(**inputs)
 >>> word_last_hidden_state = outputs.last_hidden_state
 >>> entity_last_hidden_state = outputs.entity_last_hidden_state
-
 # Example 2: Inputting Wikipedia entities to obtain enriched contextualized representations
->>> entities = ["Beyoncé", "Los Angeles"]  # Wikipedia entity titles corresponding to the entity mentions "Beyoncé" and "Los Angeles"
+
+>>> entities = [
+...     "Beyoncé",
+...     "Los Angeles",
+>>> ]  # Wikipedia entity titles corresponding to the entity mentions "Beyoncé" and "Los Angeles"
 >>> entity_spans = [(0, 7), (17, 28)]  # character-based entity spans corresponding to "Beyoncé" and "Los Angeles"
 >>> inputs = tokenizer(text, entities=entities, entity_spans=entity_spans, add_prefix_space=True, return_tensors="pt")
 >>> outputs = model(**inputs)
 >>> word_last_hidden_state = outputs.last_hidden_state
 >>> entity_last_hidden_state = outputs.entity_last_hidden_state
-
 # Example 3: Classifying the relationship between two entities using LukeForEntityPairClassification head model
+
 >>> model = LukeForEntityPairClassification.from_pretrained("studio-ousia/luke-large-finetuned-tacred")
 >>> tokenizer = LukeTokenizer.from_pretrained("studio-ousia/luke-large-finetuned-tacred")
 >>> entity_spans = [(0, 7), (17, 28)]  # character-based entity spans corresponding to "Beyoncé" and "Los Angeles"
@@ -548,8 +551,8 @@ Examples:
 
 >>> tokenizer = LukeTokenizer.from_pretrained("studio-ousia/luke-base")
 >>> model = LukeModel.from_pretrained("studio-ousia/luke-base")
-
 # Compute the contextualized entity representation corresponding to the entity mention "Beyoncé"
+
 >>> text = "Beyoncé lives in Los Angeles."
 >>> entity_spans = [(0, 7)]  # character-based entity span corresponding to "Beyoncé"
 
@@ -557,13 +560,21 @@ Examples:
 >>> outputs = model(**encoding)
 >>> word_last_hidden_state = outputs.last_hidden_state
 >>> entity_last_hidden_state = outputs.entity_last_hidden_state
-
 # Input Wikipedia entities to obtain enriched contextualized representations of word tokens
->>> text = "Beyoncé lives in Los Angeles."
->>> entities = ["Beyoncé", "Los Angeles"]  # Wikipedia entity titles corresponding to the entity mentions "Beyoncé" and "Los Angeles"
->>> entity_spans = [(0, 7), (17, 28)]  # character-based entity spans corresponding to "Beyoncé" and "Los Angeles"
 
->>> encoding = tokenizer(text, entities=entities, entity_spans=entity_spans, add_prefix_space=True, return_tensors="pt")
+>>> text = "Beyoncé lives in Los Angeles."
+>>> entities = [
+...     "Beyoncé",
+...     "Los Angeles",
+>>> ]  # Wikipedia entity titles corresponding to the entity mentions "Beyoncé" and "Los Angeles"
+>>> entity_spans = [
+...     (0, 7),
+...     (17, 28),
+>>> ]  # character-based entity spans corresponding to "Beyoncé" and "Los Angeles"
+
+>>> encoding = tokenizer(
+...     text, entities=entities, entity_spans=entity_spans, add_prefix_space=True, return_tensors="pt"
+... )
 >>> outputs = model(**encoding)
 >>> word_last_hidden_state = outputs.last_hidden_state
 >>> entity_last_hidden_state = outputs.entity_last_hidden_state
@@ -575,7 +586,7 @@ Examples:
 
 <div class="docstring">
 
-<docstring><name>class transformers.LukeForMaskedLM</name><anchor>transformers.LukeForMaskedLM</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/luke/modeling_luke.py#L1124</source><parameters>[{"name": "config", "val": ""}]</parameters><paramsdesc>- **config** ([LukeConfig](/docs/transformers/master/en/model_doc/luke#transformers.LukeConfig)) -- Model configuration class with all the parameters of the
+<docstring><name>class transformers.LukeForMaskedLM</name><anchor>transformers.LukeForMaskedLM</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/luke/modeling_luke.py#L1132</source><parameters>[{"name": "config", "val": ""}]</parameters><paramsdesc>- **config** ([LukeConfig](/docs/transformers/master/en/model_doc/luke#transformers.LukeConfig)) -- Model configuration class with all the parameters of the
   model. Initializing with a config file does not load the weights associated with the model, only the
   configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel.from_pretrained) method to load the model weights.</paramsdesc><paramgroups>0</paramgroups></docstring>
 
@@ -596,7 +607,7 @@ and behavior.
 
 
 <div class="docstring">
-<docstring><name>forward</name><anchor>transformers.LukeForMaskedLM.forward</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/luke/modeling_luke.py#L1160</source><parameters>[{"name": "input_ids", "val": " = None"}, {"name": "attention_mask", "val": " = None"}, {"name": "token_type_ids", "val": " = None"}, {"name": "position_ids", "val": " = None"}, {"name": "entity_ids", "val": " = None"}, {"name": "entity_attention_mask", "val": " = None"}, {"name": "entity_token_type_ids", "val": " = None"}, {"name": "entity_position_ids", "val": " = None"}, {"name": "labels", "val": " = None"}, {"name": "entity_labels", "val": " = None"}, {"name": "head_mask", "val": " = None"}, {"name": "inputs_embeds", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "return_dict", "val": " = None"}]</parameters><paramsdesc>- **input_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`) --
+<docstring><name>forward</name><anchor>transformers.LukeForMaskedLM.forward</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/luke/modeling_luke.py#L1168</source><parameters>[{"name": "input_ids", "val": " = None"}, {"name": "attention_mask", "val": " = None"}, {"name": "token_type_ids", "val": " = None"}, {"name": "position_ids", "val": " = None"}, {"name": "entity_ids", "val": " = None"}, {"name": "entity_attention_mask", "val": " = None"}, {"name": "entity_token_type_ids", "val": " = None"}, {"name": "entity_position_ids", "val": " = None"}, {"name": "labels", "val": " = None"}, {"name": "entity_labels", "val": " = None"}, {"name": "head_mask", "val": " = None"}, {"name": "inputs_embeds", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "return_dict", "val": " = None"}]</parameters><paramsdesc>- **input_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`) --
   Indices of input sequence tokens in the vocabulary.
 
   Indices can be obtained using [LukeTokenizer](/docs/transformers/master/en/model_doc/luke#transformers.LukeTokenizer). See [PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.encode) and
@@ -718,7 +729,7 @@ the latter silently ignores them.
 
 <div class="docstring">
 
-<docstring><name>class transformers.LukeForEntityClassification</name><anchor>transformers.LukeForEntityClassification</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/luke/modeling_luke.py#L1260</source><parameters>[{"name": "config", "val": ""}]</parameters><paramsdesc>- **config** ([LukeConfig](/docs/transformers/master/en/model_doc/luke#transformers.LukeConfig)) -- Model configuration class with all the parameters of the
+<docstring><name>class transformers.LukeForEntityClassification</name><anchor>transformers.LukeForEntityClassification</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/luke/modeling_luke.py#L1268</source><parameters>[{"name": "config", "val": ""}]</parameters><paramsdesc>- **config** ([LukeConfig](/docs/transformers/master/en/model_doc/luke#transformers.LukeConfig)) -- Model configuration class with all the parameters of the
   model. Initializing with a config file does not load the weights associated with the model, only the
   configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel.from_pretrained) method to load the model weights.</paramsdesc><paramgroups>0</paramgroups></docstring>
 
@@ -739,7 +750,7 @@ and behavior.
 
 
 <div class="docstring">
-<docstring><name>forward</name><anchor>transformers.LukeForEntityClassification.forward</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/luke/modeling_luke.py#L1273</source><parameters>[{"name": "input_ids", "val": " = None"}, {"name": "attention_mask", "val": " = None"}, {"name": "token_type_ids", "val": " = None"}, {"name": "position_ids", "val": " = None"}, {"name": "entity_ids", "val": " = None"}, {"name": "entity_attention_mask", "val": " = None"}, {"name": "entity_token_type_ids", "val": " = None"}, {"name": "entity_position_ids", "val": " = None"}, {"name": "head_mask", "val": " = None"}, {"name": "inputs_embeds", "val": " = None"}, {"name": "labels", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "return_dict", "val": " = None"}]</parameters><paramsdesc>- **input_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`) --
+<docstring><name>forward</name><anchor>transformers.LukeForEntityClassification.forward</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/luke/modeling_luke.py#L1281</source><parameters>[{"name": "input_ids", "val": " = None"}, {"name": "attention_mask", "val": " = None"}, {"name": "token_type_ids", "val": " = None"}, {"name": "position_ids", "val": " = None"}, {"name": "entity_ids", "val": " = None"}, {"name": "entity_attention_mask", "val": " = None"}, {"name": "entity_token_type_ids", "val": " = None"}, {"name": "entity_position_ids", "val": " = None"}, {"name": "head_mask", "val": " = None"}, {"name": "inputs_embeds", "val": " = None"}, {"name": "labels", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "return_dict", "val": " = None"}]</parameters><paramsdesc>- **input_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`) --
   Indices of input sequence tokens in the vocabulary.
 
   Indices can be obtained using [LukeTokenizer](/docs/transformers/master/en/model_doc/luke#transformers.LukeTokenizer). See [PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.encode) and
@@ -870,7 +881,7 @@ Predicted class: person
 
 <div class="docstring">
 
-<docstring><name>class transformers.LukeForEntityPairClassification</name><anchor>transformers.LukeForEntityPairClassification</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/luke/modeling_luke.py#L1375</source><parameters>[{"name": "config", "val": ""}]</parameters><paramsdesc>- **config** ([LukeConfig](/docs/transformers/master/en/model_doc/luke#transformers.LukeConfig)) -- Model configuration class with all the parameters of the
+<docstring><name>class transformers.LukeForEntityPairClassification</name><anchor>transformers.LukeForEntityPairClassification</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/luke/modeling_luke.py#L1383</source><parameters>[{"name": "config", "val": ""}]</parameters><paramsdesc>- **config** ([LukeConfig](/docs/transformers/master/en/model_doc/luke#transformers.LukeConfig)) -- Model configuration class with all the parameters of the
   model. Initializing with a config file does not load the weights associated with the model, only the
   configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel.from_pretrained) method to load the model weights.</paramsdesc><paramgroups>0</paramgroups></docstring>
 
@@ -891,7 +902,7 @@ and behavior.
 
 
 <div class="docstring">
-<docstring><name>forward</name><anchor>transformers.LukeForEntityPairClassification.forward</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/luke/modeling_luke.py#L1388</source><parameters>[{"name": "input_ids", "val": " = None"}, {"name": "attention_mask", "val": " = None"}, {"name": "token_type_ids", "val": " = None"}, {"name": "position_ids", "val": " = None"}, {"name": "entity_ids", "val": " = None"}, {"name": "entity_attention_mask", "val": " = None"}, {"name": "entity_token_type_ids", "val": " = None"}, {"name": "entity_position_ids", "val": " = None"}, {"name": "head_mask", "val": " = None"}, {"name": "inputs_embeds", "val": " = None"}, {"name": "labels", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "return_dict", "val": " = None"}]</parameters><paramsdesc>- **input_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`) --
+<docstring><name>forward</name><anchor>transformers.LukeForEntityPairClassification.forward</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/luke/modeling_luke.py#L1396</source><parameters>[{"name": "input_ids", "val": " = None"}, {"name": "attention_mask", "val": " = None"}, {"name": "token_type_ids", "val": " = None"}, {"name": "position_ids", "val": " = None"}, {"name": "entity_ids", "val": " = None"}, {"name": "entity_attention_mask", "val": " = None"}, {"name": "entity_token_type_ids", "val": " = None"}, {"name": "entity_position_ids", "val": " = None"}, {"name": "head_mask", "val": " = None"}, {"name": "inputs_embeds", "val": " = None"}, {"name": "labels", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "return_dict", "val": " = None"}]</parameters><paramsdesc>- **input_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`) --
   Indices of input sequence tokens in the vocabulary.
 
   Indices can be obtained using [LukeTokenizer](/docs/transformers/master/en/model_doc/luke#transformers.LukeTokenizer). See [PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.encode) and
@@ -1007,7 +1018,10 @@ Examples:
 >>> model = LukeForEntityPairClassification.from_pretrained("studio-ousia/luke-large-finetuned-tacred")
 
 >>> text = "Beyoncé lives in Los Angeles."
->>> entity_spans = [(0, 7), (17, 28)]  # character-based entity spans corresponding to "Beyoncé" and "Los Angeles"
+>>> entity_spans = [
+...     (0, 7),
+...     (17, 28),
+>>> ]  # character-based entity spans corresponding to "Beyoncé" and "Los Angeles"
 >>> inputs = tokenizer(text, entity_spans=entity_spans, return_tensors="pt")
 >>> outputs = model(**inputs)
 >>> logits = outputs.logits
@@ -1022,7 +1036,7 @@ Predicted class: per:cities_of_residence
 
 <div class="docstring">
 
-<docstring><name>class transformers.LukeForEntitySpanClassification</name><anchor>transformers.LukeForEntitySpanClassification</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/luke/modeling_luke.py#L1492</source><parameters>[{"name": "config", "val": ""}]</parameters><paramsdesc>- **config** ([LukeConfig](/docs/transformers/master/en/model_doc/luke#transformers.LukeConfig)) -- Model configuration class with all the parameters of the
+<docstring><name>class transformers.LukeForEntitySpanClassification</name><anchor>transformers.LukeForEntitySpanClassification</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/luke/modeling_luke.py#L1503</source><parameters>[{"name": "config", "val": ""}]</parameters><paramsdesc>- **config** ([LukeConfig](/docs/transformers/master/en/model_doc/luke#transformers.LukeConfig)) -- Model configuration class with all the parameters of the
   model. Initializing with a config file does not load the weights associated with the model, only the
   configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel.from_pretrained) method to load the model weights.</paramsdesc><paramgroups>0</paramgroups></docstring>
 
@@ -1043,7 +1057,7 @@ and behavior.
 
 
 <div class="docstring">
-<docstring><name>forward</name><anchor>transformers.LukeForEntitySpanClassification.forward</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/luke/modeling_luke.py#L1505</source><parameters>[{"name": "input_ids", "val": " = None"}, {"name": "attention_mask", "val": " = None"}, {"name": "token_type_ids", "val": " = None"}, {"name": "position_ids", "val": " = None"}, {"name": "entity_ids", "val": " = None"}, {"name": "entity_attention_mask", "val": " = None"}, {"name": "entity_token_type_ids", "val": " = None"}, {"name": "entity_position_ids", "val": " = None"}, {"name": "entity_start_positions", "val": " = None"}, {"name": "entity_end_positions", "val": " = None"}, {"name": "head_mask", "val": " = None"}, {"name": "inputs_embeds", "val": " = None"}, {"name": "labels", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "return_dict", "val": " = None"}]</parameters><paramsdesc>- **input_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`) --
+<docstring><name>forward</name><anchor>transformers.LukeForEntitySpanClassification.forward</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/luke/modeling_luke.py#L1516</source><parameters>[{"name": "input_ids", "val": " = None"}, {"name": "attention_mask", "val": " = None"}, {"name": "token_type_ids", "val": " = None"}, {"name": "position_ids", "val": " = None"}, {"name": "entity_ids", "val": " = None"}, {"name": "entity_attention_mask", "val": " = None"}, {"name": "entity_token_type_ids", "val": " = None"}, {"name": "entity_position_ids", "val": " = None"}, {"name": "entity_start_positions", "val": " = None"}, {"name": "entity_end_positions", "val": " = None"}, {"name": "head_mask", "val": " = None"}, {"name": "inputs_embeds", "val": " = None"}, {"name": "labels", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "return_dict", "val": " = None"}]</parameters><paramsdesc>- **input_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`) --
   Indices of input sequence tokens in the vocabulary.
 
   Indices can be obtained using [LukeTokenizer](/docs/transformers/master/en/model_doc/luke#transformers.LukeTokenizer). See [PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.encode) and
@@ -1165,8 +1179,8 @@ Examples:
 >>> model = LukeForEntitySpanClassification.from_pretrained("studio-ousia/luke-large-finetuned-conll-2003")
 
 >>> text = "Beyoncé lives in Los Angeles"
-
 # List all possible entity spans in the text
+
 >>> word_start_positions = [0, 8, 14, 17, 21]  # character-based start positions of word tokens
 >>> word_end_positions = [7, 13, 16, 20, 28]  # character-based end positions of word tokens
 >>> entity_spans = []
@@ -1180,7 +1194,7 @@ Examples:
 >>> predicted_class_indices = logits.argmax(-1).squeeze().tolist()
 >>> for span, predicted_class_idx in zip(entity_spans, predicted_class_indices):
 ...     if predicted_class_idx != 0:
-...        print(text[span[0]:span[1]], model.config.id2label[predicted_class_idx])
+...         print(text[span[0] : span[1]], model.config.id2label[predicted_class_idx])
 Beyoncé PER
 Los Angeles LOC
 ```

@@ -167,6 +167,7 @@ from transformers import pipeline
 
 pipe = pipeline("text-classification")
 
+
 def data():
     while True:
         # This could come from a dataset, a database, a queue or HTTP request
@@ -175,6 +176,7 @@ def data():
         # to use multiple threads to preprocess data. You can still have 1 thread that
         # does the preprocessing while the main runs the big inference
         yield "This is a test"
+
 
 for out in pipe(data()):
     print(out)
@@ -282,15 +284,15 @@ Examples:
 >>> from transformers import pipeline, AutoModelForTokenClassification, AutoTokenizer
 
 >>> # Sentiment analysis pipeline
->>> pipeline('sentiment-analysis')
+>>> pipeline("sentiment-analysis")
 
 >>> # Question answering pipeline, specifying the checkpoint identifier
->>> pipeline('question-answering', model='distilbert-base-cased-distilled-squad', tokenizer='bert-base-cased')
+>>> pipeline("question-answering", model="distilbert-base-cased-distilled-squad", tokenizer="bert-base-cased")
 
 >>> # Named entity recognition pipeline, passing in a specific model and tokenizer
 >>> model = AutoModelForTokenClassification.from_pretrained("dbmdz/bert-large-cased-finetuned-conll03-english")
 >>> tokenizer = AutoTokenizer.from_pretrained("bert-base-cased")
->>> pipeline('ner', model=model, tokenizer=tokenizer)
+>>> pipeline("ner", model=model, tokenizer=tokenizer)
 ```
 
 </div>
@@ -301,10 +303,10 @@ All pipelines can use batching. This will work
 whenever the pipeline uses its streaming ability (so when passing lists or `Dataset` or `generator`).
 
 ```python
-from transformers import pipeline                                                   
+from transformers import pipeline
 from transformers.pipelines.base import KeyDataset
 import datasets
-import tqdm                                                                         
+import tqdm
 
 dataset = datasets.load_dataset("imdb", name="plain_text", split="unsupervised")
 pipe = pipeline("text-classification", device=0)
@@ -325,28 +327,28 @@ Example where it's mostly a speedup:
 </Tip>
 
 ```python
-from transformers import pipeline                                                   
-from torch.utils.data import Dataset                                                
-import tqdm                                                                         
+from transformers import pipeline
+from torch.utils.data import Dataset
+import tqdm
 
 
-pipe = pipeline("text-classification", device=0)                                    
+pipe = pipeline("text-classification", device=0)
 
 
-class MyDataset(Dataset):                                                           
-    def __len__(self):                                                              
-        return 5000                                                                 
+class MyDataset(Dataset):
+    def __len__(self):
+        return 5000
 
-    def __getitem__(self, i):                                                       
-        return "This is a test"                                                     
+    def __getitem__(self, i):
+        return "This is a test"
 
 
-dataset = MyDataset()   
+dataset = MyDataset()
 
 for batch_size in [1, 8, 64, 256]:
-    print("-" * 30)                                                                     
-    print(f"Streaming batch_size=&amp;lcub;batch_size}")    
-    for out in tqdm.tqdm(pipe(dataset, batch_size=batch_size), total=len(dataset)):              
+    print("-" * 30)
+    print(f"Streaming batch_size=&amp;lcub;batch_size}")
+    for out in tqdm.tqdm(pipe(dataset, batch_size=batch_size), total=len(dataset)):
         pass
 ```
 
@@ -370,15 +372,15 @@ Streaming batch_size=256
 Example where it's most a slowdown:
 
 ```python
-class MyDataset(Dataset):                                                           
-    def __len__(self):                                                              
-        return 5000                                                                 
+class MyDataset(Dataset):
+    def __len__(self):
+        return 5000
 
-    def __getitem__(self, i):                                                       
-        if i % 64 == 0:                                                          
-            n = 100                                                              
-        else:                                                                    
-            n = 1                                                                
+    def __getitem__(self, i):
+        if i % 64 == 0:
+            n = 100
+        else:
+            n = 1
         return "This is a test" * n
 ```
 
@@ -474,10 +476,11 @@ If you want to try simply you can:
 
 ```python
 class MyPipeline(TextClassificationPipeline):
-    def postprocess(...):
-        ...
+    def postprocess():
+        # Your code goes here
         scores = scores * 100
-        ...
+        # And here
+
 
 my_pipeline = MyPipeline(model=model, tokenizer=tokenizer, ...)
 # or if you use *pipeline* function, then:
@@ -1083,7 +1086,7 @@ Perform segmentation (detect masks & classes) in the image(s) passed as inputs.
 
 <div class="docstring">
 
-<docstring><name>class transformers.TokenClassificationPipeline</name><anchor>transformers.TokenClassificationPipeline</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/pipelines/token_classification.py#L86</source><parameters>[{"name": "args_parser", "val": " = <transformers.pipelines.token_classification.TokenClassificationArgumentHandler object at 0x7fee1340c280>"}, {"name": "*args", "val": ""}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **model** ([PreTrainedModel](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel) or [TFPreTrainedModel](/docs/transformers/master/en/main_classes/model#transformers.TFPreTrainedModel)) --
+<docstring><name>class transformers.TokenClassificationPipeline</name><anchor>transformers.TokenClassificationPipeline</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/pipelines/token_classification.py#L86</source><parameters>[{"name": "args_parser", "val": " = <transformers.pipelines.token_classification.TokenClassificationArgumentHandler object at 0x7f9ad01021c0>"}, {"name": "*args", "val": ""}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **model** ([PreTrainedModel](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel) or [TFPreTrainedModel](/docs/transformers/master/en/main_classes/model#transformers.TFPreTrainedModel)) --
   The model that will be used by the pipeline to make predictions. This needs to be a model inheriting from
   [PreTrainedModel](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel) for PyTorch and [TFPreTrainedModel](/docs/transformers/master/en/main_classes/model#transformers.TFPreTrainedModel) for TensorFlow.
 - **tokenizer** ([PreTrainedTokenizer](/docs/transformers/master/en/main_classes/tokenizer#transformers.PreTrainedTokenizer)) --
@@ -1507,7 +1510,7 @@ Summarize the text(s) given as inputs.
 
 <div class="docstring">
 
-<docstring><name>class transformers.TableQuestionAnsweringPipeline</name><anchor>transformers.TableQuestionAnsweringPipeline</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/pipelines/table_question_answering.py#L83</source><parameters>[{"name": "args_parser", "val": " = <transformers.pipelines.table_question_answering.TableQuestionAnsweringArgumentHandler object at 0x7fee133f0a60>"}, {"name": "*args", "val": ""}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **model** ([PreTrainedModel](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel) or [TFPreTrainedModel](/docs/transformers/master/en/main_classes/model#transformers.TFPreTrainedModel)) --
+<docstring><name>class transformers.TableQuestionAnsweringPipeline</name><anchor>transformers.TableQuestionAnsweringPipeline</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/pipelines/table_question_answering.py#L83</source><parameters>[{"name": "args_parser", "val": " = <transformers.pipelines.table_question_answering.TableQuestionAnsweringArgumentHandler object at 0x7f9ad00e29a0>"}, {"name": "*args", "val": ""}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **model** ([PreTrainedModel](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel) or [TFPreTrainedModel](/docs/transformers/master/en/main_classes/model#transformers.TFPreTrainedModel)) --
   The model that will be used by the pipeline to make predictions. This needs to be a model inheriting from
   [PreTrainedModel](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel) for PyTorch and [TFPreTrainedModel](/docs/transformers/master/en/main_classes/model#transformers.TFPreTrainedModel) for TensorFlow.
 - **tokenizer** ([PreTrainedTokenizer](/docs/transformers/master/en/main_classes/tokenizer#transformers.PreTrainedTokenizer)) --
@@ -1605,10 +1608,10 @@ Example:
 
 ```python
 data = &amp;lcub;
-"actors": ["brad pitt", "leonardo di caprio", "george clooney"],
-"age": ["56", "45", "59"],
-"number of movies": ["87", "53", "69"],
-"date of birth": ["7 february 1967", "10 june 1996", "28 november 1967"],
+    "actors": ["brad pitt", "leonardo di caprio", "george clooney"],
+    "age": ["56", "45", "59"],
+    "number of movies": ["87", "53", "69"],
+    "date of birth": ["7 february 1967", "10 june 1996", "28 november 1967"],
 }
 ```
 
@@ -1618,6 +1621,7 @@ Example:
 
 ```python
 import pandas as pd
+
 table = pd.DataFrame.from_dict(data)
 ```
 
@@ -1922,7 +1926,7 @@ Checks whether there might be something wrong with given input with regard to th
 
 <div class="docstring">
 
-<docstring><name>class transformers.TokenClassificationPipeline</name><anchor>transformers.TokenClassificationPipeline</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/pipelines/token_classification.py#L86</source><parameters>[{"name": "args_parser", "val": " = <transformers.pipelines.token_classification.TokenClassificationArgumentHandler object at 0x7fee1340c280>"}, {"name": "*args", "val": ""}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **model** ([PreTrainedModel](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel) or [TFPreTrainedModel](/docs/transformers/master/en/main_classes/model#transformers.TFPreTrainedModel)) --
+<docstring><name>class transformers.TokenClassificationPipeline</name><anchor>transformers.TokenClassificationPipeline</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/pipelines/token_classification.py#L86</source><parameters>[{"name": "args_parser", "val": " = <transformers.pipelines.token_classification.TokenClassificationArgumentHandler object at 0x7f9ad01021c0>"}, {"name": "*args", "val": ""}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **model** ([PreTrainedModel](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel) or [TFPreTrainedModel](/docs/transformers/master/en/main_classes/model#transformers.TFPreTrainedModel)) --
   The model that will be used by the pipeline to make predictions. This needs to be a model inheriting from
   [PreTrainedModel](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel) for PyTorch and [TFPreTrainedModel](/docs/transformers/master/en/main_classes/model#transformers.TFPreTrainedModel) for TensorFlow.
 - **tokenizer** ([PreTrainedTokenizer](/docs/transformers/master/en/main_classes/tokenizer#transformers.PreTrainedTokenizer)) --
@@ -2147,7 +2151,7 @@ Translate the text(s) given as inputs.
 
 <div class="docstring">
 
-<docstring><name>class transformers.ZeroShotClassificationPipeline</name><anchor>transformers.ZeroShotClassificationPipeline</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/pipelines/zero_shot_classification.py#L47</source><parameters>[{"name": "args_parser", "val": " = <transformers.pipelines.zero_shot_classification.ZeroShotClassificationArgumentHandler object at 0x7fee1340cbe0>"}, {"name": "*args", "val": ""}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **model** ([PreTrainedModel](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel) or [TFPreTrainedModel](/docs/transformers/master/en/main_classes/model#transformers.TFPreTrainedModel)) --
+<docstring><name>class transformers.ZeroShotClassificationPipeline</name><anchor>transformers.ZeroShotClassificationPipeline</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/pipelines/zero_shot_classification.py#L47</source><parameters>[{"name": "args_parser", "val": " = <transformers.pipelines.zero_shot_classification.ZeroShotClassificationArgumentHandler object at 0x7f9ad0102b20>"}, {"name": "*args", "val": ""}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **model** ([PreTrainedModel](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel) or [TFPreTrainedModel](/docs/transformers/master/en/main_classes/model#transformers.TFPreTrainedModel)) --
   The model that will be used by the pipeline to make predictions. This needs to be a model inheriting from
   [PreTrainedModel](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel) for PyTorch and [TFPreTrainedModel](/docs/transformers/master/en/main_classes/model#transformers.TFPreTrainedModel) for TensorFlow.
 - **tokenizer** ([PreTrainedTokenizer](/docs/transformers/master/en/main_classes/tokenizer#transformers.PreTrainedTokenizer)) --

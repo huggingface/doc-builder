@@ -80,17 +80,17 @@ Examples:
 
 >>> # Accessing the model configuration
 >>> config_encoder = model.config.encoder
->>> config_decoder  = model.config.decoder
+>>> config_decoder = model.config.decoder
 >>> # set decoder config to causal lm
 >>> config_decoder.is_decoder = True
 >>> config_decoder.add_cross_attention = True
 
 >>> # Saving the model, including its configuration
->>> model.save_pretrained('my-model')
+>>> model.save_pretrained("my-model")
 
 >>> # loading model and config from pretrained folder
->>> encoder_decoder_config = SpeechEncoderDecoderConfig.from_pretrained('my-model')
->>> model = SpeechEncoderDecoderModel.from_pretrained('my-model', config=encoder_decoder_config)
+>>> encoder_decoder_config = SpeechEncoderDecoderConfig.from_pretrained("my-model")
+>>> model = SpeechEncoderDecoderModel.from_pretrained("my-model", config=encoder_decoder_config)
 ```
 
 
@@ -162,7 +162,7 @@ one of the base model classes of the library as encoder and another one as decod
 
 
 <div class="docstring">
-<docstring><name>forward</name><anchor>transformers.SpeechEncoderDecoderModel.forward</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/speech_encoder_decoder/modeling_speech_encoder_decoder.py#L420</source><parameters>[{"name": "inputs", "val": " = None"}, {"name": "attention_mask", "val": " = None"}, {"name": "decoder_input_ids", "val": " = None"}, {"name": "decoder_attention_mask", "val": " = None"}, {"name": "encoder_outputs", "val": " = None"}, {"name": "past_key_values", "val": " = None"}, {"name": "decoder_inputs_embeds", "val": " = None"}, {"name": "labels", "val": " = None"}, {"name": "use_cache", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "input_values", "val": " = None"}, {"name": "input_features", "val": " = None"}, {"name": "return_dict", "val": " = None"}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **inputs** (`torch.FloatTensor` of shape `(batch_size, sequence_length)` or `(batch_size, sequence_length, feature_dim)`, *optional*) --
+<docstring><name>forward</name><anchor>transformers.SpeechEncoderDecoderModel.forward</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/speech_encoder_decoder/modeling_speech_encoder_decoder.py#L423</source><parameters>[{"name": "inputs", "val": " = None"}, {"name": "attention_mask", "val": " = None"}, {"name": "decoder_input_ids", "val": " = None"}, {"name": "decoder_attention_mask", "val": " = None"}, {"name": "encoder_outputs", "val": " = None"}, {"name": "past_key_values", "val": " = None"}, {"name": "decoder_inputs_embeds", "val": " = None"}, {"name": "labels", "val": " = None"}, {"name": "use_cache", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "input_values", "val": " = None"}, {"name": "input_features", "val": " = None"}, {"name": "return_dict", "val": " = None"}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **inputs** (`torch.FloatTensor` of shape `(batch_size, sequence_length)` or `(batch_size, sequence_length, feature_dim)`, *optional*) --
   Float values of input raw speech waveform or speech features. Values can be obtained by loading a *.flac*
   or *.wav* audio file into an array of type *List[float]* or a *numpy.ndarray*, *e.g.* via the soundfile
   library (*pip install soundfile*). To prepare the array into *inputs*, either the [Wav2Vec2Processor](/docs/transformers/master/en/model_doc/wav2vec2#transformers.Wav2Vec2Processor) or
@@ -298,8 +298,8 @@ Examples:
 >>> from datasets import load_dataset
 >>> import torch
 
->>> processor = Speech2Text2Processor.from_pretrained('facebook/s2t-wav2vec2-large-en-de')
->>> model = SpeechEncoderDecoderModel.from_pretrained('facebook/s2t-wav2vec2-large-en-de')
+>>> processor = Speech2Text2Processor.from_pretrained("facebook/s2t-wav2vec2-large-en-de")
+>>> model = SpeechEncoderDecoderModel.from_pretrained("facebook/s2t-wav2vec2-large-en-de")
 
 >>> ds = load_dataset("hf-internal-testing/librispeech_asr_dummy", "clean", split="validation")
 
@@ -366,8 +366,11 @@ Example:
 
 ```python
 >>> from transformers import SpeechEncoderDecoderModel
+
 >>> # initialize a wav2vec2bert from a pretrained Wav2Vec2 and a pretrained BERT model. Note that the cross-attention layers will be randomly initialized
->>> model = SpeechEncoderDecoderModel.from_encoder_decoder_pretrained('facebook/wav2vec2-base-960h', 'bert-base-uncased')
+>>> model = SpeechEncoderDecoderModel.from_encoder_decoder_pretrained(
+...     "facebook/wav2vec2-base-960h", "bert-base-uncased"
+... )
 >>> # saving model after fine-tuning
 >>> model.save_pretrained("./wav2vec2bert")
 >>> # load fine-tuned model
