@@ -1,0 +1,209 @@
+---
+local: exporting-transformers-models-to-onnx
+sections:
+- local: onnx-configurations
+  sections:
+  - local: transformers.onnx.OnnxConfig
+    title: OnnxConfig
+  - local: transformers.onnx.OnnxConfigWithPast
+    title: OnnxConfigWithPast
+  - local: transformers.onnx.OnnxSeq2SeqConfigWithPast
+    title: OnnxSeq2SeqConfigWithPast
+  title: ONNX Configurations
+- local: onnx-features
+  sections:
+  - local: transformers.onnx.FeaturesManager
+    title: FeaturesManager
+  title: ONNX Features
+title: Exporting 🤗 Transformers models to ONNX
+---
+<script>
+import Tip from "./Tip.svelte";
+import Youtube from "./Youtube.svelte";
+import Docstring from "./Docstring.svelte";
+import CodeBlock from "./CodeBlock.svelte";
+import CodeBlockFw from "./CodeBlockFw.svelte";
+import ColabDropdown from "./ColabDropdown.svelte";
+import IconCopyLink from "./IconCopyLink.svelte";
+export let fw: "pt" | "tf"
+</script>
+<!--Copyright 2020 The HuggingFace Team. All rights reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
+the License. You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on
+an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
+specific language governing permissions and limitations under the License.
+-->
+
+<h1 id="exporting-transformers-models-to-onnx">Exporting 🤗 Transformers models to ONNX</h1>
+
+🤗 Transformers provides a `transformers.onnx` package that enables you to
+convert model checkpoints to an ONNX graph by leveraging configuration objects.
+
+See the [guide](../serialization) on exporting 🤗 Transformers models for more
+details.
+
+<h2 id="onnx-configurations">ONNX Configurations</h2>
+
+We provide three abstract classes that you should inherit from, depending on the
+type of model architecture you wish to export:
+
+* Encoder-based models inherit from [OnnxConfig](/docs/transformers/master/en/main_classes/onnx#transformers.onnx.OnnxConfig)
+* Decoder-based models inherit from [OnnxConfigWithPast](/docs/transformers/master/en/main_classes/onnx#transformers.onnx.OnnxConfigWithPast)
+* Encoder-decoder models inherit from [OnnxSeq2SeqConfigWithPast](/docs/transformers/master/en/main_classes/onnx#transformers.onnx.OnnxSeq2SeqConfigWithPast)
+
+<h3 id="transformers.onnx.OnnxConfig">OnnxConfig</h3>
+
+<div class="docstring">
+
+<docstring><name>class transformers.onnx.OnnxConfig</name><anchor>transformers.onnx.OnnxConfig</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/onnx/config.py#L52</source><parameters>[{"name": "config", "val": ": PretrainedConfig"}, {"name": "task", "val": ": str = 'default'"}, {"name": "patching_specs", "val": ": typing.List[transformers.onnx.config.PatchingSpec] = None"}]</parameters></docstring>
+
+Base class for ONNX exportable model describing metadata on how to export the model through the ONNX format.
+
+
+
+<div class="docstring">
+<docstring><name>flatten\_output\_collection\_property</name><anchor>transformers.onnx.OnnxConfig.flatten_output_collection_property</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/onnx/config.py#L245</source><parameters>[{"name": "name", "val": ": str"}, {"name": "field", "val": ": typing.Iterable[typing.Any]"}]</parameters><paramsdesc>name -- The name of the nested structure
+field -- The structure to, potentially, be flattened</paramsdesc><paramgroups>0</paramgroups><rettype>(Dict[str, Any])</rettype><retdesc>Outputs with flattened structure and key mapping this new structure.</retdesc></docstring>
+
+Flatten any potential nested structure expanding the name of the field with the index of the element within the
+structure.
+
+
+
+
+
+
+
+
+</div>
+<div class="docstring">
+<docstring><name>from\_model\_config</name><anchor>transformers.onnx.OnnxConfig.from_model_config</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/onnx/config.py#L92</source><parameters>[{"name": "config", "val": ": PretrainedConfig"}, {"name": "task", "val": ": str = 'default'"}]</parameters><paramsdesc>config -- The model's configuration to use when exporting to ONNX</paramsdesc><paramgroups>0</paramgroups><retdesc>OnnxConfig for this model</retdesc></docstring>
+
+Instantiate a OnnxConfig for a specific model
+
+
+
+
+
+
+</div>
+<div class="docstring">
+<docstring><name>generate\_dummy\_inputs</name><anchor>transformers.onnx.OnnxConfig.generate_dummy_inputs</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/onnx/config.py#L198</source><parameters>[{"name": "tokenizer", "val": ": PreTrainedTokenizer"}, {"name": "batch_size", "val": ": int = -1"}, {"name": "seq_length", "val": ": int = -1"}, {"name": "is_pair", "val": ": bool = False"}, {"name": "framework", "val": ": typing.Optional[transformers.file_utils.TensorType] = None"}]</parameters><paramsdesc>tokenizer -- The tokenizer associated with this model configuration
+batch_size -- The batch size (int) to export the model for (-1 means dynamic axis)
+seq_length -- The sequence length (int) to export the model for (-1 means dynamic axis)
+is_pair -- Indicate if the input is a pair (sentence 1, sentence 2)
+framework -- The framework (optional) the tokenizer will generate tensor for</paramsdesc><paramgroups>0</paramgroups><retdesc>Mapping[str, Tensor] holding the kwargs to provide to the model's forward function</retdesc></docstring>
+
+Generate inputs to provide to the ONNX exporter for the specific framework
+
+
+
+
+
+
+</div>
+<div class="docstring">
+<docstring><name>use\_external\_data\_format</name><anchor>transformers.onnx.OnnxConfig.use_external_data_format</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/onnx/config.py#L181</source><parameters>[{"name": "num_parameters", "val": ": int"}]</parameters><paramsdesc>num_parameters -- Number of parameter on the model</paramsdesc><paramgroups>0</paramgroups><retdesc>True if model.num_parameters() * size_of(float32) >= 2Gb False otherwise</retdesc></docstring>
+
+Flag indicating if the model requires using external data format
+
+
+
+
+
+
+</div></div>
+
+<h3 id="transformers.onnx.OnnxConfigWithPast">OnnxConfigWithPast</h3>
+
+<div class="docstring">
+
+<div class="docstring">
+<docstring><name>fill\_with\_past\_key\_values\_</name><anchor>transformers.onnx.OnnxConfigWithPast.fill_with_past_key_values_</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/onnx/config.py#L366</source><parameters>[{"name": "inputs_or_outputs", "val": ": typing.Mapping[str, typing.Mapping[int, str]]"}, {"name": "direction", "val": ": str"}]</parameters><paramsdesc>inputs_or_outputs -- The mapping to fill.
+direction -- either "inputs" or "outputs", it specifies whether input_or_outputs is the input mapping or the
+output mapping, this is important for axes naming.</paramsdesc><paramgroups>0</paramgroups></docstring>
+
+Fill the input_or_ouputs mapping with past_key_values dynamic axes considering.
+
+
+
+
+</div>
+<div class="docstring">
+<docstring><name>with\_past</name><anchor>transformers.onnx.OnnxConfigWithPast.with_past</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/onnx/config.py#L275</source><parameters>[{"name": "config", "val": ": PretrainedConfig"}, {"name": "task", "val": ": str = 'default'"}]</parameters><paramsdesc>config -- The underlying model's config to use when exporting to ONNX</paramsdesc><paramgroups>0</paramgroups><retdesc>OnnxConfig with `.use_past = True`</retdesc></docstring>
+
+Instantiate a OnnxConfig with `use_past` attribute set to True
+
+
+
+
+
+
+</div></div>
+
+<h3 id="transformers.onnx.OnnxSeq2SeqConfigWithPast">OnnxSeq2SeqConfigWithPast</h3>
+
+<div class="docstring">
+</div>
+
+<h2 id="onnx-features">ONNX Features</h2>
+
+Each ONNX configuration is associated with a set of _features_ that enable you
+to export models for different types of topologies or tasks.
+
+<h3 id="transformers.onnx.FeaturesManager">FeaturesManager</h3>
+
+<div class="docstring">
+
+<div class="docstring">
+<docstring><name>check\_supported\_model\_or\_raise</name><anchor>transformers.onnx.FeaturesManager.check_supported_model_or_raise</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/onnx/features.py#L288</source><parameters>[{"name": "model", "val": ": PreTrainedModel"}, {"name": "feature", "val": ": str = 'default'"}]</parameters><paramsdesc>model -- The model to export.
+feature -- The name of the feature to check if it is available.</paramsdesc><paramgroups>0</paramgroups><retdesc>(str) The type of the model (OnnxConfig) The OnnxConfig instance holding the model export properties.</retdesc></docstring>
+
+Check whether or not the model has the requested features.
+
+
+
+
+
+
+</div>
+<div class="docstring">
+<docstring><name>get\_model\_class\_for\_feature</name><anchor>transformers.onnx.FeaturesManager.get_model_class_for_feature</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/onnx/features.py#L254</source><parameters>[{"name": "feature", "val": ": str"}]</parameters><paramsdesc>feature -- The feature required.</paramsdesc><paramgroups>0</paramgroups><retdesc>The AutoModel class corresponding to the feature.</retdesc></docstring>
+
+Attempt to retrieve an AutoModel class from a feature name.
+
+
+
+
+
+
+</div>
+<div class="docstring">
+<docstring><name>get\_model\_from\_feature</name><anchor>transformers.onnx.FeaturesManager.get_model_from_feature</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/onnx/features.py#L273</source><parameters>[{"name": "feature", "val": ": str"}, {"name": "model", "val": ": str"}]</parameters><paramsdesc>feature -- The feature required.
+model -- The name of the model to export.</paramsdesc><paramgroups>0</paramgroups><retdesc>The instance of the model.</retdesc></docstring>
+
+Attempt to retrieve a model from a model's name and the feature to be enabled.
+
+
+
+
+
+
+</div>
+<div class="docstring">
+<docstring><name>get\_supported\_features\_for\_model\_type</name><anchor>transformers.onnx.FeaturesManager.get_supported_features_for_model_type</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/onnx/features.py#L226</source><parameters>[{"name": "model_type", "val": ": str"}, {"name": "model_name", "val": ": typing.Optional[str] = None"}]</parameters><paramsdesc>model_type -- The model type to retrieve the supported features for.
+model_name -- The name attribute of the model object, only used for the exception message.</paramsdesc><paramgroups>0</paramgroups><retdesc>The dictionary mapping each feature to a corresponding OnnxConfig constructor.</retdesc></docstring>
+
+Try to retrieve the feature -> OnnxConfig constructor map from the model type.
+
+
+
+
+
+
+</div></div>
