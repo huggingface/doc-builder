@@ -48,7 +48,7 @@ def build_command(args):
 
     # dev build should not update _versions.yml
     package_doc_path = os.path.join(args.build_dir, args.library_name)
-    if "dev" not in version and os.path.isfile(os.path.join(package_doc_path, "_versions.yml")):
+    if "pr_" not in version and os.path.isfile(os.path.join(package_doc_path, "_versions.yml")):
         update_versions_file(os.path.join(args.build_dir, args.library_name), version)
 
 
