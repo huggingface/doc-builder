@@ -540,7 +540,6 @@ Parameters:
 """
         self.assertEqual(parse_rst_docstring(rst_docstring), expected_conversion)
 
-
     def test_remove_indent(self):
         example1 = """
     Lala

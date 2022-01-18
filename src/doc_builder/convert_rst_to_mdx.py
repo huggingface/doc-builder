@@ -425,9 +425,9 @@ def parse_rst_docstring(docstring):
     if result.count("<parameters>") > 1:
         parameters_blocks = _re_parameters.findall(result)
         parameters_blocks = [pb[0].strip() for pb in parameters_blocks]
-        parameters_str = '\n'.join(parameters_blocks)
+        parameters_str = "\n".join(parameters_blocks)
         result = _re_parameters.sub("", result)
-        result +=  f'\n<parameters>{parameters_str}</parameters>\n'
+        result += f"\n<parameters>{parameters_str}</parameters>\n"
 
     return result
 
