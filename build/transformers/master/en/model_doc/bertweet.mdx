@@ -1,0 +1,211 @@
+---
+local: bertweet
+sections:
+- local: overview
+  title: Overview
+- local: transformers.BertweetTokenizer
+  title: BertweetTokenizer
+title: BERTweet
+---
+<script>
+import Tip from "./Tip.svelte";
+import Youtube from "./Youtube.svelte";
+import Docstring from "./Docstring.svelte";
+import CodeBlock from "./CodeBlock.svelte";
+import CodeBlockFw from "./CodeBlockFw.svelte";
+import ColabDropdown from "./ColabDropdown.svelte";
+import IconCopyLink from "./IconCopyLink.svelte";
+export let fw: "pt" | "tf"
+</script>
+<!--Copyright 2020 The HuggingFace Team. All rights reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
+the License. You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on
+an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
+specific language governing permissions and limitations under the License.
+-->
+
+<h1 id="bertweet">BERTweet</h1>
+
+<h2 id="overview">Overview</h2>
+
+The BERTweet model was proposed in [BERTweet: A pre-trained language model for English Tweets](https://www.aclweb.org/anthology/2020.emnlp-demos.2.pdf) by Dat Quoc Nguyen, Thanh Vu, Anh Tuan Nguyen.
+
+The abstract from the paper is the following:
+
+*We present BERTweet, the first public large-scale pre-trained language model for English Tweets. Our BERTweet, having
+the same architecture as BERT-base (Devlin et al., 2019), is trained using the RoBERTa pre-training procedure (Liu et
+al., 2019). Experiments show that BERTweet outperforms strong baselines RoBERTa-base and XLM-R-base (Conneau et al.,
+2020), producing better performance results than the previous state-of-the-art models on three Tweet NLP tasks:
+Part-of-speech tagging, Named-entity recognition and text classification.*
+
+Example of use:
+
+```python
+>>> import torch
+>>> from transformers import AutoModel, AutoTokenizer
+
+>>> bertweet = AutoModel.from_pretrained("vinai/bertweet-base")
+
+>>> # For transformers v4.x+:
+>>> tokenizer = AutoTokenizer.from_pretrained("vinai/bertweet-base", use_fast=False)
+
+>>> # For transformers v3.x:
+>>> # tokenizer = AutoTokenizer.from_pretrained("vinai/bertweet-base")
+
+>>> # INPUT TWEET IS ALREADY NORMALIZED!
+>>> line = "SC has first two presumptive cases of coronavirus , DHEC confirms HTTPURL via @USER :cry:"
+
+>>> input_ids = torch.tensor([tokenizer.encode(line)])
+
+>>> with torch.no_grad():
+...     features = bertweet(input_ids)  # Models outputs are now tuples
+
+>>> # With TensorFlow 2.0+:
+>>> # from transformers import TFAutoModel
+>>> # bertweet = TFAutoModel.from_pretrained("vinai/bertweet-base")
+```
+
+This model was contributed by [dqnguyen](https://huggingface.co/dqnguyen). The original code can be found [here](https://github.com/VinAIResearch/BERTweet).
+
+<h2 id="transformers.BertweetTokenizer">BertweetTokenizer</h2>
+
+<div class="docstring">
+
+<docstring><name>class transformers.BertweetTokenizer</name><anchor>transformers.BertweetTokenizer</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/bertweet/tokenization_bertweet.py#L68</source><parameters>[{"name": "vocab_file", "val": ""}, {"name": "merges_file", "val": ""}, {"name": "normalization", "val": " = False"}, {"name": "bos_token", "val": " = '<s>'"}, {"name": "eos_token", "val": " = '</s>'"}, {"name": "sep_token", "val": " = '</s>'"}, {"name": "cls_token", "val": " = '<s>'"}, {"name": "unk_token", "val": " = '<unk>'"}, {"name": "pad_token", "val": " = '<pad>'"}, {"name": "mask_token", "val": " = '<mask>'"}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **vocab_file** (`str`) --
+  Path to the vocabulary file.
+- **merges_file** (`str`) --
+  Path to the merges file.
+- **normalization** (`bool`, *optional*, defaults to `False`) --
+  Whether or not to apply a normalization preprocess.
+- **bos_token** (`str`, *optional*, defaults to `"<s>"`) --
+  The beginning of sequence token that was used during pretraining. Can be used a sequence classifier token.
+
+  <Tip>
+
+  When building a sequence using special tokens, this is not the token that is used for the beginning of
+  sequence. The token used is the `cls_token`.
+
+  </Tip>
+
+- **eos_token** (`str`, *optional*, defaults to `"</s>"`) --
+  The end of sequence token.
+
+  <Tip>
+
+  When building a sequence using special tokens, this is not the token that is used for the end of sequence.
+  The token used is the `sep_token`.
+
+  </Tip>
+
+- **sep_token** (`str`, *optional*, defaults to `"&amp;lt;/s>"`) --
+  The separator token, which is used when building a sequence from multiple sequences, e.g. two sequences for
+  sequence classification or for a text and a question for question answering. It is also used as the last
+  token of a sequence built with special tokens.
+- **cls_token** (`str`, *optional*, defaults to `"&amp;lt;s>"`) --
+  The classifier token which is used when doing sequence classification (classification of the whole sequence
+  instead of per-token classification). It is the first token of the sequence when built with special tokens.
+- **unk_token** (`str`, *optional*, defaults to `"&amp;lt;unk>"`) --
+  The unknown token. A token that is not in the vocabulary cannot be converted to an ID and is set to be this
+  token instead.
+- **pad_token** (`str`, *optional*, defaults to `"&amp;lt;pad>"`) --
+  The token used for padding, for example when batching sequences of different lengths.
+- **mask_token** (`str`, *optional*, defaults to `"&amp;lt;mask>"`) --
+  The token used for masking values. This is the token used when training this model with masked language
+  modeling. This is the token which the model will try to predict.</paramsdesc><paramgroups>0</paramgroups></docstring>
+
+Constructs a BERTweet tokenizer, using Byte-Pair-Encoding.
+
+This tokenizer inherits from [PreTrainedTokenizer](/docs/transformers/master/en/main_classes/tokenizer#transformers.PreTrainedTokenizer) which contains most of the main methods. Users should refer to
+this superclass for more information regarding those methods.
+
+
+
+
+
+<div class="docstring">
+<docstring><name>add\_from\_file</name><anchor>transformers.BertweetTokenizer.add_from_file</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/bertweet/tokenization_bertweet.py#L414</source><parameters>[{"name": "f", "val": ""}]</parameters></docstring>
+
+Loads a pre-existing dictionary from a text file and adds its symbols to this instance.
+
+
+</div>
+<div class="docstring">
+<docstring><name>build\_inputs\_with\_special\_tokens</name><anchor>transformers.BertweetTokenizer.build_inputs_with_special_tokens</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/bertweet/tokenization_bertweet.py#L183</source><parameters>[{"name": "token_ids_0", "val": ": typing.List[int]"}, {"name": "token_ids_1", "val": ": typing.Optional[typing.List[int]] = None"}]</parameters><paramsdesc>- **token_ids_0** (`List[int]`) --
+  List of IDs to which the special tokens will be added.
+- **token_ids_1** (`List[int]`, *optional*) --
+  Optional second list of IDs for sequence pairs.</paramsdesc><paramgroups>0</paramgroups><rettype>`List[int]`</rettype><retdesc>List of [input IDs](../glossary#input-ids) with the appropriate special tokens.</retdesc></docstring>
+
+Build model inputs from a sequence or a pair of sequence for sequence classification tasks by concatenating and
+adding special tokens. A BERTweet sequence has the following format:
+
+- single sequence: `<s> X </s>`
+- pair of sequences: `<s> A </s>&amp;lt;/s> B &amp;lt;/s>`
+
+
+
+
+
+
+
+
+</div>
+<div class="docstring">
+<docstring><name>convert\_tokens\_to\_string</name><anchor>transformers.BertweetTokenizer.convert_tokens_to_string</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/bertweet/tokenization_bertweet.py#L384</source><parameters>[{"name": "tokens", "val": ""}]</parameters></docstring>
+Converts a sequence of tokens (string) in a single string.
+
+</div>
+<div class="docstring">
+<docstring><name>create\_token\_type\_ids\_from\_sequences</name><anchor>transformers.BertweetTokenizer.create_token_type_ids_from_sequences</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/bertweet/tokenization_bertweet.py#L237</source><parameters>[{"name": "token_ids_0", "val": ": typing.List[int]"}, {"name": "token_ids_1", "val": ": typing.Optional[typing.List[int]] = None"}]</parameters><paramsdesc>- **token_ids_0** (`List[int]`) --
+  List of IDs.
+- **token_ids_1** (`List[int]`, *optional*) --
+  Optional second list of IDs for sequence pairs.</paramsdesc><paramgroups>0</paramgroups><rettype>`List[int]`</rettype><retdesc>List of zeros.</retdesc></docstring>
+
+Create a mask from the two sequences passed to be used in a sequence-pair classification task. BERTweet does
+not make use of token type ids, therefore a list of zeros is returned.
+
+
+
+
+
+
+
+
+</div>
+<div class="docstring">
+<docstring><name>get\_special\_tokens\_mask</name><anchor>transformers.BertweetTokenizer.get_special_tokens_mask</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/bertweet/tokenization_bertweet.py#L209</source><parameters>[{"name": "token_ids_0", "val": ": typing.List[int]"}, {"name": "token_ids_1", "val": ": typing.Optional[typing.List[int]] = None"}, {"name": "already_has_special_tokens", "val": ": bool = False"}]</parameters><paramsdesc>- **token_ids_0** (`List[int]`) --
+  List of IDs.
+- **token_ids_1** (`List[int]`, *optional*) --
+  Optional second list of IDs for sequence pairs.
+- **already_has_special_tokens** (`bool`, *optional*, defaults to `False`) --
+  Whether or not the token list is already formatted with special tokens for the model.</paramsdesc><paramgroups>0</paramgroups><rettype>`List[int]`</rettype><retdesc>A list of integers in the range [0, 1]: 1 for a special token, 0 for a sequence token.</retdesc></docstring>
+
+Retrieve sequence ids from a token list that has no special tokens added. This method is called when adding
+special tokens using the tokenizer `prepare_for_model` method.
+
+
+
+
+
+
+
+
+</div>
+<div class="docstring">
+<docstring><name>normalizeToken</name><anchor>transformers.BertweetTokenizer.normalizeToken</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/bertweet/tokenization_bertweet.py#L357</source><parameters>[{"name": "token", "val": ""}]</parameters></docstring>
+
+Normalize tokens in a Tweet
+
+
+</div>
+<div class="docstring">
+<docstring><name>normalizeTweet</name><anchor>transformers.BertweetTokenizer.normalizeTweet</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/bertweet/tokenization_bertweet.py#L323</source><parameters>[{"name": "tweet", "val": ""}]</parameters></docstring>
+
+Normalize a raw Tweet
+
+
+</div></div>

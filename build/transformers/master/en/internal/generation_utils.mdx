@@ -1,0 +1,1143 @@
+---
+local: utilities-for-generation
+sections:
+- local: generate-outputs
+  sections:
+  - local: transformers.generation_utils.GreedySearchDecoderOnlyOutput
+    title: GreedySearchOutput
+  - local: transformers.generation_utils.SampleDecoderOnlyOutput
+    title: SampleOutput
+  - local: transformers.generation_utils.BeamSearchDecoderOnlyOutput
+    title: BeamSearchOutput
+  - local: transformers.generation_utils.BeamSampleDecoderOnlyOutput
+    title: BeamSampleOutput
+  title: Generate Outputs
+- local: transformers.LogitsProcessor
+  title: LogitsProcessor
+- local: transformers.StoppingCriteria
+  title: StoppingCriteria
+- local: transformers.BeamScorer
+  title: BeamSearch
+- local: transformers.top_k_top_p_filtering
+  title: Utilities
+title: Utilities for Generation
+---
+<script>
+import Tip from "./Tip.svelte";
+import Youtube from "./Youtube.svelte";
+import Docstring from "./Docstring.svelte";
+import CodeBlock from "./CodeBlock.svelte";
+import CodeBlockFw from "./CodeBlockFw.svelte";
+import ColabDropdown from "./ColabDropdown.svelte";
+import IconCopyLink from "./IconCopyLink.svelte";
+export let fw: "pt" | "tf"
+</script>
+<!--Copyright 2020 The HuggingFace Team. All rights reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
+the License. You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on
+an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
+specific language governing permissions and limitations under the License.
+-->
+
+<h1 id="utilities-for-generation">Utilities for Generation</h1>
+
+This page lists all the utility functions used by [generate()](/docs/transformers/master/en/main_classes/model#transformers.generation_utils.GenerationMixin.generate),
+[greedy_search()](/docs/transformers/master/en/main_classes/model#transformers.generation_utils.GenerationMixin.greedy_search),
+[sample()](/docs/transformers/master/en/main_classes/model#transformers.generation_utils.GenerationMixin.sample),
+[beam_search()](/docs/transformers/master/en/main_classes/model#transformers.generation_utils.GenerationMixin.beam_search),
+[beam_sample()](/docs/transformers/master/en/main_classes/model#transformers.generation_utils.GenerationMixin.beam_sample), and
+[group_beam_search()](/docs/transformers/master/en/main_classes/model#transformers.generation_utils.GenerationMixin.group_beam_search).
+
+Most of those are only useful if you are studying the code of the generate methods in the library.
+
+<h2 id="generate-outputs">Generate Outputs</h2>
+
+The output of [generate()](/docs/transformers/master/en/main_classes/model#transformers.generation_utils.GenerationMixin.generate) is an instance of a subclass of
+[ModelOutput](/docs/transformers/master/en/main_classes/output#transformers.file_utils.ModelOutput). This output is a data structure containing all the information returned
+by [generate()](/docs/transformers/master/en/main_classes/model#transformers.generation_utils.GenerationMixin.generate), but that can also be used as tuple or dictionary.
+
+Here's an example:
+
+```python
+from transformers import GPT2Tokenizer, GPT2LMHeadModel
+
+tokenizer = GPT2Tokenizer.from_pretrained("gpt2")
+model = GPT2LMHeadModel.from_pretrained("gpt2")
+
+inputs = tokenizer("Hello, my dog is cute and ", return_tensors="pt")
+generation_output = model.generate(**inputs, return_dict_in_generate=True, output_scores=True)
+```
+
+The `generation_output` object is a [GreedySearchDecoderOnlyOutput](/docs/transformers/master/en/internal/generation_utils#transformers.generation_utils.GreedySearchDecoderOnlyOutput), as we can
+see in the documentation of that class below, it means it has the following attributes:
+
+- `sequences`: the generated sequences of tokens
+- `scores` (optional): the prediction scores of the language modelling head, for each generation step
+- `hidden_states` (optional): the hidden states of the model, for each generation step
+- `attentions` (optional): the attention weights of the model, for each generation step
+
+Here we have the `scores` since we passed along `output_scores=True`, but we don't have `hidden_states` and
+`attentions` because we didn't pass `output_hidden_states=True` or `output_attentions=True`.
+
+You can access each attribute as you would usually do, and if that attribute has not been returned by the model, you
+will get `None`. Here for instance `generation_output.scores` are all the generated prediction scores of the
+language modeling head, and `generation_output.attentions` is `None`.
+
+When using our `generation_output` object as a tuple, it only keeps the attributes that don't have `None` values.
+Here, for instance, it has two elements, `loss` then `logits`, so
+
+```python
+generation_output[:2]
+```
+
+will return the tuple `(generation_output.sequences, generation_output.scores)` for instance.
+
+When using our `generation_output` object as a dictionary, it only keeps the attributes that don't have `None`
+values. Here, for instance, it has two keys that are `sequences` and `scores`.
+
+We document here all output types.
+
+
+<h3 id="transformers.generation_utils.GreedySearchDecoderOnlyOutput">GreedySearchOutput</h3>
+
+<div class="docstring">
+
+<docstring><name>class transformers.generation\_utils.GreedySearchDecoderOnlyOutput</name><anchor>transformers.generation_utils.GreedySearchDecoderOnlyOutput</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/generation_utils.py#L58</source><parameters>[{"name": "sequences", "val": ": LongTensor = None"}, {"name": "scores", "val": ": typing.Optional[typing.Tuple[torch.FloatTensor]] = None"}, {"name": "attentions", "val": ": typing.Optional[typing.Tuple[typing.Tuple[torch.FloatTensor]]] = None"}, {"name": "hidden_states", "val": ": typing.Optional[typing.Tuple[typing.Tuple[torch.FloatTensor]]] = None"}]</parameters><paramsdesc>- **sequences** (`torch.LongTensor` of shape `(batch_size, sequence_length)`) --
+  The generated sequences. The second dimension (sequence_length) is either equal to `max_length` or shorter
+  if all batches finished early due to the `eos_token_id`.
+- **scores** (`tuple(torch.FloatTensor)` *optional*, returned when `output_scores=True` is passed or when `config.output_scores=True`) --
+  Processed prediction scores of the language modeling head (scores for each vocabulary token before SoftMax)
+  at each generation step. `(max_length-input_ids.shape[-1],)`-shaped tuple of `torch.FloatTensor` with each
+  tensor of shape `(batch_size, config.vocab_size)`).
+- **attentions** (`tuple(tuple(torch.FloatTensor))`, *optional*, returned when `output_attentions=True` is passed or `config.output_attentions=True`) --
+  Tuple (one element for each generated token) of tuples (one element for each layer of the decoder) of
+  `torch.FloatTensor` of shape `(batch_size, num_heads, generated_length, sequence_length)`.
+- **hidden_states** (`tuple(tuple(torch.FloatTensor))`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) --
+  Tuple (one element for each generated token) of tuples (one element for each layer of the decoder) of
+  `torch.FloatTensor` of shape `(batch_size, generated_length, hidden_size)`.</paramsdesc><paramgroups>0</paramgroups></docstring>
+
+Base class for outputs of decoder-only generation models using greedy search.
+
+
+
+
+
+</div>
+
+<div class="docstring">
+
+<docstring><name>class transformers.generation\_utils.GreedySearchEncoderDecoderOutput</name><anchor>transformers.generation_utils.GreedySearchEncoderDecoderOutput</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/generation_utils.py#L86</source><parameters>[{"name": "sequences", "val": ": LongTensor = None"}, {"name": "scores", "val": ": typing.Optional[typing.Tuple[torch.FloatTensor]] = None"}, {"name": "encoder_attentions", "val": ": typing.Optional[typing.Tuple[torch.FloatTensor]] = None"}, {"name": "encoder_hidden_states", "val": ": typing.Optional[typing.Tuple[torch.FloatTensor]] = None"}, {"name": "decoder_attentions", "val": ": typing.Optional[typing.Tuple[typing.Tuple[torch.FloatTensor]]] = None"}, {"name": "cross_attentions", "val": ": typing.Optional[typing.Tuple[typing.Tuple[torch.FloatTensor]]] = None"}, {"name": "decoder_hidden_states", "val": ": typing.Optional[typing.Tuple[typing.Tuple[torch.FloatTensor]]] = None"}]</parameters><paramsdesc>- **sequences** (`torch.LongTensor` of shape `(batch_size, sequence_length)`) --
+  The generated sequences. The second dimension (sequence_length) is either equal to `max_length` or shorter
+  if all batches finished early due to the `eos_token_id`.
+- **scores** (`tuple(torch.FloatTensor)` *optional*, returned when `output_scores=True` is passed or when `config.output_scores=True`) --
+  Processed prediction scores of the language modeling head (scores for each vocabulary token before SoftMax)
+  at each generation step. `(max_length-1,)`-shaped tuple of `torch.FloatTensor` with each tensor of shape
+  `(batch_size, config.vocab_size)`).
+- **encoder_attentions** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_attentions=True` is passed or `config.output_attentions=True`) --
+  Tuple of `torch.FloatTensor` (one for each layer of the decoder) of shape `(batch_size, num_heads,
+  sequence_length, sequence_length)`.
+- **encoder_hidden_states** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) --
+  Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer) of
+  shape `(batch_size, sequence_length, hidden_size)`.
+- **decoder_attentions** (`tuple(tuple(torch.FloatTensor))`, *optional*, returned when `output_attentions=True` is passed or `config.output_attentions=True`) --
+  Tuple (one element for each generated token) of tuples (one element for each layer of the decoder) of
+  `torch.FloatTensor` of shape `(batch_size, num_heads, generated_length, sequence_length)`.
+- **cross_attentions** (`tuple(tuple(torch.FloatTensor))`, *optional*, returned when `output_attentions=True` is passed or `config.output_attentions=True`) --
+  Tuple (one element for each generated token) of tuples (one element for each layer of the decoder) of
+  `torch.FloatTensor` of shape `(batch_size, num_heads, generated_length, sequence_length)`.
+- **decoder_hidden_states** (`tuple(tuple(torch.FloatTensor))`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) --
+  Tuple (one element for each generated token) of tuples (one element for each layer of the decoder) of
+  `torch.FloatTensor` of shape `(batch_size, generated_length, hidden_size)`.</paramsdesc><paramgroups>0</paramgroups></docstring>
+
+Base class for outputs of encoder-decoder generation models using greedy search. Hidden states and attention
+weights of the decoder (respectively the encoder) can be accessed via the encoder_attentions and the
+encoder_hidden_states attributes (respectively the decoder_attentions and the decoder_hidden_states attributes)
+
+
+
+
+
+</div>
+
+<div class="docstring">
+
+<docstring><name>class transformers.generation\_flax\_utils.FlaxGreedySearchOutput</name><anchor>transformers.generation_flax_utils.FlaxGreedySearchOutput</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/generation_flax_utils.py#L45</source><parameters>[{"name": "sequences", "val": ": ndarray = None"}]</parameters><paramsdesc>- **sequences** (`jnp.ndarray` of shape `(batch_size, max_length)`) --
+  The generated sequences.</paramsdesc><paramgroups>0</paramgroups></docstring>
+
+Flax Base class for outputs of decoder-only generation models using greedy search.
+
+
+
+
+
+
+<div class="docstring">
+<docstring><name>replace</name><anchor>None</anchor><source>https://github.com/huggingface/transformers/blob/master/src/flax/struct.py#L120</source><parameters>[{"name": "**updates", "val": ""}]</parameters></docstring>
+"Returns a new object replacing the specified fields with new values.
+
+</div></div>
+
+<h3 id="transformers.generation_utils.SampleDecoderOnlyOutput">SampleOutput</h3>
+
+<div class="docstring">
+
+<docstring><name>class transformers.generation\_utils.SampleDecoderOnlyOutput</name><anchor>transformers.generation_utils.SampleDecoderOnlyOutput</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/generation_utils.py#L128</source><parameters>[{"name": "sequences", "val": ": LongTensor = None"}, {"name": "scores", "val": ": typing.Optional[typing.Tuple[torch.FloatTensor]] = None"}, {"name": "attentions", "val": ": typing.Optional[typing.Tuple[typing.Tuple[torch.FloatTensor]]] = None"}, {"name": "hidden_states", "val": ": typing.Optional[typing.Tuple[typing.Tuple[torch.FloatTensor]]] = None"}]</parameters><paramsdesc>- **sequences** (`torch.LongTensor` of shape `(batch_size*num_return_sequences, sequence_length)`) --
+  The generated sequences. The second dimension (sequence_length) is either equal to `max_length` or shorter
+  if all batches finished early due to the `eos_token_id`.
+- **scores** (`tuple(torch.FloatTensor)` *optional*, returned when `output_scores=True` is passed or when `config.output_scores=True`) --
+  Processed prediction scores of the language modeling head (scores for each vocabulary token before SoftMax)
+  at each generation step. `(max_length-input_ids.shape[-1],)`-shaped tuple of `torch.FloatTensor` with each
+  tensor of shape `(batch_size*num_return_sequences, config.vocab_size)`).
+- **attentions** (`tuple(tuple(torch.FloatTensor))`, *optional*, returned when `output_attentions=True` is passed or `config.output_attentions=True`) --
+  Tuple (one element for each generated token) of tuples (one element for each layer of the decoder) of
+  `torch.FloatTensor` of shape `(num_return_sequences*batch_size, num_heads, generated_length,
+  sequence_length)`.
+- **hidden_states** (`tuple(tuple(torch.FloatTensor))`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) --
+  Tuple (one element for each generated token) of tuples (one element for each layer of the decoder) of
+  `torch.FloatTensor` of shape `(num_return_sequences*batch_size, generated_length, hidden_size)`.</paramsdesc><paramgroups>0</paramgroups></docstring>
+
+Base class for outputs of decoder-only generation models using sampling.
+
+
+
+
+
+</div>
+
+<div class="docstring">
+
+<docstring><name>class transformers.generation\_utils.SampleEncoderDecoderOutput</name><anchor>transformers.generation_utils.SampleEncoderDecoderOutput</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/generation_utils.py#L157</source><parameters>[{"name": "sequences", "val": ": LongTensor = None"}, {"name": "scores", "val": ": typing.Optional[typing.Tuple[torch.FloatTensor]] = None"}, {"name": "encoder_attentions", "val": ": typing.Optional[typing.Tuple[torch.FloatTensor]] = None"}, {"name": "encoder_hidden_states", "val": ": typing.Optional[typing.Tuple[torch.FloatTensor]] = None"}, {"name": "decoder_attentions", "val": ": typing.Optional[typing.Tuple[typing.Tuple[torch.FloatTensor]]] = None"}, {"name": "cross_attentions", "val": ": typing.Optional[typing.Tuple[typing.Tuple[torch.FloatTensor]]] = None"}, {"name": "decoder_hidden_states", "val": ": typing.Optional[typing.Tuple[typing.Tuple[torch.FloatTensor]]] = None"}]</parameters><paramsdesc>- **sequences** (`torch.LongTensor` of shape `(batch_size*num_return_sequences, sequence_length)`) --
+  The generated sequences. The second dimension (sequence_length) is either equal to `max_length` or shorter
+  if all batches finished early due to the `eos_token_id`.
+- **scores** (`tuple(torch.FloatTensor)` *optional*, returned when `output_scores=True` is passed or when `config.output_scores=True`) --
+  Processed prediction scores of the language modeling head (scores for each vocabulary token before SoftMax)
+  at each generation step. `(max_length-1,)`-shaped tuple of `torch.FloatTensor` with each tensor of shape
+  `(batch_size*num_return_sequences, config.vocab_size)`).
+- **encoder_attentions** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_attentions=True` is passed or `config.output_attentions=True`) --
+  Tuple of `torch.FloatTensor` (one for each layer of the decoder) of shape
+  `(batch_size*num_return_sequences, num_heads, sequence_length, sequence_length)`.
+- **encoder_hidden_states** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) --
+  Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer) of
+  shape `(batch_size*num_return_sequences, sequence_length, hidden_size)`.
+- **decoder_attentions** (`tuple(tuple(torch.FloatTensor))`, *optional*, returned when `output_attentions=True` is passed or `config.output_attentions=True`) --
+  Tuple (one element for each generated token) of tuples (one element for each layer of the decoder) of
+  `torch.FloatTensor` of shape `(batch_size*num_return_sequences, num_heads, generated_length,
+  sequence_length)`.
+- **cross_attentions** (`tuple(tuple(torch.FloatTensor))`, *optional*, returned when `output_attentions=True` is passed or `config.output_attentions=True`) --
+  Tuple (one element for each generated token) of tuples (one element for each layer of the decoder) of
+  `torch.FloatTensor` of shape `(batch_size, num_heads, generated_length, sequence_length)`.
+- **decoder_hidden_states** (`tuple(tuple(torch.FloatTensor))`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) --
+  Tuple (one element for each generated token) of tuples (one element for each layer of the decoder) of
+  `torch.FloatTensor` of shape `(batch_size*num_return_sequences, generated_length, hidden_size)`.</paramsdesc><paramgroups>0</paramgroups></docstring>
+
+Base class for outputs of encoder-decoder generation models using sampling. Hidden states and attention weights of
+the decoder (respectively the encoder) can be accessed via the encoder_attentions and the encoder_hidden_states
+attributes (respectively the decoder_attentions and the decoder_hidden_states attributes)
+
+
+
+
+
+</div>
+
+<div class="docstring">
+
+<docstring><name>class transformers.generation\_flax\_utils.FlaxSampleOutput</name><anchor>transformers.generation_flax_utils.FlaxSampleOutput</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/generation_flax_utils.py#L59</source><parameters>[{"name": "sequences", "val": ": ndarray = None"}]</parameters><paramsdesc>- **sequences** (`jnp.ndarray` of shape `(batch_size, max_length)`) --
+  The generated sequences.</paramsdesc><paramgroups>0</paramgroups></docstring>
+
+Flax Base class for outputs of decoder-only generation models using sampling.
+
+
+
+
+
+
+<div class="docstring">
+<docstring><name>replace</name><anchor>None</anchor><source>https://github.com/huggingface/transformers/blob/master/src/flax/struct.py#L120</source><parameters>[{"name": "**updates", "val": ""}]</parameters></docstring>
+"Returns a new object replacing the specified fields with new values.
+
+</div></div>
+
+<h3 id="transformers.generation_utils.BeamSearchDecoderOnlyOutput">BeamSearchOutput</h3>
+
+<div class="docstring">
+
+<docstring><name>class transformers.generation\_utils.BeamSearchDecoderOnlyOutput</name><anchor>transformers.generation_utils.BeamSearchDecoderOnlyOutput</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/generation_utils.py#L200</source><parameters>[{"name": "sequences", "val": ": LongTensor = None"}, {"name": "sequences_scores", "val": ": typing.Optional[torch.FloatTensor] = None"}, {"name": "scores", "val": ": typing.Optional[typing.Tuple[torch.FloatTensor]] = None"}, {"name": "attentions", "val": ": typing.Optional[typing.Tuple[typing.Tuple[torch.FloatTensor]]] = None"}, {"name": "hidden_states", "val": ": typing.Optional[typing.Tuple[typing.Tuple[torch.FloatTensor]]] = None"}]</parameters><paramsdesc>- **sequences** (`torch.LongTensor` of shape `(batch_size*num_return_sequences, sequence_length)`) --
+  The generated sequences. The second dimension (sequence_length) is either equal to `max_length` or shorter
+  if all batches finished early due to the `eos_token_id`.
+- **sequences_scores** (`torch.FloatTensor` of shape `(batch_size*num_return_sequences)`, *optional*, returned when `output_scores=True` is passed or when `config.output_scores=True`) --
+  Final beam scores of the generated `sequences`.
+- **scores** (`tuple(torch.FloatTensor)` *optional*, returned when `output_scores=True` is passed or when `config.output_scores=True`) --
+  Processed beam scores for each vocabulary token at each generation step. Beam scores consisting of log
+  softmax scores for each vocabulary token and sum of log softmax of previously generated tokens in this beam
+  . `(max_length-input_ids.shape[-1],)`-shaped tuple of `torch.FloatTensor` with each tensor of shape
+  `(batch_size*num_beams*num_return_sequences, config.vocab_size)`).
+- **attentions** (`tuple(tuple(torch.FloatTensor))`, *optional*, returned when `output_attentions=True` is passed or `config.output_attentions=True`) --
+  Tuple (one element for each generated token) of tuples (one element for each layer of the decoder) of
+  `torch.FloatTensor` of shape `(batch_size*num_beams, num_heads, generated_length, sequence_length)`.
+- **hidden_states** (`tuple(tuple(torch.FloatTensor))`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) --
+  Tuple (one element for each generated token) of tuples (one element for each layer of the decoder) of
+  `torch.FloatTensor` of shape `(batch_size*num_beams*num_return_sequences, generated_length, hidden_size)`.</paramsdesc><paramgroups>0</paramgroups></docstring>
+
+Base class for outputs of decoder-only generation models using beam search.
+
+
+
+
+</div>
+
+<div class="docstring">
+
+<docstring><name>class transformers.generation\_utils.BeamSearchEncoderDecoderOutput</name><anchor>transformers.generation_utils.BeamSearchEncoderDecoderOutput</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/generation_utils.py#L231</source><parameters>[{"name": "sequences", "val": ": LongTensor = None"}, {"name": "sequences_scores", "val": ": typing.Optional[torch.FloatTensor] = None"}, {"name": "scores", "val": ": typing.Optional[typing.Tuple[torch.FloatTensor]] = None"}, {"name": "encoder_attentions", "val": ": typing.Optional[typing.Tuple[torch.FloatTensor]] = None"}, {"name": "encoder_hidden_states", "val": ": typing.Optional[typing.Tuple[torch.FloatTensor]] = None"}, {"name": "decoder_attentions", "val": ": typing.Optional[typing.Tuple[typing.Tuple[torch.FloatTensor]]] = None"}, {"name": "cross_attentions", "val": ": typing.Optional[typing.Tuple[typing.Tuple[torch.FloatTensor]]] = None"}, {"name": "decoder_hidden_states", "val": ": typing.Optional[typing.Tuple[typing.Tuple[torch.FloatTensor]]] = None"}]</parameters><paramsdesc>- **sequences** (`torch.LongTensor` of shape `(batch_size*num_return_sequences, sequence_length)`) --
+  The generated sequences. The second dimension (sequence_length) is either equal to `max_length` or shorter
+  if all batches finished early due to the `eos_token_id`.
+- **sequences_scores** (`torch.FloatTensor` of shape `(batch_size*num_return_sequences)`, *optional*, returned when `output_scores=True` is passed or when `config.output_scores=True`) --
+  Final beam scores of the generated `sequences`.
+- **scores** (`tuple(torch.FloatTensor)` *optional*, returned when `output_scores=True` is passed or when `config.output_scores=True`) --
+  Processed beam scores for each vocabulary token at each generation step. Beam scores consisting of log
+  softmax scores for each vocabulary token and sum of log softmax of previously generated tokens in this beam
+  . `(max_length-1,)`-shaped tuple of `torch.FloatTensor` with each tensor of shape `(batch_size*num_beams,
+  config.vocab_size)`).
+- **attentions** (`tuple(tuple(torch.FloatTensor))`, *optional*, returned when `output_attentions=True` is passed or `config.output_attentions=True`) --
+- **encoder_attentions** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_attentions=True` is passed or `config.output_attentions=True`) --
+  Tuple of `torch.FloatTensor` (one for each layer of the decoder) of shape `(batch_size, num_heads,
+  sequence_length, sequence_length)`.
+- **encoder_hidden_states** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) --
+  Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer) of
+  shape `(batch_size*num_beams*num_return_sequences, sequence_length, hidden_size)`.
+- **decoder_attentions** (`tuple(tuple(torch.FloatTensor))`, *optional*, returned when `output_attentions=True` is passed or `config.output_attentions=True`) --
+  Tuple (one element for each generated token) of tuples (one element for each layer of the decoder) of
+  `torch.FloatTensor` of shape `(batch_size*num_beams*num_return_sequences, num_heads, generated_length,
+  sequence_length)`.
+- **cross_attentions** (`tuple(tuple(torch.FloatTensor))`, *optional*, returned when `output_attentions=True` is passed or `config.output_attentions=True`) --
+  Tuple (one element for each generated token) of tuples (one element for each layer of the decoder) of
+  `torch.FloatTensor` of shape `(batch_size, num_heads, generated_length, sequence_length)`.
+- **decoder_hidden_states** (`tuple(tuple(torch.FloatTensor))`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) --
+  Tuple (one element for each generated token) of tuples (one element for each layer of the decoder) of
+  `torch.FloatTensor` of shape `(batch_size*num_beams*num_return_sequences, generated_length, hidden_size)`.</paramsdesc><paramgroups>0</paramgroups></docstring>
+
+Base class for outputs of encoder-decoder generation models using beam search. Hidden states and attention weights
+of the decoder (respectively the encoder) can be accessed via the encoder_attentions and the encoder_hidden_states
+attributes (respectively the decoder_attentions and the decoder_hidden_states attributes)
+
+
+
+
+</div>
+
+<h3 id="transformers.generation_utils.BeamSampleDecoderOnlyOutput">BeamSampleOutput</h3>
+
+<div class="docstring">
+
+<docstring><name>class transformers.generation\_utils.BeamSampleDecoderOnlyOutput</name><anchor>transformers.generation_utils.BeamSampleDecoderOnlyOutput</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/generation_utils.py#L278</source><parameters>[{"name": "sequences", "val": ": LongTensor = None"}, {"name": "sequences_scores", "val": ": typing.Optional[torch.FloatTensor] = None"}, {"name": "scores", "val": ": typing.Optional[typing.Tuple[torch.FloatTensor]] = None"}, {"name": "attentions", "val": ": typing.Optional[typing.Tuple[typing.Tuple[torch.FloatTensor]]] = None"}, {"name": "hidden_states", "val": ": typing.Optional[typing.Tuple[typing.Tuple[torch.FloatTensor]]] = None"}]</parameters><paramsdesc>- **sequences** (`torch.LongTensor` of shape `(batch_size*num_return_sequences, sequence_length)`) --
+  The generated sequences. The second dimension (sequence_length) is either equal to `max_length` or shorter
+  if all batches finished early due to the `eos_token_id`.
+- **sequences_scores** (`torch.FloatTensor` of shape `(batch_size * num_return_sequence)`, *optional*, returned when `output_scores=True` is passed or when `config.output_scores=True`) --
+  Final beam scores of the generated `sequences`.
+- **scores** (`tuple(torch.FloatTensor)` *optional*, returned when `output_scores=True` is passed or when `config.output_scores=True`) --
+  Processed beam scores for each vocabulary token at each generation step. Beam scores consisting of log
+  softmax scores for each vocabulary token and sum of log softmax of previously generated tokens in this beam
+  . `(max_length-input_ids.shape[-1],)`-shaped tuple of `torch.FloatTensor` with each tensor of shape
+  `(batch_size*num_beams*num_return_sequences, config.vocab_size)`).
+- **attentions** (`tuple(tuple(torch.FloatTensor))`, *optional*, returned when `output_attentions=True` is passed or `config.output_attentions=True`) --
+  Tuple (one element for each generated token) of tuples (one element for each layer of the decoder) of
+  `torch.FloatTensor` of shape `(batch_size*num_beams, num_heads, generated_length, sequence_length)`.
+- **hidden_states** (`tuple(tuple(torch.FloatTensor))`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) --
+  Tuple (one element for each generated token) of tuples (one element for each layer of the decoder) of
+  `torch.FloatTensor` of shape `(batch_size*num_beams, generated_length, hidden_size)`.</paramsdesc><paramgroups>0</paramgroups></docstring>
+
+Base class for outputs of decoder-only generation models using beam sample.
+
+
+
+
+</div>
+
+<div class="docstring">
+
+<docstring><name>class transformers.generation\_utils.BeamSampleEncoderDecoderOutput</name><anchor>transformers.generation_utils.BeamSampleEncoderDecoderOutput</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/generation_utils.py#L309</source><parameters>[{"name": "sequences", "val": ": LongTensor = None"}, {"name": "sequences_scores", "val": ": typing.Optional[torch.FloatTensor] = None"}, {"name": "scores", "val": ": typing.Optional[typing.Tuple[torch.FloatTensor]] = None"}, {"name": "encoder_attentions", "val": ": typing.Optional[typing.Tuple[torch.FloatTensor]] = None"}, {"name": "encoder_hidden_states", "val": ": typing.Optional[typing.Tuple[torch.FloatTensor]] = None"}, {"name": "decoder_attentions", "val": ": typing.Optional[typing.Tuple[typing.Tuple[torch.FloatTensor]]] = None"}, {"name": "cross_attentions", "val": ": typing.Optional[typing.Tuple[typing.Tuple[torch.FloatTensor]]] = None"}, {"name": "decoder_hidden_states", "val": ": typing.Optional[typing.Tuple[typing.Tuple[torch.FloatTensor]]] = None"}]</parameters><paramsdesc>- **sequences** (`torch.LongTensor` of shape `(batch_size*num_beams, sequence_length)`) --
+  The generated sequences. The second dimension (sequence_length) is either equal to `max_length` or shorter
+  if all batches finished early due to the `eos_token_id`.
+- **sequences_scores** (`torch.FloatTensor` of shape `(batch_size * num_return_sequence)`, *optional*, returned when `output_scores=True` is passed or when `config.output_scores=True`) --
+  Final beam scores of the generated `sequences`.
+- **scores** (`tuple(torch.FloatTensor)` *optional*, returned when `output_scores=True` is passed or when `config.output_scores=True`) --
+  Processed beam scores for each vocabulary token at each generation step. Beam scores consisting of log
+  softmax scores for each vocabulary token and sum of log softmax of previously generated tokens in this beam
+  . `(max_length-1,)`-shaped tuple of `torch.FloatTensor` with each tensor of shape `(batch_size*num_beams,
+  config.vocab_size)`).
+- **encoder_attentions** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_attentions=True` is passed or `config.output_attentions=True`) --
+  Tuple of `torch.FloatTensor` (one for each layer of the decoder) of shape `(batch_size, num_heads,
+  sequence_length, sequence_length)`.
+- **encoder_hidden_states** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) --
+  Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer) of
+  shape `(batch_size*num_beams, sequence_length, hidden_size)`.
+- **decoder_attentions** (`tuple(tuple(torch.FloatTensor))`, *optional*, returned when `output_attentions=True` is passed or `config.output_attentions=True`) --
+  Tuple (one element for each generated token) of tuples (one element for each layer of the decoder) of
+  `torch.FloatTensor` of shape `(batch_size*num_beams, num_heads, generated_length, sequence_length)`.
+- **cross_attentions** (`tuple(tuple(torch.FloatTensor))`, *optional*, returned when `output_attentions=True` is passed or `config.output_attentions=True`) --
+  Tuple (one element for each generated token) of tuples (one element for each layer of the decoder) of
+  `torch.FloatTensor` of shape `(batch_size, num_heads, generated_length, sequence_length)`.
+- **decoder_hidden_states** (`tuple(tuple(torch.FloatTensor))`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) --
+  Tuple (one element for each generated token) of tuples (one element for each layer of the decoder) of
+  `torch.FloatTensor` of shape `(batch_size*num_beams, generated_length, hidden_size)`.</paramsdesc><paramgroups>0</paramgroups></docstring>
+
+Base class for outputs of encoder-decoder generation models using beam sampling. Hidden states and attention
+weights of the decoder (respectively the encoder) can be accessed via the encoder_attentions and the
+encoder_hidden_states attributes (respectively the decoder_attentions and the decoder_hidden_states attributes)
+
+
+
+
+</div>
+
+<h2 id="transformers.LogitsProcessor">LogitsProcessor</h2>
+
+A [LogitsProcessor](/docs/transformers/master/en/internal/generation_utils#transformers.LogitsProcessor) can be used to modify the prediction scores of a language model head for
+generation.
+
+<div class="docstring">
+
+<docstring><name>class transformers.LogitsProcessor</name><anchor>transformers.LogitsProcessor</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/generation_logits_process.py#L52</source><parameters>[]</parameters></docstring>
+Abstract base class for all logit processors that can be applied during generation.
+
+
+<div class="docstring">
+<docstring><name>\_\_call\_\_</name><anchor>transformers.LogitsProcessor.__call__</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/generation_logits_process.py#L55</source><parameters>[{"name": "input_ids", "val": ": LongTensor"}, {"name": "scores", "val": ": FloatTensor"}]</parameters><paramsdesc>- **input_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`) --
+  Indices of input sequence tokens in the vocabulary.
+
+  Indices can be obtained using [BertTokenizer](/docs/transformers/master/en/model_doc/bert#transformers.BertTokenizer). See [PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.encode) and
+  [PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.__call__) for details.
+
+  [What are input IDs?](../glossary#input-ids)
+- **scores** (`torch.FloatTensor` of shape `(batch_size, config.vocab_size)`) --
+  Prediction scores of a language modeling head. These can be logits for each vocabulary when not using beam
+  search or log softmax for each vocabulary token when using beam search
+  kwargs --
+  Additional logits processor specific kwargs.</paramsdesc><paramgroups>0</paramgroups><rettype>`torch.FloatTensor` of shape `(batch_size, config.vocab_size)`</rettype><retdesc>The processed prediction scores.</retdesc></docstring>
+
+
+
+
+
+
+
+Torch method for processing logits.
+
+</div></div>
+
+<div class="docstring">
+
+<docstring><name>class transformers.LogitsProcessorList</name><anchor>transformers.LogitsProcessorList</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/generation_logits_process.py#L74</source><parameters>[{"name": "iterable", "val": " = ()"}]</parameters></docstring>
+
+This class can be used to create a list of [LogitsProcessor](/docs/transformers/master/en/internal/generation_utils#transformers.LogitsProcessor) or [LogitsWarper](/docs/transformers/master/en/internal/generation_utils#transformers.LogitsWarper) to subsequently process a
+`scores` input tensor. This class inherits from list and adds a specific *__call__* method to apply each
+[LogitsProcessor](/docs/transformers/master/en/internal/generation_utils#transformers.LogitsProcessor) or [LogitsWarper](/docs/transformers/master/en/internal/generation_utils#transformers.LogitsWarper) to the inputs.
+
+
+
+<div class="docstring">
+<docstring><name>\_\_call\_\_</name><anchor>transformers.LogitsProcessorList.__call__</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/generation_logits_process.py#L81</source><parameters>[{"name": "input_ids", "val": ": LongTensor"}, {"name": "scores", "val": ": FloatTensor"}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **input_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`) --
+  Indices of input sequence tokens in the vocabulary.
+
+  Indices can be obtained using [BertTokenizer](/docs/transformers/master/en/model_doc/bert#transformers.BertTokenizer). See [PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.encode) and
+  [PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.__call__) for details.
+
+  [What are input IDs?](../glossary#input-ids)
+- **scores** (`torch.FloatTensor` of shape `(batch_size, config.vocab_size)`) --
+  Prediction scores of a language modeling head. These can be logits for each vocabulary when not using beam
+  search or log softmax for each vocabulary token when using beam search
+  kwargs --
+  Additional logits processor specific kwargs.</paramsdesc><paramgroups>0</paramgroups><rettype>`torch.FloatTensor` of shape `(batch_size, config.vocab_size)`</rettype><retdesc>The processed prediction scores.</retdesc></docstring>
+
+
+
+
+
+
+
+
+</div></div>
+
+<div class="docstring">
+
+<docstring><name>class transformers.LogitsWarper</name><anchor>transformers.LogitsWarper</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/generation_logits_process.py#L63</source><parameters>[]</parameters></docstring>
+Abstract base class for all logit warpers that can be applied during generation with multinomial sampling.
+
+
+<div class="docstring">
+<docstring><name>\_\_call\_\_</name><anchor>transformers.LogitsWarper.__call__</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/generation_logits_process.py#L66</source><parameters>[{"name": "input_ids", "val": ": LongTensor"}, {"name": "scores", "val": ": FloatTensor"}]</parameters><paramsdesc>- **input_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`) --
+  Indices of input sequence tokens in the vocabulary.
+
+  Indices can be obtained using [BertTokenizer](/docs/transformers/master/en/model_doc/bert#transformers.BertTokenizer). See [PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.encode) and
+  [PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.__call__) for details.
+
+  [What are input IDs?](../glossary#input-ids)
+- **scores** (`torch.FloatTensor` of shape `(batch_size, config.vocab_size)`) --
+  Prediction scores of a language modeling head. These can be logits for each vocabulary when not using beam
+  search or log softmax for each vocabulary token when using beam search
+  kwargs --
+  Additional logits processor specific kwargs.</paramsdesc><paramgroups>0</paramgroups><rettype>`torch.FloatTensor` of shape `(batch_size, config.vocab_size)`</rettype><retdesc>The processed prediction scores.</retdesc></docstring>
+
+
+
+
+
+
+
+Torch method for warping logits.
+
+</div></div>
+
+<div class="docstring">
+
+<docstring><name>class transformers.MinLengthLogitsProcessor</name><anchor>transformers.MinLengthLogitsProcessor</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/generation_logits_process.py#L97</source><parameters>[{"name": "min_length", "val": ": int"}, {"name": "eos_token_id", "val": ": int"}]</parameters><paramsdesc>- **min_length** (`int`) --
+  The minimum length below which the score of `eos_token_id` is set to `-float("Inf")`.
+- **eos_token_id** (`int`) --
+  The id of the *end-of-sequence* token.</paramsdesc><paramgroups>0</paramgroups></docstring>
+
+[LogitsProcessor](/docs/transformers/master/en/internal/generation_utils#transformers.LogitsProcessor) enforcing a min-length by setting EOS probability to 0.
+
+
+
+
+
+<div class="docstring"></div></div>
+
+<div class="docstring">
+
+<docstring><name>class transformers.TemperatureLogitsWarper</name><anchor>transformers.TemperatureLogitsWarper</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/generation_logits_process.py#L125</source><parameters>[{"name": "temperature", "val": ": float"}]</parameters><paramsdesc>- **temperature** (`float`) --
+  The value used to module the logits distribution.</paramsdesc><paramgroups>0</paramgroups></docstring>
+
+[LogitsWarper](/docs/transformers/master/en/internal/generation_utils#transformers.LogitsWarper) for temperature (exponential scaling output probability distribution).
+
+
+
+
+
+<div class="docstring"></div></div>
+
+<div class="docstring">
+
+<docstring><name>class transformers.RepetitionPenaltyLogitsProcessor</name><anchor>transformers.RepetitionPenaltyLogitsProcessor</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/generation_logits_process.py#L145</source><parameters>[{"name": "penalty", "val": ": float"}]</parameters><paramsdesc>- **repetition_penalty** (`float`) --
+  The parameter for repetition penalty. 1.0 means no penalty. See [this
+  paper](https://arxiv.org/pdf/1909.05858.pdf) for more details.</paramsdesc><paramgroups>0</paramgroups></docstring>
+
+[LogitsProcessor](/docs/transformers/master/en/internal/generation_utils#transformers.LogitsProcessor) enforcing an exponential penalty on repeated sequences.
+
+
+
+
+
+<div class="docstring"></div></div>
+
+<div class="docstring">
+
+<docstring><name>class transformers.TopPLogitsWarper</name><anchor>transformers.TopPLogitsWarper</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/generation_logits_process.py#L171</source><parameters>[{"name": "top_p", "val": ": float"}, {"name": "filter_value", "val": ": float = -inf"}, {"name": "min_tokens_to_keep", "val": ": int = 1"}]</parameters><paramsdesc>- **top_p** (`float`) --
+  If set to &amp;lt; 1, only the most probable tokens with probabilities that add up to `top_p` or higher are kept
+  for generation.
+- **filter_value** (`float`, *optional*, defaults to `-float("Inf")`) --
+  All filtered values will be set to this float value.
+- **min_tokens_to_keep** (`int`, *optional*, defaults to 1) --
+  Minimum number of tokens that cannot be filtered.</paramsdesc><paramgroups>0</paramgroups></docstring>
+
+[LogitsWarper](/docs/transformers/master/en/internal/generation_utils#transformers.LogitsWarper) that performs top-p, i.e. restricting to top tokens summing to prob_cut_off &amp;lt;= prob_cut_off.
+
+
+
+
+
+<div class="docstring"></div></div>
+
+<div class="docstring">
+
+<docstring><name>class transformers.TopKLogitsWarper</name><anchor>transformers.TopKLogitsWarper</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/generation_logits_process.py#L213</source><parameters>[{"name": "top_k", "val": ": int"}, {"name": "filter_value", "val": ": float = -inf"}, {"name": "min_tokens_to_keep", "val": ": int = 1"}]</parameters><paramsdesc>- **top_k** (`int`) --
+  The number of highest probability vocabulary tokens to keep for top-k-filtering.
+- **filter_value** (`float`, *optional*, defaults to `-float("Inf")`) --
+  All filtered values will be set to this float value.
+- **min_tokens_to_keep** (`int`, *optional*, defaults to 1) --
+  Minimum number of tokens that cannot be filtered.</paramsdesc><paramgroups>0</paramgroups></docstring>
+
+[LogitsWarper](/docs/transformers/master/en/internal/generation_utils#transformers.LogitsWarper) that performs top-k, i.e. restricting to the k highest probability elements.
+
+
+
+
+
+<div class="docstring"></div></div>
+
+<div class="docstring">
+
+<docstring><name>class transformers.NoRepeatNGramLogitsProcessor</name><anchor>transformers.NoRepeatNGramLogitsProcessor</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/generation_logits_process.py#L277</source><parameters>[{"name": "ngram_size", "val": ": int"}]</parameters><paramsdesc>- **ngram_size** (`int`) --
+  All ngrams of size `ngram_size` can only occur once.</paramsdesc><paramgroups>0</paramgroups></docstring>
+
+[LogitsProcessor](/docs/transformers/master/en/internal/generation_utils#transformers.LogitsProcessor) that enforces no repetition of n-grams. See
+[Fairseq](https://github.com/pytorch/fairseq/blob/a07cb6f40480928c9e0548b737aadd36ee66ac76/fairseq/sequence_generator.py#L345).
+
+
+
+
+
+<div class="docstring"></div></div>
+
+<div class="docstring">
+
+<docstring><name>class transformers.NoBadWordsLogitsProcessor</name><anchor>transformers.NoBadWordsLogitsProcessor</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/generation_logits_process.py#L344</source><parameters>[{"name": "bad_words_ids", "val": ": typing.List[typing.List[int]]"}, {"name": "eos_token_id", "val": ": int"}]</parameters><paramsdesc>- **bad_words_ids** (`List[List[int]]`) --
+  List of list of token ids that are not allowed to be generated. In order to get the tokens of the words
+  that should not appear in the generated text, use `tokenizer(bad_word, add_prefix_space=True).input_ids`.
+- **eos_token_id** (`int`) --
+  The id of the *end-of-sequence* token.</paramsdesc><paramgroups>0</paramgroups></docstring>
+
+[LogitsProcessor](/docs/transformers/master/en/internal/generation_utils#transformers.LogitsProcessor) that enforces that specified sequences will never be sampled.
+
+
+
+
+
+<div class="docstring"></div></div>
+
+<div class="docstring">
+
+<docstring><name>class transformers.PrefixConstrainedLogitsProcessor</name><anchor>transformers.PrefixConstrainedLogitsProcessor</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/generation_logits_process.py#L471</source><parameters>[{"name": "prefix_allowed_tokens_fn", "val": ": typing.Callable[[int, torch.Tensor], typing.List[int]]"}, {"name": "num_beams", "val": ": int"}]</parameters><paramsdesc>prefix_allowed_tokens_fn -- (`Callable[[int, torch.Tensor], List[int]]`):
+This function constraints the beam search to allowed tokens only at each step. This function takes 2
+arguments `inputs_ids` and the batch ID `batch_id`. It has to return a list with the allowed tokens for the
+next generation step conditioned on the previously generated tokens `inputs_ids` and the batch ID
+`batch_id`.</paramsdesc><paramgroups>0</paramgroups></docstring>
+
+[LogitsProcessor](/docs/transformers/master/en/internal/generation_utils#transformers.LogitsProcessor) that enforces constrained generation and is useful for prefix-conditioned constrained
+generation. See [Autoregressive Entity Retrieval](https://arxiv.org/abs/2010.00904) for more information.
+
+
+
+
+
+<div class="docstring"></div></div>
+
+<div class="docstring">
+
+<docstring><name>class transformers.HammingDiversityLogitsProcessor</name><anchor>transformers.HammingDiversityLogitsProcessor</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/generation_logits_process.py#L497</source><parameters>[{"name": "diversity_penalty", "val": ": float"}, {"name": "num_beams", "val": ": int"}, {"name": "num_beam_groups", "val": ": int"}]</parameters><paramsdesc>- **diversity_penalty** (`float`) --
+  This value is subtracted from a beam's score if it generates a token same as any beam from other group at a
+  particular time. Note that `diversity_penalty` is only effective if `group beam search` is enabled.
+- **num_beams** (`int`) --
+  Number of beams used for group beam search. See [this paper](https://arxiv.org/pdf/1610.02424.pdf) for more
+  details.
+- **num_beam_groups** (`int`) --
+  Number of groups to divide `num_beams` into in order to ensure diversity among different groups of beams.
+  See [this paper](https://arxiv.org/pdf/1610.02424.pdf) for more details.</paramsdesc><paramgroups>0</paramgroups></docstring>
+
+[LogitsProcessor](/docs/transformers/master/en/internal/generation_utils#transformers.LogitsProcessor) that enforces diverse beam search. Note that this logits processor is only effective for
+[PreTrainedModel.group_beam_search()](/docs/transformers/master/en/main_classes/model#transformers.generation_utils.GenerationMixin.group_beam_search). See [Diverse Beam Search: Decoding Diverse Solutions from Neural Sequence
+Models](https://arxiv.org/pdf/1610.02424.pdf) for more details.
+
+
+
+
+
+<div class="docstring"></div></div>
+
+<div class="docstring">
+
+<docstring><name>class transformers.ForcedBOSTokenLogitsProcessor</name><anchor>transformers.ForcedBOSTokenLogitsProcessor</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/generation_logits_process.py#L557</source><parameters>[{"name": "bos_token_id", "val": ": int"}]</parameters><paramsdesc>- **bos_token_id** (`int`) --
+  The id of the token to force as the first generated token.</paramsdesc><paramgroups>0</paramgroups></docstring>
+
+[LogitsProcessor](/docs/transformers/master/en/internal/generation_utils#transformers.LogitsProcessor) that enforces the specified token as the first generated token.
+
+
+
+
+
+<div class="docstring"></div></div>
+
+<div class="docstring">
+
+<docstring><name>class transformers.ForcedEOSTokenLogitsProcessor</name><anchor>transformers.ForcedEOSTokenLogitsProcessor</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/generation_logits_process.py#L578</source><parameters>[{"name": "max_length", "val": ": int"}, {"name": "eos_token_id", "val": ": int"}]</parameters><paramsdesc>- **max_length** (`int`) --
+  The maximum length of the sequence to be generated.
+- **eos_token_id** (`int`) --
+  The id of the token to force as the last generated token when `max_length` is reached.</paramsdesc><paramgroups>0</paramgroups></docstring>
+
+[LogitsProcessor](/docs/transformers/master/en/internal/generation_utils#transformers.LogitsProcessor) that enforces the specified token as the last generated token when `max_length` is reached.
+
+
+
+
+
+<div class="docstring"></div></div>
+
+<div class="docstring">
+
+<docstring><name>class transformers.InfNanRemoveLogitsProcessor</name><anchor>transformers.InfNanRemoveLogitsProcessor</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/generation_logits_process.py#L602</source><parameters>[]</parameters></docstring>
+
+[LogitsProcessor](/docs/transformers/master/en/internal/generation_utils#transformers.LogitsProcessor) that removes all `nan` and `inf` values to avoid the generation method to fail. Note that using
+the logits processor should only be used if necessary since it can slow down the generation method. `max_length` is
+reached.
+
+
+
+<div class="docstring"></div></div>
+
+<div class="docstring">
+
+<docstring><name>class transformers.FlaxLogitsProcessor</name><anchor>transformers.FlaxLogitsProcessor</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/generation_flax_logits_process.py#L51</source><parameters>[]</parameters></docstring>
+Abstract base class for all logit processors that can be applied during generation.
+
+
+<div class="docstring">
+<docstring><name>\_\_call\_\_</name><anchor>transformers.FlaxLogitsProcessor.__call__</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/generation_flax_logits_process.py#L54</source><parameters>[{"name": "input_ids", "val": ": ndarray"}, {"name": "scores", "val": ": ndarray"}]</parameters><paramsdesc>- **input_ids** (`jnp.ndarray` of shape `(batch_size, sequence_length)`) --
+  Indices of input sequence tokens in the vocabulary.
+
+  Indices can be obtained using [PreTrainedTokenizer](/docs/transformers/master/en/main_classes/tokenizer#transformers.PreTrainedTokenizer). See [PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.encode) and
+  [PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.__call__) for details.
+
+  [What are input IDs?](../glossary#input-ids)
+- **scores** (`jnp.ndarray` of shape `(batch_size, config.vocab_size)`) --
+  Prediction scores of a language modeling head. These can be logits for each vocabulary when not using beam
+  search or log softmax for each vocabulary token when using beam search
+  kwargs --
+  Additional logits processor specific kwargs.</paramsdesc><paramgroups>0</paramgroups><rettype>`jnp.ndarray` of shape `(batch_size, config.vocab_size)`</rettype><retdesc>The processed prediction scores.</retdesc></docstring>
+
+
+
+
+
+
+
+Flax method for processing logits.
+
+</div></div>
+
+<div class="docstring">
+
+<docstring><name>class transformers.FlaxLogitsProcessorList</name><anchor>transformers.FlaxLogitsProcessorList</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/generation_flax_logits_process.py#L73</source><parameters>[{"name": "iterable", "val": " = ()"}]</parameters></docstring>
+
+This class can be used to create a list of [FlaxLogitsProcessor](/docs/transformers/master/en/internal/generation_utils#transformers.FlaxLogitsProcessor) or [FlaxLogitsWarper](/docs/transformers/master/en/internal/generation_utils#transformers.FlaxLogitsWarper) to subsequently process
+a `scores` input tensor. This class inherits from list and adds a specific *__call__* method to apply each
+[FlaxLogitsProcessor](/docs/transformers/master/en/internal/generation_utils#transformers.FlaxLogitsProcessor) or [FlaxLogitsWarper](/docs/transformers/master/en/internal/generation_utils#transformers.FlaxLogitsWarper) to the inputs.
+
+
+
+<div class="docstring">
+<docstring><name>\_\_call\_\_</name><anchor>transformers.FlaxLogitsProcessorList.__call__</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/generation_flax_logits_process.py#L80</source><parameters>[{"name": "input_ids", "val": ": ndarray"}, {"name": "scores", "val": ": ndarray"}, {"name": "cur_len", "val": ": int"}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **input_ids** (`jnp.ndarray` of shape `(batch_size, sequence_length)`) --
+  Indices of input sequence tokens in the vocabulary.
+
+  Indices can be obtained using [PreTrainedTokenizer](/docs/transformers/master/en/main_classes/tokenizer#transformers.PreTrainedTokenizer). See [PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.encode) and
+  [PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.__call__) for details.
+
+  [What are input IDs?](../glossary#input-ids)
+- **scores** (`jnp.ndarray` of shape `(batch_size, config.vocab_size)`) --
+  Prediction scores of a language modeling head. These can be logits for each vocabulary when not using beam
+  search or log softmax for each vocabulary token when using beam search
+  kwargs --
+  Additional logits processor specific kwargs.</paramsdesc><paramgroups>0</paramgroups><rettype>`jnp.ndarray` of shape `(batch_size, config.vocab_size)`</rettype><retdesc>The processed prediction scores.</retdesc></docstring>
+
+
+
+
+
+
+
+
+</div></div>
+
+<div class="docstring">
+
+<docstring><name>class transformers.FlaxLogitsWarper</name><anchor>transformers.FlaxLogitsWarper</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/generation_flax_logits_process.py#L62</source><parameters>[]</parameters></docstring>
+Abstract base class for all logit warpers that can be applied during generation with multinomial sampling.
+
+
+<div class="docstring">
+<docstring><name>\_\_call\_\_</name><anchor>transformers.FlaxLogitsWarper.__call__</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/generation_flax_logits_process.py#L65</source><parameters>[{"name": "input_ids", "val": ": ndarray"}, {"name": "scores", "val": ": ndarray"}]</parameters><paramsdesc>- **input_ids** (`jnp.ndarray` of shape `(batch_size, sequence_length)`) --
+  Indices of input sequence tokens in the vocabulary.
+
+  Indices can be obtained using [PreTrainedTokenizer](/docs/transformers/master/en/main_classes/tokenizer#transformers.PreTrainedTokenizer). See [PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.encode) and
+  [PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.__call__) for details.
+
+  [What are input IDs?](../glossary#input-ids)
+- **scores** (`jnp.ndarray` of shape `(batch_size, config.vocab_size)`) --
+  Prediction scores of a language modeling head. These can be logits for each vocabulary when not using beam
+  search or log softmax for each vocabulary token when using beam search
+  kwargs --
+  Additional logits processor specific kwargs.</paramsdesc><paramgroups>0</paramgroups><rettype>`jnp.ndarray` of shape `(batch_size, config.vocab_size)`</rettype><retdesc>The processed prediction scores.</retdesc></docstring>
+
+
+
+
+
+
+
+Flax method for warping logits.
+
+</div></div>
+
+<div class="docstring">
+
+<docstring><name>class transformers.FlaxTemperatureLogitsWarper</name><anchor>transformers.FlaxTemperatureLogitsWarper</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/generation_flax_logits_process.py#L96</source><parameters>[{"name": "temperature", "val": ": float"}]</parameters><paramsdesc>- **temperature** (`float`) --
+  The value used to module the logits distribution.</paramsdesc><paramgroups>0</paramgroups></docstring>
+
+[LogitsWarper](/docs/transformers/master/en/internal/generation_utils#transformers.LogitsWarper) for temperature (exponential scaling output probability distribution).
+
+
+
+
+
+<div class="docstring"></div></div>
+
+<div class="docstring">
+
+<docstring><name>class transformers.FlaxTopPLogitsWarper</name><anchor>transformers.FlaxTopPLogitsWarper</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/generation_flax_logits_process.py#L116</source><parameters>[{"name": "top_p", "val": ": float"}, {"name": "filter_value", "val": ": float = -inf"}, {"name": "min_tokens_to_keep", "val": ": int = 1"}]</parameters><paramsdesc>- **top_p** (`float`) --
+  If set to &amp;lt; 1, only the most probable tokens with probabilities that add up to `top_p` or higher are kept
+  for generation.
+- **filter_value** (`float`, *optional*, defaults to `-float("Inf")`) --
+  All filtered values will be set to this float value.
+- **min_tokens_to_keep** (`int`, *optional*, defaults to 1) --
+  Minimum number of tokens that cannot be filtered.</paramsdesc><paramgroups>0</paramgroups></docstring>
+
+[LogitsWarper](/docs/transformers/master/en/internal/generation_utils#transformers.LogitsWarper) that performs top-p, i.e. restricting to top tokens summing to prob_cut_off &amp;lt;= prob_cut_off.
+
+
+
+
+
+<div class="docstring"></div></div>
+
+<div class="docstring">
+
+<docstring><name>class transformers.FlaxTopKLogitsWarper</name><anchor>transformers.FlaxTopKLogitsWarper</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/generation_flax_logits_process.py#L157</source><parameters>[{"name": "top_k", "val": ": int"}, {"name": "filter_value", "val": ": float = -inf"}, {"name": "min_tokens_to_keep", "val": ": int = 1"}]</parameters><paramsdesc>- **top_k** (`int`) --
+  The number of highest probability vocabulary tokens to keep for top-k-filtering.
+- **filter_value** (`float`, *optional*, defaults to `-float("Inf")`) --
+  All filtered values will be set to this float value.
+- **min_tokens_to_keep** (`int`, *optional*, defaults to 1) --
+  Minimum number of tokens that cannot be filtered.</paramsdesc><paramgroups>0</paramgroups></docstring>
+
+[LogitsWarper](/docs/transformers/master/en/internal/generation_utils#transformers.LogitsWarper) that performs top-k, i.e. restricting to the k highest probability elements.
+
+
+
+
+
+<div class="docstring"></div></div>
+
+<div class="docstring">
+
+<docstring><name>class transformers.FlaxForcedBOSTokenLogitsProcessor</name><anchor>transformers.FlaxForcedBOSTokenLogitsProcessor</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/generation_flax_logits_process.py#L193</source><parameters>[{"name": "bos_token_id", "val": ": int"}]</parameters><paramsdesc>- **bos_token_id** (`int`) --
+  The id of the token to force as the first generated token.</paramsdesc><paramgroups>0</paramgroups></docstring>
+
+[FlaxLogitsProcessor](/docs/transformers/master/en/internal/generation_utils#transformers.FlaxLogitsProcessor) that enforces the specified token as the first generated token.
+
+
+
+
+
+<div class="docstring"></div></div>
+
+<div class="docstring">
+
+<docstring><name>class transformers.FlaxForcedEOSTokenLogitsProcessor</name><anchor>transformers.FlaxForcedEOSTokenLogitsProcessor</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/generation_flax_logits_process.py#L217</source><parameters>[{"name": "max_length", "val": ": int"}, {"name": "eos_token_id", "val": ": int"}]</parameters><paramsdesc>- **max_length** (`int`) --
+  The maximum length of the sequence to be generated.
+- **eos_token_id** (`int`) --
+  The id of the token to force as the last generated token when `max_length` is reached.</paramsdesc><paramgroups>0</paramgroups></docstring>
+
+[FlaxLogitsProcessor](/docs/transformers/master/en/internal/generation_utils#transformers.FlaxLogitsProcessor) that enforces the specified token as the last generated token when `max_length` is reached.
+
+
+
+
+
+<div class="docstring"></div></div>
+
+<div class="docstring">
+
+<docstring><name>class transformers.FlaxMinLengthLogitsProcessor</name><anchor>transformers.FlaxMinLengthLogitsProcessor</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/generation_flax_logits_process.py#L244</source><parameters>[{"name": "min_length", "val": ": int"}, {"name": "eos_token_id", "val": ": int"}]</parameters><paramsdesc>- **min_length** (`int`) --
+  The minimum length below which the score of `eos_token_id` is set to `-float("Inf")`.
+- **eos_token_id** (`int`) --
+  The id of the *end-of-sequence* token.</paramsdesc><paramgroups>0</paramgroups></docstring>
+
+[FlaxLogitsProcessor](/docs/transformers/master/en/internal/generation_utils#transformers.FlaxLogitsProcessor) enforcing a min-length by setting EOS probability to 0.
+
+
+
+
+
+<div class="docstring"></div></div>
+
+<h2 id="transformers.StoppingCriteria">StoppingCriteria</h2>
+
+A [StoppingCriteria](/docs/transformers/master/en/internal/generation_utils#transformers.StoppingCriteria) can be used to change when to stop generation (other than EOS token).
+
+<div class="docstring">
+
+<docstring><name>class transformers.StoppingCriteria</name><anchor>transformers.StoppingCriteria</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/generation_stopping_criteria.py#L33</source><parameters>[]</parameters></docstring>
+Abstract base class for all stopping criteria that can be applied during generation.
+
+
+<div class="docstring">
+<docstring><name>\_\_call\_\_</name><anchor>transformers.StoppingCriteria.__call__</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/generation_stopping_criteria.py#L36</source><parameters>[{"name": "input_ids", "val": ": LongTensor"}, {"name": "scores", "val": ": FloatTensor"}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **input_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`) --
+  Indices of input sequence tokens in the vocabulary.
+
+  Indices can be obtained using [BertTokenizer](/docs/transformers/master/en/model_doc/bert#transformers.BertTokenizer). See [PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.encode) and
+  [PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.__call__) for details.
+
+  [What are input IDs?](../glossary#input-ids)
+- **scores** (`torch.FloatTensor` of shape `(batch_size, config.vocab_size)`) --
+  Prediction scores of a language modeling head. These can be scores for each vocabulary token before SoftMax
+  or scores for each vocabulary token after SoftMax.
+  kwargs --
+  Additional stopping criteria specific kwargs.</paramsdesc><paramgroups>0</paramgroups><retdesc>`bool`. `False` indicates we should continue, `True` indicates we should stop.</retdesc></docstring>
+
+
+
+
+
+
+</div></div>
+
+<div class="docstring">
+
+<div class="docstring">
+<docstring><name>\_\_call\_\_</name><anchor>transformers.StoppingCriteriaList.__call__</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/generation_stopping_criteria.py#L111</source><parameters>[{"name": "input_ids", "val": ": LongTensor"}, {"name": "scores", "val": ": FloatTensor"}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **input_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`) --
+  Indices of input sequence tokens in the vocabulary.
+
+  Indices can be obtained using [BertTokenizer](/docs/transformers/master/en/model_doc/bert#transformers.BertTokenizer). See [PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.encode) and
+  [PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.__call__) for details.
+
+  [What are input IDs?](../glossary#input-ids)
+- **scores** (`torch.FloatTensor` of shape `(batch_size, config.vocab_size)`) --
+  Prediction scores of a language modeling head. These can be scores for each vocabulary token before SoftMax
+  or scores for each vocabulary token after SoftMax.
+  kwargs --
+  Additional stopping criteria specific kwargs.</paramsdesc><paramgroups>0</paramgroups><retdesc>`bool`. `False` indicates we should continue, `True` indicates we should stop.</retdesc></docstring>
+
+
+
+
+
+
+</div></div>
+
+<div class="docstring">
+
+<docstring><name>class transformers.MaxLengthCriteria</name><anchor>transformers.MaxLengthCriteria</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/generation_stopping_criteria.py#L41</source><parameters>[{"name": "max_length", "val": ": int"}]</parameters><paramsdesc>- **max_length** (`int`) --
+  The maximum length that the output sequence can have in number of tokens.</paramsdesc><paramgroups>0</paramgroups></docstring>
+
+This class can be used to stop generation whenever the full generated number of tokens exceeds `max_length`. Keep
+in mind for decoder-only type of transformers, this will include the initial prompted tokens.
+
+
+
+
+
+<div class="docstring">
+<docstring><name>\_\_call\_\_</name><anchor>transformers.MaxLengthCriteria.__call__</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/generation_stopping_criteria.py#L54</source><parameters>[{"name": "input_ids", "val": ": LongTensor"}, {"name": "scores", "val": ": FloatTensor"}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **input_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`) --
+  Indices of input sequence tokens in the vocabulary.
+
+  Indices can be obtained using [BertTokenizer](/docs/transformers/master/en/model_doc/bert#transformers.BertTokenizer). See [PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.encode) and
+  [PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.__call__) for details.
+
+  [What are input IDs?](../glossary#input-ids)
+- **scores** (`torch.FloatTensor` of shape `(batch_size, config.vocab_size)`) --
+  Prediction scores of a language modeling head. These can be scores for each vocabulary token before SoftMax
+  or scores for each vocabulary token after SoftMax.
+  kwargs --
+  Additional stopping criteria specific kwargs.</paramsdesc><paramgroups>0</paramgroups><retdesc>`bool`. `False` indicates we should continue, `True` indicates we should stop.</retdesc></docstring>
+
+
+
+
+
+
+</div></div>
+
+<div class="docstring">
+
+<docstring><name>class transformers.MaxTimeCriteria</name><anchor>transformers.MaxTimeCriteria</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/generation_stopping_criteria.py#L88</source><parameters>[{"name": "max_time", "val": ": float"}, {"name": "initial_timestamp", "val": ": typing.Optional[float] = None"}]</parameters><paramsdesc>- **max_time** (`float`) --
+  The maximum allowed time in seconds for the generation.
+- **initial_time** (`float`, *optional*, defaults to `time.time()`) --
+  The start of the generation allowed time.</paramsdesc><paramgroups>0</paramgroups></docstring>
+
+This class can be used to stop generation whenever the full generation exceeds some amount of time. By default, the
+time will start being counted when you initialize this function. You can override this by passing an
+`initial_time`.
+
+
+
+
+
+<div class="docstring">
+<docstring><name>\_\_call\_\_</name><anchor>transformers.MaxTimeCriteria.__call__</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/generation_stopping_criteria.py#L105</source><parameters>[{"name": "input_ids", "val": ": LongTensor"}, {"name": "scores", "val": ": FloatTensor"}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **input_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`) --
+  Indices of input sequence tokens in the vocabulary.
+
+  Indices can be obtained using [BertTokenizer](/docs/transformers/master/en/model_doc/bert#transformers.BertTokenizer). See [PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.encode) and
+  [PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.__call__) for details.
+
+  [What are input IDs?](../glossary#input-ids)
+- **scores** (`torch.FloatTensor` of shape `(batch_size, config.vocab_size)`) --
+  Prediction scores of a language modeling head. These can be scores for each vocabulary token before SoftMax
+  or scores for each vocabulary token after SoftMax.
+  kwargs --
+  Additional stopping criteria specific kwargs.</paramsdesc><paramgroups>0</paramgroups><retdesc>`bool`. `False` indicates we should continue, `True` indicates we should stop.</retdesc></docstring>
+
+
+
+
+
+
+</div></div>
+
+<h2 id="transformers.BeamScorer">BeamSearch</h2>
+
+<div class="docstring">
+
+<docstring><name>class transformers.BeamScorer</name><anchor>transformers.BeamScorer</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/generation_beam_search.py#L86</source><parameters>[]</parameters></docstring>
+
+Abstract base class for all beam scorers that are used for [beam_search()](/docs/transformers/master/en/main_classes/model#transformers.generation_utils.GenerationMixin.beam_search) and
+[beam_sample()](/docs/transformers/master/en/main_classes/model#transformers.generation_utils.GenerationMixin.beam_sample).
+
+
+
+<div class="docstring">
+<docstring><name>process</name><anchor>transformers.BeamScorer.process</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/generation_beam_search.py#L92</source><parameters>[{"name": "input_ids", "val": ": LongTensor"}, {"name": "next_scores", "val": ": FloatTensor"}, {"name": "next_tokens", "val": ": LongTensor"}, {"name": "next_indices", "val": ": LongTensor"}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **input_ids** (`torch.LongTensor` of shape `(batch_size * num_beams, sequence_length)`) --
+  Indices of input sequence tokens in the vocabulary.
+
+  Indices can be obtained using any class inheriting from [PreTrainedTokenizer](/docs/transformers/master/en/main_classes/tokenizer#transformers.PreTrainedTokenizer). See
+  [PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.encode) and [PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.__call__) for details.
+
+  [What are input IDs?](../glossary#input-ids)
+- **next_scores** (`torch.FloatTensor` of shape `(batch_size, 2 * num_beams)`) --
+  Current scores of the top `2 * num_beams` non-finished beam hypotheses.
+- **next_tokens** (`torch.LongTensor` of shape `(batch_size, 2 * num_beams)`) --
+  `input_ids` of the tokens corresponding to the top `2 * num_beams` non-finished beam hypotheses.
+- **next_indices** (`torch.LongTensor` of shape `(batch_size, 2 * num_beams)`) --
+  Beam indices indicating to which beam hypothesis the `next_tokens` correspond.
+- **pad_token_id** (`int`, *optional*) --
+  The id of the *padding* token.
+- **eos_token_id** (`int`, *optional*) --
+  The id of the *end-of-sequence* token.</paramsdesc><paramgroups>0</paramgroups><rettype>`UserDict`</rettype><retdesc>A dictionary composed of the fields as defined above:
+
+- **next_beam_scores** (`torch.FloatTensor` of shape `(batch_size * num_beams)`) -- Updated scores of all
+  non-finished beams.
+- **next_beam_tokens** (`torch.FloatTensor` of shape `(batch_size * num_beams)`) -- Next tokens to be added
+  to the non-finished beam_hypotheses.
+- **next_beam_indices** (`torch.FloatTensor` of shape `(batch_size * num_beams)`) -- Beam indices
+  indicating to which beam the next tokens shall be added.</retdesc></docstring>
+
+
+
+
+
+
+
+
+</div>
+<div class="docstring">
+<docstring><name>finalize</name><anchor>transformers.BeamScorer.finalize</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/generation_beam_search.py#L104</source><parameters>[{"name": "input_ids", "val": ": LongTensor"}, {"name": "next_scores", "val": ": FloatTensor"}, {"name": "next_tokens", "val": ": LongTensor"}, {"name": "next_indices", "val": ": LongTensor"}, {"name": "max_length", "val": ": int"}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **input_ids** (`torch.LongTensor` of shape `(batch_size * num_beams, sequence_length)`) --
+  Indices of input sequence tokens in the vocabulary.
+
+  Indices can be obtained using any class inheriting from [PreTrainedTokenizer](/docs/transformers/master/en/main_classes/tokenizer#transformers.PreTrainedTokenizer). See
+  [PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.encode) and [PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.__call__) for details.
+
+  [What are input IDs?](../glossary#input-ids)
+- **final_beam_scores** (`torch.FloatTensor` of shape `(batch_size * num_beams)`) --
+  The final scores of all non-finished beams.
+- **final_beam_tokens** (`torch.FloatTensor` of shape `(batch_size * num_beams)`) --
+  The last tokens to be added to the non-finished beam_hypotheses.
+- **final_beam_indices** (`torch.FloatTensor` of shape `(batch_size * num_beams)`) --
+  The beam indices indicating to which beam the `final_beam_tokens` shall be added.
+- **pad_token_id** (`int`, *optional*) --
+  The id of the *padding* token.
+- **eos_token_id** (`int`, *optional*) --
+  The id of the *end-of-sequence* token.</paramsdesc><paramgroups>0</paramgroups><rettype>`torch.LongTensor` of shape `(batch_size * num_return_sequences, sequence_length)`</rettype><retdesc>The generated sequences.
+The second dimension (sequence_length) is either equal to `max_length` or shorter if all batches finished early
+due to the `eos_token_id`.</retdesc></docstring>
+
+
+
+
+
+
+
+
+</div></div>
+
+<div class="docstring">
+
+<docstring><name>class transformers.BeamSearchScorer</name><anchor>transformers.BeamSearchScorer</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/generation_beam_search.py#L118</source><parameters>[{"name": "batch_size", "val": ": int"}, {"name": "num_beams", "val": ": int"}, {"name": "device", "val": ": device"}, {"name": "length_penalty", "val": ": typing.Optional[float] = 1.0"}, {"name": "do_early_stopping", "val": ": typing.Optional[bool] = False"}, {"name": "num_beam_hyps_to_keep", "val": ": typing.Optional[int] = 1"}, {"name": "num_beam_groups", "val": ": typing.Optional[int] = 1"}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **batch_size** (`int`) --
+  Batch Size of `input_ids` for which standard beam search decoding is run in parallel.
+- **max_length** (`int`) --
+  The maximum length of the sequence to be generated.
+- **num_beams** (`int`) --
+  Number of beams for beam search.
+- **device** (`torch.device`) --
+  Defines the device type (*e.g.*, `"cpu"` or `"cuda"`) on which this instance of `BeamSearchScorer` will be
+  allocated.
+- **length_penalty** (`float`, *optional*, defaults to 1.0) --
+  Exponential penalty to the length. 1.0 means no penalty. Set to values &amp;lt; 1.0 in order to encourage the
+  model to generate shorter sequences, to a value > 1.0 in order to encourage the model to produce longer
+  sequences.
+- **do_early_stopping** (`bool`, *optional*, defaults to `False`) --
+  Whether to stop the beam search when at least `num_beams` sentences are finished per batch or not.
+- **num_beam_hyps_to_keep** (`int`, *optional*, defaults to 1) --
+  The number of beam hypotheses that shall be returned upon calling
+  `finalize`.
+- **num_beam_groups** (`int`) --
+  Number of groups to divide `num_beams` into in order to ensure diversity among different groups of beams.
+  See [this paper](https://arxiv.org/pdf/1610.02424.pdf) for more details.</paramsdesc><paramgroups>0</paramgroups></docstring>
+
+[BeamScorer](/docs/transformers/master/en/internal/generation_utils#transformers.BeamScorer) implementing standard beam search decoding.
+
+Adapted in part from [Facebook's XLM beam search
+code](https://github.com/facebookresearch/XLM/blob/9e6f6814d17be4fe5b15f2e6c43eb2b2d76daeb4/src/model/transformer.py#L529).
+
+Reference for the diverse beam search algorithm and implementation [Ashwin Kalyan's DBS
+implementation](https://github.com/ashwinkalyan/dbs/blob/master/dbs/beam_utils.lua)
+
+
+
+
+
+<div class="docstring"></div>
+<div class="docstring"></div></div>
+
+<h2 id="transformers.top_k_top_p_filtering">Utilities</h2>
+
+<div class="docstring">
+
+<docstring><name>transformers.top\_k\_top\_p\_filtering</name><anchor>transformers.top_k_top_p_filtering</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/generation_utils.py#L2681</source><parameters>[{"name": "logits", "val": ": FloatTensor"}, {"name": "top_k", "val": ": int = 0"}, {"name": "top_p", "val": ": float = 1.0"}, {"name": "filter_value", "val": ": float = -inf"}, {"name": "min_tokens_to_keep", "val": ": int = 1"}]</parameters><paramsdesc>logits -- logits distribution shape (batch size, vocabulary size)
+- **top_k** (`int`, *optional*, defaults to 0) --
+  If > 0, only keep the top k tokens with highest probability (top-k filtering)
+- **top_p** (`float`, *optional*, defaults to 1.0) --
+  If &amp;lt; 1.0, only keep the top tokens with cumulative probability >= top_p (nucleus filtering). Nucleus
+  filtering is described in Holtzman et al. (http://arxiv.org/abs/1904.09751)
+- **min_tokens_to_keep** (`int`, *optional*, defaults to 1) --
+  Minimumber of tokens we keep per batch example in the output.</paramsdesc><paramgroups>0</paramgroups></docstring>
+
+Filter a distribution of logits using top-k and/or nucleus (top-p) filtering
+
+
+
+From: https://gist.github.com/thomwolf/1a5a29f6962089e871b94cbd09daf317
+
+
+</div>
+
+<div class="docstring">
+
+<docstring><name>transformers.tf\_top\_k\_top\_p\_filtering</name><anchor>transformers.tf_top_k_top_p_filtering</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/generation_tf_utils.py#L1569</source><parameters>[{"name": "logits", "val": ""}, {"name": "top_k", "val": " = 0"}, {"name": "top_p", "val": " = 1.0"}, {"name": "filter_value", "val": " = -inf"}, {"name": "min_tokens_to_keep", "val": " = 1"}]</parameters><paramsdesc>logits -- logits distribution shape (batch size, vocabulary size)
+- **top_k** (`int`, *optional*, defaults to 0) --
+  If > 0, only keep the top k tokens with highest probability (top-k filtering)
+- **top_p** (`float`, *optional*, defaults to 1.0) --
+  If &amp;lt; 1.0, only keep the top tokens with cumulative probability >= top_p (nucleus filtering). Nucleus
+  filtering is described in Holtzman et al. (http://arxiv.org/abs/1904.09751)
+- **min_tokens_to_keep** (`int`, *optional*, defaults to 1) --
+  Minimumber of tokens we keep per batch example in the output.</paramsdesc><paramgroups>0</paramgroups></docstring>
+
+Filter a distribution of logits using top-k and/or nucleus (top-p) filtering
+
+
+
+From: https://gist.github.com/thomwolf/1a5a29f6962089e871b94cbd09daf317
+
+
+</div>

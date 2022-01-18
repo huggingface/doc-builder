@@ -1,0 +1,346 @@
+---
+local: feature-extractor
+sections:
+- local: transformers.feature_extraction_utils.FeatureExtractionMixin
+  title: FeatureExtractionMixin
+- local: transformers.SequenceFeatureExtractor
+  title: SequenceFeatureExtractor
+- local: transformers.BatchFeature
+  title: BatchFeature
+- local: transformers.ImageFeatureExtractionMixin
+  title: ImageFeatureExtractionMixin
+title: Feature Extractor
+---
+<script>
+import Tip from "./Tip.svelte";
+import Youtube from "./Youtube.svelte";
+import Docstring from "./Docstring.svelte";
+import CodeBlock from "./CodeBlock.svelte";
+import CodeBlockFw from "./CodeBlockFw.svelte";
+import ColabDropdown from "./ColabDropdown.svelte";
+import IconCopyLink from "./IconCopyLink.svelte";
+export let fw: "pt" | "tf"
+</script>
+<!--Copyright 2021 The HuggingFace Team. All rights reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
+the License. You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on
+an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
+specific language governing permissions and limitations under the License.
+-->
+
+<h1 id="feature-extractor">Feature Extractor</h1>
+
+A feature extractor is in charge of preparing input features for a multi-modal model. This includes feature extraction
+from sequences, *e.g.*, pre-processing audio files to Log-Mel Spectrogram features, feature extraction from images
+*e.g.* cropping image image files, but also padding, normalization, and conversion to Numpy, PyTorch, and TensorFlow
+tensors.
+
+
+<h2 id="transformers.feature_extraction_utils.FeatureExtractionMixin">FeatureExtractionMixin</h2>
+
+<div class="docstring">
+
+<docstring><name>class transformers.feature\_extraction\_utils.FeatureExtractionMixin</name><anchor>transformers.feature_extraction_utils.FeatureExtractionMixin</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/feature_extraction_utils.py#L197</source><parameters>[{"name": "**kwargs", "val": ""}]</parameters></docstring>
+
+This is a feature extraction mixin used to provide saving/loading functionality for sequential and image feature
+extractors.
+
+
+
+<div class="docstring">
+<docstring><name>from\_pretrained</name><anchor>transformers.feature_extraction_utils.FeatureExtractionMixin.from_pretrained</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/feature_extraction_utils.py#L219</source><parameters>[{"name": "pretrained_model_name_or_path", "val": ": typing.Union[str, os.PathLike]"}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **pretrained_model_name_or_path** (`str` or `os.PathLike`) --
+  This can be either:
+
+  - a string, the *model id* of a pretrained feature_extractor hosted inside a model repo on
+    huggingface.co. Valid model ids can be located at the root-level, like `bert-base-uncased`, or
+    namespaced under a user or organization name, like `dbmdz/bert-base-german-cased`.
+  - a path to a *directory* containing a feature extractor file saved using the
+    [save_pretrained()](/docs/transformers/master/en/main_classes/feature_extractor#transformers.feature_extraction_utils.FeatureExtractionMixin.save_pretrained) method, e.g.,
+    `./my_model_directory/`.
+  - a path or url to a saved feature extractor JSON *file*, e.g.,
+    `./my_model_directory/preprocessor_config.json`.
+- **cache_dir** (`str` or `os.PathLike`, *optional*) --
+  Path to a directory in which a downloaded pretrained model feature extractor should be cached if the
+  standard cache should not be used.
+- **force_download** (`bool`, *optional*, defaults to `False`) --
+  Whether or not to force to (re-)download the feature extractor files and override the cached versions
+  if they exist.
+- **resume_download** (`bool`, *optional*, defaults to `False`) --
+  Whether or not to delete incompletely received file. Attempts to resume the download if such a file
+  exists.
+- **proxies** (`Dict[str, str]`, *optional*) --
+  A dictionary of proxy servers to use by protocol or endpoint, e.g., `&amp;lcub;'http': 'foo.bar:3128',
+  'http://hostname': 'foo.bar:4012'}.` The proxies are used on each request.
+- **use_auth_token** (`str` or *bool*, *optional*) --
+  The token to use as HTTP bearer authorization for remote files. If `True`, will use the token generated
+  when running `transformers-cli login` (stored in `~/.huggingface`).
+- **revision(`str`,** *optional*, defaults to `"main"`) --
+  The specific model version to use. It can be a branch name, a tag name, or a commit id, since we use a
+  git-based system for storing models and other artifacts on huggingface.co, so `revision` can be any
+  identifier allowed by git.
+- **return_unused_kwargs** (`bool`, *optional*, defaults to `False`) --
+  If `False`, then this function returns just the final feature extractor object. If `True`, then this
+  functions returns a `Tuple(feature_extractor, unused_kwargs)` where *unused_kwargs* is a dictionary
+  consisting of the key/value pairs whose keys are not feature extractor attributes: i.e., the part of
+  `kwargs` which has not been used to update `feature_extractor` and is otherwise ignored.
+- **kwargs** (`Dict[str, Any]`, *optional*) --
+  The values in kwargs of any keys which are feature extractor attributes will be used to override the
+  loaded values. Behavior concerning key/value pairs whose keys are *not* feature extractor attributes is
+  controlled by the `return_unused_kwargs` keyword parameter.</paramsdesc><paramgroups>0</paramgroups><retdesc>A feature extractor of type [FeatureExtractionMixin](/docs/transformers/master/en/main_classes/feature_extractor#transformers.feature_extraction_utils.FeatureExtractionMixin).</retdesc></docstring>
+
+Instantiate a type of [FeatureExtractionMixin](/docs/transformers/master/en/main_classes/feature_extractor#transformers.feature_extraction_utils.FeatureExtractionMixin) from a feature extractor, *e.g.* a
+derived class of [SequenceFeatureExtractor](/docs/transformers/master/en/main_classes/feature_extractor#transformers.SequenceFeatureExtractor).
+
+
+
+<Tip>
+
+Passing `use_auth_token=True` is required when you want to use a private model.
+
+</Tip>
+
+
+
+Examples:
+
+```python
+# We can't instantiate directly the base class *FeatureExtractionMixin* nor *SequenceFeatureExtractor* so let's show the examples on a
+# derived class: *Wav2Vec2FeatureExtractor*
+feature_extractor = Wav2Vec2FeatureExtractor.from_pretrained(
+    "facebook/wav2vec2-base-960h"
+)  # Download feature_extraction_config from huggingface.co and cache.
+feature_extractor = Wav2Vec2FeatureExtractor.from_pretrained(
+    "./test/saved_model/"
+)  # E.g. feature_extractor (or model) was saved using *save_pretrained('./test/saved_model/')*
+feature_extractor = Wav2Vec2FeatureExtractor.from_pretrained("./test/saved_model/preprocessor_config.json")
+feature_extractor = Wav2Vec2FeatureExtractor.from_pretrained(
+    "facebook/wav2vec2-base-960h", return_attention_mask=False, foo=False
+)
+assert feature_extractor.return_attention_mask is False
+feature_extractor, unused_kwargs = Wav2Vec2FeatureExtractor.from_pretrained(
+    "facebook/wav2vec2-base-960h", return_attention_mask=False, foo=False, return_unused_kwargs=True
+)
+assert feature_extractor.return_attention_mask is False
+assert unused_kwargs == &amp;lcub;"foo": False}
+```
+
+</div>
+<div class="docstring">
+<docstring><name>save\_pretrained</name><anchor>transformers.feature_extraction_utils.FeatureExtractionMixin.save_pretrained</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/feature_extraction_utils.py#L303</source><parameters>[{"name": "save_directory", "val": ": typing.Union[str, os.PathLike]"}]</parameters><paramsdesc>- **save_directory** (`str` or `os.PathLike`) --
+  Directory where the feature extractor JSON file will be saved (will be created if it does not exist).</paramsdesc><paramgroups>0</paramgroups></docstring>
+
+Save a feature_extractor object to the directory `save_directory`, so that it can be re-loaded using the
+[from_pretrained()](/docs/transformers/master/en/main_classes/feature_extractor#transformers.feature_extraction_utils.FeatureExtractionMixin.from_pretrained) class method.
+
+
+
+
+</div></div>
+
+<h2 id="transformers.SequenceFeatureExtractor">SequenceFeatureExtractor</h2>
+
+<div class="docstring">
+
+<docstring><name>class transformers.SequenceFeatureExtractor</name><anchor>transformers.SequenceFeatureExtractor</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/feature_extraction_sequence_utils.py#L38</source><parameters>[{"name": "feature_size", "val": ": int"}, {"name": "sampling_rate", "val": ": int"}, {"name": "padding_value", "val": ": float"}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **feature_size** (`int`) --
+  The feature dimension of the extracted features.
+- **sampling_rate** (`int`) --
+  The sampling rate at which the audio files should be digitalized expressed in Hertz per second (Hz).
+- **padding_value** (`float`) --
+  The value that is used to fill the padding values / vectors.</paramsdesc><paramgroups>0</paramgroups></docstring>
+
+This is a general feature extraction class for speech recognition.
+
+
+
+
+
+<div class="docstring">
+<docstring><name>pad</name><anchor>transformers.SequenceFeatureExtractor.pad</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/feature_extraction_sequence_utils.py#L61</source><parameters>[{"name": "processed_features", "val": ": typing.Union[transformers.feature_extraction_utils.BatchFeature, typing.List[transformers.feature_extraction_utils.BatchFeature], typing.Dict[str, transformers.feature_extraction_utils.BatchFeature], typing.Dict[str, typing.List[transformers.feature_extraction_utils.BatchFeature]], typing.List[typing.Dict[str, transformers.feature_extraction_utils.BatchFeature]]]"}, {"name": "padding", "val": ": typing.Union[bool, str, transformers.file_utils.PaddingStrategy] = True"}, {"name": "max_length", "val": ": typing.Optional[int] = None"}, {"name": "truncation", "val": ": bool = False"}, {"name": "pad_to_multiple_of", "val": ": typing.Optional[int] = None"}, {"name": "return_attention_mask", "val": ": typing.Optional[bool] = None"}, {"name": "return_tensors", "val": ": typing.Union[str, transformers.file_utils.TensorType, NoneType] = None"}]</parameters><paramsdesc>- **processed_features** ([BatchFeature](/docs/transformers/master/en/main_classes/feature_extractor#transformers.BatchFeature), list of [BatchFeature](/docs/transformers/master/en/main_classes/feature_extractor#transformers.BatchFeature), `Dict[str, List[float]]`, `Dict[str, List[List[float]]` or `List[Dict[str, List[float]]]`) --
+  Processed inputs. Can represent one input ([BatchFeature](/docs/transformers/master/en/main_classes/feature_extractor#transformers.BatchFeature) or `Dict[str, List[float]]`) or a batch of
+  input values / vectors (list of [BatchFeature](/docs/transformers/master/en/main_classes/feature_extractor#transformers.BatchFeature), *Dict[str, List[List[float]]]* or *List[Dict[str,
+  List[float]]]*) so you can use this method during preprocessing as well as in a PyTorch Dataloader
+  collate function.
+
+  Instead of `List[float]` you can have tensors (numpy arrays, PyTorch tensors or TensorFlow tensors),
+  see the note above for the return type.
+- **padding** (`bool`, `str` or [PaddingStrategy](/docs/transformers/master/en/internal/file_utils#transformers.file_utils.PaddingStrategy), *optional*, defaults to `True`) --
+  Select a strategy to pad the returned sequences (according to the model's padding side and padding
+  index) among:
+
+  - `True` or `'longest'`: Pad to the longest sequence in the batch (or no padding if only a single
+    sequence if provided).
+  - `'max_length'`: Pad to a maximum length specified with the argument `max_length` or to the maximum
+    acceptable input length for the model if that argument is not provided.
+  - `False` or `'do_not_pad'` (default): No padding (i.e., can output a batch with sequences of different
+    lengths).
+- **max_length** (`int`, *optional*) --
+  Maximum length of the returned list and optionally padding length (see above).
+- **truncation** (`bool`) --
+  Activates truncation to cut input sequences longer than `max_length` to `max_length`.
+- **pad_to_multiple_of** (`int`, *optional*) --
+  If set will pad the sequence to a multiple of the provided value.
+
+  This is especially useful to enable the use of Tensor Cores on NVIDIA hardware with compute capability
+  >= 7.5 (Volta), or on TPUs which benefit from having sequence lengths be a multiple of 128.
+- **return_attention_mask** (`bool`, *optional*) --
+  Whether to return the attention mask. If left to the default, will return the attention mask according
+  to the specific feature_extractor's default.
+
+  [What are attention masks?](../glossary#attention-mask)
+- **return_tensors** (`str` or [TensorType](/docs/transformers/master/en/internal/file_utils#transformers.TensorType), *optional*) --
+  If set, will return tensors instead of list of python integers. Acceptable values are:
+
+  - `'tf'`: Return TensorFlow `tf.constant` objects.
+  - `'pt'`: Return PyTorch `torch.Tensor` objects.
+  - `'np'`: Return Numpy `np.ndarray` objects.</paramsdesc><paramgroups>0</paramgroups></docstring>
+
+Pad input values / input vectors or a batch of input values / input vectors up to predefined length or to the
+max sequence length in the batch.
+
+Padding side (left/right) padding values are defined at the feature extractor level (with `self.padding_side`,
+`self.padding_value`)
+
+<Tip>
+
+If the `processed_features` passed are dictionary of numpy arrays, PyTorch tensors or TensorFlow tensors, the
+result will use the same type unless you provide a different tensor type with `return_tensors`. In the case of
+PyTorch tensors, you will lose the specific device of your tensors however.
+
+</Tip>
+
+
+
+
+</div></div>
+
+<h2 id="transformers.BatchFeature">BatchFeature</h2>
+
+<div class="docstring">
+
+<docstring><name>class transformers.BatchFeature</name><anchor>transformers.BatchFeature</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/feature_extraction_utils.py#L55</source><parameters>[{"name": "data", "val": ": typing.Union[typing.Dict[str, typing.Any], NoneType] = None"}, {"name": "tensor_type", "val": ": typing.Union[NoneType, str, transformers.file_utils.TensorType] = None"}]</parameters><paramsdesc>- **data** (`dict`) --
+  Dictionary of lists/arrays/tensors returned by the __call__/pad methods ('input_values', 'attention_mask',
+  etc.).
+- **tensor_type** (`Union[None, str, TensorType]`, *optional*) --
+  You can give a tensor_type here to convert the lists of integers in PyTorch/TensorFlow/Numpy Tensors at
+  initialization.</paramsdesc><paramgroups>0</paramgroups></docstring>
+
+Holds the output of the [pad()](/docs/transformers/master/en/main_classes/feature_extractor#transformers.SequenceFeatureExtractor.pad) and feature extractor specific `__call__` methods.
+
+This class is derived from a python dictionary and can be used as a dictionary.
+
+
+
+
+
+<div class="docstring">
+<docstring><name>convert\_to\_tensors</name><anchor>transformers.BatchFeature.convert_to_tensors</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/feature_extraction_utils.py#L109</source><parameters>[{"name": "tensor_type", "val": ": typing.Union[str, transformers.file_utils.TensorType, NoneType] = None"}]</parameters><paramsdesc>- **tensor_type** (`str` or [TensorType](/docs/transformers/master/en/internal/file_utils#transformers.TensorType), *optional*) --
+  The type of tensors to use. If `str`, should be one of the values of the enum
+  [TensorType](/docs/transformers/master/en/internal/file_utils#transformers.TensorType). If `None`, no modification is done.</paramsdesc><paramgroups>0</paramgroups></docstring>
+
+Convert the inner content to tensors.
+
+
+
+
+</div>
+<div class="docstring">
+<docstring><name>to</name><anchor>transformers.BatchFeature.to</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/feature_extraction_utils.py#L174</source><parameters>[{"name": "device", "val": ": typing.Union[str, ForwardRef('torch.device')]"}]</parameters><paramsdesc>- **device** (`str` or `torch.device`) -- The device to put the tensors on.</paramsdesc><paramgroups>0</paramgroups><rettype>[BatchFeature](/docs/transformers/master/en/main_classes/feature_extractor#transformers.BatchFeature)</rettype><retdesc>The same instance after modification.</retdesc></docstring>
+
+Send all values to device by calling `v.to(device)` (PyTorch only).
+
+
+
+
+
+
+
+
+</div></div>
+
+<h2 id="transformers.ImageFeatureExtractionMixin">ImageFeatureExtractionMixin</h2>
+
+<div class="docstring">
+
+<docstring><name>class transformers.ImageFeatureExtractionMixin</name><anchor>transformers.ImageFeatureExtractionMixin</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/image_utils.py#L76</source><parameters>[]</parameters></docstring>
+
+Mixin that contain utilities for preparing image features.
+
+
+
+<div class="docstring">
+<docstring><name>center\_crop</name><anchor>transformers.ImageFeatureExtractionMixin.center_crop</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/image_utils.py#L210</source><parameters>[{"name": "image", "val": ""}, {"name": "size", "val": ""}]</parameters><paramsdesc>- **image** (`PIL.Image.Image` or `np.ndarray` or `torch.Tensor`) --
+  The image to resize.
+- **size** (`int` or `Tuple[int, int]`) --
+  The size to which crop the image.</paramsdesc><paramgroups>0</paramgroups></docstring>
+
+Crops `image` to the given size using a center crop. Note that if the image is too small to be cropped to the
+size given, it will be padded (so the returned result has the size asked).
+
+
+
+
+</div>
+<div class="docstring">
+<docstring><name>normalize</name><anchor>transformers.ImageFeatureExtractionMixin.normalize</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/image_utils.py#L151</source><parameters>[{"name": "image", "val": ""}, {"name": "mean", "val": ""}, {"name": "std", "val": ""}]</parameters><paramsdesc>- **image** (`PIL.Image.Image` or `np.ndarray` or `torch.Tensor`) --
+  The image to normalize.
+- **mean** (`List[float]` or `np.ndarray` or `torch.Tensor`) --
+  The mean (per channel) to use for normalization.
+- **std** (`List[float]` or `np.ndarray` or `torch.Tensor`) --
+  The standard deviation (per channel) to use for normalization.</paramsdesc><paramgroups>0</paramgroups></docstring>
+
+Normalizes `image` with `mean` and `std`. Note that this will trigger a conversion of `image` to a NumPy array
+if it's a PIL Image.
+
+
+
+
+</div>
+<div class="docstring">
+<docstring><name>resize</name><anchor>transformers.ImageFeatureExtractionMixin.resize</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/image_utils.py#L187</source><parameters>[{"name": "image", "val": ""}, {"name": "size", "val": ""}, {"name": "resample", "val": " = 2"}]</parameters><paramsdesc>- **image** (`PIL.Image.Image` or `np.ndarray` or `torch.Tensor`) --
+  The image to resize.
+- **size** (`int` or `Tuple[int, int]`) --
+  The size to use for resizing the image.
+- **resample** (`int`, *optional*, defaults to `PIL.Image.BILINEAR`) --
+  The filter to user for resampling.</paramsdesc><paramgroups>0</paramgroups></docstring>
+
+Resizes `image`. Note that this will trigger a conversion of `image` to a PIL Image.
+
+
+
+
+</div>
+<div class="docstring">
+<docstring><name>to\_numpy\_array</name><anchor>transformers.ImageFeatureExtractionMixin.to_numpy_array</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/image_utils.py#L118</source><parameters>[{"name": "image", "val": ""}, {"name": "rescale", "val": " = None"}, {"name": "channel_first", "val": " = True"}]</parameters><paramsdesc>- **image** (`PIL.Image.Image` or `np.ndarray` or `torch.Tensor`) --
+  The image to convert to a NumPy array.
+- **rescale** (`bool`, *optional*) --
+  Whether or not to apply the scaling factor (to make pixel values floats between 0. and 1.). Will
+  default to `True` if the image is a PIL Image or an array/tensor of integers, `False` otherwise.
+- **channel_first** (`bool`, *optional*, defaults to `True`) --
+  Whether or not to permute the dimensions of the image to put the channel dimension first.</paramsdesc><paramgroups>0</paramgroups></docstring>
+
+Converts `image` to a numpy array. Optionally rescales it and puts the channel dimension as the first
+dimension.
+
+
+
+
+</div>
+<div class="docstring">
+<docstring><name>to\_pil\_image</name><anchor>transformers.ImageFeatureExtractionMixin.to_pil_image</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/image_utils.py#L88</source><parameters>[{"name": "image", "val": ""}, {"name": "rescale", "val": " = None"}]</parameters><paramsdesc>- **image** (`PIL.Image.Image` or `numpy.ndarray` or `torch.Tensor`) --
+  The image to convert to the PIL Image format.
+- **rescale** (`bool`, *optional*) --
+  Whether or not to apply the scaling factor (to make pixel values integers between 0 and 255). Will
+  default to `True` if the image type is a floating type, `False` otherwise.</paramsdesc><paramgroups>0</paramgroups></docstring>
+
+Converts `image` to a PIL Image. Optionally rescales it and puts the channel dimension back as the last axis if
+needed.
+
+
+
+
+</div></div>

@@ -1,0 +1,847 @@
+---
+local: gpt-neo
+sections:
+- local: overview
+  sections:
+  - local: generation
+    title: Generation
+  title: Overview
+- local: transformers.GPTNeoConfig
+  title: GPTNeoConfig
+- local: transformers.GPTNeoModel
+  title: GPTNeoModel
+- local: transformers.GPTNeoForCausalLM
+  title: GPTNeoForCausalLM
+- local: transformers.GPTNeoForSequenceClassification
+  title: GPTNeoForSequenceClassification
+- local: transformers.FlaxGPTNeoModel
+  title: FlaxGPTNeoModel
+- local: transformers.FlaxGPTNeoForCausalLM
+  title: FlaxGPTNeoForCausalLM
+title: GPT Neo
+---
+<script>
+import Tip from "./Tip.svelte";
+import Youtube from "./Youtube.svelte";
+import Docstring from "./Docstring.svelte";
+import CodeBlock from "./CodeBlock.svelte";
+import CodeBlockFw from "./CodeBlockFw.svelte";
+import ColabDropdown from "./ColabDropdown.svelte";
+import IconCopyLink from "./IconCopyLink.svelte";
+export let fw: "pt" | "tf"
+</script>
+<!--Copyright 2021 The HuggingFace Team. All rights reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
+the License. You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on
+an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
+specific language governing permissions and limitations under the License.
+-->
+
+<h1 id="gpt-neo">GPT Neo</h1>
+
+<h2 id="overview">Overview</h2>
+
+The GPTNeo model was released in the [EleutherAI/gpt-neo](https://github.com/EleutherAI/gpt-neo) repository by Sid
+Black, Stella Biderman, Leo Gao, Phil Wang and Connor Leahy. It is a GPT2 like causal language model trained on the
+[Pile](https://pile.eleuther.ai/) dataset.
+
+The architecture is similar to GPT2 except that GPT Neo uses local attention in every other layer with a window size of
+256 tokens.
+
+This model was contributed by [valhalla](https://huggingface.co/valhalla).
+
+<h3 id="generation">Generation</h3>
+
+The `generate()` method can be used to generate text using GPT Neo model.
+
+```python
+>>> from transformers import GPTNeoForCausalLM, GPT2Tokenizer
+
+>>> model = GPTNeoForCausalLM.from_pretrained("EleutherAI/gpt-neo-1.3B")
+>>> tokenizer = GPT2Tokenizer.from_pretrained("EleutherAI/gpt-neo-1.3B")
+
+>>> prompt = (
+...     "In a shocking finding, scientists discovered a herd of unicorns living in a remote, "
+...     "previously unexplored valley, in the Andes Mountains. Even more surprising to the "
+...     "researchers was the fact that the unicorns spoke perfect English."
+... )
+
+>>> input_ids = tokenizer(prompt, return_tensors="pt").input_ids
+
+>>> gen_tokens = model.generate(
+...     input_ids,
+...     do_sample=True,
+...     temperature=0.9,
+...     max_length=100,
+... )
+>>> gen_text = tokenizer.batch_decode(gen_tokens)[0]
+```
+
+<h2 id="transformers.GPTNeoConfig">GPTNeoConfig</h2>
+
+<div class="docstring">
+
+<docstring><name>class transformers.GPTNeoConfig</name><anchor>transformers.GPTNeoConfig</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/gpt_neo/configuration_gpt_neo.py#L34</source><parameters>[{"name": "vocab_size", "val": " = 50257"}, {"name": "max_position_embeddings", "val": " = 2048"}, {"name": "hidden_size", "val": " = 2048"}, {"name": "num_layers", "val": " = 24"}, {"name": "attention_types", "val": " = [[['global', 'local'], 12]]"}, {"name": "num_heads", "val": " = 16"}, {"name": "intermediate_size", "val": " = None"}, {"name": "window_size", "val": " = 256"}, {"name": "activation_function", "val": " = 'gelu_new'"}, {"name": "resid_dropout", "val": " = 0.0"}, {"name": "embed_dropout", "val": " = 0.0"}, {"name": "attention_dropout", "val": " = 0.0"}, {"name": "layer_norm_epsilon", "val": " = 1e-05"}, {"name": "initializer_range", "val": " = 0.02"}, {"name": "summary_type", "val": " = 'cls_index'"}, {"name": "summary_use_proj", "val": " = True"}, {"name": "summary_activation", "val": " = None"}, {"name": "summary_proj_to_labels", "val": " = True"}, {"name": "summary_first_dropout", "val": " = 0.1"}, {"name": "use_cache", "val": " = True"}, {"name": "bos_token_id", "val": " = 50256"}, {"name": "eos_token_id", "val": " = 50256"}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **vocab_size** (`int`, *optional*, defaults to 50257) --
+  Vocabulary size of the GPT Neo model. Defines the number of different tokens that can be represented by the
+  `inputs_ids` passed when calling [GPTNeoModel](/docs/transformers/master/en/model_doc/gpt_neo#transformers.GPTNeoModel). Vocabulary size of the model. Defines the different
+  tokens that can be represented by the *inputs_ids* passed to the forward method of [GPTNeoModel](/docs/transformers/master/en/model_doc/gpt_neo#transformers.GPTNeoModel).
+- **attention_types** (`List`, *optional*, defaults to `[[["global", "local"], 12]]`) --
+  The type of attention for each layer in a `List` of the following format `[[["attention_type"],
+  num_layerss]]` e.g. for a 24 layer model `[[["global"], 24]]` or `[[["global", "local"], 12]]` Choose the
+  value of `attention_type` from `["global", "local"]`
+- **hidden_size** (`int`, *optional*, defaults to 2048) --
+  Dimensionality of the encoder layers and the pooler layer.
+- **num_layers** (`int`, *optional*, defaults to 24) --
+  Number of hidden layers in the Transformer encoder.
+- **num_heads** (`int`, *optional*, defaults to 16) --
+  Number of attention heads for each attention layer in the Transformer encoder.
+- **intermediate_size** (`int`, *optional*, defaults to 8192) --
+  Dimensionality of the "intermediate" (i.e., feed-forward) layer in the Transformer encoder.
+- **activation_function** (`str` or `function`, *optional*, defaults to `"gelu_new"`) --
+  The non-linear activation function (function or string) in the encoder and pooler. If string, `"gelu"`,
+  `"relu"`, `"selu"` and `"gelu_new"` are supported.
+- **embed_dropout** (`float`, *optional*, defaults to 0.0) --
+  The dropout probabilitiy for all fully connected layers in the embeddings, encoder, and pooler.
+- **attention_dropout** (`float`, *optional*, defaults to 0.0) --
+  The dropout ratio for the attention probabilities.
+- **max_position_embeddings** (`int`, *optional*, defaults to 2048) --
+  The maximum sequence length that this model might ever be used with. Typically set this to something large
+  just in case (e.g., 512 or 1024 or 2048).
+- **type_vocab_size** (`int`, *optional*, defaults to 2) --
+  The vocabulary size of the `token_type_ids` passed when calling [GPTNeoModel](/docs/transformers/master/en/model_doc/gpt_neo#transformers.GPTNeoModel).
+- **initializer_range** (`float`, *optional*, defaults to 0.02) --
+  The standard deviation of the truncated_normal_initializer for initializing all weight matrices.
+- **layer_norm_epsilon** (`float`, *optional*, defaults to 1e-5) --
+  The epsilon used by the layer normalization layers.
+- **use_cache** (`bool`, *optional*, defaults to `True`) --
+  Whether or not the model should return the last key/values attentions (not used by all models). Only
+  relevant if `config.is_decoder=True`.</paramsdesc><paramgroups>0</paramgroups></docstring>
+
+This is the configuration class to store the configuration of a [GPTNeoModel](/docs/transformers/master/en/model_doc/gpt_neo#transformers.GPTNeoModel). It is used to instantiate a GPT
+Neo model according to the specified arguments, defining the model architecture. Instantiating a configuration with
+the defaults will yield a similar configuration to that of the GPTNeo
+[gpt-neo-1.3B](https://huggingface.co/EleutherAI/gpt-neo-1.3B) architecture.
+
+Configuration objects inherit from [PretrainedConfig](/docs/transformers/master/en/main_classes/configuration#transformers.PretrainedConfig) and can be used to control the model outputs. Read the
+documentation from [PretrainedConfig](/docs/transformers/master/en/main_classes/configuration#transformers.PretrainedConfig) for more information.
+
+
+
+
+Example:
+
+```python
+>>> from transformers import GPTNeoModel, GPTNeoConfig
+
+>>> # Initializing a GPTNeo EleutherAI/gpt-neo-1.3B style configuration
+>>> configuration = GPTNeoConfig()
+
+>>> # Initializing a model from the EleutherAI/gpt-neo-1.3B style configuration
+>>> model = GPTNeoModel(configuration)
+
+>>> # Accessing the model configuration
+>>> configuration = model.config
+```
+
+</div>
+
+<h2 id="transformers.GPTNeoModel">GPTNeoModel</h2>
+
+<div class="docstring">
+
+<docstring><name>class transformers.GPTNeoModel</name><anchor>transformers.GPTNeoModel</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/gpt_neo/modeling_gpt_neo.py#L475</source><parameters>[{"name": "config", "val": ""}]</parameters><paramsdesc>- **config** ([GPTNeoConfig](/docs/transformers/master/en/model_doc/gpt_neo#transformers.GPTNeoConfig)) -- Model configuration class with all the parameters of the model.
+  Initializing with a config file does not load the weights associated with the model, only the
+  configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel.from_pretrained) method to load the model weights.</paramsdesc><paramgroups>0</paramgroups></docstring>
+The bare GPT Neo Model transformer outputting raw hidden-states without any specific head on top.
+
+This model inherits from [PreTrainedModel](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel). Check the superclass documentation for the generic methods the
+library implements for all its model (such as downloading or saving, resizing the input embeddings, pruning heads
+etc.)
+
+This model is also a PyTorch [torch.nn.Module](https://pytorch.org/docs/stable/nn.html#torch.nn.Module) subclass.
+Use it as a regular PyTorch Module and refer to the PyTorch documentation for all matter related to general usage
+and behavior.
+
+
+
+
+
+<div class="docstring">
+<docstring><name>forward</name><anchor>transformers.GPTNeoModel.forward</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/gpt_neo/modeling_gpt_neo.py#L496</source><parameters>[{"name": "input_ids", "val": " = None"}, {"name": "past_key_values", "val": " = None"}, {"name": "attention_mask", "val": " = None"}, {"name": "token_type_ids", "val": " = None"}, {"name": "position_ids", "val": " = None"}, {"name": "head_mask", "val": " = None"}, {"name": "inputs_embeds", "val": " = None"}, {"name": "use_cache", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "return_dict", "val": " = None"}]</parameters><paramsdesc>- **input_ids** (`torch.LongTensor` of shape `(batch_size, input_ids_length)`) --
+  `input_ids_length` = `sequence_length` if `past_key_values` is `None` else
+  `past_key_values[0][0].shape[-2]` (`sequence_length` of input past key value states). Indices of input
+  sequence tokens in the vocabulary.
+
+  If `past_key_values` is used, only `input_ids` that do not have their past calculated should be passed as
+  `input_ids`.
+
+  Indices can be obtained using `GPTNeoTokenizer`. See [PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.encode) and
+  [PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.__call__) for details.
+
+  [What are input IDs?](../glossary#input-ids)
+- **past_key_values** (`Tuple[Tuple[torch.Tensor]]` of length `config.num_layers`) --
+  Contains precomputed hidden-states (key and values in the attention blocks) as computed by the model (see
+  `past_key_values` output below). Can be used to speed up sequential decoding. The `input_ids` which have
+  their past given to this model should not be passed as `input_ids` as they have already been computed.
+- **attention_mask** (`torch.FloatTensor` of shape `(batch_size, sequence_length)`, *optional*) --
+  Mask to avoid performing attention on padding token indices. Mask values selected in `[0, 1]`:
+
+  - 1 for tokens that are **not masked**,
+  - 0 for tokens that are **masked**.
+
+  [What are attention masks?](../glossary#attention-mask)
+- **token_type_ids** (`torch.LongTensor` of shape `(batch_size, input_ids_length)`, *optional*) --
+  Segment token indices to indicate first and second portions of the inputs. Indices are selected in `[0,
+  1]`:
+
+  - 0 corresponds to a *sentence A* token,
+  - 1 corresponds to a *sentence B* token.
+
+  [What are token type IDs?](../glossary#token-type-ids)
+- **position_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`, *optional*) --
+  Indices of positions of each input sequence tokens in the position embeddings. Selected in the range `[0,
+  config.max_position_embeddings - 1]`.
+
+  [What are position IDs?](../glossary#position-ids)
+- **head_mask** (`torch.FloatTensor` of shape `(num_heads,)` or `(num_layers, num_heads)`, *optional*) --
+  Mask to nullify selected heads of the self-attention modules. Mask values selected in `[0, 1]`:
+
+  - 1 indicates the head is **not masked**,
+  - 0 indicates the head is **masked**.
+
+- **inputs_embeds** (`torch.FloatTensor` of shape `(batch_size, sequence_length, hidden_size)`, *optional*) --
+  Optionally, instead of passing `input_ids` you can choose to directly pass an embedded representation. This
+  is useful if you want more control over how to convert `input_ids` indices into associated vectors than the
+  model's internal embedding lookup matrix.
+
+  If `past_key_values` is used, optionally only the last `inputs_embeds` have to be input (see
+  `past_key_values`).
+- **use_cache** (`bool`, *optional*) --
+  If set to `True`, `past_key_values` key value states are returned and can be used to speed up decoding (see
+  `past_key_values`).
+- **output_attentions** (`bool`, *optional*) --
+  Whether or not to return the attentions tensors of all attention layers. See `attentions` under returned
+  tensors for more detail.
+- **output_hidden_states** (`bool`, *optional*) --
+  Whether or not to return the hidden states of all layers. See `hidden_states` under returned tensors for
+  more detail.
+- **return_dict** (`bool`, *optional*) --
+  Whether or not to return a [ModelOutput](/docs/transformers/master/en/main_classes/output#transformers.file_utils.ModelOutput) instead of a plain tuple.</paramsdesc><paramgroups>0</paramgroups><rettype>[transformers.modeling_outputs.BaseModelOutputWithPastAndCrossAttentions](/docs/transformers/master/en/main_classes/output#transformers.modeling_outputs.BaseModelOutputWithPastAndCrossAttentions) or `tuple(torch.FloatTensor)`</rettype><retdesc>A [transformers.modeling_outputs.BaseModelOutputWithPastAndCrossAttentions](/docs/transformers/master/en/main_classes/output#transformers.modeling_outputs.BaseModelOutputWithPastAndCrossAttentions) or a tuple of
+`torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising various
+elements depending on the configuration ([GPTNeoConfig](/docs/transformers/master/en/model_doc/gpt_neo#transformers.GPTNeoConfig)) and inputs.
+
+- **last_hidden_state** (`torch.FloatTensor` of shape `(batch_size, sequence_length, hidden_size)`) -- Sequence of hidden-states at the output of the last layer of the model.
+
+  If `past_key_values` is used only the last hidden-state of the sequences of shape `(batch_size, 1,
+  hidden_size)` is output.
+- **past_key_values** (`tuple(tuple(torch.FloatTensor))`, *optional*, returned when `use_cache=True` is passed or when `config.use_cache=True`) -- Tuple of `tuple(torch.FloatTensor)` of length `config.n_layers`, with each tuple having 2 tensors of shape
+  `(batch_size, num_heads, sequence_length, embed_size_per_head)`) and optionally if
+  `config.is_encoder_decoder=True` 2 additional tensors of shape `(batch_size, num_heads,
+  encoder_sequence_length, embed_size_per_head)`.
+
+  Contains pre-computed hidden-states (key and values in the self-attention blocks and optionally if
+  `config.is_encoder_decoder=True` in the cross-attention blocks) that can be used (see `past_key_values`
+  input) to speed up sequential decoding.
+- **hidden_states** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer) of
+  shape `(batch_size, sequence_length, hidden_size)`.
+
+  Hidden-states of the model at the output of each layer plus the initial embedding outputs.
+- **attentions** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length,
+  sequence_length)`.
+
+  Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
+  heads.
+- **cross_attentions** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_attentions=True` and `config.add_cross_attention=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length,
+  sequence_length)`.
+
+  Attentions weights of the decoder's cross-attention layer, after the attention softmax, used to compute the
+  weighted average in the cross-attention heads.</retdesc></docstring>
+The [GPTNeoModel](/docs/transformers/master/en/model_doc/gpt_neo#transformers.GPTNeoModel) forward method, overrides the `__call__` special method.
+
+<Tip>
+
+Although the recipe for forward pass needs to be defined within this function, one should call the `Module`
+instance afterwards instead of this since the former takes care of running the pre and post processing steps while
+the latter silently ignores them.
+
+</Tip>
+
+
+
+
+
+
+
+Example:
+
+```python
+>>> from transformers import GPT2Tokenizer, GPTNeoModel
+>>> import torch
+
+>>> tokenizer = GPT2Tokenizer.from_pretrained("EleutherAI/gpt-neo-1.3B")
+>>> model = GPTNeoModel.from_pretrained("EleutherAI/gpt-neo-1.3B")
+
+>>> inputs = tokenizer("Hello, my dog is cute", return_tensors="pt")
+>>> outputs = model(**inputs)
+
+>>> last_hidden_states = outputs.last_hidden_state
+```
+
+
+</div></div>
+
+<h2 id="transformers.GPTNeoForCausalLM">GPTNeoForCausalLM</h2>
+
+<div class="docstring">
+
+<docstring><name>class transformers.GPTNeoForCausalLM</name><anchor>transformers.GPTNeoForCausalLM</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/gpt_neo/modeling_gpt_neo.py#L663</source><parameters>[{"name": "config", "val": ""}]</parameters><paramsdesc>- **config** ([GPTNeoConfig](/docs/transformers/master/en/model_doc/gpt_neo#transformers.GPTNeoConfig)) -- Model configuration class with all the parameters of the model.
+  Initializing with a config file does not load the weights associated with the model, only the
+  configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel.from_pretrained) method to load the model weights.</paramsdesc><paramgroups>0</paramgroups></docstring>
+
+The GPT Neo Model transformer with a language modeling head on top (linear layer with weights tied to the input
+embeddings).
+
+
+This model inherits from [PreTrainedModel](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel). Check the superclass documentation for the generic methods the
+library implements for all its model (such as downloading or saving, resizing the input embeddings, pruning heads
+etc.)
+
+This model is also a PyTorch [torch.nn.Module](https://pytorch.org/docs/stable/nn.html#torch.nn.Module) subclass.
+Use it as a regular PyTorch Module and refer to the PyTorch documentation for all matter related to general usage
+and behavior.
+
+
+
+
+
+<div class="docstring">
+<docstring><name>forward</name><anchor>transformers.GPTNeoForCausalLM.forward</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/gpt_neo/modeling_gpt_neo.py#L713</source><parameters>[{"name": "input_ids", "val": " = None"}, {"name": "past_key_values", "val": " = None"}, {"name": "attention_mask", "val": " = None"}, {"name": "token_type_ids", "val": " = None"}, {"name": "position_ids", "val": " = None"}, {"name": "head_mask", "val": " = None"}, {"name": "inputs_embeds", "val": " = None"}, {"name": "labels", "val": " = None"}, {"name": "use_cache", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "return_dict", "val": " = None"}]</parameters><paramsdesc>- **input_ids** (`torch.LongTensor` of shape `(batch_size, input_ids_length)`) --
+  `input_ids_length` = `sequence_length` if `past_key_values` is `None` else
+  `past_key_values[0][0].shape[-2]` (`sequence_length` of input past key value states). Indices of input
+  sequence tokens in the vocabulary.
+
+  If `past_key_values` is used, only `input_ids` that do not have their past calculated should be passed as
+  `input_ids`.
+
+  Indices can be obtained using `GPTNeoTokenizer`. See [PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.encode) and
+  [PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.__call__) for details.
+
+  [What are input IDs?](../glossary#input-ids)
+- **past_key_values** (`Tuple[Tuple[torch.Tensor]]` of length `config.num_layers`) --
+  Contains precomputed hidden-states (key and values in the attention blocks) as computed by the model (see
+  `past_key_values` output below). Can be used to speed up sequential decoding. The `input_ids` which have
+  their past given to this model should not be passed as `input_ids` as they have already been computed.
+- **attention_mask** (`torch.FloatTensor` of shape `(batch_size, sequence_length)`, *optional*) --
+  Mask to avoid performing attention on padding token indices. Mask values selected in `[0, 1]`:
+
+  - 1 for tokens that are **not masked**,
+  - 0 for tokens that are **masked**.
+
+  [What are attention masks?](../glossary#attention-mask)
+- **token_type_ids** (`torch.LongTensor` of shape `(batch_size, input_ids_length)`, *optional*) --
+  Segment token indices to indicate first and second portions of the inputs. Indices are selected in `[0,
+  1]`:
+
+  - 0 corresponds to a *sentence A* token,
+  - 1 corresponds to a *sentence B* token.
+
+  [What are token type IDs?](../glossary#token-type-ids)
+- **position_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`, *optional*) --
+  Indices of positions of each input sequence tokens in the position embeddings. Selected in the range `[0,
+  config.max_position_embeddings - 1]`.
+
+  [What are position IDs?](../glossary#position-ids)
+- **head_mask** (`torch.FloatTensor` of shape `(num_heads,)` or `(num_layers, num_heads)`, *optional*) --
+  Mask to nullify selected heads of the self-attention modules. Mask values selected in `[0, 1]`:
+
+  - 1 indicates the head is **not masked**,
+  - 0 indicates the head is **masked**.
+
+- **inputs_embeds** (`torch.FloatTensor` of shape `(batch_size, sequence_length, hidden_size)`, *optional*) --
+  Optionally, instead of passing `input_ids` you can choose to directly pass an embedded representation. This
+  is useful if you want more control over how to convert `input_ids` indices into associated vectors than the
+  model's internal embedding lookup matrix.
+
+  If `past_key_values` is used, optionally only the last `inputs_embeds` have to be input (see
+  `past_key_values`).
+- **use_cache** (`bool`, *optional*) --
+  If set to `True`, `past_key_values` key value states are returned and can be used to speed up decoding (see
+  `past_key_values`).
+- **output_attentions** (`bool`, *optional*) --
+  Whether or not to return the attentions tensors of all attention layers. See `attentions` under returned
+  tensors for more detail.
+- **output_hidden_states** (`bool`, *optional*) --
+  Whether or not to return the hidden states of all layers. See `hidden_states` under returned tensors for
+  more detail.
+- **return_dict** (`bool`, *optional*) --
+  Whether or not to return a [ModelOutput](/docs/transformers/master/en/main_classes/output#transformers.file_utils.ModelOutput) instead of a plain tuple.
+
+- **labels** (`torch.LongTensor` of shape `(batch_size, sequence_length)`, *optional*) --
+  Labels for language modeling. Note that the labels **are shifted** inside the model, i.e. you can set
+  `labels = input_ids` Indices are selected in `[-100, 0, ..., config.vocab_size]` All labels set to `-100`
+  are ignored (masked), the loss is only computed for labels in `[0, ..., config.vocab_size]`</paramsdesc><paramgroups>0</paramgroups><rettype>[transformers.modeling_outputs.CausalLMOutputWithCrossAttentions](/docs/transformers/master/en/main_classes/output#transformers.modeling_outputs.CausalLMOutputWithCrossAttentions) or `tuple(torch.FloatTensor)`</rettype><retdesc>A [transformers.modeling_outputs.CausalLMOutputWithCrossAttentions](/docs/transformers/master/en/main_classes/output#transformers.modeling_outputs.CausalLMOutputWithCrossAttentions) or a tuple of
+`torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising various
+elements depending on the configuration ([GPTNeoConfig](/docs/transformers/master/en/model_doc/gpt_neo#transformers.GPTNeoConfig)) and inputs.
+
+- **loss** (`torch.FloatTensor` of shape `(1,)`, *optional*, returned when `labels` is provided) -- Language modeling loss (for next-token prediction).
+- **logits** (`torch.FloatTensor` of shape `(batch_size, sequence_length, config.vocab_size)`) -- Prediction scores of the language modeling head (scores for each vocabulary token before SoftMax).
+- **hidden_states** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer) of
+  shape `(batch_size, sequence_length, hidden_size)`.
+
+  Hidden-states of the model at the output of each layer plus the initial embedding outputs.
+- **attentions** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length,
+  sequence_length)`.
+
+  Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
+  heads.
+- **cross_attentions** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length,
+  sequence_length)`.
+
+  Cross attentions weights after the attention softmax, used to compute the weighted average in the
+  cross-attention heads.
+- **past_key_values** (`tuple(tuple(torch.FloatTensor))`, *optional*, returned when `use_cache=True` is passed or when `config.use_cache=True`) -- Tuple of `torch.FloatTensor` tuples of length `config.n_layers`, with each tuple containing the cached key,
+  value states of the self-attention and the cross-attention layers if model is used in encoder-decoder
+  setting. Only relevant if `config.is_decoder = True`.
+
+  Contains pre-computed hidden-states (key and values in the attention blocks) that can be used (see
+  `past_key_values` input) to speed up sequential decoding.</retdesc></docstring>
+The [GPTNeoForCausalLM](/docs/transformers/master/en/model_doc/gpt_neo#transformers.GPTNeoForCausalLM) forward method, overrides the `__call__` special method.
+
+<Tip>
+
+Although the recipe for forward pass needs to be defined within this function, one should call the `Module`
+instance afterwards instead of this since the former takes care of running the pre and post processing steps while
+the latter silently ignores them.
+
+</Tip>
+
+
+
+
+
+
+
+Example:
+
+```python
+>>> import torch
+>>> from transformers import GPT2Tokenizer, GPTNeoForCausalLM
+
+>>> tokenizer = GPT2Tokenizer.from_pretrained("EleutherAI/gpt-neo-1.3B")
+>>> model = GPTNeoForCausalLM.from_pretrained("EleutherAI/gpt-neo-1.3B")
+
+>>> inputs = tokenizer("Hello, my dog is cute", return_tensors="pt")
+>>> outputs = model(**inputs, labels=inputs["input_ids"])
+>>> loss = outputs.loss
+>>> logits = outputs.logits
+```
+
+
+</div></div>
+
+<h2 id="transformers.GPTNeoForSequenceClassification">GPTNeoForSequenceClassification</h2>
+
+<div class="docstring">
+
+<docstring><name>class transformers.GPTNeoForSequenceClassification</name><anchor>transformers.GPTNeoForSequenceClassification</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/gpt_neo/modeling_gpt_neo.py#L816</source><parameters>[{"name": "config", "val": ""}]</parameters><paramsdesc>- **config** ([GPTNeoConfig](/docs/transformers/master/en/model_doc/gpt_neo#transformers.GPTNeoConfig)) -- Model configuration class with all the parameters of the model.
+  Initializing with a config file does not load the weights associated with the model, only the
+  configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel.from_pretrained) method to load the model weights.</paramsdesc><paramgroups>0</paramgroups></docstring>
+
+The GPTNeo Model transformer with a sequence classification head on top (linear layer).
+
+[GPTNeoForSequenceClassification](/docs/transformers/master/en/model_doc/gpt_neo#transformers.GPTNeoForSequenceClassification) uses the last token in order to do the classification, as other causal models
+(e.g. GPT-1) do.
+
+Since it does classification on the last token, it requires to know the position of the last token. If a
+`pad_token_id` is defined in the configuration, it finds the last token that is not a padding token in each row. If
+no `pad_token_id` is defined, it simply takes the last value in each row of the batch. Since it cannot guess the
+padding tokens when `inputs_embeds` are passed instead of `input_ids`, it does the same (take the last value in
+each row of the batch).
+
+
+This model inherits from [PreTrainedModel](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel). Check the superclass documentation for the generic methods the
+library implements for all its model (such as downloading or saving, resizing the input embeddings, pruning heads
+etc.)
+
+This model is also a PyTorch [torch.nn.Module](https://pytorch.org/docs/stable/nn.html#torch.nn.Module) subclass.
+Use it as a regular PyTorch Module and refer to the PyTorch documentation for all matter related to general usage
+and behavior.
+
+
+
+
+
+<div class="docstring">
+<docstring><name>forward</name><anchor>transformers.GPTNeoForSequenceClassification.forward</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/gpt_neo/modeling_gpt_neo.py#L828</source><parameters>[{"name": "input_ids", "val": " = None"}, {"name": "past_key_values", "val": " = None"}, {"name": "attention_mask", "val": " = None"}, {"name": "token_type_ids", "val": " = None"}, {"name": "position_ids", "val": " = None"}, {"name": "head_mask", "val": " = None"}, {"name": "inputs_embeds", "val": " = None"}, {"name": "labels", "val": " = None"}, {"name": "use_cache", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "return_dict", "val": " = None"}]</parameters><paramsdesc>- **input_ids** (`torch.LongTensor` of shape `(batch_size, input_ids_length)`) --
+  `input_ids_length` = `sequence_length` if `past_key_values` is `None` else
+  `past_key_values[0][0].shape[-2]` (`sequence_length` of input past key value states). Indices of input
+  sequence tokens in the vocabulary.
+
+  If `past_key_values` is used, only `input_ids` that do not have their past calculated should be passed as
+  `input_ids`.
+
+  Indices can be obtained using `GPTNeoTokenizer`. See [PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.encode) and
+  [PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.__call__) for details.
+
+  [What are input IDs?](../glossary#input-ids)
+- **past_key_values** (`Tuple[Tuple[torch.Tensor]]` of length `config.num_layers`) --
+  Contains precomputed hidden-states (key and values in the attention blocks) as computed by the model (see
+  `past_key_values` output below). Can be used to speed up sequential decoding. The `input_ids` which have
+  their past given to this model should not be passed as `input_ids` as they have already been computed.
+- **attention_mask** (`torch.FloatTensor` of shape `(batch_size, sequence_length)`, *optional*) --
+  Mask to avoid performing attention on padding token indices. Mask values selected in `[0, 1]`:
+
+  - 1 for tokens that are **not masked**,
+  - 0 for tokens that are **masked**.
+
+  [What are attention masks?](../glossary#attention-mask)
+- **token_type_ids** (`torch.LongTensor` of shape `(batch_size, input_ids_length)`, *optional*) --
+  Segment token indices to indicate first and second portions of the inputs. Indices are selected in `[0,
+  1]`:
+
+  - 0 corresponds to a *sentence A* token,
+  - 1 corresponds to a *sentence B* token.
+
+  [What are token type IDs?](../glossary#token-type-ids)
+- **position_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`, *optional*) --
+  Indices of positions of each input sequence tokens in the position embeddings. Selected in the range `[0,
+  config.max_position_embeddings - 1]`.
+
+  [What are position IDs?](../glossary#position-ids)
+- **head_mask** (`torch.FloatTensor` of shape `(num_heads,)` or `(num_layers, num_heads)`, *optional*) --
+  Mask to nullify selected heads of the self-attention modules. Mask values selected in `[0, 1]`:
+
+  - 1 indicates the head is **not masked**,
+  - 0 indicates the head is **masked**.
+
+- **inputs_embeds** (`torch.FloatTensor` of shape `(batch_size, sequence_length, hidden_size)`, *optional*) --
+  Optionally, instead of passing `input_ids` you can choose to directly pass an embedded representation. This
+  is useful if you want more control over how to convert `input_ids` indices into associated vectors than the
+  model's internal embedding lookup matrix.
+
+  If `past_key_values` is used, optionally only the last `inputs_embeds` have to be input (see
+  `past_key_values`).
+- **use_cache** (`bool`, *optional*) --
+  If set to `True`, `past_key_values` key value states are returned and can be used to speed up decoding (see
+  `past_key_values`).
+- **output_attentions** (`bool`, *optional*) --
+  Whether or not to return the attentions tensors of all attention layers. See `attentions` under returned
+  tensors for more detail.
+- **output_hidden_states** (`bool`, *optional*) --
+  Whether or not to return the hidden states of all layers. See `hidden_states` under returned tensors for
+  more detail.
+- **return_dict** (`bool`, *optional*) --
+  Whether or not to return a [ModelOutput](/docs/transformers/master/en/main_classes/output#transformers.file_utils.ModelOutput) instead of a plain tuple.
+
+- **labels** (`torch.LongTensor` of shape `(batch_size,)`, *optional*) --
+  Labels for computing the sequence classification/regression loss. Indices should be in `[0, ...,
+  config.num_labels - 1]`. If `config.num_labels == 1` a regression loss is computed (Mean-Square loss), If
+  `config.num_labels > 1` a classification loss is computed (Cross-Entropy).</paramsdesc><paramgroups>0</paramgroups><rettype>`transformers.modeling_outputs.SequenceClassifierOutputWithPast` or `tuple(torch.FloatTensor)`</rettype><retdesc>A `transformers.modeling_outputs.SequenceClassifierOutputWithPast` or a tuple of
+`torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising various
+elements depending on the configuration ([GPTNeoConfig](/docs/transformers/master/en/model_doc/gpt_neo#transformers.GPTNeoConfig)) and inputs.
+
+- **loss** (`torch.FloatTensor` of shape `(1,)`, *optional*, returned when `labels` is provided) -- Classification (or regression if config.num_labels==1) loss.
+- **logits** (`torch.FloatTensor` of shape `(batch_size, config.num_labels)`) -- Classification (or regression if config.num_labels==1) scores (before SoftMax).
+- **past_key_values** (`tuple(tuple(torch.FloatTensor))`, *optional*, returned when `use_cache=True` is passed or when `config.use_cache=True`) -- Tuple of `tuple(torch.FloatTensor)` of length `config.n_layers`, with each tuple having 2 tensors of shape
+  `(batch_size, num_heads, sequence_length, embed_size_per_head)`)
+
+  Contains pre-computed hidden-states (key and values in the self-attention blocks) that can be used (see
+  `past_key_values` input) to speed up sequential decoding.
+- **hidden_states** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer) of
+  shape `(batch_size, sequence_length, hidden_size)`.
+
+  Hidden-states of the model at the output of each layer plus the initial embedding outputs.
+- **attentions** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length,
+  sequence_length)`.
+
+  Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
+  heads.</retdesc></docstring>
+The [GPTNeoForSequenceClassification](/docs/transformers/master/en/model_doc/gpt_neo#transformers.GPTNeoForSequenceClassification) forward method, overrides the `__call__` special method.
+
+<Tip>
+
+Although the recipe for forward pass needs to be defined within this function, one should call the `Module`
+instance afterwards instead of this since the former takes care of running the pre and post processing steps while
+the latter silently ignores them.
+
+</Tip>
+
+
+
+
+
+
+
+Example of single-label classification:
+
+```python
+>>> from transformers import GPT2Tokenizer, GPTNeoForSequenceClassification
+>>> import torch
+
+>>> tokenizer = GPT2Tokenizer.from_pretrained("EleutherAI/gpt-neo-1.3B")
+>>> model = GPTNeoForSequenceClassification.from_pretrained("EleutherAI/gpt-neo-1.3B")
+
+>>> inputs = tokenizer("Hello, my dog is cute", return_tensors="pt")
+>>> labels = torch.tensor([1]).unsqueeze(0)  # Batch size 1
+>>> outputs = model(**inputs, labels=labels)
+>>> loss = outputs.loss
+>>> logits = outputs.logits
+```
+
+Example of multi-label classification:
+
+```python
+>>> from transformers import GPT2Tokenizer, GPTNeoForSequenceClassification
+>>> import torch
+
+>>> tokenizer = GPT2Tokenizer.from_pretrained("EleutherAI/gpt-neo-1.3B")
+>>> model = GPTNeoForSequenceClassification.from_pretrained("EleutherAI/gpt-neo-1.3B", problem_type="multi_label_classification")
+
+>>> inputs = tokenizer("Hello, my dog is cute", return_tensors="pt")
+>>> labels = torch.tensor([[1, 1]], dtype=torch.float)  # need dtype=float for BCEWithLogitsLoss
+>>> outputs = model(**inputs, labels=labels)
+>>> loss = outputs.loss
+>>> logits = outputs.logits
+```
+
+
+</div></div>
+
+<h2 id="transformers.FlaxGPTNeoModel">FlaxGPTNeoModel</h2>
+
+<div class="docstring">
+
+<docstring><name>class transformers.FlaxGPTNeoModel</name><anchor>transformers.FlaxGPTNeoModel</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/gpt_neo/modeling_flax_gpt_neo.py#L581</source><parameters>[{"name": "config", "val": ": GPTNeoConfig"}, {"name": "input_shape", "val": ": typing.Tuple = (1, 1)"}, {"name": "seed", "val": ": int = 0"}, {"name": "dtype", "val": ": dtype = <class 'jax._src.numpy.lax_numpy.float32'>"}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **config** ([GPTNeoConfig](/docs/transformers/master/en/model_doc/gpt_neo#transformers.GPTNeoConfig)) -- Model configuration class with all the parameters of the model.
+  Initializing with a config file does not load the weights associated with the model, only the
+  configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model#transformers.FlaxPreTrainedModel.from_pretrained) method to load the model weights.
+- **dtype** (`jax.numpy.dtype`, *optional*, defaults to `jax.numpy.float32`) --
+  The data type of the computation. Can be one of `jax.numpy.float32`, `jax.numpy.float16` (on GPUs) and
+  `jax.numpy.bfloat16` (on TPUs).
+
+  This can be used to enable mixed-precision training or half-precision inference on GPUs or TPUs. If
+  specified all the computation will be performed with the given `dtype`.
+
+  **Note that this only specifies the dtype of the computation and does not influence the dtype of model
+  parameters.**
+
+  If you wish to change the dtype of the model parameters, see [to_fp16()](/docs/transformers/master/en/main_classes/model#transformers.FlaxPreTrainedModel.to_fp16) and
+  [to_bf16()](/docs/transformers/master/en/main_classes/model#transformers.FlaxPreTrainedModel.to_bf16).</paramsdesc><paramgroups>0</paramgroups></docstring>
+The bare GPTNeo Model transformer outputting raw hidden-states without any specific head on top.
+
+This model inherits from [FlaxPreTrainedModel](/docs/transformers/master/en/main_classes/model#transformers.FlaxPreTrainedModel). Check the superclass documentation for the generic methods the
+library implements for all its model (such as downloading or saving, resizing the input embeddings, pruning heads
+etc.)
+
+This model is also a Flax Linen
+[flax.nn.Module](https://flax.readthedocs.io/en/latest/_autosummary/flax.nn.module.html) subclass. Use it as a
+regular Flax Module and refer to the Flax documentation for all matter related to general usage and behavior.
+
+Finally, this model supports inherent JAX features such as:
+
+- [Just-In-Time (JIT) compilation](https://jax.readthedocs.io/en/latest/jax.html#just-in-time-compilation-jit)
+- [Automatic Differentiation](https://jax.readthedocs.io/en/latest/jax.html#automatic-differentiation)
+- [Vectorization](https://jax.readthedocs.io/en/latest/jax.html#vectorization-vmap)
+- [Parallelization](https://jax.readthedocs.io/en/latest/jax.html#parallelization-pmap)
+
+
+
+
+
+<div class="docstring">
+<docstring><name>\_\_call\_\_</name><anchor>transformers.FlaxGPTNeoPreTrainedModel.__call__</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/gpt_neo/modeling_flax_gpt_neo.py#L391</source><parameters>[{"name": "input_ids", "val": ""}, {"name": "attention_mask", "val": " = None"}, {"name": "position_ids", "val": " = None"}, {"name": "params", "val": ": dict = None"}, {"name": "past_key_values", "val": ": dict = None"}, {"name": "dropout_rng", "val": ": PRNGKey = None"}, {"name": "train", "val": ": bool = False"}, {"name": "output_attentions", "val": ": typing.Optional[bool] = None"}, {"name": "output_hidden_states", "val": ": typing.Optional[bool] = None"}, {"name": "return_dict", "val": ": typing.Optional[bool] = None"}]</parameters><paramsdesc>- **input_ids** (`numpy.ndarray` of shape `(batch_size, input_ids_length)`) --
+  `input_ids_length` = `sequence_length`. Indices of input sequence tokens in the vocabulary.
+
+  Indices can be obtained using `GPTNeoTokenizer`. See [PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.encode) and
+  [PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.__call__) for details.
+
+  [What are input IDs?](../glossary#input-ids)
+- **attention_mask** (`numpy.ndarray` of shape `(batch_size, sequence_length)`, *optional*) --
+  Mask to avoid performing attention on padding token indices. Mask values selected in `[0, 1]`:
+
+  - 1 for tokens that are **not masked**,
+  - 0 for tokens that are **masked**.
+
+  [What are attention masks?](../glossary#attention-mask)
+- **position_ids** (`numpy.ndarray` of shape `(batch_size, sequence_length)`, *optional*) --
+  Indices of positions of each input sequence tokens in the position embeddings. Selected in the range `[0,
+  config.max_position_embeddings - 1]`.
+- **past_key_values** (`Dict[str, np.ndarray]`, *optional*, returned by `init_cache` or when passing previous `past_key_values`) --
+  Dictionary of pre-computed hidden-states (key and values in the attention blocks) that can be used for fast
+  auto-regressive decoding. Pre-computed key and value hidden-states are of shape *[batch_size, max_length]*.
+- **output_attentions** (`bool`, *optional*) --
+  Whether or not to return the attentions tensors of all attention layers. See `attentions` under returned
+  tensors for more detail.
+- **output_hidden_states** (`bool`, *optional*) --
+  Whether or not to return the hidden states of all layers. See `hidden_states` under returned tensors for
+  more detail.
+- **return_dict** (`bool`, *optional*) --
+  Whether or not to return a [ModelOutput](/docs/transformers/master/en/main_classes/output#transformers.file_utils.ModelOutput) instead of a plain tuple.</paramsdesc><paramgroups>0</paramgroups><rettype>[transformers.modeling_flax_outputs.FlaxBaseModelOutput](/docs/transformers/master/en/main_classes/output#transformers.modeling_flax_outputs.FlaxBaseModelOutput) or `tuple(torch.FloatTensor)`</rettype><retdesc>A [transformers.modeling_flax_outputs.FlaxBaseModelOutput](/docs/transformers/master/en/main_classes/output#transformers.modeling_flax_outputs.FlaxBaseModelOutput) or a tuple of
+`torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising various
+elements depending on the configuration ([GPTNeoConfig](/docs/transformers/master/en/model_doc/gpt_neo#transformers.GPTNeoConfig)) and inputs.
+
+- **last_hidden_state** (`jnp.ndarray` of shape `(batch_size, sequence_length, hidden_size)`) -- Sequence of hidden-states at the output of the last layer of the model.
+- **hidden_states** (`tuple(jnp.ndarray)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `jnp.ndarray` (one for the output of the embeddings + one for the output of each layer) of shape
+  `(batch_size, sequence_length, hidden_size)`.
+
+  Hidden-states of the model at the output of each layer plus the initial embedding outputs.
+- **attentions** (`tuple(jnp.ndarray)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `jnp.ndarray` (one for each layer) of shape `(batch_size, num_heads, sequence_length,
+  sequence_length)`.
+
+  Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
+  heads.</retdesc></docstring>
+The `FlaxGPTNeoPreTrainedModel` forward method, overrides the `__call__` special method.
+
+<Tip>
+
+Although the recipe for forward pass needs to be defined within this function, one should call the `Module`
+instance afterwards instead of this since the former takes care of running the pre and post processing steps while
+the latter silently ignores them.
+
+</Tip>
+
+
+
+
+
+
+
+Example:
+
+```python
+>>> from transformers import GPT2Tokenizer, FlaxGPTNeoModel
+
+>>> tokenizer = GPT2Tokenizer.from_pretrained("EleutherAI/gpt-neo-1.3B")
+>>> model = FlaxGPTNeoModel.from_pretrained("EleutherAI/gpt-neo-1.3B")
+
+>>> inputs = tokenizer("Hello, my dog is cute", return_tensors="jax")
+>>> outputs = model(**inputs)
+
+>>> last_hidden_states = outputs.last_hidden_state
+```
+
+
+</div></div>
+
+<h2 id="transformers.FlaxGPTNeoForCausalLM">FlaxGPTNeoForCausalLM</h2>
+
+<div class="docstring">
+
+<docstring><name>class transformers.FlaxGPTNeoForCausalLM</name><anchor>transformers.FlaxGPTNeoForCausalLM</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/gpt_neo/modeling_flax_gpt_neo.py#L646</source><parameters>[{"name": "config", "val": ": GPTNeoConfig"}, {"name": "input_shape", "val": ": typing.Tuple = (1, 1)"}, {"name": "seed", "val": ": int = 0"}, {"name": "dtype", "val": ": dtype = <class 'jax._src.numpy.lax_numpy.float32'>"}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **config** ([GPTNeoConfig](/docs/transformers/master/en/model_doc/gpt_neo#transformers.GPTNeoConfig)) -- Model configuration class with all the parameters of the model.
+  Initializing with a config file does not load the weights associated with the model, only the
+  configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model#transformers.FlaxPreTrainedModel.from_pretrained) method to load the model weights.
+- **dtype** (`jax.numpy.dtype`, *optional*, defaults to `jax.numpy.float32`) --
+  The data type of the computation. Can be one of `jax.numpy.float32`, `jax.numpy.float16` (on GPUs) and
+  `jax.numpy.bfloat16` (on TPUs).
+
+  This can be used to enable mixed-precision training or half-precision inference on GPUs or TPUs. If
+  specified all the computation will be performed with the given `dtype`.
+
+  **Note that this only specifies the dtype of the computation and does not influence the dtype of model
+  parameters.**
+
+  If you wish to change the dtype of the model parameters, see [to_fp16()](/docs/transformers/master/en/main_classes/model#transformers.FlaxPreTrainedModel.to_fp16) and
+  [to_bf16()](/docs/transformers/master/en/main_classes/model#transformers.FlaxPreTrainedModel.to_bf16).</paramsdesc><paramgroups>0</paramgroups></docstring>
+
+The GPTNeo Model transformer with a language modeling head on top (linear layer with weights tied to the input
+embeddings).
+
+
+This model inherits from [FlaxPreTrainedModel](/docs/transformers/master/en/main_classes/model#transformers.FlaxPreTrainedModel). Check the superclass documentation for the generic methods the
+library implements for all its model (such as downloading or saving, resizing the input embeddings, pruning heads
+etc.)
+
+This model is also a Flax Linen
+[flax.nn.Module](https://flax.readthedocs.io/en/latest/_autosummary/flax.nn.module.html) subclass. Use it as a
+regular Flax Module and refer to the Flax documentation for all matter related to general usage and behavior.
+
+Finally, this model supports inherent JAX features such as:
+
+- [Just-In-Time (JIT) compilation](https://jax.readthedocs.io/en/latest/jax.html#just-in-time-compilation-jit)
+- [Automatic Differentiation](https://jax.readthedocs.io/en/latest/jax.html#automatic-differentiation)
+- [Vectorization](https://jax.readthedocs.io/en/latest/jax.html#vectorization-vmap)
+- [Parallelization](https://jax.readthedocs.io/en/latest/jax.html#parallelization-pmap)
+
+
+
+
+
+<div class="docstring">
+<docstring><name>\_\_call\_\_</name><anchor>transformers.FlaxGPTNeoPreTrainedModel.__call__</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/gpt_neo/modeling_flax_gpt_neo.py#L391</source><parameters>[{"name": "input_ids", "val": ""}, {"name": "attention_mask", "val": " = None"}, {"name": "position_ids", "val": " = None"}, {"name": "params", "val": ": dict = None"}, {"name": "past_key_values", "val": ": dict = None"}, {"name": "dropout_rng", "val": ": PRNGKey = None"}, {"name": "train", "val": ": bool = False"}, {"name": "output_attentions", "val": ": typing.Optional[bool] = None"}, {"name": "output_hidden_states", "val": ": typing.Optional[bool] = None"}, {"name": "return_dict", "val": ": typing.Optional[bool] = None"}]</parameters><paramsdesc>- **input_ids** (`numpy.ndarray` of shape `(batch_size, input_ids_length)`) --
+  `input_ids_length` = `sequence_length`. Indices of input sequence tokens in the vocabulary.
+
+  Indices can be obtained using `GPTNeoTokenizer`. See [PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.encode) and
+  [PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.__call__) for details.
+
+  [What are input IDs?](../glossary#input-ids)
+- **attention_mask** (`numpy.ndarray` of shape `(batch_size, sequence_length)`, *optional*) --
+  Mask to avoid performing attention on padding token indices. Mask values selected in `[0, 1]`:
+
+  - 1 for tokens that are **not masked**,
+  - 0 for tokens that are **masked**.
+
+  [What are attention masks?](../glossary#attention-mask)
+- **position_ids** (`numpy.ndarray` of shape `(batch_size, sequence_length)`, *optional*) --
+  Indices of positions of each input sequence tokens in the position embeddings. Selected in the range `[0,
+  config.max_position_embeddings - 1]`.
+- **past_key_values** (`Dict[str, np.ndarray]`, *optional*, returned by `init_cache` or when passing previous `past_key_values`) --
+  Dictionary of pre-computed hidden-states (key and values in the attention blocks) that can be used for fast
+  auto-regressive decoding. Pre-computed key and value hidden-states are of shape *[batch_size, max_length]*.
+- **output_attentions** (`bool`, *optional*) --
+  Whether or not to return the attentions tensors of all attention layers. See `attentions` under returned
+  tensors for more detail.
+- **output_hidden_states** (`bool`, *optional*) --
+  Whether or not to return the hidden states of all layers. See `hidden_states` under returned tensors for
+  more detail.
+- **return_dict** (`bool`, *optional*) --
+  Whether or not to return a [ModelOutput](/docs/transformers/master/en/main_classes/output#transformers.file_utils.ModelOutput) instead of a plain tuple.</paramsdesc><paramgroups>0</paramgroups><rettype>[transformers.modeling_flax_outputs.FlaxMaskedLMOutput](/docs/transformers/master/en/main_classes/output#transformers.modeling_flax_outputs.FlaxMaskedLMOutput) or `tuple(torch.FloatTensor)`</rettype><retdesc>A [transformers.modeling_flax_outputs.FlaxMaskedLMOutput](/docs/transformers/master/en/main_classes/output#transformers.modeling_flax_outputs.FlaxMaskedLMOutput) or a tuple of
+`torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising various
+elements depending on the configuration ([GPTNeoConfig](/docs/transformers/master/en/model_doc/gpt_neo#transformers.GPTNeoConfig)) and inputs.
+
+- **logits** (`jnp.ndarray` of shape `(batch_size, sequence_length, config.vocab_size)`) -- Prediction scores of the language modeling head (scores for each vocabulary token before SoftMax).
+- **hidden_states** (`tuple(jnp.ndarray)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `jnp.ndarray` (one for the output of the embeddings + one for the output of each layer) of shape
+  `(batch_size, sequence_length, hidden_size)`.
+
+  Hidden-states of the model at the output of each layer plus the initial embedding outputs.
+- **attentions** (`tuple(jnp.ndarray)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `jnp.ndarray` (one for each layer) of shape `(batch_size, num_heads, sequence_length,
+  sequence_length)`.
+
+  Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
+  heads.</retdesc></docstring>
+The `FlaxGPTNeoPreTrainedModel` forward method, overrides the `__call__` special method.
+
+<Tip>
+
+Although the recipe for forward pass needs to be defined within this function, one should call the `Module`
+instance afterwards instead of this since the former takes care of running the pre and post processing steps while
+the latter silently ignores them.
+
+</Tip>
+
+
+
+
+
+
+
+Example:
+
+```python
+>>> from transformers import GPT2Tokenizer, FlaxGPTNeoForCausalLM
+
+>>> tokenizer = GPT2Tokenizer.from_pretrained("EleutherAI/gpt-neo-1.3B")
+>>> model = FlaxGPTNeoForCausalLM.from_pretrained("EleutherAI/gpt-neo-1.3B")
+
+>>> inputs = tokenizer("Hello, my dog is cute", return_tensors="np")
+>>> outputs = model(**inputs)
+
+>>> # retrieve logts for next token
+>>> next_token_logits = outputs.logits[:, -1]
+```
+
+
+</div></div>

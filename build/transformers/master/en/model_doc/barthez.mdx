@@ -1,0 +1,293 @@
+---
+local: barthez
+sections:
+- local: overview
+  sections:
+  - local: examples
+    title: Examples
+  title: Overview
+- local: transformers.BarthezTokenizer
+  title: BarthezTokenizer
+- local: transformers.BarthezTokenizerFast
+  title: BarthezTokenizerFast
+title: BARThez
+---
+<script>
+import Tip from "./Tip.svelte";
+import Youtube from "./Youtube.svelte";
+import Docstring from "./Docstring.svelte";
+import CodeBlock from "./CodeBlock.svelte";
+import CodeBlockFw from "./CodeBlockFw.svelte";
+import ColabDropdown from "./ColabDropdown.svelte";
+import IconCopyLink from "./IconCopyLink.svelte";
+export let fw: "pt" | "tf"
+</script>
+<!--Copyright 2020 The HuggingFace Team. All rights reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
+the License. You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on
+an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
+specific language governing permissions and limitations under the License.
+-->
+
+<h1 id="barthez">BARThez</h1>
+
+<h2 id="overview">Overview</h2>
+
+The BARThez model was proposed in [BARThez: a Skilled Pretrained French Sequence-to-Sequence Model](https://arxiv.org/abs/2010.12321) by Moussa Kamal Eddine, Antoine J.-P. Tixier, Michalis Vazirgiannis on 23 Oct,
+2020.
+
+The abstract of the paper:
+
+
+*Inductive transfer learning, enabled by self-supervised learning, have taken the entire Natural Language Processing
+(NLP) field by storm, with models such as BERT and BART setting new state of the art on countless natural language
+understanding tasks. While there are some notable exceptions, most of the available models and research have been
+conducted for the English language. In this work, we introduce BARThez, the first BART model for the French language
+(to the best of our knowledge). BARThez was pretrained on a very large monolingual French corpus from past research
+that we adapted to suit BART's perturbation schemes. Unlike already existing BERT-based French language models such as
+CamemBERT and FlauBERT, BARThez is particularly well-suited for generative tasks, since not only its encoder but also
+its decoder is pretrained. In addition to discriminative tasks from the FLUE benchmark, we evaluate BARThez on a novel
+summarization dataset, OrangeSum, that we release with this paper. We also continue the pretraining of an already
+pretrained multilingual BART on BARThez's corpus, and we show that the resulting model, which we call mBARTHez,
+provides a significant boost over vanilla BARThez, and is on par with or outperforms CamemBERT and FlauBERT.*
+
+This model was contributed by [moussakam](https://huggingface.co/moussakam). The Authors' code can be found [here](https://github.com/moussaKam/BARThez).
+
+
+<h3 id="examples">Examples</h3>
+
+- BARThez can be fine-tuned on sequence-to-sequence tasks in a similar way as BART, check:
+  [examples/pytorch/summarization/](https://github.com/huggingface/transformers/tree/master/examples/pytorch/summarization/README.md).
+
+
+<h2 id="transformers.BarthezTokenizer">BarthezTokenizer</h2>
+
+<div class="docstring">
+
+<docstring><name>class transformers.BarthezTokenizer</name><anchor>transformers.BarthezTokenizer</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/barthez/tokenization_barthez.py#L49</source><parameters>[{"name": "vocab_file", "val": ""}, {"name": "bos_token", "val": " = '<s>'"}, {"name": "eos_token", "val": " = '</s>'"}, {"name": "sep_token", "val": " = '</s>'"}, {"name": "cls_token", "val": " = '<s>'"}, {"name": "unk_token", "val": " = '<unk>'"}, {"name": "pad_token", "val": " = '<pad>'"}, {"name": "mask_token", "val": " = '<mask>'"}, {"name": "sp_model_kwargs", "val": ": typing.Union[typing.Dict[str, typing.Any], NoneType] = None"}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **vocab_file** (`str`) --
+  [SentencePiece](https://github.com/google/sentencepiece) file (generally has a *.spm* extension) that
+  contains the vocabulary necessary to instantiate a tokenizer.
+- **bos_token** (`str`, *optional*, defaults to `"<s>"`) --
+  The beginning of sequence token that was used during pretraining. Can be used a sequence classifier token.
+
+  <Tip>
+
+  When building a sequence using special tokens, this is not the token that is used for the beginning of
+  sequence. The token used is the `cls_token`.
+
+  </Tip>
+
+- **eos_token** (`str`, *optional*, defaults to `"</s>"`) --
+  The end of sequence token.
+
+  <Tip>
+
+  When building a sequence using special tokens, this is not the token that is used for the end of sequence.
+  The token used is the `sep_token`.
+
+  </Tip>
+
+- **sep_token** (`str`, *optional*, defaults to `"&amp;lt;/s>"`) --
+  The separator token, which is used when building a sequence from multiple sequences, e.g. two sequences for
+  sequence classification or for a text and a question for question answering. It is also used as the last
+  token of a sequence built with special tokens.
+- **cls_token** (`str`, *optional*, defaults to `"<s>"`) --
+  The classifier token which is used when doing sequence classification (classification of the whole sequence
+  instead of per-token classification). It is the first token of the sequence when built with special tokens.
+- **unk_token** (`str`, *optional*, defaults to `"&amp;lt;unk>"`) --
+  The unknown token. A token that is not in the vocabulary cannot be converted to an ID and is set to be this
+  token instead.
+- **pad_token** (`str`, *optional*, defaults to `"&amp;lt;pad>"`) --
+  The token used for padding, for example when batching sequences of different lengths.
+- **mask_token** (`str`, *optional*, defaults to `"&amp;lt;mask>"`) --
+  The token used for masking values. This is the token used when training this model with masked language
+  modeling. This is the token which the model will try to predict.
+- **additional_special_tokens** (`List[str]`, *optional*, defaults to `["&amp;lt;s>NOTUSED", "</s>NOTUSED"]`) --
+  Additional special tokens used by the tokenizer.
+- **sp_model_kwargs** (`dict`, *optional*) --
+  Will be passed to the `SentencePieceProcessor.__init__()` method. The [Python wrapper for
+  SentencePiece](https://github.com/google/sentencepiece/tree/master/python) can be used, among other things,
+  to set:
+
+  - `enable_sampling`: Enable subword regularization.
+  - `nbest_size`: Sampling parameters for unigram. Invalid for BPE-Dropout.
+
+    - `nbest_size = &amp;lcub;0,1}`: No sampling is performed.
+    - `nbest_size > 1`: samples from the nbest_size results.
+    - `nbest_size &amp;lt; 0`: assuming that nbest_size is infinite and samples from the all hypothesis (lattice)
+      using forward-filtering-and-backward-sampling algorithm.
+
+  - `alpha`: Smoothing parameter for unigram sampling, and dropout probability of merge operations for
+    BPE-dropout.</paramsdesc><paramgroups>0</paramgroups></docstring>
+
+Adapted from [CamembertTokenizer](/docs/transformers/master/en/model_doc/camembert#transformers.CamembertTokenizer) and [BartTokenizer](/docs/transformers/master/en/model_doc/bart#transformers.BartTokenizer). Construct a BARThez tokenizer. Based on
+[SentencePiece](https://github.com/google/sentencepiece).
+
+This tokenizer inherits from [PreTrainedTokenizer](/docs/transformers/master/en/main_classes/tokenizer#transformers.PreTrainedTokenizer) which contains most of the main methods. Users should refer to
+this superclass for more information regarding those methods.
+
+
+
+Attributes:
+sp_model (`SentencePieceProcessor`):
+The *SentencePiece* processor that is used for every conversion (string, tokens and IDs).
+
+
+
+<div class="docstring">
+<docstring><name>build\_inputs\_with\_special\_tokens</name><anchor>transformers.BarthezTokenizer.build_inputs_with_special_tokens</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/barthez/tokenization_barthez.py#L163</source><parameters>[{"name": "token_ids_0", "val": ": typing.List[int]"}, {"name": "token_ids_1", "val": ": typing.Optional[typing.List[int]] = None"}]</parameters><paramsdesc>- **token_ids_0** (`List[int]`) --
+  List of IDs to which the special tokens will be added.
+- **token_ids_1** (`List[int]`, *optional*) --
+  Optional second list of IDs for sequence pairs.</paramsdesc><paramgroups>0</paramgroups><rettype>`List[int]`</rettype><retdesc>List of [input IDs](../glossary#input-ids) with the appropriate special tokens.</retdesc></docstring>
+
+Build model inputs from a sequence or a pair of sequence for sequence classification tasks by concatenating and
+adding special tokens. A BARThez sequence has the following format:
+
+- single sequence: `<s> X </s>`
+- pair of sequences: `<s> A </s>&amp;lt;/s> B &amp;lt;/s>`
+
+
+
+
+
+
+
+
+</div>
+<div class="docstring">
+<docstring><name>convert\_tokens\_to\_string</name><anchor>transformers.BarthezTokenizer.convert_tokens_to_string</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/barthez/tokenization_barthez.py#L279</source><parameters>[{"name": "tokens", "val": ""}]</parameters></docstring>
+Converts a sequence of tokens (strings for sub-words) in a single string.
+
+</div>
+<div class="docstring">
+<docstring><name>create\_token\_type\_ids\_from\_sequences</name><anchor>transformers.BarthezTokenizer.create_token_type_ids_from_sequences</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/barthez/tokenization_barthez.py#L216</source><parameters>[{"name": "token_ids_0", "val": ": typing.List[int]"}, {"name": "token_ids_1", "val": ": typing.Optional[typing.List[int]] = None"}]</parameters><paramsdesc>- **token_ids_0** (`List[int]`) --
+  List of IDs.
+- **token_ids_1** (`List[int]`, *optional*) --
+  Optional second list of IDs for sequence pairs.</paramsdesc><paramgroups>0</paramgroups><rettype>`List[int]`</rettype><retdesc>List of zeros.</retdesc></docstring>
+
+Create a mask from the two sequences passed to be used in a sequence-pair classification task.
+
+
+
+
+
+
+
+
+</div>
+<div class="docstring">
+<docstring><name>get\_special\_tokens\_mask</name><anchor>transformers.BarthezTokenizer.get_special_tokens_mask</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/barthez/tokenization_barthez.py#L189</source><parameters>[{"name": "token_ids_0", "val": ": typing.List[int]"}, {"name": "token_ids_1", "val": ": typing.Optional[typing.List[int]] = None"}, {"name": "already_has_special_tokens", "val": ": bool = False"}]</parameters><paramsdesc>- **token_ids_0** (`List[int]`) --
+  List of IDs.
+- **token_ids_1** (`List[int]`, *optional*) --
+  Optional second list of IDs for sequence pairs.
+- **already_has_special_tokens** (`bool`, *optional*, defaults to `False`) --
+  Whether or not the token list is already formatted with special tokens for the model.</paramsdesc><paramgroups>0</paramgroups><rettype>`List[int]`</rettype><retdesc>A list of integers in the range [0, 1]: 1 for a special token, 0 for a sequence token.</retdesc></docstring>
+
+Retrieve sequence ids from a token list that has no special tokens added. This method is called when adding
+special tokens using the tokenizer `prepare_for_model` method.
+
+
+
+
+
+
+
+
+</div></div>
+
+<h2 id="transformers.BarthezTokenizerFast">BarthezTokenizerFast</h2>
+
+<div class="docstring">
+
+<docstring><name>class transformers.BarthezTokenizerFast</name><anchor>transformers.BarthezTokenizerFast</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/barthez/tokenization_barthez_fast.py#L59</source><parameters>[{"name": "vocab_file", "val": " = None"}, {"name": "tokenizer_file", "val": " = None"}, {"name": "bos_token", "val": " = '<s>'"}, {"name": "eos_token", "val": " = '</s>'"}, {"name": "sep_token", "val": " = '</s>'"}, {"name": "cls_token", "val": " = '<s>'"}, {"name": "unk_token", "val": " = '<unk>'"}, {"name": "pad_token", "val": " = '<pad>'"}, {"name": "mask_token", "val": " = '<mask>'"}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **vocab_file** (`str`) --
+  [SentencePiece](https://github.com/google/sentencepiece) file (generally has a *.spm* extension) that
+  contains the vocabulary necessary to instantiate a tokenizer.
+- **bos_token** (`str`, *optional*, defaults to `"<s>"`) --
+  The beginning of sequence token that was used during pretraining. Can be used a sequence classifier token.
+
+  <Tip>
+
+  When building a sequence using special tokens, this is not the token that is used for the beginning of
+  sequence. The token used is the `cls_token`.
+
+  </Tip>
+
+- **eos_token** (`str`, *optional*, defaults to `"</s>"`) --
+  The end of sequence token.
+
+  <Tip>
+
+  When building a sequence using special tokens, this is not the token that is used for the end of sequence.
+  The token used is the `sep_token`.
+
+  </Tip>
+
+- **sep_token** (`str`, *optional*, defaults to `"&amp;lt;/s>"`) --
+  The separator token, which is used when building a sequence from multiple sequences, e.g. two sequences for
+  sequence classification or for a text and a question for question answering. It is also used as the last
+  token of a sequence built with special tokens.
+- **cls_token** (`str`, *optional*, defaults to `"<s>"`) --
+  The classifier token which is used when doing sequence classification (classification of the whole sequence
+  instead of per-token classification). It is the first token of the sequence when built with special tokens.
+- **unk_token** (`str`, *optional*, defaults to `"&amp;lt;unk>"`) --
+  The unknown token. A token that is not in the vocabulary cannot be converted to an ID and is set to be this
+  token instead.
+- **pad_token** (`str`, *optional*, defaults to `"&amp;lt;pad>"`) --
+  The token used for padding, for example when batching sequences of different lengths.
+- **mask_token** (`str`, *optional*, defaults to `"&amp;lt;mask>"`) --
+  The token used for masking values. This is the token used when training this model with masked language
+  modeling. This is the token which the model will try to predict.
+- **additional_special_tokens** (`List[str]`, *optional*, defaults to `["&amp;lt;s>NOTUSED", "</s>NOTUSED"]`) --
+  Additional special tokens used by the tokenizer.</paramsdesc><paramgroups>0</paramgroups></docstring>
+
+Adapted from [CamembertTokenizer](/docs/transformers/master/en/model_doc/camembert#transformers.CamembertTokenizer) and [BartTokenizer](/docs/transformers/master/en/model_doc/bart#transformers.BartTokenizer). Construct a "fast" BARThez tokenizer. Based on
+[SentencePiece](https://github.com/google/sentencepiece).
+
+This tokenizer inherits from [PreTrainedTokenizerFast](/docs/transformers/master/en/main_classes/tokenizer#transformers.PreTrainedTokenizerFast) which contains most of the main methods. Users should
+refer to this superclass for more information regarding those methods.
+
+
+
+
+
+<div class="docstring">
+<docstring><name>build\_inputs\_with\_special\_tokens</name><anchor>transformers.BarthezTokenizerFast.build_inputs_with_special_tokens</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/barthez/tokenization_barthez_fast.py#L148</source><parameters>[{"name": "token_ids_0", "val": ": typing.List[int]"}, {"name": "token_ids_1", "val": ": typing.Optional[typing.List[int]] = None"}]</parameters><paramsdesc>- **token_ids_0** (`List[int]`) --
+  List of IDs to which the special tokens will be added.
+- **token_ids_1** (`List[int]`, *optional*) --
+  Optional second list of IDs for sequence pairs.</paramsdesc><paramgroups>0</paramgroups><rettype>`List[int]`</rettype><retdesc>List of [input IDs](../glossary#input-ids) with the appropriate special tokens.</retdesc></docstring>
+
+Build model inputs from a sequence or a pair of sequence for sequence classification tasks by concatenating and
+adding special tokens. A BARThez sequence has the following format:
+
+- single sequence: `<s> X </s>`
+- pair of sequences: `<s> A </s>&amp;lt;/s> B &amp;lt;/s>`
+
+
+
+
+
+
+
+
+</div>
+<div class="docstring">
+<docstring><name>create\_token\_type\_ids\_from\_sequences</name><anchor>transformers.BarthezTokenizerFast.create_token_type_ids_from_sequences</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/barthez/tokenization_barthez_fast.py#L174</source><parameters>[{"name": "token_ids_0", "val": ": typing.List[int]"}, {"name": "token_ids_1", "val": ": typing.Optional[typing.List[int]] = None"}]</parameters><paramsdesc>- **token_ids_0** (`List[int]`) --
+  List of IDs.
+- **token_ids_1** (`List[int]`, *optional*) --
+  Optional second list of IDs for sequence pairs.</paramsdesc><paramgroups>0</paramgroups><rettype>`List[int]`</rettype><retdesc>List of zeros.</retdesc></docstring>
+
+Create a mask from the two sequences passed to be used in a sequence-pair classification task.
+
+
+
+
+
+
+
+
+</div></div>

@@ -1,0 +1,231 @@
+---
+local: utilities-for-pipelines
+sections:
+- local: transformers.pipelines.ArgumentHandler
+  title: Argument handling
+- local: transformers.PipelineDataFormat
+  title: Data format
+- local: transformers.pipelines.PipelineException
+  title: Utilities
+title: Utilities for pipelines
+---
+<script>
+import Tip from "./Tip.svelte";
+import Youtube from "./Youtube.svelte";
+import Docstring from "./Docstring.svelte";
+import CodeBlock from "./CodeBlock.svelte";
+import CodeBlockFw from "./CodeBlockFw.svelte";
+import ColabDropdown from "./ColabDropdown.svelte";
+import IconCopyLink from "./IconCopyLink.svelte";
+export let fw: "pt" | "tf"
+</script>
+<!--Copyright 2020 The HuggingFace Team. All rights reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
+the License. You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on
+an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
+specific language governing permissions and limitations under the License.
+-->
+
+<h1 id="utilities-for-pipelines">Utilities for pipelines</h1>
+
+This page lists all the utility functions the library provides for pipelines.
+
+Most of those are only useful if you are studying the code of the models in the library.
+
+
+<h2 id="transformers.pipelines.ArgumentHandler">Argument handling</h2>
+
+<div class="docstring">
+
+<docstring><name>class transformers.pipelines.ArgumentHandler</name><anchor>transformers.pipelines.ArgumentHandler</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/pipelines/base.py#L373</source><parameters>[]</parameters></docstring>
+
+Base interface for handling arguments for each [Pipeline](/docs/transformers/master/en/main_classes/pipelines#transformers.Pipeline).
+
+
+</div>
+
+<div class="docstring">
+
+<docstring><name>class transformers.pipelines.ZeroShotClassificationArgumentHandler</name><anchor>transformers.pipelines.ZeroShotClassificationArgumentHandler</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/pipelines/zero_shot_classification.py#L14</source><parameters>[]</parameters></docstring>
+
+Handles arguments for zero-shot for text classification by turning each possible label into an NLI
+premise/hypothesis pair.
+
+
+</div>
+
+<div class="docstring">
+
+<docstring><name>class transformers.pipelines.QuestionAnsweringArgumentHandler</name><anchor>transformers.pipelines.QuestionAnsweringArgumentHandler</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/pipelines/question_answering.py#L32</source><parameters>[]</parameters></docstring>
+
+QuestionAnsweringPipeline requires the user to provide multiple arguments (i.e. question & context) to be mapped to
+internal `SquadExample`.
+
+QuestionAnsweringArgumentHandler manages all the possible to create a `SquadExample` from the command-line
+supplied arguments.
+
+
+</div>
+
+<h2 id="transformers.PipelineDataFormat">Data format</h2>
+
+<div class="docstring">
+
+<docstring><name>class transformers.PipelineDataFormat</name><anchor>transformers.PipelineDataFormat</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/pipelines/base.py#L383</source><parameters>[{"name": "output_path", "val": ": typing.Optional[str]"}, {"name": "input_path", "val": ": typing.Optional[str]"}, {"name": "column", "val": ": typing.Optional[str]"}, {"name": "overwrite", "val": ": bool = False"}]</parameters><paramsdesc>- **output_path** (`str`, *optional*) -- Where to save the outgoing data.
+- **input_path** (`str`, *optional*) -- Where to look for the input data.
+- **column** (`str`, *optional*) -- The column to read.
+- **overwrite** (`bool`, *optional*, defaults to `False`) --
+  Whether or not to overwrite the `output_path`.</paramsdesc><paramgroups>0</paramgroups></docstring>
+
+Base class for all the pipeline supported data format both for reading and writing. Supported data formats
+currently includes:
+
+- JSON
+- CSV
+- stdin/stdout (pipe)
+
+`PipelineDataFormat` also includes some utilities to work with multi-columns like mapping from datasets columns to
+pipelines keyword arguments through the `dataset_kwarg_1=dataset_column_1` format.
+
+
+
+
+
+<div class="docstring">
+<docstring><name>from\_str</name><anchor>transformers.PipelineDataFormat.from_str</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/pipelines/base.py#L460</source><parameters>[{"name": "format", "val": ": str"}, {"name": "output_path", "val": ": typing.Optional[str]"}, {"name": "input_path", "val": ": typing.Optional[str]"}, {"name": "column", "val": ": typing.Optional[str]"}, {"name": "overwrite", "val": " = False"}]</parameters><paramsdesc>format -- (`str`):
+The format of the desired pipeline. Acceptable values are `"json"`, `"csv"` or `"pipe"`.
+- **output_path** (`str`, *optional*) --
+  Where to save the outgoing data.
+- **input_path** (`str`, *optional*) --
+  Where to look for the input data.
+- **column** (`str`, *optional*) --
+  The column to read.
+- **overwrite** (`bool`, *optional*, defaults to `False`) --
+  Whether or not to overwrite the `output_path`.</paramsdesc><paramgroups>0</paramgroups><rettype>[PipelineDataFormat](/docs/transformers/master/en/internal/pipelines_utils#transformers.PipelineDataFormat)</rettype><retdesc>The proper data format.</retdesc></docstring>
+
+Creates an instance of the right subclass of [PipelineDataFormat](/docs/transformers/master/en/internal/pipelines_utils#transformers.PipelineDataFormat) depending on `format`.
+
+
+
+
+
+
+
+
+</div>
+<div class="docstring">
+<docstring><name>save</name><anchor>transformers.PipelineDataFormat.save</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/pipelines/base.py#L432</source><parameters>[{"name": "data", "val": ": typing.Union[dict, typing.List[dict]]"}]</parameters><paramsdesc>- **data** (`dict` or list of `dict`) -- The data to store.</paramsdesc><paramgroups>0</paramgroups></docstring>
+
+Save the provided data object with the representation for the current [PipelineDataFormat](/docs/transformers/master/en/internal/pipelines_utils#transformers.PipelineDataFormat).
+
+
+
+
+</div>
+<div class="docstring">
+<docstring><name>save\_binary</name><anchor>transformers.PipelineDataFormat.save_binary</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/pipelines/base.py#L442</source><parameters>[{"name": "data", "val": ": typing.Union[dict, typing.List[dict]]"}]</parameters><paramsdesc>- **data** (`dict` or list of `dict`) -- The data to store.</paramsdesc><paramgroups>0</paramgroups><rettype>`str`</rettype><retdesc>Path where the data has been saved.</retdesc></docstring>
+
+Save the provided data object as a pickle-formatted binary data on the disk.
+
+
+
+
+
+
+
+
+</div></div>
+
+<div class="docstring">
+
+<docstring><name>class transformers.CsvPipelineDataFormat</name><anchor>transformers.CsvPipelineDataFormat</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/pipelines/base.py#L496</source><parameters>[{"name": "output_path", "val": ": typing.Optional[str]"}, {"name": "input_path", "val": ": typing.Optional[str]"}, {"name": "column", "val": ": typing.Optional[str]"}, {"name": "overwrite", "val": " = False"}]</parameters><paramsdesc>- **output_path** (`str`, *optional*) -- Where to save the outgoing data.
+- **input_path** (`str`, *optional*) -- Where to look for the input data.
+- **column** (`str`, *optional*) -- The column to read.
+- **overwrite** (`bool`, *optional*, defaults to `False`) --
+  Whether or not to overwrite the `output_path`.</paramsdesc><paramgroups>0</paramgroups></docstring>
+
+Support for pipelines using CSV data format.
+
+
+
+
+
+<div class="docstring">
+<docstring><name>save</name><anchor>transformers.CsvPipelineDataFormat.save</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/pipelines/base.py#L526</source><parameters>[{"name": "data", "val": ": typing.List[dict]"}]</parameters><paramsdesc>- **data** (`List[dict]`) -- The data to store.</paramsdesc><paramgroups>0</paramgroups></docstring>
+
+Save the provided data object with the representation for the current [PipelineDataFormat](/docs/transformers/master/en/internal/pipelines_utils#transformers.PipelineDataFormat).
+
+
+
+
+</div></div>
+
+<div class="docstring">
+
+<docstring><name>class transformers.JsonPipelineDataFormat</name><anchor>transformers.JsonPipelineDataFormat</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/pipelines/base.py#L540</source><parameters>[{"name": "output_path", "val": ": typing.Optional[str]"}, {"name": "input_path", "val": ": typing.Optional[str]"}, {"name": "column", "val": ": typing.Optional[str]"}, {"name": "overwrite", "val": " = False"}]</parameters><paramsdesc>- **output_path** (`str`, *optional*) -- Where to save the outgoing data.
+- **input_path** (`str`, *optional*) -- Where to look for the input data.
+- **column** (`str`, *optional*) -- The column to read.
+- **overwrite** (`bool`, *optional*, defaults to `False`) --
+  Whether or not to overwrite the `output_path`.</paramsdesc><paramgroups>0</paramgroups></docstring>
+
+Support for pipelines using JSON file format.
+
+
+
+
+
+<div class="docstring">
+<docstring><name>save</name><anchor>transformers.JsonPipelineDataFormat.save</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/pipelines/base.py#L571</source><parameters>[{"name": "data", "val": ": dict"}]</parameters><paramsdesc>- **data** (`dict`) -- The data to store.</paramsdesc><paramgroups>0</paramgroups></docstring>
+
+Save the provided data object in a json file.
+
+
+
+
+</div></div>
+
+<div class="docstring">
+
+<docstring><name>class transformers.PipedPipelineDataFormat</name><anchor>transformers.PipedPipelineDataFormat</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/pipelines/base.py#L582</source><parameters>[{"name": "output_path", "val": ": typing.Optional[str]"}, {"name": "input_path", "val": ": typing.Optional[str]"}, {"name": "column", "val": ": typing.Optional[str]"}, {"name": "overwrite", "val": ": bool = False"}]</parameters><paramsdesc>- **output_path** (`str`, *optional*) -- Where to save the outgoing data.
+- **input_path** (`str`, *optional*) -- Where to look for the input data.
+- **column** (`str`, *optional*) -- The column to read.
+- **overwrite** (`bool`, *optional*, defaults to `False`) --
+  Whether or not to overwrite the `output_path`.</paramsdesc><paramgroups>0</paramgroups></docstring>
+
+Read data from piped input to the python process. For multi columns data, columns should separated by 	
+
+If columns are provided, then the output will be a dictionary with &amp;lcub;column_x: value_x}
+
+
+
+
+
+<div class="docstring">
+<docstring><name>save</name><anchor>transformers.PipedPipelineDataFormat.save</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/pipelines/base.py#L612</source><parameters>[{"name": "data", "val": ": dict"}]</parameters><paramsdesc>- **data** (`dict`) -- The data to store.</paramsdesc><paramgroups>0</paramgroups></docstring>
+
+Print the data.
+
+
+
+
+</div></div>
+
+<h2 id="transformers.pipelines.PipelineException">Utilities</h2>
+
+<div class="docstring">
+
+<docstring><name>class transformers.pipelines.PipelineException</name><anchor>transformers.pipelines.PipelineException</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/pipelines/base.py#L356</source><parameters>[{"name": "task", "val": ": str"}, {"name": "model", "val": ": str"}, {"name": "reason", "val": ": str"}]</parameters><paramsdesc>- **task** (`str`) -- The task of the pipeline.
+- **model** (`str`) -- The model used by the pipeline.
+- **reason** (`str`) -- The error message to display.</paramsdesc><paramgroups>0</paramgroups></docstring>
+
+Raised by a [Pipeline](/docs/transformers/master/en/main_classes/pipelines#transformers.Pipeline) when handling __call__.
+
+
+
+
+</div>

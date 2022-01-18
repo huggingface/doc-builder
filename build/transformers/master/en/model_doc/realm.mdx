@@ -1,0 +1,892 @@
+---
+local: realm
+sections:
+- local: overview
+  title: Overview
+- local: transformers.RealmConfig
+  title: RealmConfig
+- local: transformers.RealmTokenizer
+  title: RealmTokenizer
+- local: transformers.RealmRetriever
+  title: RealmRetriever
+- local: transformers.RealmEmbedder
+  title: RealmEmbedder
+- local: transformers.RealmScorer
+  title: RealmScorer
+- local: transformers.RealmKnowledgeAugEncoder
+  title: RealmKnowledgeAugEncoder
+- local: transformers.RealmReader
+  title: RealmReader
+- local: transformers.RealmForOpenQA
+  title: RealmForOpenQA
+title: REALM
+---
+<script>
+import Tip from "./Tip.svelte";
+import Youtube from "./Youtube.svelte";
+import Docstring from "./Docstring.svelte";
+import CodeBlock from "./CodeBlock.svelte";
+import CodeBlockFw from "./CodeBlockFw.svelte";
+import ColabDropdown from "./ColabDropdown.svelte";
+import IconCopyLink from "./IconCopyLink.svelte";
+export let fw: "pt" | "tf"
+</script>
+<!--Copyright 2022 The HuggingFace Team. All rights reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
+the License. You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on
+an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
+specific language governing permissions and limitations under the License.
+-->
+
+<h1 id="realm">REALM</h1>
+
+<h2 id="overview">Overview</h2>
+
+The REALM model was proposed in `REALM: Retrieval-Augmented Language Model Pre-Training
+&amp;lt;https://arxiv.org/abs/2002.08909>`__ by Kelvin Guu, Kenton Lee, Zora Tung, Panupong Pasupat and Ming-Wei Chang. It's a
+retrieval-augmented language model that firstly retrieves documents from a textual knowledge corpus and then
+utilizes retrieved documents to process question answering tasks.
+
+The abstract from the paper is the following:
+
+*Language model pre-training has been shown to capture a surprising amount of world knowledge, crucial for NLP tasks
+such as question answering. However, this knowledge is stored implicitly in the parameters of a neural network,
+requiring ever-larger networks to cover more facts. To capture knowledge in a more modular and interpretable way, we
+augment language model pre-training with a latent knowledge retriever, which allows the model to retrieve and attend
+over documents from a large corpus such as Wikipedia, used during pre-training, fine-tuning and inference. For the
+first time, we show how to pre-train such a knowledge retriever in an unsupervised manner, using masked language
+modeling as the learning signal and backpropagating through a retrieval step that considers millions of documents. We
+demonstrate the effectiveness of Retrieval-Augmented Language Model pre-training (REALM) by fine-tuning on the
+challenging task of Open-domain Question Answering (Open-QA). We compare against state-of-the-art models for both
+explicit and implicit knowledge storage on three popular Open-QA benchmarks, and find that we outperform all previous
+methods by a significant margin (4-16% absolute accuracy), while also providing qualitative benefits such as
+interpretability and modularity.*
+
+This model was contributed by `qqaatw &amp;lt;https://huggingface.co/qqaatw>`__. The original code can be found `here
+&amp;lt;https://github.com/google-research/language/tree/master/language/realm>`__.
+
+<h2 id="transformers.RealmConfig">RealmConfig</h2>
+
+<div class="docstring">
+
+<docstring><name>class transformers.RealmConfig</name><anchor>transformers.RealmConfig</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/realm/configuration_realm.py#L36</source><parameters>[{"name": "vocab_size", "val": " = 30522"}, {"name": "hidden_size", "val": " = 768"}, {"name": "retriever_proj_size", "val": " = 128"}, {"name": "num_hidden_layers", "val": " = 12"}, {"name": "num_attention_heads", "val": " = 12"}, {"name": "num_candidates", "val": " = 8"}, {"name": "intermediate_size", "val": " = 3072"}, {"name": "hidden_act", "val": " = 'gelu_new'"}, {"name": "hidden_dropout_prob", "val": " = 0.1"}, {"name": "attention_probs_dropout_prob", "val": " = 0.1"}, {"name": "max_position_embeddings", "val": " = 512"}, {"name": "type_vocab_size", "val": " = 2"}, {"name": "initializer_range", "val": " = 0.02"}, {"name": "layer_norm_eps", "val": " = 1e-12"}, {"name": "span_hidden_size", "val": " = 256"}, {"name": "max_span_width", "val": " = 10"}, {"name": "reader_layer_norm_eps", "val": " = 0.001"}, {"name": "reader_beam_size", "val": " = 5"}, {"name": "reader_seq_len", "val": " = 320"}, {"name": "num_block_records", "val": " = 13353718"}, {"name": "searcher_beam_size", "val": " = 5000"}, {"name": "searcher_seq_len", "val": " = 64"}, {"name": "pad_token_id", "val": " = 1"}, {"name": "bos_token_id", "val": " = 0"}, {"name": "eos_token_id", "val": " = 2"}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **vocab_size** (`int`, *optional*, defaults to 30522) --
+  Vocabulary size of the REALM model. Defines the number of different tokens that can be represented by the
+  `inputs_ids` passed when calling [RealmEmbedder](/docs/transformers/master/en/model_doc/realm#transformers.RealmEmbedder), [RealmScorer](/docs/transformers/master/en/model_doc/realm#transformers.RealmScorer), [RealmKnowledgeAugEncoder](/docs/transformers/master/en/model_doc/realm#transformers.RealmKnowledgeAugEncoder), or
+  [RealmReader](/docs/transformers/master/en/model_doc/realm#transformers.RealmReader).
+- **hidden_size** (`int`, *optional*, defaults to 768) --
+  Dimension of the encoder layers and the pooler layer.
+- **retriever_proj_size** (`int`, *optional*, defaults to 128) --
+  Dimension of the retriever(embedder) projection.
+- **num_hidden_layers** (`int`, *optional*, defaults to 12) --
+  Number of hidden layers in the Transformer encoder.
+- **num_attention_heads** (`int`, *optional*, defaults to 12) --
+  Number of attention heads for each attention layer in the Transformer encoder.
+- **num_candidates** (`int`, *optional*, defaults to 8) --
+  Number of candidates inputted to the RealmScorer or RealmKnowledgeAugEncoder.
+- **intermediate_size** (`int`, *optional*, defaults to 3072) --
+  Dimension of the "intermediate" (i.e., feed-forward) layer in the Transformer encoder.
+- **hidden_act** (`str` or `function`, *optional*, defaults to `"gelu_new"`) --
+  The non-linear activation function (function or string) in the encoder and pooler. If string, `"gelu"`,
+  `"relu"`, `"selu"` and `"gelu_new"` are supported.
+- **hidden_dropout_prob** (`float`, *optional*, defaults to 0.1) --
+  The dropout probabilitiy for all fully connected layers in the embeddings, encoder, and pooler.
+- **attention_probs_dropout_prob** (`float`, *optional*, defaults to 0.1) --
+  The dropout ratio for the attention probabilities.
+- **max_position_embeddings** (`int`, *optional*, defaults to 512) --
+  The maximum sequence length that this model might ever be used with. Typically set this to something large
+  just in case (e.g., 512 or 1024 or 2048).
+- **type_vocab_size** (`int`, *optional*, defaults to 2) --
+  The vocabulary size of the `token_type_ids` passed when calling [RealmEmbedder](/docs/transformers/master/en/model_doc/realm#transformers.RealmEmbedder), [RealmScorer](/docs/transformers/master/en/model_doc/realm#transformers.RealmScorer),
+  [RealmKnowledgeAugEncoder](/docs/transformers/master/en/model_doc/realm#transformers.RealmKnowledgeAugEncoder), or [RealmReader](/docs/transformers/master/en/model_doc/realm#transformers.RealmReader).
+- **initializer_range** (`float`, *optional*, defaults to 0.02) --
+  The standard deviation of the truncated_normal_initializer for initializing all weight matrices.
+- **layer_norm_eps** (`float`, *optional*, defaults to 1e-12) --
+  The epsilon used by the layer normalization layers.
+- **span_hidden_size** (`int`, *optional*, defaults to 256) --
+  Dimension of the reader's spans.
+- **max_span_width** (`int`, *optional*, defaults to 10) --
+  Max span width of the reader.
+- **reader_layer_norm_eps** (`float`, *optional*, defaults to 1e-3) --
+  The epsilon used by the reader's layer normalization layers.
+- **reader_beam_size** (`int`, *optional*, defaults to 5) --
+  Beam size of the reader.
+- **reader_seq_len** (`int`, *optional*, defaults to 288+32) --
+  Maximum sequence length of the reader.
+- **num_block_records** (`int`, *optional*, defaults to 13353718) --
+  Number of block records.
+- **searcher_beam_size** (`int`, *optional*, defaults to 5000) --
+  Beam size of the searcher. Note that when eval mode is enabled, *searcher_beam_size* will be the same as
+  *reader_beam_size*.
+- **searcher_seq_len** (`int`, *optional*, defaults to 64) --
+  Maximum sequence length of the searcher.</paramsdesc><paramgroups>0</paramgroups></docstring>
+
+This is the configuration class to store the configuration of
+
+1. [RealmEmbedder](/docs/transformers/master/en/model_doc/realm#transformers.RealmEmbedder)
+2. [RealmScorer](/docs/transformers/master/en/model_doc/realm#transformers.RealmScorer)
+3. [RealmKnowledgeAugEncoder](/docs/transformers/master/en/model_doc/realm#transformers.RealmKnowledgeAugEncoder)
+4. [RealmRetriever](/docs/transformers/master/en/model_doc/realm#transformers.RealmRetriever)
+5. [RealmReader](/docs/transformers/master/en/model_doc/realm#transformers.RealmReader)
+6. [RealmForOpenQA](/docs/transformers/master/en/model_doc/realm#transformers.RealmForOpenQA)
+
+It is used to instantiate an REALM model according to the specified arguments, defining the model architecture.
+Instantiating a configuration with the defaults will yield a similar configuration to that of the REALM
+[realm-cc-news-pretrained](https://huggingface.co/qqaatw/realm-cc-news-pretrained-embedder) architecture.
+
+Configuration objects inherit from [PretrainedConfig](/docs/transformers/master/en/main_classes/configuration#transformers.PretrainedConfig) and can be used to control the model outputs. Read the
+documentation from [PretrainedConfig](/docs/transformers/master/en/main_classes/configuration#transformers.PretrainedConfig) for more information.
+
+
+
+
+Example:
+
+```python
+>>> from transformers import RealmEmbedder, RealmConfig
+
+>>> # Initializing a REALM realm-cc-news-pretrained-* style configuration
+>>> configuration = RealmConfig()
+
+>>> # Initializing a model from the qqaatw/realm-cc-news-pretrained-embedder style configuration
+>>> model = RealmEmbedder(configuration)
+
+>>> # Accessing the model configuration
+>>> configuration = model.config
+```
+
+</div>
+
+<h2 id="transformers.RealmTokenizer">RealmTokenizer</h2>
+
+<div class="docstring">
+
+<docstring><name>class transformers.RealmTokenizer</name><anchor>transformers.RealmTokenizer</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/realm/tokenization_realm.py#L63</source><parameters>[{"name": "vocab_file", "val": ""}, {"name": "do_lower_case", "val": " = True"}, {"name": "do_basic_tokenize", "val": " = True"}, {"name": "never_split", "val": " = None"}, {"name": "unk_token", "val": " = '[UNK]'"}, {"name": "sep_token", "val": " = '[SEP]'"}, {"name": "pad_token", "val": " = '[PAD]'"}, {"name": "cls_token", "val": " = '[CLS]'"}, {"name": "mask_token", "val": " = '[MASK]'"}, {"name": "tokenize_chinese_chars", "val": " = True"}, {"name": "strip_accents", "val": " = None"}, {"name": "**kwargs", "val": ""}]</parameters></docstring>
+
+Construct a REALM tokenizer.
+
+[RealmTokenizer](/docs/transformers/master/en/model_doc/realm#transformers.RealmTokenizer) is identical to [BertTokenizer](/docs/transformers/master/en/model_doc/bert#transformers.BertTokenizer) and runs end-to-end tokenization: punctuation splitting and
+wordpiece.
+
+Refer to superclass [BertTokenizer](/docs/transformers/master/en/model_doc/bert#transformers.BertTokenizer) for usage examples and documentation concerning parameters.
+
+
+
+<div class="docstring">
+<docstring><name>build\_inputs\_with\_special\_tokens</name><anchor>transformers.BertTokenizer.build_inputs_with_special_tokens</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/bert/tokenization_bert.py#L248</source><parameters>[{"name": "token_ids_0", "val": ": typing.List[int]"}, {"name": "token_ids_1", "val": ": typing.Optional[typing.List[int]] = None"}]</parameters><paramsdesc>- **token_ids_0** (`List[int]`) --
+  List of IDs to which the special tokens will be added.
+- **token_ids_1** (`List[int]`, *optional*) --
+  Optional second list of IDs for sequence pairs.</paramsdesc><paramgroups>0</paramgroups><rettype>`List[int]`</rettype><retdesc>List of [input IDs](../glossary#input-ids) with the appropriate special tokens.</retdesc></docstring>
+
+Build model inputs from a sequence or a pair of sequence for sequence classification tasks by concatenating and
+adding special tokens. A BERT sequence has the following format:
+
+- single sequence: `[CLS] X [SEP]`
+- pair of sequences: `[CLS] A [SEP] B [SEP]`
+
+
+
+
+
+
+
+
+</div>
+<div class="docstring">
+<docstring><name>get\_special\_tokens\_mask</name><anchor>transformers.BertTokenizer.get_special_tokens_mask</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/bert/tokenization_bert.py#L273</source><parameters>[{"name": "token_ids_0", "val": ": typing.List[int]"}, {"name": "token_ids_1", "val": ": typing.Optional[typing.List[int]] = None"}, {"name": "already_has_special_tokens", "val": ": bool = False"}]</parameters><paramsdesc>- **token_ids_0** (`List[int]`) --
+  List of IDs.
+- **token_ids_1** (`List[int]`, *optional*) --
+  Optional second list of IDs for sequence pairs.
+- **already_has_special_tokens** (`bool`, *optional*, defaults to `False`) --
+  Whether or not the token list is already formatted with special tokens for the model.</paramsdesc><paramgroups>0</paramgroups><rettype>`List[int]`</rettype><retdesc>A list of integers in the range [0, 1]: 1 for a special token, 0 for a sequence token.</retdesc></docstring>
+
+Retrieve sequence ids from a token list that has no special tokens added. This method is called when adding
+special tokens using the tokenizer `prepare_for_model` method.
+
+
+
+
+
+
+
+
+</div>
+<div class="docstring">
+<docstring><name>create\_token\_type\_ids\_from\_sequences</name><anchor>transformers.BertTokenizer.create_token_type_ids_from_sequences</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/bert/tokenization_bert.py#L301</source><parameters>[{"name": "token_ids_0", "val": ": typing.List[int]"}, {"name": "token_ids_1", "val": ": typing.Optional[typing.List[int]] = None"}]</parameters><paramsdesc>- **token_ids_0** (`List[int]`) --
+  List of IDs.
+- **token_ids_1** (`List[int]`, *optional*) --
+  Optional second list of IDs for sequence pairs.</paramsdesc><paramgroups>0</paramgroups><rettype>`List[int]`</rettype><retdesc>List of [token type IDs](../glossary#token-type-ids) according to the given sequence(s).</retdesc></docstring>
+
+Create a mask from the two sequences passed to be used in a sequence-pair classification task. A BERT sequence
+pair mask has the following format:
+
+```
+0 0 0 0 0 0 0 0 0 0 0 1 1 1 1 1 1 1 1 1
+| first sequence    | second sequence |
+```
+
+If `token_ids_1` is `None`, this method only returns the first portion of the mask (0s).
+
+
+
+
+
+
+
+
+</div>
+<div class="docstring"></div>
+<div class="docstring">
+<docstring><name>batch\_encode\_candidates</name><anchor>transformers.RealmTokenizer.batch_encode_candidates</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/realm/tokenization_realm.py#L78</source><parameters>[{"name": "text", "val": ""}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **text** (`List[List[str]]`) --
+  The batch of sequences to be encoded. Each sequence must be in this format: (batch_size,
+  num_candidates, text).
+- **text_pair** (`List[List[str]]`, *optional*) --
+  The batch of sequences to be encoded. Each sequence must be in this format: (batch_size,
+  num_candidates, text).
+  **kwargs --
+  Keyword arguments of the __call__ method.</paramsdesc><paramgroups>0</paramgroups><rettype>[BatchEncoding](/docs/transformers/master/en/main_classes/tokenizer#transformers.BatchEncoding)</rettype><retdesc>Encoded text or text pair.</retdesc></docstring>
+
+Encode a batch of text or text pair. This method is similar to regular __call__ method but has the following
+differences:
+
+1. Handle additional num_candidate axis. (batch_size, num_candidates, text)
+2. Always pad the sequences to *max_length*.
+3. Must specify *max_length* in order to stack packs of candidates into a batch.
+
+- single sequence: `[CLS] X [SEP]`
+- pair of sequences: `[CLS] A [SEP] B [SEP]`
+
+
+
+
+
+
+
+Example:
+
+```python
+>>> from transformers import RealmTokenizer
+
+>>> # batch_size = 2, num_candidates = 2
+>>> text = [["Hello world!", "Nice to meet you!"], ["The cute cat.", "The adorable dog."]]
+
+>>> tokenizer = RealmTokenizer.from_pretrained("qqaatw/realm-cc-news-pretrained-encoder")
+>>> tokenized_text = tokenizer.batch_encode_candidates(text, max_length=10, return_tensors="pt")
+```
+
+</div></div>
+
+<h2 id="transformers.RealmRetriever">RealmRetriever</h2>
+
+<div class="docstring">
+
+<docstring><name>class transformers.RealmRetriever</name><anchor>transformers.RealmRetriever</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/realm/retrieval_realm.py#L73</source><parameters>[{"name": "block_records", "val": ""}, {"name": "tokenizer", "val": ""}]</parameters><paramsdesc>- **block_records** (`np.ndarray`) --
+  A numpy array which cantains evidence texts.
+- **tokenizer** ([RealmTokenizer](/docs/transformers/master/en/model_doc/realm#transformers.RealmTokenizer)) --
+  The tokenizer to encode retrieved texts.</paramsdesc><paramgroups>0</paramgroups></docstring>
+The retriever of REALM outputting the retrieved evidence block and whether the block has answers as well as answer
+positions."
+
+
+
+
+
+<div class="docstring">
+<docstring><name>block\_has\_answer</name><anchor>transformers.RealmRetriever.block_has_answer</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/realm/retrieval_realm.py#L128</source><parameters>[{"name": "concat_inputs", "val": ""}, {"name": "answer_ids", "val": ""}]</parameters></docstring>
+check if retrieved_blocks has answers.
+
+</div></div>
+
+<h2 id="transformers.RealmEmbedder">RealmEmbedder</h2>
+
+<div class="docstring">
+
+<docstring><name>class transformers.RealmEmbedder</name><anchor>transformers.RealmEmbedder</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/realm/modeling_realm.py#L1146</source><parameters>[{"name": "config", "val": ""}]</parameters><paramsdesc>- **config** ([RealmConfig](/docs/transformers/master/en/model_doc/realm#transformers.RealmConfig)) -- Model configuration class with all the parameters of the model.
+  Initializing with a config file does not load the weights associated with the model, only the
+  configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel.from_pretrained) method to load the model weights.</paramsdesc><paramgroups>0</paramgroups></docstring>
+The embedder of REALM outputting projected score that will be used to calculate relevance score.
+This model is a PyTorch [torch.nn.Module](https://pytorch.org/docs/stable/nn.html#torch.nn.Module) sub-class. Use
+it as a regular PyTorch Module and refer to the PyTorch documentation for all matter related to general usage and
+behavior.
+
+
+
+
+
+<div class="docstring">
+<docstring><name>forward</name><anchor>transformers.RealmEmbedder.forward</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/realm/modeling_realm.py#L1160</source><parameters>[{"name": "input_ids", "val": " = None"}, {"name": "attention_mask", "val": " = None"}, {"name": "token_type_ids", "val": " = None"}, {"name": "position_ids", "val": " = None"}, {"name": "head_mask", "val": " = None"}, {"name": "inputs_embeds", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "return_dict", "val": " = None"}]</parameters><paramsdesc>- **input_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`) --
+  Indices of input sequence tokens in the vocabulary.
+
+  Indices can be obtained using [RealmTokenizer](/docs/transformers/master/en/model_doc/realm#transformers.RealmTokenizer). See [PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.encode) and
+  [PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.__call__) for details.
+
+  [What are input IDs?](../glossary#input-ids)
+- **attention_mask** (`torch.FloatTensor` of shape `(batch_size, sequence_length)`, *optional*) --
+  Mask to avoid performing attention on padding token indices. Mask values selected in `[0, 1]`:
+
+  - 1 for tokens that are **not masked**,
+  - 0 for tokens that are **masked**.
+
+  [What are attention masks?](../glossary#attention-mask)
+- **token_type_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`, *optional*) --
+  Segment token indices to indicate first and second portions of the inputs. Indices are selected in `[0,
+  1]`:
+
+  - 0 corresponds to a *sentence A* token,
+  - 1 corresponds to a *sentence B* token.
+
+  [What are token type IDs?](../glossary#token-type-ids)
+- **position_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`, *optional*) --
+  Indices of positions of each input sequence tokens in the position embeddings. Selected in the range `[0,
+  config.max_position_embeddings - 1]`.
+
+  [What are position IDs?](../glossary#position-ids)
+- **head_mask** (`torch.FloatTensor` of shape `(num_heads,)` or `(num_layers, num_heads)`, *optional*) --
+  Mask to nullify selected heads of the self-attention modules. Mask values selected in `[0, 1]`:
+
+  - 1 indicates the head is **not masked**,
+  - 0 indicates the head is **masked**.
+
+- **inputs_embeds** (`torch.FloatTensor` of shape `(batch_size, sequence_length, hidden_size)`, *optional*) --
+  Optionally, instead of passing `input_ids` you can choose to directly pass an embedded representation. This
+  is useful if you want more control over how to convert *input_ids* indices into associated vectors than the
+  model's internal embedding lookup matrix.
+- **output_attentions** (`bool`, *optional*) --
+  Whether or not to return the attentions tensors of all attention layers. See `attentions` under returned
+  tensors for more detail.
+- **output_hidden_states** (`bool`, *optional*) --
+  Whether or not to return the hidden states of all layers. See `hidden_states` under returned tensors for
+  more detail.
+- **return_dict** (`bool`, *optional*) --
+  Whether or not to return a [ModelOutput](/docs/transformers/master/en/main_classes/output#transformers.file_utils.ModelOutput) instead of a plain tuple.</paramsdesc><paramgroups>0</paramgroups><rettype>`transformers.models.realm.modeling_realm.RealmEmbedderOutput` or `tuple(torch.FloatTensor)`</rettype><retdesc>A `transformers.models.realm.modeling_realm.RealmEmbedderOutput` or a tuple of
+`torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising various
+elements depending on the configuration ([RealmConfig](/docs/transformers/master/en/model_doc/realm#transformers.RealmConfig)) and inputs.
+
+- **projected_score** (`torch.FloatTensor` of shape `(batch_size, config.retriever_proj_size)`) -- Projected score.
+- **hidden_states** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer) of
+  shape `(batch_size, sequence_length, hidden_size)`.
+
+  Hidden-states of the model at the output of each layer plus the initial embedding outputs.
+- **attentions** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length,
+  sequence_length)`.
+
+  Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
+  heads.</retdesc></docstring>
+The [RealmEmbedder](/docs/transformers/master/en/model_doc/realm#transformers.RealmEmbedder) forward method, overrides the `__call__` special method.
+
+<Tip>
+
+Although the recipe for forward pass needs to be defined within this function, one should call the `Module`
+instance afterwards instead of this since the former takes care of running the pre and post processing steps while
+the latter silently ignores them.
+
+</Tip>
+
+
+
+
+
+
+
+Example:
+
+```python
+>>> from transformers import RealmTokenizer, RealmEmbedder
+>>> import torch
+
+>>> tokenizer = RealmTokenizer.from_pretrained("qqaatw/realm-cc-news-pretrained-embedder")
+>>> model = RealmEmbedder.from_pretrained("qqaatw/realm-cc-news-pretrained-embedder")
+
+>>> inputs = tokenizer("Hello, my dog is cute", return_tensors="pt")
+>>> outputs = model(**inputs)
+
+>>> projected_score = outputs.projected_score
+```
+
+
+</div></div>
+
+<h2 id="transformers.RealmScorer">RealmScorer</h2>
+
+<div class="docstring">
+
+<docstring><name>class transformers.RealmScorer</name><anchor>transformers.RealmScorer</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/realm/modeling_realm.py#L1226</source><parameters>[{"name": "config", "val": ""}, {"name": "query_embedder", "val": " = None"}]</parameters><paramsdesc>- **config** ([RealmConfig](/docs/transformers/master/en/model_doc/realm#transformers.RealmConfig)) -- Model configuration class with all the parameters of the model.
+  Initializing with a config file does not load the weights associated with the model, only the
+  configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel.from_pretrained) method to load the model weights.
+
+</parameters>
+
+<parameters>
+
+- **query_embedder** ([RealmEmbedder](/docs/transformers/master/en/model_doc/realm#transformers.RealmEmbedder)) --
+  Embedder for input sequences. If not specified, it will use the same embedder as candidate sequences.</paramsdesc><paramgroups>0</paramgroups></docstring>
+The scorer of REALM outputting relevance scores representing the score of document candidates (before softmax).
+This model is a PyTorch [torch.nn.Module](https://pytorch.org/docs/stable/nn.html#torch.nn.Module) sub-class. Use
+it as a regular PyTorch Module and refer to the PyTorch documentation for all matter related to general usage and
+behavior.
+
+
+
+
+
+<div class="docstring">
+<docstring><name>forward</name><anchor>transformers.RealmScorer.forward</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/realm/modeling_realm.py#L1242</source><parameters>[{"name": "input_ids", "val": " = None"}, {"name": "attention_mask", "val": " = None"}, {"name": "token_type_ids", "val": " = None"}, {"name": "position_ids", "val": " = None"}, {"name": "candidate_input_ids", "val": " = None"}, {"name": "candidate_attention_mask", "val": " = None"}, {"name": "candidate_token_type_ids", "val": " = None"}, {"name": "candidate_inputs_embeds", "val": " = None"}, {"name": "head_mask", "val": " = None"}, {"name": "inputs_embeds", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "return_dict", "val": " = None"}]</parameters><paramsdesc>- **input_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`) --
+  Indices of input sequence tokens in the vocabulary.
+
+  Indices can be obtained using [RealmTokenizer](/docs/transformers/master/en/model_doc/realm#transformers.RealmTokenizer). See [PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.encode) and
+  [PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.__call__) for details.
+
+  [What are input IDs?](../glossary#input-ids)
+- **attention_mask** (`torch.FloatTensor` of shape `(batch_size, sequence_length)`, *optional*) --
+  Mask to avoid performing attention on padding token indices. Mask values selected in `[0, 1]`:
+
+  - 1 for tokens that are **not masked**,
+  - 0 for tokens that are **masked**.
+
+  [What are attention masks?](../glossary#attention-mask)
+- **token_type_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`, *optional*) --
+  Segment token indices to indicate first and second portions of the inputs. Indices are selected in `[0,
+  1]`:
+
+  - 0 corresponds to a *sentence A* token,
+  - 1 corresponds to a *sentence B* token.
+
+  [What are token type IDs?](../glossary#token-type-ids)
+- **position_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`, *optional*) --
+  Indices of positions of each input sequence tokens in the position embeddings. Selected in the range `[0,
+  config.max_position_embeddings - 1]`.
+
+  [What are position IDs?](../glossary#position-ids)
+- **head_mask** (`torch.FloatTensor` of shape `(num_heads,)` or `(num_layers, num_heads)`, *optional*) --
+  Mask to nullify selected heads of the self-attention modules. Mask values selected in `[0, 1]`:
+
+  - 1 indicates the head is **not masked**,
+  - 0 indicates the head is **masked**.
+
+- **inputs_embeds** (`torch.FloatTensor` of shape `(batch_size, sequence_length, hidden_size)`, *optional*) --
+  Optionally, instead of passing `input_ids` you can choose to directly pass an embedded representation. This
+  is useful if you want more control over how to convert *input_ids* indices into associated vectors than the
+  model's internal embedding lookup matrix.
+- **output_attentions** (`bool`, *optional*) --
+  Whether or not to return the attentions tensors of all attention layers. See `attentions` under returned
+  tensors for more detail.
+- **output_hidden_states** (`bool`, *optional*) --
+  Whether or not to return the hidden states of all layers. See `hidden_states` under returned tensors for
+  more detail.
+- **return_dict** (`bool`, *optional*) --
+  Whether or not to return a [ModelOutput](/docs/transformers/master/en/main_classes/output#transformers.file_utils.ModelOutput) instead of a plain tuple.
+
+- **candidate_input_ids** (`torch.LongTensor` of shape `(batch_size, num_candidates, sequence_length)`) --
+  Indices of candidate input sequence tokens in the vocabulary.
+
+  Indices can be obtained using [RealmTokenizer](/docs/transformers/master/en/model_doc/realm#transformers.RealmTokenizer). See [PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.encode) and
+  [PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.__call__) for details.
+
+  [What are input IDs?](../glossary#input-ids)
+- **candidate_attention_mask** (`torch.FloatTensor` of shape `(batch_size, num_candidates, sequence_length)`, *optional*) --
+  Mask to avoid performing attention on padding token indices. Mask values selected in `[0, 1]`:
+
+  - 1 for tokens that are **not masked**,
+  - 0 for tokens that are **masked**.
+
+  [What are attention masks?](../glossary#attention-mask)
+- **candidate_token_type_ids** (`torch.LongTensor` of shape `(batch_size, num_candidates, sequence_length)`, *optional*) --
+  Segment token indices to indicate first and second portions of the inputs. Indices are selected in `[0,
+  1]`:
+
+  - 0 corresponds to a *sentence A* token,
+  - 1 corresponds to a *sentence B* token.
+
+  [What are token type IDs?](../glossary#token-type-ids)
+- **candidate_inputs_embeds** (`torch.FloatTensor` of shape `(batch_size * num_candidates, sequence_length, hidden_size)`, *optional*) --
+  Optionally, instead of passing `candidate_input_ids` you can choose to directly pass an embedded
+  representation. This is useful if you want more control over how to convert *candidate_input_ids* indices
+  into associated vectors than the model's internal embedding lookup matrix.</paramsdesc><paramgroups>0</paramgroups><rettype>`transformers.models.realm.modeling_realm.RealmScorerOutput` or `tuple(torch.FloatTensor)`</rettype><retdesc>A `transformers.models.realm.modeling_realm.RealmScorerOutput` or a tuple of
+`torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising various
+elements depending on the configuration ([RealmConfig](/docs/transformers/master/en/model_doc/realm#transformers.RealmConfig)) and inputs.
+
+- **relevance_score** (`torch.FloatTensor` of shape `(batch_size, config.num_candidates)`) -- The relevance score of document candidates (before softmax).
+- **query_score** (`torch.FloatTensor` of shape `(batch_size, config.retriever_proj_size)`) -- Query score derived from the query embedder.
+- **candidate_score** (`torch.FloatTensor` of shape `(batch_size, config.num_candidates, config.retriever_proj_size)`) -- Candidate score derived from the embedder.</retdesc></docstring>
+The [RealmScorer](/docs/transformers/master/en/model_doc/realm#transformers.RealmScorer) forward method, overrides the `__call__` special method.
+
+<Tip>
+
+Although the recipe for forward pass needs to be defined within this function, one should call the `Module`
+instance afterwards instead of this since the former takes care of running the pre and post processing steps while
+the latter silently ignores them.
+
+</Tip>
+
+
+
+
+
+
+
+Example:
+
+```python
+>>> import torch
+>>> from transformers import RealmTokenizer, RealmScorer
+
+>>> tokenizer = RealmTokenizer.from_pretrained("qqaatw/realm-cc-news-pretrained-scorer")
+>>> model = RealmScorer.from_pretrained("qqaatw/realm-cc-news-pretrained-scorer", num_candidates=2)
+
+>>> # batch_size = 2, num_candidates = 2
+>>> input_texts = ["How are you?", "What is the item in the picture?"]
+>>> candidates_texts = [["Hello world!", "Nice to meet you!"], ["A cute cat.", "An adorable dog."]]
+
+>>> inputs = tokenizer(input_texts, return_tensors="pt")
+>>> candidates_inputs = tokenizer.batch_encode_candidates(candidates_texts, max_length=10, return_tensors="pt")
+
+>>> outputs = model(
+...     **inputs,
+...     candidate_input_ids=candidates_inputs.input_ids,
+...     candidate_attention_mask=candidates_inputs.attention_mask,
+...     candidate_token_type_ids=candidates_inputs.token_type_ids,
+... )
+>>> relevance_score = outputs.relevance_score
+```
+
+</div></div>
+
+<h2 id="transformers.RealmKnowledgeAugEncoder">RealmKnowledgeAugEncoder</h2>
+
+<div class="docstring">
+
+<docstring><name>class transformers.RealmKnowledgeAugEncoder</name><anchor>transformers.RealmKnowledgeAugEncoder</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/realm/modeling_realm.py#L1373</source><parameters>[{"name": "config", "val": ""}]</parameters><paramsdesc>- **config** ([RealmConfig](/docs/transformers/master/en/model_doc/realm#transformers.RealmConfig)) -- Model configuration class with all the parameters of the model.
+  Initializing with a config file does not load the weights associated with the model, only the
+  configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel.from_pretrained) method to load the model weights.</paramsdesc><paramgroups>0</paramgroups></docstring>
+The knowledge-augmented encoder of REALM outputting masked language model logits and marginal log-likelihood loss.
+This model is a PyTorch [torch.nn.Module](https://pytorch.org/docs/stable/nn.html#torch.nn.Module) sub-class. Use
+it as a regular PyTorch Module and refer to the PyTorch documentation for all matter related to general usage and
+behavior.
+
+
+
+
+
+<div class="docstring">
+<docstring><name>forward</name><anchor>transformers.RealmKnowledgeAugEncoder.forward</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/realm/modeling_realm.py#L1392</source><parameters>[{"name": "input_ids", "val": " = None"}, {"name": "attention_mask", "val": " = None"}, {"name": "token_type_ids", "val": " = None"}, {"name": "position_ids", "val": " = None"}, {"name": "head_mask", "val": " = None"}, {"name": "inputs_embeds", "val": " = None"}, {"name": "relevance_score", "val": " = None"}, {"name": "labels", "val": " = None"}, {"name": "mlm_mask", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "return_dict", "val": " = None"}]</parameters><paramsdesc>- **input_ids** (`torch.LongTensor` of shape `(batch_size, num_candidates, sequence_length)`) --
+  Indices of input sequence tokens in the vocabulary.
+
+  Indices can be obtained using [RealmTokenizer](/docs/transformers/master/en/model_doc/realm#transformers.RealmTokenizer). See [PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.encode) and
+  [PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.__call__) for details.
+
+  [What are input IDs?](../glossary#input-ids)
+- **attention_mask** (`torch.FloatTensor` of shape `(batch_size, num_candidates, sequence_length)`, *optional*) --
+  Mask to avoid performing attention on padding token indices. Mask values selected in `[0, 1]`:
+
+  - 1 for tokens that are **not masked**,
+  - 0 for tokens that are **masked**.
+
+  [What are attention masks?](../glossary#attention-mask)
+- **token_type_ids** (`torch.LongTensor` of shape `(batch_size, num_candidates, sequence_length)`, *optional*) --
+  Segment token indices to indicate first and second portions of the inputs. Indices are selected in `[0,
+  1]`:
+
+  - 0 corresponds to a *sentence A* token,
+  - 1 corresponds to a *sentence B* token.
+
+  [What are token type IDs?](../glossary#token-type-ids)
+- **position_ids** (`torch.LongTensor` of shape `(batch_size, num_candidates, sequence_length)`, *optional*) --
+  Indices of positions of each input sequence tokens in the position embeddings. Selected in the range `[0,
+  config.max_position_embeddings - 1]`.
+
+  [What are position IDs?](../glossary#position-ids)
+- **head_mask** (`torch.FloatTensor` of shape `(num_heads,)` or `(num_layers, num_heads)`, *optional*) --
+  Mask to nullify selected heads of the self-attention modules. Mask values selected in `[0, 1]`:
+
+  - 1 indicates the head is **not masked**,
+  - 0 indicates the head is **masked**.
+
+- **inputs_embeds** (`torch.FloatTensor` of shape `(batch_size, num_candidates, sequence_length, hidden_size)`, *optional*) --
+  Optionally, instead of passing `input_ids` you can choose to directly pass an embedded representation. This
+  is useful if you want more control over how to convert *input_ids* indices into associated vectors than the
+  model's internal embedding lookup matrix.
+- **output_attentions** (`bool`, *optional*) --
+  Whether or not to return the attentions tensors of all attention layers. See `attentions` under returned
+  tensors for more detail.
+- **output_hidden_states** (`bool`, *optional*) --
+  Whether or not to return the hidden states of all layers. See `hidden_states` under returned tensors for
+  more detail.
+- **return_dict** (`bool`, *optional*) --
+  Whether or not to return a [ModelOutput](/docs/transformers/master/en/main_classes/output#transformers.file_utils.ModelOutput) instead of a plain tuple.
+
+- **relevance_score** (`torch.FloatTensor` of shape `(batch_size, num_candidates)`, *optional*) --
+  Relevance score derived from RealmScorer, must be specified if you want to compute the masked language
+  modeling loss.
+
+- **labels** (`torch.LongTensor` of shape `(batch_size, sequence_length)`, *optional*) --
+  Labels for computing the masked language modeling loss. Indices should be in `[-100, 0, ...,
+  config.vocab_size]` (see `input_ids` docstring) Tokens with indices set to `-100` are ignored (masked), the
+  loss is only computed for the tokens with labels in `[0, ..., config.vocab_size]`
+
+- **mlm_mask** (`torch.LongTensor` of shape `(batch_size, sequence_length)`, *optional*) --
+  Mask to avoid calculating joint loss on certain positions. If not specified, the loss will not be masked.
+  Mask values selected in `[0, 1]`:
+
+  - 1 for tokens that are **not masked**,
+  - 0 for tokens that are **masked**.</paramsdesc><paramgroups>0</paramgroups><rettype>[transformers.modeling_outputs.MaskedLMOutput](/docs/transformers/master/en/main_classes/output#transformers.modeling_outputs.MaskedLMOutput) or `tuple(torch.FloatTensor)`</rettype><retdesc>A [transformers.modeling_outputs.MaskedLMOutput](/docs/transformers/master/en/main_classes/output#transformers.modeling_outputs.MaskedLMOutput) or a tuple of
+`torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising various
+elements depending on the configuration ([RealmConfig](/docs/transformers/master/en/model_doc/realm#transformers.RealmConfig)) and inputs.
+
+- **loss** (`torch.FloatTensor` of shape `(1,)`, *optional*, returned when `labels` is provided) -- Masked language modeling (MLM) loss.
+- **logits** (`torch.FloatTensor` of shape `(batch_size, sequence_length, config.vocab_size)`) -- Prediction scores of the language modeling head (scores for each vocabulary token before SoftMax).
+- **hidden_states** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer) of
+  shape `(batch_size, sequence_length, hidden_size)`.
+
+  Hidden-states of the model at the output of each layer plus the initial embedding outputs.
+- **attentions** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length,
+  sequence_length)`.
+
+  Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
+  heads.</retdesc></docstring>
+The [RealmKnowledgeAugEncoder](/docs/transformers/master/en/model_doc/realm#transformers.RealmKnowledgeAugEncoder) forward method, overrides the `__call__` special method.
+
+<Tip>
+
+Although the recipe for forward pass needs to be defined within this function, one should call the `Module`
+instance afterwards instead of this since the former takes care of running the pre and post processing steps while
+the latter silently ignores them.
+
+</Tip>
+
+
+
+
+
+
+
+Example:
+
+```python
+>>> import torch
+>>> from transformers import RealmTokenizer, RealmKnowledgeAugEncoder
+
+>>> tokenizer = RealmTokenizer.from_pretrained("qqaatw/realm-cc-news-pretrained-encoder")
+>>> model = RealmKnowledgeAugEncoder.from_pretrained(
+...     "qqaatw/realm-cc-news-pretrained-encoder", num_candidates=2
+... )
+
+>>> # batch_size = 2, num_candidates = 2
+>>> text = [["Hello world!", "Nice to meet you!"], ["The cute cat.", "The adorable dog."]]
+
+>>> inputs = tokenizer.batch_encode_candidates(text, max_length=10, return_tensors="pt")
+>>> outputs = model(**inputs)
+>>> logits = outputs.logits
+```
+
+</div></div>
+
+<h2 id="transformers.RealmReader">RealmReader</h2>
+
+<div class="docstring">
+
+<docstring><name>class transformers.RealmReader</name><anchor>transformers.RealmReader</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/realm/modeling_realm.py#L1521</source><parameters>[{"name": "config", "val": ""}]</parameters><paramsdesc>- **config** ([RealmConfig](/docs/transformers/master/en/model_doc/realm#transformers.RealmConfig)) -- Model configuration class with all the parameters of the model.
+  Initializing with a config file does not load the weights associated with the model, only the
+  configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel.from_pretrained) method to load the model weights.</paramsdesc><paramgroups>0</paramgroups></docstring>
+The reader of REALM.
+This model is a PyTorch [torch.nn.Module](https://pytorch.org/docs/stable/nn.html#torch.nn.Module) sub-class. Use
+it as a regular PyTorch Module and refer to the PyTorch documentation for all matter related to general usage and
+behavior.
+
+
+
+
+
+<div class="docstring">
+<docstring><name>forward</name><anchor>transformers.RealmReader.forward</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/realm/modeling_realm.py#L1535</source><parameters>[{"name": "input_ids", "val": " = None"}, {"name": "attention_mask", "val": " = None"}, {"name": "token_type_ids", "val": " = None"}, {"name": "position_ids", "val": " = None"}, {"name": "head_mask", "val": " = None"}, {"name": "inputs_embeds", "val": " = None"}, {"name": "relevance_score", "val": " = None"}, {"name": "start_positions", "val": " = None"}, {"name": "end_positions", "val": " = None"}, {"name": "has_answers", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "return_dict", "val": " = None"}]</parameters><paramsdesc>- **input_ids** (`torch.LongTensor` of shape `(reader_beam_size, sequence_length)`) --
+  Indices of input sequence tokens in the vocabulary.
+
+  Indices can be obtained using [RealmTokenizer](/docs/transformers/master/en/model_doc/realm#transformers.RealmTokenizer). See [PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.encode) and
+  [PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.__call__) for details.
+
+  [What are input IDs?](../glossary#input-ids)
+- **attention_mask** (`torch.FloatTensor` of shape `(reader_beam_size, sequence_length)`, *optional*) --
+  Mask to avoid performing attention on padding token indices. Mask values selected in `[0, 1]`:
+
+  - 1 for tokens that are **not masked**,
+  - 0 for tokens that are **masked**.
+
+  [What are attention masks?](../glossary#attention-mask)
+- **token_type_ids** (`torch.LongTensor` of shape `(reader_beam_size, sequence_length)`, *optional*) --
+  Segment token indices to indicate first and second portions of the inputs. Indices are selected in `[0,
+  1]`:
+
+  - 0 corresponds to a *sentence A* token,
+  - 1 corresponds to a *sentence B* token.
+
+  [What are token type IDs?](../glossary#token-type-ids)
+- **position_ids** (`torch.LongTensor` of shape `(reader_beam_size, sequence_length)`, *optional*) --
+  Indices of positions of each input sequence tokens in the position embeddings. Selected in the range `[0,
+  config.max_position_embeddings - 1]`.
+
+  [What are position IDs?](../glossary#position-ids)
+- **head_mask** (`torch.FloatTensor` of shape `(num_heads,)` or `(num_layers, num_heads)`, *optional*) --
+  Mask to nullify selected heads of the self-attention modules. Mask values selected in `[0, 1]`:
+
+  - 1 indicates the head is **not masked**,
+  - 0 indicates the head is **masked**.
+
+- **inputs_embeds** (`torch.FloatTensor` of shape `(reader_beam_size, sequence_length, hidden_size)`, *optional*) --
+  Optionally, instead of passing `input_ids` you can choose to directly pass an embedded representation. This
+  is useful if you want more control over how to convert *input_ids* indices into associated vectors than the
+  model's internal embedding lookup matrix.
+- **output_attentions** (`bool`, *optional*) --
+  Whether or not to return the attentions tensors of all attention layers. See `attentions` under returned
+  tensors for more detail.
+- **output_hidden_states** (`bool`, *optional*) --
+  Whether or not to return the hidden states of all layers. See `hidden_states` under returned tensors for
+  more detail.
+- **return_dict** (`bool`, *optional*) --
+  Whether or not to return a [ModelOutput](/docs/transformers/master/en/main_classes/output#transformers.file_utils.ModelOutput) instead of a plain tuple.
+
+- **relevance_score** (`torch.FloatTensor` of shape `(searcher_beam_size,)`, *optional*) --
+  Relevance score, which must be specified if you want to compute the marginal log loss.
+- **start_positions** (`torch.LongTensor` of shape `(batch_size,)`, *optional*) --
+  Labels for position (index) of the start of the labelled span for computing the token classification loss.
+  Positions are clamped to the length of the sequence (`sequence_length`). Position outside of the sequence
+  are not taken into account for computing the loss.
+- **end_positions** (`torch.LongTensor` of shape `(batch_size,)`, *optional*) --
+  Labels for position (index) of the end of the labelled span for computing the token classification loss.
+  Positions are clamped to the length of the sequence (`sequence_length`). Position outside of the sequence
+  are not taken into account for computing the loss.
+- **has_answers** (`torch.BoolTensor` of shape `(searcher_beam_size,)`, *optional*) --
+  Whether or not the evidence block has answer(s).</paramsdesc><paramgroups>0</paramgroups><rettype>`transformers.models.realm.modeling_realm.RealmReaderOutput` or `tuple(torch.FloatTensor)`</rettype><retdesc>A `transformers.models.realm.modeling_realm.RealmReaderOutput` or a tuple of
+`torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising various
+elements depending on the configuration ([RealmConfig](/docs/transformers/master/en/model_doc/realm#transformers.RealmConfig)) and inputs.
+
+- **loss** (`torch.FloatTensor` of shape `(1,)`, *optional*, returned when `start_positions`, `end_positions`, `has_answers` are provided) -- Total loss.
+- **retriever_loss** (`torch.FloatTensor` of shape `(1,)`, *optional*, returned when `start_positions`, `end_positions`, `has_answers` are provided) -- Retriever loss.
+- **reader_loss** (`torch.FloatTensor` of shape `(1,)`, *optional*, returned when `start_positions`, `end_positions`, `has_answers` are provided) -- Reader loss.
+- **retriever_correct** (`torch.BoolTensor` of shape `(config.searcher_beam_size,)`, *optional*) -- Whether or not an evidence block contains answer.
+- **reader_correct** (`torch.BoolTensor` of shape `(config.reader_beam_size, num_candidates)`, *optional*) -- Whether or not a span candidate contains answer.
+- **block_idx** (`torch.LongTensor` of shape `()`) -- The index of the retrieved evidence block in which the predicted answer is most likely.
+- **candidate** (`torch.LongTensor` of shape `()`) -- The index of the retrieved span candidates in which the predicted answer is most likely.
+- **start_pos** (`torch.IntTensor` of shape `()`) -- Predicted answer starting position in *RealmReader*'s inputs.
+- **end_pos:** (`torch.IntTensor` of shape `()`) -- Predicted answer ending position in *RealmReader*'s inputs.
+- **hidden_states** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer) of
+  shape `(batch_size, sequence_length, hidden_size)`.
+
+  Hidden-states of the model at the output of each layer plus the initial embedding outputs.
+- **attentions** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length,
+  sequence_length)`.
+
+  Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
+  heads.</retdesc></docstring>
+The [RealmReader](/docs/transformers/master/en/model_doc/realm#transformers.RealmReader) forward method, overrides the `__call__` special method.
+
+<Tip>
+
+Although the recipe for forward pass needs to be defined within this function, one should call the `Module`
+instance afterwards instead of this since the former takes care of running the pre and post processing steps while
+the latter silently ignores them.
+
+</Tip>
+
+
+
+
+
+
+
+
+</div></div>
+
+<h2 id="transformers.RealmForOpenQA">RealmForOpenQA</h2>
+
+<div class="docstring">
+
+<docstring><name>class transformers.RealmForOpenQA</name><anchor>transformers.RealmForOpenQA</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/realm/modeling_realm.py#L1722</source><parameters>[{"name": "config", "val": ""}, {"name": "retriever", "val": " = None"}]</parameters><paramsdesc>- **config** ([RealmConfig](/docs/transformers/master/en/model_doc/realm#transformers.RealmConfig)) -- Model configuration class with all the parameters of the model.
+  Initializing with a config file does not load the weights associated with the model, only the
+  configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel.from_pretrained) method to load the model weights.</paramsdesc><paramgroups>0</paramgroups></docstring>
+`RealmForOpenQA` for end-to-end open domain question answering.
+This model is a PyTorch [torch.nn.Module](https://pytorch.org/docs/stable/nn.html#torch.nn.Module) sub-class. Use
+it as a regular PyTorch Module and refer to the PyTorch documentation for all matter related to general usage and
+behavior.
+
+
+
+
+
+<div class="docstring">
+<docstring><name>forward</name><anchor>transformers.RealmForOpenQA.forward</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/realm/modeling_realm.py#L1745</source><parameters>[{"name": "input_ids", "val": ""}, {"name": "attention_mask", "val": " = None"}, {"name": "token_type_ids", "val": " = None"}, {"name": "answer_ids", "val": " = None"}, {"name": "return_dict", "val": " = None"}]</parameters><paramsdesc>- **input_ids** (`torch.LongTensor` of shape `(1, sequence_length)`) --
+  Indices of input sequence tokens in the vocabulary.
+
+  Indices can be obtained using [RealmTokenizer](/docs/transformers/master/en/model_doc/realm#transformers.RealmTokenizer). See [PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.encode) and
+  [PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.__call__) for details.
+
+  [What are input IDs?](../glossary#input-ids)
+- **attention_mask** (`torch.FloatTensor` of shape `(1, sequence_length)`, *optional*) --
+  Mask to avoid performing attention on padding token indices. Mask values selected in `[0, 1]`:
+
+  - 1 for tokens that are **not masked**,
+  - 0 for tokens that are **masked**.
+
+  [What are attention masks?](../glossary#attention-mask)
+- **token_type_ids** (`torch.LongTensor` of shape `(1, sequence_length)`, *optional*) --
+  Segment token indices to indicate first and second portions of the inputs. Indices are selected in `[0,
+  1]`:
+
+  - 0 corresponds to a *sentence A* token,
+  - 1 corresponds to a *sentence B* token (should not be used in this model by design).
+
+  [What are token type IDs?](../glossary#token-type-ids)
+- **answer_ids** (`list` of shape `(num_answers, answer_length)`, *optional*) --
+  Answer ids for computing the marginal log-likelihood loss. Indices should be in `[-1, 0, ...,
+  config.vocab_size]` (see `input_ids` docstring) Tokens with indices set to `-1` are ignored (masked), the
+  loss is only computed for the tokens with labels in `[0, ..., config.vocab_size]`
+- **return_dict** (`bool`, *optional*) --
+  Whether or not to return a [ModelOutput](/docs/transformers/master/en/main_classes/output#transformers.file_utils.ModelOutput) instead of a plain tuple.</paramsdesc><paramgroups>0</paramgroups><rettype>`transformers.models.realm.modeling_realm.RealmForOpenQAOutput` or `tuple(torch.FloatTensor)`</rettype><retdesc>A `transformers.models.realm.modeling_realm.RealmForOpenQAOutput` or a tuple of
+`torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising various
+elements depending on the configuration ([RealmConfig](/docs/transformers/master/en/model_doc/realm#transformers.RealmConfig)) and inputs.
+
+- **reader_output** (`dict`) -- Reader output.
+- **predicted_answer_ids** (`torch.LongTensor` of shape `(answer_sequence_length)`) -- Predicted answer ids.</retdesc></docstring>
+The [RealmForOpenQA](/docs/transformers/master/en/model_doc/realm#transformers.RealmForOpenQA) forward method, overrides the `__call__` special method.
+
+<Tip>
+
+Although the recipe for forward pass needs to be defined within this function, one should call the `Module`
+instance afterwards instead of this since the former takes care of running the pre and post processing steps while
+the latter silently ignores them.
+
+</Tip>
+
+
+
+
+
+
+
+Example:
+
+```python
+>>> import torch
+>>> from transformers import RealmForOpenQA, RealmRetriever, RealmTokenizer
+
+>>> retriever = RealmRetriever.from_pretrained("qqaatw/realm-orqa-nq-openqa")
+>>> tokenizer = RealmTokenizer.from_pretrained("qqaatw/realm-orqa-nq-openqa")
+>>> model = RealmForOpenQA.from_pretrained("qqaatw/realm-orqa-nq-openqa", retriever=retriever)
+
+>>> question = "Who is the pioneer in modern computer science?"
+>>> question_ids = tokenizer([question], return_tensors="pt")
+>>> answer_ids = tokenizer(
+...     ["alan mathison turing"],
+...     add_special_tokens=False,
+...     return_token_type_ids=False,
+...     return_attention_mask=False,
+>>> ).input_ids
+
+>>> reader_output, predicted_answer_ids = model(**question_ids, answer_ids=answer_ids, return_dict=False)
+>>> predicted_answer = tokenizer.decode(predicted_answer_ids)
+>>> loss = reader_output.loss
+```
+
+</div></div>

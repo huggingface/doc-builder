@@ -1,0 +1,2298 @@
+---
+local: distilbert
+sections:
+- local: overview
+  title: Overview
+- local: transformers.DistilBertConfig
+  title: DistilBertConfig
+- local: transformers.DistilBertTokenizer
+  title: DistilBertTokenizer
+- local: transformers.DistilBertTokenizerFast
+  title: DistilBertTokenizerFast
+- local: transformers.DistilBertModel
+  title: DistilBertModel
+- local: transformers.DistilBertForMaskedLM
+  title: DistilBertForMaskedLM
+- local: transformers.DistilBertForSequenceClassification
+  title: DistilBertForSequenceClassification
+- local: transformers.DistilBertForMultipleChoice
+  title: DistilBertForMultipleChoice
+- local: transformers.DistilBertForTokenClassification
+  title: DistilBertForTokenClassification
+- local: transformers.DistilBertForQuestionAnswering
+  title: DistilBertForQuestionAnswering
+- local: transformers.TFDistilBertModel
+  title: TFDistilBertModel
+- local: transformers.TFDistilBertForMaskedLM
+  title: TFDistilBertForMaskedLM
+- local: transformers.TFDistilBertForSequenceClassification
+  title: TFDistilBertForSequenceClassification
+- local: transformers.TFDistilBertForMultipleChoice
+  title: TFDistilBertForMultipleChoice
+- local: transformers.TFDistilBertForTokenClassification
+  title: TFDistilBertForTokenClassification
+- local: transformers.TFDistilBertForQuestionAnswering
+  title: TFDistilBertForQuestionAnswering
+- local: transformers.FlaxDistilBertModel
+  title: FlaxDistilBertModel
+- local: transformers.FlaxDistilBertForMaskedLM
+  title: FlaxDistilBertForMaskedLM
+- local: transformers.FlaxDistilBertForSequenceClassification
+  title: FlaxDistilBertForSequenceClassification
+- local: transformers.FlaxDistilBertForMultipleChoice
+  title: FlaxDistilBertForMultipleChoice
+- local: transformers.FlaxDistilBertForTokenClassification
+  title: FlaxDistilBertForTokenClassification
+- local: transformers.FlaxDistilBertForQuestionAnswering
+  title: FlaxDistilBertForQuestionAnswering
+title: DistilBERT
+---
+<script>
+import Tip from "./Tip.svelte";
+import Youtube from "./Youtube.svelte";
+import Docstring from "./Docstring.svelte";
+import CodeBlock from "./CodeBlock.svelte";
+import CodeBlockFw from "./CodeBlockFw.svelte";
+import ColabDropdown from "./ColabDropdown.svelte";
+import IconCopyLink from "./IconCopyLink.svelte";
+export let fw: "pt" | "tf"
+</script>
+<!--Copyright 2020 The HuggingFace Team. All rights reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
+the License. You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on
+an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
+specific language governing permissions and limitations under the License.
+-->
+
+<h1 id="distilbert">DistilBERT</h1>
+
+<h2 id="overview">Overview</h2>
+
+The DistilBERT model was proposed in the blog post [Smaller, faster, cheaper, lighter: Introducing DistilBERT, a
+distilled version of BERT](https://medium.com/huggingface/distilbert-8cf3380435b5), and the paper [DistilBERT, a
+distilled version of BERT: smaller, faster, cheaper and lighter](https://arxiv.org/abs/1910.01108). DistilBERT is a
+small, fast, cheap and light Transformer model trained by distilling BERT base. It has 40% less parameters than
+*bert-base-uncased*, runs 60% faster while preserving over 95% of BERT's performances as measured on the GLUE language
+understanding benchmark.
+
+The abstract from the paper is the following:
+
+*As Transfer Learning from large-scale pre-trained models becomes more prevalent in Natural Language Processing (NLP),
+operating these large models in on-the-edge and/or under constrained computational training or inference budgets
+remains challenging. In this work, we propose a method to pre-train a smaller general-purpose language representation
+model, called DistilBERT, which can then be fine-tuned with good performances on a wide range of tasks like its larger
+counterparts. While most prior work investigated the use of distillation for building task-specific models, we leverage
+knowledge distillation during the pretraining phase and show that it is possible to reduce the size of a BERT model by
+40%, while retaining 97% of its language understanding capabilities and being 60% faster. To leverage the inductive
+biases learned by larger models during pretraining, we introduce a triple loss combining language modeling,
+distillation and cosine-distance losses. Our smaller, faster and lighter model is cheaper to pre-train and we
+demonstrate its capabilities for on-device computations in a proof-of-concept experiment and a comparative on-device
+study.*
+
+Tips:
+
+- DistilBERT doesn't have `token_type_ids`, you don't need to indicate which token belongs to which segment. Just
+  separate your segments with the separation token `tokenizer.sep_token` (or `[SEP]`).
+- DistilBERT doesn't have options to select the input positions (`position_ids` input). This could be added if
+  necessary though, just let us know if you need this option.
+
+This model was contributed by [victorsanh](https://huggingface.co/victorsanh). This model jax version was
+contributed by [kamalkraj](https://huggingface.co/kamalkraj). The original code can be found [here](https://github.com/huggingface/transformers/tree/master/examples/research_projects/distillation).
+
+
+<h2 id="transformers.DistilBertConfig">DistilBertConfig</h2>
+
+<div class="docstring">
+
+<docstring><name>class transformers.DistilBertConfig</name><anchor>transformers.DistilBertConfig</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/distilbert/configuration_distilbert.py#L37</source><parameters>[{"name": "vocab_size", "val": " = 30522"}, {"name": "max_position_embeddings", "val": " = 512"}, {"name": "sinusoidal_pos_embds", "val": " = False"}, {"name": "n_layers", "val": " = 6"}, {"name": "n_heads", "val": " = 12"}, {"name": "dim", "val": " = 768"}, {"name": "hidden_dim", "val": " = 3072"}, {"name": "dropout", "val": " = 0.1"}, {"name": "attention_dropout", "val": " = 0.1"}, {"name": "activation", "val": " = 'gelu'"}, {"name": "initializer_range", "val": " = 0.02"}, {"name": "qa_dropout", "val": " = 0.1"}, {"name": "seq_classif_dropout", "val": " = 0.2"}, {"name": "pad_token_id", "val": " = 0"}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **vocab_size** (`int`, *optional*, defaults to 30522) --
+  Vocabulary size of the DistilBERT model. Defines the number of different tokens that can be represented by
+  the `inputs_ids` passed when calling [DistilBertModel](/docs/transformers/master/en/model_doc/distilbert#transformers.DistilBertModel) or [TFDistilBertModel](/docs/transformers/master/en/model_doc/distilbert#transformers.TFDistilBertModel).
+- **max_position_embeddings** (`int`, *optional*, defaults to 512) --
+  The maximum sequence length that this model might ever be used with. Typically set this to something large
+  just in case (e.g., 512 or 1024 or 2048).
+- **sinusoidal_pos_embds** (`boolean`, *optional*, defaults to `False`) --
+  Whether to use sinusoidal positional embeddings.
+- **n_layers** (`int`, *optional*, defaults to 6) --
+  Number of hidden layers in the Transformer encoder.
+- **n_heads** (`int`, *optional*, defaults to 12) --
+  Number of attention heads for each attention layer in the Transformer encoder.
+- **dim** (`int`, *optional*, defaults to 768) --
+  Dimensionality of the encoder layers and the pooler layer.
+- **hidden_dim** (`int`, *optional*, defaults to 3072) --
+  The size of the "intermediate" (often named feed-forward) layer in the Transformer encoder.
+- **dropout** (`float`, *optional*, defaults to 0.1) --
+  The dropout probability for all fully connected layers in the embeddings, encoder, and pooler.
+- **attention_dropout** (`float`, *optional*, defaults to 0.1) --
+  The dropout ratio for the attention probabilities.
+- **activation** (`str` or `Callable`, *optional*, defaults to `"gelu"`) --
+  The non-linear activation function (function or string) in the encoder and pooler. If string, `"gelu"`,
+  `"relu"`, `"silu"` and `"gelu_new"` are supported.
+- **initializer_range** (`float`, *optional*, defaults to 0.02) --
+  The standard deviation of the truncated_normal_initializer for initializing all weight matrices.
+- **qa_dropout** (`float`, *optional*, defaults to 0.1) --
+  The dropout probabilities used in the question answering model [DistilBertForQuestionAnswering](/docs/transformers/master/en/model_doc/distilbert#transformers.DistilBertForQuestionAnswering).
+- **seq_classif_dropout** (`float`, *optional*, defaults to 0.2) --
+  The dropout probabilities used in the sequence classification and the multiple choice model
+  [DistilBertForSequenceClassification](/docs/transformers/master/en/model_doc/distilbert#transformers.DistilBertForSequenceClassification).</paramsdesc><paramgroups>0</paramgroups></docstring>
+
+This is the configuration class to store the configuration of a [DistilBertModel](/docs/transformers/master/en/model_doc/distilbert#transformers.DistilBertModel) or a [TFDistilBertModel](/docs/transformers/master/en/model_doc/distilbert#transformers.TFDistilBertModel). It
+is used to instantiate a DistilBERT model according to the specified arguments, defining the model architecture.
+Instantiating a configuration with the defaults will yield a similar configuration to that of the DistilBERT
+[distilbert-base-uncased](https://huggingface.co/distilbert-base-uncased) architecture.
+
+Configuration objects inherit from [PretrainedConfig](/docs/transformers/master/en/main_classes/configuration#transformers.PretrainedConfig) and can be used to control the model outputs. Read the
+documentation from [PretrainedConfig](/docs/transformers/master/en/main_classes/configuration#transformers.PretrainedConfig) for more information.
+
+
+
+Examples:
+
+```python
+>>> from transformers import DistilBertModel, DistilBertConfig
+
+>>> # Initializing a DistilBERT configuration
+>>> configuration = DistilBertConfig()
+
+>>> # Initializing a model from the configuration
+>>> model = DistilBertModel(configuration)
+
+>>> # Accessing the model configuration
+>>> configuration = model.config
+```
+
+</div>
+
+<h2 id="transformers.DistilBertTokenizer">DistilBertTokenizer</h2>
+
+<div class="docstring">
+
+<docstring><name>class transformers.DistilBertTokenizer</name><anchor>transformers.DistilBertTokenizer</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/distilbert/tokenization_distilbert.py#L56</source><parameters>[{"name": "vocab_file", "val": ""}, {"name": "do_lower_case", "val": " = True"}, {"name": "do_basic_tokenize", "val": " = True"}, {"name": "never_split", "val": " = None"}, {"name": "unk_token", "val": " = '[UNK]'"}, {"name": "sep_token", "val": " = '[SEP]'"}, {"name": "pad_token", "val": " = '[PAD]'"}, {"name": "cls_token", "val": " = '[CLS]'"}, {"name": "mask_token", "val": " = '[MASK]'"}, {"name": "tokenize_chinese_chars", "val": " = True"}, {"name": "strip_accents", "val": " = None"}, {"name": "**kwargs", "val": ""}]</parameters></docstring>
+
+Construct a DistilBERT tokenizer.
+
+[DistilBertTokenizer](/docs/transformers/master/en/model_doc/distilbert#transformers.DistilBertTokenizer) is identical to [BertTokenizer](/docs/transformers/master/en/model_doc/bert#transformers.BertTokenizer) and runs end-to-end tokenization: punctuation splitting
+and wordpiece.
+
+Refer to superclass [BertTokenizer](/docs/transformers/master/en/model_doc/bert#transformers.BertTokenizer) for usage examples and documentation concerning parameters.
+
+
+</div>
+
+<h2 id="transformers.DistilBertTokenizerFast">DistilBertTokenizerFast</h2>
+
+<div class="docstring">
+
+<docstring><name>class transformers.DistilBertTokenizerFast</name><anchor>transformers.DistilBertTokenizerFast</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/distilbert/tokenization_distilbert_fast.py#L65</source><parameters>[{"name": "vocab_file", "val": " = None"}, {"name": "tokenizer_file", "val": " = None"}, {"name": "do_lower_case", "val": " = True"}, {"name": "unk_token", "val": " = '[UNK]'"}, {"name": "sep_token", "val": " = '[SEP]'"}, {"name": "pad_token", "val": " = '[PAD]'"}, {"name": "cls_token", "val": " = '[CLS]'"}, {"name": "mask_token", "val": " = '[MASK]'"}, {"name": "tokenize_chinese_chars", "val": " = True"}, {"name": "strip_accents", "val": " = None"}, {"name": "**kwargs", "val": ""}]</parameters></docstring>
+
+Construct a "fast" DistilBERT tokenizer (backed by HuggingFace's *tokenizers* library).
+
+[DistilBertTokenizerFast](/docs/transformers/master/en/model_doc/distilbert#transformers.DistilBertTokenizerFast) is identical to [BertTokenizerFast](/docs/transformers/master/en/model_doc/bert#transformers.BertTokenizerFast) and runs end-to-end tokenization: punctuation
+splitting and wordpiece.
+
+Refer to superclass [BertTokenizerFast](/docs/transformers/master/en/model_doc/bert#transformers.BertTokenizerFast) for usage examples and documentation concerning parameters.
+
+
+</div>
+
+<h2 id="transformers.DistilBertModel">DistilBertModel</h2>
+
+<div class="docstring">
+
+<docstring><name>class transformers.DistilBertModel</name><anchor>transformers.DistilBertModel</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/distilbert/modeling_distilbert.py#L435</source><parameters>[{"name": "config", "val": ""}]</parameters><paramsdesc>- **config** ([DistilBertConfig](/docs/transformers/master/en/model_doc/distilbert#transformers.DistilBertConfig)) -- Model configuration class with all the parameters of the model.
+  Initializing with a config file does not load the weights associated with the model, only the
+  configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel.from_pretrained) method to load the model weights.</paramsdesc><paramgroups>0</paramgroups></docstring>
+The bare DistilBERT encoder/transformer outputting raw hidden-states without any specific head on top.
+
+This model inherits from [PreTrainedModel](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel). Check the superclass documentation for the generic methods the
+library implements for all its model (such as downloading or saving, resizing the input embeddings, pruning heads
+etc.)
+
+This model is also a PyTorch [torch.nn.Module](https://pytorch.org/docs/stable/nn.html#torch.nn.Module) subclass.
+Use it as a regular PyTorch Module and refer to the PyTorch documentation for all matter related to general usage
+and behavior.
+
+
+
+
+
+<div class="docstring">
+<docstring><name>forward</name><anchor>transformers.DistilBertModel.forward</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/distilbert/modeling_distilbert.py#L507</source><parameters>[{"name": "input_ids", "val": " = None"}, {"name": "attention_mask", "val": " = None"}, {"name": "head_mask", "val": " = None"}, {"name": "inputs_embeds", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "return_dict", "val": " = None"}]</parameters><paramsdesc>- **input_ids** (`torch.LongTensor` of shape `(batch_size, num_choices)`) --
+  Indices of input sequence tokens in the vocabulary.
+
+  Indices can be obtained using [DistilBertTokenizer](/docs/transformers/master/en/model_doc/distilbert#transformers.DistilBertTokenizer). See [PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.encode) and
+  [PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.__call__) for details.
+
+  [What are input IDs?](../glossary#input-ids)
+- **attention_mask** (`torch.FloatTensor` of shape `(batch_size, num_choices)`, *optional*) --
+  Mask to avoid performing attention on padding token indices. Mask values selected in `[0, 1]`:
+
+  - 1 for tokens that are **not masked**,
+  - 0 for tokens that are **masked**.
+
+  [What are attention masks?](../glossary#attention-mask)
+- **head_mask** (`torch.FloatTensor` of shape `(num_heads,)` or `(num_layers, num_heads)`, *optional*) --
+  Mask to nullify selected heads of the self-attention modules. Mask values selected in `[0, 1]`:
+
+  - 1 indicates the head is **not masked**,
+  - 0 indicates the head is **masked**.
+
+- **inputs_embeds** (`torch.FloatTensor` of shape `(batch_size, num_choices, hidden_size)`, *optional*) --
+  Optionally, instead of passing `input_ids` you can choose to directly pass an embedded representation. This
+  is useful if you want more control over how to convert `input_ids` indices into associated vectors than the
+  model's internal embedding lookup matrix.
+- **output_attentions** (`bool`, *optional*) --
+  Whether or not to return the attentions tensors of all attention layers. See `attentions` under returned
+  tensors for more detail.
+- **output_hidden_states** (`bool`, *optional*) --
+  Whether or not to return the hidden states of all layers. See `hidden_states` under returned tensors for
+  more detail.
+- **return_dict** (`bool`, *optional*) --
+  Whether or not to return a [ModelOutput](/docs/transformers/master/en/main_classes/output#transformers.file_utils.ModelOutput) instead of a plain tuple.</paramsdesc><paramgroups>0</paramgroups><rettype>[transformers.modeling_outputs.BaseModelOutput](/docs/transformers/master/en/main_classes/output#transformers.modeling_outputs.BaseModelOutput) or `tuple(torch.FloatTensor)`</rettype><retdesc>A [transformers.modeling_outputs.BaseModelOutput](/docs/transformers/master/en/main_classes/output#transformers.modeling_outputs.BaseModelOutput) or a tuple of
+`torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising various
+elements depending on the configuration ([DistilBertConfig](/docs/transformers/master/en/model_doc/distilbert#transformers.DistilBertConfig)) and inputs.
+
+- **last_hidden_state** (`torch.FloatTensor` of shape `(batch_size, sequence_length, hidden_size)`) -- Sequence of hidden-states at the output of the last layer of the model.
+- **hidden_states** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer) of
+  shape `(batch_size, sequence_length, hidden_size)`.
+
+  Hidden-states of the model at the output of each layer plus the initial embedding outputs.
+- **attentions** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length,
+  sequence_length)`.
+
+  Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
+  heads.</retdesc></docstring>
+The [DistilBertModel](/docs/transformers/master/en/model_doc/distilbert#transformers.DistilBertModel) forward method, overrides the `__call__` special method.
+
+<Tip>
+
+Although the recipe for forward pass needs to be defined within this function, one should call the `Module`
+instance afterwards instead of this since the former takes care of running the pre and post processing steps while
+the latter silently ignores them.
+
+</Tip>
+
+
+
+
+
+
+
+Example:
+
+```python
+>>> from transformers import DistilBertTokenizer, DistilBertModel
+>>> import torch
+
+>>> tokenizer = DistilBertTokenizer.from_pretrained("distilbert-base-uncased")
+>>> model = DistilBertModel.from_pretrained("distilbert-base-uncased")
+
+>>> inputs = tokenizer("Hello, my dog is cute", return_tensors="pt")
+>>> outputs = model(**inputs)
+
+>>> last_hidden_states = outputs.last_hidden_state
+```
+
+
+</div></div>
+
+<h2 id="transformers.DistilBertForMaskedLM">DistilBertForMaskedLM</h2>
+
+<div class="docstring">
+
+<docstring><name>class transformers.DistilBertForMaskedLM</name><anchor>transformers.DistilBertForMaskedLM</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/distilbert/modeling_distilbert.py#L563</source><parameters>[{"name": "config", "val": ""}]</parameters><paramsdesc>- **config** ([DistilBertConfig](/docs/transformers/master/en/model_doc/distilbert#transformers.DistilBertConfig)) -- Model configuration class with all the parameters of the model.
+  Initializing with a config file does not load the weights associated with the model, only the
+  configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel.from_pretrained) method to load the model weights.</paramsdesc><paramgroups>0</paramgroups></docstring>
+DistilBert Model with a `masked language modeling` head on top.
+
+This model inherits from [PreTrainedModel](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel). Check the superclass documentation for the generic methods the
+library implements for all its model (such as downloading or saving, resizing the input embeddings, pruning heads
+etc.)
+
+This model is also a PyTorch [torch.nn.Module](https://pytorch.org/docs/stable/nn.html#torch.nn.Module) subclass.
+Use it as a regular PyTorch Module and refer to the PyTorch documentation for all matter related to general usage
+and behavior.
+
+
+
+
+
+<div class="docstring">
+<docstring><name>forward</name><anchor>transformers.DistilBertForMaskedLM.forward</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/distilbert/modeling_distilbert.py#L603</source><parameters>[{"name": "input_ids", "val": " = None"}, {"name": "attention_mask", "val": " = None"}, {"name": "head_mask", "val": " = None"}, {"name": "inputs_embeds", "val": " = None"}, {"name": "labels", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "return_dict", "val": " = None"}]</parameters><paramsdesc>- **input_ids** (`torch.LongTensor` of shape `(batch_size, num_choices)`) --
+  Indices of input sequence tokens in the vocabulary.
+
+  Indices can be obtained using [DistilBertTokenizer](/docs/transformers/master/en/model_doc/distilbert#transformers.DistilBertTokenizer). See [PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.encode) and
+  [PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.__call__) for details.
+
+  [What are input IDs?](../glossary#input-ids)
+- **attention_mask** (`torch.FloatTensor` of shape `(batch_size, num_choices)`, *optional*) --
+  Mask to avoid performing attention on padding token indices. Mask values selected in `[0, 1]`:
+
+  - 1 for tokens that are **not masked**,
+  - 0 for tokens that are **masked**.
+
+  [What are attention masks?](../glossary#attention-mask)
+- **head_mask** (`torch.FloatTensor` of shape `(num_heads,)` or `(num_layers, num_heads)`, *optional*) --
+  Mask to nullify selected heads of the self-attention modules. Mask values selected in `[0, 1]`:
+
+  - 1 indicates the head is **not masked**,
+  - 0 indicates the head is **masked**.
+
+- **inputs_embeds** (`torch.FloatTensor` of shape `(batch_size, num_choices, hidden_size)`, *optional*) --
+  Optionally, instead of passing `input_ids` you can choose to directly pass an embedded representation. This
+  is useful if you want more control over how to convert `input_ids` indices into associated vectors than the
+  model's internal embedding lookup matrix.
+- **output_attentions** (`bool`, *optional*) --
+  Whether or not to return the attentions tensors of all attention layers. See `attentions` under returned
+  tensors for more detail.
+- **output_hidden_states** (`bool`, *optional*) --
+  Whether or not to return the hidden states of all layers. See `hidden_states` under returned tensors for
+  more detail.
+- **return_dict** (`bool`, *optional*) --
+  Whether or not to return a [ModelOutput](/docs/transformers/master/en/main_classes/output#transformers.file_utils.ModelOutput) instead of a plain tuple.
+
+- **labels** (`torch.LongTensor` of shape `(batch_size, sequence_length)`, *optional*) --
+  Labels for computing the masked language modeling loss. Indices should be in `[-100, 0, ...,
+  config.vocab_size]` (see `input_ids` docstring) Tokens with indices set to `-100` are ignored (masked), the
+  loss is only computed for the tokens with labels in `[0, ..., config.vocab_size]`.</paramsdesc><paramgroups>0</paramgroups><rettype>[transformers.modeling_outputs.MaskedLMOutput](/docs/transformers/master/en/main_classes/output#transformers.modeling_outputs.MaskedLMOutput) or `tuple(torch.FloatTensor)`</rettype><retdesc>A [transformers.modeling_outputs.MaskedLMOutput](/docs/transformers/master/en/main_classes/output#transformers.modeling_outputs.MaskedLMOutput) or a tuple of
+`torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising various
+elements depending on the configuration ([DistilBertConfig](/docs/transformers/master/en/model_doc/distilbert#transformers.DistilBertConfig)) and inputs.
+
+- **loss** (`torch.FloatTensor` of shape `(1,)`, *optional*, returned when `labels` is provided) -- Masked language modeling (MLM) loss.
+- **logits** (`torch.FloatTensor` of shape `(batch_size, sequence_length, config.vocab_size)`) -- Prediction scores of the language modeling head (scores for each vocabulary token before SoftMax).
+- **hidden_states** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer) of
+  shape `(batch_size, sequence_length, hidden_size)`.
+
+  Hidden-states of the model at the output of each layer plus the initial embedding outputs.
+- **attentions** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length,
+  sequence_length)`.
+
+  Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
+  heads.</retdesc></docstring>
+The [DistilBertForMaskedLM](/docs/transformers/master/en/model_doc/distilbert#transformers.DistilBertForMaskedLM) forward method, overrides the `__call__` special method.
+
+<Tip>
+
+Although the recipe for forward pass needs to be defined within this function, one should call the `Module`
+instance afterwards instead of this since the former takes care of running the pre and post processing steps while
+the latter silently ignores them.
+
+</Tip>
+
+
+
+
+
+
+
+Example:
+
+```python
+>>> from transformers import DistilBertTokenizer, DistilBertForMaskedLM
+>>> import torch
+
+>>> tokenizer = DistilBertTokenizer.from_pretrained("distilbert-base-uncased")
+>>> model = DistilBertForMaskedLM.from_pretrained("distilbert-base-uncased")
+
+>>> inputs = tokenizer("The capital of France is [MASK].", return_tensors="pt")
+>>> labels = tokenizer("The capital of France is Paris.", return_tensors="pt")["input_ids"]
+
+>>> outputs = model(**inputs, labels=labels)
+>>> loss = outputs.loss
+>>> logits = outputs.logits
+```
+
+
+</div></div>
+
+<h2 id="transformers.DistilBertForSequenceClassification">DistilBertForSequenceClassification</h2>
+
+<div class="docstring">
+
+<docstring><name>class transformers.DistilBertForSequenceClassification</name><anchor>transformers.DistilBertForSequenceClassification</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/distilbert/modeling_distilbert.py#L667</source><parameters>[{"name": "config", "val": ""}]</parameters><paramsdesc>- **config** ([DistilBertConfig](/docs/transformers/master/en/model_doc/distilbert#transformers.DistilBertConfig)) -- Model configuration class with all the parameters of the model.
+  Initializing with a config file does not load the weights associated with the model, only the
+  configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel.from_pretrained) method to load the model weights.</paramsdesc><paramgroups>0</paramgroups></docstring>
+
+DistilBert Model transformer with a sequence classification/regression head on top (a linear layer on top of the
+pooled output) e.g. for GLUE tasks.
+
+
+This model inherits from [PreTrainedModel](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel). Check the superclass documentation for the generic methods the
+library implements for all its model (such as downloading or saving, resizing the input embeddings, pruning heads
+etc.)
+
+This model is also a PyTorch [torch.nn.Module](https://pytorch.org/docs/stable/nn.html#torch.nn.Module) subclass.
+Use it as a regular PyTorch Module and refer to the PyTorch documentation for all matter related to general usage
+and behavior.
+
+
+
+
+
+<div class="docstring">
+<docstring><name>forward</name><anchor>transformers.DistilBertForSequenceClassification.forward</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/distilbert/modeling_distilbert.py#L701</source><parameters>[{"name": "input_ids", "val": " = None"}, {"name": "attention_mask", "val": " = None"}, {"name": "head_mask", "val": " = None"}, {"name": "inputs_embeds", "val": " = None"}, {"name": "labels", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "return_dict", "val": " = None"}]</parameters><paramsdesc>- **input_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`) --
+  Indices of input sequence tokens in the vocabulary.
+
+  Indices can be obtained using [DistilBertTokenizer](/docs/transformers/master/en/model_doc/distilbert#transformers.DistilBertTokenizer). See [PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.encode) and
+  [PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.__call__) for details.
+
+  [What are input IDs?](../glossary#input-ids)
+- **attention_mask** (`torch.FloatTensor` of shape `(batch_size, sequence_length)`, *optional*) --
+  Mask to avoid performing attention on padding token indices. Mask values selected in `[0, 1]`:
+
+  - 1 for tokens that are **not masked**,
+  - 0 for tokens that are **masked**.
+
+  [What are attention masks?](../glossary#attention-mask)
+- **head_mask** (`torch.FloatTensor` of shape `(num_heads,)` or `(num_layers, num_heads)`, *optional*) --
+  Mask to nullify selected heads of the self-attention modules. Mask values selected in `[0, 1]`:
+
+  - 1 indicates the head is **not masked**,
+  - 0 indicates the head is **masked**.
+
+- **inputs_embeds** (`torch.FloatTensor` of shape `(batch_size, sequence_length, hidden_size)`, *optional*) --
+  Optionally, instead of passing `input_ids` you can choose to directly pass an embedded representation. This
+  is useful if you want more control over how to convert `input_ids` indices into associated vectors than the
+  model's internal embedding lookup matrix.
+- **output_attentions** (`bool`, *optional*) --
+  Whether or not to return the attentions tensors of all attention layers. See `attentions` under returned
+  tensors for more detail.
+- **output_hidden_states** (`bool`, *optional*) --
+  Whether or not to return the hidden states of all layers. See `hidden_states` under returned tensors for
+  more detail.
+- **return_dict** (`bool`, *optional*) --
+  Whether or not to return a [ModelOutput](/docs/transformers/master/en/main_classes/output#transformers.file_utils.ModelOutput) instead of a plain tuple.
+
+- **labels** (`torch.LongTensor` of shape `(batch_size,)`, *optional*) --
+  Labels for computing the sequence classification/regression loss. Indices should be in `[0, ...,
+  config.num_labels - 1]`. If `config.num_labels == 1` a regression loss is computed (Mean-Square loss), If
+  `config.num_labels > 1` a classification loss is computed (Cross-Entropy).</paramsdesc><paramgroups>0</paramgroups><rettype>[transformers.modeling_outputs.SequenceClassifierOutput](/docs/transformers/master/en/main_classes/output#transformers.modeling_outputs.SequenceClassifierOutput) or `tuple(torch.FloatTensor)`</rettype><retdesc>A [transformers.modeling_outputs.SequenceClassifierOutput](/docs/transformers/master/en/main_classes/output#transformers.modeling_outputs.SequenceClassifierOutput) or a tuple of
+`torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising various
+elements depending on the configuration ([DistilBertConfig](/docs/transformers/master/en/model_doc/distilbert#transformers.DistilBertConfig)) and inputs.
+
+- **loss** (`torch.FloatTensor` of shape `(1,)`, *optional*, returned when `labels` is provided) -- Classification (or regression if config.num_labels==1) loss.
+- **logits** (`torch.FloatTensor` of shape `(batch_size, config.num_labels)`) -- Classification (or regression if config.num_labels==1) scores (before SoftMax).
+- **hidden_states** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer) of
+  shape `(batch_size, sequence_length, hidden_size)`.
+
+  Hidden-states of the model at the output of each layer plus the initial embedding outputs.
+- **attentions** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length,
+  sequence_length)`.
+
+  Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
+  heads.</retdesc></docstring>
+The [DistilBertForSequenceClassification](/docs/transformers/master/en/model_doc/distilbert#transformers.DistilBertForSequenceClassification) forward method, overrides the `__call__` special method.
+
+<Tip>
+
+Although the recipe for forward pass needs to be defined within this function, one should call the `Module`
+instance afterwards instead of this since the former takes care of running the pre and post processing steps while
+the latter silently ignores them.
+
+</Tip>
+
+
+
+
+
+
+
+Example of single-label classification:
+
+```python
+>>> from transformers import DistilBertTokenizer, DistilBertForSequenceClassification
+>>> import torch
+
+>>> tokenizer = DistilBertTokenizer.from_pretrained("distilbert-base-uncased")
+>>> model = DistilBertForSequenceClassification.from_pretrained("distilbert-base-uncased")
+
+>>> inputs = tokenizer("Hello, my dog is cute", return_tensors="pt")
+>>> labels = torch.tensor([1]).unsqueeze(0)  # Batch size 1
+>>> outputs = model(**inputs, labels=labels)
+>>> loss = outputs.loss
+>>> logits = outputs.logits
+```
+
+Example of multi-label classification:
+
+```python
+>>> from transformers import DistilBertTokenizer, DistilBertForSequenceClassification
+>>> import torch
+
+>>> tokenizer = DistilBertTokenizer.from_pretrained("distilbert-base-uncased")
+>>> model = DistilBertForSequenceClassification.from_pretrained("distilbert-base-uncased", problem_type="multi_label_classification")
+
+>>> inputs = tokenizer("Hello, my dog is cute", return_tensors="pt")
+>>> labels = torch.tensor([[1, 1]], dtype=torch.float)  # need dtype=float for BCEWithLogitsLoss
+>>> outputs = model(**inputs, labels=labels)
+>>> loss = outputs.loss
+>>> logits = outputs.logits
+```
+
+
+</div></div>
+
+<h2 id="transformers.DistilBertForMultipleChoice">DistilBertForMultipleChoice</h2>
+
+<div class="docstring">
+
+<docstring><name>class transformers.DistilBertForMultipleChoice</name><anchor>transformers.DistilBertForMultipleChoice</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/distilbert/modeling_distilbert.py#L1006</source><parameters>[{"name": "config", "val": ""}]</parameters><paramsdesc>- **config** ([DistilBertConfig](/docs/transformers/master/en/model_doc/distilbert#transformers.DistilBertConfig)) -- Model configuration class with all the parameters of the model.
+  Initializing with a config file does not load the weights associated with the model, only the
+  configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel.from_pretrained) method to load the model weights.</paramsdesc><paramgroups>0</paramgroups></docstring>
+
+DistilBert Model with a multiple choice classification head on top (a linear layer on top of the pooled output and
+a softmax) e.g. for RocStories/SWAG tasks.
+
+
+This model inherits from [PreTrainedModel](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel). Check the superclass documentation for the generic methods the
+library implements for all its model (such as downloading or saving, resizing the input embeddings, pruning heads
+etc.)
+
+This model is also a PyTorch [torch.nn.Module](https://pytorch.org/docs/stable/nn.html#torch.nn.Module) subclass.
+Use it as a regular PyTorch Module and refer to the PyTorch documentation for all matter related to general usage
+and behavior.
+
+
+
+
+
+<div class="docstring">
+<docstring><name>forward</name><anchor>transformers.DistilBertForMultipleChoice.forward</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/distilbert/modeling_distilbert.py#L1038</source><parameters>[{"name": "input_ids", "val": " = None"}, {"name": "attention_mask", "val": " = None"}, {"name": "head_mask", "val": " = None"}, {"name": "inputs_embeds", "val": " = None"}, {"name": "labels", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "return_dict", "val": " = None"}]</parameters><paramsdesc>- **input_ids** (`torch.LongTensor` of shape `(batch_size, num_choices, sequence_length)`) --
+  Indices of input sequence tokens in the vocabulary.
+
+  Indices can be obtained using [DistilBertTokenizer](/docs/transformers/master/en/model_doc/distilbert#transformers.DistilBertTokenizer). See [PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.encode) and
+  [PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.__call__) for details.
+
+  [What are input IDs?](../glossary#input-ids)
+- **attention_mask** (`torch.FloatTensor` of shape `(batch_size, num_choices, sequence_length)`, *optional*) --
+  Mask to avoid performing attention on padding token indices. Mask values selected in `[0, 1]`:
+
+  - 1 for tokens that are **not masked**,
+  - 0 for tokens that are **masked**.
+
+  [What are attention masks?](../glossary#attention-mask)
+- **head_mask** (`torch.FloatTensor` of shape `(num_heads,)` or `(num_layers, num_heads)`, *optional*) --
+  Mask to nullify selected heads of the self-attention modules. Mask values selected in `[0, 1]`:
+
+  - 1 indicates the head is **not masked**,
+  - 0 indicates the head is **masked**.
+
+- **inputs_embeds** (`torch.FloatTensor` of shape `(batch_size, num_choices, sequence_length, hidden_size)`, *optional*) --
+  Optionally, instead of passing `input_ids` you can choose to directly pass an embedded representation. This
+  is useful if you want more control over how to convert `input_ids` indices into associated vectors than the
+  model's internal embedding lookup matrix.
+- **output_attentions** (`bool`, *optional*) --
+  Whether or not to return the attentions tensors of all attention layers. See `attentions` under returned
+  tensors for more detail.
+- **output_hidden_states** (`bool`, *optional*) --
+  Whether or not to return the hidden states of all layers. See `hidden_states` under returned tensors for
+  more detail.
+- **return_dict** (`bool`, *optional*) --
+  Whether or not to return a [ModelOutput](/docs/transformers/master/en/main_classes/output#transformers.file_utils.ModelOutput) instead of a plain tuple.
+
+- **labels** (`torch.LongTensor` of shape `(batch_size,)`, *optional*) --
+  Labels for computing the multiple choice classification loss. Indices should be in `[0, ...,
+  num_choices-1]` where `num_choices` is the size of the second dimension of the input tensors. (See
+  `input_ids` above)</paramsdesc><paramgroups>0</paramgroups><rettype>[transformers.modeling_outputs.MultipleChoiceModelOutput](/docs/transformers/master/en/main_classes/output#transformers.modeling_outputs.MultipleChoiceModelOutput) or `tuple(torch.FloatTensor)`</rettype><retdesc>A [transformers.modeling_outputs.MultipleChoiceModelOutput](/docs/transformers/master/en/main_classes/output#transformers.modeling_outputs.MultipleChoiceModelOutput) or a tuple of
+`torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising various
+elements depending on the configuration ([DistilBertConfig](/docs/transformers/master/en/model_doc/distilbert#transformers.DistilBertConfig)) and inputs.
+
+- **loss** (`torch.FloatTensor` of shape *(1,)*, *optional*, returned when `labels` is provided) -- Classification loss.
+- **logits** (`torch.FloatTensor` of shape `(batch_size, num_choices)`) -- *num_choices* is the second dimension of the input tensors. (see *input_ids* above).
+
+  Classification scores (before SoftMax).
+- **hidden_states** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer) of
+  shape `(batch_size, sequence_length, hidden_size)`.
+
+  Hidden-states of the model at the output of each layer plus the initial embedding outputs.
+- **attentions** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length,
+  sequence_length)`.
+
+  Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
+  heads.</retdesc></docstring>
+The [DistilBertForMultipleChoice](/docs/transformers/master/en/model_doc/distilbert#transformers.DistilBertForMultipleChoice) forward method, overrides the `__call__` special method.
+
+<Tip>
+
+Although the recipe for forward pass needs to be defined within this function, one should call the `Module`
+instance afterwards instead of this since the former takes care of running the pre and post processing steps while
+the latter silently ignores them.
+
+</Tip>
+
+
+
+
+
+
+
+Examples:
+
+```python
+>>> from transformers import DistilBertTokenizer, DistilBertForMultipleChoice
+>>> import torch
+
+>>> tokenizer = DistilBertTokenizer.from_pretrained("distilbert-base-cased")
+>>> model = DistilBertForMultipleChoice.from_pretrained("distilbert-base-cased")
+
+>>> prompt = "In Italy, pizza served in formal settings, such as at a restaurant, is presented unsliced."
+>>> choice0 = "It is eaten with a fork and a knife."
+>>> choice1 = "It is eaten while held in the hand."
+>>> labels = torch.tensor(0).unsqueeze(0)  # choice0 is correct (according to Wikipedia ;)), batch size 1
+
+>>> encoding = tokenizer([[prompt, choice0], [prompt, choice1]], return_tensors="pt", padding=True)
+>>> outputs = model(**&amp;lcub;k: v.unsqueeze(0) for k, v in encoding.items()}, labels=labels)  # batch size is 1
+
+>>> # the linear classifier still needs to be trained
+>>> loss = outputs.loss
+>>> logits = outputs.logits
+```
+
+</div></div>
+
+<h2 id="transformers.DistilBertForTokenClassification">DistilBertForTokenClassification</h2>
+
+<div class="docstring">
+
+<docstring><name>class transformers.DistilBertForTokenClassification</name><anchor>transformers.DistilBertForTokenClassification</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/distilbert/modeling_distilbert.py#L902</source><parameters>[{"name": "config", "val": ""}]</parameters><paramsdesc>- **config** ([DistilBertConfig](/docs/transformers/master/en/model_doc/distilbert#transformers.DistilBertConfig)) -- Model configuration class with all the parameters of the model.
+  Initializing with a config file does not load the weights associated with the model, only the
+  configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel.from_pretrained) method to load the model weights.</paramsdesc><paramgroups>0</paramgroups></docstring>
+
+DistilBert Model with a token classification head on top (a linear layer on top of the hidden-states output) e.g.
+for Named-Entity-Recognition (NER) tasks.
+
+
+This model inherits from [PreTrainedModel](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel). Check the superclass documentation for the generic methods the
+library implements for all its model (such as downloading or saving, resizing the input embeddings, pruning heads
+etc.)
+
+This model is also a PyTorch [torch.nn.Module](https://pytorch.org/docs/stable/nn.html#torch.nn.Module) subclass.
+Use it as a regular PyTorch Module and refer to the PyTorch documentation for all matter related to general usage
+and behavior.
+
+
+
+
+
+<div class="docstring">
+<docstring><name>forward</name><anchor>transformers.DistilBertForTokenClassification.forward</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/distilbert/modeling_distilbert.py#L934</source><parameters>[{"name": "input_ids", "val": " = None"}, {"name": "attention_mask", "val": " = None"}, {"name": "head_mask", "val": " = None"}, {"name": "inputs_embeds", "val": " = None"}, {"name": "labels", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "return_dict", "val": " = None"}]</parameters><paramsdesc>- **input_ids** (`torch.LongTensor` of shape `(&amp;lcub;0})`) --
+  Indices of input sequence tokens in the vocabulary.
+
+  Indices can be obtained using [DistilBertTokenizer](/docs/transformers/master/en/model_doc/distilbert#transformers.DistilBertTokenizer). See [PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.encode) and
+  [PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.__call__) for details.
+
+  [What are input IDs?](../glossary#input-ids)
+- **attention_mask** (`torch.FloatTensor` of shape `(&amp;lcub;0})`, *optional*) --
+  Mask to avoid performing attention on padding token indices. Mask values selected in `[0, 1]`:
+
+  - 1 for tokens that are **not masked**,
+  - 0 for tokens that are **masked**.
+
+  [What are attention masks?](../glossary#attention-mask)
+- **head_mask** (`torch.FloatTensor` of shape `(num_heads,)` or `(num_layers, num_heads)`, *optional*) --
+  Mask to nullify selected heads of the self-attention modules. Mask values selected in `[0, 1]`:
+
+  - 1 indicates the head is **not masked**,
+  - 0 indicates the head is **masked**.
+
+- **inputs_embeds** (`torch.FloatTensor` of shape `(&amp;lcub;0}, hidden_size)`, *optional*) --
+  Optionally, instead of passing `input_ids` you can choose to directly pass an embedded representation. This
+  is useful if you want more control over how to convert `input_ids` indices into associated vectors than the
+  model's internal embedding lookup matrix.
+- **output_attentions** (`bool`, *optional*) --
+  Whether or not to return the attentions tensors of all attention layers. See `attentions` under returned
+  tensors for more detail.
+- **output_hidden_states** (`bool`, *optional*) --
+  Whether or not to return the hidden states of all layers. See `hidden_states` under returned tensors for
+  more detail.
+- **return_dict** (`bool`, *optional*) --
+  Whether or not to return a [ModelOutput](/docs/transformers/master/en/main_classes/output#transformers.file_utils.ModelOutput) instead of a plain tuple.
+
+- **labels** (`torch.LongTensor` of shape `(batch_size, sequence_length)`, *optional*) --
+  Labels for computing the token classification loss. Indices should be in `[0, ..., config.num_labels - 1]`.</paramsdesc><paramgroups>0</paramgroups><rettype>[transformers.modeling_outputs.TokenClassifierOutput](/docs/transformers/master/en/main_classes/output#transformers.modeling_outputs.TokenClassifierOutput) or `tuple(torch.FloatTensor)`</rettype><retdesc>A [transformers.modeling_outputs.TokenClassifierOutput](/docs/transformers/master/en/main_classes/output#transformers.modeling_outputs.TokenClassifierOutput) or a tuple of
+`torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising various
+elements depending on the configuration ([DistilBertConfig](/docs/transformers/master/en/model_doc/distilbert#transformers.DistilBertConfig)) and inputs.
+
+- **loss** (`torch.FloatTensor` of shape `(1,)`, *optional*, returned when `labels` is provided)  -- Classification loss.
+- **logits** (`torch.FloatTensor` of shape `(batch_size, sequence_length, config.num_labels)`) -- Classification scores (before SoftMax).
+- **hidden_states** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer) of
+  shape `(batch_size, sequence_length, hidden_size)`.
+
+  Hidden-states of the model at the output of each layer plus the initial embedding outputs.
+- **attentions** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length,
+  sequence_length)`.
+
+  Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
+  heads.</retdesc></docstring>
+The [DistilBertForTokenClassification](/docs/transformers/master/en/model_doc/distilbert#transformers.DistilBertForTokenClassification) forward method, overrides the `__call__` special method.
+
+<Tip>
+
+Although the recipe for forward pass needs to be defined within this function, one should call the `Module`
+instance afterwards instead of this since the former takes care of running the pre and post processing steps while
+the latter silently ignores them.
+
+</Tip>
+
+
+
+
+
+
+
+Example:
+
+```python
+>>> from transformers import DistilBertTokenizer, DistilBertForTokenClassification
+>>> import torch
+
+>>> tokenizer = DistilBertTokenizer.from_pretrained("distilbert-base-uncased")
+>>> model = DistilBertForTokenClassification.from_pretrained("distilbert-base-uncased")
+
+>>> inputs = tokenizer("Hello, my dog is cute", return_tensors="pt")
+>>> labels = torch.tensor([1] * inputs["input_ids"].size(1)).unsqueeze(0)  # Batch size 1
+
+>>> outputs = model(**inputs, labels=labels)
+>>> loss = outputs.loss
+>>> logits = outputs.logits
+```
+
+
+</div></div>
+
+<h2 id="transformers.DistilBertForQuestionAnswering">DistilBertForQuestionAnswering</h2>
+
+<div class="docstring">
+
+<docstring><name>class transformers.DistilBertForQuestionAnswering</name><anchor>transformers.DistilBertForQuestionAnswering</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/distilbert/modeling_distilbert.py#L785</source><parameters>[{"name": "config", "val": ""}]</parameters><paramsdesc>- **config** ([DistilBertConfig](/docs/transformers/master/en/model_doc/distilbert#transformers.DistilBertConfig)) -- Model configuration class with all the parameters of the model.
+  Initializing with a config file does not load the weights associated with the model, only the
+  configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel.from_pretrained) method to load the model weights.</paramsdesc><paramgroups>0</paramgroups></docstring>
+
+DistilBert Model with a span classification head on top for extractive question-answering tasks like SQuAD (a
+linear layers on top of the hidden-states output to compute `span start logits` and `span end logits`).
+
+
+This model inherits from [PreTrainedModel](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel). Check the superclass documentation for the generic methods the
+library implements for all its model (such as downloading or saving, resizing the input embeddings, pruning heads
+etc.)
+
+This model is also a PyTorch [torch.nn.Module](https://pytorch.org/docs/stable/nn.html#torch.nn.Module) subclass.
+Use it as a regular PyTorch Module and refer to the PyTorch documentation for all matter related to general usage
+and behavior.
+
+
+
+
+
+<div class="docstring">
+<docstring><name>forward</name><anchor>transformers.DistilBertForQuestionAnswering.forward</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/distilbert/modeling_distilbert.py#L817</source><parameters>[{"name": "input_ids", "val": " = None"}, {"name": "attention_mask", "val": " = None"}, {"name": "head_mask", "val": " = None"}, {"name": "inputs_embeds", "val": " = None"}, {"name": "start_positions", "val": " = None"}, {"name": "end_positions", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "return_dict", "val": " = None"}]</parameters><paramsdesc>- **input_ids** (`torch.LongTensor` of shape `(batch_size, num_choices)`) --
+  Indices of input sequence tokens in the vocabulary.
+
+  Indices can be obtained using [DistilBertTokenizer](/docs/transformers/master/en/model_doc/distilbert#transformers.DistilBertTokenizer). See [PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.encode) and
+  [PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.__call__) for details.
+
+  [What are input IDs?](../glossary#input-ids)
+- **attention_mask** (`torch.FloatTensor` of shape `(batch_size, num_choices)`, *optional*) --
+  Mask to avoid performing attention on padding token indices. Mask values selected in `[0, 1]`:
+
+  - 1 for tokens that are **not masked**,
+  - 0 for tokens that are **masked**.
+
+  [What are attention masks?](../glossary#attention-mask)
+- **head_mask** (`torch.FloatTensor` of shape `(num_heads,)` or `(num_layers, num_heads)`, *optional*) --
+  Mask to nullify selected heads of the self-attention modules. Mask values selected in `[0, 1]`:
+
+  - 1 indicates the head is **not masked**,
+  - 0 indicates the head is **masked**.
+
+- **inputs_embeds** (`torch.FloatTensor` of shape `(batch_size, num_choices, hidden_size)`, *optional*) --
+  Optionally, instead of passing `input_ids` you can choose to directly pass an embedded representation. This
+  is useful if you want more control over how to convert `input_ids` indices into associated vectors than the
+  model's internal embedding lookup matrix.
+- **output_attentions** (`bool`, *optional*) --
+  Whether or not to return the attentions tensors of all attention layers. See `attentions` under returned
+  tensors for more detail.
+- **output_hidden_states** (`bool`, *optional*) --
+  Whether or not to return the hidden states of all layers. See `hidden_states` under returned tensors for
+  more detail.
+- **return_dict** (`bool`, *optional*) --
+  Whether or not to return a [ModelOutput](/docs/transformers/master/en/main_classes/output#transformers.file_utils.ModelOutput) instead of a plain tuple.
+
+- **start_positions** (`torch.LongTensor` of shape `(batch_size,)`, *optional*) --
+  Labels for position (index) of the start of the labelled span for computing the token classification loss.
+  Positions are clamped to the length of the sequence (`sequence_length`). Position outside of the sequence
+  are not taken into account for computing the loss.
+- **end_positions** (`torch.LongTensor` of shape `(batch_size,)`, *optional*) --
+  Labels for position (index) of the end of the labelled span for computing the token classification loss.
+  Positions are clamped to the length of the sequence (`sequence_length`). Position outside of the sequence
+  are not taken into account for computing the loss.</paramsdesc><paramgroups>0</paramgroups><rettype>[transformers.modeling_outputs.QuestionAnsweringModelOutput](/docs/transformers/master/en/main_classes/output#transformers.modeling_outputs.QuestionAnsweringModelOutput) or `tuple(torch.FloatTensor)`</rettype><retdesc>A [transformers.modeling_outputs.QuestionAnsweringModelOutput](/docs/transformers/master/en/main_classes/output#transformers.modeling_outputs.QuestionAnsweringModelOutput) or a tuple of
+`torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising various
+elements depending on the configuration ([DistilBertConfig](/docs/transformers/master/en/model_doc/distilbert#transformers.DistilBertConfig)) and inputs.
+
+- **loss** (`torch.FloatTensor` of shape `(1,)`, *optional*, returned when `labels` is provided) -- Total span extraction loss is the sum of a Cross-Entropy for the start and end positions.
+- **start_logits** (`torch.FloatTensor` of shape `(batch_size, sequence_length)`) -- Span-start scores (before SoftMax).
+- **end_logits** (`torch.FloatTensor` of shape `(batch_size, sequence_length)`) -- Span-end scores (before SoftMax).
+- **hidden_states** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer) of
+  shape `(batch_size, sequence_length, hidden_size)`.
+
+  Hidden-states of the model at the output of each layer plus the initial embedding outputs.
+- **attentions** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length,
+  sequence_length)`.
+
+  Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
+  heads.</retdesc></docstring>
+The [DistilBertForQuestionAnswering](/docs/transformers/master/en/model_doc/distilbert#transformers.DistilBertForQuestionAnswering) forward method, overrides the `__call__` special method.
+
+<Tip>
+
+Although the recipe for forward pass needs to be defined within this function, one should call the `Module`
+instance afterwards instead of this since the former takes care of running the pre and post processing steps while
+the latter silently ignores them.
+
+</Tip>
+
+
+
+
+
+
+
+Example:
+
+```python
+>>> from transformers import DistilBertTokenizer, DistilBertForQuestionAnswering
+>>> import torch
+
+>>> tokenizer = DistilBertTokenizer.from_pretrained("distilbert-base-uncased")
+>>> model = DistilBertForQuestionAnswering.from_pretrained("distilbert-base-uncased")
+
+>>> question, text = "Who was Jim Henson?", "Jim Henson was a nice puppet"
+>>> inputs = tokenizer(question, text, return_tensors="pt")
+>>> start_positions = torch.tensor([1])
+>>> end_positions = torch.tensor([3])
+
+>>> outputs = model(**inputs, start_positions=start_positions, end_positions=end_positions)
+>>> loss = outputs.loss
+>>> start_scores = outputs.start_logits
+>>> end_scores = outputs.end_logits
+```
+
+
+</div></div>
+
+<h2 id="transformers.TFDistilBertModel">TFDistilBertModel</h2>
+
+<div class="docstring">
+
+<docstring><name>class transformers.TFDistilBertModel</name><anchor>transformers.TFDistilBertModel</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/distilbert/modeling_tf_distilbert.py#L536</source><parameters>[{"name": "*args", "val": ""}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **config** ([DistilBertConfig](/docs/transformers/master/en/model_doc/distilbert#transformers.DistilBertConfig)) -- Model configuration class with all the parameters of the model.
+  Initializing with a config file does not load the weights associated with the model, only the
+  configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel.from_pretrained) method to load the model weights.</paramsdesc><paramgroups>0</paramgroups></docstring>
+The bare DistilBERT encoder/transformer outputting raw hidden-states without any specific head on top.
+
+This model inherits from [TFPreTrainedModel](/docs/transformers/master/en/main_classes/model#transformers.TFPreTrainedModel). Check the superclass documentation for the generic methods the
+library implements for all its model (such as downloading or saving, resizing the input embeddings, pruning heads
+etc.)
+
+This model is also a [tf.keras.Model](https://www.tensorflow.org/api_docs/python/tf/keras/Model) subclass. Use it
+as a regular TF 2.0 Keras Model and refer to the TF 2.0 documentation for all matter related to general usage and
+behavior.
+
+<Tip>
+
+TF 2.0 models accepts two formats as inputs:
+
+- having all inputs as keyword arguments (like PyTorch models), or
+- having all inputs as a list, tuple or dict in the first positional arguments.
+
+This second option is useful when using `tf.keras.Model.fit` method which currently requires having all the
+tensors in the first argument of the model call function: `model(inputs)`.
+
+If you choose this second option, there are three possibilities you can use to gather all the input Tensors in the
+first positional argument :
+
+- a single Tensor with `input_ids` only and nothing else: `model(inputs_ids)`
+- a list of varying length with one or several input Tensors IN THE ORDER given in the docstring:
+`model([input_ids, attention_mask])`
+- a dictionary with one or several input Tensors associated to the input names given in the docstring:
+`model(&amp;lcub;"input_ids": input_ids})`
+
+</Tip>
+
+
+
+
+
+<div class="docstring">
+<docstring><name>call</name><anchor>transformers.TFDistilBertModel.call</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/distilbert/modeling_tf_distilbert.py#L541</source><parameters>[{"name": "input_ids", "val": " = None"}, {"name": "attention_mask", "val": " = None"}, {"name": "head_mask", "val": " = None"}, {"name": "inputs_embeds", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "return_dict", "val": " = None"}, {"name": "training", "val": " = False"}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **input_ids** (`Numpy array` or `tf.Tensor` of shape `(batch_size, sequence_length)`) --
+  Indices of input sequence tokens in the vocabulary.
+
+  Indices can be obtained using [DistilBertTokenizer](/docs/transformers/master/en/model_doc/distilbert#transformers.DistilBertTokenizer). See [PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.__call__) and
+  [PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.encode) for details.
+
+  [What are input IDs?](../glossary#input-ids)
+- **attention_mask** (`Numpy array` or `tf.Tensor` of shape `(batch_size, sequence_length)`, *optional*) --
+  Mask to avoid performing attention on padding token indices. Mask values selected in `[0, 1]`:
+
+  - 1 for tokens that are **not masked**,
+  - 0 for tokens that are **masked**.
+
+  [What are attention masks?](../glossary#attention-mask)
+- **head_mask** (`Numpy array` or `tf.Tensor` of shape `(num_heads,)` or `(num_layers, num_heads)`, *optional*) --
+  Mask to nullify selected heads of the self-attention modules. Mask values selected in `[0, 1]`:
+
+  - 1 indicates the head is **not masked**,
+  - 0 indicates the head is **masked**.
+
+- **inputs_embeds** (`tf.Tensor` of shape `(batch_size, sequence_length, hidden_size)`, *optional*) --
+  Optionally, instead of passing `input_ids` you can choose to directly pass an embedded representation. This
+  is useful if you want more control over how to convert `input_ids` indices into associated vectors than the
+  model's internal embedding lookup matrix.
+- **output_attentions** (`bool`, *optional*) --
+  Whether or not to return the attentions tensors of all attention layers. See `attentions` under returned
+  tensors for more detail. This argument can be used only in eager mode, in graph mode the value in the
+  config will be used instead.
+- **output_hidden_states** (`bool`, *optional*) --
+  Whether or not to return the hidden states of all layers. See `hidden_states` under returned tensors for
+  more detail. This argument can be used only in eager mode, in graph mode the value in the config will be
+  used instead.
+- **return_dict** (`bool`, *optional*) --
+  Whether or not to return a [ModelOutput](/docs/transformers/master/en/main_classes/output#transformers.file_utils.ModelOutput) instead of a plain tuple. This argument can be used
+  in eager mode, in graph mode the value will always be set to True.
+- **training** (`bool`, *optional*, defaults to `False`) --
+  Whether or not to use the model in training mode (some modules like dropout modules have different
+  behaviors between training and evaluation).</paramsdesc><paramgroups>0</paramgroups><rettype>[transformers.modeling_tf_outputs.TFBaseModelOutput](/docs/transformers/master/en/main_classes/output#transformers.modeling_tf_outputs.TFBaseModelOutput) or `tuple(tf.Tensor)`</rettype><retdesc>A [transformers.modeling_tf_outputs.TFBaseModelOutput](/docs/transformers/master/en/main_classes/output#transformers.modeling_tf_outputs.TFBaseModelOutput) or a tuple of `tf.Tensor` (if
+`return_dict=False` is passed or when `config.return_dict=False`) comprising various elements depending on the
+configuration ([DistilBertConfig](/docs/transformers/master/en/model_doc/distilbert#transformers.DistilBertConfig)) and inputs.
+
+- **last_hidden_state** (`tf.Tensor` of shape `(batch_size, sequence_length, hidden_size)`) -- Sequence of hidden-states at the output of the last layer of the model.
+- **hidden_states** (`tuple(tf.FloatTensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `tf.Tensor` (one for the output of the embeddings + one for the output of each layer) of shape
+  `(batch_size, sequence_length, hidden_size)`.
+
+  Hidden-states of the model at the output of each layer plus the initial embedding outputs.
+- **attentions** (`tuple(tf.Tensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `tf.Tensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length,
+  sequence_length)`.
+
+  Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
+  heads.</retdesc></docstring>
+The [TFDistilBertModel](/docs/transformers/master/en/model_doc/distilbert#transformers.TFDistilBertModel) forward method, overrides the `__call__` special method.
+
+<Tip>
+
+Although the recipe for forward pass needs to be defined within this function, one should call the `Module`
+instance afterwards instead of this since the former takes care of running the pre and post processing steps while
+the latter silently ignores them.
+
+</Tip>
+
+
+
+
+
+
+
+Example:
+
+```python
+>>> from transformers import DistilBertTokenizer, TFDistilBertModel
+>>> import tensorflow as tf
+
+>>> tokenizer = DistilBertTokenizer.from_pretrained("distilbert-base-uncased")
+>>> model = TFDistilBertModel.from_pretrained("distilbert-base-uncased")
+
+>>> inputs = tokenizer("Hello, my dog is cute", return_tensors="tf")
+>>> outputs = model(inputs)
+
+>>> last_hidden_states = outputs.last_hidden_state
+```
+
+
+</div></div>
+
+<h2 id="transformers.TFDistilBertForMaskedLM">TFDistilBertForMaskedLM</h2>
+
+<div class="docstring">
+
+<docstring><name>class transformers.TFDistilBertForMaskedLM</name><anchor>transformers.TFDistilBertForMaskedLM</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/distilbert/modeling_tf_distilbert.py#L636</source><parameters>[{"name": "*args", "val": ""}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **config** ([DistilBertConfig](/docs/transformers/master/en/model_doc/distilbert#transformers.DistilBertConfig)) -- Model configuration class with all the parameters of the model.
+  Initializing with a config file does not load the weights associated with the model, only the
+  configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel.from_pretrained) method to load the model weights.</paramsdesc><paramgroups>0</paramgroups></docstring>
+DistilBert Model with a `masked language modeling` head on top.
+
+This model inherits from [TFPreTrainedModel](/docs/transformers/master/en/main_classes/model#transformers.TFPreTrainedModel). Check the superclass documentation for the generic methods the
+library implements for all its model (such as downloading or saving, resizing the input embeddings, pruning heads
+etc.)
+
+This model is also a [tf.keras.Model](https://www.tensorflow.org/api_docs/python/tf/keras/Model) subclass. Use it
+as a regular TF 2.0 Keras Model and refer to the TF 2.0 documentation for all matter related to general usage and
+behavior.
+
+<Tip>
+
+TF 2.0 models accepts two formats as inputs:
+
+- having all inputs as keyword arguments (like PyTorch models), or
+- having all inputs as a list, tuple or dict in the first positional arguments.
+
+This second option is useful when using `tf.keras.Model.fit` method which currently requires having all the
+tensors in the first argument of the model call function: `model(inputs)`.
+
+If you choose this second option, there are three possibilities you can use to gather all the input Tensors in the
+first positional argument :
+
+- a single Tensor with `input_ids` only and nothing else: `model(inputs_ids)`
+- a list of varying length with one or several input Tensors IN THE ORDER given in the docstring:
+`model([input_ids, attention_mask])`
+- a dictionary with one or several input Tensors associated to the input names given in the docstring:
+`model(&amp;lcub;"input_ids": input_ids})`
+
+</Tip>
+
+
+
+
+
+<div class="docstring">
+<docstring><name>call</name><anchor>transformers.TFDistilBertForMaskedLM.call</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/distilbert/modeling_tf_distilbert.py#L656</source><parameters>[{"name": "input_ids", "val": " = None"}, {"name": "attention_mask", "val": " = None"}, {"name": "head_mask", "val": " = None"}, {"name": "inputs_embeds", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "return_dict", "val": " = None"}, {"name": "labels", "val": " = None"}, {"name": "training", "val": " = False"}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **input_ids** (`Numpy array` or `tf.Tensor` of shape `(batch_size, sequence_length)`) --
+  Indices of input sequence tokens in the vocabulary.
+
+  Indices can be obtained using [DistilBertTokenizer](/docs/transformers/master/en/model_doc/distilbert#transformers.DistilBertTokenizer). See [PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.__call__) and
+  [PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.encode) for details.
+
+  [What are input IDs?](../glossary#input-ids)
+- **attention_mask** (`Numpy array` or `tf.Tensor` of shape `(batch_size, sequence_length)`, *optional*) --
+  Mask to avoid performing attention on padding token indices. Mask values selected in `[0, 1]`:
+
+  - 1 for tokens that are **not masked**,
+  - 0 for tokens that are **masked**.
+
+  [What are attention masks?](../glossary#attention-mask)
+- **head_mask** (`Numpy array` or `tf.Tensor` of shape `(num_heads,)` or `(num_layers, num_heads)`, *optional*) --
+  Mask to nullify selected heads of the self-attention modules. Mask values selected in `[0, 1]`:
+
+  - 1 indicates the head is **not masked**,
+  - 0 indicates the head is **masked**.
+
+- **inputs_embeds** (`tf.Tensor` of shape `(batch_size, sequence_length, hidden_size)`, *optional*) --
+  Optionally, instead of passing `input_ids` you can choose to directly pass an embedded representation. This
+  is useful if you want more control over how to convert `input_ids` indices into associated vectors than the
+  model's internal embedding lookup matrix.
+- **output_attentions** (`bool`, *optional*) --
+  Whether or not to return the attentions tensors of all attention layers. See `attentions` under returned
+  tensors for more detail. This argument can be used only in eager mode, in graph mode the value in the
+  config will be used instead.
+- **output_hidden_states** (`bool`, *optional*) --
+  Whether or not to return the hidden states of all layers. See `hidden_states` under returned tensors for
+  more detail. This argument can be used only in eager mode, in graph mode the value in the config will be
+  used instead.
+- **return_dict** (`bool`, *optional*) --
+  Whether or not to return a [ModelOutput](/docs/transformers/master/en/main_classes/output#transformers.file_utils.ModelOutput) instead of a plain tuple. This argument can be used
+  in eager mode, in graph mode the value will always be set to True.
+- **training** (`bool`, *optional*, defaults to `False`) --
+  Whether or not to use the model in training mode (some modules like dropout modules have different
+  behaviors between training and evaluation).
+
+- **labels** (`tf.Tensor` of shape `(batch_size, sequence_length)`, *optional*) --
+  Labels for computing the masked language modeling loss. Indices should be in `[-100, 0, ...,
+  config.vocab_size]` (see `input_ids` docstring) Tokens with indices set to `-100` are ignored (masked), the
+  loss is only computed for the tokens with labels in `[0, ..., config.vocab_size]`</paramsdesc><paramgroups>0</paramgroups><rettype>[transformers.modeling_tf_outputs.TFMaskedLMOutput](/docs/transformers/master/en/main_classes/output#transformers.modeling_tf_outputs.TFMaskedLMOutput) or `tuple(tf.Tensor)`</rettype><retdesc>A [transformers.modeling_tf_outputs.TFMaskedLMOutput](/docs/transformers/master/en/main_classes/output#transformers.modeling_tf_outputs.TFMaskedLMOutput) or a tuple of `tf.Tensor` (if
+`return_dict=False` is passed or when `config.return_dict=False`) comprising various elements depending on the
+configuration ([DistilBertConfig](/docs/transformers/master/en/model_doc/distilbert#transformers.DistilBertConfig)) and inputs.
+
+- **loss** (`tf.Tensor` of shape `(n,)`, *optional*, where n is the number of non-masked labels, returned when `labels` is provided) -- Masked language modeling (MLM) loss.
+- **logits** (`tf.Tensor` of shape `(batch_size, sequence_length, config.vocab_size)`) -- Prediction scores of the language modeling head (scores for each vocabulary token before SoftMax).
+- **hidden_states** (`tuple(tf.Tensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `tf.Tensor` (one for the output of the embeddings + one for the output of each layer) of shape
+  `(batch_size, sequence_length, hidden_size)`.
+
+  Hidden-states of the model at the output of each layer plus the initial embedding outputs.
+- **attentions** (`tuple(tf.Tensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `tf.Tensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length,
+  sequence_length)`.
+
+  Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
+  heads.</retdesc></docstring>
+The [TFDistilBertForMaskedLM](/docs/transformers/master/en/model_doc/distilbert#transformers.TFDistilBertForMaskedLM) forward method, overrides the `__call__` special method.
+
+<Tip>
+
+Although the recipe for forward pass needs to be defined within this function, one should call the `Module`
+instance afterwards instead of this since the former takes care of running the pre and post processing steps while
+the latter silently ignores them.
+
+</Tip>
+
+
+
+
+
+
+
+Example:
+
+```python
+>>> from transformers import DistilBertTokenizer, TFDistilBertForMaskedLM
+>>> import tensorflow as tf
+
+>>> tokenizer = DistilBertTokenizer.from_pretrained("distilbert-base-uncased")
+>>> model = TFDistilBertForMaskedLM.from_pretrained("distilbert-base-uncased")
+
+>>> inputs = tokenizer("The capital of France is [MASK].", return_tensors="tf")
+>>> inputs["labels"] = tokenizer("The capital of France is Paris.", return_tensors="tf")["input_ids"]
+
+>>> outputs = model(inputs)
+>>> loss = outputs.loss
+>>> logits = outputs.logits
+```
+
+
+</div></div>
+
+<h2 id="transformers.TFDistilBertForSequenceClassification">TFDistilBertForSequenceClassification</h2>
+
+<div class="docstring">
+
+<docstring><name>class transformers.TFDistilBertForSequenceClassification</name><anchor>transformers.TFDistilBertForSequenceClassification</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/distilbert/modeling_tf_distilbert.py#L740</source><parameters>[{"name": "*args", "val": ""}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **config** ([DistilBertConfig](/docs/transformers/master/en/model_doc/distilbert#transformers.DistilBertConfig)) -- Model configuration class with all the parameters of the model.
+  Initializing with a config file does not load the weights associated with the model, only the
+  configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel.from_pretrained) method to load the model weights.</paramsdesc><paramgroups>0</paramgroups></docstring>
+
+DistilBert Model transformer with a sequence classification/regression head on top (a linear layer on top of the
+pooled output) e.g. for GLUE tasks.
+
+
+This model inherits from [TFPreTrainedModel](/docs/transformers/master/en/main_classes/model#transformers.TFPreTrainedModel). Check the superclass documentation for the generic methods the
+library implements for all its model (such as downloading or saving, resizing the input embeddings, pruning heads
+etc.)
+
+This model is also a [tf.keras.Model](https://www.tensorflow.org/api_docs/python/tf/keras/Model) subclass. Use it
+as a regular TF 2.0 Keras Model and refer to the TF 2.0 documentation for all matter related to general usage and
+behavior.
+
+<Tip>
+
+TF 2.0 models accepts two formats as inputs:
+
+- having all inputs as keyword arguments (like PyTorch models), or
+- having all inputs as a list, tuple or dict in the first positional arguments.
+
+This second option is useful when using `tf.keras.Model.fit` method which currently requires having all the
+tensors in the first argument of the model call function: `model(inputs)`.
+
+If you choose this second option, there are three possibilities you can use to gather all the input Tensors in the
+first positional argument :
+
+- a single Tensor with `input_ids` only and nothing else: `model(inputs_ids)`
+- a list of varying length with one or several input Tensors IN THE ORDER given in the docstring:
+`model([input_ids, attention_mask])`
+- a dictionary with one or several input Tensors associated to the input names given in the docstring:
+`model(&amp;lcub;"input_ids": input_ids})`
+
+</Tip>
+
+
+
+
+
+<div class="docstring">
+<docstring><name>call</name><anchor>transformers.TFDistilBertForSequenceClassification.call</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/distilbert/modeling_tf_distilbert.py#L757</source><parameters>[{"name": "input_ids", "val": " = None"}, {"name": "attention_mask", "val": " = None"}, {"name": "head_mask", "val": " = None"}, {"name": "inputs_embeds", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "return_dict", "val": " = None"}, {"name": "labels", "val": " = None"}, {"name": "training", "val": " = False"}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **input_ids** (`Numpy array` or `tf.Tensor` of shape `(batch_size, sequence_length)`) --
+  Indices of input sequence tokens in the vocabulary.
+
+  Indices can be obtained using [DistilBertTokenizer](/docs/transformers/master/en/model_doc/distilbert#transformers.DistilBertTokenizer). See [PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.__call__) and
+  [PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.encode) for details.
+
+  [What are input IDs?](../glossary#input-ids)
+- **attention_mask** (`Numpy array` or `tf.Tensor` of shape `(batch_size, sequence_length)`, *optional*) --
+  Mask to avoid performing attention on padding token indices. Mask values selected in `[0, 1]`:
+
+  - 1 for tokens that are **not masked**,
+  - 0 for tokens that are **masked**.
+
+  [What are attention masks?](../glossary#attention-mask)
+- **head_mask** (`Numpy array` or `tf.Tensor` of shape `(num_heads,)` or `(num_layers, num_heads)`, *optional*) --
+  Mask to nullify selected heads of the self-attention modules. Mask values selected in `[0, 1]`:
+
+  - 1 indicates the head is **not masked**,
+  - 0 indicates the head is **masked**.
+
+- **inputs_embeds** (`tf.Tensor` of shape `(batch_size, sequence_length, hidden_size)`, *optional*) --
+  Optionally, instead of passing `input_ids` you can choose to directly pass an embedded representation. This
+  is useful if you want more control over how to convert `input_ids` indices into associated vectors than the
+  model's internal embedding lookup matrix.
+- **output_attentions** (`bool`, *optional*) --
+  Whether or not to return the attentions tensors of all attention layers. See `attentions` under returned
+  tensors for more detail. This argument can be used only in eager mode, in graph mode the value in the
+  config will be used instead.
+- **output_hidden_states** (`bool`, *optional*) --
+  Whether or not to return the hidden states of all layers. See `hidden_states` under returned tensors for
+  more detail. This argument can be used only in eager mode, in graph mode the value in the config will be
+  used instead.
+- **return_dict** (`bool`, *optional*) --
+  Whether or not to return a [ModelOutput](/docs/transformers/master/en/main_classes/output#transformers.file_utils.ModelOutput) instead of a plain tuple. This argument can be used
+  in eager mode, in graph mode the value will always be set to True.
+- **training** (`bool`, *optional*, defaults to `False`) --
+  Whether or not to use the model in training mode (some modules like dropout modules have different
+  behaviors between training and evaluation).
+
+- **labels** (`tf.Tensor` of shape `(batch_size,)`, *optional*) --
+  Labels for computing the sequence classification/regression loss. Indices should be in `[0, ...,
+  config.num_labels - 1]`. If `config.num_labels == 1` a regression loss is computed (Mean-Square loss), If
+  `config.num_labels > 1` a classification loss is computed (Cross-Entropy).</paramsdesc><paramgroups>0</paramgroups><rettype>[transformers.modeling_tf_outputs.TFSequenceClassifierOutput](/docs/transformers/master/en/main_classes/output#transformers.modeling_tf_outputs.TFSequenceClassifierOutput) or `tuple(tf.Tensor)`</rettype><retdesc>A [transformers.modeling_tf_outputs.TFSequenceClassifierOutput](/docs/transformers/master/en/main_classes/output#transformers.modeling_tf_outputs.TFSequenceClassifierOutput) or a tuple of `tf.Tensor` (if
+`return_dict=False` is passed or when `config.return_dict=False`) comprising various elements depending on the
+configuration ([DistilBertConfig](/docs/transformers/master/en/model_doc/distilbert#transformers.DistilBertConfig)) and inputs.
+
+- **loss** (`tf.Tensor` of shape `(batch_size, )`, *optional*, returned when `labels` is provided) -- Classification (or regression if config.num_labels==1) loss.
+- **logits** (`tf.Tensor` of shape `(batch_size, config.num_labels)`) -- Classification (or regression if config.num_labels==1) scores (before SoftMax).
+- **hidden_states** (`tuple(tf.Tensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `tf.Tensor` (one for the output of the embeddings + one for the output of each layer) of shape
+  `(batch_size, sequence_length, hidden_size)`.
+
+  Hidden-states of the model at the output of each layer plus the initial embedding outputs.
+- **attentions** (`tuple(tf.Tensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `tf.Tensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length,
+  sequence_length)`.
+
+  Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
+  heads.</retdesc></docstring>
+The [TFDistilBertForSequenceClassification](/docs/transformers/master/en/model_doc/distilbert#transformers.TFDistilBertForSequenceClassification) forward method, overrides the `__call__` special method.
+
+<Tip>
+
+Although the recipe for forward pass needs to be defined within this function, one should call the `Module`
+instance afterwards instead of this since the former takes care of running the pre and post processing steps while
+the latter silently ignores them.
+
+</Tip>
+
+
+
+
+
+
+
+Example:
+
+```python
+>>> from transformers import DistilBertTokenizer, TFDistilBertForSequenceClassification
+>>> import tensorflow as tf
+
+>>> tokenizer = DistilBertTokenizer.from_pretrained("distilbert-base-uncased")
+>>> model = TFDistilBertForSequenceClassification.from_pretrained("distilbert-base-uncased")
+
+>>> inputs = tokenizer("Hello, my dog is cute", return_tensors="tf")
+>>> inputs["labels"] = tf.reshape(tf.constant(1), (-1, 1))  # Batch size 1
+
+>>> outputs = model(inputs)
+>>> loss = outputs.loss
+>>> logits = outputs.logits
+```
+
+
+</div></div>
+
+<h2 id="transformers.TFDistilBertForMultipleChoice">TFDistilBertForMultipleChoice</h2>
+
+<div class="docstring">
+
+<docstring><name>class transformers.TFDistilBertForMultipleChoice</name><anchor>transformers.TFDistilBertForMultipleChoice</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/distilbert/modeling_tf_distilbert.py#L931</source><parameters>[{"name": "*args", "val": ""}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **config** ([DistilBertConfig](/docs/transformers/master/en/model_doc/distilbert#transformers.DistilBertConfig)) -- Model configuration class with all the parameters of the model.
+  Initializing with a config file does not load the weights associated with the model, only the
+  configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel.from_pretrained) method to load the model weights.</paramsdesc><paramgroups>0</paramgroups></docstring>
+
+DistilBert Model with a multiple choice classification head on top (a linear layer on top of the pooled output and
+a softmax) e.g. for RocStories/SWAG tasks.
+
+
+This model inherits from [TFPreTrainedModel](/docs/transformers/master/en/main_classes/model#transformers.TFPreTrainedModel). Check the superclass documentation for the generic methods the
+library implements for all its model (such as downloading or saving, resizing the input embeddings, pruning heads
+etc.)
+
+This model is also a [tf.keras.Model](https://www.tensorflow.org/api_docs/python/tf/keras/Model) subclass. Use it
+as a regular TF 2.0 Keras Model and refer to the TF 2.0 documentation for all matter related to general usage and
+behavior.
+
+<Tip>
+
+TF 2.0 models accepts two formats as inputs:
+
+- having all inputs as keyword arguments (like PyTorch models), or
+- having all inputs as a list, tuple or dict in the first positional arguments.
+
+This second option is useful when using `tf.keras.Model.fit` method which currently requires having all the
+tensors in the first argument of the model call function: `model(inputs)`.
+
+If you choose this second option, there are three possibilities you can use to gather all the input Tensors in the
+first positional argument :
+
+- a single Tensor with `input_ids` only and nothing else: `model(inputs_ids)`
+- a list of varying length with one or several input Tensors IN THE ORDER given in the docstring:
+`model([input_ids, attention_mask])`
+- a dictionary with one or several input Tensors associated to the input names given in the docstring:
+`model(&amp;lcub;"input_ids": input_ids})`
+
+</Tip>
+
+
+
+
+
+<div class="docstring">
+<docstring><name>call</name><anchor>transformers.TFDistilBertForMultipleChoice.call</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/distilbert/modeling_tf_distilbert.py#L957</source><parameters>[{"name": "input_ids", "val": " = None"}, {"name": "attention_mask", "val": " = None"}, {"name": "head_mask", "val": " = None"}, {"name": "inputs_embeds", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "return_dict", "val": " = None"}, {"name": "labels", "val": " = None"}, {"name": "training", "val": " = False"}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **input_ids** (`Numpy array` or `tf.Tensor` of shape `(batch_size, num_choices, sequence_length)`) --
+  Indices of input sequence tokens in the vocabulary.
+
+  Indices can be obtained using [DistilBertTokenizer](/docs/transformers/master/en/model_doc/distilbert#transformers.DistilBertTokenizer). See [PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.__call__) and
+  [PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.encode) for details.
+
+  [What are input IDs?](../glossary#input-ids)
+- **attention_mask** (`Numpy array` or `tf.Tensor` of shape `(batch_size, num_choices, sequence_length)`, *optional*) --
+  Mask to avoid performing attention on padding token indices. Mask values selected in `[0, 1]`:
+
+  - 1 for tokens that are **not masked**,
+  - 0 for tokens that are **masked**.
+
+  [What are attention masks?](../glossary#attention-mask)
+- **head_mask** (`Numpy array` or `tf.Tensor` of shape `(num_heads,)` or `(num_layers, num_heads)`, *optional*) --
+  Mask to nullify selected heads of the self-attention modules. Mask values selected in `[0, 1]`:
+
+  - 1 indicates the head is **not masked**,
+  - 0 indicates the head is **masked**.
+
+- **inputs_embeds** (`tf.Tensor` of shape `(batch_size, num_choices, sequence_length, hidden_size)`, *optional*) --
+  Optionally, instead of passing `input_ids` you can choose to directly pass an embedded representation. This
+  is useful if you want more control over how to convert `input_ids` indices into associated vectors than the
+  model's internal embedding lookup matrix.
+- **output_attentions** (`bool`, *optional*) --
+  Whether or not to return the attentions tensors of all attention layers. See `attentions` under returned
+  tensors for more detail. This argument can be used only in eager mode, in graph mode the value in the
+  config will be used instead.
+- **output_hidden_states** (`bool`, *optional*) --
+  Whether or not to return the hidden states of all layers. See `hidden_states` under returned tensors for
+  more detail. This argument can be used only in eager mode, in graph mode the value in the config will be
+  used instead.
+- **return_dict** (`bool`, *optional*) --
+  Whether or not to return a [ModelOutput](/docs/transformers/master/en/main_classes/output#transformers.file_utils.ModelOutput) instead of a plain tuple. This argument can be used
+  in eager mode, in graph mode the value will always be set to True.
+- **training** (`bool`, *optional*, defaults to `False`) --
+  Whether or not to use the model in training mode (some modules like dropout modules have different
+  behaviors between training and evaluation).
+
+- **labels** (`tf.Tensor` of shape `(batch_size,)`, *optional*) --
+  Labels for computing the multiple choice classification loss. Indices should be in `[0, ..., num_choices]`
+  where `num_choices` is the size of the second dimension of the input tensors. (See `input_ids` above)</paramsdesc><paramgroups>0</paramgroups><rettype>[transformers.modeling_tf_outputs.TFMultipleChoiceModelOutput](/docs/transformers/master/en/main_classes/output#transformers.modeling_tf_outputs.TFMultipleChoiceModelOutput) or `tuple(tf.Tensor)`</rettype><retdesc>A [transformers.modeling_tf_outputs.TFMultipleChoiceModelOutput](/docs/transformers/master/en/main_classes/output#transformers.modeling_tf_outputs.TFMultipleChoiceModelOutput) or a tuple of `tf.Tensor` (if
+`return_dict=False` is passed or when `config.return_dict=False`) comprising various elements depending on the
+configuration ([DistilBertConfig](/docs/transformers/master/en/model_doc/distilbert#transformers.DistilBertConfig)) and inputs.
+
+- **loss** (`tf.Tensor` of shape *(batch_size, )*, *optional*, returned when `labels` is provided) -- Classification loss.
+- **logits** (`tf.Tensor` of shape `(batch_size, num_choices)`) -- *num_choices* is the second dimension of the input tensors. (see *input_ids* above).
+
+  Classification scores (before SoftMax).
+- **hidden_states** (`tuple(tf.Tensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `tf.Tensor` (one for the output of the embeddings + one for the output of each layer) of shape
+  `(batch_size, sequence_length, hidden_size)`.
+
+  Hidden-states of the model at the output of each layer plus the initial embedding outputs.
+- **attentions** (`tuple(tf.Tensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `tf.Tensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length,
+  sequence_length)`.
+
+  Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
+  heads.</retdesc></docstring>
+The [TFDistilBertForMultipleChoice](/docs/transformers/master/en/model_doc/distilbert#transformers.TFDistilBertForMultipleChoice) forward method, overrides the `__call__` special method.
+
+<Tip>
+
+Although the recipe for forward pass needs to be defined within this function, one should call the `Module`
+instance afterwards instead of this since the former takes care of running the pre and post processing steps while
+the latter silently ignores them.
+
+</Tip>
+
+
+
+
+
+
+
+Example:
+
+```python
+>>> from transformers import DistilBertTokenizer, TFDistilBertForMultipleChoice
+>>> import tensorflow as tf
+
+>>> tokenizer = DistilBertTokenizer.from_pretrained("distilbert-base-uncased")
+>>> model = TFDistilBertForMultipleChoice.from_pretrained("distilbert-base-uncased")
+
+>>> prompt = "In Italy, pizza served in formal settings, such as at a restaurant, is presented unsliced."
+>>> choice0 = "It is eaten with a fork and a knife."
+>>> choice1 = "It is eaten while held in the hand."
+
+>>> encoding = tokenizer([prompt, prompt], [choice0, choice1], return_tensors="tf", padding=True)
+>>> inputs = &amp;lcub;k: tf.expand_dims(v, 0) for k, v in encoding.items()}
+>>> outputs = model(inputs)  # batch size is 1
+
+>>> # the linear classifier still needs to be trained
+>>> logits = outputs.logits
+```
+
+
+</div></div>
+
+<h2 id="transformers.TFDistilBertForTokenClassification">TFDistilBertForTokenClassification</h2>
+
+<div class="docstring">
+
+<docstring><name>class transformers.TFDistilBertForTokenClassification</name><anchor>transformers.TFDistilBertForTokenClassification</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/distilbert/modeling_tf_distilbert.py#L841</source><parameters>[{"name": "*args", "val": ""}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **config** ([DistilBertConfig](/docs/transformers/master/en/model_doc/distilbert#transformers.DistilBertConfig)) -- Model configuration class with all the parameters of the model.
+  Initializing with a config file does not load the weights associated with the model, only the
+  configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel.from_pretrained) method to load the model weights.</paramsdesc><paramgroups>0</paramgroups></docstring>
+
+DistilBert Model with a token classification head on top (a linear layer on top of the hidden-states output) e.g.
+for Named-Entity-Recognition (NER) tasks.
+
+
+This model inherits from [TFPreTrainedModel](/docs/transformers/master/en/main_classes/model#transformers.TFPreTrainedModel). Check the superclass documentation for the generic methods the
+library implements for all its model (such as downloading or saving, resizing the input embeddings, pruning heads
+etc.)
+
+This model is also a [tf.keras.Model](https://www.tensorflow.org/api_docs/python/tf/keras/Model) subclass. Use it
+as a regular TF 2.0 Keras Model and refer to the TF 2.0 documentation for all matter related to general usage and
+behavior.
+
+<Tip>
+
+TF 2.0 models accepts two formats as inputs:
+
+- having all inputs as keyword arguments (like PyTorch models), or
+- having all inputs as a list, tuple or dict in the first positional arguments.
+
+This second option is useful when using `tf.keras.Model.fit` method which currently requires having all the
+tensors in the first argument of the model call function: `model(inputs)`.
+
+If you choose this second option, there are three possibilities you can use to gather all the input Tensors in the
+first positional argument :
+
+- a single Tensor with `input_ids` only and nothing else: `model(inputs_ids)`
+- a list of varying length with one or several input Tensors IN THE ORDER given in the docstring:
+`model([input_ids, attention_mask])`
+- a dictionary with one or several input Tensors associated to the input names given in the docstring:
+`model(&amp;lcub;"input_ids": input_ids})`
+
+</Tip>
+
+
+
+
+
+<div class="docstring">
+<docstring><name>call</name><anchor>transformers.TFDistilBertForTokenClassification.call</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/distilbert/modeling_tf_distilbert.py#L852</source><parameters>[{"name": "input_ids", "val": " = None"}, {"name": "attention_mask", "val": " = None"}, {"name": "head_mask", "val": " = None"}, {"name": "inputs_embeds", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "return_dict", "val": " = None"}, {"name": "labels", "val": " = None"}, {"name": "training", "val": " = False"}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **input_ids** (`Numpy array` or `tf.Tensor` of shape `(batch_size, sequence_length)`) --
+  Indices of input sequence tokens in the vocabulary.
+
+  Indices can be obtained using [DistilBertTokenizer](/docs/transformers/master/en/model_doc/distilbert#transformers.DistilBertTokenizer). See [PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.__call__) and
+  [PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.encode) for details.
+
+  [What are input IDs?](../glossary#input-ids)
+- **attention_mask** (`Numpy array` or `tf.Tensor` of shape `(batch_size, sequence_length)`, *optional*) --
+  Mask to avoid performing attention on padding token indices. Mask values selected in `[0, 1]`:
+
+  - 1 for tokens that are **not masked**,
+  - 0 for tokens that are **masked**.
+
+  [What are attention masks?](../glossary#attention-mask)
+- **head_mask** (`Numpy array` or `tf.Tensor` of shape `(num_heads,)` or `(num_layers, num_heads)`, *optional*) --
+  Mask to nullify selected heads of the self-attention modules. Mask values selected in `[0, 1]`:
+
+  - 1 indicates the head is **not masked**,
+  - 0 indicates the head is **masked**.
+
+- **inputs_embeds** (`tf.Tensor` of shape `(batch_size, sequence_length, hidden_size)`, *optional*) --
+  Optionally, instead of passing `input_ids` you can choose to directly pass an embedded representation. This
+  is useful if you want more control over how to convert `input_ids` indices into associated vectors than the
+  model's internal embedding lookup matrix.
+- **output_attentions** (`bool`, *optional*) --
+  Whether or not to return the attentions tensors of all attention layers. See `attentions` under returned
+  tensors for more detail. This argument can be used only in eager mode, in graph mode the value in the
+  config will be used instead.
+- **output_hidden_states** (`bool`, *optional*) --
+  Whether or not to return the hidden states of all layers. See `hidden_states` under returned tensors for
+  more detail. This argument can be used only in eager mode, in graph mode the value in the config will be
+  used instead.
+- **return_dict** (`bool`, *optional*) --
+  Whether or not to return a [ModelOutput](/docs/transformers/master/en/main_classes/output#transformers.file_utils.ModelOutput) instead of a plain tuple. This argument can be used
+  in eager mode, in graph mode the value will always be set to True.
+- **training** (`bool`, *optional*, defaults to `False`) --
+  Whether or not to use the model in training mode (some modules like dropout modules have different
+  behaviors between training and evaluation).
+
+- **labels** (`tf.Tensor` of shape `(batch_size, sequence_length)`, *optional*) --
+  Labels for computing the token classification loss. Indices should be in `[0, ..., config.num_labels - 1]`.</paramsdesc><paramgroups>0</paramgroups><rettype>[transformers.modeling_tf_outputs.TFTokenClassifierOutput](/docs/transformers/master/en/main_classes/output#transformers.modeling_tf_outputs.TFTokenClassifierOutput) or `tuple(tf.Tensor)`</rettype><retdesc>A [transformers.modeling_tf_outputs.TFTokenClassifierOutput](/docs/transformers/master/en/main_classes/output#transformers.modeling_tf_outputs.TFTokenClassifierOutput) or a tuple of `tf.Tensor` (if
+`return_dict=False` is passed or when `config.return_dict=False`) comprising various elements depending on the
+configuration ([DistilBertConfig](/docs/transformers/master/en/model_doc/distilbert#transformers.DistilBertConfig)) and inputs.
+
+- **loss** (`tf.Tensor` of shape `(n,)`, *optional*, where n is the number of unmasked labels, returned when `labels` is provided)  -- Classification loss.
+- **logits** (`tf.Tensor` of shape `(batch_size, sequence_length, config.num_labels)`) -- Classification scores (before SoftMax).
+- **hidden_states** (`tuple(tf.Tensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `tf.Tensor` (one for the output of the embeddings + one for the output of each layer) of shape
+  `(batch_size, sequence_length, hidden_size)`.
+
+  Hidden-states of the model at the output of each layer plus the initial embedding outputs.
+- **attentions** (`tuple(tf.Tensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `tf.Tensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length,
+  sequence_length)`.
+
+  Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
+  heads.</retdesc></docstring>
+The [TFDistilBertForTokenClassification](/docs/transformers/master/en/model_doc/distilbert#transformers.TFDistilBertForTokenClassification) forward method, overrides the `__call__` special method.
+
+<Tip>
+
+Although the recipe for forward pass needs to be defined within this function, one should call the `Module`
+instance afterwards instead of this since the former takes care of running the pre and post processing steps while
+the latter silently ignores them.
+
+</Tip>
+
+
+
+
+
+
+
+Example:
+
+```python
+>>> from transformers import DistilBertTokenizer, TFDistilBertForTokenClassification
+>>> import tensorflow as tf
+
+>>> tokenizer = DistilBertTokenizer.from_pretrained("distilbert-base-uncased")
+>>> model = TFDistilBertForTokenClassification.from_pretrained("distilbert-base-uncased")
+
+>>> inputs = tokenizer("Hello, my dog is cute", return_tensors="tf")
+>>> input_ids = inputs["input_ids"]
+>>> inputs["labels"] = tf.reshape(
+...     tf.constant([1] * tf.size(input_ids).numpy()), (-1, tf.size(input_ids))
+>>> )  # Batch size 1
+
+>>> outputs = model(inputs)
+>>> loss = outputs.loss
+>>> logits = outputs.logits
+```
+
+
+</div></div>
+
+<h2 id="transformers.TFDistilBertForQuestionAnswering">TFDistilBertForQuestionAnswering</h2>
+
+<div class="docstring">
+
+<docstring><name>class transformers.TFDistilBertForQuestionAnswering</name><anchor>transformers.TFDistilBertForQuestionAnswering</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/distilbert/modeling_tf_distilbert.py#L1073</source><parameters>[{"name": "*args", "val": ""}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **config** ([DistilBertConfig](/docs/transformers/master/en/model_doc/distilbert#transformers.DistilBertConfig)) -- Model configuration class with all the parameters of the model.
+  Initializing with a config file does not load the weights associated with the model, only the
+  configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel.from_pretrained) method to load the model weights.</paramsdesc><paramgroups>0</paramgroups></docstring>
+
+DistilBert Model with a span classification head on top for extractive question-answering tasks like SQuAD (a
+linear layer on top of the hidden-states output to compute `span start logits` and `span end logits`).
+
+
+This model inherits from [TFPreTrainedModel](/docs/transformers/master/en/main_classes/model#transformers.TFPreTrainedModel). Check the superclass documentation for the generic methods the
+library implements for all its model (such as downloading or saving, resizing the input embeddings, pruning heads
+etc.)
+
+This model is also a [tf.keras.Model](https://www.tensorflow.org/api_docs/python/tf/keras/Model) subclass. Use it
+as a regular TF 2.0 Keras Model and refer to the TF 2.0 documentation for all matter related to general usage and
+behavior.
+
+<Tip>
+
+TF 2.0 models accepts two formats as inputs:
+
+- having all inputs as keyword arguments (like PyTorch models), or
+- having all inputs as a list, tuple or dict in the first positional arguments.
+
+This second option is useful when using `tf.keras.Model.fit` method which currently requires having all the
+tensors in the first argument of the model call function: `model(inputs)`.
+
+If you choose this second option, there are three possibilities you can use to gather all the input Tensors in the
+first positional argument :
+
+- a single Tensor with `input_ids` only and nothing else: `model(inputs_ids)`
+- a list of varying length with one or several input Tensors IN THE ORDER given in the docstring:
+`model([input_ids, attention_mask])`
+- a dictionary with one or several input Tensors associated to the input names given in the docstring:
+`model(&amp;lcub;"input_ids": input_ids})`
+
+</Tip>
+
+
+
+
+
+<div class="docstring">
+<docstring><name>call</name><anchor>transformers.TFDistilBertForQuestionAnswering.call</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/distilbert/modeling_tf_distilbert.py#L1084</source><parameters>[{"name": "input_ids", "val": " = None"}, {"name": "attention_mask", "val": " = None"}, {"name": "head_mask", "val": " = None"}, {"name": "inputs_embeds", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "return_dict", "val": " = None"}, {"name": "start_positions", "val": " = None"}, {"name": "end_positions", "val": " = None"}, {"name": "training", "val": " = False"}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **input_ids** (`Numpy array` or `tf.Tensor` of shape `(batch_size, sequence_length)`) --
+  Indices of input sequence tokens in the vocabulary.
+
+  Indices can be obtained using [DistilBertTokenizer](/docs/transformers/master/en/model_doc/distilbert#transformers.DistilBertTokenizer). See [PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.__call__) and
+  [PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.encode) for details.
+
+  [What are input IDs?](../glossary#input-ids)
+- **attention_mask** (`Numpy array` or `tf.Tensor` of shape `(batch_size, sequence_length)`, *optional*) --
+  Mask to avoid performing attention on padding token indices. Mask values selected in `[0, 1]`:
+
+  - 1 for tokens that are **not masked**,
+  - 0 for tokens that are **masked**.
+
+  [What are attention masks?](../glossary#attention-mask)
+- **head_mask** (`Numpy array` or `tf.Tensor` of shape `(num_heads,)` or `(num_layers, num_heads)`, *optional*) --
+  Mask to nullify selected heads of the self-attention modules. Mask values selected in `[0, 1]`:
+
+  - 1 indicates the head is **not masked**,
+  - 0 indicates the head is **masked**.
+
+- **inputs_embeds** (`tf.Tensor` of shape `(batch_size, sequence_length, hidden_size)`, *optional*) --
+  Optionally, instead of passing `input_ids` you can choose to directly pass an embedded representation. This
+  is useful if you want more control over how to convert `input_ids` indices into associated vectors than the
+  model's internal embedding lookup matrix.
+- **output_attentions** (`bool`, *optional*) --
+  Whether or not to return the attentions tensors of all attention layers. See `attentions` under returned
+  tensors for more detail. This argument can be used only in eager mode, in graph mode the value in the
+  config will be used instead.
+- **output_hidden_states** (`bool`, *optional*) --
+  Whether or not to return the hidden states of all layers. See `hidden_states` under returned tensors for
+  more detail. This argument can be used only in eager mode, in graph mode the value in the config will be
+  used instead.
+- **return_dict** (`bool`, *optional*) --
+  Whether or not to return a [ModelOutput](/docs/transformers/master/en/main_classes/output#transformers.file_utils.ModelOutput) instead of a plain tuple. This argument can be used
+  in eager mode, in graph mode the value will always be set to True.
+- **training** (`bool`, *optional*, defaults to `False`) --
+  Whether or not to use the model in training mode (some modules like dropout modules have different
+  behaviors between training and evaluation).
+
+- **start_positions** (`tf.Tensor` of shape `(batch_size,)`, *optional*) --
+  Labels for position (index) of the start of the labelled span for computing the token classification loss.
+  Positions are clamped to the length of the sequence (`sequence_length`). Position outside of the sequence
+  are not taken into account for computing the loss.
+- **end_positions** (`tf.Tensor` of shape `(batch_size,)`, *optional*) --
+  Labels for position (index) of the end of the labelled span for computing the token classification loss.
+  Positions are clamped to the length of the sequence (`sequence_length`). Position outside of the sequence
+  are not taken into account for computing the loss.</paramsdesc><paramgroups>0</paramgroups><rettype>[transformers.modeling_tf_outputs.TFQuestionAnsweringModelOutput](/docs/transformers/master/en/main_classes/output#transformers.modeling_tf_outputs.TFQuestionAnsweringModelOutput) or `tuple(tf.Tensor)`</rettype><retdesc>A [transformers.modeling_tf_outputs.TFQuestionAnsweringModelOutput](/docs/transformers/master/en/main_classes/output#transformers.modeling_tf_outputs.TFQuestionAnsweringModelOutput) or a tuple of `tf.Tensor` (if
+`return_dict=False` is passed or when `config.return_dict=False`) comprising various elements depending on the
+configuration ([DistilBertConfig](/docs/transformers/master/en/model_doc/distilbert#transformers.DistilBertConfig)) and inputs.
+
+- **loss** (`tf.Tensor` of shape `(batch_size, )`, *optional*, returned when `start_positions` and `end_positions` are provided) -- Total span extraction loss is the sum of a Cross-Entropy for the start and end positions.
+- **start_logits** (`tf.Tensor` of shape `(batch_size, sequence_length)`) -- Span-start scores (before SoftMax).
+- **end_logits** (`tf.Tensor` of shape `(batch_size, sequence_length)`) -- Span-end scores (before SoftMax).
+- **hidden_states** (`tuple(tf.Tensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `tf.Tensor` (one for the output of the embeddings + one for the output of each layer) of shape
+  `(batch_size, sequence_length, hidden_size)`.
+
+  Hidden-states of the model at the output of each layer plus the initial embedding outputs.
+- **attentions** (`tuple(tf.Tensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `tf.Tensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length,
+  sequence_length)`.
+
+  Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
+  heads.</retdesc></docstring>
+The [TFDistilBertForQuestionAnswering](/docs/transformers/master/en/model_doc/distilbert#transformers.TFDistilBertForQuestionAnswering) forward method, overrides the `__call__` special method.
+
+<Tip>
+
+Although the recipe for forward pass needs to be defined within this function, one should call the `Module`
+instance afterwards instead of this since the former takes care of running the pre and post processing steps while
+the latter silently ignores them.
+
+</Tip>
+
+
+
+
+
+
+
+Example:
+
+```python
+>>> from transformers import DistilBertTokenizer, TFDistilBertForQuestionAnswering
+>>> import tensorflow as tf
+
+>>> tokenizer = DistilBertTokenizer.from_pretrained("distilbert-base-uncased")
+>>> model = TFDistilBertForQuestionAnswering.from_pretrained("distilbert-base-uncased")
+
+>>> question, text = "Who was Jim Henson?", "Jim Henson was a nice puppet"
+>>> input_dict = tokenizer(question, text, return_tensors="tf")
+>>> outputs = model(input_dict)
+>>> start_logits = outputs.start_logits
+>>> end_logits = outputs.end_logits
+
+>>> all_tokens = tokenizer.convert_ids_to_tokens(input_dict["input_ids"].numpy()[0])
+>>> answer = " ".join(all_tokens[tf.math.argmax(start_logits, 1)[0] : tf.math.argmax(end_logits, 1)[0] + 1])
+```
+
+
+</div></div>
+
+<h2 id="transformers.FlaxDistilBertModel">FlaxDistilBertModel</h2>
+
+<div class="docstring">
+
+<docstring><name>class transformers.FlaxDistilBertModel</name><anchor>transformers.FlaxDistilBertModel</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/distilbert/modeling_flax_distilbert.py#L527</source><parameters>[{"name": "config", "val": ": DistilBertConfig"}, {"name": "input_shape", "val": ": typing.Tuple = (1, 1)"}, {"name": "seed", "val": ": int = 0"}, {"name": "dtype", "val": ": dtype = <class 'jax._src.numpy.lax_numpy.float32'>"}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **config** ([DistilBertConfig](/docs/transformers/master/en/model_doc/distilbert#transformers.DistilBertConfig)) -- Model configuration class with all the parameters of the model.
+  Initializing with a config file does not load the weights associated with the model, only the
+  configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel.from_pretrained) method to load the model weights.</paramsdesc><paramgroups>0</paramgroups></docstring>
+The bare DistilBert Model transformer outputting raw hidden-states without any specific head on top.
+
+This model inherits from [FlaxPreTrainedModel](/docs/transformers/master/en/main_classes/model#transformers.FlaxPreTrainedModel). Check the superclass documentation for the generic methods the
+library implements for all its model (such as downloading, saving and converting weights from PyTorch models)
+
+This model is also a Flax Linen [flax.linen.Module](https://flax.readthedocs.io/en/latest/flax.linen.html#module)
+subclass. Use it as a regular Flax linen Module and refer to the Flax documentation for all matter related to
+general usage and behavior.
+
+Finally, this model supports inherent JAX features such as:
+
+- [Just-In-Time (JIT) compilation](https://jax.readthedocs.io/en/latest/jax.html#just-in-time-compilation-jit)
+- [Automatic Differentiation](https://jax.readthedocs.io/en/latest/jax.html#automatic-differentiation)
+- [Vectorization](https://jax.readthedocs.io/en/latest/jax.html#vectorization-vmap)
+- [Parallelization](https://jax.readthedocs.io/en/latest/jax.html#parallelization-pmap)
+
+
+
+
+
+<div class="docstring">
+<docstring><name>\_\_call\_\_</name><anchor>transformers.FlaxDistilBertPreTrainedModel.__call__</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/distilbert/modeling_flax_distilbert.py#L450</source><parameters>[{"name": "input_ids", "val": ""}, {"name": "attention_mask", "val": " = None"}, {"name": "head_mask", "val": " = None"}, {"name": "params", "val": ": dict = None"}, {"name": "dropout_rng", "val": ": PRNGKey = None"}, {"name": "train", "val": ": bool = False"}, {"name": "output_attentions", "val": ": typing.Optional[bool] = None"}, {"name": "output_hidden_states", "val": ": typing.Optional[bool] = None"}, {"name": "return_dict", "val": ": typing.Optional[bool] = None"}]</parameters><paramsdesc>- **input_ids** (`numpy.ndarray` of shape `(batch_size, sequence_length)`) --
+  Indices of input sequence tokens in the vocabulary.
+
+  Indices can be obtained using [BertTokenizer](/docs/transformers/master/en/model_doc/bert#transformers.BertTokenizer). See [PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.encode) and
+  [PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.__call__) for details.
+
+  [What are input IDs?](../glossary#input-ids)
+- **attention_mask** (`numpy.ndarray` of shape `(batch_size, sequence_length)`, *optional*) --
+  Mask to avoid performing attention on padding token indices. Mask values selected in `[0, 1]`:
+
+  - 1 for tokens that are **not masked**,
+  - 0 for tokens that are **masked**.
+
+  [What are attention masks?](../glossary#attention-mask)
+- **output_attentions** (`bool`, *optional*) --
+  Whether or not to return the attentions tensors of all attention layers. See `attentions` under returned
+  tensors for more detail.
+- **output_hidden_states** (`bool`, *optional*) --
+  Whether or not to return the hidden states of all layers. See `hidden_states` under returned tensors for
+  more detail.
+- **return_dict** (`bool`, *optional*) --
+  Whether or not to return a [ModelOutput](/docs/transformers/master/en/main_classes/output#transformers.file_utils.ModelOutput) instead of a plain tuple.</paramsdesc><paramgroups>0</paramgroups></docstring>
+The `FlaxDistilBertPreTrainedModel` forward method, overrides the `__call__` special method.
+
+<Tip>
+
+Although the recipe for forward pass needs to be defined within this function, one should call the `Module`
+instance afterwards instead of this since the former takes care of running the pre and post processing steps while
+the latter silently ignores them.
+
+</Tip>
+
+
+
+Example:
+
+```python
+>>> from transformers import DistilBertTokenizer, FlaxDistilBertModel
+
+>>> tokenizer = DistilBertTokenizer.from_pretrained("distilbert-base-uncased")
+>>> model = FlaxDistilBertModel.from_pretrained("distilbert-base-uncased")
+
+>>> inputs = tokenizer("Hello, my dog is cute", return_tensors="jax")
+>>> outputs = model(**inputs)
+
+>>> last_hidden_states = outputs.last_hidden_state
+```
+
+
+</div></div>
+
+<h2 id="transformers.FlaxDistilBertForMaskedLM">FlaxDistilBertForMaskedLM</h2>
+
+<div class="docstring">
+
+<docstring><name>class transformers.FlaxDistilBertForMaskedLM</name><anchor>transformers.FlaxDistilBertForMaskedLM</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/distilbert/modeling_flax_distilbert.py#L600</source><parameters>[{"name": "config", "val": ": DistilBertConfig"}, {"name": "input_shape", "val": ": typing.Tuple = (1, 1)"}, {"name": "seed", "val": ": int = 0"}, {"name": "dtype", "val": ": dtype = <class 'jax._src.numpy.lax_numpy.float32'>"}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **config** ([DistilBertConfig](/docs/transformers/master/en/model_doc/distilbert#transformers.DistilBertConfig)) -- Model configuration class with all the parameters of the model.
+  Initializing with a config file does not load the weights associated with the model, only the
+  configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel.from_pretrained) method to load the model weights.</paramsdesc><paramgroups>0</paramgroups></docstring>
+DistilBert Model with a `language modeling` head on top.
+
+This model inherits from [FlaxPreTrainedModel](/docs/transformers/master/en/main_classes/model#transformers.FlaxPreTrainedModel). Check the superclass documentation for the generic methods the
+library implements for all its model (such as downloading, saving and converting weights from PyTorch models)
+
+This model is also a Flax Linen [flax.linen.Module](https://flax.readthedocs.io/en/latest/flax.linen.html#module)
+subclass. Use it as a regular Flax linen Module and refer to the Flax documentation for all matter related to
+general usage and behavior.
+
+Finally, this model supports inherent JAX features such as:
+
+- [Just-In-Time (JIT) compilation](https://jax.readthedocs.io/en/latest/jax.html#just-in-time-compilation-jit)
+- [Automatic Differentiation](https://jax.readthedocs.io/en/latest/jax.html#automatic-differentiation)
+- [Vectorization](https://jax.readthedocs.io/en/latest/jax.html#vectorization-vmap)
+- [Parallelization](https://jax.readthedocs.io/en/latest/jax.html#parallelization-pmap)
+
+
+
+
+
+<div class="docstring">
+<docstring><name>\_\_call\_\_</name><anchor>transformers.FlaxDistilBertPreTrainedModel.__call__</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/distilbert/modeling_flax_distilbert.py#L450</source><parameters>[{"name": "input_ids", "val": ""}, {"name": "attention_mask", "val": " = None"}, {"name": "head_mask", "val": " = None"}, {"name": "params", "val": ": dict = None"}, {"name": "dropout_rng", "val": ": PRNGKey = None"}, {"name": "train", "val": ": bool = False"}, {"name": "output_attentions", "val": ": typing.Optional[bool] = None"}, {"name": "output_hidden_states", "val": ": typing.Optional[bool] = None"}, {"name": "return_dict", "val": ": typing.Optional[bool] = None"}]</parameters><paramsdesc>- **input_ids** (`numpy.ndarray` of shape `(batch_size, sequence_length)`) --
+  Indices of input sequence tokens in the vocabulary.
+
+  Indices can be obtained using [BertTokenizer](/docs/transformers/master/en/model_doc/bert#transformers.BertTokenizer). See [PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.encode) and
+  [PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.__call__) for details.
+
+  [What are input IDs?](../glossary#input-ids)
+- **attention_mask** (`numpy.ndarray` of shape `(batch_size, sequence_length)`, *optional*) --
+  Mask to avoid performing attention on padding token indices. Mask values selected in `[0, 1]`:
+
+  - 1 for tokens that are **not masked**,
+  - 0 for tokens that are **masked**.
+
+  [What are attention masks?](../glossary#attention-mask)
+- **output_attentions** (`bool`, *optional*) --
+  Whether or not to return the attentions tensors of all attention layers. See `attentions` under returned
+  tensors for more detail.
+- **output_hidden_states** (`bool`, *optional*) --
+  Whether or not to return the hidden states of all layers. See `hidden_states` under returned tensors for
+  more detail.
+- **return_dict** (`bool`, *optional*) --
+  Whether or not to return a [ModelOutput](/docs/transformers/master/en/main_classes/output#transformers.file_utils.ModelOutput) instead of a plain tuple.</paramsdesc><paramgroups>0</paramgroups><rettype>[transformers.modeling_flax_outputs.FlaxMaskedLMOutput](/docs/transformers/master/en/main_classes/output#transformers.modeling_flax_outputs.FlaxMaskedLMOutput) or `tuple(torch.FloatTensor)`</rettype><retdesc>A [transformers.modeling_flax_outputs.FlaxMaskedLMOutput](/docs/transformers/master/en/main_classes/output#transformers.modeling_flax_outputs.FlaxMaskedLMOutput) or a tuple of
+`torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising various
+elements depending on the configuration ([DistilBertConfig](/docs/transformers/master/en/model_doc/distilbert#transformers.DistilBertConfig)) and inputs.
+
+- **logits** (`jnp.ndarray` of shape `(batch_size, sequence_length, config.vocab_size)`) -- Prediction scores of the language modeling head (scores for each vocabulary token before SoftMax).
+- **hidden_states** (`tuple(jnp.ndarray)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `jnp.ndarray` (one for the output of the embeddings + one for the output of each layer) of shape
+  `(batch_size, sequence_length, hidden_size)`.
+
+  Hidden-states of the model at the output of each layer plus the initial embedding outputs.
+- **attentions** (`tuple(jnp.ndarray)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `jnp.ndarray` (one for each layer) of shape `(batch_size, num_heads, sequence_length,
+  sequence_length)`.
+
+  Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
+  heads.</retdesc></docstring>
+The `FlaxDistilBertPreTrainedModel` forward method, overrides the `__call__` special method.
+
+<Tip>
+
+Although the recipe for forward pass needs to be defined within this function, one should call the `Module`
+instance afterwards instead of this since the former takes care of running the pre and post processing steps while
+the latter silently ignores them.
+
+</Tip>
+
+
+
+
+
+
+
+Example:
+
+```python
+>>> from transformers import DistilBertTokenizer, FlaxDistilBertForMaskedLM
+
+>>> tokenizer = DistilBertTokenizer.from_pretrained("distilbert-base-uncased")
+>>> model = FlaxDistilBertForMaskedLM.from_pretrained("distilbert-base-uncased")
+
+>>> inputs = tokenizer("The capital of France is [MASK].", return_tensors="jax")
+
+>>> outputs = model(**inputs)
+>>> logits = outputs.logits
+```
+
+
+</div></div>
+
+<h2 id="transformers.FlaxDistilBertForSequenceClassification">FlaxDistilBertForSequenceClassification</h2>
+
+<div class="docstring">
+
+<docstring><name>class transformers.FlaxDistilBertForSequenceClassification</name><anchor>transformers.FlaxDistilBertForSequenceClassification</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/distilbert/modeling_flax_distilbert.py#L669</source><parameters>[{"name": "config", "val": ": DistilBertConfig"}, {"name": "input_shape", "val": ": typing.Tuple = (1, 1)"}, {"name": "seed", "val": ": int = 0"}, {"name": "dtype", "val": ": dtype = <class 'jax._src.numpy.lax_numpy.float32'>"}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **config** ([DistilBertConfig](/docs/transformers/master/en/model_doc/distilbert#transformers.DistilBertConfig)) -- Model configuration class with all the parameters of the model.
+  Initializing with a config file does not load the weights associated with the model, only the
+  configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel.from_pretrained) method to load the model weights.</paramsdesc><paramgroups>0</paramgroups></docstring>
+
+DistilBert Model transformer with a sequence classification/regression head on top (a linear layer on top of the
+pooled output) e.g. for GLUE tasks.
+
+
+This model inherits from [FlaxPreTrainedModel](/docs/transformers/master/en/main_classes/model#transformers.FlaxPreTrainedModel). Check the superclass documentation for the generic methods the
+library implements for all its model (such as downloading, saving and converting weights from PyTorch models)
+
+This model is also a Flax Linen [flax.linen.Module](https://flax.readthedocs.io/en/latest/flax.linen.html#module)
+subclass. Use it as a regular Flax linen Module and refer to the Flax documentation for all matter related to
+general usage and behavior.
+
+Finally, this model supports inherent JAX features such as:
+
+- [Just-In-Time (JIT) compilation](https://jax.readthedocs.io/en/latest/jax.html#just-in-time-compilation-jit)
+- [Automatic Differentiation](https://jax.readthedocs.io/en/latest/jax.html#automatic-differentiation)
+- [Vectorization](https://jax.readthedocs.io/en/latest/jax.html#vectorization-vmap)
+- [Parallelization](https://jax.readthedocs.io/en/latest/jax.html#parallelization-pmap)
+
+
+
+
+
+<div class="docstring">
+<docstring><name>\_\_call\_\_</name><anchor>transformers.FlaxDistilBertPreTrainedModel.__call__</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/distilbert/modeling_flax_distilbert.py#L450</source><parameters>[{"name": "input_ids", "val": ""}, {"name": "attention_mask", "val": " = None"}, {"name": "head_mask", "val": " = None"}, {"name": "params", "val": ": dict = None"}, {"name": "dropout_rng", "val": ": PRNGKey = None"}, {"name": "train", "val": ": bool = False"}, {"name": "output_attentions", "val": ": typing.Optional[bool] = None"}, {"name": "output_hidden_states", "val": ": typing.Optional[bool] = None"}, {"name": "return_dict", "val": ": typing.Optional[bool] = None"}]</parameters><paramsdesc>- **input_ids** (`numpy.ndarray` of shape `(batch_size, sequence_length)`) --
+  Indices of input sequence tokens in the vocabulary.
+
+  Indices can be obtained using [BertTokenizer](/docs/transformers/master/en/model_doc/bert#transformers.BertTokenizer). See [PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.encode) and
+  [PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.__call__) for details.
+
+  [What are input IDs?](../glossary#input-ids)
+- **attention_mask** (`numpy.ndarray` of shape `(batch_size, sequence_length)`, *optional*) --
+  Mask to avoid performing attention on padding token indices. Mask values selected in `[0, 1]`:
+
+  - 1 for tokens that are **not masked**,
+  - 0 for tokens that are **masked**.
+
+  [What are attention masks?](../glossary#attention-mask)
+- **output_attentions** (`bool`, *optional*) --
+  Whether or not to return the attentions tensors of all attention layers. See `attentions` under returned
+  tensors for more detail.
+- **output_hidden_states** (`bool`, *optional*) --
+  Whether or not to return the hidden states of all layers. See `hidden_states` under returned tensors for
+  more detail.
+- **return_dict** (`bool`, *optional*) --
+  Whether or not to return a [ModelOutput](/docs/transformers/master/en/main_classes/output#transformers.file_utils.ModelOutput) instead of a plain tuple.</paramsdesc><paramgroups>0</paramgroups><rettype>[transformers.modeling_flax_outputs.FlaxSequenceClassifierOutput](/docs/transformers/master/en/main_classes/output#transformers.modeling_flax_outputs.FlaxSequenceClassifierOutput) or `tuple(torch.FloatTensor)`</rettype><retdesc>A [transformers.modeling_flax_outputs.FlaxSequenceClassifierOutput](/docs/transformers/master/en/main_classes/output#transformers.modeling_flax_outputs.FlaxSequenceClassifierOutput) or a tuple of
+`torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising various
+elements depending on the configuration ([DistilBertConfig](/docs/transformers/master/en/model_doc/distilbert#transformers.DistilBertConfig)) and inputs.
+
+- **logits** (`jnp.ndarray` of shape `(batch_size, config.num_labels)`) -- Classification (or regression if config.num_labels==1) scores (before SoftMax).
+- **hidden_states** (`tuple(jnp.ndarray)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `jnp.ndarray` (one for the output of the embeddings + one for the output of each layer) of shape
+  `(batch_size, sequence_length, hidden_size)`.
+
+  Hidden-states of the model at the output of each layer plus the initial embedding outputs.
+- **attentions** (`tuple(jnp.ndarray)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `jnp.ndarray` (one for each layer) of shape `(batch_size, num_heads, sequence_length,
+  sequence_length)`.
+
+  Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
+  heads.</retdesc></docstring>
+The `FlaxDistilBertPreTrainedModel` forward method, overrides the `__call__` special method.
+
+<Tip>
+
+Although the recipe for forward pass needs to be defined within this function, one should call the `Module`
+instance afterwards instead of this since the former takes care of running the pre and post processing steps while
+the latter silently ignores them.
+
+</Tip>
+
+
+
+
+
+
+
+Example:
+
+```python
+>>> from transformers import DistilBertTokenizer, FlaxDistilBertForSequenceClassification
+
+>>> tokenizer = DistilBertTokenizer.from_pretrained("distilbert-base-uncased")
+>>> model = FlaxDistilBertForSequenceClassification.from_pretrained("distilbert-base-uncased")
+
+>>> inputs = tokenizer("Hello, my dog is cute", return_tensors="jax")
+
+>>> outputs = model(**inputs)
+>>> logits = outputs.logits
+```
+
+
+</div></div>
+
+<h2 id="transformers.FlaxDistilBertForMultipleChoice">FlaxDistilBertForMultipleChoice</h2>
+
+<div class="docstring">
+
+<docstring><name>class transformers.FlaxDistilBertForMultipleChoice</name><anchor>transformers.FlaxDistilBertForMultipleChoice</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/distilbert/modeling_flax_distilbert.py#L749</source><parameters>[{"name": "config", "val": ": DistilBertConfig"}, {"name": "input_shape", "val": ": typing.Tuple = (1, 1)"}, {"name": "seed", "val": ": int = 0"}, {"name": "dtype", "val": ": dtype = <class 'jax._src.numpy.lax_numpy.float32'>"}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **config** ([DistilBertConfig](/docs/transformers/master/en/model_doc/distilbert#transformers.DistilBertConfig)) -- Model configuration class with all the parameters of the model.
+  Initializing with a config file does not load the weights associated with the model, only the
+  configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel.from_pretrained) method to load the model weights.</paramsdesc><paramgroups>0</paramgroups></docstring>
+
+DistilBert Model with a multiple choice classification head on top (a linear layer on top of the pooled output and
+a softmax) e.g. for RocStories/SWAG tasks.
+
+
+This model inherits from [FlaxPreTrainedModel](/docs/transformers/master/en/main_classes/model#transformers.FlaxPreTrainedModel). Check the superclass documentation for the generic methods the
+library implements for all its model (such as downloading, saving and converting weights from PyTorch models)
+
+This model is also a Flax Linen [flax.linen.Module](https://flax.readthedocs.io/en/latest/flax.linen.html#module)
+subclass. Use it as a regular Flax linen Module and refer to the Flax documentation for all matter related to
+general usage and behavior.
+
+Finally, this model supports inherent JAX features such as:
+
+- [Just-In-Time (JIT) compilation](https://jax.readthedocs.io/en/latest/jax.html#just-in-time-compilation-jit)
+- [Automatic Differentiation](https://jax.readthedocs.io/en/latest/jax.html#automatic-differentiation)
+- [Vectorization](https://jax.readthedocs.io/en/latest/jax.html#vectorization-vmap)
+- [Parallelization](https://jax.readthedocs.io/en/latest/jax.html#parallelization-pmap)
+
+
+
+
+
+<div class="docstring">
+<docstring><name>\_\_call\_\_</name><anchor>transformers.FlaxDistilBertPreTrainedModel.__call__</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/distilbert/modeling_flax_distilbert.py#L450</source><parameters>[{"name": "input_ids", "val": ""}, {"name": "attention_mask", "val": " = None"}, {"name": "head_mask", "val": " = None"}, {"name": "params", "val": ": dict = None"}, {"name": "dropout_rng", "val": ": PRNGKey = None"}, {"name": "train", "val": ": bool = False"}, {"name": "output_attentions", "val": ": typing.Optional[bool] = None"}, {"name": "output_hidden_states", "val": ": typing.Optional[bool] = None"}, {"name": "return_dict", "val": ": typing.Optional[bool] = None"}]</parameters><paramsdesc>- **input_ids** (`numpy.ndarray` of shape `(batch_size, num_choices, sequence_length)`) --
+  Indices of input sequence tokens in the vocabulary.
+
+  Indices can be obtained using [BertTokenizer](/docs/transformers/master/en/model_doc/bert#transformers.BertTokenizer). See [PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.encode) and
+  [PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.__call__) for details.
+
+  [What are input IDs?](../glossary#input-ids)
+- **attention_mask** (`numpy.ndarray` of shape `(batch_size, num_choices, sequence_length)`, *optional*) --
+  Mask to avoid performing attention on padding token indices. Mask values selected in `[0, 1]`:
+
+  - 1 for tokens that are **not masked**,
+  - 0 for tokens that are **masked**.
+
+  [What are attention masks?](../glossary#attention-mask)
+- **output_attentions** (`bool`, *optional*) --
+  Whether or not to return the attentions tensors of all attention layers. See `attentions` under returned
+  tensors for more detail.
+- **output_hidden_states** (`bool`, *optional*) --
+  Whether or not to return the hidden states of all layers. See `hidden_states` under returned tensors for
+  more detail.
+- **return_dict** (`bool`, *optional*) --
+  Whether or not to return a [ModelOutput](/docs/transformers/master/en/main_classes/output#transformers.file_utils.ModelOutput) instead of a plain tuple.</paramsdesc><paramgroups>0</paramgroups><rettype>[transformers.modeling_flax_outputs.FlaxMultipleChoiceModelOutput](/docs/transformers/master/en/main_classes/output#transformers.modeling_flax_outputs.FlaxMultipleChoiceModelOutput) or `tuple(torch.FloatTensor)`</rettype><retdesc>A [transformers.modeling_flax_outputs.FlaxMultipleChoiceModelOutput](/docs/transformers/master/en/main_classes/output#transformers.modeling_flax_outputs.FlaxMultipleChoiceModelOutput) or a tuple of
+`torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising various
+elements depending on the configuration ([DistilBertConfig](/docs/transformers/master/en/model_doc/distilbert#transformers.DistilBertConfig)) and inputs.
+
+- **logits** (`jnp.ndarray` of shape `(batch_size, num_choices)`) -- *num_choices* is the second dimension of the input tensors. (see *input_ids* above).
+
+  Classification scores (before SoftMax).
+- **hidden_states** (`tuple(jnp.ndarray)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `jnp.ndarray` (one for the output of the embeddings + one for the output of each layer) of shape
+  `(batch_size, sequence_length, hidden_size)`.
+
+  Hidden-states of the model at the output of each layer plus the initial embedding outputs.
+- **attentions** (`tuple(jnp.ndarray)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `jnp.ndarray` (one for each layer) of shape `(batch_size, num_heads, sequence_length,
+  sequence_length)`.
+
+  Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
+  heads.</retdesc></docstring>
+The `FlaxDistilBertPreTrainedModel` forward method, overrides the `__call__` special method.
+
+<Tip>
+
+Although the recipe for forward pass needs to be defined within this function, one should call the `Module`
+instance afterwards instead of this since the former takes care of running the pre and post processing steps while
+the latter silently ignores them.
+
+</Tip>
+
+
+
+
+
+
+
+Example:
+
+```python
+>>> from transformers import DistilBertTokenizer, FlaxDistilBertForMultipleChoice
+
+>>> tokenizer = DistilBertTokenizer.from_pretrained("distilbert-base-uncased")
+>>> model = FlaxDistilBertForMultipleChoice.from_pretrained("distilbert-base-uncased")
+
+>>> prompt = "In Italy, pizza served in formal settings, such as at a restaurant, is presented unsliced."
+>>> choice0 = "It is eaten with a fork and a knife."
+>>> choice1 = "It is eaten while held in the hand."
+
+>>> encoding = tokenizer([prompt, prompt], [choice0, choice1], return_tensors="jax", padding=True)
+>>> outputs = model(**&amp;lcub;k: v[None, :] for k, v in encoding.items()})
+
+>>> logits = outputs.logits
+```
+
+
+</div></div>
+
+<h2 id="transformers.FlaxDistilBertForTokenClassification">FlaxDistilBertForTokenClassification</h2>
+
+<div class="docstring">
+
+<docstring><name>class transformers.FlaxDistilBertForTokenClassification</name><anchor>transformers.FlaxDistilBertForTokenClassification</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/distilbert/modeling_flax_distilbert.py#L815</source><parameters>[{"name": "config", "val": ": DistilBertConfig"}, {"name": "input_shape", "val": ": typing.Tuple = (1, 1)"}, {"name": "seed", "val": ": int = 0"}, {"name": "dtype", "val": ": dtype = <class 'jax._src.numpy.lax_numpy.float32'>"}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **config** ([DistilBertConfig](/docs/transformers/master/en/model_doc/distilbert#transformers.DistilBertConfig)) -- Model configuration class with all the parameters of the model.
+  Initializing with a config file does not load the weights associated with the model, only the
+  configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel.from_pretrained) method to load the model weights.</paramsdesc><paramgroups>0</paramgroups></docstring>
+
+DistilBert Model with a token classification head on top (a linear layer on top of the hidden-states output) e.g.
+for Named-Entity-Recognition (NER) tasks.
+
+
+This model inherits from [FlaxPreTrainedModel](/docs/transformers/master/en/main_classes/model#transformers.FlaxPreTrainedModel). Check the superclass documentation for the generic methods the
+library implements for all its model (such as downloading, saving and converting weights from PyTorch models)
+
+This model is also a Flax Linen [flax.linen.Module](https://flax.readthedocs.io/en/latest/flax.linen.html#module)
+subclass. Use it as a regular Flax linen Module and refer to the Flax documentation for all matter related to
+general usage and behavior.
+
+Finally, this model supports inherent JAX features such as:
+
+- [Just-In-Time (JIT) compilation](https://jax.readthedocs.io/en/latest/jax.html#just-in-time-compilation-jit)
+- [Automatic Differentiation](https://jax.readthedocs.io/en/latest/jax.html#automatic-differentiation)
+- [Vectorization](https://jax.readthedocs.io/en/latest/jax.html#vectorization-vmap)
+- [Parallelization](https://jax.readthedocs.io/en/latest/jax.html#parallelization-pmap)
+
+
+
+
+
+<div class="docstring">
+<docstring><name>\_\_call\_\_</name><anchor>transformers.FlaxDistilBertPreTrainedModel.__call__</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/distilbert/modeling_flax_distilbert.py#L450</source><parameters>[{"name": "input_ids", "val": ""}, {"name": "attention_mask", "val": " = None"}, {"name": "head_mask", "val": " = None"}, {"name": "params", "val": ": dict = None"}, {"name": "dropout_rng", "val": ": PRNGKey = None"}, {"name": "train", "val": ": bool = False"}, {"name": "output_attentions", "val": ": typing.Optional[bool] = None"}, {"name": "output_hidden_states", "val": ": typing.Optional[bool] = None"}, {"name": "return_dict", "val": ": typing.Optional[bool] = None"}]</parameters><paramsdesc>- **input_ids** (`numpy.ndarray` of shape `(batch_size, sequence_length)`) --
+  Indices of input sequence tokens in the vocabulary.
+
+  Indices can be obtained using [BertTokenizer](/docs/transformers/master/en/model_doc/bert#transformers.BertTokenizer). See [PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.encode) and
+  [PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.__call__) for details.
+
+  [What are input IDs?](../glossary#input-ids)
+- **attention_mask** (`numpy.ndarray` of shape `(batch_size, sequence_length)`, *optional*) --
+  Mask to avoid performing attention on padding token indices. Mask values selected in `[0, 1]`:
+
+  - 1 for tokens that are **not masked**,
+  - 0 for tokens that are **masked**.
+
+  [What are attention masks?](../glossary#attention-mask)
+- **output_attentions** (`bool`, *optional*) --
+  Whether or not to return the attentions tensors of all attention layers. See `attentions` under returned
+  tensors for more detail.
+- **output_hidden_states** (`bool`, *optional*) --
+  Whether or not to return the hidden states of all layers. See `hidden_states` under returned tensors for
+  more detail.
+- **return_dict** (`bool`, *optional*) --
+  Whether or not to return a [ModelOutput](/docs/transformers/master/en/main_classes/output#transformers.file_utils.ModelOutput) instead of a plain tuple.</paramsdesc><paramgroups>0</paramgroups><rettype>[transformers.modeling_flax_outputs.FlaxTokenClassifierOutput](/docs/transformers/master/en/main_classes/output#transformers.modeling_flax_outputs.FlaxTokenClassifierOutput) or `tuple(torch.FloatTensor)`</rettype><retdesc>A [transformers.modeling_flax_outputs.FlaxTokenClassifierOutput](/docs/transformers/master/en/main_classes/output#transformers.modeling_flax_outputs.FlaxTokenClassifierOutput) or a tuple of
+`torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising various
+elements depending on the configuration ([DistilBertConfig](/docs/transformers/master/en/model_doc/distilbert#transformers.DistilBertConfig)) and inputs.
+
+- **logits** (`jnp.ndarray` of shape `(batch_size, sequence_length, config.num_labels)`) -- Classification scores (before SoftMax).
+- **hidden_states** (`tuple(jnp.ndarray)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `jnp.ndarray` (one for the output of the embeddings + one for the output of each layer) of shape
+  `(batch_size, sequence_length, hidden_size)`.
+
+  Hidden-states of the model at the output of each layer plus the initial embedding outputs.
+- **attentions** (`tuple(jnp.ndarray)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `jnp.ndarray` (one for each layer) of shape `(batch_size, num_heads, sequence_length,
+  sequence_length)`.
+
+  Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
+  heads.</retdesc></docstring>
+The `FlaxDistilBertPreTrainedModel` forward method, overrides the `__call__` special method.
+
+<Tip>
+
+Although the recipe for forward pass needs to be defined within this function, one should call the `Module`
+instance afterwards instead of this since the former takes care of running the pre and post processing steps while
+the latter silently ignores them.
+
+</Tip>
+
+
+
+
+
+
+
+Example:
+
+```python
+>>> from transformers import DistilBertTokenizer, FlaxDistilBertForTokenClassification
+
+>>> tokenizer = DistilBertTokenizer.from_pretrained("distilbert-base-uncased")
+>>> model = FlaxDistilBertForTokenClassification.from_pretrained("distilbert-base-uncased")
+
+>>> inputs = tokenizer("Hello, my dog is cute", return_tensors="jax")
+
+>>> outputs = model(**inputs)
+>>> logits = outputs.logits
+```
+
+
+</div></div>
+
+<h2 id="transformers.FlaxDistilBertForQuestionAnswering">FlaxDistilBertForQuestionAnswering</h2>
+
+<div class="docstring">
+
+<docstring><name>class transformers.FlaxDistilBertForQuestionAnswering</name><anchor>transformers.FlaxDistilBertForQuestionAnswering</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/distilbert/modeling_flax_distilbert.py#L885</source><parameters>[{"name": "config", "val": ": DistilBertConfig"}, {"name": "input_shape", "val": ": typing.Tuple = (1, 1)"}, {"name": "seed", "val": ": int = 0"}, {"name": "dtype", "val": ": dtype = <class 'jax._src.numpy.lax_numpy.float32'>"}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **config** ([DistilBertConfig](/docs/transformers/master/en/model_doc/distilbert#transformers.DistilBertConfig)) -- Model configuration class with all the parameters of the model.
+  Initializing with a config file does not load the weights associated with the model, only the
+  configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel.from_pretrained) method to load the model weights.</paramsdesc><paramgroups>0</paramgroups></docstring>
+
+DistilBert Model with a span classification head on top for extractive question-answering tasks like SQuAD (a
+linear layers on top of the hidden-states output to compute `span start logits` and `span end logits`).
+
+
+This model inherits from [FlaxPreTrainedModel](/docs/transformers/master/en/main_classes/model#transformers.FlaxPreTrainedModel). Check the superclass documentation for the generic methods the
+library implements for all its model (such as downloading, saving and converting weights from PyTorch models)
+
+This model is also a Flax Linen [flax.linen.Module](https://flax.readthedocs.io/en/latest/flax.linen.html#module)
+subclass. Use it as a regular Flax linen Module and refer to the Flax documentation for all matter related to
+general usage and behavior.
+
+Finally, this model supports inherent JAX features such as:
+
+- [Just-In-Time (JIT) compilation](https://jax.readthedocs.io/en/latest/jax.html#just-in-time-compilation-jit)
+- [Automatic Differentiation](https://jax.readthedocs.io/en/latest/jax.html#automatic-differentiation)
+- [Vectorization](https://jax.readthedocs.io/en/latest/jax.html#vectorization-vmap)
+- [Parallelization](https://jax.readthedocs.io/en/latest/jax.html#parallelization-pmap)
+
+
+
+
+
+<div class="docstring">
+<docstring><name>\_\_call\_\_</name><anchor>transformers.FlaxDistilBertPreTrainedModel.__call__</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/distilbert/modeling_flax_distilbert.py#L450</source><parameters>[{"name": "input_ids", "val": ""}, {"name": "attention_mask", "val": " = None"}, {"name": "head_mask", "val": " = None"}, {"name": "params", "val": ": dict = None"}, {"name": "dropout_rng", "val": ": PRNGKey = None"}, {"name": "train", "val": ": bool = False"}, {"name": "output_attentions", "val": ": typing.Optional[bool] = None"}, {"name": "output_hidden_states", "val": ": typing.Optional[bool] = None"}, {"name": "return_dict", "val": ": typing.Optional[bool] = None"}]</parameters><paramsdesc>- **input_ids** (`numpy.ndarray` of shape `(batch_size, sequence_length)`) --
+  Indices of input sequence tokens in the vocabulary.
+
+  Indices can be obtained using [BertTokenizer](/docs/transformers/master/en/model_doc/bert#transformers.BertTokenizer). See [PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.encode) and
+  [PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.__call__) for details.
+
+  [What are input IDs?](../glossary#input-ids)
+- **attention_mask** (`numpy.ndarray` of shape `(batch_size, sequence_length)`, *optional*) --
+  Mask to avoid performing attention on padding token indices. Mask values selected in `[0, 1]`:
+
+  - 1 for tokens that are **not masked**,
+  - 0 for tokens that are **masked**.
+
+  [What are attention masks?](../glossary#attention-mask)
+- **output_attentions** (`bool`, *optional*) --
+  Whether or not to return the attentions tensors of all attention layers. See `attentions` under returned
+  tensors for more detail.
+- **output_hidden_states** (`bool`, *optional*) --
+  Whether or not to return the hidden states of all layers. See `hidden_states` under returned tensors for
+  more detail.
+- **return_dict** (`bool`, *optional*) --
+  Whether or not to return a [ModelOutput](/docs/transformers/master/en/main_classes/output#transformers.file_utils.ModelOutput) instead of a plain tuple.</paramsdesc><paramgroups>0</paramgroups><rettype>[transformers.modeling_flax_outputs.FlaxQuestionAnsweringModelOutput](/docs/transformers/master/en/main_classes/output#transformers.modeling_flax_outputs.FlaxQuestionAnsweringModelOutput) or `tuple(torch.FloatTensor)`</rettype><retdesc>A [transformers.modeling_flax_outputs.FlaxQuestionAnsweringModelOutput](/docs/transformers/master/en/main_classes/output#transformers.modeling_flax_outputs.FlaxQuestionAnsweringModelOutput) or a tuple of
+`torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising various
+elements depending on the configuration ([DistilBertConfig](/docs/transformers/master/en/model_doc/distilbert#transformers.DistilBertConfig)) and inputs.
+
+- **start_logits** (`jnp.ndarray` of shape `(batch_size, sequence_length)`) -- Span-start scores (before SoftMax).
+- **end_logits** (`jnp.ndarray` of shape `(batch_size, sequence_length)`) -- Span-end scores (before SoftMax).
+- **hidden_states** (`tuple(jnp.ndarray)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `jnp.ndarray` (one for the output of the embeddings + one for the output of each layer) of shape
+  `(batch_size, sequence_length, hidden_size)`.
+
+  Hidden-states of the model at the output of each layer plus the initial embedding outputs.
+- **attentions** (`tuple(jnp.ndarray)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `jnp.ndarray` (one for each layer) of shape `(batch_size, num_heads, sequence_length,
+  sequence_length)`.
+
+  Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
+  heads.</retdesc></docstring>
+The `FlaxDistilBertPreTrainedModel` forward method, overrides the `__call__` special method.
+
+<Tip>
+
+Although the recipe for forward pass needs to be defined within this function, one should call the `Module`
+instance afterwards instead of this since the former takes care of running the pre and post processing steps while
+the latter silently ignores them.
+
+</Tip>
+
+
+
+
+
+
+
+Example:
+
+```python
+>>> from transformers import DistilBertTokenizer, FlaxDistilBertForQuestionAnswering
+
+>>> tokenizer = DistilBertTokenizer.from_pretrained("distilbert-base-uncased")
+>>> model = FlaxDistilBertForQuestionAnswering.from_pretrained("distilbert-base-uncased")
+
+>>> question, text = "Who was Jim Henson?", "Jim Henson was a nice puppet"
+>>> inputs = tokenizer(question, text, return_tensors="jax")
+
+>>> outputs = model(**inputs)
+>>> start_scores = outputs.start_logits
+>>> end_scores = outputs.end_logits
+```
+
+
+</div></div>

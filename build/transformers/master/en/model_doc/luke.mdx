@@ -1,0 +1,1202 @@
+---
+local: luke
+sections:
+- local: overview
+  title: Overview
+- local: transformers.LukeConfig
+  title: LukeConfig
+- local: transformers.LukeTokenizer
+  title: LukeTokenizer
+- local: transformers.LukeModel
+  title: LukeModel
+- local: transformers.LukeForMaskedLM
+  title: LukeForMaskedLM
+- local: transformers.LukeForEntityClassification
+  title: LukeForEntityClassification
+- local: transformers.LukeForEntityPairClassification
+  title: LukeForEntityPairClassification
+- local: transformers.LukeForEntitySpanClassification
+  title: LukeForEntitySpanClassification
+title: LUKE
+---
+<script>
+import Tip from "./Tip.svelte";
+import Youtube from "./Youtube.svelte";
+import Docstring from "./Docstring.svelte";
+import CodeBlock from "./CodeBlock.svelte";
+import CodeBlockFw from "./CodeBlockFw.svelte";
+import ColabDropdown from "./ColabDropdown.svelte";
+import IconCopyLink from "./IconCopyLink.svelte";
+export let fw: "pt" | "tf"
+</script>
+<!--Copyright 2021 The HuggingFace Team. All rights reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
+the License. You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on
+an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
+specific language governing permissions and limitations under the License.
+-->
+
+<h1 id="luke">LUKE</h1>
+
+<h2 id="overview">Overview</h2>
+
+The LUKE model was proposed in [LUKE: Deep Contextualized Entity Representations with Entity-aware Self-attention](https://arxiv.org/abs/2010.01057) by Ikuya Yamada, Akari Asai, Hiroyuki Shindo, Hideaki Takeda and Yuji Matsumoto.
+It is based on RoBERTa and adds entity embeddings as well as an entity-aware self-attention mechanism, which helps
+improve performance on various downstream tasks involving reasoning about entities such as named entity recognition,
+extractive and cloze-style question answering, entity typing, and relation classification.
+
+The abstract from the paper is the following:
+
+*Entity representations are useful in natural language tasks involving entities. In this paper, we propose new
+pretrained contextualized representations of words and entities based on the bidirectional transformer. The proposed
+model treats words and entities in a given text as independent tokens, and outputs contextualized representations of
+them. Our model is trained using a new pretraining task based on the masked language model of BERT. The task involves
+predicting randomly masked words and entities in a large entity-annotated corpus retrieved from Wikipedia. We also
+propose an entity-aware self-attention mechanism that is an extension of the self-attention mechanism of the
+transformer, and considers the types of tokens (words or entities) when computing attention scores. The proposed model
+achieves impressive empirical performance on a wide range of entity-related tasks. In particular, it obtains
+state-of-the-art results on five well-known datasets: Open Entity (entity typing), TACRED (relation classification),
+CoNLL-2003 (named entity recognition), ReCoRD (cloze-style question answering), and SQuAD 1.1 (extractive question
+answering).*
+
+Tips:
+
+- This implementation is the same as [RobertaModel](/docs/transformers/master/en/model_doc/roberta#transformers.RobertaModel) with the addition of entity embeddings as well
+  as an entity-aware self-attention mechanism, which improves performance on tasks involving reasoning about entities.
+- LUKE treats entities as input tokens; therefore, it takes `entity_ids`, `entity_attention_mask`,
+  `entity_token_type_ids` and `entity_position_ids` as extra input. You can obtain those using
+  [LukeTokenizer](/docs/transformers/master/en/model_doc/luke#transformers.LukeTokenizer).
+- [LukeTokenizer](/docs/transformers/master/en/model_doc/luke#transformers.LukeTokenizer) takes `entities` and `entity_spans` (character-based start and end
+  positions of the entities in the input text) as extra input. `entities` typically consist of [MASK] entities or
+  Wikipedia entities. The brief description when inputting these entities are as follows:
+
+  - *Inputting [MASK] entities to compute entity representations*: The [MASK] entity is used to mask entities to be
+    predicted during pretraining. When LUKE receives the [MASK] entity, it tries to predict the original entity by
+    gathering the information about the entity from the input text. Therefore, the [MASK] entity can be used to address
+    downstream tasks requiring the information of entities in text such as entity typing, relation classification, and
+    named entity recognition.
+  - *Inputting Wikipedia entities to compute knowledge-enhanced token representations*: LUKE learns rich information
+    (or knowledge) about Wikipedia entities during pretraining and stores the information in its entity embedding. By
+    using Wikipedia entities as input tokens, LUKE outputs token representations enriched by the information stored in
+    the embeddings of these entities. This is particularly effective for tasks requiring real-world knowledge, such as
+    question answering.
+
+- There are three head models for the former use case:
+
+  - [LukeForEntityClassification](/docs/transformers/master/en/model_doc/luke#transformers.LukeForEntityClassification), for tasks to classify a single entity in an input text such as
+    entity typing, e.g. the [Open Entity dataset](https://www.cs.utexas.edu/~eunsol/html_pages/open_entity.html).
+    This model places a linear head on top of the output entity representation.
+  - [LukeForEntityPairClassification](/docs/transformers/master/en/model_doc/luke#transformers.LukeForEntityPairClassification), for tasks to classify the relationship between two entities
+    such as relation classification, e.g. the [TACRED dataset](https://nlp.stanford.edu/projects/tacred/). This
+    model places a linear head on top of the concatenated output representation of the pair of given entities.
+  - [LukeForEntitySpanClassification](/docs/transformers/master/en/model_doc/luke#transformers.LukeForEntitySpanClassification), for tasks to classify the sequence of entity spans, such as
+    named entity recognition (NER). This model places a linear head on top of the output entity representations. You
+    can address NER using this model by inputting all possible entity spans in the text to the model.
+
+  [LukeTokenizer](/docs/transformers/master/en/model_doc/luke#transformers.LukeTokenizer) has a `task` argument, which enables you to easily create an input to these
+  head models by specifying `task="entity_classification"`, `task="entity_pair_classification"`, or
+  `task="entity_span_classification"`. Please refer to the example code of each head models.
+
+  A demo notebook on how to fine-tune [LukeForEntityPairClassification](/docs/transformers/master/en/model_doc/luke#transformers.LukeForEntityPairClassification) for relation
+  classification can be found [here](https://github.com/NielsRogge/Transformers-Tutorials/tree/master/LUKE).
+
+  There are also 3 notebooks available, which showcase how you can reproduce the results as reported in the paper with
+  the HuggingFace implementation of LUKE. They can be found [here](https://github.com/studio-ousia/luke/tree/master/notebooks).
+
+Example:
+
+```python
+>>> from transformers import LukeTokenizer, LukeModel, LukeForEntityPairClassification
+
+>>> model = LukeModel.from_pretrained("studio-ousia/luke-base")
+>>> tokenizer = LukeTokenizer.from_pretrained("studio-ousia/luke-base")
+# Example 1: Computing the contextualized entity representation corresponding to the entity mention "Beyoncé"
+
+>>> text = "Beyoncé lives in Los Angeles."
+>>> entity_spans = [(0, 7)]  # character-based entity span corresponding to "Beyoncé"
+>>> inputs = tokenizer(text, entity_spans=entity_spans, add_prefix_space=True, return_tensors="pt")
+>>> outputs = model(**inputs)
+>>> word_last_hidden_state = outputs.last_hidden_state
+>>> entity_last_hidden_state = outputs.entity_last_hidden_state
+# Example 2: Inputting Wikipedia entities to obtain enriched contextualized representations
+
+>>> entities = [
+...     "Beyoncé",
+...     "Los Angeles",
+>>> ]  # Wikipedia entity titles corresponding to the entity mentions "Beyoncé" and "Los Angeles"
+>>> entity_spans = [(0, 7), (17, 28)]  # character-based entity spans corresponding to "Beyoncé" and "Los Angeles"
+>>> inputs = tokenizer(text, entities=entities, entity_spans=entity_spans, add_prefix_space=True, return_tensors="pt")
+>>> outputs = model(**inputs)
+>>> word_last_hidden_state = outputs.last_hidden_state
+>>> entity_last_hidden_state = outputs.entity_last_hidden_state
+# Example 3: Classifying the relationship between two entities using LukeForEntityPairClassification head model
+
+>>> model = LukeForEntityPairClassification.from_pretrained("studio-ousia/luke-large-finetuned-tacred")
+>>> tokenizer = LukeTokenizer.from_pretrained("studio-ousia/luke-large-finetuned-tacred")
+>>> entity_spans = [(0, 7), (17, 28)]  # character-based entity spans corresponding to "Beyoncé" and "Los Angeles"
+>>> inputs = tokenizer(text, entity_spans=entity_spans, return_tensors="pt")
+>>> outputs = model(**inputs)
+>>> logits = outputs.logits
+>>> predicted_class_idx = int(logits[0].argmax())
+>>> print("Predicted class:", model.config.id2label[predicted_class_idx])
+```
+
+This model was contributed by [ikuyamada](https://huggingface.co/ikuyamada) and [nielsr](https://huggingface.co/nielsr). The original code can be found [here](https://github.com/studio-ousia/luke).
+
+
+<h2 id="transformers.LukeConfig">LukeConfig</h2>
+
+<div class="docstring">
+
+<docstring><name>class transformers.LukeConfig</name><anchor>transformers.LukeConfig</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/luke/configuration_luke.py#L29</source><parameters>[{"name": "vocab_size", "val": " = 50267"}, {"name": "entity_vocab_size", "val": " = 500000"}, {"name": "hidden_size", "val": " = 768"}, {"name": "entity_emb_size", "val": " = 256"}, {"name": "num_hidden_layers", "val": " = 12"}, {"name": "num_attention_heads", "val": " = 12"}, {"name": "intermediate_size", "val": " = 3072"}, {"name": "hidden_act", "val": " = 'gelu'"}, {"name": "hidden_dropout_prob", "val": " = 0.1"}, {"name": "attention_probs_dropout_prob", "val": " = 0.1"}, {"name": "max_position_embeddings", "val": " = 512"}, {"name": "type_vocab_size", "val": " = 2"}, {"name": "initializer_range", "val": " = 0.02"}, {"name": "layer_norm_eps", "val": " = 1e-12"}, {"name": "use_entity_aware_attention", "val": " = True"}, {"name": "pad_token_id", "val": " = 1"}, {"name": "bos_token_id", "val": " = 0"}, {"name": "eos_token_id", "val": " = 2"}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **vocab_size** (`int`, *optional*, defaults to 30522) --
+  Vocabulary size of the LUKE model. Defines the number of different tokens that can be represented by the
+  `inputs_ids` passed when calling [LukeModel](/docs/transformers/master/en/model_doc/luke#transformers.LukeModel).
+- **entity_vocab_size** (`int`, *optional*, defaults to 500000) --
+  Entity vocabulary size of the LUKE model. Defines the number of different entities that can be represented
+  by the `entity_ids` passed when calling [LukeModel](/docs/transformers/master/en/model_doc/luke#transformers.LukeModel).
+- **hidden_size** (`int`, *optional*, defaults to 768) --
+  Dimensionality of the encoder layers and the pooler layer.
+- **entity_emb_size** (`int`, *optional*, defaults to 256) --
+  The number of dimensions of the entity embedding.
+- **num_hidden_layers** (`int`, *optional*, defaults to 12) --
+  Number of hidden layers in the Transformer encoder.
+- **num_attention_heads** (`int`, *optional*, defaults to 12) --
+  Number of attention heads for each attention layer in the Transformer encoder.
+- **intermediate_size** (`int`, *optional*, defaults to 3072) --
+  Dimensionality of the "intermediate" (often named feed-forward) layer in the Transformer encoder.
+- **hidden_act** (`str` or `Callable`, *optional*, defaults to `"gelu"`) --
+  The non-linear activation function (function or string) in the encoder and pooler. If string, `"gelu"`,
+  `"relu"`, `"silu"` and `"gelu_new"` are supported.
+- **hidden_dropout_prob** (`float`, *optional*, defaults to 0.1) --
+  The dropout probability for all fully connected layers in the embeddings, encoder, and pooler.
+- **attention_probs_dropout_prob** (`float`, *optional*, defaults to 0.1) --
+  The dropout ratio for the attention probabilities.
+- **max_position_embeddings** (`int`, *optional*, defaults to 512) --
+  The maximum sequence length that this model might ever be used with. Typically set this to something large
+  just in case (e.g., 512 or 1024 or 2048).
+- **type_vocab_size** (`int`, *optional*, defaults to 2) --
+  The vocabulary size of the `token_type_ids` passed when calling [LukeModel](/docs/transformers/master/en/model_doc/luke#transformers.LukeModel).
+- **initializer_range** (`float`, *optional*, defaults to 0.02) --
+  The standard deviation of the truncated_normal_initializer for initializing all weight matrices.
+- **layer_norm_eps** (`float`, *optional*, defaults to 1e-12) --
+  The epsilon used by the layer normalization layers.
+- **use_entity_aware_attention** (`bool`, defaults to `True`) --
+  Whether or not the model should use the entity-aware self-attention mechanism proposed in [LUKE: Deep
+  Contextualized Entity Representations with Entity-aware Self-attention (Yamada et
+  al.)](https://arxiv.org/abs/2010.01057).</paramsdesc><paramgroups>0</paramgroups></docstring>
+
+This is the configuration class to store the configuration of a [LukeModel](/docs/transformers/master/en/model_doc/luke#transformers.LukeModel). It is used to instantiate a LUKE
+model according to the specified arguments, defining the model architecture.
+
+Configuration objects inherit from [PretrainedConfig](/docs/transformers/master/en/main_classes/configuration#transformers.PretrainedConfig) and can be used to control the model outputs. Read the
+documentation from [PretrainedConfig](/docs/transformers/master/en/main_classes/configuration#transformers.PretrainedConfig) for more information.
+
+
+
+
+Examples:
+
+```python
+>>> from transformers import LukeConfig, LukeModel
+
+>>> # Initializing a LUKE configuration
+>>> configuration = LukeConfig()
+
+>>> # Initializing a model from the configuration
+>>> model = LukeModel(configuration)
+
+>>> # Accessing the model configuration
+>>> configuration = model.config
+```
+
+</div>
+
+<h2 id="transformers.LukeTokenizer">LukeTokenizer</h2>
+
+<div class="docstring">
+
+<docstring><name>class transformers.LukeTokenizer</name><anchor>transformers.LukeTokenizer</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/luke/tokenization_luke.py#L152</source><parameters>[{"name": "vocab_file", "val": ""}, {"name": "merges_file", "val": ""}, {"name": "entity_vocab_file", "val": ""}, {"name": "task", "val": " = None"}, {"name": "max_entity_length", "val": " = 32"}, {"name": "max_mention_length", "val": " = 30"}, {"name": "entity_token_1", "val": " = '<ent>'"}, {"name": "entity_token_2", "val": " = '<ent2>'"}, {"name": "entity_unk_token", "val": " = '[UNK]'"}, {"name": "entity_pad_token", "val": " = '[PAD]'"}, {"name": "entity_mask_token", "val": " = '[MASK]'"}, {"name": "entity_mask2_token", "val": " = '[MASK2]'"}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **vocab_file** (`str`) --
+  Path to the vocabulary file.
+- **merges_file** (`str`) --
+  Path to the merges file.
+- **entity_vocab_file** (`str`) --
+  Path to the entity vocabulary file.
+- **task** (`str`, *optional*) --
+  Task for which you want to prepare sequences. One of `"entity_classification"`,
+  `"entity_pair_classification"`, or `"entity_span_classification"`. If you specify this argument, the entity
+  sequence is automatically created based on the given entity span(s).
+- **max_entity_length** (`int`, *optional*, defaults to 32) --
+  The maximum length of `entity_ids`.
+- **max_mention_length** (`int`, *optional*, defaults to 30) --
+  The maximum number of tokens inside an entity span.
+- **entity_token_1** (`str`, *optional*, defaults to `&amp;lt;ent>`) --
+  The special token used to represent an entity span in a word token sequence. This token is only used when
+  `task` is set to `"entity_classification"` or `"entity_pair_classification"`.
+- **entity_token_2** (`str`, *optional*, defaults to `&amp;lt;ent2>`) --
+  The special token used to represent an entity span in a word token sequence. This token is only used when
+  `task` is set to `"entity_pair_classification"`.</paramsdesc><paramgroups>0</paramgroups></docstring>
+
+Construct a LUKE tokenizer.
+
+This tokenizer inherits from [RobertaTokenizer](/docs/transformers/master/en/model_doc/roberta#transformers.RobertaTokenizer) which contains most of the main methods. Users should refer to
+this superclass for more information regarding those methods. Compared to [RobertaTokenizer](/docs/transformers/master/en/model_doc/roberta#transformers.RobertaTokenizer), [LukeTokenizer](/docs/transformers/master/en/model_doc/luke#transformers.LukeTokenizer)
+also creates entity sequences, namely `entity_ids`, `entity_attention_mask`, `entity_token_type_ids`, and
+`entity_position_ids` to be used by the LUKE model.
+
+
+
+
+
+<div class="docstring">
+<docstring><name>\_\_call\_\_</name><anchor>transformers.LukeTokenizer.__call__</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/luke/tokenization_luke.py#L261</source><parameters>[{"name": "text", "val": ": typing.Union[str, typing.List[str]]"}, {"name": "text_pair", "val": ": typing.Union[str, typing.List[str], NoneType] = None"}, {"name": "entity_spans", "val": ": typing.Union[typing.List[typing.Tuple[int, int]], typing.List[typing.List[typing.Tuple[int, int]]], NoneType] = None"}, {"name": "entity_spans_pair", "val": ": typing.Union[typing.List[typing.Tuple[int, int]], typing.List[typing.List[typing.Tuple[int, int]]], NoneType] = None"}, {"name": "entities", "val": ": typing.Union[typing.List[str], typing.List[typing.List[str]], NoneType] = None"}, {"name": "entities_pair", "val": ": typing.Union[typing.List[str], typing.List[typing.List[str]], NoneType] = None"}, {"name": "add_special_tokens", "val": ": bool = True"}, {"name": "padding", "val": ": typing.Union[bool, str, transformers.file_utils.PaddingStrategy] = False"}, {"name": "truncation", "val": ": typing.Union[bool, str, transformers.tokenization_utils_base.TruncationStrategy] = False"}, {"name": "max_length", "val": ": typing.Optional[int] = None"}, {"name": "max_entity_length", "val": ": typing.Optional[int] = None"}, {"name": "stride", "val": ": int = 0"}, {"name": "is_split_into_words", "val": ": typing.Optional[bool] = False"}, {"name": "pad_to_multiple_of", "val": ": typing.Optional[int] = None"}, {"name": "return_tensors", "val": ": typing.Union[str, transformers.file_utils.TensorType, NoneType] = None"}, {"name": "return_token_type_ids", "val": ": typing.Optional[bool] = None"}, {"name": "return_attention_mask", "val": ": typing.Optional[bool] = None"}, {"name": "return_overflowing_tokens", "val": ": bool = False"}, {"name": "return_special_tokens_mask", "val": ": bool = False"}, {"name": "return_offsets_mapping", "val": ": bool = False"}, {"name": "return_length", "val": ": bool = False"}, {"name": "verbose", "val": ": bool = True"}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **text** (`str`, `List[str]`, `List[List[str]]`) --
+  The sequence or batch of sequences to be encoded. Each sequence must be a string. Note that this
+  tokenizer does not support tokenization based on pretokenized strings.
+- **text_pair** (`str`, `List[str]`, `List[List[str]]`) --
+  The sequence or batch of sequences to be encoded. Each sequence must be a string. Note that this
+  tokenizer does not support tokenization based on pretokenized strings.
+- **entity_spans** (`List[Tuple[int, int]]`, `List[List[Tuple[int, int]]]`, *optional*) --
+  The sequence or batch of sequences of entity spans to be encoded. Each sequence consists of tuples each
+  with two integers denoting character-based start and end positions of entities. If you specify
+  `"entity_classification"` or `"entity_pair_classification"` as the `task` argument in the constructor,
+  the length of each sequence must be 1 or 2, respectively. If you specify `entities`, the length of each
+  sequence must be equal to the length of each sequence of `entities`.
+- **entity_spans_pair** (`List[Tuple[int, int]]`, `List[List[Tuple[int, int]]]`, *optional*) --
+  The sequence or batch of sequences of entity spans to be encoded. Each sequence consists of tuples each
+  with two integers denoting character-based start and end positions of entities. If you specify the
+  `task` argument in the constructor, this argument is ignored. If you specify `entities_pair`, the
+  length of each sequence must be equal to the length of each sequence of `entities_pair`.
+- **entities** (`List[str]`, `List[List[str]]`, *optional*) --
+  The sequence or batch of sequences of entities to be encoded. Each sequence consists of strings
+  representing entities, i.e., special entities (e.g., [MASK]) or entity titles of Wikipedia (e.g., Los
+  Angeles). This argument is ignored if you specify the `task` argument in the constructor. The length of
+  each sequence must be equal to the length of each sequence of `entity_spans`. If you specify
+  `entity_spans` without specifying this argument, the entity sequence or the batch of entity sequences
+  is automatically constructed by filling it with the [MASK] entity.
+- **entities_pair** (`List[str]`, `List[List[str]]`, *optional*) --
+  The sequence or batch of sequences of entities to be encoded. Each sequence consists of strings
+  representing entities, i.e., special entities (e.g., [MASK]) or entity titles of Wikipedia (e.g., Los
+  Angeles). This argument is ignored if you specify the `task` argument in the constructor. The length of
+  each sequence must be equal to the length of each sequence of `entity_spans_pair`. If you specify
+  `entity_spans_pair` without specifying this argument, the entity sequence or the batch of entity
+  sequences is automatically constructed by filling it with the [MASK] entity.
+- **max_entity_length** (`int`, *optional*) --
+  The maximum length of `entity_ids`.
+
+- **add_special_tokens** (`bool`, *optional*, defaults to `True`) --
+  Whether or not to encode the sequences with the special tokens relative to their model.
+- **padding** (`bool`, `str` or [PaddingStrategy](/docs/transformers/master/en/internal/file_utils#transformers.file_utils.PaddingStrategy), *optional*, defaults to `False`) --
+  Activates and controls padding. Accepts the following values:
+
+  - `True` or `'longest'`: Pad to the longest sequence in the batch (or no padding if only a single
+    sequence if provided).
+  - `'max_length'`: Pad to a maximum length specified with the argument `max_length` or to the maximum
+    acceptable input length for the model if that argument is not provided.
+  - `False` or `'do_not_pad'` (default): No padding (i.e., can output a batch with sequences of different
+    lengths).
+- **truncation** (`bool`, `str` or [TruncationStrategy](/docs/transformers/master/en/internal/tokenization_utils#transformers.tokenization_utils_base.TruncationStrategy), *optional*, defaults to `False`) --
+  Activates and controls truncation. Accepts the following values:
+
+  - `True` or `'longest_first'`: Truncate to a maximum length specified with the argument `max_length` or
+    to the maximum acceptable input length for the model if that argument is not provided. This will
+    truncate token by token, removing a token from the longest sequence in the pair if a pair of
+    sequences (or a batch of pairs) is provided.
+  - `'only_first'`: Truncate to a maximum length specified with the argument `max_length` or to the
+    maximum acceptable input length for the model if that argument is not provided. This will only
+    truncate the first sequence of a pair if a pair of sequences (or a batch of pairs) is provided.
+  - `'only_second'`: Truncate to a maximum length specified with the argument `max_length` or to the
+    maximum acceptable input length for the model if that argument is not provided. This will only
+    truncate the second sequence of a pair if a pair of sequences (or a batch of pairs) is provided.
+  - `False` or `'do_not_truncate'` (default): No truncation (i.e., can output batch with sequence lengths
+    greater than the model maximum admissible input size).
+- **max_length** (`int`, *optional*) --
+  Controls the maximum length to use by one of the truncation/padding parameters.
+
+  If left unset or set to `None`, this will use the predefined model maximum length if a maximum length
+  is required by one of the truncation/padding parameters. If the model has no specific maximum input
+  length (like XLNet) truncation/padding to a maximum length will be deactivated.
+- **stride** (`int`, *optional*, defaults to 0) --
+  If set to a number along with `max_length`, the overflowing tokens returned when
+  `return_overflowing_tokens=True` will contain some tokens from the end of the truncated sequence
+  returned to provide some overlap between truncated and overflowing sequences. The value of this
+  argument defines the number of overlapping tokens.
+- **is_split_into_words** (`bool`, *optional*, defaults to `False`) --
+  Whether or not the input is already pre-tokenized (e.g., split into words). If set to `True`, the
+  tokenizer assumes the input is already split into words (for instance, by splitting it on whitespace)
+  which it will tokenize. This is useful for NER or token classification.
+- **pad_to_multiple_of** (`int`, *optional*) --
+  If set will pad the sequence to a multiple of the provided value. This is especially useful to enable
+  the use of Tensor Cores on NVIDIA hardware with compute capability >= 7.5 (Volta).
+- **return_tensors** (`str` or [TensorType](/docs/transformers/master/en/internal/file_utils#transformers.TensorType), *optional*) --
+  If set, will return tensors instead of list of python integers. Acceptable values are:
+
+  - `'tf'`: Return TensorFlow `tf.constant` objects.
+  - `'pt'`: Return PyTorch `torch.Tensor` objects.
+  - `'np'`: Return Numpy `np.ndarray` objects.
+
+- **return_token_type_ids** (`bool`, *optional*) --
+  Whether to return token type IDs. If left to the default, will return the token type IDs according to
+  the specific tokenizer's default, defined by the `return_outputs` attribute.
+
+  [What are token type IDs?](../glossary#token-type-ids)
+- **return_attention_mask** (`bool`, *optional*) --
+  Whether to return the attention mask. If left to the default, will return the attention mask according
+  to the specific tokenizer's default, defined by the `return_outputs` attribute.
+
+  [What are attention masks?](../glossary#attention-mask)
+- **return_overflowing_tokens** (`bool`, *optional*, defaults to `False`) --
+  Whether or not to return overflowing token sequences. If a pair of sequences of input ids (or a batch
+  of pairs) is provided with `truncation_strategy = longest_first` or `True`, an error is raised instead
+  of returning overflowing tokens.
+- **return_special_tokens_mask** (`bool`, *optional*, defaults to `False`) --
+  Whether or not to return special tokens mask information.
+- **return_offsets_mapping** (`bool`, *optional*, defaults to `False`) --
+  Whether or not to return `(char_start, char_end)` for each token.
+
+  This is only available on fast tokenizers inheriting from [PreTrainedTokenizerFast](/docs/transformers/master/en/main_classes/tokenizer#transformers.PreTrainedTokenizerFast), if using
+  Python's tokenizer, this method will raise `NotImplementedError`.
+- **return_length**  (`bool`, *optional*, defaults to `False`) --
+  Whether or not to return the lengths of the encoded inputs.
+- **verbose** (`bool`, *optional*, defaults to `True`) --
+  Whether or not to print more information and warnings.
+  **kwargs -- passed to the `self.tokenize()` method</paramsdesc><paramgroups>0</paramgroups><rettype>[BatchEncoding](/docs/transformers/master/en/main_classes/tokenizer#transformers.BatchEncoding)</rettype><retdesc>A [BatchEncoding](/docs/transformers/master/en/main_classes/tokenizer#transformers.BatchEncoding) with the following fields:
+
+- **input_ids** -- List of token ids to be fed to a model.
+
+  [What are input IDs?](../glossary#input-ids)
+
+- **token_type_ids** -- List of token type ids to be fed to a model (when `return_token_type_ids=True` or
+  if *"token_type_ids"* is in `self.model_input_names`).
+
+  [What are token type IDs?](../glossary#token-type-ids)
+
+- **attention_mask** -- List of indices specifying which tokens should be attended to by the model (when
+  `return_attention_mask=True` or if *"attention_mask"* is in `self.model_input_names`).
+
+  [What are attention masks?](../glossary#attention-mask)
+
+- **entity_ids** -- List of entity ids to be fed to a model.
+
+  [What are input IDs?](../glossary#input-ids)
+
+- **entity_position_ids** -- List of entity positions in the input sequence to be fed to a model.
+
+- **entity_token_type_ids** -- List of entity token type ids to be fed to a model (when
+  `return_token_type_ids=True` or if *"entity_token_type_ids"* is in `self.model_input_names`).
+
+  [What are token type IDs?](../glossary#token-type-ids)
+
+- **entity_attention_mask** -- List of indices specifying which entities should be attended to by the model
+  (when `return_attention_mask=True` or if *"entity_attention_mask"* is in `self.model_input_names`).
+
+  [What are attention masks?](../glossary#attention-mask)
+
+- **entity_start_positions** -- List of the start positions of entities in the word token sequence (when
+  `task="entity_span_classification"`).
+- **entity_end_positions** -- List of the end positions of entities in the word token sequence (when
+  `task="entity_span_classification"`).
+- **overflowing_tokens** -- List of overflowing tokens sequences (when a `max_length` is specified and
+  `return_overflowing_tokens=True`).
+- **num_truncated_tokens** -- Number of tokens truncated (when a `max_length` is specified and
+  `return_overflowing_tokens=True`).
+- **special_tokens_mask** -- List of 0s and 1s, with 1 specifying added special tokens and 0 specifying
+  regular sequence tokens (when `add_special_tokens=True` and `return_special_tokens_mask=True`).
+- **length** -- The length of the inputs (when `return_length=True`)</retdesc></docstring>
+
+Main method to tokenize and prepare for the model one or several sequence(s) or one or several pair(s) of
+sequences, depending on the task you want to prepare them for.
+
+
+
+
+
+
+
+
+</div>
+<div class="docstring"></div></div>
+
+<h2 id="transformers.LukeModel">LukeModel</h2>
+
+<div class="docstring">
+
+<docstring><name>class transformers.LukeModel</name><anchor>transformers.LukeModel</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/luke/modeling_luke.py#L879</source><parameters>[{"name": "config", "val": ""}, {"name": "add_pooling_layer", "val": " = True"}]</parameters><paramsdesc>- **config** ([LukeConfig](/docs/transformers/master/en/model_doc/luke#transformers.LukeConfig)) -- Model configuration class with all the parameters of the
+  model. Initializing with a config file does not load the weights associated with the model, only the
+  configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel.from_pretrained) method to load the model weights.</paramsdesc><paramgroups>0</paramgroups></docstring>
+The bare LUKE model transformer outputting raw hidden-states for both word tokens and entities without any specific head on top.
+
+This model inherits from [PreTrainedModel](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel). Check the superclass documentation for the generic methods the
+library implements for all its model (such as downloading or saving, resizing the input embeddings, pruning heads
+etc.)
+
+This model is also a PyTorch [torch.nn.Module](https://pytorch.org/docs/stable/nn.html#torch.nn.Module) subclass.
+Use it as a regular PyTorch Module and refer to the PyTorch documentation for all matter related to general usage
+and behavior.
+
+
+
+
+
+<div class="docstring">
+<docstring><name>forward</name><anchor>transformers.LukeModel.forward</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/luke/modeling_luke.py#L911</source><parameters>[{"name": "input_ids", "val": " = None"}, {"name": "attention_mask", "val": " = None"}, {"name": "token_type_ids", "val": " = None"}, {"name": "position_ids", "val": " = None"}, {"name": "entity_ids", "val": " = None"}, {"name": "entity_attention_mask", "val": " = None"}, {"name": "entity_token_type_ids", "val": " = None"}, {"name": "entity_position_ids", "val": " = None"}, {"name": "head_mask", "val": " = None"}, {"name": "inputs_embeds", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "return_dict", "val": " = None"}]</parameters><paramsdesc>- **input_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`) --
+  Indices of input sequence tokens in the vocabulary.
+
+  Indices can be obtained using [LukeTokenizer](/docs/transformers/master/en/model_doc/luke#transformers.LukeTokenizer). See [PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.encode) and
+  [PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.__call__) for details.
+
+  [What are input IDs?](../glossary#input-ids)
+- **attention_mask** (`torch.FloatTensor` of shape `(batch_size, sequence_length)`, *optional*) --
+  Mask to avoid performing attention on padding token indices. Mask values selected in `[0, 1]`:
+
+  - 1 for tokens that are **not masked**,
+  - 0 for tokens that are **masked**.
+
+  [What are attention masks?](../glossary#attention-mask)
+- **token_type_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`, *optional*) --
+  Segment token indices to indicate first and second portions of the inputs. Indices are selected in `[0,
+  1]`:
+
+  - 0 corresponds to a *sentence A* token,
+  - 1 corresponds to a *sentence B* token.
+
+  [What are token type IDs?](../glossary#token-type-ids)
+- **position_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`, *optional*) --
+  Indices of positions of each input sequence tokens in the position embeddings. Selected in the range `[0,
+  config.max_position_embeddings - 1]`.
+
+  [What are position IDs?](../glossary#position-ids)
+
+- **entity_ids** (`torch.LongTensor` of shape `(batch_size, entity_length)`) --
+  Indices of entity tokens in the entity vocabulary.
+
+  Indices can be obtained using [LukeTokenizer](/docs/transformers/master/en/model_doc/luke#transformers.LukeTokenizer). See [PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.encode) and
+  [PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.__call__) for details.
+
+- **entity_attention_mask** (`torch.FloatTensor` of shape `(batch_size, entity_length)`, *optional*) --
+  Mask to avoid performing attention on padding entity token indices. Mask values selected in `[0, 1]`:
+
+  - 1 for entity tokens that are **not masked**,
+  - 0 for entity tokens that are **masked**.
+
+- **entity_token_type_ids** (`torch.LongTensor` of shape `(batch_size, entity_length)`, *optional*) --
+  Segment token indices to indicate first and second portions of the entity token inputs. Indices are
+  selected in `[0, 1]`:
+
+  - 0 corresponds to a *portion A* entity token,
+  - 1 corresponds to a *portion B* entity token.
+
+- **entity_position_ids** (`torch.LongTensor` of shape `(batch_size, entity_length, max_mention_length)`, *optional*) --
+  Indices of positions of each input entity in the position embeddings. Selected in the range `[0,
+  config.max_position_embeddings - 1]`.
+
+- **inputs_embeds** (`torch.FloatTensor` of shape `(batch_size, sequence_length, hidden_size)`, *optional*) --
+  Optionally, instead of passing `input_ids` you can choose to directly pass an embedded representation. This
+  is useful if you want more control over how to convert `input_ids` indices into associated vectors than the
+  model's internal embedding lookup matrix.
+
+- **head_mask** (`torch.FloatTensor` of shape `(num_heads,)` or `(num_layers, num_heads)`, *optional*) --
+  Mask to nullify selected heads of the self-attention modules. Mask values selected in `[0, 1]`:
+
+  - 1 indicates the head is **not masked**,
+  - 0 indicates the head is **masked**.
+
+- **output_attentions** (`bool`, *optional*) --
+  Whether or not to return the attentions tensors of all attention layers. See `attentions` under returned
+  tensors for more detail.
+- **output_hidden_states** (`bool`, *optional*) --
+  Whether or not to return the hidden states of all layers. See `hidden_states` under returned tensors for
+  more detail.
+- **return_dict** (`bool`, *optional*) --
+  Whether or not to return a [ModelOutput](/docs/transformers/master/en/main_classes/output#transformers.file_utils.ModelOutput) instead of a plain tuple.</paramsdesc><paramgroups>0</paramgroups><rettype>`transformers.models.luke.modeling_luke.BaseLukeModelOutputWithPooling` or `tuple(torch.FloatTensor)`</rettype><retdesc>A `transformers.models.luke.modeling_luke.BaseLukeModelOutputWithPooling` or a tuple of
+`torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising various
+elements depending on the configuration ([LukeConfig](/docs/transformers/master/en/model_doc/luke#transformers.LukeConfig)) and inputs.
+
+- **last_hidden_state** (`torch.FloatTensor` of shape `(batch_size, sequence_length, hidden_size)`) -- Sequence of hidden-states at the output of the last layer of the model.
+- **entity_last_hidden_state** (`torch.FloatTensor` of shape `(batch_size, entity_length, hidden_size)`) -- Sequence of entity hidden-states at the output of the last layer of the model.
+- **pooler_output** (`torch.FloatTensor` of shape `(batch_size, hidden_size)`) -- Last layer hidden-state of the first token of the sequence (classification token) further processed by a
+  Linear layer and a Tanh activation function.
+- **hidden_states** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer) of
+  shape `(batch_size, sequence_length, hidden_size)`. Hidden-states of the model at the output of each layer
+  plus the initial embedding outputs.
+- **entity_hidden_states** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer) of
+  shape `(batch_size, entity_length, hidden_size)`. Entity hidden-states of the model at the output of each
+  layer plus the initial entity embedding outputs.
+- **attentions** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length +
+  entity_length, sequence_length + entity_length)`. Attentions weights after the attention softmax, used to
+  compute the weighted average in the self-attention heads.</retdesc></docstring>
+The [LukeModel](/docs/transformers/master/en/model_doc/luke#transformers.LukeModel) forward method, overrides the `__call__` special method.
+
+<Tip>
+
+Although the recipe for forward pass needs to be defined within this function, one should call the `Module`
+instance afterwards instead of this since the former takes care of running the pre and post processing steps while
+the latter silently ignores them.
+
+</Tip>
+
+
+
+
+
+
+
+Examples:
+
+```python
+>>> from transformers import LukeTokenizer, LukeModel
+
+>>> tokenizer = LukeTokenizer.from_pretrained("studio-ousia/luke-base")
+>>> model = LukeModel.from_pretrained("studio-ousia/luke-base")
+# Compute the contextualized entity representation corresponding to the entity mention "Beyoncé"
+
+>>> text = "Beyoncé lives in Los Angeles."
+>>> entity_spans = [(0, 7)]  # character-based entity span corresponding to "Beyoncé"
+
+>>> encoding = tokenizer(text, entity_spans=entity_spans, add_prefix_space=True, return_tensors="pt")
+>>> outputs = model(**encoding)
+>>> word_last_hidden_state = outputs.last_hidden_state
+>>> entity_last_hidden_state = outputs.entity_last_hidden_state
+# Input Wikipedia entities to obtain enriched contextualized representations of word tokens
+
+>>> text = "Beyoncé lives in Los Angeles."
+>>> entities = [
+...     "Beyoncé",
+...     "Los Angeles",
+>>> ]  # Wikipedia entity titles corresponding to the entity mentions "Beyoncé" and "Los Angeles"
+>>> entity_spans = [
+...     (0, 7),
+...     (17, 28),
+>>> ]  # character-based entity spans corresponding to "Beyoncé" and "Los Angeles"
+
+>>> encoding = tokenizer(
+...     text, entities=entities, entity_spans=entity_spans, add_prefix_space=True, return_tensors="pt"
+... )
+>>> outputs = model(**encoding)
+>>> word_last_hidden_state = outputs.last_hidden_state
+>>> entity_last_hidden_state = outputs.entity_last_hidden_state
+```
+
+</div></div>
+
+<h2 id="transformers.LukeForMaskedLM">LukeForMaskedLM</h2>
+
+<div class="docstring">
+
+<docstring><name>class transformers.LukeForMaskedLM</name><anchor>transformers.LukeForMaskedLM</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/luke/modeling_luke.py#L1132</source><parameters>[{"name": "config", "val": ""}]</parameters><paramsdesc>- **config** ([LukeConfig](/docs/transformers/master/en/model_doc/luke#transformers.LukeConfig)) -- Model configuration class with all the parameters of the
+  model. Initializing with a config file does not load the weights associated with the model, only the
+  configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel.from_pretrained) method to load the model weights.</paramsdesc><paramgroups>0</paramgroups></docstring>
+
+The LUKE model with a language modeling head and entity prediction head on top for masked language modeling and
+masked entity prediction.
+
+
+This model inherits from [PreTrainedModel](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel). Check the superclass documentation for the generic methods the
+library implements for all its model (such as downloading or saving, resizing the input embeddings, pruning heads
+etc.)
+
+This model is also a PyTorch [torch.nn.Module](https://pytorch.org/docs/stable/nn.html#torch.nn.Module) subclass.
+Use it as a regular PyTorch Module and refer to the PyTorch documentation for all matter related to general usage
+and behavior.
+
+
+
+
+
+<div class="docstring">
+<docstring><name>forward</name><anchor>transformers.LukeForMaskedLM.forward</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/luke/modeling_luke.py#L1168</source><parameters>[{"name": "input_ids", "val": " = None"}, {"name": "attention_mask", "val": " = None"}, {"name": "token_type_ids", "val": " = None"}, {"name": "position_ids", "val": " = None"}, {"name": "entity_ids", "val": " = None"}, {"name": "entity_attention_mask", "val": " = None"}, {"name": "entity_token_type_ids", "val": " = None"}, {"name": "entity_position_ids", "val": " = None"}, {"name": "labels", "val": " = None"}, {"name": "entity_labels", "val": " = None"}, {"name": "head_mask", "val": " = None"}, {"name": "inputs_embeds", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "return_dict", "val": " = None"}]</parameters><paramsdesc>- **input_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`) --
+  Indices of input sequence tokens in the vocabulary.
+
+  Indices can be obtained using [LukeTokenizer](/docs/transformers/master/en/model_doc/luke#transformers.LukeTokenizer). See [PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.encode) and
+  [PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.__call__) for details.
+
+  [What are input IDs?](../glossary#input-ids)
+- **attention_mask** (`torch.FloatTensor` of shape `(batch_size, sequence_length)`, *optional*) --
+  Mask to avoid performing attention on padding token indices. Mask values selected in `[0, 1]`:
+
+  - 1 for tokens that are **not masked**,
+  - 0 for tokens that are **masked**.
+
+  [What are attention masks?](../glossary#attention-mask)
+- **token_type_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`, *optional*) --
+  Segment token indices to indicate first and second portions of the inputs. Indices are selected in `[0,
+  1]`:
+
+  - 0 corresponds to a *sentence A* token,
+  - 1 corresponds to a *sentence B* token.
+
+  [What are token type IDs?](../glossary#token-type-ids)
+- **position_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`, *optional*) --
+  Indices of positions of each input sequence tokens in the position embeddings. Selected in the range `[0,
+  config.max_position_embeddings - 1]`.
+
+  [What are position IDs?](../glossary#position-ids)
+
+- **entity_ids** (`torch.LongTensor` of shape `(batch_size, entity_length)`) --
+  Indices of entity tokens in the entity vocabulary.
+
+  Indices can be obtained using [LukeTokenizer](/docs/transformers/master/en/model_doc/luke#transformers.LukeTokenizer). See [PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.encode) and
+  [PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.__call__) for details.
+
+- **entity_attention_mask** (`torch.FloatTensor` of shape `(batch_size, entity_length)`, *optional*) --
+  Mask to avoid performing attention on padding entity token indices. Mask values selected in `[0, 1]`:
+
+  - 1 for entity tokens that are **not masked**,
+  - 0 for entity tokens that are **masked**.
+
+- **entity_token_type_ids** (`torch.LongTensor` of shape `(batch_size, entity_length)`, *optional*) --
+  Segment token indices to indicate first and second portions of the entity token inputs. Indices are
+  selected in `[0, 1]`:
+
+  - 0 corresponds to a *portion A* entity token,
+  - 1 corresponds to a *portion B* entity token.
+
+- **entity_position_ids** (`torch.LongTensor` of shape `(batch_size, entity_length, max_mention_length)`, *optional*) --
+  Indices of positions of each input entity in the position embeddings. Selected in the range `[0,
+  config.max_position_embeddings - 1]`.
+
+- **inputs_embeds** (`torch.FloatTensor` of shape `(batch_size, sequence_length, hidden_size)`, *optional*) --
+  Optionally, instead of passing `input_ids` you can choose to directly pass an embedded representation. This
+  is useful if you want more control over how to convert `input_ids` indices into associated vectors than the
+  model's internal embedding lookup matrix.
+
+- **head_mask** (`torch.FloatTensor` of shape `(num_heads,)` or `(num_layers, num_heads)`, *optional*) --
+  Mask to nullify selected heads of the self-attention modules. Mask values selected in `[0, 1]`:
+
+  - 1 indicates the head is **not masked**,
+  - 0 indicates the head is **masked**.
+
+- **output_attentions** (`bool`, *optional*) --
+  Whether or not to return the attentions tensors of all attention layers. See `attentions` under returned
+  tensors for more detail.
+- **output_hidden_states** (`bool`, *optional*) --
+  Whether or not to return the hidden states of all layers. See `hidden_states` under returned tensors for
+  more detail.
+- **return_dict** (`bool`, *optional*) --
+  Whether or not to return a [ModelOutput](/docs/transformers/master/en/main_classes/output#transformers.file_utils.ModelOutput) instead of a plain tuple.
+
+- **labels** (`torch.LongTensor` of shape `(batch_size, sequence_length)`, *optional*) --
+  Labels for computing the masked language modeling loss. Indices should be in `[-100, 0, ...,
+  config.vocab_size]` (see `input_ids` docstring) Tokens with indices set to `-100` are ignored (masked), the
+  loss is only computed for the tokens with labels in `[0, ..., config.vocab_size]`
+- **entity_labels** (`torch.LongTensor` of shape `(batch_size, entity_length)`, *optional*) --
+  Labels for computing the masked language modeling loss. Indices should be in `[-100, 0, ...,
+  config.vocab_size]` (see `input_ids` docstring) Tokens with indices set to `-100` are ignored (masked), the
+  loss is only computed for the tokens with labels in `[0, ..., config.vocab_size]`</paramsdesc><paramgroups>0</paramgroups><rettype>`transformers.models.luke.modeling_luke.LukeMaskedLMOutput` or `tuple(torch.FloatTensor)`</rettype><retdesc>A `transformers.models.luke.modeling_luke.LukeMaskedLMOutput` or a tuple of
+`torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising various
+elements depending on the configuration ([LukeConfig](/docs/transformers/master/en/model_doc/luke#transformers.LukeConfig)) and inputs.
+
+- **loss** (`torch.FloatTensor` of shape `(1,)`, *optional*, returned when `labels` is provided) -- The sum of masked language modeling (MLM) loss and entity prediction loss.
+- **mlm_loss** (`torch.FloatTensor` of shape `(1,)`, *optional*, returned when `labels` is provided) -- Masked language modeling (MLM) loss.
+- **mep_loss** (`torch.FloatTensor` of shape `(1,)`, *optional*, returned when `labels` is provided) -- Masked entity prediction (MEP) loss.
+- **logits** (`torch.FloatTensor` of shape `(batch_size, sequence_length, config.vocab_size)`) -- Prediction scores of the language modeling head (scores for each vocabulary token before SoftMax).
+- **entity_logits** (`torch.FloatTensor` of shape `(batch_size, sequence_length, config.vocab_size)`) -- Prediction scores of the entity prediction head (scores for each entity vocabulary token before SoftMax).
+- **hidden_states** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer) of
+  shape `(batch_size, sequence_length, hidden_size)`.
+
+  Hidden-states of the model at the output of each layer plus the initial embedding outputs.
+- **entity_hidden_states** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer) of
+  shape `(batch_size, entity_length, hidden_size)`. Entity hidden-states of the model at the output of each
+  layer plus the initial entity embedding outputs.
+- **attentions** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length,
+  sequence_length)`.
+
+  Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
+  heads.</retdesc></docstring>
+The [LukeForMaskedLM](/docs/transformers/master/en/model_doc/luke#transformers.LukeForMaskedLM) forward method, overrides the `__call__` special method.
+
+<Tip>
+
+Although the recipe for forward pass needs to be defined within this function, one should call the `Module`
+instance afterwards instead of this since the former takes care of running the pre and post processing steps while
+the latter silently ignores them.
+
+</Tip>
+
+
+
+
+
+
+
+
+</div></div>
+
+<h2 id="transformers.LukeForEntityClassification">LukeForEntityClassification</h2>
+
+<div class="docstring">
+
+<docstring><name>class transformers.LukeForEntityClassification</name><anchor>transformers.LukeForEntityClassification</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/luke/modeling_luke.py#L1268</source><parameters>[{"name": "config", "val": ""}]</parameters><paramsdesc>- **config** ([LukeConfig](/docs/transformers/master/en/model_doc/luke#transformers.LukeConfig)) -- Model configuration class with all the parameters of the
+  model. Initializing with a config file does not load the weights associated with the model, only the
+  configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel.from_pretrained) method to load the model weights.</paramsdesc><paramgroups>0</paramgroups></docstring>
+
+The LUKE model with a classification head on top (a linear layer on top of the hidden state of the first entity
+token) for entity classification tasks, such as Open Entity.
+
+
+This model inherits from [PreTrainedModel](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel). Check the superclass documentation for the generic methods the
+library implements for all its model (such as downloading or saving, resizing the input embeddings, pruning heads
+etc.)
+
+This model is also a PyTorch [torch.nn.Module](https://pytorch.org/docs/stable/nn.html#torch.nn.Module) subclass.
+Use it as a regular PyTorch Module and refer to the PyTorch documentation for all matter related to general usage
+and behavior.
+
+
+
+
+
+<div class="docstring">
+<docstring><name>forward</name><anchor>transformers.LukeForEntityClassification.forward</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/luke/modeling_luke.py#L1281</source><parameters>[{"name": "input_ids", "val": " = None"}, {"name": "attention_mask", "val": " = None"}, {"name": "token_type_ids", "val": " = None"}, {"name": "position_ids", "val": " = None"}, {"name": "entity_ids", "val": " = None"}, {"name": "entity_attention_mask", "val": " = None"}, {"name": "entity_token_type_ids", "val": " = None"}, {"name": "entity_position_ids", "val": " = None"}, {"name": "head_mask", "val": " = None"}, {"name": "inputs_embeds", "val": " = None"}, {"name": "labels", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "return_dict", "val": " = None"}]</parameters><paramsdesc>- **input_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`) --
+  Indices of input sequence tokens in the vocabulary.
+
+  Indices can be obtained using [LukeTokenizer](/docs/transformers/master/en/model_doc/luke#transformers.LukeTokenizer). See [PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.encode) and
+  [PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.__call__) for details.
+
+  [What are input IDs?](../glossary#input-ids)
+- **attention_mask** (`torch.FloatTensor` of shape `(batch_size, sequence_length)`, *optional*) --
+  Mask to avoid performing attention on padding token indices. Mask values selected in `[0, 1]`:
+
+  - 1 for tokens that are **not masked**,
+  - 0 for tokens that are **masked**.
+
+  [What are attention masks?](../glossary#attention-mask)
+- **token_type_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`, *optional*) --
+  Segment token indices to indicate first and second portions of the inputs. Indices are selected in `[0,
+  1]`:
+
+  - 0 corresponds to a *sentence A* token,
+  - 1 corresponds to a *sentence B* token.
+
+  [What are token type IDs?](../glossary#token-type-ids)
+- **position_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`, *optional*) --
+  Indices of positions of each input sequence tokens in the position embeddings. Selected in the range `[0,
+  config.max_position_embeddings - 1]`.
+
+  [What are position IDs?](../glossary#position-ids)
+
+- **entity_ids** (`torch.LongTensor` of shape `(batch_size, entity_length)`) --
+  Indices of entity tokens in the entity vocabulary.
+
+  Indices can be obtained using [LukeTokenizer](/docs/transformers/master/en/model_doc/luke#transformers.LukeTokenizer). See [PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.encode) and
+  [PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.__call__) for details.
+
+- **entity_attention_mask** (`torch.FloatTensor` of shape `(batch_size, entity_length)`, *optional*) --
+  Mask to avoid performing attention on padding entity token indices. Mask values selected in `[0, 1]`:
+
+  - 1 for entity tokens that are **not masked**,
+  - 0 for entity tokens that are **masked**.
+
+- **entity_token_type_ids** (`torch.LongTensor` of shape `(batch_size, entity_length)`, *optional*) --
+  Segment token indices to indicate first and second portions of the entity token inputs. Indices are
+  selected in `[0, 1]`:
+
+  - 0 corresponds to a *portion A* entity token,
+  - 1 corresponds to a *portion B* entity token.
+
+- **entity_position_ids** (`torch.LongTensor` of shape `(batch_size, entity_length, max_mention_length)`, *optional*) --
+  Indices of positions of each input entity in the position embeddings. Selected in the range `[0,
+  config.max_position_embeddings - 1]`.
+
+- **inputs_embeds** (`torch.FloatTensor` of shape `(batch_size, sequence_length, hidden_size)`, *optional*) --
+  Optionally, instead of passing `input_ids` you can choose to directly pass an embedded representation. This
+  is useful if you want more control over how to convert `input_ids` indices into associated vectors than the
+  model's internal embedding lookup matrix.
+
+- **head_mask** (`torch.FloatTensor` of shape `(num_heads,)` or `(num_layers, num_heads)`, *optional*) --
+  Mask to nullify selected heads of the self-attention modules. Mask values selected in `[0, 1]`:
+
+  - 1 indicates the head is **not masked**,
+  - 0 indicates the head is **masked**.
+
+- **output_attentions** (`bool`, *optional*) --
+  Whether or not to return the attentions tensors of all attention layers. See `attentions` under returned
+  tensors for more detail.
+- **output_hidden_states** (`bool`, *optional*) --
+  Whether or not to return the hidden states of all layers. See `hidden_states` under returned tensors for
+  more detail.
+- **return_dict** (`bool`, *optional*) --
+  Whether or not to return a [ModelOutput](/docs/transformers/master/en/main_classes/output#transformers.file_utils.ModelOutput) instead of a plain tuple.
+
+- **labels** (`torch.LongTensor` of shape `(batch_size,)` or `(batch_size, num_labels)`, *optional*) --
+  Labels for computing the classification loss. If the shape is `(batch_size,)`, the cross entropy loss is
+  used for the single-label classification. In this case, labels should contain the indices that should be in
+  `[0, ..., config.num_labels - 1]`. If the shape is `(batch_size, num_labels)`, the binary cross entropy
+  loss is used for the multi-label classification. In this case, labels should only contain `[0, 1]`, where 0
+  and 1 indicate false and true, respectively.</paramsdesc><paramgroups>0</paramgroups><rettype>`transformers.models.luke.modeling_luke.EntityClassificationOutput` or `tuple(torch.FloatTensor)`</rettype><retdesc>A `transformers.models.luke.modeling_luke.EntityClassificationOutput` or a tuple of
+`torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising various
+elements depending on the configuration ([LukeConfig](/docs/transformers/master/en/model_doc/luke#transformers.LukeConfig)) and inputs.
+
+- **loss** (`torch.FloatTensor` of shape `(1,)`, *optional*, returned when `labels` is provided) -- Classification loss.
+- **logits** (`torch.FloatTensor` of shape `(batch_size, config.num_labels)`) -- Classification scores (before SoftMax).
+- **hidden_states** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer) of
+  shape `(batch_size, sequence_length, hidden_size)`. Hidden-states of the model at the output of each layer
+  plus the initial embedding outputs.
+- **entity_hidden_states** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer) of
+  shape `(batch_size, entity_length, hidden_size)`. Entity hidden-states of the model at the output of each
+  layer plus the initial entity embedding outputs.
+- **attentions** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length,
+  sequence_length)`. Attentions weights after the attention softmax, used to compute the weighted average in
+  the self-attention heads.</retdesc></docstring>
+The [LukeForEntityClassification](/docs/transformers/master/en/model_doc/luke#transformers.LukeForEntityClassification) forward method, overrides the `__call__` special method.
+
+<Tip>
+
+Although the recipe for forward pass needs to be defined within this function, one should call the `Module`
+instance afterwards instead of this since the former takes care of running the pre and post processing steps while
+the latter silently ignores them.
+
+</Tip>
+
+
+
+
+
+
+
+Examples:
+
+```python
+>>> from transformers import LukeTokenizer, LukeForEntityClassification
+
+>>> tokenizer = LukeTokenizer.from_pretrained("studio-ousia/luke-large-finetuned-open-entity")
+>>> model = LukeForEntityClassification.from_pretrained("studio-ousia/luke-large-finetuned-open-entity")
+
+>>> text = "Beyoncé lives in Los Angeles."
+>>> entity_spans = [(0, 7)]  # character-based entity span corresponding to "Beyoncé"
+>>> inputs = tokenizer(text, entity_spans=entity_spans, return_tensors="pt")
+>>> outputs = model(**inputs)
+>>> logits = outputs.logits
+>>> predicted_class_idx = logits.argmax(-1).item()
+>>> print("Predicted class:", model.config.id2label[predicted_class_idx])
+Predicted class: person
+```
+
+</div></div>
+
+<h2 id="transformers.LukeForEntityPairClassification">LukeForEntityPairClassification</h2>
+
+<div class="docstring">
+
+<docstring><name>class transformers.LukeForEntityPairClassification</name><anchor>transformers.LukeForEntityPairClassification</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/luke/modeling_luke.py#L1383</source><parameters>[{"name": "config", "val": ""}]</parameters><paramsdesc>- **config** ([LukeConfig](/docs/transformers/master/en/model_doc/luke#transformers.LukeConfig)) -- Model configuration class with all the parameters of the
+  model. Initializing with a config file does not load the weights associated with the model, only the
+  configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel.from_pretrained) method to load the model weights.</paramsdesc><paramgroups>0</paramgroups></docstring>
+
+The LUKE model with a classification head on top (a linear layer on top of the hidden states of the two entity
+tokens) for entity pair classification tasks, such as TACRED.
+
+
+This model inherits from [PreTrainedModel](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel). Check the superclass documentation for the generic methods the
+library implements for all its model (such as downloading or saving, resizing the input embeddings, pruning heads
+etc.)
+
+This model is also a PyTorch [torch.nn.Module](https://pytorch.org/docs/stable/nn.html#torch.nn.Module) subclass.
+Use it as a regular PyTorch Module and refer to the PyTorch documentation for all matter related to general usage
+and behavior.
+
+
+
+
+
+<div class="docstring">
+<docstring><name>forward</name><anchor>transformers.LukeForEntityPairClassification.forward</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/luke/modeling_luke.py#L1396</source><parameters>[{"name": "input_ids", "val": " = None"}, {"name": "attention_mask", "val": " = None"}, {"name": "token_type_ids", "val": " = None"}, {"name": "position_ids", "val": " = None"}, {"name": "entity_ids", "val": " = None"}, {"name": "entity_attention_mask", "val": " = None"}, {"name": "entity_token_type_ids", "val": " = None"}, {"name": "entity_position_ids", "val": " = None"}, {"name": "head_mask", "val": " = None"}, {"name": "inputs_embeds", "val": " = None"}, {"name": "labels", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "return_dict", "val": " = None"}]</parameters><paramsdesc>- **input_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`) --
+  Indices of input sequence tokens in the vocabulary.
+
+  Indices can be obtained using [LukeTokenizer](/docs/transformers/master/en/model_doc/luke#transformers.LukeTokenizer). See [PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.encode) and
+  [PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.__call__) for details.
+
+  [What are input IDs?](../glossary#input-ids)
+- **attention_mask** (`torch.FloatTensor` of shape `(batch_size, sequence_length)`, *optional*) --
+  Mask to avoid performing attention on padding token indices. Mask values selected in `[0, 1]`:
+
+  - 1 for tokens that are **not masked**,
+  - 0 for tokens that are **masked**.
+
+  [What are attention masks?](../glossary#attention-mask)
+- **token_type_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`, *optional*) --
+  Segment token indices to indicate first and second portions of the inputs. Indices are selected in `[0,
+  1]`:
+
+  - 0 corresponds to a *sentence A* token,
+  - 1 corresponds to a *sentence B* token.
+
+  [What are token type IDs?](../glossary#token-type-ids)
+- **position_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`, *optional*) --
+  Indices of positions of each input sequence tokens in the position embeddings. Selected in the range `[0,
+  config.max_position_embeddings - 1]`.
+
+  [What are position IDs?](../glossary#position-ids)
+
+- **entity_ids** (`torch.LongTensor` of shape `(batch_size, entity_length)`) --
+  Indices of entity tokens in the entity vocabulary.
+
+  Indices can be obtained using [LukeTokenizer](/docs/transformers/master/en/model_doc/luke#transformers.LukeTokenizer). See [PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.encode) and
+  [PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.__call__) for details.
+
+- **entity_attention_mask** (`torch.FloatTensor` of shape `(batch_size, entity_length)`, *optional*) --
+  Mask to avoid performing attention on padding entity token indices. Mask values selected in `[0, 1]`:
+
+  - 1 for entity tokens that are **not masked**,
+  - 0 for entity tokens that are **masked**.
+
+- **entity_token_type_ids** (`torch.LongTensor` of shape `(batch_size, entity_length)`, *optional*) --
+  Segment token indices to indicate first and second portions of the entity token inputs. Indices are
+  selected in `[0, 1]`:
+
+  - 0 corresponds to a *portion A* entity token,
+  - 1 corresponds to a *portion B* entity token.
+
+- **entity_position_ids** (`torch.LongTensor` of shape `(batch_size, entity_length, max_mention_length)`, *optional*) --
+  Indices of positions of each input entity in the position embeddings. Selected in the range `[0,
+  config.max_position_embeddings - 1]`.
+
+- **inputs_embeds** (`torch.FloatTensor` of shape `(batch_size, sequence_length, hidden_size)`, *optional*) --
+  Optionally, instead of passing `input_ids` you can choose to directly pass an embedded representation. This
+  is useful if you want more control over how to convert `input_ids` indices into associated vectors than the
+  model's internal embedding lookup matrix.
+
+- **head_mask** (`torch.FloatTensor` of shape `(num_heads,)` or `(num_layers, num_heads)`, *optional*) --
+  Mask to nullify selected heads of the self-attention modules. Mask values selected in `[0, 1]`:
+
+  - 1 indicates the head is **not masked**,
+  - 0 indicates the head is **masked**.
+
+- **output_attentions** (`bool`, *optional*) --
+  Whether or not to return the attentions tensors of all attention layers. See `attentions` under returned
+  tensors for more detail.
+- **output_hidden_states** (`bool`, *optional*) --
+  Whether or not to return the hidden states of all layers. See `hidden_states` under returned tensors for
+  more detail.
+- **return_dict** (`bool`, *optional*) --
+  Whether or not to return a [ModelOutput](/docs/transformers/master/en/main_classes/output#transformers.file_utils.ModelOutput) instead of a plain tuple.
+
+- **labels** (`torch.LongTensor` of shape `(batch_size,)` or `(batch_size, num_labels)`, *optional*) --
+  Labels for computing the classification loss. If the shape is `(batch_size,)`, the cross entropy loss is
+  used for the single-label classification. In this case, labels should contain the indices that should be in
+  `[0, ..., config.num_labels - 1]`. If the shape is `(batch_size, num_labels)`, the binary cross entropy
+  loss is used for the multi-label classification. In this case, labels should only contain `[0, 1]`, where 0
+  and 1 indicate false and true, respectively.</paramsdesc><paramgroups>0</paramgroups><rettype>`transformers.models.luke.modeling_luke.EntityPairClassificationOutput` or `tuple(torch.FloatTensor)`</rettype><retdesc>A `transformers.models.luke.modeling_luke.EntityPairClassificationOutput` or a tuple of
+`torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising various
+elements depending on the configuration ([LukeConfig](/docs/transformers/master/en/model_doc/luke#transformers.LukeConfig)) and inputs.
+
+- **loss** (`torch.FloatTensor` of shape `(1,)`, *optional*, returned when `labels` is provided) -- Classification loss.
+- **logits** (`torch.FloatTensor` of shape `(batch_size, config.num_labels)`) -- Classification scores (before SoftMax).
+- **hidden_states** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer) of
+  shape `(batch_size, sequence_length, hidden_size)`. Hidden-states of the model at the output of each layer
+  plus the initial embedding outputs.
+- **entity_hidden_states** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer) of
+  shape `(batch_size, entity_length, hidden_size)`. Entity hidden-states of the model at the output of each
+  layer plus the initial entity embedding outputs.
+- **attentions** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length,
+  sequence_length)`. Attentions weights after the attention softmax, used to compute the weighted average in
+  the self-attention heads.</retdesc></docstring>
+The [LukeForEntityPairClassification](/docs/transformers/master/en/model_doc/luke#transformers.LukeForEntityPairClassification) forward method, overrides the `__call__` special method.
+
+<Tip>
+
+Although the recipe for forward pass needs to be defined within this function, one should call the `Module`
+instance afterwards instead of this since the former takes care of running the pre and post processing steps while
+the latter silently ignores them.
+
+</Tip>
+
+
+
+
+
+
+
+Examples:
+
+```python
+>>> from transformers import LukeTokenizer, LukeForEntityPairClassification
+
+>>> tokenizer = LukeTokenizer.from_pretrained("studio-ousia/luke-large-finetuned-tacred")
+>>> model = LukeForEntityPairClassification.from_pretrained("studio-ousia/luke-large-finetuned-tacred")
+
+>>> text = "Beyoncé lives in Los Angeles."
+>>> entity_spans = [
+...     (0, 7),
+...     (17, 28),
+>>> ]  # character-based entity spans corresponding to "Beyoncé" and "Los Angeles"
+>>> inputs = tokenizer(text, entity_spans=entity_spans, return_tensors="pt")
+>>> outputs = model(**inputs)
+>>> logits = outputs.logits
+>>> predicted_class_idx = logits.argmax(-1).item()
+>>> print("Predicted class:", model.config.id2label[predicted_class_idx])
+Predicted class: per:cities_of_residence
+```
+
+</div></div>
+
+<h2 id="transformers.LukeForEntitySpanClassification">LukeForEntitySpanClassification</h2>
+
+<div class="docstring">
+
+<docstring><name>class transformers.LukeForEntitySpanClassification</name><anchor>transformers.LukeForEntitySpanClassification</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/luke/modeling_luke.py#L1503</source><parameters>[{"name": "config", "val": ""}]</parameters><paramsdesc>- **config** ([LukeConfig](/docs/transformers/master/en/model_doc/luke#transformers.LukeConfig)) -- Model configuration class with all the parameters of the
+  model. Initializing with a config file does not load the weights associated with the model, only the
+  configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel.from_pretrained) method to load the model weights.</paramsdesc><paramgroups>0</paramgroups></docstring>
+
+The LUKE model with a span classification head on top (a linear layer on top of the hidden states output) for tasks
+such as named entity recognition.
+
+
+This model inherits from [PreTrainedModel](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel). Check the superclass documentation for the generic methods the
+library implements for all its model (such as downloading or saving, resizing the input embeddings, pruning heads
+etc.)
+
+This model is also a PyTorch [torch.nn.Module](https://pytorch.org/docs/stable/nn.html#torch.nn.Module) subclass.
+Use it as a regular PyTorch Module and refer to the PyTorch documentation for all matter related to general usage
+and behavior.
+
+
+
+
+
+<div class="docstring">
+<docstring><name>forward</name><anchor>transformers.LukeForEntitySpanClassification.forward</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/luke/modeling_luke.py#L1516</source><parameters>[{"name": "input_ids", "val": " = None"}, {"name": "attention_mask", "val": " = None"}, {"name": "token_type_ids", "val": " = None"}, {"name": "position_ids", "val": " = None"}, {"name": "entity_ids", "val": " = None"}, {"name": "entity_attention_mask", "val": " = None"}, {"name": "entity_token_type_ids", "val": " = None"}, {"name": "entity_position_ids", "val": " = None"}, {"name": "entity_start_positions", "val": " = None"}, {"name": "entity_end_positions", "val": " = None"}, {"name": "head_mask", "val": " = None"}, {"name": "inputs_embeds", "val": " = None"}, {"name": "labels", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "return_dict", "val": " = None"}]</parameters><paramsdesc>- **input_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`) --
+  Indices of input sequence tokens in the vocabulary.
+
+  Indices can be obtained using [LukeTokenizer](/docs/transformers/master/en/model_doc/luke#transformers.LukeTokenizer). See [PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.encode) and
+  [PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.__call__) for details.
+
+  [What are input IDs?](../glossary#input-ids)
+- **attention_mask** (`torch.FloatTensor` of shape `(batch_size, sequence_length)`, *optional*) --
+  Mask to avoid performing attention on padding token indices. Mask values selected in `[0, 1]`:
+
+  - 1 for tokens that are **not masked**,
+  - 0 for tokens that are **masked**.
+
+  [What are attention masks?](../glossary#attention-mask)
+- **token_type_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`, *optional*) --
+  Segment token indices to indicate first and second portions of the inputs. Indices are selected in `[0,
+  1]`:
+
+  - 0 corresponds to a *sentence A* token,
+  - 1 corresponds to a *sentence B* token.
+
+  [What are token type IDs?](../glossary#token-type-ids)
+- **position_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`, *optional*) --
+  Indices of positions of each input sequence tokens in the position embeddings. Selected in the range `[0,
+  config.max_position_embeddings - 1]`.
+
+  [What are position IDs?](../glossary#position-ids)
+
+- **entity_ids** (`torch.LongTensor` of shape `(batch_size, entity_length)`) --
+  Indices of entity tokens in the entity vocabulary.
+
+  Indices can be obtained using [LukeTokenizer](/docs/transformers/master/en/model_doc/luke#transformers.LukeTokenizer). See [PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.encode) and
+  [PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.__call__) for details.
+
+- **entity_attention_mask** (`torch.FloatTensor` of shape `(batch_size, entity_length)`, *optional*) --
+  Mask to avoid performing attention on padding entity token indices. Mask values selected in `[0, 1]`:
+
+  - 1 for entity tokens that are **not masked**,
+  - 0 for entity tokens that are **masked**.
+
+- **entity_token_type_ids** (`torch.LongTensor` of shape `(batch_size, entity_length)`, *optional*) --
+  Segment token indices to indicate first and second portions of the entity token inputs. Indices are
+  selected in `[0, 1]`:
+
+  - 0 corresponds to a *portion A* entity token,
+  - 1 corresponds to a *portion B* entity token.
+
+- **entity_position_ids** (`torch.LongTensor` of shape `(batch_size, entity_length, max_mention_length)`, *optional*) --
+  Indices of positions of each input entity in the position embeddings. Selected in the range `[0,
+  config.max_position_embeddings - 1]`.
+
+- **inputs_embeds** (`torch.FloatTensor` of shape `(batch_size, sequence_length, hidden_size)`, *optional*) --
+  Optionally, instead of passing `input_ids` you can choose to directly pass an embedded representation. This
+  is useful if you want more control over how to convert `input_ids` indices into associated vectors than the
+  model's internal embedding lookup matrix.
+
+- **head_mask** (`torch.FloatTensor` of shape `(num_heads,)` or `(num_layers, num_heads)`, *optional*) --
+  Mask to nullify selected heads of the self-attention modules. Mask values selected in `[0, 1]`:
+
+  - 1 indicates the head is **not masked**,
+  - 0 indicates the head is **masked**.
+
+- **output_attentions** (`bool`, *optional*) --
+  Whether or not to return the attentions tensors of all attention layers. See `attentions` under returned
+  tensors for more detail.
+- **output_hidden_states** (`bool`, *optional*) --
+  Whether or not to return the hidden states of all layers. See `hidden_states` under returned tensors for
+  more detail.
+- **return_dict** (`bool`, *optional*) --
+  Whether or not to return a [ModelOutput](/docs/transformers/master/en/main_classes/output#transformers.file_utils.ModelOutput) instead of a plain tuple.
+
+- **entity_start_positions** (`torch.LongTensor`) --
+  The start positions of entities in the word token sequence.
+
+- **entity_end_positions** (`torch.LongTensor`) --
+  The end positions of entities in the word token sequence.
+
+- **labels** (`torch.LongTensor` of shape `(batch_size, entity_length)` or `(batch_size, entity_length, num_labels)`, *optional*) --
+  Labels for computing the classification loss. If the shape is `(batch_size, entity_length)`, the cross
+  entropy loss is used for the single-label classification. In this case, labels should contain the indices
+  that should be in `[0, ..., config.num_labels - 1]`. If the shape is `(batch_size, entity_length,
+  num_labels)`, the binary cross entropy loss is used for the multi-label classification. In this case,
+  labels should only contain `[0, 1]`, where 0 and 1 indicate false and true, respectively.</paramsdesc><paramgroups>0</paramgroups><rettype>`transformers.models.luke.modeling_luke.EntitySpanClassificationOutput` or `tuple(torch.FloatTensor)`</rettype><retdesc>A `transformers.models.luke.modeling_luke.EntitySpanClassificationOutput` or a tuple of
+`torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising various
+elements depending on the configuration ([LukeConfig](/docs/transformers/master/en/model_doc/luke#transformers.LukeConfig)) and inputs.
+
+- **loss** (`torch.FloatTensor` of shape `(1,)`, *optional*, returned when `labels` is provided) -- Classification loss.
+- **logits** (`torch.FloatTensor` of shape `(batch_size, config.num_labels)`) -- Classification scores (before SoftMax).
+- **hidden_states** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer) of
+  shape `(batch_size, sequence_length, hidden_size)`. Hidden-states of the model at the output of each layer
+  plus the initial embedding outputs.
+- **entity_hidden_states** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer) of
+  shape `(batch_size, entity_length, hidden_size)`. Entity hidden-states of the model at the output of each
+  layer plus the initial entity embedding outputs.
+- **attentions** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length,
+  sequence_length)`. Attentions weights after the attention softmax, used to compute the weighted average in
+  the self-attention heads.</retdesc></docstring>
+The [LukeForEntitySpanClassification](/docs/transformers/master/en/model_doc/luke#transformers.LukeForEntitySpanClassification) forward method, overrides the `__call__` special method.
+
+<Tip>
+
+Although the recipe for forward pass needs to be defined within this function, one should call the `Module`
+instance afterwards instead of this since the former takes care of running the pre and post processing steps while
+the latter silently ignores them.
+
+</Tip>
+
+
+
+
+
+
+
+Examples:
+
+```python
+>>> from transformers import LukeTokenizer, LukeForEntitySpanClassification
+
+>>> tokenizer = LukeTokenizer.from_pretrained("studio-ousia/luke-large-finetuned-conll-2003")
+>>> model = LukeForEntitySpanClassification.from_pretrained("studio-ousia/luke-large-finetuned-conll-2003")
+
+>>> text = "Beyoncé lives in Los Angeles"
+# List all possible entity spans in the text
+
+>>> word_start_positions = [0, 8, 14, 17, 21]  # character-based start positions of word tokens
+>>> word_end_positions = [7, 13, 16, 20, 28]  # character-based end positions of word tokens
+>>> entity_spans = []
+>>> for i, start_pos in enumerate(word_start_positions):
+...     for end_pos in word_end_positions[i:]:
+...         entity_spans.append((start_pos, end_pos))
+
+>>> inputs = tokenizer(text, entity_spans=entity_spans, return_tensors="pt")
+>>> outputs = model(**inputs)
+>>> logits = outputs.logits
+>>> predicted_class_indices = logits.argmax(-1).squeeze().tolist()
+>>> for span, predicted_class_idx in zip(entity_spans, predicted_class_indices):
+...     if predicted_class_idx != 0:
+...         print(text[span[0] : span[1]], model.config.id2label[predicted_class_idx])
+Beyoncé PER
+Los Angeles LOC
+```
+
+</div></div>

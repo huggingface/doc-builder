@@ -1,0 +1,956 @@
+---
+local: gptj
+sections:
+- local: overview
+  sections:
+  - local: generation
+    title: Generation
+  title: Overview
+- local: transformers.GPTJConfig
+  title: GPTJConfig
+- local: transformers.GPTJModel
+  title: GPTJModel
+- local: transformers.GPTJForCausalLM
+  title: GPTJForCausalLM
+- local: transformers.GPTJForSequenceClassification
+  title: GPTJForSequenceClassification
+- local: transformers.GPTJForQuestionAnswering
+  title: GPTJForQuestionAnswering
+- local: transformers.FlaxGPTJModel
+  title: FlaxGPTJModel
+- local: transformers.FlaxGPTJForCausalLM
+  title: FlaxGPTJForCausalLM
+title: GPT-J
+---
+<script>
+import Tip from "./Tip.svelte";
+import Youtube from "./Youtube.svelte";
+import Docstring from "./Docstring.svelte";
+import CodeBlock from "./CodeBlock.svelte";
+import CodeBlockFw from "./CodeBlockFw.svelte";
+import ColabDropdown from "./ColabDropdown.svelte";
+import IconCopyLink from "./IconCopyLink.svelte";
+export let fw: "pt" | "tf"
+</script>
+<!--Copyright 2021 The HuggingFace Team. All rights reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
+the License. You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on
+an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
+specific language governing permissions and limitations under the License.
+-->
+
+<h1 id="gptj">GPT-J</h1>
+
+<h2 id="overview">Overview</h2>
+
+The GPT-J model was released in the [kingoflolz/mesh-transformer-jax](https://github.com/kingoflolz/mesh-transformer-jax) repository by Ben Wang and Aran Komatsuzaki. It is a GPT-2-like
+causal language model trained on [the Pile](https://pile.eleuther.ai/) dataset.
+
+This model was contributed by [Stella Biderman](https://huggingface.co/stellaathena).
+
+Tips:
+
+- To load [GPT-J](https://huggingface.co/EleutherAI/gpt-j-6B) in float32 one would need at least 2x model size CPU
+  RAM: 1x for initial weights and another 1x to load the checkpoint. So for GPT-J it would take at least 48GB of CPU
+  RAM to just load the model. To reduce the CPU RAM usage there are a few options. The `torch_dtype` argument can be
+  used to initialize the model in half-precision. And the `low_cpu_mem_usage` argument can be used to keep the RAM
+  usage to 1x. There is also a [fp16 branch](https://huggingface.co/EleutherAI/gpt-j-6B/tree/float16) which stores
+  the fp16 weights, which could be used to further minimize the RAM usage. Combining all this it should take roughly
+  12.1GB of CPU RAM to load the model.
+
+```python
+>>> from transformers import GPTJForCausalLM
+>>> import torch
+
+>>> model = GPTJForCausalLM.from_pretrained(
+...     "EleutherAI/gpt-j-6B", revision="float16", torch_dtype=torch.float16, low_cpu_mem_usage=True
+... )
+```
+
+- The model should fit on 16GB GPU for inference. For training/fine-tuning it would take much more GPU RAM. Adam
+  optimizer for example makes four copies of the model: model, gradients, average and squared average of the gradients.
+  So it would need at least 4x model size GPU memory, even with mixed precision as gradient updates are in fp32. This
+  is not including the activations and data batches, which would again require some more GPU RAM. So one should explore
+  solutions such as DeepSpeed, to train/fine-tune the model. Another option is to use the original codebase to
+  train/fine-tune the model on TPU and then convert the model to Transformers format for inference. Instructions for
+  that could be found [here](https://github.com/kingoflolz/mesh-transformer-jax/blob/master/howto_finetune.md)
+
+- Although the embedding matrix has a size of 50400, only 50257 entries are used by the GPT-2 tokenizer. These extra
+  tokens are added for the sake of efficiency on TPUs. To avoid the mis-match between embedding matrix size and vocab
+  size, the tokenizer for [GPT-J](https://huggingface.co/EleutherAI/gpt-j-6B) contains 143 extra tokens
+  `<|extratoken_1|>... <|extratoken_143|>`, so the `vocab_size` of tokenizer also becomes 50400.
+
+<h3 id="generation">Generation</h3>
+
+The [generate()](/docs/transformers/master/en/main_classes/model#transformers.generation_utils.GenerationMixin.generate) method can be used to generate text using GPT-J
+model.
+
+```python
+>>> from transformers import AutoModelForCausalLM, AutoTokenizer
+
+>>> model = AutoModelForCausalLM.from_pretrained("EleutherAI/gpt-j-6B")
+>>> tokenizer = AutoTokenizer.from_pretrained("EleutherAI/gpt-j-6B")
+
+>>> prompt = (
+...     "In a shocking finding, scientists discovered a herd of unicorns living in a remote, "
+...     "previously unexplored valley, in the Andes Mountains. Even more surprising to the "
+...     "researchers was the fact that the unicorns spoke perfect English."
+... )
+
+>>> input_ids = tokenizer(prompt, return_tensors="pt").input_ids
+
+>>> gen_tokens = model.generate(
+...     input_ids,
+...     do_sample=True,
+...     temperature=0.9,
+...     max_length=100,
+... )
+>>> gen_text = tokenizer.batch_decode(gen_tokens)[0]
+```
+
+...or in float16 precision:
+
+```python
+>>> from transformers import GPTJForCausalLM, AutoTokenizer
+>>> import torch
+
+>>> model = GPTJForCausalLM.from_pretrained("EleutherAI/gpt-j-6B", torch_dtype=torch.float16)
+>>> tokenizer = AutoTokenizer.from_pretrained("EleutherAI/gpt-j-6B")
+
+>>> prompt = (
+...     "In a shocking finding, scientists discovered a herd of unicorns living in a remote, "
+...     "previously unexplored valley, in the Andes Mountains. Even more surprising to the "
+...     "researchers was the fact that the unicorns spoke perfect English."
+... )
+
+>>> input_ids = tokenizer(prompt, return_tensors="pt").input_ids
+
+>>> gen_tokens = model.generate(
+...     input_ids,
+...     do_sample=True,
+...     temperature=0.9,
+...     max_length=100,
+... )
+>>> gen_text = tokenizer.batch_decode(gen_tokens)[0]
+```
+
+<h2 id="transformers.GPTJConfig">GPTJConfig</h2>
+
+<div class="docstring">
+
+<docstring><name>class transformers.GPTJConfig</name><anchor>transformers.GPTJConfig</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/gptj/configuration_gptj.py#L29</source><parameters>[{"name": "vocab_size", "val": " = 50400"}, {"name": "n_positions", "val": " = 2048"}, {"name": "n_embd", "val": " = 4096"}, {"name": "n_layer", "val": " = 28"}, {"name": "n_head", "val": " = 16"}, {"name": "rotary_dim", "val": " = 64"}, {"name": "n_inner", "val": " = None"}, {"name": "activation_function", "val": " = 'gelu_new'"}, {"name": "resid_pdrop", "val": " = 0.0"}, {"name": "embd_pdrop", "val": " = 0.0"}, {"name": "attn_pdrop", "val": " = 0.0"}, {"name": "layer_norm_epsilon", "val": " = 1e-05"}, {"name": "initializer_range", "val": " = 0.02"}, {"name": "scale_attn_weights", "val": " = True"}, {"name": "use_cache", "val": " = True"}, {"name": "bos_token_id", "val": " = 50256"}, {"name": "eos_token_id", "val": " = 50256"}, {"name": "tie_word_embeddings", "val": " = False"}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **vocab_size** (`int`, *optional*, defaults to 50400) --
+  Vocabulary size of the GPT-J model. Defines the number of different tokens that can be represented by the
+  `inputs_ids` passed when calling [GPTJModel](/docs/transformers/master/en/model_doc/gptj#transformers.GPTJModel).
+- **n_positions** (`int`, *optional*, defaults to 2048) --
+  The maximum sequence length that this model might ever be used with. Typically set this to something large
+  just in case (e.g., 512 or 1024 or 2048).
+- **n_embd** (`int`, *optional*, defaults to 4096) --
+  Dimensionality of the embeddings and hidden states.
+- **n_layer** (`int`, *optional*, defaults to 28) --
+  Number of hidden layers in the Transformer encoder.
+- **n_head** (`int`, *optional*, defaults to 16) --
+  Number of attention heads for each attention layer in the Transformer encoder.
+- **rotary_dim** (`int`, *optional*, defaults to 64) --
+  Number of dimensions in the embedding that Rotary Position Embedding is applied to.
+- **n_inner** (`int`, *optional*, defaults to None) --
+  Dimensionality of the inner feed-forward layers. `None` will set it to 4 times n_embd
+- **activation_function** (`str`, *optional*, defaults to `"gelu_new"`) --
+  Activation function, to be selected in the list `["relu", "silu", "gelu", "tanh", "gelu_new"]`.
+- **resid_pdrop** (`float`, *optional*, defaults to 0.1) --
+  The dropout probability for all fully connected layers in the embeddings, encoder, and pooler.
+- **embd_pdrop** (`int`, *optional*, defaults to 0.1) --
+  The dropout ratio for the embeddings.
+- **attn_pdrop** (`float`, *optional*, defaults to 0.1) --
+  The dropout ratio for the attention.
+- **layer_norm_epsilon** (`float`, *optional*, defaults to 1e-5) --
+  The epsilon to use in the layer normalization layers.
+- **initializer_range** (`float`, *optional*, defaults to 0.02) --
+  The standard deviation of the truncated_normal_initializer for initializing all weight matrices.
+- **scale_attn_weights** (`bool`, *optional*, defaults to `True`) --
+  Scale attention weights by dividing by sqrt(hidden_size).
+- **use_cache** (`bool`, *optional*, defaults to `True`) --
+  Whether or not the model should return the last key/values attentions (not used by all models).</paramsdesc><paramgroups>0</paramgroups></docstring>
+
+This is the configuration class to store the configuration of a [GPTJModel](/docs/transformers/master/en/model_doc/gptj#transformers.GPTJModel). It is used to instantiate a GPT-J
+model according to the specified arguments, defining the model architecture. Instantiating a configuration with the
+defaults will yield a similar configuration to that of the GPT-J
+[gpt-j-6B](https://huggingface.co/EleutherAI/gpt-j-6B) architecture. Configuration objects inherit from
+[PretrainedConfig](/docs/transformers/master/en/main_classes/configuration#transformers.PretrainedConfig) and can be used to control the model outputs. Read the documentation from [PretrainedConfig](/docs/transformers/master/en/main_classes/configuration#transformers.PretrainedConfig)
+for more information.
+
+
+
+Example:
+
+```python
+>>> from transformers import GPTJModel, GPTJConfig
+
+>>> # Initializing a GPT-J 6B configuration
+>>> configuration = GPTJConfig()
+
+>>> # Initializing a model from the configuration
+>>> model = GPTJModel(configuration)
+
+>>> # Accessing the model configuration
+>>> configuration = model.config
+```
+
+</div>
+
+<h2 id="transformers.GPTJModel">GPTJModel</h2>
+
+<div class="docstring">
+
+<docstring><name>class transformers.GPTJModel</name><anchor>transformers.GPTJModel</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/gptj/modeling_gptj.py#L450</source><parameters>[{"name": "config", "val": ""}]</parameters><paramsdesc>- **config** ([GPTJConfig](/docs/transformers/master/en/model_doc/gptj#transformers.GPTJConfig)) -- Model configuration class with all the parameters of the model.
+  Initializing with a config file does not load the weights associated with the model, only the
+  configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel.from_pretrained) method to load the model weights.</paramsdesc><paramgroups>0</paramgroups></docstring>
+The bare GPT-J Model transformer outputting raw hidden-states without any specific head on top.
+This model is a PyTorch [torch.nn.Module](https://pytorch.org/docs/stable/nn.html#torch.nn.Module) sub-class. Use
+it as a regular PyTorch Module and refer to the PyTorch documentation for all matter related to general usage and
+behavior.
+
+
+
+
+
+<div class="docstring">
+<docstring><name>forward</name><anchor>transformers.GPTJModel.forward</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/gptj/modeling_gptj.py#L506</source><parameters>[{"name": "input_ids", "val": " = None"}, {"name": "past_key_values", "val": " = None"}, {"name": "attention_mask", "val": " = None"}, {"name": "token_type_ids", "val": " = None"}, {"name": "position_ids", "val": " = None"}, {"name": "head_mask", "val": " = None"}, {"name": "inputs_embeds", "val": " = None"}, {"name": "use_cache", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "return_dict", "val": " = None"}]</parameters><paramsdesc>- **input_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`) --
+  Indices of input sequence tokens in the vocabulary.
+
+  Indices can be obtained using `GPTJTokenizer`. See [PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.encode) and
+  [PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.__call__) for details.
+
+  [What are input IDs?](../glossary#input-ids)
+- **attention_mask** (`torch.FloatTensor` of shape `(batch_size, sequence_length)`, *optional*) --
+  Mask to avoid performing attention on padding token indices. Mask values selected in `[0, 1]`:
+
+  - 1 for tokens that are **not masked**,
+  - 0 for tokens that are **masked**.
+
+  [What are attention masks?](../glossary#attention-mask)
+- **token_type_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`, *optional*) --
+  Segment token indices to indicate first and second portions of the inputs. Indices are selected in `[0,
+  1]`:
+
+  - 0 corresponds to a *sentence A* token,
+  - 1 corresponds to a *sentence B* token.
+
+  [What are token type IDs?](../glossary#token-type-ids)
+- **position_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`, *optional*) --
+  Indices of positions of each input sequence tokens in the position embeddings. Selected in the range `[0,
+  config.n_positions - 1]`.
+
+  [What are position IDs?](../glossary#position-ids)
+- **head_mask** (`torch.FloatTensor` of shape `(num_attention_heads,)` or `(n_layer, num_attention_heads)`, *optional*) --
+  Mask to nullify selected heads of the self-attention modules. Mask values selected in `[0, 1]`:
+
+  - 1 indicates the head is **not masked**,
+  - 0 indicates the head is **masked**.
+
+- **inputs_embeds** (`torch.FloatTensor` of shape `(batch_size, sequence_length, hidden_dim)`, *optional*) --
+  Optionally, instead of passing `input_ids` you can choose to directly pass an embedded representation. This
+  is useful if you want more control over how to convert *input_ids* indices into associated vectors than the
+  model's internal embedding lookup matrix.
+- **output_attentions** (`bool`, *optional*) --
+  Whether or not to return the attentions tensors of all attention layers. See `attentions` under returned
+  tensors for more detail.
+- **output_hidden_states** (`bool`, *optional*) --
+  Whether or not to return the hidden states of all layers. See `hidden_states` under returned tensors for
+  more detail.
+- **return_dict** (`bool`, *optional*) --
+  Whether or not to return a [ModelOutput](/docs/transformers/master/en/main_classes/output#transformers.file_utils.ModelOutput) instead of a plain tuple.</paramsdesc><paramgroups>0</paramgroups><rettype>[transformers.modeling_outputs.BaseModelOutputWithPast](/docs/transformers/master/en/main_classes/output#transformers.modeling_outputs.BaseModelOutputWithPast) or `tuple(torch.FloatTensor)`</rettype><retdesc>A [transformers.modeling_outputs.BaseModelOutputWithPast](/docs/transformers/master/en/main_classes/output#transformers.modeling_outputs.BaseModelOutputWithPast) or a tuple of
+`torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising various
+elements depending on the configuration ([GPTJConfig](/docs/transformers/master/en/model_doc/gptj#transformers.GPTJConfig)) and inputs.
+
+- **last_hidden_state** (`torch.FloatTensor` of shape `(batch_size, sequence_length, hidden_size)`) -- Sequence of hidden-states at the output of the last layer of the model.
+
+  If `past_key_values` is used only the last hidden-state of the sequences of shape `(batch_size, 1,
+  hidden_size)` is output.
+- **past_key_values** (`tuple(tuple(torch.FloatTensor))`, *optional*, returned when `use_cache=True` is passed or when `config.use_cache=True`) -- Tuple of `tuple(torch.FloatTensor)` of length `config.n_layers`, with each tuple having 2 tensors of shape
+  `(batch_size, num_heads, sequence_length, embed_size_per_head)`) and optionally if
+  `config.is_encoder_decoder=True` 2 additional tensors of shape `(batch_size, num_heads,
+  encoder_sequence_length, embed_size_per_head)`.
+
+  Contains pre-computed hidden-states (key and values in the self-attention blocks and optionally if
+  `config.is_encoder_decoder=True` in the cross-attention blocks) that can be used (see `past_key_values`
+  input) to speed up sequential decoding.
+- **hidden_states** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer) of
+  shape `(batch_size, sequence_length, hidden_size)`.
+
+  Hidden-states of the model at the output of each layer plus the initial embedding outputs.
+- **attentions** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length,
+  sequence_length)`.
+
+  Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
+  heads.</retdesc></docstring>
+The [GPTJModel](/docs/transformers/master/en/model_doc/gptj#transformers.GPTJModel) forward method, overrides the `__call__` special method.
+
+<Tip>
+
+Although the recipe for forward pass needs to be defined within this function, one should call the `Module`
+instance afterwards instead of this since the former takes care of running the pre and post processing steps while
+the latter silently ignores them.
+
+</Tip>
+
+
+
+
+
+
+
+Example:
+
+```python
+>>> from transformers import GPT2Tokenizer, GPTJModel
+>>> import torch
+
+>>> tokenizer = GPT2Tokenizer.from_pretrained("EleutherAI/gpt-j-6B")
+>>> model = GPTJModel.from_pretrained("EleutherAI/gpt-j-6B")
+
+>>> inputs = tokenizer("Hello, my dog is cute", return_tensors="pt")
+>>> outputs = model(**inputs)
+
+>>> last_hidden_states = outputs.last_hidden_state
+```
+
+
+</div></div>
+
+<h2 id="transformers.GPTJForCausalLM">GPTJForCausalLM</h2>
+
+<div class="docstring">
+
+<docstring><name>class transformers.GPTJForCausalLM</name><anchor>transformers.GPTJForCausalLM</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/gptj/modeling_gptj.py#L691</source><parameters>[{"name": "config", "val": ""}]</parameters><paramsdesc>- **config** ([GPTJConfig](/docs/transformers/master/en/model_doc/gptj#transformers.GPTJConfig)) -- Model configuration class with all the parameters of the model.
+  Initializing with a config file does not load the weights associated with the model, only the
+  configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel.from_pretrained) method to load the model weights.</paramsdesc><paramgroups>0</paramgroups></docstring>
+
+The GPT-J Model transformer with a language modeling head on top (linear layer with weights tied to the input
+embeddings).
+
+This model is a PyTorch [torch.nn.Module](https://pytorch.org/docs/stable/nn.html#torch.nn.Module) sub-class. Use
+it as a regular PyTorch Module and refer to the PyTorch documentation for all matter related to general usage and
+behavior.
+
+
+
+
+
+<div class="docstring">
+<docstring><name>forward</name><anchor>transformers.GPTJForCausalLM.forward</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/gptj/modeling_gptj.py#L760</source><parameters>[{"name": "input_ids", "val": " = None"}, {"name": "past_key_values", "val": " = None"}, {"name": "attention_mask", "val": " = None"}, {"name": "token_type_ids", "val": " = None"}, {"name": "position_ids", "val": " = None"}, {"name": "head_mask", "val": " = None"}, {"name": "inputs_embeds", "val": " = None"}, {"name": "labels", "val": " = None"}, {"name": "use_cache", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "return_dict", "val": " = None"}]</parameters><paramsdesc>- **input_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`) --
+  Indices of input sequence tokens in the vocabulary.
+
+  Indices can be obtained using `GPTJTokenizer`. See [PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.encode) and
+  [PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.__call__) for details.
+
+  [What are input IDs?](../glossary#input-ids)
+- **attention_mask** (`torch.FloatTensor` of shape `(batch_size, sequence_length)`, *optional*) --
+  Mask to avoid performing attention on padding token indices. Mask values selected in `[0, 1]`:
+
+  - 1 for tokens that are **not masked**,
+  - 0 for tokens that are **masked**.
+
+  [What are attention masks?](../glossary#attention-mask)
+- **token_type_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`, *optional*) --
+  Segment token indices to indicate first and second portions of the inputs. Indices are selected in `[0,
+  1]`:
+
+  - 0 corresponds to a *sentence A* token,
+  - 1 corresponds to a *sentence B* token.
+
+  [What are token type IDs?](../glossary#token-type-ids)
+- **position_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`, *optional*) --
+  Indices of positions of each input sequence tokens in the position embeddings. Selected in the range `[0,
+  config.n_positions - 1]`.
+
+  [What are position IDs?](../glossary#position-ids)
+- **head_mask** (`torch.FloatTensor` of shape `(num_attention_heads,)` or `(n_layer, num_attention_heads)`, *optional*) --
+  Mask to nullify selected heads of the self-attention modules. Mask values selected in `[0, 1]`:
+
+  - 1 indicates the head is **not masked**,
+  - 0 indicates the head is **masked**.
+
+- **inputs_embeds** (`torch.FloatTensor` of shape `(batch_size, sequence_length, hidden_dim)`, *optional*) --
+  Optionally, instead of passing `input_ids` you can choose to directly pass an embedded representation. This
+  is useful if you want more control over how to convert *input_ids* indices into associated vectors than the
+  model's internal embedding lookup matrix.
+- **output_attentions** (`bool`, *optional*) --
+  Whether or not to return the attentions tensors of all attention layers. See `attentions` under returned
+  tensors for more detail.
+- **output_hidden_states** (`bool`, *optional*) --
+  Whether or not to return the hidden states of all layers. See `hidden_states` under returned tensors for
+  more detail.
+- **return_dict** (`bool`, *optional*) --
+  Whether or not to return a [ModelOutput](/docs/transformers/master/en/main_classes/output#transformers.file_utils.ModelOutput) instead of a plain tuple.
+
+- **labels** (`torch.LongTensor` of shape `(batch_size, sequence_length)`, *optional*) --
+  Labels for language modeling. Note that the labels **are shifted** inside the model, i.e. you can set
+  `labels = input_ids` Indices are selected in `[-100, 0, ..., config.vocab_size]` All labels set to `-100`
+  are ignored (masked), the loss is only computed for labels in `[0, ..., config.vocab_size]`</paramsdesc><paramgroups>0</paramgroups><rettype>[transformers.modeling_outputs.CausalLMOutputWithPast](/docs/transformers/master/en/main_classes/output#transformers.modeling_outputs.CausalLMOutputWithPast) or `tuple(torch.FloatTensor)`</rettype><retdesc>A [transformers.modeling_outputs.CausalLMOutputWithPast](/docs/transformers/master/en/main_classes/output#transformers.modeling_outputs.CausalLMOutputWithPast) or a tuple of
+`torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising various
+elements depending on the configuration ([GPTJConfig](/docs/transformers/master/en/model_doc/gptj#transformers.GPTJConfig)) and inputs.
+
+- **loss** (`torch.FloatTensor` of shape `(1,)`, *optional*, returned when `labels` is provided) -- Language modeling loss (for next-token prediction).
+- **logits** (`torch.FloatTensor` of shape `(batch_size, sequence_length, config.vocab_size)`) -- Prediction scores of the language modeling head (scores for each vocabulary token before SoftMax).
+- **past_key_values** (`tuple(tuple(torch.FloatTensor))`, *optional*, returned when `use_cache=True` is passed or when `config.use_cache=True`) -- Tuple of `tuple(torch.FloatTensor)` of length `config.n_layers`, with each tuple having 2 tensors of shape
+  `(batch_size, num_heads, sequence_length, embed_size_per_head)`)
+
+  Contains pre-computed hidden-states (key and values in the self-attention blocks) that can be used (see
+  `past_key_values` input) to speed up sequential decoding.
+- **hidden_states** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer) of
+  shape `(batch_size, sequence_length, hidden_size)`.
+
+  Hidden-states of the model at the output of each layer plus the initial embedding outputs.
+- **attentions** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length,
+  sequence_length)`.
+
+  Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
+  heads.</retdesc></docstring>
+The [GPTJForCausalLM](/docs/transformers/master/en/model_doc/gptj#transformers.GPTJForCausalLM) forward method, overrides the `__call__` special method.
+
+<Tip>
+
+Although the recipe for forward pass needs to be defined within this function, one should call the `Module`
+instance afterwards instead of this since the former takes care of running the pre and post processing steps while
+the latter silently ignores them.
+
+</Tip>
+
+
+
+
+
+
+
+Example:
+
+```python
+>>> import torch
+>>> from transformers import GPT2Tokenizer, GPTJForCausalLM
+
+>>> tokenizer = GPT2Tokenizer.from_pretrained("EleutherAI/gpt-j-6B")
+>>> model = GPTJForCausalLM.from_pretrained("EleutherAI/gpt-j-6B")
+
+>>> inputs = tokenizer("Hello, my dog is cute", return_tensors="pt")
+>>> outputs = model(**inputs, labels=inputs["input_ids"])
+>>> loss = outputs.loss
+>>> logits = outputs.logits
+```
+
+
+</div></div>
+
+<h2 id="transformers.GPTJForSequenceClassification">GPTJForSequenceClassification</h2>
+
+<div class="docstring">
+
+<docstring><name>class transformers.GPTJForSequenceClassification</name><anchor>transformers.GPTJForSequenceClassification</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/gptj/modeling_gptj.py#L866</source><parameters>[{"name": "config", "val": ""}]</parameters><paramsdesc>- **config** ([GPTJConfig](/docs/transformers/master/en/model_doc/gptj#transformers.GPTJConfig)) -- Model configuration class with all the parameters of the model.
+  Initializing with a config file does not load the weights associated with the model, only the
+  configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel.from_pretrained) method to load the model weights.</paramsdesc><paramgroups>0</paramgroups></docstring>
+
+The GPT-J Model transformer with a sequence classification head on top (linear layer).
+
+[GPTJForSequenceClassification](/docs/transformers/master/en/model_doc/gptj#transformers.GPTJForSequenceClassification) uses the last token in order to do the classification, as other causal models
+(e.g. GPT, GPT-2, GPT-Neo) do.
+
+Since it does classification on the last token, it requires to know the position of the last token. If a
+`pad_token_id` is defined in the configuration, it finds the last token that is not a padding token in each row. If
+no `pad_token_id` is defined, it simply takes the last value in each row of the batch. Since it cannot guess the
+padding tokens when `inputs_embeds` are passed instead of `input_ids`, it does the same (take the last value in
+each row of the batch).
+
+This model is a PyTorch [torch.nn.Module](https://pytorch.org/docs/stable/nn.html#torch.nn.Module) sub-class. Use
+it as a regular PyTorch Module and refer to the PyTorch documentation for all matter related to general usage and
+behavior.
+
+
+
+
+
+<div class="docstring">
+<docstring><name>forward</name><anchor>transformers.GPTJForSequenceClassification.forward</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/gptj/modeling_gptj.py#L882</source><parameters>[{"name": "input_ids", "val": " = None"}, {"name": "past_key_values", "val": " = None"}, {"name": "attention_mask", "val": " = None"}, {"name": "token_type_ids", "val": " = None"}, {"name": "position_ids", "val": " = None"}, {"name": "head_mask", "val": " = None"}, {"name": "inputs_embeds", "val": " = None"}, {"name": "labels", "val": " = None"}, {"name": "use_cache", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "return_dict", "val": " = None"}]</parameters><paramsdesc>- **input_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`) --
+  Indices of input sequence tokens in the vocabulary.
+
+  Indices can be obtained using `GPTJTokenizer`. See [PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.encode) and
+  [PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.__call__) for details.
+
+  [What are input IDs?](../glossary#input-ids)
+- **attention_mask** (`torch.FloatTensor` of shape `(batch_size, sequence_length)`, *optional*) --
+  Mask to avoid performing attention on padding token indices. Mask values selected in `[0, 1]`:
+
+  - 1 for tokens that are **not masked**,
+  - 0 for tokens that are **masked**.
+
+  [What are attention masks?](../glossary#attention-mask)
+- **token_type_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`, *optional*) --
+  Segment token indices to indicate first and second portions of the inputs. Indices are selected in `[0,
+  1]`:
+
+  - 0 corresponds to a *sentence A* token,
+  - 1 corresponds to a *sentence B* token.
+
+  [What are token type IDs?](../glossary#token-type-ids)
+- **position_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`, *optional*) --
+  Indices of positions of each input sequence tokens in the position embeddings. Selected in the range `[0,
+  config.n_positions - 1]`.
+
+  [What are position IDs?](../glossary#position-ids)
+- **head_mask** (`torch.FloatTensor` of shape `(num_attention_heads,)` or `(n_layer, num_attention_heads)`, *optional*) --
+  Mask to nullify selected heads of the self-attention modules. Mask values selected in `[0, 1]`:
+
+  - 1 indicates the head is **not masked**,
+  - 0 indicates the head is **masked**.
+
+- **inputs_embeds** (`torch.FloatTensor` of shape `(batch_size, sequence_length, hidden_dim)`, *optional*) --
+  Optionally, instead of passing `input_ids` you can choose to directly pass an embedded representation. This
+  is useful if you want more control over how to convert *input_ids* indices into associated vectors than the
+  model's internal embedding lookup matrix.
+- **output_attentions** (`bool`, *optional*) --
+  Whether or not to return the attentions tensors of all attention layers. See `attentions` under returned
+  tensors for more detail.
+- **output_hidden_states** (`bool`, *optional*) --
+  Whether or not to return the hidden states of all layers. See `hidden_states` under returned tensors for
+  more detail.
+- **return_dict** (`bool`, *optional*) --
+  Whether or not to return a [ModelOutput](/docs/transformers/master/en/main_classes/output#transformers.file_utils.ModelOutput) instead of a plain tuple.
+
+- **labels** (`torch.LongTensor` of shape `(batch_size,)`, *optional*) --
+  Labels for computing the sequence classification/regression loss. Indices should be in `[0, ...,
+  config.num_labels - 1]`. If `config.num_labels == 1` a regression loss is computed (Mean-Square loss), If
+  `config.num_labels > 1` a classification loss is computed (Cross-Entropy).</paramsdesc><paramgroups>0</paramgroups><rettype>`transformers.modeling_outputs.SequenceClassifierOutputWithPast` or `tuple(torch.FloatTensor)`</rettype><retdesc>A `transformers.modeling_outputs.SequenceClassifierOutputWithPast` or a tuple of
+`torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising various
+elements depending on the configuration ([GPTJConfig](/docs/transformers/master/en/model_doc/gptj#transformers.GPTJConfig)) and inputs.
+
+- **loss** (`torch.FloatTensor` of shape `(1,)`, *optional*, returned when `labels` is provided) -- Classification (or regression if config.num_labels==1) loss.
+- **logits** (`torch.FloatTensor` of shape `(batch_size, config.num_labels)`) -- Classification (or regression if config.num_labels==1) scores (before SoftMax).
+- **past_key_values** (`tuple(tuple(torch.FloatTensor))`, *optional*, returned when `use_cache=True` is passed or when `config.use_cache=True`) -- Tuple of `tuple(torch.FloatTensor)` of length `config.n_layers`, with each tuple having 2 tensors of shape
+  `(batch_size, num_heads, sequence_length, embed_size_per_head)`)
+
+  Contains pre-computed hidden-states (key and values in the self-attention blocks) that can be used (see
+  `past_key_values` input) to speed up sequential decoding.
+- **hidden_states** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer) of
+  shape `(batch_size, sequence_length, hidden_size)`.
+
+  Hidden-states of the model at the output of each layer plus the initial embedding outputs.
+- **attentions** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length,
+  sequence_length)`.
+
+  Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
+  heads.</retdesc></docstring>
+The [GPTJForSequenceClassification](/docs/transformers/master/en/model_doc/gptj#transformers.GPTJForSequenceClassification) forward method, overrides the `__call__` special method.
+
+<Tip>
+
+Although the recipe for forward pass needs to be defined within this function, one should call the `Module`
+instance afterwards instead of this since the former takes care of running the pre and post processing steps while
+the latter silently ignores them.
+
+</Tip>
+
+
+
+
+
+
+
+Example of single-label classification:
+
+```python
+>>> from transformers import GPT2Tokenizer, GPTJForSequenceClassification
+>>> import torch
+
+>>> tokenizer = GPT2Tokenizer.from_pretrained("EleutherAI/gpt-j-6B")
+>>> model = GPTJForSequenceClassification.from_pretrained("EleutherAI/gpt-j-6B")
+
+>>> inputs = tokenizer("Hello, my dog is cute", return_tensors="pt")
+>>> labels = torch.tensor([1]).unsqueeze(0)  # Batch size 1
+>>> outputs = model(**inputs, labels=labels)
+>>> loss = outputs.loss
+>>> logits = outputs.logits
+```
+
+Example of multi-label classification:
+
+```python
+>>> from transformers import GPT2Tokenizer, GPTJForSequenceClassification
+>>> import torch
+
+>>> tokenizer = GPT2Tokenizer.from_pretrained("EleutherAI/gpt-j-6B")
+>>> model = GPTJForSequenceClassification.from_pretrained("EleutherAI/gpt-j-6B", problem_type="multi_label_classification")
+
+>>> inputs = tokenizer("Hello, my dog is cute", return_tensors="pt")
+>>> labels = torch.tensor([[1, 1]], dtype=torch.float)  # need dtype=float for BCEWithLogitsLoss
+>>> outputs = model(**inputs, labels=labels)
+>>> loss = outputs.loss
+>>> logits = outputs.logits
+```
+
+
+</div></div>
+
+<h2 id="transformers.GPTJForQuestionAnswering">GPTJForQuestionAnswering</h2>
+
+<div class="docstring">
+
+<docstring><name>class transformers.GPTJForQuestionAnswering</name><anchor>transformers.GPTJForQuestionAnswering</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/gptj/modeling_gptj.py#L992</source><parameters>[{"name": "config", "val": ""}]</parameters><paramsdesc>- **config** ([GPTJConfig](/docs/transformers/master/en/model_doc/gptj#transformers.GPTJConfig)) -- Model configuration class with all the parameters of the model.
+  Initializing with a config file does not load the weights associated with the model, only the
+  configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model#transformers.PreTrainedModel.from_pretrained) method to load the model weights.</paramsdesc><paramgroups>0</paramgroups></docstring>
+
+The GPT-J Model transformer with a span classification head on top for extractive question-answering tasks like
+SQuAD (a linear layers on top of the hidden-states output to compute `span start logits` and `span end logits`).
+
+This model is a PyTorch [torch.nn.Module](https://pytorch.org/docs/stable/nn.html#torch.nn.Module) sub-class. Use
+it as a regular PyTorch Module and refer to the PyTorch documentation for all matter related to general usage and
+behavior.
+
+
+
+
+
+<div class="docstring">
+<docstring><name>forward</name><anchor>transformers.GPTJForQuestionAnswering.forward</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/gptj/modeling_gptj.py#L1008</source><parameters>[{"name": "input_ids", "val": " = None"}, {"name": "attention_mask", "val": " = None"}, {"name": "token_type_ids", "val": " = None"}, {"name": "position_ids", "val": " = None"}, {"name": "head_mask", "val": " = None"}, {"name": "inputs_embeds", "val": " = None"}, {"name": "start_positions", "val": " = None"}, {"name": "end_positions", "val": " = None"}, {"name": "output_attentions", "val": " = None"}, {"name": "output_hidden_states", "val": " = None"}, {"name": "return_dict", "val": " = None"}]</parameters><paramsdesc>- **input_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`) --
+  Indices of input sequence tokens in the vocabulary.
+
+  Indices can be obtained using `GPTJTokenizer`. See [PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.encode) and
+  [PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.__call__) for details.
+
+  [What are input IDs?](../glossary#input-ids)
+- **attention_mask** (`torch.FloatTensor` of shape `(batch_size, sequence_length)`, *optional*) --
+  Mask to avoid performing attention on padding token indices. Mask values selected in `[0, 1]`:
+
+  - 1 for tokens that are **not masked**,
+  - 0 for tokens that are **masked**.
+
+  [What are attention masks?](../glossary#attention-mask)
+- **token_type_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`, *optional*) --
+  Segment token indices to indicate first and second portions of the inputs. Indices are selected in `[0,
+  1]`:
+
+  - 0 corresponds to a *sentence A* token,
+  - 1 corresponds to a *sentence B* token.
+
+  [What are token type IDs?](../glossary#token-type-ids)
+- **position_ids** (`torch.LongTensor` of shape `(batch_size, sequence_length)`, *optional*) --
+  Indices of positions of each input sequence tokens in the position embeddings. Selected in the range `[0,
+  config.n_positions - 1]`.
+
+  [What are position IDs?](../glossary#position-ids)
+- **head_mask** (`torch.FloatTensor` of shape `(num_attention_heads,)` or `(n_layer, num_attention_heads)`, *optional*) --
+  Mask to nullify selected heads of the self-attention modules. Mask values selected in `[0, 1]`:
+
+  - 1 indicates the head is **not masked**,
+  - 0 indicates the head is **masked**.
+
+- **inputs_embeds** (`torch.FloatTensor` of shape `(batch_size, sequence_length, hidden_dim)`, *optional*) --
+  Optionally, instead of passing `input_ids` you can choose to directly pass an embedded representation. This
+  is useful if you want more control over how to convert *input_ids* indices into associated vectors than the
+  model's internal embedding lookup matrix.
+- **output_attentions** (`bool`, *optional*) --
+  Whether or not to return the attentions tensors of all attention layers. See `attentions` under returned
+  tensors for more detail.
+- **output_hidden_states** (`bool`, *optional*) --
+  Whether or not to return the hidden states of all layers. See `hidden_states` under returned tensors for
+  more detail.
+- **return_dict** (`bool`, *optional*) --
+  Whether or not to return a [ModelOutput](/docs/transformers/master/en/main_classes/output#transformers.file_utils.ModelOutput) instead of a plain tuple.
+
+- **start_positions** (`torch.LongTensor` of shape `(batch_size,)`, *optional*) --
+  Labels for position (index) of the start of the labelled span for computing the token classification loss.
+  Positions are clamped to the length of the sequence (`sequence_length`). Position outside of the sequence
+  are not taken into account for computing the loss.
+- **end_positions** (`torch.LongTensor` of shape `(batch_size,)`, *optional*) --
+  Labels for position (index) of the end of the labelled span for computing the token classification loss.
+  Positions are clamped to the length of the sequence (`sequence_length`). Position outside of the sequence
+  are not taken into account for computing the loss.</paramsdesc><paramgroups>0</paramgroups><rettype>[transformers.modeling_outputs.QuestionAnsweringModelOutput](/docs/transformers/master/en/main_classes/output#transformers.modeling_outputs.QuestionAnsweringModelOutput) or `tuple(torch.FloatTensor)`</rettype><retdesc>A [transformers.modeling_outputs.QuestionAnsweringModelOutput](/docs/transformers/master/en/main_classes/output#transformers.modeling_outputs.QuestionAnsweringModelOutput) or a tuple of
+`torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising various
+elements depending on the configuration ([GPTJConfig](/docs/transformers/master/en/model_doc/gptj#transformers.GPTJConfig)) and inputs.
+
+- **loss** (`torch.FloatTensor` of shape `(1,)`, *optional*, returned when `labels` is provided) -- Total span extraction loss is the sum of a Cross-Entropy for the start and end positions.
+- **start_logits** (`torch.FloatTensor` of shape `(batch_size, sequence_length)`) -- Span-start scores (before SoftMax).
+- **end_logits** (`torch.FloatTensor` of shape `(batch_size, sequence_length)`) -- Span-end scores (before SoftMax).
+- **hidden_states** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `torch.FloatTensor` (one for the output of the embeddings + one for the output of each layer) of
+  shape `(batch_size, sequence_length, hidden_size)`.
+
+  Hidden-states of the model at the output of each layer plus the initial embedding outputs.
+- **attentions** (`tuple(torch.FloatTensor)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `torch.FloatTensor` (one for each layer) of shape `(batch_size, num_heads, sequence_length,
+  sequence_length)`.
+
+  Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
+  heads.</retdesc></docstring>
+The [GPTJForQuestionAnswering](/docs/transformers/master/en/model_doc/gptj#transformers.GPTJForQuestionAnswering) forward method, overrides the `__call__` special method.
+
+<Tip>
+
+Although the recipe for forward pass needs to be defined within this function, one should call the `Module`
+instance afterwards instead of this since the former takes care of running the pre and post processing steps while
+the latter silently ignores them.
+
+</Tip>
+
+
+
+
+
+
+
+Example:
+
+```python
+>>> from transformers import GPT2Tokenizer, GPTJForQuestionAnswering
+>>> import torch
+
+>>> tokenizer = GPT2Tokenizer.from_pretrained("EleutherAI/gpt-j-6B")
+>>> model = GPTJForQuestionAnswering.from_pretrained("EleutherAI/gpt-j-6B")
+
+>>> question, text = "Who was Jim Henson?", "Jim Henson was a nice puppet"
+>>> inputs = tokenizer(question, text, return_tensors="pt")
+>>> start_positions = torch.tensor([1])
+>>> end_positions = torch.tensor([3])
+
+>>> outputs = model(**inputs, start_positions=start_positions, end_positions=end_positions)
+>>> loss = outputs.loss
+>>> start_scores = outputs.start_logits
+>>> end_scores = outputs.end_logits
+```
+
+
+</div></div>
+
+<h2 id="transformers.FlaxGPTJModel">FlaxGPTJModel</h2>
+
+<div class="docstring">
+
+<docstring><name>class transformers.FlaxGPTJModel</name><anchor>transformers.FlaxGPTJModel</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/gptj/modeling_flax_gptj.py#L608</source><parameters>[{"name": "config", "val": ": GPTJConfig"}, {"name": "input_shape", "val": ": typing.Tuple = (1, 1)"}, {"name": "seed", "val": ": int = 0"}, {"name": "dtype", "val": ": dtype = <class 'jax._src.numpy.lax_numpy.float32'>"}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **config** ([GPTJConfig](/docs/transformers/master/en/model_doc/gptj#transformers.GPTJConfig)) -- Model configuration class with all the parameters of the model.
+  Initializing with a config file does not load the weights associated with the model, only the
+  configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model#transformers.FlaxPreTrainedModel.from_pretrained) method to load the model weights.
+- **dtype** (`jax.numpy.dtype`, *optional*, defaults to `jax.numpy.float32`) --
+  The data type of the computation. Can be one of `jax.numpy.float32`, `jax.numpy.float16` (on GPUs) and
+  `jax.numpy.bfloat16` (on TPUs).
+
+  This can be used to enable mixed-precision training or half-precision inference on GPUs or TPUs. If
+  specified all the computation will be performed with the given `dtype`.
+
+  **Note that this only specifies the dtype of the computation and does not influence the dtype of model
+  parameters.**
+
+  If you wish to change the dtype of the model parameters, see [to_fp16()](/docs/transformers/master/en/main_classes/model#transformers.FlaxPreTrainedModel.to_fp16) and
+  [to_bf16()](/docs/transformers/master/en/main_classes/model#transformers.FlaxPreTrainedModel.to_bf16).</paramsdesc><paramgroups>0</paramgroups></docstring>
+The bare GPTJ Model transformer outputting raw hidden-states without any specific head on top.
+
+This model inherits from [FlaxPreTrainedModel](/docs/transformers/master/en/main_classes/model#transformers.FlaxPreTrainedModel). Check the superclass documentation for the generic methods the
+library implements for all its model (such as downloading or saving, resizing the input embeddings, pruning heads
+etc.)
+
+This model is also a Flax Linen
+[flax.nn.Module](https://flax.readthedocs.io/en/latest/_autosummary/flax.nn.module.html) subclass. Use it as a
+regular Flax Module and refer to the Flax documentation for all matter related to general usage and behavior.
+
+Finally, this model supports inherent JAX features such as:
+
+- [Just-In-Time (JIT) compilation](https://jax.readthedocs.io/en/latest/jax.html#just-in-time-compilation-jit)
+- [Automatic Differentiation](https://jax.readthedocs.io/en/latest/jax.html#automatic-differentiation)
+- [Vectorization](https://jax.readthedocs.io/en/latest/jax.html#vectorization-vmap)
+- [Parallelization](https://jax.readthedocs.io/en/latest/jax.html#parallelization-pmap)
+
+
+
+
+
+<div class="docstring">
+<docstring><name>\_\_call\_\_</name><anchor>transformers.FlaxGPTJPreTrainedModel.__call__</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/gptj/modeling_flax_gptj.py#L426</source><parameters>[{"name": "input_ids", "val": ""}, {"name": "attention_mask", "val": " = None"}, {"name": "position_ids", "val": " = None"}, {"name": "params", "val": ": dict = None"}, {"name": "past_key_values", "val": ": dict = None"}, {"name": "dropout_rng", "val": ": PRNGKey = None"}, {"name": "train", "val": ": bool = False"}, {"name": "output_attentions", "val": ": typing.Optional[bool] = None"}, {"name": "output_hidden_states", "val": ": typing.Optional[bool] = None"}, {"name": "return_dict", "val": ": typing.Optional[bool] = None"}]</parameters><paramsdesc>- **input_ids** (`numpy.ndarray` of shape `(batch_size, input_ids_length)`) --
+  `input_ids_length` = `sequence_length`. Indices of input sequence tokens in the vocabulary.
+
+  Indices can be obtained using `GPTJTokenizer`. See [PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.encode) and
+  [PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.__call__) for details.
+
+  [What are input IDs?](../glossary#input-ids)
+- **attention_mask** (`numpy.ndarray` of shape `(batch_size, sequence_length)`, *optional*) --
+  Mask to avoid performing attention on padding token indices. Mask values selected in `[0, 1]`:
+
+  - 1 for tokens that are **not masked**,
+  - 0 for tokens that are **masked**.
+
+  [What are attention masks?](../glossary#attention-mask)
+- **position_ids** (`numpy.ndarray` of shape `(batch_size, sequence_length)`, *optional*) --
+  Indices of positions of each input sequence tokens in the position embeddings. Selected in the range `[0,
+  config.max_position_embeddings - 1]`.
+- **past_key_values** (`Dict[str, np.ndarray]`, *optional*, returned by `init_cache` or when passing previous `past_key_values`) --
+  Dictionary of pre-computed hidden-states (key and values in the attention blocks) that can be used for fast
+  auto-regressive decoding. Pre-computed key and value hidden-states are of shape *[batch_size, max_length]*.
+- **output_attentions** (`bool`, *optional*) --
+  Whether or not to return the attentions tensors of all attention layers. See `attentions` under returned
+  tensors for more detail.
+- **output_hidden_states** (`bool`, *optional*) --
+  Whether or not to return the hidden states of all layers. See `hidden_states` under returned tensors for
+  more detail.
+- **return_dict** (`bool`, *optional*) --
+  Whether or not to return a [ModelOutput](/docs/transformers/master/en/main_classes/output#transformers.file_utils.ModelOutput) instead of a plain tuple.</paramsdesc><paramgroups>0</paramgroups><rettype>[transformers.modeling_flax_outputs.FlaxMaskedLMOutput](/docs/transformers/master/en/main_classes/output#transformers.modeling_flax_outputs.FlaxMaskedLMOutput) or `tuple(torch.FloatTensor)`</rettype><retdesc>A [transformers.modeling_flax_outputs.FlaxMaskedLMOutput](/docs/transformers/master/en/main_classes/output#transformers.modeling_flax_outputs.FlaxMaskedLMOutput) or a tuple of
+`torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising various
+elements depending on the configuration ([GPTJConfig](/docs/transformers/master/en/model_doc/gptj#transformers.GPTJConfig)) and inputs.
+
+- **logits** (`jnp.ndarray` of shape `(batch_size, sequence_length, config.vocab_size)`) -- Prediction scores of the language modeling head (scores for each vocabulary token before SoftMax).
+- **hidden_states** (`tuple(jnp.ndarray)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `jnp.ndarray` (one for the output of the embeddings + one for the output of each layer) of shape
+  `(batch_size, sequence_length, hidden_size)`.
+
+  Hidden-states of the model at the output of each layer plus the initial embedding outputs.
+- **attentions** (`tuple(jnp.ndarray)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `jnp.ndarray` (one for each layer) of shape `(batch_size, num_heads, sequence_length,
+  sequence_length)`.
+
+  Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
+  heads.</retdesc></docstring>
+The `FlaxGPTJPreTrainedModel` forward method, overrides the `__call__` special method.
+
+<Tip>
+
+Although the recipe for forward pass needs to be defined within this function, one should call the `Module`
+instance afterwards instead of this since the former takes care of running the pre and post processing steps while
+the latter silently ignores them.
+
+</Tip>
+
+
+
+
+
+
+
+Example:
+
+```python
+>>> from transformers import GPTJTokenizer, FlaxGPTJModel
+
+>>> tokenizer = GPTJTokenizer.from_pretrained("gptj")
+>>> model = FlaxGPTJModel.from_pretrained("gptj")
+
+>>> inputs = tokenizer("Hello, my dog is cute", return_tensors="jax")
+>>> outputs = model(**inputs)
+
+>>> last_hidden_states = outputs.last_hidden_state
+```
+
+
+</div></div>
+
+<h2 id="transformers.FlaxGPTJForCausalLM">FlaxGPTJForCausalLM</h2>
+
+<div class="docstring">
+
+<docstring><name>class transformers.FlaxGPTJForCausalLM</name><anchor>transformers.FlaxGPTJForCausalLM</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/gptj/modeling_flax_gptj.py#L676</source><parameters>[{"name": "config", "val": ": GPTJConfig"}, {"name": "input_shape", "val": ": typing.Tuple = (1, 1)"}, {"name": "seed", "val": ": int = 0"}, {"name": "dtype", "val": ": dtype = <class 'jax._src.numpy.lax_numpy.float32'>"}, {"name": "**kwargs", "val": ""}]</parameters><paramsdesc>- **config** ([GPTJConfig](/docs/transformers/master/en/model_doc/gptj#transformers.GPTJConfig)) -- Model configuration class with all the parameters of the model.
+  Initializing with a config file does not load the weights associated with the model, only the
+  configuration. Check out the [from_pretrained()](/docs/transformers/master/en/main_classes/model#transformers.FlaxPreTrainedModel.from_pretrained) method to load the model weights.
+- **dtype** (`jax.numpy.dtype`, *optional*, defaults to `jax.numpy.float32`) --
+  The data type of the computation. Can be one of `jax.numpy.float32`, `jax.numpy.float16` (on GPUs) and
+  `jax.numpy.bfloat16` (on TPUs).
+
+  This can be used to enable mixed-precision training or half-precision inference on GPUs or TPUs. If
+  specified all the computation will be performed with the given `dtype`.
+
+  **Note that this only specifies the dtype of the computation and does not influence the dtype of model
+  parameters.**
+
+  If you wish to change the dtype of the model parameters, see [to_fp16()](/docs/transformers/master/en/main_classes/model#transformers.FlaxPreTrainedModel.to_fp16) and
+  [to_bf16()](/docs/transformers/master/en/main_classes/model#transformers.FlaxPreTrainedModel.to_bf16).</paramsdesc><paramgroups>0</paramgroups></docstring>
+
+The GPTJ Model transformer with a language modeling head on top (linear layer with weights tied to the input
+embeddings).
+
+
+This model inherits from [FlaxPreTrainedModel](/docs/transformers/master/en/main_classes/model#transformers.FlaxPreTrainedModel). Check the superclass documentation for the generic methods the
+library implements for all its model (such as downloading or saving, resizing the input embeddings, pruning heads
+etc.)
+
+This model is also a Flax Linen
+[flax.nn.Module](https://flax.readthedocs.io/en/latest/_autosummary/flax.nn.module.html) subclass. Use it as a
+regular Flax Module and refer to the Flax documentation for all matter related to general usage and behavior.
+
+Finally, this model supports inherent JAX features such as:
+
+- [Just-In-Time (JIT) compilation](https://jax.readthedocs.io/en/latest/jax.html#just-in-time-compilation-jit)
+- [Automatic Differentiation](https://jax.readthedocs.io/en/latest/jax.html#automatic-differentiation)
+- [Vectorization](https://jax.readthedocs.io/en/latest/jax.html#vectorization-vmap)
+- [Parallelization](https://jax.readthedocs.io/en/latest/jax.html#parallelization-pmap)
+
+
+
+
+
+<div class="docstring">
+<docstring><name>\_\_call\_\_</name><anchor>transformers.FlaxGPTJPreTrainedModel.__call__</anchor><source>https://github.com/huggingface/transformers/blob/master/src/transformers/models/gptj/modeling_flax_gptj.py#L426</source><parameters>[{"name": "input_ids", "val": ""}, {"name": "attention_mask", "val": " = None"}, {"name": "position_ids", "val": " = None"}, {"name": "params", "val": ": dict = None"}, {"name": "past_key_values", "val": ": dict = None"}, {"name": "dropout_rng", "val": ": PRNGKey = None"}, {"name": "train", "val": ": bool = False"}, {"name": "output_attentions", "val": ": typing.Optional[bool] = None"}, {"name": "output_hidden_states", "val": ": typing.Optional[bool] = None"}, {"name": "return_dict", "val": ": typing.Optional[bool] = None"}]</parameters><paramsdesc>- **input_ids** (`numpy.ndarray` of shape `(batch_size, input_ids_length)`) --
+  `input_ids_length` = `sequence_length`. Indices of input sequence tokens in the vocabulary.
+
+  Indices can be obtained using `GPTJTokenizer`. See [PreTrainedTokenizer.encode()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.encode) and
+  [PreTrainedTokenizer.__call__()](/docs/transformers/master/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.__call__) for details.
+
+  [What are input IDs?](../glossary#input-ids)
+- **attention_mask** (`numpy.ndarray` of shape `(batch_size, sequence_length)`, *optional*) --
+  Mask to avoid performing attention on padding token indices. Mask values selected in `[0, 1]`:
+
+  - 1 for tokens that are **not masked**,
+  - 0 for tokens that are **masked**.
+
+  [What are attention masks?](../glossary#attention-mask)
+- **position_ids** (`numpy.ndarray` of shape `(batch_size, sequence_length)`, *optional*) --
+  Indices of positions of each input sequence tokens in the position embeddings. Selected in the range `[0,
+  config.max_position_embeddings - 1]`.
+- **past_key_values** (`Dict[str, np.ndarray]`, *optional*, returned by `init_cache` or when passing previous `past_key_values`) --
+  Dictionary of pre-computed hidden-states (key and values in the attention blocks) that can be used for fast
+  auto-regressive decoding. Pre-computed key and value hidden-states are of shape *[batch_size, max_length]*.
+- **output_attentions** (`bool`, *optional*) --
+  Whether or not to return the attentions tensors of all attention layers. See `attentions` under returned
+  tensors for more detail.
+- **output_hidden_states** (`bool`, *optional*) --
+  Whether or not to return the hidden states of all layers. See `hidden_states` under returned tensors for
+  more detail.
+- **return_dict** (`bool`, *optional*) --
+  Whether or not to return a [ModelOutput](/docs/transformers/master/en/main_classes/output#transformers.file_utils.ModelOutput) instead of a plain tuple.</paramsdesc><paramgroups>0</paramgroups><rettype>[transformers.modeling_flax_outputs.FlaxMaskedLMOutput](/docs/transformers/master/en/main_classes/output#transformers.modeling_flax_outputs.FlaxMaskedLMOutput) or `tuple(torch.FloatTensor)`</rettype><retdesc>A [transformers.modeling_flax_outputs.FlaxMaskedLMOutput](/docs/transformers/master/en/main_classes/output#transformers.modeling_flax_outputs.FlaxMaskedLMOutput) or a tuple of
+`torch.FloatTensor` (if `return_dict=False` is passed or when `config.return_dict=False`) comprising various
+elements depending on the configuration ([GPTJConfig](/docs/transformers/master/en/model_doc/gptj#transformers.GPTJConfig)) and inputs.
+
+- **logits** (`jnp.ndarray` of shape `(batch_size, sequence_length, config.vocab_size)`) -- Prediction scores of the language modeling head (scores for each vocabulary token before SoftMax).
+- **hidden_states** (`tuple(jnp.ndarray)`, *optional*, returned when `output_hidden_states=True` is passed or when `config.output_hidden_states=True`) -- Tuple of `jnp.ndarray` (one for the output of the embeddings + one for the output of each layer) of shape
+  `(batch_size, sequence_length, hidden_size)`.
+
+  Hidden-states of the model at the output of each layer plus the initial embedding outputs.
+- **attentions** (`tuple(jnp.ndarray)`, *optional*, returned when `output_attentions=True` is passed or when `config.output_attentions=True`) -- Tuple of `jnp.ndarray` (one for each layer) of shape `(batch_size, num_heads, sequence_length,
+  sequence_length)`.
+
+  Attentions weights after the attention softmax, used to compute the weighted average in the self-attention
+  heads.</retdesc></docstring>
+The `FlaxGPTJPreTrainedModel` forward method, overrides the `__call__` special method.
+
+<Tip>
+
+Although the recipe for forward pass needs to be defined within this function, one should call the `Module`
+instance afterwards instead of this since the former takes care of running the pre and post processing steps while
+the latter silently ignores them.
+
+</Tip>
+
+
+
+
+
+
+
+Example:
+
+```python
+>>> from transformers import GPTJTokenizer, FlaxGPTJForCausalLM
+
+>>> tokenizer = GPTJTokenizer.from_pretrained("gptj")
+>>> model = FlaxGPTJForCausalLM.from_pretrained("gptj")
+
+>>> inputs = tokenizer("Hello, my dog is cute", return_tensors="np")
+>>> outputs = model(**inputs)
+
+>>> # retrieve logts for next token
+>>> next_token_logits = outputs.logits[:, -1]
+```
+
+
+</div></div>
