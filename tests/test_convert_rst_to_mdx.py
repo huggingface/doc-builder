@@ -516,6 +516,31 @@ End of the arg section.
 """
         self.assertEqual(parse_rst_docstring(rst_docstring), expected_conversion)
 
+        # test multiple parameter blocks
+        rst_docstring = """Args:
+    a (:obj:`str` or :obj:`bool`): some parameter
+    b (:obj:`str` or :obj:`bool`):
+        Another parameter with the description below
+
+Parameters:
+    a (:obj:`str` or :obj:`bool`): some parameter
+    b (:obj:`str` or :obj:`bool`):
+        Another parameter with the description below
+"""
+        expected_conversion = """
+
+
+
+<parameters>- **a** (:obj:`str` or :obj:`bool`) -- some parameter
+- **b** (:obj:`str` or :obj:`bool`) --
+        Another parameter with the description below
+- **a** (:obj:`str` or :obj:`bool`) -- some parameter
+- **b** (:obj:`str` or :obj:`bool`) --
+        Another parameter with the description below</parameters>
+"""
+        self.assertEqual(parse_rst_docstring(rst_docstring), expected_conversion)
+
+
     def test_remove_indent(self):
         example1 = """
     Lala

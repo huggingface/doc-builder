@@ -358,6 +358,9 @@ class InvalidRstDocstringError(ValueError):
     pass
 
 
+_re_parameters = re.compile(r"<parameters>(((?!<parameters>).)*)</parameters>", re.DOTALL)
+
+
 def parse_rst_docstring(docstring):
     """
     Parses a docstring written in rst, in particular the list of arguments and the return type.
@@ -416,7 +419,17 @@ def parse_rst_docstring(docstring):
         else:
             idx += 1
 
-    return "\n".join(lines)
+    result = "\n".join(lines)
+
+    # combine multiple <parameters> blocks into one block
+    if result.count("<parameters>") > 1:
+        parameters_blocks = _re_parameters.findall(result)
+        parameters_blocks = [pb[0].strip() for pb in parameters_blocks]
+        parameters_str = '\n'.join(parameters_blocks)
+        result = _re_parameters.sub("", result)
+        result +=  f'\n<parameters>{parameters_str}</parameters>\n'
+
+    return result
 
 
 _re_list = re.compile("^\s*(-|\*|\d+\.)\s")
