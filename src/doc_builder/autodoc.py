@@ -369,7 +369,7 @@ def resolve_links_in_text(text, package, mapping, page_info):
     prefix = f"/docs/{package_name}/{version}/{language}/"
 
     def _resolve_link(search):
-        object_name = search.groups()[0]
+        object_name, last_char = search.groups()
         # If the name begins with `~`, we shortcut to the last part.
         if object_name.startswith("~"):
             obj = find_object_in_package(object_name[1:], package)
@@ -377,7 +377,7 @@ def resolve_links_in_text(text, package, mapping, page_info):
         else:
             obj = find_object_in_package(object_name, package)
         if obj is None:
-            return f"`{object_name}`"
+            return f"`{object_name}`{last_char}"
 
         # If the object is not a class, we add ()
         if not isinstance(obj, type):
@@ -388,9 +388,9 @@ def resolve_links_in_text(text, package, mapping, page_info):
         if anchor not in mapping:
             return f"`{object_name}`"
         page = f"{prefix}{mapping[anchor]}"
-        return f"[{object_name}]({page}#{anchor})"
+        return f"[{object_name}]({page}#{anchor}){last_char}"
 
-    return re.sub(r"\[`([^`]+)`\]", _resolve_link, text)
+    return re.sub(r"\[`([^`]+)`\]([^\(])", _resolve_link, text)
 
 
 # Re pattern that catches the start of a block code with potential indent.

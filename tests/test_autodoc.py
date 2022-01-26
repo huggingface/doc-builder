@@ -354,6 +354,16 @@ tuple before.
             ),
         )
 
+        self.assertEqual(
+            resolve_links_in_text(
+                "This is a regular [`link`](url)",
+                transformers,
+                small_mapping,
+                page_info,
+            ),
+            "This is a regular [`link`](url)",
+        )
+
     def test_resolve_links_in_text_custom_version_lang(self):
         page_info = {"package_name": "transformers", "version": "v4.10.0", "language": "fr"}
         small_mapping = {
