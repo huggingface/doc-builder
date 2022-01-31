@@ -38,7 +38,10 @@ def update_versions_file(build_path, version):
         new_version = {"version": version}
         did_insert = False
         for i, value in enumerate(sem_versions):
-            if package_version.parse(new_version["version"]) > package_version.parse(value["version"]):
+            if package_version.parse(new_version["version"]) == package_version.parse(value["version"]):
+                # Nothing to do, the version is here already.
+                return
+            elif package_version.parse(new_version["version"]) > package_version.parse(value["version"]):
                 sem_versions.insert(i, new_version)
                 did_insert = True
                 break
