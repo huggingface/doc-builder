@@ -53,13 +53,13 @@ class UtilsTester(unittest.TestCase):
 
             self.assertRaises(ValueError, update_versions_file, tmp_dir, "v4.2.2")
 
-        # test inserting duplicate value into yml
+        # test inserting duplicate version into yml
         with tempfile.TemporaryDirectory() as tmp_dir:
             with open(f"{tmp_dir}/_versions.yml", "w") as tmp_yml:
                 versions = [{"version": "master"}]
                 yaml.dump(versions, tmp_yml)
             update_versions_file(tmp_dir, "v4.2.2")
-            update_versions_file(tmp_dir, "v4.2.2")  # inserting duplicate value
+            update_versions_file(tmp_dir, "v4.2.2")  # inserting duplicate version
             with open(f"{tmp_dir}/_versions.yml", "r") as tmp_yml:
                 yml_str = tmp_yml.read()
                 expected_yml = "- version: master\n- version: v4.2.2\n"
