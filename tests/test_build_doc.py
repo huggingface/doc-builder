@@ -36,6 +36,9 @@ class BuildDocTester(unittest.TestCase):
     {label: "Mixed", value: "https://colab.research.google.com/github/huggingface/notebooks/blob/master/transformers_doc/quicktour.ipynb"},
     {label: "PyTorch", value: "https://colab.research.google.com/github/huggingface/notebooks/blob/master/transformers_doc/pytorch/quicktour.ipynb"},
     {label: "TensorFlow", value: "https://colab.research.google.com/github/huggingface/notebooks/blob/master/transformers_doc/tensorflow/quicktour.ipynb"},
+    {label: "Mixed", value: "https://studiolab.sagemaker.aws/import/github/huggingface/notebooks/blob/master/transformers_doc/quicktour.ipynb"},
+    {label: "PyTorch", value: "https://studiolab.sagemaker.aws/import/github/huggingface/notebooks/blob/master/transformers_doc/pytorch/quicktour.ipynb"},
+    {label: "TensorFlow", value: "https://studiolab.sagemaker.aws/import/github/huggingface/notebooks/blob/master/transformers_doc/tensorflow/quicktour.ipynb"},
 ]}} />
 """
         self.assertEqual(resolve_open_in_colab("\n[[open-in-colab]]\n", {"page": "quicktour.html"}), expected)
