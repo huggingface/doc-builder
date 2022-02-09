@@ -248,6 +248,11 @@ def document_object(object_name, package, page_info, full_name=True):
             f"Unable to find {object_name} in {package.__name__}. Make sure the path to that object is correct."
         )
 
+    # TODO: handle class properties in docstring
+    # being ignored currently
+    if isinstance(obj, property):
+        return "", None
+
     anchor_name = get_shortest_path(obj, package)
     if full_name and anchor_name is not None:
         name = anchor_name
