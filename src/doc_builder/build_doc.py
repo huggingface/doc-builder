@@ -47,13 +47,18 @@ def resolve_open_in_colab(content, page_info):
         return content
 
     page_name = Path(page_info["page"]).stem
-    nb_prefix = "https://colab.research.google.com/github/huggingface/notebooks/blob/master/transformers_doc/"
-    links = {
-        "Mixed": f"{nb_prefix}{page_name}.ipynb",
-        "PyTorch": f"{nb_prefix}pytorch/{page_name}.ipynb",
-        "TensorFlow": f"{nb_prefix}tensorflow/{page_name}.ipynb",
-    }
-    formatted_links = ['    {label: "' + key + '", value: "' + value + '"},' for key, value in links.items()]
+    nb_prefix = "/github/huggingface/notebooks/blob/master/transformers_doc/"
+    nb_prefix_colab = f"https://colab.research.google.com{nb_prefix}"
+    nb_prefix_awsstudio = f"https://studiolab.sagemaker.aws/import{nb_prefix}"
+    links = [
+        ("Mixed", f"{nb_prefix_colab}{page_name}.ipynb"),
+        ("PyTorch", f"{nb_prefix_colab}pytorch/{page_name}.ipynb"),
+        ("TensorFlow", f"{nb_prefix_colab}tensorflow/{page_name}.ipynb"),
+        ("Mixed", f"{nb_prefix_awsstudio}{page_name}.ipynb"),
+        ("PyTorch", f"{nb_prefix_awsstudio}pytorch/{page_name}.ipynb"),
+        ("TensorFlow", f"{nb_prefix_awsstudio}tensorflow/{page_name}.ipynb"),
+    ]
+    formatted_links = ['    {label: "' + key + '", value: "' + value + '"},' for key, value in links]
 
     svelte_component = """<DocNotebookDropdown hydrate-props={{
   classNames: "absolute z-10 right-0 top-0",
