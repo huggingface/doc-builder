@@ -382,7 +382,10 @@ def parse_rst_docstring(docstring):
             # Returns or Raises block.
             param_indent = find_indent(lines[idx])
             while (
-                idx < len(lines) and find_indent(lines[idx]) == param_indent and _re_returns.search(lines[idx]) is None
+                idx < len(lines)
+                and find_indent(lines[idx]) == param_indent
+                and _re_returns.search(lines[idx]) is None
+                and _re_raises.search(lines[idx]) is None
             ):
                 intro, doc = split_arg_line(lines[idx])
                 # Line starting with a > after indent indicate a "section title" in the parameters.
@@ -437,7 +440,11 @@ def parse_rst_docstring(docstring):
             # The line may contain the return type.
             return_type, lines[idx] = split_return_line(lines[idx])
             idx += 1
-            while idx < len(lines) and (is_empty_line(lines[idx]) or find_indent(lines[idx]) >= return_indent):
+            while idx < len(lines) and (
+                is_empty_line(lines[idx])
+                or find_indent(lines[idx]) >= return_indent
+                or _re_raises.search(lines[idx]) is not None
+            ):
                 idx += 1
             lines.insert(idx, "</returns>\n")
             idx += 1
