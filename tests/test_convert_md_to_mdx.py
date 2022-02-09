@@ -23,7 +23,7 @@ class ConvertMdToMdxTester(unittest.TestCase):
     def test_convert_md_to_mdx(self):
         page_info = {"package_name": "transformers", "version": "v4.10.0", "language": "fr"}
         md_text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit"
-        expected_conversion = '<script>\nimport Tip from "./Tip.svelte";\nimport Youtube from "./Youtube.svelte";\nimport Docstring from "./Docstring.svelte";\nimport CodeBlock from "./CodeBlock.svelte";\nimport CodeBlockFw from "./CodeBlockFw.svelte";\nimport ColabDropdown from "./ColabDropdown.svelte";\nimport IconCopyLink from "./IconCopyLink.svelte";\nexport let fw: "pt" | "tf"\n</script>\nLorem ipsum dolor sit amet, consectetur adipiscing elit'
+        expected_conversion = '<script>\nimport Tip from "./Tip.svelte";\nimport Youtube from "./Youtube.svelte";\nimport Docstring from "./Docstring.svelte";\nimport CodeBlock from "./CodeBlock.svelte";\nimport CodeBlockFw from "./CodeBlockFw.svelte";\nimport DocNotebookDropdown from "./DocNotebookDropdown.svelte";\nimport IconCopyLink from "./IconCopyLink.svelte";\nexport let fw: "pt" | "tf"\n</script>\nLorem ipsum dolor sit amet, consectetur adipiscing elit'
         self.assertEqual(convert_md_to_mdx(md_text, page_info), expected_conversion)
 
     def test_convert_special_chars(self):
