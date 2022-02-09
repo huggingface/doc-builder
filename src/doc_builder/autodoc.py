@@ -53,6 +53,10 @@ def get_shortest_path(obj, package):
     Simplifies the path to `obj` to be the shortest possible, for instance if `obj` is in the main init of its
     package.
     """
+    if isinstance(obj, property):
+        # Propreties have no __module__ or __name__ attributes, but their getter function does.
+        obj = obj.fget
+
     if not hasattr(obj, "__module__"):
         return None
     long_path = obj.__module__
@@ -247,6 +251,9 @@ def document_object(object_name, package, page_info, full_name=True):
         raise ValueError(
             f"Unable to find {object_name} in {package.__name__}. Make sure the path to that object is correct."
         )
+    if isinstance(obj, property):
+        # Propreties have no __module__ or __name__ attributes, but their getter function does.
+        obj = obj.fget
 
     anchor_name = get_shortest_path(obj, package)
     if full_name and anchor_name is not None:
