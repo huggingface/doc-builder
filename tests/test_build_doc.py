@@ -30,7 +30,7 @@ class BuildDocTester(unittest.TestCase):
 
     def test_resolve_open_in_colab(self):
         expected = """
-<ColabDropdown hydrate-props={{
+<DocNotebookDropdown hydrate-props={{
   classNames: "absolute z-10 right-0 top-0",
   options:[
     {label: "Mixed", value: "https://colab.research.google.com/github/huggingface/notebooks/blob/master/transformers_doc/quicktour.ipynb"},
