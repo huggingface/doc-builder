@@ -440,10 +440,9 @@ def parse_rst_docstring(docstring):
             # The line may contain the return type.
             return_type, lines[idx] = split_return_line(lines[idx])
             idx += 1
-            while idx < len(lines) and (
+            while idx < len(lines) and_re_raises.search(lines[idx]) is None and (
                 is_empty_line(lines[idx])
                 or find_indent(lines[idx]) >= return_indent
-                or _re_raises.search(lines[idx]) is not None
             ):
                 idx += 1
             lines.insert(idx, "</returns>\n")
