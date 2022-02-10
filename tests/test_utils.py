@@ -119,6 +119,7 @@ Example::
         ... })
     >>> pa.Table.from_pandas(df)
     <pyarrow.lib.Table object at 0x7f05d1fb1b40>"""
+
         self.assertEqual(convert_numpydoc_to_groupsdoc(original_numpydocstring), expected_conversion)
 
     def test_convert_parametype_numpydoc_to_groupsdoc(self):
