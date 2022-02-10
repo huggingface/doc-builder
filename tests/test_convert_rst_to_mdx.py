@@ -480,6 +480,12 @@ Args:
     b (:obj:`str` or :obj:`bool`):
         Another parameter with the description below
 
+Raises:
+    `pa.ArrowInvalidError`: if the arrow data casting fails
+    TypeError: if the target type is not supported according, e.g.
+        - point1
+        - point2
+
 Returns:
     :obj:`str` or :obj:`bool`: some result
 
@@ -499,6 +505,17 @@ docstring
         Another parameter with the description below
 
 </parameters>
+
+<raises>
+
+- `pa.ArrowInvalidError` -- if the arrow data casting fails
+- `TypeError` -- if the target type is not supported according, e.g.
+        - point1
+        - point2
+
+</raises>
+
+<raisederrors>`pa.ArrowInvalidError` or `TypeError`</raisederrors>
 
 <returns>
 
