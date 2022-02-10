@@ -73,7 +73,7 @@ class UtilsTester(unittest.TestCase):
         KeyError
             If any of the passed columns name are not existing.
         ValueError
-            
+
         Returns
         -------
         Table
