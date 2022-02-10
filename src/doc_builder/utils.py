@@ -120,7 +120,8 @@ def convert_numpydoc_to_groupsdoc(docstring):
 
     indent = "    "
     result = ""
-    result += helper(numydoc["Summary"])
+    summary_str = f'{helper(numydoc["Summary"])}\n{helper(numydoc["Extended Summary"])}'
+    result += summary_str
     if numydoc["Parameters"]:
         result += "\nArgs:\n"
         for parameter in numydoc["Parameters"]:
