@@ -107,9 +107,8 @@ def convert_numpydoc_to_groupsdoc(docstring):
     Args:
     - **docstring** (`str`) -- Docstring that is written in numpystyle.
     """
-    numydoc = NumpyDocString(docstring)
 
-    def helper(arr):
+    def stringify_arr(arr):
         """
         Helper function that joins array into space-separated string.
         """
@@ -118,31 +117,39 @@ def convert_numpydoc_to_groupsdoc(docstring):
             return " ".join(arr) + "\n"
         return ""
 
+    def start_section(docstring, section):
+        """
+        Helper function that joins array into space-separated string.
+        """
+        return docstring.rstrip() + f"\n\n{section}:\n"
+
+    numydoc = NumpyDocString(docstring)
     indent = "    "
     result = ""
-    summary_str = f'{helper(numydoc["Summary"])}\n{helper(numydoc["Extended Summary"])}'
+    summary_str = f'{stringify_arr(numydoc["Summary"])}\n{stringify_arr(numydoc["Extended Summary"])}'
     result += summary_str
     if numydoc["Parameters"]:
-        result += "\nArgs:\n"
+        result = start_section(result, "Args")
         for parameter in numydoc["Parameters"]:
+            result = result.rstrip() + "\n"
             result += indent + parameter[0]
             if parameter[1]:
-                result += f" ({convert_parametype_numpydoc_to_groupsdoc(parameter[1])})"
-            result += ":\n"
+                result += f" ({convert_parametype_numpydoc_to_groupsdoc(parameter[1])}):"
             if parameter[2]:
-                result += indent * 2 + helper(parameter[2])
+                result += " " + stringify_arr(parameter[2])
     if numydoc["Returns"]:
-        result += "\nReturns:\n"
+        result = start_section(result, "Returns")
         for parameter in numydoc["Returns"]:
             returnttype = f":obj:'{parameter[1]}'" if parameter[1] else ""
-            result += indent + ": ".join(s for s in [returnttype, helper(parameter[2])] if s)
+            result += indent + ": ".join(s for s in [returnttype, stringify_arr(parameter[2])] if s)
     if numydoc["Raises"]:
-        result += "\nRaises:\n"
+        result = start_section(result, "Raises")
         for parameter in numydoc["Raises"]:
+            result = result.rstrip() + "\n"
             raiseerror = f"{parameter[1]}" if parameter[1] else ""
-            result += indent + ": ".join(s for s in [raiseerror, helper(parameter[2])] if s)
+            result += indent + ": ".join(s for s in [raiseerror, stringify_arr(parameter[2])] if s)
     if numydoc["Examples"]:
-        result += "\nExample::\n"
+        result = start_section(result, "Example:")
         first_line = numydoc["Examples"][0]
         indent_n = len(first_line) - len(first_line.lstrip())
         examples = [indent + line[indent_n:] for line in numydoc["Examples"]]
