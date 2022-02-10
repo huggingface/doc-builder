@@ -326,6 +326,8 @@ def convert_rst_blocks(text, page_info):
 _re_args = re.compile("^\s*(Args?|Arguments?|Params?|Parameters?):\s*$")
 # Re pattern that catches return blocks of the form `Return:`.
 _re_returns = re.compile("^\s*Returns?:\s*$")
+# Re pattern that catches return blocks of the form `Raises:`.
+_re_raises = re.compile("^\s*Raises?:\s*$")
 
 
 def split_return_line(line):
@@ -377,10 +379,13 @@ def parse_rst_docstring(docstring):
             while is_empty_line(lines[idx]):
                 idx += 1
             # Grab the indent of the list of parameters, this block will stop when we unindent under it or we see the
-            # Returns block.
+            # Returns or Raises block.
             param_indent = find_indent(lines[idx])
             while (
-                idx < len(lines) and find_indent(lines[idx]) == param_indent and _re_returns.search(lines[idx]) is None
+                idx < len(lines)
+                and find_indent(lines[idx]) == param_indent
+                and _re_returns.search(lines[idx]) is None
+                and _re_raises.search(lines[idx]) is None
             ):
                 intro, doc = split_arg_line(lines[idx])
                 # Line starting with a > after indent indicate a "section title" in the parameters.
@@ -392,6 +397,34 @@ def parse_rst_docstring(docstring):
                 while idx < len(lines) and (is_empty_line(lines[idx]) or find_indent(lines[idx]) > param_indent):
                     idx += 1
             lines.insert(idx, "</parameters>\n")
+            idx += 1
+
+        # Raises section
+        elif _re_raises.search(lines[idx]) is not None:
+            # Title of the section.
+            lines[idx] = "<raises>\n"
+            # Raised errors (e.g. ValueError, TypeError, etc.)
+            raised_errors = []
+            # Find the next nonempty line
+            idx += 1
+            while is_empty_line(lines[idx]):
+                idx += 1
+            # Grab the indent of the list of raises, this block will stop when we unindent under it or we see the
+            # Returns block.
+            raise_indent = find_indent(lines[idx])
+            while (
+                idx < len(lines) and find_indent(lines[idx]) == raise_indent and _re_returns.search(lines[idx]) is None
+            ):
+                intro, doc = split_arg_line(lines[idx])
+                intro = re.sub(r"^\s*`?([\w\.]*)`?$", r"`\1`", intro)
+                lines[idx] = "- " + intro + " --" + doc
+                raised_errors.append(intro)
+                idx += 1
+                while idx < len(lines) and (is_empty_line(lines[idx]) or find_indent(lines[idx]) > raise_indent):
+                    idx += 1
+            lines.insert(idx, "</raises>\n")
+            idx += 1
+            lines.insert(idx, f'<raisederrors>{" or ".join(raised_errors)}</raisederrors>\n')
             idx += 1
 
         # Returns section
@@ -407,7 +440,11 @@ def parse_rst_docstring(docstring):
             # The line may contain the return type.
             return_type, lines[idx] = split_return_line(lines[idx])
             idx += 1
-            while idx < len(lines) and (is_empty_line(lines[idx]) or find_indent(lines[idx]) >= return_indent):
+            while (
+                idx < len(lines)
+                and _re_raises.search(lines[idx]) is None
+                and (is_empty_line(lines[idx]) or find_indent(lines[idx]) >= return_indent)
+            ):
                 idx += 1
             lines.insert(idx, "</returns>\n")
             idx += 1
