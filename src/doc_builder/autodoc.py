@@ -120,6 +120,8 @@ _re_returns = re.compile(r"<returns>(.*)</returns>", re.DOTALL)
 _re_returntype = re.compile(r"<returntype>(.*)</returntype>", re.DOTALL)
 _re_example_tags = re.compile(r"(<exampletitle>|<example>)")
 _re_parameter_group = re.compile(r"^> (.*)$", re.MULTILINE)
+_re_raises = re.compile(r"<raises>(.*)</raises>", re.DOTALL)
+_re_raisederrors = re.compile(r"<raisederrors>(.*)</raisederrors>", re.DOTALL)
 
 
 def get_signature_component(name, anchor, signature, object_doc, source_link):
@@ -165,6 +167,8 @@ def get_signature_component(name, anchor, signature, object_doc, source_link):
     object_doc, parameters = regex_closure(object_doc, _re_parameters)
     object_doc, return_description = regex_closure(object_doc, _re_returns)
     object_doc, returntype = regex_closure(object_doc, _re_returntype)
+    object_doc, raise_description = regex_closure(object_doc, _re_raises)
+    object_doc, raisederrors = regex_closure(object_doc, _re_raisederrors)
 
     svelte_str = "<docstring>"
     svelte_str += f"<name>{name}</name>"
@@ -191,6 +195,12 @@ def get_signature_component(name, anchor, signature, object_doc, source_link):
         svelte_str += f"<rettype>{returntype}</rettype>"
     if return_description is not None:
         svelte_str += f"<retdesc>{return_description}</retdesc>"
+
+    if raise_description is not None:
+        svelte_str += f"<raises>{raise_description}</raises>"
+    if raisederrors is not None:
+        svelte_str += f"<raisederrors>{raisederrors}</raisederrors>"
+
     svelte_str += "</docstring>"
 
     return svelte_str + f"\n{object_doc}\n"
