@@ -89,7 +89,7 @@ def convert_parametype_numpydoc_to_groupsdoc(paramtype):
     ```py
     >>> s = "bool, optional, default True"
     >>> convert_numpydoc_to_rstdoc(s)
-    '`bool`, `optional`, defaults to `True`'
+    ':obj:`bool`, `optional`, defaults to :obj:`True`'
     ```
     """
     paramtype = re.sub(r"\s*\(.*\)$", "", paramtype).replace("default", "defaults to")
