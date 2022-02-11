@@ -125,17 +125,27 @@ Example::
     def test_convert_parametype_numpydoc_to_groupsdoc(self):
         # test canonical
         original_numpydocstring = "bool, optional, default True"
-        expected_conversion = "`bool`, `optional`, defaults to `True`"
+        expected_conversion = ":obj:`bool`, `optional`, defaults to :obj:`True`"
         self.assertEqual(convert_parametype_numpydoc_to_groupsdoc(original_numpydocstring), expected_conversion)
 
         # test without `optional`
         original_numpydocstring = "bool, default True"
-        expected_conversion = "`bool`, defaults to `True`"
+        expected_conversion = ":obj:`bool`, defaults to :obj:`True`"
         self.assertEqual(convert_parametype_numpydoc_to_groupsdoc(original_numpydocstring), expected_conversion)
 
         # test with extra info
         original_numpydocstring = "bool, optional, default True (some extra info)"
-        expected_conversion = "`bool`, `optional`, defaults to `True`"
+        expected_conversion = ":obj:`bool`, `optional`, defaults to :obj:`True`"
+        self.assertEqual(convert_parametype_numpydoc_to_groupsdoc(original_numpydocstring), expected_conversion)
+
+        # test int
+        original_numpydocstring = "int, optional, default 1"
+        expected_conversion = ":obj:`int`, `optional`, defaults to 1"
+        self.assertEqual(convert_parametype_numpydoc_to_groupsdoc(original_numpydocstring), expected_conversion)
+
+        # test str
+        original_numpydocstring = "str, optional, default 'some_str'"
+        expected_conversion = ":obj:`str`, `optional`, defaults to 'some_str'"
         self.assertEqual(convert_parametype_numpydoc_to_groupsdoc(original_numpydocstring), expected_conversion)
 
     def test_update_versions_file(self):

@@ -96,7 +96,17 @@ def convert_parametype_numpydoc_to_groupsdoc(paramtype):
     arr = paramtype.split(", ")
     for i, s in enumerate(arr):
         s = s.split(" ")
-        s[-1] = f"`{s[-1]}`"
+        if "optional" in s[-1]:
+            # parameter is optional or not
+            s[-1] = f"`{s[-1]}`"
+        elif "defaults" in s:
+            # parameter default value
+            valtype = type(eval(s[-1]))
+            non_obj_types = [str, int, float]
+            s[-1] = s[-1] if valtype in non_obj_types else f":obj:`{s[-1]}`"
+        else:
+            # parameter type
+            s[-1] = f":obj:`{s[-1]}`"
         arr[i] = " ".join(s)
     return ", ".join(arr)
 
