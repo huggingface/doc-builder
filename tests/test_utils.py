@@ -98,10 +98,10 @@ The column types in the resulting Arrow Table are inferred from the dtypes of th
 Args:
     df (`pandas.DataFrame`):
     schema (`pyarrow.Schema`, `optional`): The expected schema of the Arrow Table. This can be used to indicate the type of columns if we cannot infer it automatically. If passed, the output will have exactly this schema. Columns specified in the schema that are not found in the DataFrame columns or its index will raise an error. Additional columns or index levels in the DataFrame which are not specified in the schema will be ignored.
-    preserve_index (`bool`, `optional`, defults to `True`): Whether to store the index as an additional column in the resulting ``Table``. The default of None will store the index as a column, except for RangeIndex which is stored as metadata only. Use ``preserve_index=True`` to force it to be stored as a column.
-    nthreads (`int`, defults to `None`): If greater than 1, convert columns to Arrow in parallel using indicated number of threads.
+    preserve_index (`bool`, `optional`, defaults to `True`): Whether to store the index as an additional column in the resulting ``Table``. The default of None will store the index as a column, except for RangeIndex which is stored as metadata only. Use ``preserve_index=True`` to force it to be stored as a column.
+    nthreads (`int`, defaults to `None`): If greater than 1, convert columns to Arrow in parallel using indicated number of threads.
     columns (`list`, `optional`): List of column to be converted. If None, use all columns.
-    safe (`bool`, defults to `True`): Check for overflows or other unsafe conversions.
+    safe (`bool`, defaults to `True`): Check for overflows or other unsafe conversions.
 
 Returns:
     :obj:'Table': New table without the columns.
@@ -125,17 +125,17 @@ Example::
     def test_convert_parametype_numpydoc_to_groupsdoc(self):
         # test canonical
         original_numpydocstring = "bool, optional, default True"
-        expected_conversion = "`bool`, `optional`, defults to `True`"
+        expected_conversion = "`bool`, `optional`, defaults to `True`"
         self.assertEqual(convert_parametype_numpydoc_to_groupsdoc(original_numpydocstring), expected_conversion)
 
         # test without `optional`
         original_numpydocstring = "bool, default True"
-        expected_conversion = "`bool`, defults to `True`"
+        expected_conversion = "`bool`, defaults to `True`"
         self.assertEqual(convert_parametype_numpydoc_to_groupsdoc(original_numpydocstring), expected_conversion)
 
         # test with extra info
         original_numpydocstring = "bool, optional, default True (some extra info)"
-        expected_conversion = "`bool`, `optional`, defults to `True`"
+        expected_conversion = "`bool`, `optional`, defaults to `True`"
         self.assertEqual(convert_parametype_numpydoc_to_groupsdoc(original_numpydocstring), expected_conversion)
 
     def test_update_versions_file(self):
