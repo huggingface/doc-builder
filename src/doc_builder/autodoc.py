@@ -20,6 +20,7 @@ import re
 
 from .convert_md_to_mdx import convert_md_docstring_to_mdx
 from .convert_rst_to_mdx import convert_rst_docstring_to_mdx, find_indent, is_empty_line
+from .utils import convert_numpydoc_to_groupsdoc
 
 
 def find_object_in_package(object_name, package):
@@ -231,6 +232,17 @@ def is_rst_docstring(docstring):
     return False
 
 
+# Re pattern to numpystyle docstring (e.g Parameter -------).
+_re_numpydocstring = re.compile(r"(Parameter|Raise|Return)s?\n\s*----+\n")
+
+
+def is_numpy_docstring(docstring):
+    """
+    Returns `True` if `docstring` is written in numpystyle.
+    """
+    return _re_numpydocstring.search(docstring)
+
+
 def get_source_link(obj, page_info):
     """
     Returns the link to the source code of an object on GitHub.
@@ -280,6 +292,8 @@ def document_object(object_name, package, page_info, full_name=True):
     check = None
     if getattr(obj, "__doc__", None) is not None and len(obj.__doc__) > 0:
         object_doc = obj.__doc__
+        if is_numpy_docstring(object_doc):
+            object_doc = convert_numpydoc_to_groupsdoc(object_doc)
         if is_rst_docstring(object_doc):
             object_doc = convert_rst_docstring_to_mdx(obj.__doc__, page_info)
         else:
