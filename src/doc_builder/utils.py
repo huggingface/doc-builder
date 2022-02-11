@@ -92,7 +92,7 @@ def convert_parametype_numpydoc_to_groupsdoc(paramtype):
     '`bool`, `optional`, defaults to `True`'
     ```
     """
-    paramtype = re.sub(r"\s*\(.*\)$", "", paramtype).replace("default", "defults to")
+    paramtype = re.sub(r"\s*\(.*\)$", "", paramtype).replace("default", "defaults to")
     arr = paramtype.split(", ")
     for i, s in enumerate(arr):
         s = s.split(" ")
