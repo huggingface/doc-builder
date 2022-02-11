@@ -83,7 +83,7 @@ def convert_parametype_numpydoc_to_groupsdoc(paramtype):
     Converts parameter type str that is written in numpystyle to groupsstyle (e.g. transformers docs).
 
     Args:
-    - **paramtype** (`str`) -- The name of the object to document.
+    paramtype (`str`): The name of the object to document.
 
     Example:
     ```py
