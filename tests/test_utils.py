@@ -145,7 +145,7 @@ Example::
 
         # test str
         original_numpydocstring = "str, optional, default 'some_str'"
-        expected_conversion = ":obj:`str`, `optional`, defaults to 'some_str'"
+        expected_conversion = ":obj:`str`, `optional`, defaults to :obj:`'some_str'`"
         self.assertEqual(convert_parametype_numpydoc_to_groupsdoc(original_numpydocstring), expected_conversion)
 
     def test_update_versions_file(self):

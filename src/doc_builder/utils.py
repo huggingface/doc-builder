@@ -102,7 +102,7 @@ def convert_parametype_numpydoc_to_groupsdoc(paramtype):
         elif "defaults" in s:
             # parameter default value
             valtype = type(eval(s[-1]))
-            non_obj_types = [str, int, float]
+            non_obj_types = [int, float]
             s[-1] = s[-1] if valtype in non_obj_types else f":obj:`{s[-1]}`"
         else:
             # parameter type
