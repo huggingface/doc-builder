@@ -156,6 +156,7 @@ def convert_special_chars(text):
     Converts { and < that have special meanings in MDX.
     """
     text = text.replace("{", "&amp;lcub;")
+    text = text.replace("}", "&amp;rcub;")
     # We don't want to replace those by the HTML code, so we temporarily set them at LTHTML
     text = re.sub(r"<(img|br|hr|Youtube)", r"LTHTML\1", text)  # html void elements with no closing counterpart
     _re_lt_html = re.compile(r"<(\S+)([^>]*>)(((?!</\1>).)*)<(/\1>)", re.DOTALL)

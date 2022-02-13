@@ -70,6 +70,7 @@ def convert_rst_file(source_file, output_file, page_info):
 
     text = convert_rst_to_mdx(text, page_info, add_imports=False)
     text = text.replace("&amp;lcub;", "{")
+    text = text.replace("&amp;rcub;", "}")
     text = text.replace("&amp;lt;", "<")
     text = re.sub(r"^\[\[autodoc\]\](\s+)(transformers\.)", r"[[autodoc]]\1", text, flags=re.MULTILINE)
     text = shorten_internal_refs(text)
@@ -88,6 +89,7 @@ def convert_rst_docstring_to_markdown(docstring, page_info):
     docstring = shorten_internal_refs(docstring)
     docstring = apply_min_indent(docstring, min_indent)
     docstring = docstring.replace("&amp;lcub;", "{")
+    docstring = docstring.replace("&amp;rcub;", "}")
     docstring = docstring.replace("&amp;lt;", "<")
     return docstring
 

@@ -27,7 +27,7 @@ class ConvertMdToMdxTester(unittest.TestCase):
         self.assertEqual(convert_md_to_mdx(md_text, page_info), expected_conversion)
 
     def test_convert_special_chars(self):
-        self.assertEqual(convert_special_chars("{ lala }"), "&amp;lcub; lala }")
+        self.assertEqual(convert_special_chars("{ lala }"), "&amp;lcub; lala &amp;rcub;")
         self.assertEqual(convert_special_chars("< blo"), "&amp;lt; blo")
         self.assertEqual(convert_special_chars("<source></source>"), "<source></source>")
         self.assertEqual(convert_special_chars("<Youtube id='my_vid' />"), "<Youtube id='my_vid' />")
@@ -81,6 +81,6 @@ export let fw: "pt" | "tf"
 {}
 <>"""
         expected_conversion = """[img](/docs/transformers/v4.10.0/fr/imgs/img.gif)
-&amp;lcub;}
+&amp;lcub;&amp;rcub;
 &amp;lt;>"""
         self.assertEqual(process_md(text, page_info), expected_conversion)
