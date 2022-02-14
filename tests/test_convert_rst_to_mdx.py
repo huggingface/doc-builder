@@ -466,6 +466,8 @@ $$formula$$
             split_return_line("    :obj:`str` or :obj:`bool`: some result:"),
             ("    :obj:`str` or :obj:`bool`", " some result:"),
         )
+        self.assertEqual(split_return_line(":class:`IterableDataset`"), (":class:`IterableDataset`", ""))
+        self.assertEqual(split_return_line("`int`"), ("`int`", ""))
 
     def test_split_arg_line(self):
         self.assertEqual(split_arg_line("   x (:obj:`int`): an int"), ("   x (:obj:`int`)", " an int"))

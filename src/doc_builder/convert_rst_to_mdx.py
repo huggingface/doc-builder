@@ -339,6 +339,8 @@ def split_return_line(line):
     while idx < len(splits_on_colon) and splits_on_colon[idx] in ["obj", "class"]:
         idx += 2
     if idx >= len(splits_on_colon):
+        if len(splits_on_colon) in [1, 3]:
+            return line, ""
         return None, line
     return ":".join(splits_on_colon[:idx]), ":".join(splits_on_colon[idx:])
 
