@@ -16,6 +16,7 @@
 
 import inspect
 import unittest
+from dataclasses import dataclass
 from typing import List, Optional, Union
 
 import transformers
@@ -29,6 +30,7 @@ from doc_builder.autodoc import (
     get_signature_component,
     get_source_link,
     get_type_name,
+    is_dataclass_autodoc,
     remove_example_tags,
     resolve_links_in_text,
 )
@@ -417,3 +419,39 @@ tuple before.
                 "[transformers.BertModel.forward()](/docs/transformers/v4.10.0/fr/model_doc/bert.html#transformers.BertModel.forward)."
             ),
         )
+
+    def test_is_dataclass_autodoc(self):
+        # example auto generated doc from dataclass
+        @dataclass(frozen=True)
+        class MyClass:
+            attr1: str = "audio_file_path"
+            attr2: str = "transcription"
+
+        self.assertEqual(MyClass.__doc__, "MyClass(attr1: str = 'audio_file_path', attr2: str = 'transcription')")
+
+        # test data class auto generated doc
+        @dataclass(frozen=True)
+        class AutomaticSpeechRecognition:
+            audio_file_path_column: str = "audio_file_path"
+            transcription_column: str = "transcription"
+
+        self.assertTrue(is_dataclass_autodoc(AutomaticSpeechRecognition))
+
+        # test data class auto non-generated doc
+        @dataclass(frozen=True)
+        class AutomaticSpeechRecognition:
+            """
+            Non auto generated doc
+            """
+
+            audio_file_path_column: str = "audio_file_path"
+            transcription_column: str = "transcription"
+
+        self.assertFalse(is_dataclass_autodoc(AutomaticSpeechRecognition))
+
+        # test class with no signature (because of `dict` inheritance)
+        class AutomaticSpeechRecognition(dict):
+            audio_file_path_column: str = "audio_file_path"
+            transcription_column: str = "transcription"
+
+        self.assertFalse(is_dataclass_autodoc(AutomaticSpeechRecognition))
