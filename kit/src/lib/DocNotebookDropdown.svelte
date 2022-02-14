@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { onMount } from "svelte";
 
-	import Dropdown from "../../../huggingface_hub/js/src/lib/components/Dropdown/Dropdown.svelte";
-	import DropdownEntry from "../../../huggingface_hub/js/src/lib/components/DropdownEntry/DropdownEntry.svelte";
+	import Dropdown from "./Dropdown.svelte";
+	import DropdownEntry from "./DropdownEntry.svelte";
 
 	export let options: { label: string; value: string }[] = [];
 	export let classNames = "";
