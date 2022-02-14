@@ -28,7 +28,7 @@ export const docstringPreprocess = {
 			const signature = docstringBody.match(REGEX_SIGNATURE)[1];
 			const source = docstringBody.match(REGEX_SOURCE)[1];
 
-			let svelteComponent = `<Docstring hydrate-props={{name:"${name}", anchor:"${anchor}", parameters:${signature}, source:"${source}",`;
+			let svelteComponent = `<Docstring name={${JSON.stringify(name)}} anchor={${JSON.stringify(anchor)}} parameters={${signature}} source={${JSON.stringify(source)}} `;
 
 			if (docstringBody.match(REGEX_PARAMSDESC)) {
 				const content = docstringBody.match(REGEX_PARAMSDESC)[1];
@@ -66,20 +66,20 @@ export const docstringPreprocess = {
 
 						result.push({ anchor: paramAnchor, description, name });
 					}
-					svelteComponent += `parametersDescription: ${JSON.stringify(result)},`;
+					svelteComponent += ` parametersDescription={${JSON.stringify(result)}} `;
 				}
 			}
 	
 			if (docstringBody.match(REGEX_RETDESC)) {
 				const retDesc = docstringBody.match(REGEX_RETDESC)[1];
 				const { code } = await mdsvexPreprocess.markup({ content: retDesc, filename });
-				svelteComponent += `returnDescription: ${JSON.stringify(code)},`;
+				svelteComponent += ` returnDescription={${JSON.stringify(code)}} `;
 			}
 	
 			if (docstringBody.match(REGEX_RETTYPE)) {
 				const retType = docstringBody.match(REGEX_RETTYPE)[1];
 				const { code } = await mdsvexPreprocess.markup({ content: retType, filename });
-				svelteComponent += `returnType: ${JSON.stringify(code)},`;
+				svelteComponent += ` returnType={${JSON.stringify(code)}} `;
 			}
 
 			if (docstringBody.match(REGEX_PARAMSGROUPS)) {
@@ -94,11 +94,11 @@ export const docstringPreprocess = {
 						const { code } = await mdsvexPreprocess.markup({ content, filename });
 						parameterGroups.push({ title, parametersDescription: code });
 					}
-					svelteComponent += `parameterGroups: ${JSON.stringify(parameterGroups)},`;
+					svelteComponent += ` parameterGroups={${JSON.stringify(parameterGroups)}} `;
 				}
 			}
 
-			svelteComponent += `}} />\n`;
+			svelteComponent += ` />\n`;
 			return svelteComponent;
 		});
 
