@@ -23,7 +23,7 @@ class ConvertMdToMdxTester(unittest.TestCase):
     def test_convert_md_to_mdx(self):
         page_info = {"package_name": "transformers", "version": "v4.10.0", "language": "fr"}
         md_text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit"
-        expected_conversion = '<script>\nimport Tip from "./Tip.svelte";\nimport Youtube from "./Youtube.svelte";\nimport Docstring from "./Docstring.svelte";\nimport CodeBlock from "./CodeBlock.svelte";\nimport CodeBlockFw from "./CodeBlockFw.svelte";\nimport DocNotebookDropdown from "./DocNotebookDropdown.svelte";\nimport IconCopyLink from "./IconCopyLink.svelte";\nexport let fw: "pt" | "tf"\n</script>\nLorem ipsum dolor sit amet, consectetur adipiscing elit'
+        expected_conversion = '<script lang="ts">\nimport Tip from "$lib/Tip.svelte";\nimport Youtube from "$lib/Youtube.svelte";\nimport Docstring from "$lib/Docstring.svelte";\nimport CodeBlock from "$lib/CodeBlock.svelte";\nimport CodeBlockFw from "$lib/CodeBlockFw.svelte";\nimport DocNotebookDropdown from "$lib/DocNotebookDropdown.svelte";\nimport IconCopyLink from "$lib/IconCopyLink.svelte";\nexport let fw: "pt" | "tf"\n</script>\nLorem ipsum dolor sit amet, consectetur adipiscing elit'
         self.assertEqual(convert_md_to_mdx(md_text, page_info), expected_conversion)
 
     def test_convert_special_chars(self):
@@ -32,11 +32,11 @@ class ConvertMdToMdxTester(unittest.TestCase):
         self.assertEqual(convert_special_chars("<source></source>"), "<source></source>")
         self.assertEqual(convert_special_chars("<Youtube id='my_vid' />"), "<Youtube id='my_vid' />")
 
-        longer_test = """<script>
-import Tip from "./Tip.svelte";
-import Youtube from "./Youtube.svelte";
-import Docstring from "./Docstring.svelte";
-import CodeBlock from "./CodeBlock.svelte";
+        longer_test = """<script lang="ts">
+import Tip from "$lib/Tip.svelte";
+import Youtube from "$lib/Youtube.svelte";
+import Docstring from "$lib/Docstring.svelte";
+import CodeBlock from "$lib/CodeBlock.svelte";
 export let fw: "pt" | "tf"
 </script>"""
         self.assertEqual(convert_special_chars(longer_test), longer_test)
