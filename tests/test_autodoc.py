@@ -449,7 +449,7 @@ tuple before.
 
         self.assertFalse(is_dataclass_autodoc(AutomaticSpeechRecognition))
 
-        # test class with no signaure (because of `dict` inheritance)
+        # test class with no signature (because of `dict` inheritance)
         class AutomaticSpeechRecognition(dict):
             audio_file_path_column: str = "audio_file_path"
             transcription_column: str = "transcription"
