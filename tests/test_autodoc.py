@@ -35,6 +35,9 @@ from doc_builder.autodoc import (
 from transformers import BertModel, BertTokenizer, BertTokenizerFast
 from transformers.file_utils import PushToHubMixin
 
+from datasets.table import Table
+import datasets
+
 
 # This is dynamic since the Transformers library is not frozen.
 TEST_LINE_NUMBER = inspect.getsourcelines(transformers.file_utils.ModelOutput)[1]
@@ -417,3 +420,7 @@ tuple before.
                 "[transformers.BertModel.forward()](/docs/transformers/v4.10.0/fr/model_doc/bert.html#transformers.BertModel.forward)."
             ),
         )
+
+    def test_datasets(self):
+        txt, anchors, _ = autodoc("table.Table", datasets, methods=["remove_column"], return_anchors=True)
+        print(txt)

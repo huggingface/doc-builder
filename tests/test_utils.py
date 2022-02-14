@@ -122,6 +122,25 @@ Example::
 
         self.assertEqual(convert_numpydoc_to_groupsdoc(original_numpydocstring), expected_conversion)
 
+        original_numpydocstring = """Table.validate(self, *, full=False)
+
+        Perform validation checks.  An exception is raised if validation fails.
+
+        By default only cheap validation checks are run.  Pass `full=True`
+        for thorough validation checks (potentially O(n)).
+
+        Parameters
+        ----------
+        full: bool, default False
+            If True, run expensive checks, otherwise cheap checks only.
+
+        Raises
+        ------
+        ArrowInvalid"""
+
+        tst = convert_numpydoc_to_groupsdoc(original_numpydocstring)
+        print(tst)
+
     def test_convert_parametype_numpydoc_to_groupsdoc(self):
         # test canonical
         original_numpydocstring = "bool, optional, default True"
@@ -147,6 +166,11 @@ Example::
         original_numpydocstring = "str, optional, default 'some_str'"
         expected_conversion = ":obj:`str`, `optional`, defaults to :obj:`'some_str'`"
         self.assertEqual(convert_parametype_numpydoc_to_groupsdoc(original_numpydocstring), expected_conversion)
+
+        # test str
+        original_numpydocstring = "str, optional, default 'some_str'"
+        expected_conversion = ":obj:`str`, `optional`, defaults to :obj:`'some_str'`"
+        print(convert_parametype_numpydoc_to_groupsdoc('full: bool, default False'))
 
     def test_update_versions_file(self):
         # test canonical
