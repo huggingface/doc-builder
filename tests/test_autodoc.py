@@ -421,6 +421,14 @@ tuple before.
         )
 
     def test_is_dataclass_autodoc(self):
+        # example auto generated doc from dataclass
+        @dataclass(frozen=True)
+        class MyClass:
+            attr1: str = "audio_file_path"
+            attr2: str = "transcription"
+
+        self.assertEqual(MyClass.__doc__, "MyClass(attr1: str = 'audio_file_path', attr2: str = 'transcription')")
+
         # test data class auto generated doc
         @dataclass(frozen=True)
         class AutomaticSpeechRecognition:
