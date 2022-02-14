@@ -16,6 +16,7 @@
 
 import inspect
 import unittest
+from dataclasses import dataclass
 from typing import List, Optional, Union
 
 import transformers
@@ -29,14 +30,12 @@ from doc_builder.autodoc import (
     get_signature_component,
     get_source_link,
     get_type_name,
+    is_dataclass_autodoc,
     remove_example_tags,
     resolve_links_in_text,
 )
 from transformers import BertModel, BertTokenizer, BertTokenizerFast
 from transformers.file_utils import PushToHubMixin
-
-from datasets.table import Table
-import datasets
 
 
 # This is dynamic since the Transformers library is not frozen.
@@ -421,6 +420,30 @@ tuple before.
             ),
         )
 
-    def test_datasets(self):
-        txt, anchors, _ = autodoc("table.Table", datasets, methods=["remove_column"], return_anchors=True)
-        print(txt)
+    def test_is_dataclass_autodoc(self):
+        # test data class auto generated doc
+        @dataclass(frozen=True)
+        class AutomaticSpeechRecognition:
+            audio_file_path_column: str = "audio_file_path"
+            transcription_column: str = "transcription"
+
+        self.assertTrue(is_dataclass_autodoc(AutomaticSpeechRecognition))
+
+        # test data class auto non-generated doc
+        @dataclass(frozen=True)
+        class AutomaticSpeechRecognition:
+            """
+            Non auto generated doc
+            """
+
+            audio_file_path_column: str = "audio_file_path"
+            transcription_column: str = "transcription"
+
+        self.assertFalse(is_dataclass_autodoc(AutomaticSpeechRecognition))
+
+        # test class with no signaure (because of `dict` inheritance)
+        class AutomaticSpeechRecognition(dict):
+            audio_file_path_column: str = "audio_file_path"
+            transcription_column: str = "transcription"
+
+        self.assertFalse(is_dataclass_autodoc(AutomaticSpeechRecognition))

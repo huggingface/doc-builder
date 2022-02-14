@@ -243,6 +243,21 @@ def is_numpy_docstring(docstring):
     return _re_numpydocstring.search(docstring)
 
 
+def is_dataclass_autodoc(obj):
+    """
+    Returns boolean whether object's doc was generated automatically by `dataclass`.
+    """
+    try:
+        signature = str(inspect.signature(obj))
+    except ValueError:
+        # object doesn't have signature
+        return False
+    doc = obj.__doc__
+    doc_generated = obj.__name__ + signature
+    is_generated = doc in doc_generated
+    return is_generated
+
+
 def get_source_link(obj, page_info):
     """
     Returns the link to the source code of an object on GitHub.
@@ -292,7 +307,9 @@ def document_object(object_name, package, page_info, full_name=True):
     check = None
     if getattr(obj, "__doc__", None) is not None and len(obj.__doc__) > 0:
         object_doc = obj.__doc__
-        if is_numpy_docstring(object_doc):
+        if is_dataclass_autodoc(obj):
+            object_doc = ""
+        elif is_numpy_docstring(object_doc):
             object_doc = convert_numpydoc_to_groupsdoc(object_doc)
             object_doc = convert_rst_docstring_to_mdx(object_doc, page_info)
         elif is_rst_docstring(object_doc):
