@@ -666,6 +666,9 @@ def convert_rst_to_mdx(rst_text, page_info, add_imports=True):
             "	",
             '	export let fw: "pt" | "tf"',
             "</script>",
+            "<svelte:head>",
+            '<meta name="hf:doc:metadata" content={JSON.stringify(metadata)} >',
+            "</svelte:head>",
             "",
         ]
     else:

@@ -32,7 +32,11 @@ import CodeBlockFw from "$lib/CodeBlockFw.svelte";
 import DocNotebookDropdown from "$lib/DocNotebookDropdown.svelte";
 import IconCopyLink from "$lib/IconCopyLink.svelte";
 export let fw: "pt" | "tf"
-</script>\n""" + process_md(
+</script>
+<svelte:head>
+ <meta name="hf:doc:metadata" content={JSON.stringify(metadata)} >
+</svelte:head>
+""" + process_md(
         md_text, page_info
     )
 
