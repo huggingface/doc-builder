@@ -270,6 +270,17 @@ def get_source_link(obj, page_info):
     return f"{base_link}{module}.py#L{line_number}"
 
 
+def document_property(obj):
+    """
+    Documents property.
+    """
+    src_str = inspect.getsource(obj).strip()
+    match = re.search(r"return (.*)$", src_str)
+    returns = match.group(1)
+    obj.__doc__ = f"`@property` that returns `{returns}`"
+    return obj
+
+
 def document_object(object_name, package, page_info, full_name=True):
     """
     Writes the document of a function, class or method.
@@ -291,6 +302,8 @@ def document_object(object_name, package, page_info, full_name=True):
     if isinstance(obj, property):
         # Propreties have no __module__ or __name__ attributes, but their getter function does.
         obj = obj.fget
+        if getattr(obj, "__doc__", None) is None:
+            obj = document_property(obj)
 
     anchor_name = get_shortest_path(obj, package)
     if full_name and anchor_name is not None:

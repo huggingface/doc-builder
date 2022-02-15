@@ -23,6 +23,7 @@ import transformers
 from doc_builder.autodoc import (
     autodoc,
     document_object,
+    document_property,
     find_documented_methods,
     find_object_in_package,
     format_signature,
@@ -455,3 +456,14 @@ tuple before.
             transcription_column: str = "transcription"
 
         self.assertFalse(is_dataclass_autodoc(AutomaticSpeechRecognition))
+
+    def test_document_property(self):
+        class MyClass:
+            def __init__(self):
+                self.attr = 5
+
+            @property
+            def property1(self):
+                return self.attr
+
+        self.assertEqual(document_property(MyClass.property1.fget).__doc__, "`@property` that returns `self.attr`")
