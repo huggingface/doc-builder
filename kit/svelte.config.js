@@ -15,8 +15,12 @@ const config = {
 		browser: {
 			hydrate: false,
 			router: false
+		},
+
+		prerender: {
+			crawl: false // Do not throw if linked page doesn't exist (eg when forgetting the language prefix)
 		}
-	}
+	},
 };
 
 export default config;
