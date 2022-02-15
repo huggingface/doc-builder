@@ -12,13 +12,18 @@ const config = {
 
 	kit: {
 		adapter: adapter(),
+		// inlineStyleThreshold: 100_000,
 		browser: {
-			hydrate: false,
+			hydrate: true,
 			router: false
 		},
 
 		prerender: {
 			crawl: false // Do not throw if linked page doesn't exist (eg when forgetting the language prefix)
+		},
+
+		paths: {
+			base: "/docs/transformers/" + (process.env.DOCS_VERSION || "master"),
 		}
 	},
 };
