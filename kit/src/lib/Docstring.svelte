@@ -31,8 +31,7 @@
 	onMount(() => {
 		const { hash } = window.location;
 		const containsAnchor =
-			!!hash &&
-			parametersDescription?.some(({ anchor }) => anchor === hash.substring(1));
+			!!hash && parametersDescription?.some(({ anchor }) => anchor === hash.substring(1));
 
 		collapsed = !containsAnchor && parametersElement.clientHeight > 500;
 	});
@@ -48,9 +47,7 @@
 	function highlightSignature(name: string) {
 		if (name.startsWith("class ")) {
 			// is class signature
-			const signaturePath: string[] = name
-				.substring("class ".length)
-				.split(".");
+			const signaturePath: string[] = name.substring("class ".length).split(".");
 			const signatureName = signaturePath.pop();
 			const signaturePrefix = signaturePath.join(".");
 			return `<span class="flex-1 break-all md:text-lg bg-gradient-to-r px-2.5 py-1.5 rounded-xl from-indigo-50/70 to-white dark:from-gray-900 dark:to-gray-950 dark:text-indigo-300 text-indigo-700"><svg class="mr-1.5 text-indigo-500 inline-block -mt-0.5" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true" focusable="false" role="img" width=".8em" height=".8em" preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24"><path class="uim-quaternary" d="M20.23 7.24L12 12L3.77 7.24a1.98 1.98 0 0 1 .7-.71L11 2.76c.62-.35 1.38-.35 2 0l6.53 3.77c.29.173.531.418.7.71z" opacity=".25" fill="currentColor"></path><path class="uim-tertiary" d="M12 12v9.5a2.09 2.09 0 0 1-.91-.21L4.5 17.48a2.003 2.003 0 0 1-1-1.73v-7.5a2.06 2.06 0 0 1 .27-1.01L12 12z" opacity=".5" fill="currentColor"></path><path class="uim-primary" d="M20.5 8.25v7.5a2.003 2.003 0 0 1-1 1.73l-6.62 3.82c-.275.13-.576.198-.88.2V12l8.23-4.76c.175.308.268.656.27 1.01z" fill="currentColor"></path></svg><span class="font-light">class</span> <span class="font-medium">${signaturePrefix}.</span><span class="font-semibold">${signatureName}</span></span>`;
@@ -94,9 +91,7 @@
 		{#each parameters as { name, val }}
 			<span
 				use:tooltip={tooltipMapper[name] || ""}
-				class="comma {tooltipMapper[name]
-					? 'cursor-pointer'
-					: 'cursor-default'}"
+				class="comma {tooltipMapper[name] ? 'cursor-pointer' : 'cursor-default'}"
 				on:click|preventDefault|stopPropagation={() =>
 					onClick(`${anchor}.${name}`, !!tooltipMapper[name])}
 			>
@@ -111,9 +106,7 @@
 			<span class="font-bold">→</span>
 			<span
 				use:tooltip={returnDescription || ""}
-				class="rounded hover:bg-gray-400 {returnDescription
-					? 'cursor-pointer'
-					: 'cursor-default'}"
+				class="rounded hover:bg-gray-400 {returnDescription ? 'cursor-pointer' : 'cursor-default'}"
 				on:click|preventDefault|stopPropagation={() =>
 					onClick(`${anchor}.returns`, !!returnDescription)}
 				>{@html replaceParagraphWithSpan(returnType)}</span
@@ -123,9 +116,7 @@
 
 	<!-- `docstring-details` class is used for crawling & populating meilisearch -->
 	<div
-		class="!mb-10 relative docstring-details {collapsed
-			? 'max-h-96 overflow-hidden'
-			: ''}"
+		class="!mb-10 relative docstring-details {collapsed ? 'max-h-96 overflow-hidden' : ''}"
 		bind:this={parametersElement}
 	>
 		{#if collapsed}
@@ -141,9 +132,7 @@
 		{/if}
 		{#if !!parametersDescription}
 			<p class="flex items-center font-semibold !mt-2 !mb-2 text-gray-800">
-				Parameters <span
-					class="flex-auto border-t-2 border-gray-100 dark:border-gray-700 ml-3"
-				/>
+				Parameters <span class="flex-auto border-t-2 border-gray-100 dark:border-gray-700 ml-3" />
 			</p>
 			<ul class="px-2">
 				{#each parametersDescription as { anchor, description }}
@@ -181,9 +170,7 @@
 				{#if !!returnType}
 					{@html returnType}
 				{/if}
-				<span
-					class="flex-auto border-t-2 border-gray-100 dark:border-gray-700"
-				/>
+				<span class="flex-auto border-t-2 border-gray-100 dark:border-gray-700" />
 			</div>
 			<p class="text-base">{@html returnDescription}</p>
 		{/if}

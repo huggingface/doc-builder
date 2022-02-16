@@ -8,12 +8,8 @@
 	export let classNames = "";
 	let dropdownEl: HTMLDivElement;
 
-	const googleColabOptions = options.filter((o) =>
-		o.value.includes("colab.research.google.com")
-	);
-	const awsStudioOptions = options.filter((o) =>
-		o.value.includes("studiolab.sagemaker.aws")
-	);
+	const googleColabOptions = options.filter((o) => o.value.includes("colab.research.google.com"));
+	const awsStudioOptions = options.filter((o) => o.value.includes("studiolab.sagemaker.aws"));
 
 	function onClick(url: string) {
 		window.open(url);
@@ -48,12 +44,7 @@
 <svelte:window on:resize={onResize} />
 
 <div class="flex space-x-1 {classNames}" bind:this={dropdownEl}>
-	<Dropdown
-		btnLabel=""
-		classNames="colab-dropdown"
-		noBtnClass
-		useDeprecatedJS={false}
-	>
+	<Dropdown btnLabel="" classNames="colab-dropdown" noBtnClass useDeprecatedJS={false}>
 		<slot slot="button">
 			<img
 				alt="Open In Colab"
@@ -73,12 +64,7 @@
 			{/each}
 		</slot>
 	</Dropdown>
-	<Dropdown
-		btnLabel=""
-		classNames="colab-dropdown"
-		noBtnClass
-		useDeprecatedJS={false}
-	>
+	<Dropdown btnLabel="" classNames="colab-dropdown" noBtnClass useDeprecatedJS={false}>
 		<slot slot="button">
 			<img
 				alt="Open In Studio Lab"

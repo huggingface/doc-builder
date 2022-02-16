@@ -33,10 +33,7 @@
 		// We ignore clicks that happens inside the Dropdown itself
 		// (prevent race condition  with other click handlers)
 		const targetElement = e.target as HTMLElement;
-		if (
-			targetElement !== dropdownElement &&
-			!dropdownElement?.contains(targetElement)
-		) {
+		if (targetElement !== dropdownElement && !dropdownElement?.contains(targetElement)) {
 			onClose();
 		}
 	}

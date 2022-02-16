@@ -1,10 +1,10 @@
-import adapter from '@sveltejs/adapter-static';
-import preprocess from 'svelte-preprocess';
-import { docstringPreprocess, mdsvexPreprocess } from './preprocess.js';
+import adapter from "@sveltejs/adapter-static";
+import preprocess from "svelte-preprocess";
+import { docstringPreprocess, mdsvexPreprocess } from "./preprocess.js";
 
 /** @type {import('@sveltejs/kit').Config} */
 const config = {
-	extensions: ['.svelte', '.mdx'],
+	extensions: [".svelte", ".mdx"],
 
 	// Consult https://github.com/sveltejs/svelte-preprocess
 	// for more information about preprocessors
@@ -23,9 +23,9 @@ const config = {
 		},
 
 		paths: {
-			base: "/docs/transformers/" + (process.env.DOCS_VERSION || "master"),
-		},
-	},
+			base: "/docs/transformers/" + (process.env.DOCS_VERSION || "master")
+		}
+	}
 };
 
 export default config;

@@ -38,10 +38,7 @@
 			<slot name="button" />
 		{:else}
 			{#if btnIcon}
-				<svelte:component
-					this={btnIcon}
-					classNames="mr-1.5 {btnIconClassNames}"
-				/>
+				<svelte:component this={btnIcon} classNames="mr-1.5 {btnIconClassNames}" />
 			{/if}
 			{btnLabel}
 			{#if withBtnCaret}
@@ -53,9 +50,7 @@
 	<!-- Menu -->
 	{#if isOpen || useDeprecatedJS}
 		<DropdownMenu
-			classNames="{menuClassNames} {useDeprecatedJS
-				? 'v2-dropdown-menu hidden'
-				: ''}"
+			classNames="{menuClassNames} {useDeprecatedJS ? 'v2-dropdown-menu hidden' : ''}"
 			dropdownElement={element}
 			forceAlignement={forceMenuAlignement}
 			onClose={() => (isOpen = false)}

@@ -18,30 +18,30 @@
 
 <div
 	class="code-block relative"
-	on:mouseover={handleMouseOver} on:focus={handleMouseOver}
-	on:mouseout={handleMouseOut} on:blur={handleMouseOut}
+	on:mouseover={handleMouseOver}
+	on:focus={handleMouseOver}
+	on:mouseout={handleMouseOut}
+	on:blur={handleMouseOut}
 >
 	{#if $fw === "pt"}
 		<div class="absolute top-2.5 right-4">
 			<CopyButton
-				classNames="transition duration-200 ease-in-out {hideCopyButton &&
-					'opacity-0'}"
+				classNames="transition duration-200 ease-in-out {hideCopyButton && 'opacity-0'}"
 				label="code excerpt"
 				noText={true}
 				value={pt.code}
 			/>
 		</div>
-		<pre><FrameworkSwitch/>{@html pt.highlighted}</pre>
+		<pre><FrameworkSwitch />{@html pt.highlighted}</pre>
 	{:else}
 		<div class="absolute top-2.5 right-4">
 			<CopyButton
-				classNames="transition duration-200 ease-in-out {hideCopyButton &&
-					'opacity-0'}"
+				classNames="transition duration-200 ease-in-out {hideCopyButton && 'opacity-0'}"
 				label="code excerpt"
 				noText={true}
 				value={tf.code}
 			/>
 		</div>
-		<pre><FrameworkSwitch/>{@html tf.highlighted}</pre>
+		<pre><FrameworkSwitch />{@html tf.highlighted}</pre>
 	{/if}
 </div>

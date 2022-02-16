@@ -9,14 +9,14 @@
 			id: "pt",
 			classNames: "bg-red-50 text-red-600",
 			icon: IconPytorch,
-			name: "Pytorch",
+			name: "Pytorch"
 		},
 		{
 			id: "tf",
 			classNames: "bg-orange-50 text-yellow-600",
 			icon: IconTensorflow,
-			name: "TensorFlow",
-		},
+			name: "TensorFlow"
+		}
 	] as const;
 
 	function changeFw(_fw: Framework) {
