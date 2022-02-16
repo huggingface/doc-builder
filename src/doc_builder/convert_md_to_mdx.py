@@ -34,7 +34,7 @@ import IconCopyLink from "$lib/IconCopyLink.svelte";
 export let fw: "pt" | "tf"
 </script>
 <svelte:head>
- <meta name="hf:doc:metadata" content={JSON.stringify(metadata)} >
+  <meta name="hf:doc:metadata" content={JSON.stringify(metadata)} >
 </svelte:head>
 """ + process_md(
         md_text, page_info
