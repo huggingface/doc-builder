@@ -2,6 +2,10 @@
   import { base } from "$app/paths";
 
   export async function load(input: LoadInput) {
+    if (prerendering) {
+      return {}
+    }
+  
     const language = /\/([a-z]{2})(\/|$)/.exec(input.url.toString())[1];
 
     const toc = await input.fetch(base + '/endpoints/toc?lang='+language)
