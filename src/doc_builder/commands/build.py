@@ -113,10 +113,17 @@ def build_command(args):
             tmp_dir = Path(tmp_dir)
             # Copy everything in a tmp dir
             shutil.copytree(kit_folder, tmp_dir / "kit")
-            if (tmp_dir / "kit" / "src" / "routes" ).is_dir():
-                # Remove the current MDX dir if it exists.
-                shutil.rmtree(tmp_dir / "kit" / "src" / "routes")
-            shutil.copytree(output_path, tmp_dir / "kit" / "src" / "routes" )
+            # Manual copy and overwrite from output_path to tmp_dir / "kit" / "src" / "routes"
+            # We don't use shutil.copytree as tmp_dir / "kit" / "src" / "routes" exists and contains important files.
+            for f in output_path.iterdir():
+                dest = tmp_dir / "kit" / "src" / "routes" / f.name
+                if f.is_dir():
+                    # Remove the dest folder if it exists
+                    if dest.is_dir():
+                        shutil.rmtree(dest)
+                    shutil.copytree(f, dest)
+                else:
+                    shutil.copy(f, dest)
 
             # Build doc with node
             working_dir = str(tmp_dir / "kit")
