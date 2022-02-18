@@ -297,8 +297,6 @@ def document_object(object_name, package, page_info, full_name=True):
         name = anchor_name
     else:
         name = obj.__name__
-    # Escape underscores in magic method names
-    name = name.replace("_", "\_")
 
     prefix = "class " if isinstance(obj, type) else ""
     documentation = ""
