@@ -117,7 +117,7 @@ def convert_rst_links(text, page_info):
     # Links with a prefix
     # TODO: when it exists, use the API to deal with prefix links properly.
     prefix = f"https://github.com/huggingface/{package_name}/tree/master/"
-    text = _re_prefix_links.sub(fr"[\1]({prefix}\2)", text)
+    text = _re_prefix_links.sub(rf"[\1]({prefix}\2)", text)
     # Other links
     text = _re_links.sub(r"[\1](\2)", text)
     # Relative links or Transformers links need to remove the .html
