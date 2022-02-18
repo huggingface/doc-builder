@@ -248,7 +248,7 @@ Users should refer to this superclass for more information regarding those metho
         page_info = {"package_name": "transformers"}
 
         model_output_doc = """
-<docstring><name>class transformers.file\_utils.ModelOutput</name><anchor>transformers.file_utils.ModelOutput</anchor><source>"""
+<docstring><name>class transformers.file_utils.ModelOutput</name><anchor>transformers.file_utils.ModelOutput</anchor><source>"""
         model_output_doc += f"{self.test_source_link}"
         model_output_doc += """</source><parameters>""</parameters></docstring>
 
@@ -455,3 +455,7 @@ tuple before.
             transcription_column: str = "transcription"
 
         self.assertFalse(is_dataclass_autodoc(AutomaticSpeechRecognition))
+
+    def test_thisslash(self):
+        txt, anchors, _ = autodoc("Trainer.create_optimizer_and_scheduler", transformers, return_anchors=True)
+        print(txt)
