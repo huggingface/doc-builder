@@ -145,7 +145,7 @@ def build_command(args):
 
             # Copy result back in the build_dir.
             shutil.rmtree(output_path)
-            shutil.copytree(tmp_dir / "kit" / "src" / "routes" / args.language, output_path)
+            shutil.copytree(tmp_dir / "kit" / "build" / args.language, output_path)
 
 
 def build_command_parser(subparsers=None):
