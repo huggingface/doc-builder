@@ -121,7 +121,7 @@ def build_command(args):
             # Build doc with node
             working_dir = str(tmp_dir / "kit")
             print("Installing node dependencies")
-            p = subprocess.run(
+            subprocess.run(
                 ["npm", "ci"],
                 stderr=subprocess.PIPE,
                 stdout=subprocess.PIPE,
@@ -133,7 +133,7 @@ def build_command(args):
             env = os.environ.copy()
             env["DOCS_VERSION"] = version
             print("Building HTML files. This will take a while :-)")
-            p = subprocess.run(
+            subprocess.run(
                 ["npm", "run", "build"],
                 stderr=subprocess.PIPE,
                 stdout=subprocess.PIPE,
