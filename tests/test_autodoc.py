@@ -455,7 +455,3 @@ tuple before.
             transcription_column: str = "transcription"
 
         self.assertFalse(is_dataclass_autodoc(AutomaticSpeechRecognition))
-
-    def test_thisslash(self):
-        txt, anchors, _ = autodoc("Trainer.create_optimizer_and_scheduler", transformers, return_anchors=True)
-        print(txt)
