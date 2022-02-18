@@ -19,7 +19,6 @@ const config = {
 		},
 
 		prerender: {
-			concurrency: process.env.KIT_CONCURRENCY ? Number(process.env.KIT_CONCURRENCY) : undefined,
 			crawl: false // Do not throw if linked page doesn't exist (eg when forgetting the language prefix)
 		},
 
