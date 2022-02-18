@@ -113,10 +113,10 @@ def build_command(args):
             tmp_dir = Path(tmp_dir)
             # Copy everything in a tmp dir
             shutil.copytree(kit_folder, tmp_dir / "kit")
-            if (tmp_dir / "kit" / "src" / "routes" / args.language).is_dir():
+            if (tmp_dir / "kit" / "src" / "routes" ).is_dir():
                 # Remove the current MDX dir if it exists.
-                shutil.rmtree(tmp_dir / "kit" / "src" / "routes" / args.language)
-            shutil.copytree(output_path, tmp_dir / "kit" / "src" / "routes" / args.language)
+                shutil.rmtree(tmp_dir / "kit" / "src" / "routes")
+            shutil.copytree(output_path, tmp_dir / "kit" / "src" / "routes" )
 
             # Build doc with node
             working_dir = str(tmp_dir / "kit")
@@ -132,6 +132,7 @@ def build_command(args):
 
             env = os.environ.copy()
             env["DOCS_VERSION"] = version
+            env["DOCS_LANGUAGE"] = args.language
             print("Building HTML files. This will take a while :-)")
             subprocess.run(
                 ["npm", "run", "build"],
@@ -145,7 +146,7 @@ def build_command(args):
 
             # Copy result back in the build_dir.
             shutil.rmtree(output_path)
-            shutil.copytree(tmp_dir / "kit" / "build" / args.language, output_path)
+            shutil.copytree(tmp_dir / "kit" / "build", output_path)
 
 
 def build_command_parser(subparsers=None):

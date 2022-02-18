@@ -23,7 +23,7 @@ const config = {
 		},
 
 		paths: {
-			base: "/docs/transformers/" + (process.env.DOCS_VERSION || "master")
+			base: "/docs/transformers/" + (process.env.DOCS_VERSION || "master") + "/" + (process.env.DOCS_LANGUAGE || "en")
 		}
 	}
 };
