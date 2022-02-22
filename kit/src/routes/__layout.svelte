@@ -8,12 +8,11 @@
   
     const language = /\/([a-z]{2})(\/|$)/.exec(input.url.toString())[1];
 
-    const toc = await input.fetch(base + '/endpoints/toc?lang='+language)
+    const toc = await input.fetch(base + "/endpoints/toc")
 
     return {
       props: {
         toc: await toc.json(),
-        language
       }
     }
   }
@@ -24,7 +23,6 @@
   import { prerendering } from "$app/env";
 
   export let toc: Array<{sections: Array<{title: string} & ({local: string} | {sections: {title: string, local: string}[]})>, title: string}>
-  export let language: string
 </script>
 
 {#if prerendering}
@@ -48,11 +46,11 @@
 
             <ul style="padding-left: 16px; display: flex; flex-direction: column">
               {#each subsection.sections as finalsection}
-                <a role="navigation" href="{base}/{language}/{finalsection.local}">{finalsection.title}</a>
+                <a role="navigation" href="{base}/{finalsection.local}">{finalsection.title}</a>
               {/each}
             </ul>
           {:else}
-          <a role="navigation" href="{base}/{language}/{subsection.local}">{subsection.title}</a>
+          <a role="navigation" href="{base}/{subsection.local}">{subsection.title}</a>
           {/if}
         {/each}
       {/each}
