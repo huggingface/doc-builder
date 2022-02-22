@@ -5,8 +5,6 @@
     if (prerendering) {
       return {}
     }
-  
-    const language = /\/([a-z]{2})(\/|$)/.exec(input.url.toString())[1];
 
     const toc = await input.fetch(base + "/endpoints/toc")
 
@@ -21,6 +19,7 @@
 <script lang="ts">
   import type { LoadInput } from "@sveltejs/kit";
   import { prerendering } from "$app/env";
+  import "../app.css";
 
   export let toc: Array<{sections: Array<{title: string} & ({local: string} | {sections: {title: string, local: string}[]})>, title: string}>
 </script>
@@ -32,35 +31,36 @@
   </slot>
   
 {:else}
-  <style>
-    body, html {padding: 0; margin: 0;}
-  </style>
   <div style="width: 100vh; height: 100vh; margin: 0; padding: 0; display: flex; flex-direction: row">
     <aside style="width: 270px; min-width: 270px; max-width: 270px; border-right: 1px solid gray; height: 100vh; position: fixed; overflow-y: auto; display: flex; flex-direction: column">
-      <ul style="padding-left: 16px ; display: flex; flex-direction: column">
+      <ul class="pt-2 flex flex-col pl-3">
         {#each toc as section}
-        <h3>{section.title}</h3>
-        {#each section.sections as subsection}
-          {#if "sections" in subsection}
-            <h3>{subsection.title}</h3>
+        <h3 class="prose prose-lg">{section.title}</h3>
+        <div class="pl-4">
+          {#each section.sections as subsection}
+            {#if "sections" in subsection}
+              <h3 class="prose prose-lg">{subsection.title}</h3>
 
-            <ul style="padding-left: 16px; display: flex; flex-direction: column">
-              {#each subsection.sections as finalsection}
-                <a role="navigation" href="{base}/{finalsection.local}">{finalsection.title}</a>
-              {/each}
-            </ul>
-          {:else}
-          <a role="navigation" href="{base}/{subsection.local}">{subsection.title}</a>
-          {/if}
-        {/each}
+              <ul style="padding-left: 16px; display: flex; flex-direction: column">
+                {#each subsection.sections as finalsection}
+                  <a role="navigation" class="prose prose-base hover:underline" href="{base}/{finalsection.local.replace(/\bindex$/, '')}">{finalsection.title}</a>
+                {/each}
+              </ul>
+            {:else}
+            <a role="navigation" class="prose prose-base hover:underline block" href="{base}/{subsection.local.replace(/\bindex$/, '')}">{subsection.title}</a>
+            {/if}
+          {/each}
+        </div>
       {/each}
       </ul>
       
     </aside>
-    <div style="padding-left: 16px; padding-right: 16px; margin-left: 270px">
-      <slot>
+    <div style="margin-left: 270px;" class="px-4 pt-3"> 
+      <div class="prose prose-doc dark:prose-light max-w-4xl mx-auto break-words relative">
+        <slot>
 
-      </slot>
+        </slot>
+      </div>
     </div>
   </div>
 {/if}
