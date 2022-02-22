@@ -35,19 +35,19 @@
     <aside style="width: 270px; min-width: 270px; max-width: 270px; border-right: 1px solid gray; height: 100vh; position: fixed; overflow-y: auto; display: flex; flex-direction: column">
       <ul class="pt-2 flex flex-col pl-3">
         {#each toc as section}
-        <h3 class="prose prose-lg">{section.title}</h3>
+        <h3 class="flex group-hover:after:content-['▶'] after:absolute after:right-4 after:text-gray-500 after:transition after:duration-100 after:ease-in after:transform after:rotate-90">{section.title}</h3>
         <div class="pl-4">
           {#each section.sections as subsection}
             {#if "sections" in subsection}
-              <h3 class="prose prose-lg">{subsection.title}</h3>
+              <h3 class="flex group-hover:after:content-['▶'] after:absolute after:right-4 after:text-gray-500 after:transition after:duration-100 after:ease-in after:transform after:rotate-90">{subsection.title}</h3>
 
-              <ul style="padding-left: 16px; display: flex; flex-direction: column">
+              <ul class="pt-2 flex flex-col pl-3">
                 {#each subsection.sections as finalsection}
-                  <a role="navigation" class="prose prose-base hover:underline" href="{base}/{finalsection.local.replace(/\bindex$/, '')}">{finalsection.title}</a>
+                  <a role="navigation" class="block text-gray-500 pr-2 hover:text-black dark:hover:text-gray-300 py-1 transform transition-all hover:translate-x-px first:mt-1 last:mb-4 pl-2 ml-2" href="{base}/{finalsection.local.replace(/\bindex$/, '')}">{finalsection.title}</a>
                 {/each}
               </ul>
             {:else}
-            <a role="navigation" class="prose prose-base hover:underline block" href="{base}/{subsection.local.replace(/\bindex$/, '')}">{subsection.title}</a>
+            <a role="navigation" class="block text-gray-500 pr-2 hover:text-black dark:hover:text-gray-300 py-1 transform transition-all hover:translate-x-px first:mt-1 last:mb-4 pl-2 ml-2" href="{base}/{subsection.local.replace(/\bindex$/, '')}">{subsection.title}</a>
             {/if}
           {/each}
         </div>
