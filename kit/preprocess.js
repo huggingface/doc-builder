@@ -27,9 +27,11 @@ export const docstringPreprocess = {
 			const signature = docstringBody.match(REGEX_SIGNATURE)[1];
 			const source = docstringBody.match(REGEX_SOURCE)[1];
 
-			let svelteComponent = `<Docstring name={${JSON.stringify(unescapeUnderscores(name))}} anchor={${JSON.stringify(
-				anchor
-			)}} parameters={${signature}} source={${JSON.stringify(source)}} `;
+			let svelteComponent = `<Docstring name={${JSON.stringify(
+				unescapeUnderscores(name)
+			)}} anchor={${JSON.stringify(anchor)}} parameters={${signature}} source={${JSON.stringify(
+				source
+			)}} `;
 
 			if (docstringBody.match(REGEX_PARAMSDESC)) {
 				const content = docstringBody.match(REGEX_PARAMSDESC)[1];
@@ -179,12 +181,11 @@ function renderSvelteChars(code) {
 	return code.replace(/&amp;lcub;/g, "{").replace(/&amp;lt;/g, "<");
 }
 
-
 /**
  * The mdx file contains unnecessarily espaced underscores in the docstring's name
  */
 function unescapeUnderscores(content) {
-	return content.replace(/\\_/g, '_')
+	return content.replace(/\\_/g, "_");
 }
 
 /**

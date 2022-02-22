@@ -11,12 +11,7 @@
 </script>
 
 <div class={classNames}>
-	<Dropdown
-		btnLabel=""
-		classNames="colab-dropdown"
-		noBtnClass
-		useDeprecatedJS={false}
-	>
+	<Dropdown btnLabel="" classNames="colab-dropdown" noBtnClass useDeprecatedJS={false}>
 		<slot slot="button">
 			<img
 				alt="Open In Colab"
