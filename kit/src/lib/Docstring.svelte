@@ -136,7 +136,7 @@
 			</p>
 			<ul class="px-2">
 				{#each parametersDescription as { anchor, description }}
-					<li class="text-base !pl-4">
+					<li class="text-base !pl-4 my-3">
 						<span class="group flex space-x-1.5 items-start">
 							<a
 								id={anchor}
