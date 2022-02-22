@@ -32,6 +32,13 @@
 {#if prerendering}
 	<slot />
 {:else}
+	<style>
+		body,
+		html {
+			padding: 0;
+			margin: 0;
+		}
+	</style>
 	<div
 		style="width: 100vh; height: 100vh; margin: 0; padding: 0; display: flex; flex-direction: row"
 	>
