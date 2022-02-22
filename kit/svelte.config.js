@@ -25,7 +25,7 @@ const config = {
 		paths: {
 			base:
 				"/docs/" +
-				process.env.DOCS_LIBRARY +
+				(process.env.DOCS_LIBRARY || "transformers") +
 				"/" +
 				(process.env.DOCS_VERSION || "master") +
 				"/" +
