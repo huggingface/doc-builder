@@ -26,22 +26,20 @@
 	{#if $fw === "pt"}
 		<div class="absolute top-2.5 right-4">
 			<CopyButton
-				classNames="transition duration-200 ease-in-out {hideCopyButton &&
-					'opacity-0'}"
+				classNames="transition duration-200 ease-in-out {hideCopyButton && 'opacity-0'}"
 				title="Copy code excerpt to clipboard"
 				value={pt.code}
 			/>
 		</div>
-		<pre><FrameworkSwitch/>{@html pt.highlighted}</pre>
+		<pre><FrameworkSwitch />{@html pt.highlighted}</pre>
 	{:else}
 		<div class="absolute top-2.5 right-4">
 			<CopyButton
-				classNames="transition duration-200 ease-in-out {hideCopyButton &&
-					'opacity-0'}"
+				classNames="transition duration-200 ease-in-out {hideCopyButton && 'opacity-0'}"
 				title="Copy code excerpt to clipboard"
 				value={tf.code}
 			/>
 		</div>
-		<pre><FrameworkSwitch/>{@html tf.highlighted}</pre>
+		<pre><FrameworkSwitch />{@html tf.highlighted}</pre>
 	{/if}
 </div>
