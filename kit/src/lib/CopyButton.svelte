@@ -7,14 +7,12 @@
 
 	export let classNames = "";
 	export let label = "";
-	export let noText = false;
-	export let style: "button" | "text" = "text";
+	export let style: "button" | "button-clear" | "text" = "text";
+	export let title = "";
 	export let value: string;
 
 	let isSuccess = false;
 	let timeout: any;
-
-	$: text = `Copy ${label} to clipboard`;
 
 	onDestroy(() => {
 		if (timeout) {
@@ -37,18 +35,20 @@
 <button
 	class="inline-flex items-center relative text-sm focus:text-green-500  cursor-pointer focus:outline-none
 		{classNames}
-		{style === 'text' ? 'mx-0.5' : 'btn'}
-		{!isSuccess && style === 'text' ? 'text-gray-600' : ''}
+		{style === 'text' ? 'mx-0.5' : ''}
+		{style === 'button' ? 'btn' : ''}
+		{style === 'button-clear' ? 'py-1 px-2 border rounded-lg shadow-sm' : ''}
+		{!isSuccess && ['button-clear', 'text'].includes(style) ? 'text-gray-600' : ''}
 		{isSuccess ? 'text-green-500' : ''}
 	"
 	on:click={handleClick}
-	title={text}
+	title={title || label || "Copy to clipboard"}
 	type="button"
 >
 	<IconCopy />
-	{#if !noText}
+	{#if label}
 		<span class="ml-1.5 {style === 'text' ? 'underline' : ''}">
-			{text}
+			{label}
 		</span>
 	{/if}
 	<Tooltip classNames={isSuccess ? "opacity-100" : "opacity-0"} />
