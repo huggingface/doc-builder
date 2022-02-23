@@ -308,11 +308,11 @@ third line``.
         self.assertEqual(convert_special_chars("<source></source>"), "<source></source>")
         self.assertEqual(convert_special_chars("<Youtube id='my_vid' />"), "<Youtube id='my_vid' />")
 
-        longer_test = """<script>
-import Tip from "./Tip.svelte";
-import Youtube from "./Youtube.svelte";
-import Docstring from "./Docstring.svelte";
-import CodeBlock from "./CodeBlock.svelte";
+        longer_test = """<script lang="ts">
+import Tip from "$lib/Tip.svelte";
+import Youtube from "$lib/Youtube.svelte";
+import Docstring from "$lib/Docstring.svelte";
+import CodeBlock from "$lib/CodeBlock.svelte";
 export let fw: "pt" | "tf"
 </script>"""
         self.assertEqual(convert_special_chars(longer_test), longer_test)

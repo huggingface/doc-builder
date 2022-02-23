@@ -60,12 +60,12 @@ def resolve_open_in_colab(content, page_info):
     ]
     formatted_links = ['    {label: "' + key + '", value: "' + value + '"},' for key, value in links]
 
-    svelte_component = """<DocNotebookDropdown hydrate-props={{
-  classNames: "absolute z-10 right-0 top-0",
-  options:[
+    svelte_component = """<DocNotebookDropdown
+  classNames="absolute z-10 right-0 top-0"
+  options={[
 """
     svelte_component += "\n".join(formatted_links)
-    svelte_component += "\n]}} />"
+    svelte_component += "\n]} />"
 
     return content.replace("[[open-in-colab]]", svelte_component)
 
