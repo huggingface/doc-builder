@@ -17,11 +17,67 @@
 import argparse
 import importlib
 import os
+import shutil
+import subprocess
+import tempfile
+from pathlib import Path
 
 from doc_builder import build_doc, update_versions_file
 
 
+def check_node_is_available():
+    try:
+        p = subprocess.run(
+            ["node", "-v"],
+            stderr=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            check=True,
+            encoding="utf-8",
+        )
+        version = p.stdout.strip()
+    except Exception:
+        raise EnvironmentError(
+            "Using the --html flag requires node v14 to be installed, but it was not found in your system."
+        )
+
+    major = int(version[1:].split(".")[0])
+    if major < 14:
+        raise EnvironmentError(
+            "Using the --html flag requires node v14 to be installed, but the version in your system is lower "
+            f"({version[1:]})"
+        )
+
+
+def locate_kit_folder():
+    # First try: let's search where the module is.
+    repo_root = Path(__file__).parent.parent.parent.parent
+    kit_folder = repo_root / "kit"
+    if kit_folder.is_dir():
+        return kit_folder
+
+    # Second try, maybe we are inside the doc-builder repo
+    current_dir = Path.cwd()
+    while current_dir.parent != current_dir and not (current_dir / ".git").is_dir():
+        current_dir = current_dir.parent
+    kit_folder = current_dir / "kit"
+    if kit_folder.is_dir():
+        return kit_folder
+
+    # TODO for the future if asked for, if we can't locate the kit folder git clone doc-builder and cache it somewhere.
+
+
 def build_command(args):
+    if args.html:
+        # Error at the beginning if node is not properly installed.
+        check_node_is_available()
+        # Error at the beginning if we can't locate the kit folder
+        kit_folder = locate_kit_folder()
+        if kit_folder is None:
+            raise EnvironmentError(
+                "Using the --html flag requires the kit subfolder of the doc-builder repo. We couldn't find it with "
+                "the doc-builder package installed, so you need to run the command from inside the doc-builder repo."
+            )
+
     if args.version is None:
         module = importlib.import_module(args.library_name)
         version = module.__version__
@@ -33,7 +89,7 @@ def build_command(args):
     else:
         version = args.version
 
-    output_path = os.path.join(args.build_dir, os.path.sep.join([args.library_name, version, args.language]))
+    output_path = Path(args.build_dir) / args.library_name / version / args.language
 
     print("Building docs for", args.library_name, args.path_to_docs, output_path)
     build_doc(
@@ -50,6 +106,55 @@ def build_command(args):
     package_doc_path = os.path.join(args.build_dir, args.library_name)
     if "pr_" not in version and os.path.isfile(os.path.join(package_doc_path, "_versions.yml")):
         update_versions_file(os.path.join(args.build_dir, args.library_name), version)
+
+    # If asked, convert the MDX files into HTML files.
+    if args.html:
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            tmp_dir = Path(tmp_dir)
+            # Copy everything in a tmp dir
+            shutil.copytree(kit_folder, tmp_dir / "kit")
+            # Manual copy and overwrite from output_path to tmp_dir / "kit" / "src" / "routes"
+            # We don't use shutil.copytree as tmp_dir / "kit" / "src" / "routes" exists and contains important files.
+            for f in output_path.iterdir():
+                dest = tmp_dir / "kit" / "src" / "routes" / f.name
+                if f.is_dir():
+                    # Remove the dest folder if it exists
+                    if dest.is_dir():
+                        shutil.rmtree(dest)
+                    shutil.copytree(f, dest)
+                else:
+                    shutil.copy(f, dest)
+
+            # Build doc with node
+            working_dir = str(tmp_dir / "kit")
+            print("Installing node dependencies")
+            subprocess.run(
+                ["npm", "ci"],
+                stderr=subprocess.PIPE,
+                stdout=subprocess.PIPE,
+                check=True,
+                encoding="utf-8",
+                cwd=working_dir,
+            )
+
+            env = os.environ.copy()
+            env["DOCS_LIBRARY"] = args.library_name
+            env["DOCS_VERSION"] = version
+            env["DOCS_LANGUAGE"] = args.language
+            print("Building HTML files. This will take a while :-)")
+            subprocess.run(
+                ["npm", "run", "build"],
+                stderr=subprocess.PIPE,
+                stdout=subprocess.PIPE,
+                check=True,
+                encoding="utf-8",
+                cwd=working_dir,
+                env=env,
+            )
+
+            # Copy result back in the build_dir.
+            shutil.rmtree(output_path)
+            shutil.copytree(tmp_dir / "kit" / "build", output_path)
 
 
 def build_command_parser(subparsers=None):
@@ -75,6 +180,7 @@ def build_command_parser(subparsers=None):
         " generated according to the `path_to_docs` argument.",
     )
     parser.add_argument("--notebook_dir", type=str, help="Where to save the generated notebooks.", default=None)
+    parser.add_argument("--html", action="store_true", help="Whether or not to build HTML files instead of MDX files.")
 
     if subparsers is not None:
         parser.set_defaults(func=build_command)

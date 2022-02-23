@@ -657,17 +657,20 @@ def convert_rst_to_mdx(rst_text, page_info, add_imports=True):
     lines = process_titles(lines)
     if add_imports:
         new_lines = [
-            "<script>",
-            '	import Tip from "./Tip.svelte";',
-            '	import Youtube from "./Youtube.svelte";',
-            '	import Docstring from "./Docstring.svelte";',
-            '	import CodeBlock from "./CodeBlock.svelte";',
-            '	import CodeBlockFw from "./CodeBlockFw.svelte";',
-            '	import DocNotebookDropdown from "./DocNotebookDropdown.svelte";',
-            '	import IconCopyLink from "./IconCopyLink.svelte";',
+            '<script lang="ts">',
+            '	import Tip from "$lib/Tip.svelte";',
+            '	import Youtube from "$lib/Youtube.svelte";',
+            '	import Docstring from "$lib/Docstring.svelte";',
+            '	import CodeBlock from "$lib/CodeBlock.svelte";',
+            '	import CodeBlockFw from "$lib/CodeBlockFw.svelte";',
+            '	import DocNotebookDropdown from "$lib/DocNotebookDropdown.svelte";',
+            '	import IconCopyLink from "$lib/IconCopyLink.svelte";',
             "	",
             '	export let fw: "pt" | "tf"',
             "</script>",
+            "<svelte:head>",
+            '<meta name="hf:doc:metadata" content={JSON.stringify(metadata)} >',
+            "</svelte:head>",
             "",
         ]
     else:

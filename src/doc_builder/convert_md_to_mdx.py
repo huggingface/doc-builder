@@ -23,16 +23,20 @@ def convert_md_to_mdx(md_text, page_info):
     """
     Convert a document written in md to mdx.
     """
-    return """<script>
-import Tip from "./Tip.svelte";
-import Youtube from "./Youtube.svelte";
-import Docstring from "./Docstring.svelte";
-import CodeBlock from "./CodeBlock.svelte";
-import CodeBlockFw from "./CodeBlockFw.svelte";
-import DocNotebookDropdown from "./DocNotebookDropdown.svelte";
-import IconCopyLink from "./IconCopyLink.svelte";
+    return """<script lang="ts">
+import Tip from "$lib/Tip.svelte";
+import Youtube from "$lib/Youtube.svelte";
+import Docstring from "$lib/Docstring.svelte";
+import CodeBlock from "$lib/CodeBlock.svelte";
+import CodeBlockFw from "$lib/CodeBlockFw.svelte";
+import DocNotebookDropdown from "$lib/DocNotebookDropdown.svelte";
+import IconCopyLink from "$lib/IconCopyLink.svelte";
 export let fw: "pt" | "tf"
-</script>\n""" + process_md(
+</script>
+<svelte:head>
+  <meta name="hf:doc:metadata" content={JSON.stringify(metadata)} >
+</svelte:head>
+""" + process_md(
         md_text, page_info
     )
 
