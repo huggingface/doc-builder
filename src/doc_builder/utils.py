@@ -119,13 +119,13 @@ def convert_numpydoc_to_groupsdoc(docstring):
     - **docstring** (`str`) -- Docstring that is written in numpystyle.
     """
 
-    def stringify_arr(arr):
+    def stringify_arr(arr, sep=" "):
         """
         Helper function that joins array into space-separated string.
         """
         arr = [a.strip() for a in arr if a.strip()]
         if arr:
-            return " ".join(arr) + "\n"
+            return sep.join(arr) + "\n"
         return ""
 
     def start_section(docstring, section):
@@ -137,7 +137,8 @@ def convert_numpydoc_to_groupsdoc(docstring):
     numydoc = NumpyDocString(docstring)
     indent = "    "
     result = ""
-    summary_str = f'{stringify_arr(numydoc["Summary"])}\n{stringify_arr(numydoc["Extended Summary"])}'
+    summary_extended_str = stringify_arr(numydoc["Extended Summary"], "\n")
+    summary_str = f'{stringify_arr(numydoc["Summary"])}\n{summary_extended_str}'
     result += summary_str
     if numydoc["Parameters"]:
         result = start_section(result, "Args")
