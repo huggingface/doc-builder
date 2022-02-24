@@ -156,8 +156,8 @@ def convert_numpydoc_to_groupsdoc(docstring):
     if numydoc["Yields"]:
         result = start_section(result, "Yields")
         for parameter in numydoc["Yields"]:
-            returnttype = f":obj:`{parameter[1]}`" if parameter[1] else ""
-            result += indent + ": ".join(s for s in [returnttype, stringify_arr(parameter[2])] if s)
+            yield_type = f":obj:`{parameter[1]}`" if parameter[1] else ""
+            result += indent + ": ".join(s for s in [yield_type, stringify_arr(parameter[2])] if s)
     if numydoc["Raises"]:
         result = start_section(result, "Raises")
         for parameter in numydoc["Raises"]:
