@@ -478,6 +478,7 @@ $$formula$$
         self.assertEqual(split_arg_line("   x (:obj:`int`)"), ("   x (:obj:`int`)", ""))
 
     def test_parse_rst_docsting(self):
+        # test canonical
         rst_docstring = """
 docstring
 
@@ -537,6 +538,40 @@ Example::
 
 End of the arg section.
 """
+        self.assertEqual(parse_rst_docstring(rst_docstring), expected_conversion)
+
+        # test yields
+        rst_docstring = """
+docstring
+
+Args:
+    a (:obj:`str` or :obj:`bool`): some parameter
+    b (:obj:`str` or :obj:`bool`):
+        Another parameter with the description below
+
+Yields:
+    :obj:`str` or :obj:`bool`: some result
+"""
+        expected_conversion = """
+docstring
+
+<parameters>
+
+- **a** (:obj:`str` or :obj:`bool`) -- some parameter
+- **b** (:obj:`str` or :obj:`bool`) --
+        Another parameter with the description below
+
+</parameters>
+
+<yields>
+
+ some result
+
+</yields>
+
+<yieldtype>    :obj:`str` or :obj:`bool`</yieldtype>
+"""
+
         self.assertEqual(parse_rst_docstring(rst_docstring), expected_conversion)
 
         # test multiple parameter blocks
