@@ -2,7 +2,7 @@
 	import { base } from "$app/paths";
 
 	export async function load(input: LoadInput) {
-		if (prerendering) {
+		if (prerendering || !import.meta.env.DEV) {
 			return {};
 		}
 
@@ -29,7 +29,7 @@
 	}>;
 </script>
 
-{#if prerendering}
+{#if prerendering || !import.meta.env.DEV}
 	<slot />
 {:else}
 	<style>
