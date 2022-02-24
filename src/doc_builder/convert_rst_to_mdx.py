@@ -431,7 +431,7 @@ def parse_rst_docstring(docstring):
             if tag in ["return", "yield"] and return_type is not None:
                 lines[idx - 1] += f"\n<{tag}type>{return_type}</{tag}type>\n"
             elif raised_errors:
-                # rasied error
+                # raised errors
                 lines[idx - 1] += f"\n<raisederrors>{' or '.join(raised_errors)}</raisederrors>\n"
 
         else:
