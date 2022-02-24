@@ -27,6 +27,7 @@ from doc_builder.utils import (
 
 class UtilsTester(unittest.TestCase):
     def test_convert_numpydoc_to_groupsdoc(self):
+        # test canonical
         original_numpydocstring = """Table.from_pandas(type cls, df, Schema schema=None, preserve_index=None, nthreads=None, columns=None, bool safe=True)
 
         Convert pandas.DataFrame to an Arrow Table.
@@ -91,6 +92,7 @@ class UtilsTester(unittest.TestCase):
         >>> pa.Table.from_pandas(df)
         <pyarrow.lib.Table object at 0x7f05d1fb1b40>"""
 
+        # test yields
         expected_conversion = """Convert pandas.DataFrame to an Arrow Table.
 
 The column types in the resulting Arrow Table are inferred from the dtypes of the pandas.Series in the DataFrame. In the case of non-object Series, the NumPy dtype is translated to its Arrow equivalent. In the case of `object`, we need to guess the datatype by looking at the Python objects in this Series. Be aware that Series of the `object` dtype don't carry enough information to always lead to a meaningful Arrow type. In the case that we cannot infer a type, e.g. because the DataFrame is of length 0 or the Series only contains None/nan objects, the type is set to null. This behavior can be avoided by constructing an explicit schema and passing it to this function.
@@ -119,6 +121,37 @@ Example::
         ... })
     >>> pa.Table.from_pandas(df)
     <pyarrow.lib.Table object at 0x7f05d1fb1b40>"""
+
+        self.assertEqual(convert_numpydoc_to_groupsdoc(original_numpydocstring), expected_conversion)
+
+        original_numpydocstring = """Table.from_pandas(type cls, df, Schema schema=None, preserve_index=None, nthreads=None, columns=None, bool safe=True)
+
+        Docstring with YIELDS.
+
+        Parameters
+        ----------
+        nthreads : int, default None (may use up to system CPU count threads)
+            If greater than 1, convert columns to Arrow in parallel using
+            indicated number of threads.
+        columns : list, optional
+           List of column to be converted. If None, use all columns.
+        safe : bool, default True
+           Check for overflows or other unsafe conversions.
+
+        Yields
+        ------
+        ChunkedArray
+        """
+
+        expected_conversion = """Docstring with YIELDS.
+
+Args:
+    nthreads (:obj:`int`, defaults to :obj:`None`): If greater than 1, convert columns to Arrow in parallel using indicated number of threads.
+    columns (:obj:`list`, `optional`): List of column to be converted. If None, use all columns.
+    safe (:obj:`bool`, defaults to :obj:`True`): Check for overflows or other unsafe conversions.
+
+Yields:
+    :obj:`ChunkedArray`"""
 
         self.assertEqual(convert_numpydoc_to_groupsdoc(original_numpydocstring), expected_conversion)
 
