@@ -325,7 +325,7 @@ def convert_rst_blocks(text, page_info):
 # Re pattern that catches rst args blocks of the form `Parameters:`.
 _re_args = re.compile("^\s*(Args?|Arguments?|Attributes?|Params?|Parameters?):\s*$")
 # Re pattern that catches return blocks of the form `Return:`.
-_re_returns = re.compile("^\s*Returns?:\s*$")
+_re_returns = re.compile("^\s*(Return|Yield)s?:\s*$")
 # Re pattern that catches return blocks of the form `Raises:`.
 _re_raises = re.compile("^\s*Raises?:\s*$")
 
@@ -431,8 +431,10 @@ def parse_rst_docstring(docstring):
 
         # Returns section
         elif _re_returns.search(lines[idx]) is not None:
+            # tag is either `return` or `yield`
+            tag = _re_returns.match(lines[idx]).group(1).lower()
             # Title of the section.
-            lines[idx] = "<returns>\n"
+            lines[idx] = f"<{tag}s>\n"
             # Find the next nonempty line
             idx += 1
             while is_empty_line(lines[idx]):
@@ -448,12 +450,12 @@ def parse_rst_docstring(docstring):
                 and (is_empty_line(lines[idx]) or find_indent(lines[idx]) >= return_indent)
             ):
                 idx += 1
-            lines.insert(idx, "</returns>\n")
+            lines.insert(idx, f"</{tag}s>\n")
             idx += 1
 
             # Return block finished, we insert the return type if one was specified
             if return_type is not None:
-                lines[idx - 1] += f"\n<returntype>{return_type}</returntype>\n"
+                lines[idx - 1] += f"\n<{tag}type>{return_type}</{tag}type>\n"
 
         else:
             idx += 1
