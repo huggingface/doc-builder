@@ -299,7 +299,7 @@ def document_object(object_name, package, page_info, full_name=True):
         name = obj.__name__
 
     prefix = "class " if isinstance(obj, type) else ""
-    documentation = ""
+    object_doc = ""
     signature_name = prefix + name
     signature = format_signature(obj)
     check = None
@@ -309,15 +309,16 @@ def document_object(object_name, package, page_info, full_name=True):
             object_doc = ""
         elif is_numpy_docstring(object_doc):
             object_doc = convert_numpydoc_to_groupsdoc(object_doc)
-        if is_rst_docstring(object_doc):
+            object_doc = convert_rst_docstring_to_mdx(object_doc, page_info)
+        elif is_rst_docstring(object_doc):
             object_doc = convert_rst_docstring_to_mdx(obj.__doc__, page_info)
         else:
             check = quality_check_docstring(object_doc, object_name=object_name)
             object_doc = convert_md_docstring_to_mdx(obj.__doc__, page_info)
 
-        source_link = get_source_link(obj, page_info)
-        component = get_signature_component(signature_name, anchor_name, signature, object_doc, source_link)
-        documentation += "\n" + component + "\n"
+    source_link = get_source_link(obj, page_info)
+    component = get_signature_component(signature_name, anchor_name, signature, object_doc, source_link)
+    documentation = "\n" + component + "\n"
     return documentation, check
 
 
