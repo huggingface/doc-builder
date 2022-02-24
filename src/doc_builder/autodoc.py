@@ -123,6 +123,8 @@ def format_signature(obj):
 _re_parameters = re.compile(r"<parameters>(.*)</parameters>", re.DOTALL)
 _re_returns = re.compile(r"<returns>(.*)</returns>", re.DOTALL)
 _re_returntype = re.compile(r"<returntype>(.*)</returntype>", re.DOTALL)
+_re_yields = re.compile(r"<yields>(.*)</yields>", re.DOTALL)
+_re_yieldtype = re.compile(r"<yieldtype>(.*)</yieldtype>", re.DOTALL)
 _re_example_tags = re.compile(r"(<exampletitle>|<example>)")
 _re_parameter_group = re.compile(r"^> (.*)$", re.MULTILINE)
 _re_raises = re.compile(r"<raises>(.*)</raises>", re.DOTALL)
@@ -172,6 +174,8 @@ def get_signature_component(name, anchor, signature, object_doc, source_link):
     object_doc, parameters = regex_closure(object_doc, _re_parameters)
     object_doc, return_description = regex_closure(object_doc, _re_returns)
     object_doc, returntype = regex_closure(object_doc, _re_returntype)
+    object_doc, yield_description = regex_closure(object_doc, _re_yields)
+    object_doc, yieldtype = regex_closure(object_doc, _re_yieldtype)
     object_doc, raise_description = regex_closure(object_doc, _re_raises)
     object_doc, raisederrors = regex_closure(object_doc, _re_raisederrors)
 
@@ -200,6 +204,11 @@ def get_signature_component(name, anchor, signature, object_doc, source_link):
         svelte_str += f"<rettype>{returntype}</rettype>"
     if return_description is not None:
         svelte_str += f"<retdesc>{return_description}</retdesc>"
+
+    if yieldtype is not None:
+        svelte_str += f"<yieldtype>{yieldtype}</yieldtype>"
+    if yield_description is not None:
+        svelte_str += f"<yielddesc>{yield_description}</yielddesc>"
 
     if raise_description is not None:
         svelte_str += f"<raises>{raise_description}</raises>"
@@ -233,7 +242,7 @@ def is_rst_docstring(docstring):
 
 
 # Re pattern to numpystyle docstring (e.g Parameter -------).
-_re_numpydocstring = re.compile(r"(Parameter|Raise|Return)s?\n\s*----+\n")
+_re_numpydocstring = re.compile(r"(Parameter|Raise|Return|Yield)s?\n\s*----+\n")
 
 
 def is_numpy_docstring(docstring):
