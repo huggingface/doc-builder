@@ -1,5 +1,7 @@
 # HTML generator for the docs
 
+## Building the docs
+
 - Install `nodejs` / `npm`
 - Run `npm install`
 - Copy the mdx docs into the routes folder
@@ -8,3 +10,7 @@
 - Run `npm run run build`
 
 The generated html files and assets are in the `build` folder.
+
+## Previewing the docs
+
+Instead of `npm run build`, do `npm run dev`. Then go to http://localhost:3000/docs/transformers/master/en (or replace `master` with the correct prefix).

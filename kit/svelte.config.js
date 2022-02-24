@@ -8,7 +8,11 @@ const config = {
 
 	// Consult https://github.com/sveltejs/svelte-preprocess
 	// for more information about preprocessors
-	preprocess: [docstringPreprocess, mdsvexPreprocess, preprocess()],
+	preprocess: [
+		docstringPreprocess,
+		mdsvexPreprocess,
+		preprocess({ sourceMap: Boolean(process.env.DOCS_SOURCEMAP) })
+	],
 
 	kit: {
 		adapter: adapter(),
@@ -20,6 +24,12 @@ const config = {
 
 		prerender: {
 			crawl: false // Do not throw if linked page doesn't exist (eg when forgetting the language prefix)
+		},
+
+		vite: {
+			build: {
+				sourcemap: Boolean(process.env.DOCS_SOURCEMAP)
+			}
 		},
 
 		paths: {
