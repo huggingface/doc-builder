@@ -20,6 +20,7 @@ from pathlib import Path
 import nbformat
 
 from .autodoc import resolve_links_in_text
+from .convert_md_to_mdx import clean_doctest_syntax
 from .convert_rst_to_mdx import is_empty_line
 from .utils import get_doc_config
 
@@ -85,6 +86,8 @@ def split_frameworks(content):
     """
     split_pattern = "===PT-TF-SPLIT==="
     new_lines = {"mixed": [], "pt": [], "tf": []}
+
+    content = clean_doctest_syntax(content)
     lines = content.split("\n")
     idx = 0
     while idx < len(lines):
