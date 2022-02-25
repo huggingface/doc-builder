@@ -19,6 +19,9 @@ import re
 from .convert_rst_to_mdx import parse_rst_docstring, remove_indent
 
 
+_re_doctest_flags = re.compile("^(>>>.*\S)(\s+)# doctest:\s+\+[A-Z_]+\s*$", flags=re.MULTILINE)
+
+
 def convert_md_to_mdx(md_text, page_info):
     """
     Convert a document written in md to mdx.
@@ -72,6 +75,15 @@ def convert_img_links(text, page_info):
     return text
 
 
+def clean_doctest_syntax(text):
+    """
+    Clean the doctest artifacts in a given content.
+    """
+    text = text.replace(">>> # ===PT-TF-SPLIT===", "===PT-TF-SPLIT===")
+    text = _re_doctest_flags.sub(r"\1", text)
+    return text
+
+
 def convert_md_docstring_to_mdx(docstring, page_info):
     """
     Convert a docstring written in Markdown to mdx.
@@ -88,5 +100,6 @@ def process_md(text, page_info):
         2. Converting image links
     """
     text = convert_special_chars(text)
+    text = clean_doctest_syntax(text)
     text = convert_img_links(text, page_info)
     return text
