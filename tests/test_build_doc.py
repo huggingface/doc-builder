@@ -41,10 +41,7 @@ class BuildDocTester(unittest.TestCase):
     {label: "TensorFlow", value: "https://studiolab.sagemaker.aws/import/github/huggingface/notebooks/blob/master/transformers_doc/tensorflow/quicktour.ipynb"},
 ]} />
 """
-        self.assertEqual(
-            resolve_open_in_colab("\n[[open-in-colab]]\n", {"package_name": "transformers", "page": "quicktour.html"}),
-            expected,
-        )
+        self.assertEqual(resolve_open_in_colab("\n[[open-in-colab]]\n", {"page": "quicktour.html"}), expected)
 
     def test_generate_frontmatter_in_text(self):
         # test canonical
