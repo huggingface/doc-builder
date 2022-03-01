@@ -9,25 +9,27 @@
 	const GROUPS = [
 		{
 			id: "pt",
-			classNames: "bg-red-50 text-red-600",
+			classNames: "",
 			icon: IconPytorch,
 			name: "Pytorch",
 			group: "group1",
 		},
 		{
 			id: "tf",
-			classNames: "bg-orange-50 text-yellow-600",
+			classNames: "",
 			icon: IconTensorflow,
 			name: "TensorFlow",
 			group: "group2",
 		},
 		{
 			id: "stringapi",
+			classNames: "text-blue-600",
 			name: "String API",
 			group: "group1",
 		},
 		{
 			id: "readinstruction",
+			classNames: "text-blue-600",
 			name: "ReadInstruction",
 			group: "group2",
 		},
@@ -52,7 +54,7 @@
 				{#if g.icon}
 					<svelte:component this={g.icon} classNames="mr-1.5" />
 				{/if}
-				<p style="margin: 0px;">
+				<p class="m-0 {g.classNames}">
 					{g.name}
 				</p>
 			</button>
