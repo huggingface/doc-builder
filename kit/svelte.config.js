@@ -41,7 +41,18 @@ const config = {
 				"/" +
 				(process.env.DOCS_LANGUAGE || "en")
 		}
-	}
+	},
+
+	onwarn: (warning, handler) => {
+		if (
+			warning.message.includes("has unused export property 'fw'")
+		 || warning.message.includes("A11y")
+		) {
+			/// Too noisy
+			return;
+		}
+        handler(warning);
+    },
 };
 
 export default config;
