@@ -56,7 +56,7 @@
 				{#if g.icon}
 					<svelte:component this={g.icon} classNames="mr-1.5" />
 				{/if}
-				<p class="m-0 {g.classNames}">
+				<p class="!m-0 {g.classNames}">
 					{g.name}
 				</p>
 			</button>
