@@ -130,7 +130,6 @@ def build_command(args):
             print("Installing node dependencies")
             subprocess.run(
                 ["npm", "ci"],
-                # stderr=subprocess.PIPE,
                 stdout=subprocess.PIPE,
                 check=True,
                 encoding="utf-8",
@@ -144,7 +143,6 @@ def build_command(args):
             print("Building HTML files. This will take a while :-)")
             subprocess.run(
                 ["npm", "run", "build"],
-                # stderr=subprocess.PIPE,
                 stdout=subprocess.PIPE,
                 check=True,
                 encoding="utf-8",
