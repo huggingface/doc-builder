@@ -34,7 +34,9 @@ export const docstringPreprocess = {
 			)}} `;
 
 			if (docstringBody.match(REGEX_PARAMSDESC)) {
-				const content = docstringBody.match(REGEX_PARAMSDESC)[1];
+				let content = docstringBody.match(REGEX_PARAMSDESC)[1];
+				// escape }} by adding void character `&zwnj;` in between
+				content = content.replace(/}}/g, "}&zwnj;}");
 				let { code } = await mdsvexPreprocess.markup({ content, filename });
 				code = code.replace(REGEX_TIP, (_, isWarning, tipContent) => {
 					// render <Tip> components that are inside parameter descriptions
@@ -235,38 +237,43 @@ const _mdsvexPreprocess = mdsvex({
 				lang && hljs.getLanguage(lang)
 					? hljs.highlight(lang, code, true).value
 					: hljs.highlightAuto(code).value;
+			const escape = code => code.replace(/\\/g, "\\\\").replace(/`/g, "\\`").replace(/}/g, "\\}");
+			const REGEX_FRAMEWORKS_SPLIT = /\s*===(PT-TF|STRINGAPI-READINSTRUCTION)-SPLIT===\s*/gm;
+
 			code = renderSvelteChars(code);
-			const REGEX_FRAMEWORKS_SPLIT = /\s*===PT-TF-SPLIT===\s*/gm;
 			if (code.match(REGEX_FRAMEWORKS_SPLIT)) {
-				let [codePt, codeTf] = code.split(REGEX_FRAMEWORKS_SPLIT);
-				const highlightedPt = _highlight(codePt);
-				const highlightedTf = _highlight(codeTf);
+				const isPtTf = code.match(REGEX_FRAMEWORKS_SPLIT)[0].includes("PT-TF");
+				let [codeGroup1, _, codeGroup2] = code.split(REGEX_FRAMEWORKS_SPLIT);
+				const highlightedPt = _highlight(codeGroup1);
+				const highlightedTf = _highlight(codeGroup2);
 				// filter out outputs if the code was generated interactively
 				// `>>> for i in range(5):` becomes `for i in range(5):`
-				if (codePt.match(REGEX_CODE_INPUT)) {
-					codePt = codePt
+				if (codeGroup1.match(REGEX_CODE_INPUT)) {
+					codeGroup1 = codeGroup1
 						.split("\n")
 						.filter((line) => line.match(REGEX_CODE_INPUT))
 						.map((line) => line.slice(4))
 						.join("\n");
 				}
-				if (codeTf.match(REGEX_CODE_INPUT)) {
-					codeTf = codeTf
+				if (codeGroup2.match(REGEX_CODE_INPUT)) {
+					codeGroup2 = codeGroup2
 						.split("\n")
 						.filter((line) => line.match(REGEX_CODE_INPUT))
 						.map((line) => line.slice(4))
 						.join("\n");
 				}
 				return `
-	<CodeBlockFw 
-		pt={{
-			code: \`${codePt.replace(/\\/g, "\\\\").replace(/`/g, "\\`")}\`,
-			highlighted: \`${highlightedPt.replace(/\\/g, "\\\\").replace(/`/g, "\\`")}\`
-		}}
-		tf={{
-			code: \`${codeTf.replace(/\\/g, "\\\\").replace(/`/g, "\\`")}\`,
-			highlighted: \`${highlightedTf.replace(/\\/g, "\\\\").replace(/`/g, "\\`")}\`
-		}}
+	<CodeBlockFw
+		group1={
+			id: '${isPtTf ? "pt" : "stringapi"}',
+			code: \`${escape(codeGroup1)}\`,
+			highlighted: \`${escape(highlightedPt)}\`
+		}
+		group2={
+			id: '${isPtTf ? "tf" : "readinstruction"}',
+			code: \`${escape(codeGroup2)}\`,
+			highlighted: \`${escape(highlightedTf)}\`
+		}
 	/>`;
 			} else {
 				const highlighted = _highlight(code);
@@ -281,8 +288,8 @@ const _mdsvexPreprocess = mdsvex({
 				}
 				return `
 	<CodeBlock 
-		code={\`${code.replace(/\\/g, "\\\\").replace(/`/g, "\\`")}\`},
-		highlighted={\`${highlighted.replace(/\\/g, "\\\\").replace(/`/g, "\\`")}\`}
+		codee={\`${escape(code)}\`},
+		highlighted={\`${escape(highlighted)}\`}
 	/>`;
 			}
 		}

@@ -1,43 +1,61 @@
 <script lang="ts">
-	import type { Framework } from "./types";
-	import { fw } from "./stores";
-	import IconPytorch from "./IconPytorch.svelte";
-	import IconTensorflow from "./IconTensorflow.svelte";
+	import type { Group } from "./types";
+	import { group } from "./stores";
+	import IconPytorch from "../Icons/IconPytorch.svelte";
+	import IconTensorflow from "../Icons/IconTensorflow.svelte";
 
-	const FRAMEWORKS = [
+	export let ids: string[];
+
+	const GROUPS = [
 		{
 			id: "pt",
 			classNames: "bg-red-50 text-red-600",
 			icon: IconPytorch,
-			name: "Pytorch"
+			name: "Pytorch",
+			group: "group1",
 		},
 		{
 			id: "tf",
 			classNames: "bg-orange-50 text-yellow-600",
 			icon: IconTensorflow,
-			name: "TensorFlow"
-		}
-	] as const;
+			name: "TensorFlow",
+			group: "group2",
+		},
+		{
+			id: "stringapi",
+			name: "String API",
+			group: "group1",
+		},
+		{
+			id: "readinstruction",
+			name: "ReadInstruction",
+			group: "group2",
+		},
+	];
 
-	function changeFw(_fw: Framework) {
-		$fw = _fw;
+	function changeGroup(_group: string) {
+		$group = _group as Group;
 	}
 </script>
 
-<div
-	class="bg-white leading-none border border-gray-100 rounded-lg flex p-0.5 w-56 text-sm mb-4 select-none"
->
-	{#each FRAMEWORKS as { icon, id, name }, i}
-		<button
-			class="flex justify-center flex-1 py-1.5 px-2.5 focus:outline-none
+<div>
+	<div
+		class="bg-white leading-none border border-gray-100 rounded-lg inline-flex p-0.5 text-sm mb-4 select-none"
+	>
+		{#each GROUPS.filter((g) => ids.includes(g.id)) as g, i}
+			<button
+				class="flex justify-center py-1.5 px-2.5 focus:outline-none
 			rounded-{i ? 'r' : 'l'}
-			{id !== $fw && 'text-gray-500 filter grayscale'}"
-			on:click={() => changeFw(id)}
-		>
-			<svelte:component this={icon} classNames="mr-1.5" />
-			<p style="margin: 0px;">
-				{name}
-			</p>
-		</button>
-	{/each}
+			{g.group !== $group && 'text-gray-500 filter grayscale'}"
+				on:click={() => changeGroup(g.group)}
+			>
+				{#if g.icon}
+					<svelte:component this={g.icon} classNames="mr-1.5" />
+				{/if}
+				<p style="margin: 0px;">
+					{g.name}
+				</p>
+			</button>
+		{/each}
+	</div>
 </div>
