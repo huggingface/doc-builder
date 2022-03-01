@@ -76,11 +76,11 @@ def resolve_autodoc(content, package, return_anchors=False, page_info=None):
     Replaces [[autodoc]] special syntax by the corresponding generated documentation in some content.
 
     Args:
-    - **content** (`str`) -- The documentation to treat.
-    - **package** (`types.ModuleType`) -- The package where to look for objects to document.
-    - **return_anchors** (`bool`, *optional*, defaults to `False`) -- Whether or not to return the list of anchors
-      generated.
-    - **page_info** (`Dict[str, str]`, *optional*) -- Some information about the page.
+        content (`str`): The documentation to treat.
+        package (`types.ModuleType`): The package where to look for objects to document.
+        return_anchors (`bool`, *optional*, defaults to `False`):
+            Whether or not to return the list of anchors generated.
+        page_info (`Dict[str, str]`, *optional*): Some information about the page.
     """
     idx_last_heading = None
     is_inside_codeblock = False
@@ -143,10 +143,10 @@ def build_mdx_files(package, doc_folder, output_dir, page_info):
     Build the MDX files for a given package.
 
     Args:
-    - **package** (`types.ModuleType`) -- The package where to look for objects to document.
-    - **doc_folder** (`str` or `os.PathLike`) -- The folder where the doc source files are.
-    - **output_dir** (`str` or `os.PathLike`) -- The folder where to put the files built.
-    - **page_info** (`Dict[str, str]`) -- Some information about the page.
+        package (`types.ModuleType`): The package where to look for objects to document.
+        doc_folder (`str` or `os.PathLike`): The folder where the doc source files are.
+        output_dir (`str` or `os.PathLike`): The folder where to put the files built.
+        page_info (`Dict[str, str]`): Some information about the page.
     """
     doc_folder = Path(doc_folder)
     output_dir = Path(output_dir)
@@ -221,10 +221,10 @@ def resolve_links(doc_folder, package, mapping, page_info):
     folder.
 
     Args:
-    - **doc_folder** (`str` or `os.PathLike`) -- The folder in which to look for files.
-    - **package** (`types.ModuleType`) -- The package in which to search objects for.
-    - **mapping** (`Dict[str, str]`) -- The map from anchor names of objects to their page in the documentation.
-    - **page_info** (`Dict[str, str]`) -- Some information about the page.
+        doc_folder (`str` or `os.PathLike`): The folder in which to look for files.
+        package (`types.ModuleType`): The package in which to search objects for.
+        mapping (`Dict[str, str]`): The map from anchor names of objects to their page in the documentation.
+        page_info (`Dict[str, str]`): Some information about the page.
     """
     doc_folder = Path(doc_folder)
     all_files = list(doc_folder.glob("**/*.mdx"))
@@ -241,7 +241,7 @@ def generate_frontmatter_in_text(text, file_name=None):
     Adds frontmatter & turns markdown headers into markdown headers with hash links.
 
     Args:
-    - **text** (`str`) -- The text in which to convert the links.
+        text (`str`): The text in which to convert the links.
     """
     text = text.split("\n")
     root = None
@@ -288,7 +288,7 @@ def generate_frontmatter(doc_folder):
     Adds frontmatter & turns markdown headers into markdown headers with hash links for all files in a folder.
 
     Args:
-    - **doc_folder** (`str` or `os.PathLike`) -- The folder in which to look for files.
+        doc_folder (`str` or `os.PathLike`): The folder in which to look for files.
     """
     doc_folder = Path(doc_folder)
     all_files = list(doc_folder.glob("**/*.mdx"))

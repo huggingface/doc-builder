@@ -284,9 +284,9 @@ def document_object(object_name, package, page_info, full_name=True):
     Writes the document of a function, class or method.
 
     Args:
-    - **object_name** (`str`) -- The name of the object to document.
-    - **package** (`types.ModuleType`) -- The package of the object.
-    - **full_name** (`bool`, _optional_, defaults to `True`) -- Whether to write the full name of the object or not.
+        object_name (`str`): The name of the object to document.
+        package (`types.ModuleType`): The package of the object.
+        full_name (`bool`, *optional*, defaults to `True`): Whether to write the full name of the object or not.
     """
     if page_info is None:
         page_info = {}
@@ -362,14 +362,15 @@ def autodoc(object_name, package, methods=None, return_anchors=False, page_info=
     Generates the documentation of an object, with a potential filtering on the methods for a class.
 
     Args:
-    - **object_name** (`str`) -- The name of the function or class to document.
-    - **package** (`types.ModuleType`) -- The package of the object.
-    - **methods** (`List[str]`, _optional_) -- A list of methods to document if `obj` is a class. If nothing is passed,
-      all public methods with a new docstring compared to the superclasses are documented. If a list of methods is
-      passed and ou want to add all those methods, the key "all" will add them.
-    - **return_anchors** (`bool`, _optional_, defaults to `False`) -- Whether or not to return the list of anchors
-      generated.
-    - **page_info** (`Dict[str, str]`, *optional*) -- Some information about the page.
+        object_name (`str`): The name of the function or class to document.
+        package (`types.ModuleType`): The package of the object.
+        methods (`List[str]`, *optional*):
+            A list of methods to document if `obj` is a class. If nothing is passed, all public methods with a new
+            docstring compared to the superclasses are documented. If a list of methods is passed and ou want to add
+            all those methods, the key "all" will add them.
+        return_anchors (`bool`, *optional*, defaults to `False`):
+            Whether or not to return the list of anchors generated.
+        page_info (`Dict[str, str]`, *optional*): Some information about the page.
     """
     if page_info is None:
         page_info = {}
@@ -413,10 +414,10 @@ def resolve_links_in_text(text, package, mapping, page_info):
     Resolve links of the form [`SomeClass`] to the link in the documentation to `SomeClass`.
 
     Args:
-    - **text** (`str`) -- The text in which to convert the links.
-    - **package** (`types.ModuleType`) -- The package in which to search objects for.
-    - **mapping** (`Dict[str, str]`) -- The map from anchor names of objects to their page in the documentation.
-    - **page_info** (`Dict[str, str]`) -- Some information about the page.
+        text (`str`): The text in which to convert the links.
+        package (`types.ModuleType`): The package in which to search objects for.
+        mapping (`Dict[str, str]`): The map from anchor names of objects to their page in the documentation.
+        page_info (`Dict[str, str]`): Some information about the page.
     """
     package_name = page_info.get("package_name", package.__name__)
     version = page_info.get("version", "master")
