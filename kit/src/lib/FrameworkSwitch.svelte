@@ -1,10 +1,12 @@
 <script lang="ts">
 	import type { Group } from "./types";
-	import { group } from "./stores";
+	import { getGroupStore } from "./stores";
 	import IconPytorch from "./IconPytorch.svelte";
 	import IconTensorflow from "./IconTensorflow.svelte";
 
 	export let ids: string[];
+	const storeKey = ids.join("-");
+	const group = getGroupStore(storeKey);
 
 	const GROUPS = [
 		{

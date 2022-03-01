@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { group } from "./stores";
+	import { getGroupStore } from "./stores";
 	import CopyButton from "./CopyButton.svelte";
 	import FrameworkSwitch from "./FrameworkSwitch.svelte";
 
@@ -7,6 +7,9 @@
 	export let group2: { id: string; code: string; highlighted: string };
 
 	const ids = [group1.id, group2.id];
+	const storeKey = ids.join("-");
+	const group = getGroupStore(storeKey);
+
 
 	let hideCopyButton = true;
 
