@@ -46,8 +46,9 @@ def resolve_open_in_colab(content, page_info):
     if "[[open-in-colab]]" not in content:
         return content
 
+    package_name = page_info["package_name"]
     page_name = Path(page_info["page"]).stem
-    nb_prefix = "/github/huggingface/notebooks/blob/master/transformers_doc/"
+    nb_prefix = f"/github/huggingface/notebooks/blob/master/{package_name}_doc/"
     nb_prefix_colab = f"https://colab.research.google.com{nb_prefix}"
     nb_prefix_awsstudio = f"https://studiolab.sagemaker.aws/import{nb_prefix}"
     links = [
