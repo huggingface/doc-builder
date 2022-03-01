@@ -264,16 +264,16 @@ const _mdsvexPreprocess = mdsvex({
 				}
 				return `
 	<CodeBlockFw
-		group1={
+		group1={{
 			id: '${isPtTf ? "pt" : "stringapi"}',
 			code: \`${escape(codeGroup1)}\`,
 			highlighted: \`${escape(highlightedPt)}\`
-		}
-		group2={
+		}}
+		group2={{
 			id: '${isPtTf ? "tf" : "readinstruction"}',
 			code: \`${escape(codeGroup2)}\`,
 			highlighted: \`${escape(highlightedTf)}\`
-		}
+		}}
 	/>`;
 			} else {
 				const highlighted = _highlight(code);

@@ -1,8 +1,8 @@
 <script lang="ts">
 	import type { Group } from "./types";
 	import { group } from "./stores";
-	import IconPytorch from "../Icons/IconPytorch.svelte";
-	import IconTensorflow from "../Icons/IconTensorflow.svelte";
+	import IconPytorch from "./IconPytorch.svelte";
+	import IconTensorflow from "./IconTensorflow.svelte";
 
 	export let ids: string[];
 

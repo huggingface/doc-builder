@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { group } from "./stores";
-	import CopyButton from "../CopyButton/CopyButton.svelte";
+	import CopyButton from "./CopyButton.svelte";
 	import FrameworkSwitch from "./FrameworkSwitch.svelte";
 
 	export let group1: { id: string; code: string; highlighted: string };
