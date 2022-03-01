@@ -23,7 +23,6 @@
 		<CopyButton
 			classNames="transition duration-200 ease-in-out {hideCopyButton && 'opacity-0'}"
 			label="code excerpt"
-			noText={true}
 			value={code}
 		/>
 	</div>
