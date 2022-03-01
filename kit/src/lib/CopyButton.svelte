@@ -46,10 +46,5 @@
 	type="button"
 >
 	<IconCopy />
-	{#if label}
-		<span class="ml-1.5 {style === 'text' ? 'underline' : ''}">
-			{label}
-		</span>
-	{/if}
 	<Tooltip classNames={isSuccess ? "opacity-100" : "opacity-0"} />
 </button>
