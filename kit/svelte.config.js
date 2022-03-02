@@ -29,7 +29,12 @@ const config = {
 		vite: {
 			build: {
 				sourcemap: Boolean(process.env.DOCS_SOURCEMAP)
-			}
+			},
+			resolve: {
+				alias: {
+					"$lib/InferenceWidget.svelte": "$lib/huggingface_hub/js/src/lib/components/InferenceWidget/InferenceWidget.svelte"
+				}
+			},
 		},
 
 		paths: {
