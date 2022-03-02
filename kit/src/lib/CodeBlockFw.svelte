@@ -1,10 +1,15 @@
 <script lang="ts">
-	import { fw } from "./stores";
+	import { getGroupStore } from "./stores";
 	import CopyButton from "./CopyButton.svelte";
 	import FrameworkSwitch from "./FrameworkSwitch.svelte";
 
-	export let pt: { code: string; highlighted: string };
-	export let tf: { code: string; highlighted: string };
+	export let group1: { id: string; code: string; highlighted: string };
+	export let group2: { id: string; code: string; highlighted: string };
+
+	const ids = [group1.id, group2.id];
+	const storeKey = ids.join("-");
+	const group = getGroupStore(storeKey);
+
 
 	let hideCopyButton = true;
 
@@ -21,25 +26,25 @@
 	on:mouseover={handleMouseOver}
 	on:focus={handleMouseOver}
 	on:mouseout={handleMouseOut}
-	on:blur={handleMouseOut}
+	on:focus={handleMouseOut}
 >
-	{#if $fw === "pt"}
+	{#if $group === "group1"}
 		<div class="absolute top-2.5 right-4">
 			<CopyButton
 				classNames="transition duration-200 ease-in-out {hideCopyButton && 'opacity-0'}"
 				title="Copy code excerpt to clipboard"
-				value={pt.code}
+				value={group1.code}
 			/>
 		</div>
-		<pre><FrameworkSwitch />{@html pt.highlighted}</pre>
+		<pre><FrameworkSwitch {ids}/>{@html group1.highlighted}</pre>
 	{:else}
 		<div class="absolute top-2.5 right-4">
 			<CopyButton
 				classNames="transition duration-200 ease-in-out {hideCopyButton && 'opacity-0'}"
 				title="Copy code excerpt to clipboard"
-				value={tf.code}
+				value={group2.code}
 			/>
 		</div>
-		<pre><FrameworkSwitch />{@html tf.highlighted}</pre>
+		<pre><FrameworkSwitch {ids}/>{@html group2.highlighted}</pre>
 	{/if}
 </div>

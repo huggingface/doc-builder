@@ -1,1 +1,1 @@
-export type Framework = "pt" | "tf";
+export type Group = "group1" | "group2";

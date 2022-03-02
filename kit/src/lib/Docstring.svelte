@@ -161,7 +161,7 @@
 				<p>{@html parametersDescription}</p>
 			{/each}
 		{/if}
-		{#if !!returnDescription}
+		{#if !!returnType}
 			<div
 				class="flex items-center font-semibold space-x-3 text-base !mt-0 !mb-0 text-gray-800"
 				id={`${anchor}.returns`}
@@ -172,7 +172,7 @@
 				{/if}
 				<span class="flex-auto border-t-2 border-gray-100 dark:border-gray-700" />
 			</div>
-			<p class="text-base">{@html returnDescription}</p>
+			<p class="text-base">{@html returnDescription || ""}</p>
 		{/if}
 	</div>
 </div>
