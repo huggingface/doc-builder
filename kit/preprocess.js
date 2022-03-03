@@ -288,7 +288,7 @@ const _mdsvexPreprocess = mdsvex({
 				}
 				return `
 	<CodeBlock 
-		codee={\`${escape(code)}\`},
+		code={\`${escape(code)}\`}
 		highlighted={\`${escape(highlighted)}\`}
 	/>`;
 			}
