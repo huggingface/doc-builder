@@ -16,10 +16,8 @@
 import importlib.machinery
 import importlib.util
 import os
-import re
 
 import yaml
-from numpydoc.docscrape import NumpyDocString
 from packaging import version as package_version
 
 
