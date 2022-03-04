@@ -20,7 +20,6 @@ import re
 
 from .convert_md_to_mdx import convert_md_docstring_to_mdx
 from .convert_rst_to_mdx import convert_rst_docstring_to_mdx, find_indent, is_empty_line
-from .utils import convert_numpydoc_to_groupsdoc
 
 
 def find_object_in_package(object_name, package):
@@ -316,9 +315,6 @@ def document_object(object_name, package, page_info, full_name=True):
         object_doc = obj.__doc__
         if is_dataclass_autodoc(obj):
             object_doc = ""
-        elif is_numpy_docstring(object_doc):
-            object_doc = convert_numpydoc_to_groupsdoc(object_doc)
-            object_doc = convert_rst_docstring_to_mdx(object_doc, page_info)
         elif is_rst_docstring(object_doc):
             object_doc = convert_rst_docstring_to_mdx(obj.__doc__, page_info)
         else:

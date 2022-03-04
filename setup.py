@@ -1,6 +1,6 @@
 from setuptools import find_packages, setup
 
-install_requires = ["tqdm", "pyyaml", "packaging", "nbformat", "numpydoc"]
+install_requires = ["tqdm", "pyyaml", "packaging", "nbformat"]
 
 extras = {}
 
