@@ -18,12 +18,13 @@ import importlib
 import os
 import re
 import shutil
+import zlib
 from pathlib import Path
 
 import yaml
 from tqdm import tqdm
 
-from .autodoc import autodoc, remove_example_tags, resolve_links_in_text
+from .autodoc import autodoc, find_object_in_package, remove_example_tags, resolve_links_in_text
 from .convert_md_to_mdx import convert_md_to_mdx
 from .convert_rst_to_mdx import convert_rst_to_mdx, find_indent, is_empty_line
 from .convert_to_notebook import generate_notebooks_from_file
@@ -360,7 +361,9 @@ def build_doc(package_name, doc_folder, output_dir, clean=True, version="master"
 
     package = importlib.import_module(package_name)
     anchors_mapping = build_mdx_files(package, doc_folder, output_dir, page_info)
-    check_toc_integrity(doc_folder, output_dir)
+    sphinx_refs = check_toc_integrity(doc_folder, output_dir)
+    sphinx_refs.extend(convert_anchors_mapping_to_sphinx_format(anchors_mapping, package))
+    build_sphinx_objects_ref(sphinx_refs, output_dir, page_info)
     resolve_links(output_dir, package, anchors_mapping, page_info)
     generate_frontmatter(output_dir)
 
@@ -387,10 +390,15 @@ def check_toc_integrity(doc_folder, output_dir):
         toc = yaml.safe_load(f.read())
 
     toc_sections = []
+    sphinx_refs = []
     # We don't just loop directly in toc as we will add more into it as we un-nest things.
     while len(toc) > 0:
         part = toc.pop(0)
         toc_sections.extend([sec["local"] for sec in part["sections"] if "local" in sec])
+        # There should be one sphinx ref per page
+        for sec in part["sections"]:
+            if "local" in sec:
+                sphinx_refs.append(f"{sec['local']} std:doc -1 {sec['local']} {sec['title']}")
         # Toc has some nested sections in the API doc for instance, so we recurse.
         toc.extend([sec for sec in part["sections"] if "sections" in sec])
 
@@ -409,3 +417,62 @@ def check_toc_integrity(doc_folder, output_dir):
             + message
             + f"\nRemove them from {toc_file}."
         )
+
+    return sphinx_refs
+
+
+def convert_anchors_mapping_to_sphinx_format(anchors_mapping, package):
+    """
+    Convert the anchor mapping to the format expected by sphinx for the `objects.inv` file.
+
+    Args:
+        anchors_mapping (Dict[`str`, `str`]):
+            The mapping between anchors for objects in the doc and their location in the doc.
+        package (`types.ModuleType`):
+            The package in which to search objects for.
+    """
+    sphinx_refs = []
+    for anchor, url in anchors_mapping.items():
+        obj = find_object_in_package(anchor, package)
+        if isinstance(obj, property):
+            obj = obj.fget
+
+        # Object type
+        if isinstance(obj, type):
+            obj_type = "py:class"
+        elif hasattr(obj, "__name__") and hasattr(obj, "__qualname__"):
+            obj_type = "py:method" if obj.__name__ != obj.__qualname__ else "py:function"
+        else:
+            # Default to function
+            print(anchor)
+            obj_type = "py:function"
+
+        sphinx_refs.append(f"{anchor} {obj_type} 1 {url}#$ -")
+
+    return sphinx_refs
+
+
+def build_sphinx_objects_ref(sphinx_refs, output_dir, page_info):
+    """
+    Saves the sphinx references in an `objects.inv` file that can then be used by other documentations powered by
+    sphinx to link to objects in the generated doc.
+
+    Args:
+        sphinx_refs (`List[str]`): The list of all references, in the format expected by sphinx.
+        output_dir (`str` or `os.PathLike`): The folder where the doc is built.
+        page_info (`Dict[str, str]`): Some information about the doc.
+    """
+    intro = [
+        "# Sphinx inventory version 2\n",
+        f"# Project: {page_info['package_name']}\n",
+        f"# Version: {page_info['version']}\n",
+        "# The remainder of this file is compressed using zlib.\n",
+    ]
+    lines = [str.encode(line) for line in intro]
+
+    data = "\n".join(sorted(sphinx_refs)) + "\n"
+    data = zlib.compress(str.encode(data))
+
+    with open(Path(output_dir) / "objects.inv", "wb") as f:
+        f.writelines(lines)
+        f.write(data)
