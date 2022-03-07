@@ -212,7 +212,7 @@ def parse_doc_into_cells(content):
     """
     cells = []
     doc_config = get_doc_config()
-    if doc_config is not None:
+    if doc_config is not None and hasattr(doc_config, "notebook_first_cells"):
         for cell in doc_config.notebook_first_cells:
             if cell["type"] == "markdown":
                 cells.append(markdown_cell(cell["content"].strip()))
