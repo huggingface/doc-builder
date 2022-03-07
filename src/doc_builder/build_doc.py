@@ -444,7 +444,6 @@ def convert_anchors_mapping_to_sphinx_format(anchors_mapping, package):
             obj_type = "py:method" if obj.__name__ != obj.__qualname__ else "py:function"
         else:
             # Default to function
-            print(anchor)
             obj_type = "py:function"
 
         sphinx_refs.append(f"{anchor} {obj_type} 1 {url}#$ -")
