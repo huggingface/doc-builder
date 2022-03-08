@@ -12,7 +12,7 @@
 
 import unittest
 
-from doc_builder.convert_to_notebook import (
+from hf_doc_utils.convert_to_notebook import (
     _re_copyright,
     _re_header,
     _re_math_delimiter,

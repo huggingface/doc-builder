@@ -12,7 +12,7 @@
 
 import unittest
 
-from doc_builder.commands.convert_doc_file import shorten_internal_refs
+from hf_doc_utils.commands.convert_doc_file import shorten_internal_refs
 
 
 class ConvertDocFileTester(unittest.TestCase):

@@ -16,7 +16,7 @@
 
 import unittest
 
-from doc_builder.convert_md_to_mdx import convert_img_links, convert_md_to_mdx, convert_special_chars, process_md
+from hf_doc_utils.convert_md_to_mdx import convert_img_links, convert_md_to_mdx, convert_special_chars, process_md
 
 
 class ConvertMdToMdxTester(unittest.TestCase):

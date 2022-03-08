@@ -20,7 +20,7 @@ from dataclasses import dataclass
 from typing import List, Optional, Union
 
 import transformers
-from doc_builder.autodoc import (
+from hf_doc_utils.autodoc import (
     autodoc,
     document_object,
     find_documented_methods,

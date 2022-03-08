@@ -16,14 +16,14 @@
 
 from argparse import ArgumentParser
 
-from doc_builder.commands.build import build_command_parser
-from doc_builder.commands.convert_doc_file import convert_command_parser
-from doc_builder.commands.style import style_command_parser
+from hf_doc_utils.commands.build import build_command_parser
+from hf_doc_utils.commands.convert_doc_file import convert_command_parser
+from hf_doc_utils.commands.style import style_command_parser
 
 
 def main():
-    parser = ArgumentParser("Doc Builder CLI tool", usage="doc-builder <command> [<args>]")
-    subparsers = parser.add_subparsers(help="doc-builder command helpers")
+    parser = ArgumentParser("Doc Builder CLI tool", usage="hf-doc-utils <command> [<args>]")
+    subparsers = parser.add_subparsers(help="hf-doc-utils command helpers")
 
     # Register commands
     convert_command_parser(subparsers=subparsers)

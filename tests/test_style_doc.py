@@ -16,7 +16,7 @@
 import re
 import unittest
 
-from doc_builder.style_doc import (
+from hf_doc_utils.style_doc import (
     _re_code,
     _re_docstyle_ignore,
     _re_list,

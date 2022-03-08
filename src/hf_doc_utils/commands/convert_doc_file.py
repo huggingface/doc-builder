@@ -18,8 +18,8 @@ import argparse
 import re
 from pathlib import Path
 
-from doc_builder.autodoc import is_rst_docstring, remove_example_tags
-from doc_builder.convert_rst_to_mdx import (
+from hf_doc_utils.autodoc import is_rst_docstring, remove_example_tags
+from hf_doc_utils.convert_rst_to_mdx import (
     apply_min_indent,
     base_rst_to_mdx,
     convert_rst_to_mdx,
@@ -159,7 +159,7 @@ def convert_command_parser(subparsers=None):
     if subparsers is not None:
         parser = subparsers.add_parser("convert")
     else:
-        parser = argparse.ArgumentParser("Doc Builder convert command")
+        parser = argparse.ArgumentParser("HF Doc Utils convert command")
 
     parser.add_argument("source_file", type=str, help="The file to convert.")
     parser.add_argument(

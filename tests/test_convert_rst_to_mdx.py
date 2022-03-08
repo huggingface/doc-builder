@@ -16,7 +16,7 @@
 
 import unittest
 
-from doc_builder.convert_rst_to_mdx import (
+from hf_doc_utils.convert_rst_to_mdx import (
     _re_anchor_section,
     _re_args,
     _re_block,

@@ -15,7 +15,7 @@
 
 import unittest
 
-from doc_builder.build_doc import _re_autodoc, _re_list_item, generate_frontmatter_in_text, resolve_open_in_colab
+from hf_doc_utils.build_doc import _re_autodoc, _re_list_item, generate_frontmatter_in_text, resolve_open_in_colab
 
 
 class BuildDocTester(unittest.TestCase):

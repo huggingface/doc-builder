@@ -18,7 +18,7 @@ import tempfile
 import unittest
 
 import yaml
-from doc_builder.utils import update_versions_file
+from hf_doc_utils.utils import update_versions_file
 
 
 class UtilsTester(unittest.TestCase):

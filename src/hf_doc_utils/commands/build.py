@@ -22,7 +22,7 @@ import subprocess
 import tempfile
 from pathlib import Path
 
-from doc_builder import build_doc, update_versions_file
+from hf_doc_utils import build_doc, update_versions_file
 
 
 def check_node_is_available():
@@ -164,7 +164,7 @@ def build_command_parser(subparsers=None):
     if subparsers is not None:
         parser = subparsers.add_parser("build")
     else:
-        parser = argparse.ArgumentParser("Doc Builder build command")
+        parser = argparse.ArgumentParser("HF Doc Utils build command")
 
     parser.add_argument("library_name", type=str, help="Library name")
     parser.add_argument(

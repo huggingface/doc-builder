@@ -16,7 +16,7 @@
 
 import argparse
 
-from doc_builder import style_doc_files
+from hf_doc_utils import style_doc_files
 
 
 def style_command(args):
@@ -31,7 +31,7 @@ def style_command_parser(subparsers=None):
     if subparsers is not None:
         parser = subparsers.add_parser("style")
     else:
-        parser = argparse.ArgumentParser("Doc Builder style command")
+        parser = argparse.ArgumentParser("HF Doc Utils style command")
 
     parser.add_argument("files", nargs="+", help="The file(s) or folder(s) to restyle.")
     parser.add_argument("--max_len", type=int, default=119, help="The maximum length of lines.")

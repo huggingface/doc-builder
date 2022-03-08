@@ -13,7 +13,7 @@ extras["dev"] = extras["all"]
 
 
 setup(
-    name="doc-builder",
+    name="hf-doc-utils",
     version="0.0.1.dev0",
     author="Hugging Face, Inc.",
     author_email="sylvain@huggingface.co",
@@ -21,10 +21,10 @@ setup(
     long_description=open("README.md", "r", encoding="utf-8").read(),
     long_description_content_type="text/markdown",
     keywords="doc documentation doc-builder huggingface hugging face",
-    url="https://github.com/huggingface/doc-builder",
+    url="https://github.com/huggingface/hf-doc-utils",
     package_dir={"": "src"},
     packages=find_packages("src"),
     extras_require=extras,
     install_requires=install_requires,
-    entry_points={"console_scripts": ["doc-builder=doc_builder.commands.doc_builder_cli:main"]},
+    entry_points={"console_scripts": ["hf-doc-utils=hf_doc_utils.commands.hf_doc_utils_cli:main"]},
 )
