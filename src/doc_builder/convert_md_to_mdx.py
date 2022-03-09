@@ -35,6 +35,7 @@ import CodeBlockFw from "$lib/CodeBlockFw.svelte";
 import DocNotebookDropdown from "$lib/DocNotebookDropdown.svelte";
 import IconCopyLink from "$lib/IconCopyLink.svelte";
 import FrameworkContent from "$lib/FrameworkContent.svelte";
+import Markdown from "$lib/Markdown.svelte";
 export let fw: "pt" | "tf"
 </script>
 <svelte:head>

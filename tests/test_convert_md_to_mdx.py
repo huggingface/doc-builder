@@ -23,7 +23,7 @@ class ConvertMdToMdxTester(unittest.TestCase):
     def test_convert_md_to_mdx(self):
         page_info = {"package_name": "transformers", "version": "v4.10.0", "language": "fr"}
         md_text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit"
-        expected_conversion = '<script lang="ts">\nimport Tip from "$lib/Tip.svelte";\nimport Youtube from "$lib/Youtube.svelte";\nimport Docstring from "$lib/Docstring.svelte";\nimport CodeBlock from "$lib/CodeBlock.svelte";\nimport CodeBlockFw from "$lib/CodeBlockFw.svelte";\nimport DocNotebookDropdown from "$lib/DocNotebookDropdown.svelte";\nimport IconCopyLink from "$lib/IconCopyLink.svelte";\nimport FrameworkContent from "$lib/FrameworkContent.svelte";\nexport let fw: "pt" | "tf"\n</script>\n<svelte:head>\n  <meta name="hf:doc:metadata" content={JSON.stringify(metadata)} >\n</svelte:head>\nLorem ipsum dolor sit amet, consectetur adipiscing elit'
+        expected_conversion = '<script lang="ts">\nimport Tip from "$lib/Tip.svelte";\nimport Youtube from "$lib/Youtube.svelte";\nimport Docstring from "$lib/Docstring.svelte";\nimport CodeBlock from "$lib/CodeBlock.svelte";\nimport CodeBlockFw from "$lib/CodeBlockFw.svelte";\nimport DocNotebookDropdown from "$lib/DocNotebookDropdown.svelte";\nimport IconCopyLink from "$lib/IconCopyLink.svelte";\nimport FrameworkContent from "$lib/FrameworkContent.svelte";\nimport Markdown from "$lib/Markdown.svelte";\nexport let fw: "pt" | "tf"\n</script>\n<svelte:head>\n  <meta name="hf:doc:metadata" content={JSON.stringify(metadata)} >\n</svelte:head>\nLorem ipsum dolor sit amet, consectetur adipiscing elit'
         self.assertEqual(convert_md_to_mdx(md_text, page_info), expected_conversion)
 
     def test_convert_special_chars(self):
