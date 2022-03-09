@@ -147,9 +147,9 @@ export const frameorkcontentPreprocess = {
 				}
 			}
 
-			const svleteProps = FRAMEWORKS.map(fw => `${fw.framework}={${fw.isExist}}`).join(" ");
+			const svelteProps = FRAMEWORKS.map(fw => `${fw.framework}={${fw.isExist}}`).join(" ");
 
-			return `<FrameworkContent ${svleteProps}>\n${svelteSlots}\n</FrameworkContent>`;
+			return `<FrameworkContent ${svelteProps}>\n${svelteSlots}\n</FrameworkContent>`;
 		});
 
 		return { code: content };
