@@ -131,14 +131,14 @@ export const frameorkcontentPreprocess = {
 			{framework: "jax", REGEX_FW: REGEX_JAX, isExist: false},
 		];
 
-		content = await replaceAsync(content, REGEX_FRAMEWORKCONTENT, async (_, docstringBody) => {
+		content = await replaceAsync(content, REGEX_FRAMEWORKCONTENT, async (_, fwcontentBody) => {
 			let svelteSlots = "";
 
 			for(const [i, value] of Object.entries(FRAMEWORKS)){
 				const { framework, REGEX_FW } = value;
-				if (docstringBody.match(REGEX_FW)) {
+				if (fwcontentBody.match(REGEX_FW)) {
 					FRAMEWORKS[i].isExist = true;
-					const fwContent = docstringBody.match(REGEX_FW)[1];
+					const fwContent = fwcontentBody.match(REGEX_FW)[1];
 					svelteSlots += `<svelte:fragment slot="${framework}">
 					<Markdown>
 					\n\n${fwContent}\n\n
