@@ -46,14 +46,14 @@ const config = {
 
 	onwarn: (warning, handler) => {
 		if (
-			warning.message.includes("has unused export property 'fw'")
-		 || warning.message.includes("A11y")
+			warning.message.includes("has unused export property 'fw'") ||
+			warning.message.includes("A11y")
 		) {
 			/// Too noisy
 			return;
 		}
-        handler(warning);
-    },
+		handler(warning);
+	}
 };
 
 export default config;
