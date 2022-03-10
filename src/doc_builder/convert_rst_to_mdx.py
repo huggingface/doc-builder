@@ -411,9 +411,12 @@ def parse_rst_docstring(docstring):
 
             raised_errors = []
 
+            return_type = None
             while idx < len(lines) and find_indent(lines[idx]) == return_indent:
                 # The line may contain the return type.
-                return_type, return_decsription = split_return_line(lines[idx])
+                new_return_type, return_decsription = split_return_line(lines[idx])
+                if new_return_type is not None:
+                    return_type = new_return_type
                 if tag in ["return", "yield"]:
                     lines[idx] = return_decsription
                 else:
