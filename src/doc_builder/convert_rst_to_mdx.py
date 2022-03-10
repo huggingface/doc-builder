@@ -406,26 +406,26 @@ def parse_rst_docstring(docstring):
             idx += 1
             while is_empty_line(lines[idx]):
                 idx += 1
+
             # Grab the indent of the return line, this block will stop when we unindent under it.
             return_indent = find_indent(lines[idx])
-
-            raised_errors = []
-
-            return_type = None
-            while idx < len(lines) and find_indent(lines[idx]) == return_indent:
-                # The line may contain the return type.
-                new_return_type, return_decsription = split_return_line(lines[idx])
-                if new_return_type is not None:
-                    return_type = new_return_type
-                if tag in ["return", "yield"]:
-                    lines[idx] = return_decsription
-                else:
-                    raised_erroor = re.sub(r"^\s*`?([\w\.]*)`?$", r"`\1`", return_type)
-                    lines[idx] = "- " + raised_erroor + " --" + return_decsription
-                    raised_errors.append(raised_erroor)
+            # The line may contain the return type.
+            if tag in ["return", "yield"]:
+                return_type, return_description = split_return_line(lines[idx])
+                lines[idx] = return_description
                 idx += 1
-                while idx < len(lines) and (is_empty_line(lines[idx]) or find_indent(lines[idx]) > return_indent):
+                while idx < len(lines) and (is_empty_line(lines[idx]) or find_indent(lines[idx]) >= return_indent):
                     idx += 1
+            else:
+                raised_errors = []
+                while idx < len(lines) and find_indent(lines[idx]) == return_indent:
+                    return_type, return_description = split_return_line(lines[idx])
+                    raised_error = re.sub(r"^\s*`?([\w\.]*)`?$", r"`\1`", return_type)
+                    lines[idx] = "- " + raised_error + " --" + return_description
+                    raised_errors.append(raised_error)
+                    idx += 1
+                    while idx < len(lines) and (is_empty_line(lines[idx]) or find_indent(lines[idx]) > return_indent):
+                        idx += 1
 
             lines.insert(idx, f"</{tag}s>\n")
             idx += 1
