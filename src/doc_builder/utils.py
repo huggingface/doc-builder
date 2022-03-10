@@ -30,7 +30,7 @@ def get_default_branch_name(repo_folder):
             stdout=subprocess.PIPE,
             check=True,
             encoding="utf-8",
-            cwd="../git/accelerate/docs/source",
+            cwd=repo_folder,
         )
         branch = p.stdout.strip().split("/")[-1]
         return branch
@@ -39,12 +39,12 @@ def get_default_branch_name(repo_folder):
         return "main"
 
 
-def update_versions_file(build_path, version):
+def update_versions_file(build_path, version, doc_folder):
     """
     Insert new version into _versions.yml file of the library
     Assumes that _versions.yml exists and has its first entry as master version
     """
-    main_branch = get_default_branch_name()
+    main_branch = get_default_branch_name(doc_folder)
     if version == main_branch:
         return
     with open(os.path.join(build_path, "_versions.yml"), "r") as versions_file:
