@@ -12,6 +12,8 @@
 
 	export let framework: Framework;
 
+	let containerEl: HTMLDivElement;
+
 	const FRAMEWORK_CONFIG: Record<Framework, { Icon: typeof SvelteComponent; label: string }> = {
 		pytorch: {
 			Icon: IconPytorch,
@@ -36,13 +38,22 @@
 	}
 
 	onMount(() => {
-		if (localStorage.getItem(localStorageKey) === "true") {
+		const hashLink = window.location.hash.slice(1);
+		const headerClass = "header-link";
+		const headings = containerEl.querySelectorAll(`.${headerClass}`);
+		const hashLinks = new Set([...headings].map((h) => h.id));
+
+		if(hashLinks.has(hashLink)){
+			$frameworkStore = false;
+		}else if (localStorage.getItem(localStorageKey) === "true") {
 			$frameworkStore = true;
 		}
 	});
 </script>
 
-<div class="border border-gray-200 rounded-xl px-4 relative">
+<div class="border border-gray-200 rounded-xl px-4 relative"
+	bind:this={containerEl}
+>
 	<div class="flex h-[22px] -mt-[12.5px] px-2.5 justify-between leading-none">
 		<div class="px-2.5 flex items-center space-x-1 bg-white dark:bg-gray-950">
 			<svelte:component this={Icon} />
