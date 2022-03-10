@@ -66,6 +66,22 @@ def locate_kit_folder():
     # TODO for the future if asked for, if we can't locate the kit folder git clone doc-builder and cache it somewhere.
 
 
+def get_default_branch_name(repo_folder):
+    try:
+        p = subprocess.run(
+            ["git", "branch"],
+            stderr=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            check=True,
+            encoding="utf-8",
+            cwd=repo_folder,
+        )
+        branches = p.stdout.strip()
+        return "master" if "master" in branches else "main"
+    except Exception:
+        return "main"
+
+
 def build_command(args):
     if args.html:
         # Error at the beginning if node is not properly installed.
@@ -83,7 +99,7 @@ def build_command(args):
         version = module.__version__
 
         if "dev" in version:
-            version = "master"
+            version = get_default_branch_name(args.path_to_docs)
         else:
             version = f"v{version}"
     else:
