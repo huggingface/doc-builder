@@ -13,6 +13,7 @@
 	export let framework: Framework;
 
 	let containerEl: HTMLDivElement;
+	let hashLinks = new Set();
 
 	const FRAMEWORK_CONFIG: Record<Framework, { Icon: typeof SvelteComponent; label: string }> = {
 		pytorch: {
@@ -30,36 +31,49 @@
 	};
 	const { Icon, label } = FRAMEWORK_CONFIG[framework];
 	const localStorageKey = `hf_doc_framework_${framework}_is_hidden`;
-	const frameworkStore = getFrameworkStore(framework);
+	const fwStore = getFrameworkStore(framework);
+
+	$: isClosed = $fwStore.isClosed && !$fwStore.hasHashLink;
 
 	function toggleHidden() {
-		$frameworkStore = !$frameworkStore;
-		localStorage.setItem(localStorageKey, $frameworkStore ? "true" : "false");
+		$fwStore.isClosed = !$fwStore.isClosed;
+		if ($fwStore.isClosed) {
+			$fwStore.hasHashLink = false;
+		}
+		localStorage.setItem(localStorageKey, $fwStore.isClosed ? "true" : "false");
+	}
+
+	function onHashChange() {
+		const hashLink = window.location.hash.slice(1);
+		if (hashLinks.has(hashLink)) {
+			$fwStore.hasHashLink = true;
+		}
 	}
 
 	onMount(() => {
 		const hashLink = window.location.hash.slice(1);
 		const headerClass = "header-link";
 		const headings = containerEl.querySelectorAll(`.${headerClass}`);
-		const hashLinks = new Set([...headings].map((h) => h.id));
+		hashLinks = new Set([...headings].map((h) => h.id));
 
-		if(hashLinks.has(hashLink)){
-			$frameworkStore = false;
-		}else if (localStorage.getItem(localStorageKey) === "true") {
-			$frameworkStore = true;
+		if (hashLinks.has(hashLink)) {
+			$fwStore.isClosed = false;
+			$fwStore.hasHashLink = true;
+		} else if (localStorage.getItem(localStorageKey) === "true") {
+			$fwStore.isClosed = true;
 		}
 	});
 </script>
 
-<div class="border border-gray-200 rounded-xl px-4 relative"
-	bind:this={containerEl}
->
+<svelte:window on:hashchange={onHashChange} />
+
+<div class="border border-gray-200 rounded-xl px-4 relative" bind:this={containerEl}>
 	<div class="flex h-[22px] px-2.5 justify-between leading-none" style="margin-top: -12.5px;">
 		<div class="px-2.5 flex items-center space-x-1 bg-white dark:bg-gray-950">
 			<svelte:component this={Icon} />
 			<span>{label}</span>
 		</div>
-		{#if !$frameworkStore}
+		{#if !isClosed}
 			<div
 				class="cursor-pointer flex items-center justify-center space-x-1 text-sm px-2.5 bg-white dark:bg-gray-950 hover:underline"
 				on:click={toggleHidden}
@@ -69,9 +83,10 @@
 			</div>
 		{/if}
 	</div>
-	{#if $frameworkStore}
+	{#if isClosed}
 		<div
-			class="cursor-pointer flex items-center justify-center space-x-1 py-2.5 text-sm hover:underline" style="margin-top: -12.5px;"
+			class="cursor-pointer flex items-center justify-center space-x-1 py-2.5 text-sm hover:underline"
+			style="margin-top: -12.5px;"
 			on:click={toggleHidden}
 		>
 			<IconEyeShow />
