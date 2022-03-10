@@ -42,19 +42,15 @@
 	});
 </script>
 
-<div class="framework-content border-2 border-gray-200 rounded-xl px-4 relative">
-	<div
-		class="absolute top-0 left-0 -translate-y-4 translate-x-4 flex items-center space-x-1 px-2 bg-white dark:bg-gray-950"
-	>
-		<svelte:component this={Icon} />
-		<span>{label}</span>
-	</div>
-	<div
-		class="absolute top-0 right-0 -translate-y-6 -translate-x-4 flex items-center space-x-1 px-2 bg-white dark:bg-gray-950"
-	>
+<div class="border border-gray-200 rounded-xl px-4 relative">
+	<div class="flex h-[22px] -mt-[12.5px] px-2.5 justify-between leading-none">
+		<div class="px-2.5 flex items-center space-x-1 bg-white dark:bg-gray-950">
+			<svelte:component this={Icon} />
+			<span>{label}</span>
+		</div>
 		{#if !$frameworkStore}
 			<div
-				class="cursor-pointer flex items-center justify-center space-x-1 py-2.5"
+				class="cursor-pointer flex items-center justify-center space-x-1 text-sm px-2.5 bg-white dark:bg-gray-950 hover:underline "
 				on:click={toggleHidden}
 			>
 				<IconEyeHide />
@@ -64,7 +60,7 @@
 	</div>
 	{#if $frameworkStore}
 		<div
-			class="cursor-pointer flex items-center justify-center space-x-1 py-2.5"
+			class="cursor-pointer flex -mt-[12.5px] items-center justify-center space-x-1 py-2.5 text-sm hover:underline"
 			on:click={toggleHidden}
 		>
 			<IconEyeShow />

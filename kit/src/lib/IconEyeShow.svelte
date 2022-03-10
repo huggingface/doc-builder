@@ -1,11 +1,12 @@
 <script>
 	export let classNames = "";
+	export let size = "1em";
 </script>
 
 <svg
 	class={classNames}
-	width="1em"
-	height="1em"
+	width={size}
+	height={size}
 	viewBox="0 0 9 9"
 	fill="currentColor"
 	xmlns="http://www.w3.org/2000/svg"
