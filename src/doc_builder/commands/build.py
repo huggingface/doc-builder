@@ -23,6 +23,7 @@ import tempfile
 from pathlib import Path
 
 from doc_builder import build_doc, update_versions_file
+from doc_builder.utils import get_default_branch_name
 
 
 def check_node_is_available():
@@ -64,22 +65,6 @@ def locate_kit_folder():
         return kit_folder
 
     # TODO for the future if asked for, if we can't locate the kit folder git clone doc-builder and cache it somewhere.
-
-
-def get_default_branch_name(repo_folder):
-    try:
-        p = subprocess.run(
-            ["git", "branch"],
-            stderr=subprocess.PIPE,
-            stdout=subprocess.PIPE,
-            check=True,
-            encoding="utf-8",
-            cwd=repo_folder,
-        )
-        branches = p.stdout.strip()
-        return "master" if "master" in branches else "main"
-    except Exception:
-        return "main"
 
 
 def build_command(args):

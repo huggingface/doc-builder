@@ -16,9 +16,27 @@
 import importlib.machinery
 import importlib.util
 import os
+import subprocess
 
 import yaml
 from packaging import version as package_version
+
+
+def get_default_branch_name(repo_folder):
+    try:
+        p = subprocess.run(
+            "git symbolic-ref refs/remotes/origin/HEAD".split(),
+            stderr=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            check=True,
+            encoding="utf-8",
+            cwd="../git/accelerate/docs/source",
+        )
+        branch = p.stdout.strip().split("/")[-1]
+        return branch
+    except Exception:
+        # Just in case git is not installed, we need a default
+        return "main"
 
 
 def update_versions_file(build_path, version):
@@ -26,13 +44,14 @@ def update_versions_file(build_path, version):
     Insert new version into _versions.yml file of the library
     Assumes that _versions.yml exists and has its first entry as master version
     """
-    if version in ["main", "master"]:
+    main_branch = get_default_branch_name()
+    if version == main_branch:
         return
     with open(os.path.join(build_path, "_versions.yml"), "r") as versions_file:
         versions = yaml.load(versions_file, yaml.FullLoader)
 
-        if versions[0]["version"] not in ["main", "master"]:
-            raise ValueError(f"{build_path}/_versions.yml does not contain a dev version")
+        if versions[0]["version"] != main_branch:
+            raise ValueError(f"{build_path}/_versions.yml does not contain a {main_branch} version")
 
         master_version, sem_versions = versions[0], versions[1:]
         new_version = {"version": version}
