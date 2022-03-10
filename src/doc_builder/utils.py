@@ -26,13 +26,13 @@ def update_versions_file(build_path, version):
     Insert new version into _versions.yml file of the library
     Assumes that _versions.yml exists and has its first entry as master version
     """
-    if version == "master":
+    if version in ["main", "master"]:
         return
     with open(os.path.join(build_path, "_versions.yml"), "r") as versions_file:
         versions = yaml.load(versions_file, yaml.FullLoader)
 
-        if versions[0]["version"] != "master":
-            raise ValueError(f"{build_path}/_versions.yml does not contain master version")
+        if versions[0]["version"] not in ["main", "master"]:
+            raise ValueError(f"{build_path}/_versions.yml does not contain a dev version")
 
         master_version, sem_versions = versions[0], versions[1:]
         new_version = {"version": version}
