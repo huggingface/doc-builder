@@ -23,6 +23,9 @@ from packaging import version as package_version
 
 
 def get_default_branch_name(repo_folder):
+    config = get_doc_config()
+    if config is not None and hasattr(config, "default_branch_name"):
+        return config.default_branch_name
     try:
         p = subprocess.run(
             "git symbolic-ref refs/remotes/origin/HEAD".split(),
