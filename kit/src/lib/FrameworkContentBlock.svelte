@@ -66,28 +66,28 @@
 <svelte:window on:hashchange={onHashChange} />
 
 <div class="border border-gray-200 rounded-xl px-4 relative" bind:this={containerEl}>
-	<div class="flex h-[22px] px-2.5 justify-between leading-none" style="margin-top: -12.5px;">
+	<div class="flex h-[22px] px-2.5 justify-between leading-none" style="margin-top: -9.5px;">
 		<div class="px-2.5 flex items-center space-x-1 bg-white dark:bg-gray-950">
 			<svelte:component this={Icon} />
 			<span>{label}</span>
 		</div>
 		{#if !isClosed}
 			<div
-				class="cursor-pointer flex items-center justify-center space-x-1 text-sm px-2.5 bg-white dark:bg-gray-950 hover:underline"
+				class="cursor-pointer flex items-center justify-center space-x-1 text-sm px-2.5 bg-white dark:bg-gray-950 hover:underline leading-none"
 				on:click={toggleHidden}
 			>
-				<IconEyeHide />
+				<IconEyeHide size={"0.9em"} />
 				<span>Hide {label} content</span>
 			</div>
 		{/if}
 	</div>
 	{#if isClosed}
 		<div
-			class="cursor-pointer flex items-center justify-center space-x-1 py-2.5 text-sm hover:underline"
-			style="margin-top: -12.5px;"
+			class="cursor-pointer flex items-center justify-center space-x-1 py-2.5 text-sm hover:underline leading-none"
+			style="margin-top: -7.5px;"
 			on:click={toggleHidden}
 		>
-			<IconEyeShow />
+			<IconEyeShow size={"0.9em"} />
 			<span>Show {label} content</span>
 		</div>
 	{:else}
