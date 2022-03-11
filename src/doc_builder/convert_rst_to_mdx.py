@@ -409,6 +409,7 @@ def parse_rst_docstring(docstring):
 
             # Grab the indent of the return line, this block will stop when we unindent under it.
             return_indent = find_indent(lines[idx])
+            raised_errors = []
             # The line may contain the return type.
             if tag in ["return", "yield"]:
                 return_type, return_description = split_return_line(lines[idx])
@@ -417,7 +418,6 @@ def parse_rst_docstring(docstring):
                 while idx < len(lines) and (is_empty_line(lines[idx]) or find_indent(lines[idx]) >= return_indent):
                     idx += 1
             else:
-                raised_errors = []
                 while idx < len(lines) and find_indent(lines[idx]) == return_indent:
                     return_type, return_description = split_return_line(lines[idx])
                     raised_error = re.sub(r"^\s*`?([\w\.]*)`?$", r"`\1`", return_type)
@@ -433,7 +433,7 @@ def parse_rst_docstring(docstring):
             # Return block finished, we insert the return type if one was specified
             if tag in ["return", "yield"] and return_type is not None:
                 lines[idx - 1] += f"\n<{tag}type>{return_type}</{tag}type>\n"
-            elif raised_errors:
+            elif len(raised_errors) > 0:
                 # raised errors
                 lines[idx - 1] += f"\n<raisederrors>{' or '.join(raised_errors)}</raisederrors>\n"
 
