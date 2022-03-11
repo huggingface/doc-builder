@@ -16,6 +16,7 @@
 
 import tempfile
 import unittest
+from pathlib import Path
 
 import yaml
 from doc_builder.utils import update_versions_file
@@ -23,44 +24,45 @@ from doc_builder.utils import update_versions_file
 
 class UtilsTester(unittest.TestCase):
     def test_update_versions_file(self):
+        repo_folder = Path(__file__).parent.parent
         # test canonical
         with tempfile.TemporaryDirectory() as tmp_dir:
             with open(f"{tmp_dir}/_versions.yml", "w") as tmp_yml:
-                versions = [{"version": "master"}, {"version": "v4.2.3"}, {"version": "v4.2.1"}]
+                versions = [{"version": "main"}, {"version": "v4.2.3"}, {"version": "v4.2.1"}]
                 yaml.dump(versions, tmp_yml)
-            update_versions_file(tmp_dir, "v4.2.2")
+            update_versions_file(tmp_dir, "v4.2.2", repo_folder)
             with open(f"{tmp_dir}/_versions.yml", "r") as tmp_yml:
                 yml_str = tmp_yml.read()
-                expected_yml = "- version: master\n- version: v4.2.3\n- version: v4.2.2\n- version: v4.2.1\n"
+                expected_yml = "- version: main\n- version: v4.2.3\n- version: v4.2.2\n- version: v4.2.1\n"
                 self.assertEqual(yml_str, expected_yml)
 
-        # test yml with master version only
+        # test yml with main version only
         with tempfile.TemporaryDirectory() as tmp_dir:
             with open(f"{tmp_dir}/_versions.yml", "w") as tmp_yml:
-                versions = [{"version": "master"}]
+                versions = [{"version": "main"}]
                 yaml.dump(versions, tmp_yml)
-            update_versions_file(tmp_dir, "v4.2.2")
+            update_versions_file(tmp_dir, "v4.2.2", repo_folder)
             with open(f"{tmp_dir}/_versions.yml", "r") as tmp_yml:
                 yml_str = tmp_yml.read()
-                expected_yml = "- version: master\n- version: v4.2.2\n"
+                expected_yml = "- version: main\n- version: v4.2.2\n"
                 self.assertEqual(yml_str, expected_yml)
 
-        # test yml without master version
+        # test yml without main version
         with tempfile.TemporaryDirectory() as tmp_dir:
             with open(f"{tmp_dir}/_versions.yml", "w") as tmp_yml:
                 versions = [{"version": "v4.2.2"}]
                 yaml.dump(versions, tmp_yml)
 
-            self.assertRaises(ValueError, update_versions_file, tmp_dir, "v4.2.2")
+            self.assertRaises(ValueError, update_versions_file, tmp_dir, "v4.2.2", repo_folder)
 
         # test inserting duplicate version into yml
         with tempfile.TemporaryDirectory() as tmp_dir:
             with open(f"{tmp_dir}/_versions.yml", "w") as tmp_yml:
-                versions = [{"version": "master"}]
+                versions = [{"version": "main"}]
                 yaml.dump(versions, tmp_yml)
-            update_versions_file(tmp_dir, "v4.2.2")
-            update_versions_file(tmp_dir, "v4.2.2")  # inserting duplicate version
+            update_versions_file(tmp_dir, "v4.2.2", repo_folder)
+            update_versions_file(tmp_dir, "v4.2.2", repo_folder)  # inserting duplicate version
             with open(f"{tmp_dir}/_versions.yml", "r") as tmp_yml:
                 yml_str = tmp_yml.read()
-                expected_yml = "- version: master\n- version: v4.2.2\n"
+                expected_yml = "- version: main\n- version: v4.2.2\n"
                 self.assertEqual(yml_str, expected_yml)
