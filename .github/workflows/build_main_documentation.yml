@@ -6,13 +6,12 @@ on:
       commit_sha:
         required: true
         type: string
-      pr_number:
-        required: true
-        type: string
       package:
         required: true
         type: string
       path_to_doc:
+        type: string
+      notebook_folder:
         type: string
     secrets:
       token:
@@ -32,6 +31,19 @@ jobs:
         with:
           repository: 'huggingface/${{ inputs.package }}'
           path: ${{ inputs.package }}
+      
+      - uses: actions/checkout@v2
+        with:
+          repository: 'huggingface/doc-build'
+          path: doc-build
+          token: ${{ secrets.token }}
+      
+      - uses: actions/checkout@v2
+        if: inputs.notebook_folder != ''
+        with:
+          repository: 'huggingface/notebooks'
+          path: notebooks
+          token: ${{ secrets.HUGGINGFACE_PUSH }}
 
       - uses: actions/setup-node@v2
         with:
@@ -46,8 +58,6 @@ jobs:
           else
             echo "doc_folder=${{ inputs.path_to_docs }}" >> $GITHUB_ENV
           fi
-
-          echo "${{ secrets.token }}"
 
       - name: Setup environment
         run: |
@@ -69,30 +79,14 @@ jobs:
           git config --global user.name "Hugging Face Doc Builder"
           git config --global user.email docs@huggingface.co
 
-      - name: Find doc comment
-        uses: peter-evans/find-comment@v1
-        id: find_comment
-        with:
-          issue-number: ${{ inputs.pr_number }}
-          comment-author: HuggingFaceDocBuilderDev
-      
-      - name: Add doc comment if not present
-        uses: thollander/actions-comment-pull-request@v1
-        if: steps.find_comment.outputs.comment-id == ''
-
-        with:
-          message: 'The docs for this PR live [here](https://moon-ci-docs.huggingface.co/docs/${{ inputs.package }}/pr_${{ inputs.pr_number }}). All of your documentation changes will be reflected on that endpoint.'
-          GITHUB_TOKEN: ${{ secrets.token }}
-
-      - name: Update doc comment if necessary
-        if: github.event.action == 'reopened' && steps.find_comment.outputs.comment-id != ''
-        uses: peter-evans/create-or-update-comment@v1
-        with:
-          comment-id: ${{ steps.find_comment.outputs.comment-id }}
-          token: ${{ secrets.token }}
-          edit-mode: replace
-          body: |
-            The docs for this PR live [here](https://moon-ci-docs.huggingface.co/docs/${{ inputs.package }}/pr_${{ inputs.pr_number }}). All of your documentation changes will be reflected on that endpoint.
+      - name: Create build directory
+        run: |
+          cd doc-build
+          git pull
+          cd ..
+          mkdir build_dir
+          mkdir build_dir/${{ inputs.package }}
+          cp doc-build/${{ inputs.package }}/_versions.yml build_dir/${{ inputs.package }}
 
       - name: Make documentation
         env:
@@ -100,23 +94,45 @@ jobs:
         run: |
           echo "doc_folder has been set to ${{ env.doc_folder }}"
 
-          cd doc-builder &&
-          doc-builder build ${{ inputs.package }} ../${{ env.doc_folder }} --build_dir ../build_dir --clean --version pr_${{ inputs.pr_number }} --html &&
-          cd ..
+          if [ -z "${{ inputs.notebook_folder }}" ]
+          then
+            cd doc-builder &&
+            doc-builder build ${{ inputs.package }} ../${{ env.doc_folder }} --build_dir ../build_dir --clean --html &&
+            cd ..
+          else
+            cd doc-builder &&
+            doc-builder build ${{ inputs.package }} ../${{ env.doc_folder }} --build_dir ../build_dir --notebook_dir ../notebook_dir --clean --html &&
+            cd ..
+          fi
 
       - name: Push to repositories
         run: |
-          cd doc-build-dev
+          cd doc-build
           git pull
-          rm -rf ${{ inputs.package }}/pr_${{ inputs.pr_number }}
-          mv ../build_dir/${{ inputs.package }}/pr_${{ inputs.pr_number }} ${{ inputs.package }}/pr_${{ inputs.pr_number }}
+          mv ../build_dir/${{ inputs.package }}/_versions.yml ${{ inputs.package }}/
+          rm -rf ${{ inputs.package }}/$(ls ../build_dir/accelerate)
+          mv ../build_dir/${{ inputs.package }}/$(ls ../build_dir/${{ inputs.package }}) ${{ inputs.package }}/$(ls ../build_dir/${{ inputs.package }})
           git status
 
-          if [[ `git status --porcelain` ]]; then
+          if [[ `git status --porcelain` ]]; then 
             git add .
             git commit -m "Updated with commit ${{ inputs.commit_sha }} See: https://github.com/huggingface/${{ inputs.package }}/commit/${{ inputs.commit_sha }}"
             git push origin main
           else
             echo "No diff in the documentation."
           fi
-        shell: bash
+
+          if [ -z "${{ inputs.notebook_folder }}" ]
+          then 
+            cd notebooks
+            git pull
+            cp -r ../notebooks_dir/. ${{ inputs.notebook_folder }}
+            git status
+            if [[ `git status --porcelain` ]]; then
+              git add ${{ inputs.notebook_folder }}
+              git commit -m "Updated ${{ inputs.package }} doc notebooks with commit ${{ inputs.commit_sha }} \n\nSee: https://github.com/huggingface/${{ inputs.package }}/commit/${{ inputs.commit_sha }}"
+              git push origin master
+            else
+              echo "No diff in the notebooks."
+            fi
+          fi
