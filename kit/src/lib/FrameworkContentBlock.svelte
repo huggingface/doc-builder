@@ -67,13 +67,13 @@
 
 <div class="border border-gray-200 rounded-xl px-4 relative" bind:this={containerEl}>
 	<div class="flex h-[22px] mt-[-12.5px] justify-between leading-none" >
-		<div class="flex items-center space-x-1 bg-white dark:bg-gray-950">
+		<div class="flex px-2 items-center space-x-1 bg-white dark:bg-gray-950">
 			<svelte:component this={Icon} />
 			<span>{label}</span>
 		</div>
 		{#if !isClosed}
 			<div
-				class="cursor-pointer flex items-center justify-center space-x-1 text-sm px-2.5 bg-white dark:bg-gray-950 hover:underline leading-none"
+				class="cursor-pointer flex items-center justify-center space-x-1 text-sm px-2 bg-white dark:bg-gray-950 hover:underline leading-none"
 				on:click={toggleHidden}
 			>
 				<IconEyeHide size={"0.9em"} />
