@@ -44,7 +44,7 @@ jobs:
           fi
         shell: bash
 
-      - name: Find Comment
+      - name: Find doc comment
         if: ${{ always() }}
         uses: peter-evans/find-comment@v1
         id: find_comment
@@ -52,7 +52,7 @@ jobs:
           issue-number: ${{ inputs.pr_number }}
           comment-author: HuggingFaceDocBuilderDev
 
-      - name: Update comment
+      - name: Update doc comment if necessary
         if: steps.find_comment.outputs.comment-id != ''
         uses: peter-evans/create-or-update-comment@v1
         with:
