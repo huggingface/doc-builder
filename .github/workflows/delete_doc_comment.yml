@@ -23,6 +23,7 @@ jobs:
         run: |
           rm -rf doc-build-dev
           git clone --depth 1 https://HuggingFaceDocBuilderDev:${{ secrets.token }}@github.com/huggingface/doc-build-dev
+          echo "WRITE=$(echo '${{ secrets.token }}')" >> $GITHUB_ENV
 
       - name: Setup git
         run: |
@@ -57,7 +58,7 @@ jobs:
         uses: peter-evans/create-or-update-comment@v1
         with:
           comment-id: ${{ steps.find_comment.outputs.comment-id }}
-          token: ${{ inputs.pr_number }}
+          token: ${{ env.WRITE }}
           edit-mode: replace
           body: |
             _The documentation is not available anymore as the PR was closed or merged._
