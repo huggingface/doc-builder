@@ -43,7 +43,7 @@ jobs:
         with:
           repository: 'huggingface/notebooks'
           path: notebooks
-          token: ${{ secrets.HUGGINGFACE_PUSH }}
+          token: ${{ secrets.token }}
 
       - uses: actions/setup-node@v2
         with:
@@ -61,9 +61,6 @@ jobs:
 
       - name: Setup environment
         run: |
-          rm -rf doc-build-dev
-          git clone --depth 1 https://HuggingFaceDocBuilderDev:${{ secrets.token }}@github.com/huggingface/doc-build-dev
-          
           pip uninstall -y doc-builder
           cd doc-builder
           git pull origin main
@@ -123,7 +120,9 @@ jobs:
           fi
 
           if [ -z "${{ inputs.notebook_folder }}" ]
-          then 
+          then
+            echo "Notebooks creation was not enabled."
+          else
             cd notebooks
             git pull
             cp -r ../notebooks_dir/. ${{ inputs.notebook_folder }}
