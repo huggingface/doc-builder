@@ -119,7 +119,7 @@ export const docstringPreprocess = {
 
 // Preprocessor that converts markdown into FrameworkContent
 // svelte component using mdsvexPreprocess
-export const frameorkcontentPreprocess = {
+export const frameworkcontentPreprocess = {
 	markup: async ({ content }) => {
 		const REGEX_FRAMEWORKCONTENT =
 			/<frameworkcontent>(((?!<frameworkcontent>).)*)<\/frameworkcontent>/gms;
