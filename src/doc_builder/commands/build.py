@@ -23,7 +23,7 @@ import tempfile
 from pathlib import Path
 
 from doc_builder import build_doc, update_versions_file
-from doc_builder.utils import get_default_branch_name
+from doc_builder.utils import get_default_branch_name, read_doc_config
 
 
 def check_node_is_available():
@@ -68,6 +68,7 @@ def locate_kit_folder():
 
 
 def build_command(args):
+    read_doc_config(args.path_to_docs)
     if args.html:
         # Error at the beginning if node is not properly installed.
         check_node_is_available()
