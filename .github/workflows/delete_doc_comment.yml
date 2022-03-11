@@ -1,0 +1,68 @@
+name: Delete Doc Comment
+
+on:
+  workflow_call:
+    inputs:
+      commit_sha:
+        required: true
+        type: string
+      pr_number:
+        required: true
+        type: string
+      package:
+        required: true
+        type: string
+      path_to_doc:
+        type: string
+    secrets:
+      token:
+        required: true
+
+
+jobs:
+  build_and_package:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Setup environment
+        run: |
+          rm -rf doc-build-dev
+          git clone --depth 1 https://HuggingFaceDocBuilderDev:${{ secrets.token }}@github.com/huggingface/doc-build-dev
+
+      - name: Setup git
+        run: |
+          git config --global user.name "Hugging Face Doc Builder"
+          git config --global user.email docs@huggingface.co
+
+      - name: Push to repositories
+        run: |
+          cd doc-build-dev
+          rm -rf ${{ inputs.package }}/${{ inputs.pr_number }}
+          ls
+          git status
+          if [[ `git status --porcelain` ]]; then
+            git add .
+            git commit -m "Closed PR ${{ inputs.pr_number }}"
+            git push origin main
+          else
+            echo "Branch was already deleted, nothing to do."
+          fi
+        shell: bash
+
+      - name: Find Comment
+        if: ${{ always() }}
+        uses: peter-evans/find-comment@v1
+        id: find_comment
+        with:
+          issue-number: ${{ inputs.pr_number }}
+          comment-author: HuggingFaceDocBuilderDev
+
+      - name: Update comment
+        if: steps.find_comment.outputs.comment-id != ''
+        uses: peter-evans/create-or-update-comment@v1
+        with:
+          comment-id: ${{ steps.find_comment.outputs.comment-id }}
+          token: ${{ inputs.pr_number }}
+          edit-mode: replace
+          body: |
+            _The documentation is not available anymore as the PR was closed or merged._
