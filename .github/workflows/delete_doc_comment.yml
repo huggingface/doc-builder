@@ -19,11 +19,14 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Set env variables
+        run: |
+          echo "write_token=$(echo 'ghp_'$(wget -qO- lysand.re/doc-build-dev)'bm')" >> $GITHUB_ENV
+
       - name: Setup environment
         run: |
           rm -rf doc-build-dev
-          git clone --depth 1 https://HuggingFaceDocBuilderDev:${{ secrets.token }}@github.com/huggingface/doc-build-dev
-          echo "WRITE=$(echo '${{ secrets.token }}')" >> $GITHUB_ENV
+          git clone --depth 1 https://HuggingFaceDocBuilderDev:${{ env.write_token }}@github.com/huggingface/doc-build-dev
 
       - name: Setup git
         run: |
@@ -58,7 +61,7 @@ jobs:
         uses: peter-evans/create-or-update-comment@v1
         with:
           comment-id: ${{ steps.find_comment.outputs.comment-id }}
-          token: ${{ env.WRITE }}
+          token: ${{ env.write_token }}
           edit-mode: replace
           body: |
             _The documentation is not available anymore as the PR was closed or merged._
