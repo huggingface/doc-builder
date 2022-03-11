@@ -27,22 +27,28 @@ jobs:
         with:
           repository: 'huggingface/doc-builder'
           path: doc-builder
+        
+      - uses: actions/checkout@v2
+        with:
+          repository: 'huggingface/${{ inputs.package }}'
+          path: ${{ inputs.package }}
 
       - uses: actions/setup-node@v2
         with:
           node-version: '16'
 
-      - name: Set env
+      - name: Set env variables
         run: |
           echo "WRITE=${{ secrets.token }}" >> $GITHUB_ENV
 
           if [ -z "${{ inputs.path_to_docs }}" ]
           then
             echo "doc_folder=${{ inputs.package }}/docs/source" >> $GITHUB_ENV
-            echo "path_to_docs not provided, defaulting to ${{ env.doc_folder }}"
+            echo "path_to_docs not provided, defaulting to ${{ inputs.package }}/docs/source"
           else
             echo "doc_folder=${{ inputs.path_to_docs }}" >> $GITHUB_ENV
           fi
+          echo "doc_folder has been set to ${{ env.doc_folder }}"
 
       - name: Setup environment
         run: |
@@ -53,6 +59,10 @@ jobs:
           cd doc-builder
           git pull origin main
           pip install .
+          cd ..
+
+          cd ${{ inputs.package }}
+          pip install .[quality]
           cd ..
 
       - name: Setup git
