@@ -66,8 +66,8 @@
 <svelte:window on:hashchange={onHashChange} />
 
 <div class="border border-gray-200 rounded-xl px-4 relative" bind:this={containerEl}>
-	<div class="flex h-[22px] mt-[-12.5px] px-2.5 justify-between leading-none" >
-		<div class="px-2.5 flex items-center space-x-1 bg-white dark:bg-gray-950">
+	<div class="flex h-[22px] mt-[-12.5px] justify-between leading-none" >
+		<div class="flex items-center space-x-1 bg-white dark:bg-gray-950">
 			<svelte:component this={Icon} />
 			<span>{label}</span>
 		</div>
