@@ -12,16 +12,15 @@ export function getGroupStore(key: string): Writable<Group> {
 }
 
 // used for FrameworkContent.svelte
-const frameworks: { [key in Framework]?: Writable<{ isClosed: boolean; hasHashLink: boolean }> } =
-	{};
-export function getFrameworkStore(
-	key: Framework
-): Writable<{ isClosed: boolean; hasHashLink: boolean }> {
+export enum FrameworkState {
+	OPEN = "OPEN",
+	CLOSED = "CLOSED",
+	HASHASHLINK = "HASHASHLINK"
+}
+const frameworks: { [key in Framework]?: Writable<FrameworkState> } = {};
+export function getFrameworkStore(key: Framework): Writable<FrameworkState> {
 	if (!frameworks[key]) {
-		frameworks[key] = writable<{ isClosed: boolean; hasHashLink: boolean }>({
-			isClosed: false,
-			hasHashLink: false
-		});
+		frameworks[key] = writable<FrameworkState>(FrameworkState.OPEN);
 	}
 	return frameworks[key];
 }

@@ -3,7 +3,7 @@
 	import type { Framework } from "./types";
 
 	import { onMount } from "svelte";
-	import { getFrameworkStore } from "./stores";
+	import { getFrameworkStore, FrameworkState } from "./stores";
 	import IconPytorch from "./IconPytorch.svelte";
 	import IconTensorflow from "./IconTensorflow.svelte";
 	import IconJax from "./IconJax.svelte";
@@ -33,20 +33,18 @@
 	const localStorageKey = `hf_doc_framework_${framework}_is_hidden`;
 	const fwStore = getFrameworkStore(framework);
 
-	$: isClosed = $fwStore.isClosed && !$fwStore.hasHashLink;
+	$: isClosed = $fwStore === FrameworkState.CLOSED;
 
 	function toggleHidden() {
-		$fwStore.isClosed = !$fwStore.isClosed;
-		if ($fwStore.isClosed) {
-			$fwStore.hasHashLink = false;
-		}
-		localStorage.setItem(localStorageKey, $fwStore.isClosed ? "true" : "false");
+		$fwStore = $fwStore !== FrameworkState.CLOSED ? FrameworkState.CLOSED : FrameworkState.OPEN;
+		localStorage.setItem(localStorageKey, $fwStore);
 	}
 
 	function onHashChange() {
 		const hashLink = window.location.hash.slice(1);
 		if (hashLinks.has(hashLink)) {
-			$fwStore.hasHashLink = true;
+			$fwStore = FrameworkState.HASHASHLINK;
+			localStorage.setItem(localStorageKey, $fwStore);
 		}
 	}
 
@@ -55,12 +53,12 @@
 		const headerClass = "header-link";
 		const headings = containerEl.querySelectorAll(`.${headerClass}`);
 		hashLinks = new Set([...headings].map((h) => h.id));
+		const localState = localStorage.getItem(localStorageKey);
 
 		if (hashLinks.has(hashLink)) {
-			$fwStore.isClosed = false;
-			$fwStore.hasHashLink = true;
-		} else if (localStorage.getItem(localStorageKey) === "true") {
-			$fwStore.isClosed = true;
+			$fwStore = FrameworkState.HASHASHLINK;
+		} else if (localState === FrameworkState.CLOSED && $fwStore !== FrameworkState.HASHASHLINK) {
+			$fwStore = FrameworkState.CLOSED;
 		}
 	});
 </script>
