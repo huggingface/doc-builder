@@ -370,8 +370,8 @@ def build_doc(
         notebook_dir (`str` or `os.PathLike`, *optional*):
             If provided, where to save the notebooks generated from the doc file with an [[open-in-colab]] marker.
         watch_mode (`bool`, *optional*, default to `False`):
-            If provided & true, disables toc tree check & sphinx objects.inv builds since they are not needed
-            when `watch_mode` is active.
+            If `True`, disables the toc tree check and sphinx objects.inv builds since they are not needed
+            when this mode is active.
     """
     page_info = {"version": version, "language": language, "package_name": package_name}
     if clean and Path(output_dir).exists():
