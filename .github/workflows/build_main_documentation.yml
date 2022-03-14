@@ -1,0 +1,143 @@
+name: Build PR Documentation
+
+on:
+  workflow_call:
+    inputs:
+      commit_sha:
+        required: true
+        type: string
+      package:
+        required: true
+        type: string
+      path_to_doc:
+        type: string
+      notebook_folder:
+        type: string
+    secrets:
+      token:
+        required: true
+
+jobs:
+  build_main_documentation:
+    runs-on: ubuntu-latest
+    container:
+      huggingface/transformers-doc-builder
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          repository: 'huggingface/doc-builder'
+          path: doc-builder
+        
+      - uses: actions/checkout@v2
+        with:
+          repository: 'huggingface/${{ inputs.package }}'
+          path: ${{ inputs.package }}
+      
+      - uses: actions/checkout@v2
+        with:
+          repository: 'huggingface/doc-build'
+          path: doc-build
+          token: ${{ secrets.token }}
+      
+      - uses: actions/checkout@v2
+        if: inputs.notebook_folder != ''
+        with:
+          repository: 'huggingface/notebooks'
+          path: notebooks
+          token: ${{ secrets.token }}
+
+      - uses: actions/setup-node@v2
+        with:
+          node-version: '16'
+
+      - name: Set env variables
+        run: |
+          if [ -z "${{ inputs.path_to_docs }}" ]
+          then
+            echo "doc_folder=${{ inputs.package }}/docs/source" >> $GITHUB_ENV
+            echo "path_to_docs not provided, defaulting to ${{ inputs.package }}/docs/source"
+          else
+            echo "doc_folder=${{ inputs.path_to_docs }}" >> $GITHUB_ENV
+          fi
+
+      - name: Setup environment
+        run: |
+          pip uninstall -y doc-builder
+          cd doc-builder
+          git pull origin main
+          pip install .
+          cd ..
+
+          cd ${{ inputs.package }}
+          pip install .[dev]
+          cd ..
+
+      - name: Setup git
+        run: |
+          git config --global user.name "Hugging Face Doc Builder"
+          git config --global user.email docs@huggingface.co
+
+      - name: Create build directory
+        run: |
+          cd doc-build
+          git pull
+          cd ..
+          mkdir build_dir
+          mkdir build_dir/${{ inputs.package }}
+          cp doc-build/${{ inputs.package }}/_versions.yml build_dir/${{ inputs.package }}
+
+      - name: Make documentation
+        env:
+          NODE_OPTIONS: --max-old-space-size=6656
+        run: |
+          echo "doc_folder has been set to ${{ env.doc_folder }}"
+
+          if [ -z "${{ inputs.notebook_folder }}" ]
+          then
+            cd doc-builder &&
+            doc-builder build ${{ inputs.package }} ../${{ env.doc_folder }} --build_dir ../build_dir --clean --html &&
+            cd ..
+          else
+            cd doc-builder &&
+            doc-builder build ${{ inputs.package }} ../${{ env.doc_folder }} --build_dir ../build_dir --notebook_dir ../notebook_dir --clean --html &&
+            cd ..
+          fi
+
+      - name: Push to repositories
+        run: |
+          cd doc-build
+          git pull
+          mv ../build_dir/${{ inputs.package }}/_versions.yml ${{ inputs.package }}/
+          rm -rf ${{ inputs.package }}/$(ls ../build_dir/${{ inputs.package }})
+          mv ../build_dir/${{ inputs.package }}/$(ls ../build_dir/${{ inputs.package }}) ${{ inputs.package }}/$(ls ../build_dir/${{ inputs.package }})
+          git status
+
+          if [[ `git status --porcelain` ]]; then 
+            git add .
+            git commit -m "Updated with commit ${{ inputs.commit_sha }} See: https://github.com/huggingface/${{ inputs.package }}/commit/${{ inputs.commit_sha }}"
+            git push origin main
+          else
+            echo "No diff in the documentation."
+          fi
+
+          cd ..
+
+          if [ -z "${{ inputs.notebook_folder }}" ]
+          then
+            echo "Notebooks creation was not enabled."
+          else
+            cd notebooks
+            git pull
+            cp -r ../notebook_dir/. ${{ inputs.notebook_folder }}
+            git status
+            if [[ `git status --porcelain` ]]; then
+              git add ${{ inputs.notebook_folder }}
+              git commit -m "Updated ${{ inputs.package }} doc notebooks with commit ${{ inputs.commit_sha }} \n\nSee: https://github.com/huggingface/${{ inputs.package }}/commit/${{ inputs.commit_sha }}"
+              git push origin master
+            else
+              echo "No diff in the notebooks."
+            fi
+            cd ..
+          fi
+        shell: bash
