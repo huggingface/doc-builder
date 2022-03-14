@@ -37,6 +37,7 @@ class Watcher(FileSystemEventHandler):
     Utility class for building updated mdx files when a file changes inside
     `args.library_name` git_folder.
     """
+
     def __init__(self, args, path, src_py_path_mapping, kit_routes_folder):
         self.args = args
         self.path = path
