@@ -283,8 +283,8 @@ def get_source_path(object_name, package):
     Find a path to file in which given object was defined.
 
     Args:
-    - **object_name** (`str`) -- The name of the object to retrieve.
-    -- **package** (`types.ModuleType`) -- The package to look into.
+    - object_name (`str`): The name of the object to retrieve.
+    - package (`types.ModuleType`): The package to look into.
     """
     obj = obj = find_object_in_package(object_name=object_name, package=package)
     obj_path = inspect.getfile(obj)
