@@ -103,9 +103,4 @@ def is_watchdog_available():
     """
     Checks if soft dependency `watchdog` exists.
     """
-    try:
-        import watchdog
-
-        return True
-    except ImportError:
-        return False
+    return importlib.util.find_spec("watchdog") is not None
