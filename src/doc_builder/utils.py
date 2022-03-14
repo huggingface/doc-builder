@@ -97,3 +97,15 @@ def get_doc_config():
     Returns the `doc_config` if it has been loaded.
     """
     return doc_config
+
+
+def is_watchdog_available():
+    """
+    Checks if soft dependency `watchdog` exists.
+    """
+    try:
+        import watchdog
+
+        return True
+    except ImportError:
+        return False

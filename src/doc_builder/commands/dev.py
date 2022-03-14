@@ -27,91 +27,93 @@ from threading import Thread
 from doc_builder import build_doc
 from doc_builder.commands.build import check_node_is_available, locate_kit_folder
 from doc_builder.commands.convert_doc_file import find_root_git
-from doc_builder.utils import read_doc_config
-from watchdog.events import FileSystemEventHandler
-from watchdog.observers import Observer
+from doc_builder.utils import is_watchdog_available, read_doc_config
 
 
-class Watcher(FileSystemEventHandler):
-    """
-    Utility class for building updated mdx files when a file changes inside
-    `args.library_name` git_folder.
-    """
+if is_watchdog_available():
+    from watchdog.events import FileSystemEventHandler
+    from watchdog.observers import Observer
 
-    def __init__(self, args, path, source_files_mapping, kit_routes_folder):
-        self.args = args
-        self.path = path
-        self.source_files_mapping = source_files_mapping
-        self.kit_routes_folder = kit_routes_folder
-        self.last_modified = datetime.now()
-
-    def on_created(self, event):
-        is_valid, src_path, relative_path = self.transform_path(event)
-        if is_valid:
-            self.build(src_path, relative_path)
-
-    def on_modified(self, event):
-        is_valid, src_path, relative_path = self.transform_path(event)
-        if is_valid:
-            self.build(src_path, relative_path)
-
-    def transform_path(self, event):
+    class Watcher(FileSystemEventHandler):
         """
-        Check if a file is a doc file (mdx, or py file used as autodoc).
-        If so, returns mdx file path.
+        Utility class for building updated mdx files when a file changes inside
+        `args.library_name` git_folder.
         """
-        if datetime.now() - self.last_modified < timedelta(seconds=1):
-            return False, None, None
 
-        self.last_modified = datetime.now()
-        src_path = event.src_path
-        relative_path = event.src_path[len(self.args.path_to_docs) + 1 :]
-        is_valid_file = False
-        if not event.is_directory:
-            if src_path.endswith(".py") and src_path in self.source_files_mapping:
-                src_path = self.source_files_mapping[src_path]
-            if src_path.endswith(".mdx"):
-                is_valid_file = True
-                return is_valid_file, src_path, relative_path
-        return is_valid_file, src_path, relative_path
+        def __init__(self, args, path, source_files_mapping, kit_routes_folder):
+            self.args = args
+            self.path = path
+            self.source_files_mapping = source_files_mapping
+            self.kit_routes_folder = kit_routes_folder
+            self.last_modified = datetime.now()
 
-    def build(self, src_path, relative_path):
-        """
-        Build single mdx file in a temp dir.
-        """
-        print(f"Building: {src_path}")
-        # copy the built files into the actual build folder dawg
-        with tempfile.TemporaryDirectory() as tmp_input_dir:
-            # copy the file into srcpath
-            shutil.copy(src_path, tmp_input_dir)
+        def on_created(self, event):
+            is_valid, src_path, relative_path = self.transform_path(event)
+            if is_valid:
+                self.build(src_path, relative_path)
 
-            with tempfile.TemporaryDirectory() as tmp_out_dir:
-                build_doc(
-                    "datasets",
-                    tmp_input_dir,
-                    tmp_out_dir,
-                    version=self.args.version,
-                    language=self.args.language,
-                    watch_mode=True,
-                )
-                src = Path(tmp_out_dir) / Path(src_path).name
-                dest = self.kit_routes_folder / relative_path
-                shutil.move(src, dest)
+        def on_modified(self, event):
+            is_valid, src_path, relative_path = self.transform_path(event)
+            if is_valid:
+                self.build(src_path, relative_path)
 
-    def start(self):
-        """
-        Starts `pywatchdog.observer` for listening file changes.
-        """
-        observer = Observer()
-        observer.schedule(self, self.path, recursive=True)
-        observer.start()
-        print(f"\nWatching for changes in: {self.path}\n")
-        try:
-            while True:
-                time.sleep(1)
-        except KeyboardInterrupt:
-            observer.stop()
-        observer.join()
+        def transform_path(self, event):
+            """
+            Check if a file is a doc file (mdx, or py file used as autodoc).
+            If so, returns mdx file path.
+            """
+            if datetime.now() - self.last_modified < timedelta(seconds=1):
+                return False, None, None
+
+            self.last_modified = datetime.now()
+            src_path = event.src_path
+            relative_path = event.src_path[len(self.args.path_to_docs) + 1 :]
+            is_valid_file = False
+            if not event.is_directory:
+                if src_path.endswith(".py") and src_path in self.source_files_mapping:
+                    src_path = self.source_files_mapping[src_path]
+                if src_path.endswith(".mdx"):
+                    is_valid_file = True
+                    return is_valid_file, src_path, relative_path
+            return is_valid_file, src_path, relative_path
+
+        def build(self, src_path, relative_path):
+            """
+            Build single mdx file in a temp dir.
+            """
+            print(f"Building: {src_path}")
+            # copy the built files into the actual build folder dawg
+            with tempfile.TemporaryDirectory() as tmp_input_dir:
+                # copy the file into srcpath
+                shutil.copy(src_path, tmp_input_dir)
+
+                with tempfile.TemporaryDirectory() as tmp_out_dir:
+                    build_doc(
+                        "datasets",
+                        tmp_input_dir,
+                        tmp_out_dir,
+                        version=self.args.version,
+                        language=self.args.language,
+                        watch_mode=True,
+                    )
+                    src = Path(tmp_out_dir) / Path(src_path).name
+                    dest = self.kit_routes_folder / relative_path
+                    shutil.move(src, dest)
+
+        def start(self):
+            """
+            Starts `pywatchdog.observer` for listening file changes.
+            """
+            observer = Observer()
+            observer.schedule(self, self.path, recursive=True)
+            observer.start()
+            print(f"\nWatching for changes in: {self.path}\n")
+            try:
+                while True:
+                    time.sleep(1)
+            except KeyboardInterrupt:
+                observer.stop()
+            observer.join()
 
 
 def start_sveltekit_dev(tmp_dir, env, args):
@@ -144,57 +146,62 @@ def start_sveltekit_dev(tmp_dir, env, args):
 
 
 def dev_command(args):
-    read_doc_config(args.path_to_docs)
-    # Error at the beginning if node is not properly installed.
-    check_node_is_available()
-    # Error at the beginning if we can't locate the kit folder
-    kit_folder = locate_kit_folder()
-    if kit_folder is None:
-        raise EnvironmentError(
-            "Requires the kit subfolder of the doc-builder repo. We couldn't find it with "
-            "the doc-builder package installed, so you need to run the command from inside the doc-builder repo."
+    if is_watchdog_available():
+        read_doc_config(args.path_to_docs)
+        # Error at the beginning if node is not properly installed.
+        check_node_is_available()
+        # Error at the beginning if we can't locate the kit folder
+        kit_folder = locate_kit_folder()
+        if kit_folder is None:
+            raise EnvironmentError(
+                "Requires the kit subfolder of the doc-builder repo. We couldn't find it with "
+                "the doc-builder package installed, so you need to run the command from inside the doc-builder repo."
+            )
+
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            output_path = Path(tmp_dir) / args.library_name / args.version / args.language
+
+            print("Initial build docs for", args.library_name, args.path_to_docs, output_path)
+            source_files_mapping = build_doc(
+                args.library_name,
+                args.path_to_docs,
+                output_path,
+                clean=True,
+                version=args.version,
+                language=args.language,
+            )
+
+            # convert the MDX files into HTML files.
+            tmp_dir = Path(tmp_dir)
+            # Copy everything in a tmp dir
+            shutil.copytree(kit_folder, tmp_dir / "kit")
+            # Manual copy and overwrite from output_path to tmp_dir / "kit" / "src" / "routes"
+            # We don't use shutil.copytree as tmp_dir / "kit" / "src" / "routes" exists and contains important files.
+            kit_routes_folder = tmp_dir / "kit" / "src" / "routes"
+            for f in output_path.iterdir():
+                dest = kit_routes_folder / f.name
+                if f.is_dir():
+                    # Remove the dest folder if it exists
+                    if dest.is_dir():
+                        shutil.rmtree(dest)
+                    shutil.copytree(f, dest)
+                else:
+                    shutil.copy(f, dest)
+
+            # Node
+            env = os.environ.copy()
+            env["DOCS_LIBRARY"] = args.library_name
+            env["DOCS_VERSION"] = args.version
+            env["DOCS_LANGUAGE"] = args.language
+            Thread(target=start_sveltekit_dev, args=(tmp_dir, env, args)).start()
+
+            git_folder = find_root_git(args.path_to_docs)
+            event_handler = Watcher(args, git_folder, source_files_mapping, kit_routes_folder)
+            event_handler.start()
+    else:
+        raise ImportError(
+            "Please install `watchdog` to run `doc-builder preview` command.\nYou can do so through pip: `pip install watchdog`"
         )
-
-    with tempfile.TemporaryDirectory() as tmp_dir:
-        output_path = Path(tmp_dir) / args.library_name / args.version / args.language
-
-        print("Initial build docs for", args.library_name, args.path_to_docs, output_path)
-        source_files_mapping = build_doc(
-            args.library_name,
-            args.path_to_docs,
-            output_path,
-            clean=True,
-            version=args.version,
-            language=args.language,
-        )
-
-        # convert the MDX files into HTML files.
-        tmp_dir = Path(tmp_dir)
-        # Copy everything in a tmp dir
-        shutil.copytree(kit_folder, tmp_dir / "kit")
-        # Manual copy and overwrite from output_path to tmp_dir / "kit" / "src" / "routes"
-        # We don't use shutil.copytree as tmp_dir / "kit" / "src" / "routes" exists and contains important files.
-        kit_routes_folder = tmp_dir / "kit" / "src" / "routes"
-        for f in output_path.iterdir():
-            dest = kit_routes_folder / f.name
-            if f.is_dir():
-                # Remove the dest folder if it exists
-                if dest.is_dir():
-                    shutil.rmtree(dest)
-                shutil.copytree(f, dest)
-            else:
-                shutil.copy(f, dest)
-
-        # Node
-        env = os.environ.copy()
-        env["DOCS_LIBRARY"] = args.library_name
-        env["DOCS_VERSION"] = args.version
-        env["DOCS_LANGUAGE"] = args.language
-        Thread(target=start_sveltekit_dev, args=(tmp_dir, env, args)).start()
-
-        git_folder = find_root_git(args.path_to_docs)
-        event_handler = Watcher(args, git_folder, source_files_mapping, kit_routes_folder)
-        event_handler.start()
 
 
 def dev_command_parser(subparsers=None):
