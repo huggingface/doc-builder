@@ -156,7 +156,7 @@ def build_mdx_files(package, doc_folder, output_dir, page_info):
     output_dir = Path(output_dir)
     os.makedirs(output_dir, exist_ok=True)
     anchor_mapping = {}
-    src_py_path_mapping = {}
+    source_files_mapping = {}
 
     if "package_name" not in page_info:
         page_info["package_name"] = package.__name__
@@ -179,7 +179,7 @@ def build_mdx_files(package, doc_folder, output_dir, page_info):
                     content, package, return_anchors=True, page_info=page_info
                 )
                 if src_py is not None:
-                    src_py_path_mapping[src_py] = str(file)
+                    source_files_mapping[src_py] = str(file)
                 with open(dest_file, "w", encoding="utf-8") as writer:
                     writer.write(content)
                 # Make sure we clean up for next page.
@@ -196,7 +196,7 @@ def build_mdx_files(package, doc_folder, output_dir, page_info):
                     content, package, return_anchors=True, page_info=page_info
                 )
                 if src_py is not None:
-                    src_py_path_mapping[src_py] = str(file)
+                    source_files_mapping[src_py] = str(file)
                 with open(dest_file, "w", encoding="utf-8") as writer:
                     writer.write(content)
                 # Make sure we clean up for next page.
@@ -221,7 +221,7 @@ def build_mdx_files(package, doc_folder, output_dir, page_info):
             "The deployment of the documentation will fail because of the following errors:\n" + "\n".join(all_errors)
         )
 
-    return anchor_mapping, src_py_path_mapping
+    return anchor_mapping, source_files_mapping
 
 
 def resolve_links(doc_folder, package, mapping, page_info):
@@ -380,7 +380,7 @@ def build_doc(
     read_doc_config(doc_folder)
 
     package = importlib.import_module(package_name)
-    anchors_mapping, src_py_path_mapping = build_mdx_files(package, doc_folder, output_dir, page_info)
+    anchors_mapping, source_files_mapping = build_mdx_files(package, doc_folder, output_dir, page_info)
     if not watch_mode:
         sphinx_refs = check_toc_integrity(doc_folder, output_dir)
         sphinx_refs.extend(convert_anchors_mapping_to_sphinx_format(anchors_mapping, package))
@@ -394,7 +394,7 @@ def build_doc(
                 os.remove(nb_file)
         build_notebooks(doc_folder, notebook_dir, package=package, mapping=anchors_mapping, page_info=page_info)
 
-    return src_py_path_mapping
+    return source_files_mapping
 
 
 def check_toc_integrity(doc_folder, output_dir):

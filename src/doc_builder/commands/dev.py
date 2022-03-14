@@ -38,10 +38,10 @@ class Watcher(FileSystemEventHandler):
     `args.library_name` git_folder.
     """
 
-    def __init__(self, args, path, src_py_path_mapping, kit_routes_folder):
+    def __init__(self, args, path, source_files_mapping, kit_routes_folder):
         self.args = args
         self.path = path
-        self.src_py_path_mapping = src_py_path_mapping
+        self.source_files_mapping = source_files_mapping
         self.kit_routes_folder = kit_routes_folder
         self.last_modified = datetime.now()
 
@@ -68,8 +68,8 @@ class Watcher(FileSystemEventHandler):
         relative_path = event.src_path[len(self.args.path_to_docs) + 1 :]
         is_valid_file = False
         if not event.is_directory:
-            if src_path.endswith(".py") and src_path in self.src_py_path_mapping:
-                src_path = self.src_py_path_mapping[src_path]
+            if src_path.endswith(".py") and src_path in self.source_files_mapping:
+                src_path = self.source_files_mapping[src_path]
             if src_path.endswith(".mdx"):
                 is_valid_file = True
                 return is_valid_file, src_path, relative_path
@@ -159,7 +159,7 @@ def dev_command(args):
         output_path = Path(tmp_dir) / args.library_name / args.version / args.language
 
         print("Initial build docs for", args.library_name, args.path_to_docs, output_path)
-        src_py_path_mapping = build_doc(
+        source_files_mapping = build_doc(
             args.library_name,
             args.path_to_docs,
             output_path,
@@ -193,7 +193,7 @@ def dev_command(args):
         Thread(target=start_sveltekit_dev, args=(tmp_dir, env, args)).start()
 
         git_folder = find_root_git(args.path_to_docs)
-        event_handler = Watcher(args, git_folder, src_py_path_mapping, kit_routes_folder)
+        event_handler = Watcher(args, git_folder, source_files_mapping, kit_routes_folder)
         event_handler.start()
 
 
