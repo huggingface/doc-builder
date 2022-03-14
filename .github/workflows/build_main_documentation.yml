@@ -20,6 +20,8 @@ on:
 jobs:
   build_main_documentation:
     runs-on: ubuntu-latest
+    container:
+      huggingface/transformers-doc-builder
 
     steps:
       - uses: actions/checkout@v2
@@ -61,8 +63,6 @@ jobs:
 
       - name: Setup environment
         run: |
-          pip install -U click # Sometimes we end up with click 7.0 and we need click 8.0 for black
-
           pip uninstall -y doc-builder
           cd doc-builder
           git pull origin main
