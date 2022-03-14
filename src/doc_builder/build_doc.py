@@ -24,7 +24,7 @@ from pathlib import Path
 import yaml
 from tqdm import tqdm
 
-from .autodoc import autodoc, find_object_in_package, remove_example_tags, resolve_links_in_text
+from .autodoc import autodoc, find_object_in_package, get_source_path, remove_example_tags, resolve_links_in_text
 from .convert_md_to_mdx import convert_md_to_mdx
 from .convert_rst_to_mdx import convert_rst_to_mdx, find_indent, is_empty_line
 from .convert_to_notebook import generate_notebooks_from_file
@@ -87,6 +87,7 @@ def resolve_autodoc(content, package, return_anchors=False, page_info=None):
     is_inside_codeblock = False
     lines = content.split("\n")
     new_lines = []
+    src_py = None
     if return_anchors:
         anchors = []
         errors = []
@@ -125,6 +126,8 @@ def resolve_autodoc(content, package, return_anchors=False, page_info=None):
                 errors.extend(doc[2])
                 doc = doc[0]
             new_lines.append(doc)
+
+            src_py = get_source_path(object_name, package)
         else:
             new_lines.append(lines[idx])
             if lines[idx].startswith("```"):
@@ -136,7 +139,7 @@ def resolve_autodoc(content, package, return_anchors=False, page_info=None):
     new_content = "\n".join(new_lines)
     new_content = remove_example_tags(new_content)
 
-    return (new_content, anchors, errors) if return_anchors else new_content
+    return (new_content, anchors, src_py, errors) if return_anchors else new_content
 
 
 def build_mdx_files(package, doc_folder, output_dir, page_info):
@@ -153,6 +156,7 @@ def build_mdx_files(package, doc_folder, output_dir, page_info):
     output_dir = Path(output_dir)
     os.makedirs(output_dir, exist_ok=True)
     anchor_mapping = {}
+    src_py_path_mapping = {}
 
     if "package_name" not in page_info:
         page_info["package_name"] = package.__name__
@@ -171,9 +175,11 @@ def build_mdx_files(package, doc_folder, output_dir, page_info):
                     content = reader.read()
                 content = convert_md_to_mdx(content, page_info)
                 content = resolve_open_in_colab(content, page_info)
-                content, new_anchors, errors = resolve_autodoc(
+                content, new_anchors, src_py, errors = resolve_autodoc(
                     content, package, return_anchors=True, page_info=page_info
                 )
+                if src_py is not None:
+                    src_py_path_mapping[src_py] = str(file)
                 with open(dest_file, "w", encoding="utf-8") as writer:
                     writer.write(content)
                 # Make sure we clean up for next page.
@@ -186,9 +192,11 @@ def build_mdx_files(package, doc_folder, output_dir, page_info):
                     content = reader.read()
                 content = convert_rst_to_mdx(content, page_info)
                 content = resolve_open_in_colab(content, page_info)
-                content, new_anchors, errors = resolve_autodoc(
+                content, new_anchors, src_py, errors = resolve_autodoc(
                     content, package, return_anchors=True, page_info=page_info
                 )
+                if src_py is not None:
+                    src_py_path_mapping[src_py] = str(file)
                 with open(dest_file, "w", encoding="utf-8") as writer:
                     writer.write(content)
                 # Make sure we clean up for next page.
@@ -213,7 +221,7 @@ def build_mdx_files(package, doc_folder, output_dir, page_info):
             "The deployment of the documentation will fail because of the following errors:\n" + "\n".join(all_errors)
         )
 
-    return anchor_mapping
+    return anchor_mapping, src_py_path_mapping
 
 
 def resolve_links(doc_folder, package, mapping, page_info):
@@ -337,7 +345,16 @@ def build_notebooks(doc_folder, notebook_dir, package=None, mapping=None, page_i
             raise type(e)(f"There was an error when converting {file} to a notebook.\n" + e.args[0]) from e
 
 
-def build_doc(package_name, doc_folder, output_dir, clean=True, version="master", language="en", notebook_dir=None):
+def build_doc(
+    package_name,
+    doc_folder,
+    output_dir,
+    clean=True,
+    version="master",
+    language="en",
+    notebook_dir=None,
+    watch_mode=False,
+):
     """
     Build the documentation of a package.
 
@@ -352,6 +369,9 @@ def build_doc(package_name, doc_folder, output_dir, clean=True, version="master"
         language (`str`, *optional*, defaults to `"en"`): The language of the doc.
         notebook_dir (`str` or `os.PathLike`, *optional*):
             If provided, where to save the notebooks generated from the doc file with an [[open-in-colab]] marker.
+        watch_mode (`bool`, *optional*):
+            If provided & true, disables toc tree check & sphinx objects.inv builds since they are not needed
+            when `watch_mode` is active.
     """
     page_info = {"version": version, "language": language, "package_name": package_name}
     if clean and Path(output_dir).exists():
@@ -360,10 +380,11 @@ def build_doc(package_name, doc_folder, output_dir, clean=True, version="master"
     read_doc_config(doc_folder)
 
     package = importlib.import_module(package_name)
-    anchors_mapping = build_mdx_files(package, doc_folder, output_dir, page_info)
-    sphinx_refs = check_toc_integrity(doc_folder, output_dir)
-    sphinx_refs.extend(convert_anchors_mapping_to_sphinx_format(anchors_mapping, package))
-    build_sphinx_objects_ref(sphinx_refs, output_dir, page_info)
+    anchors_mapping, src_py_path_mapping = build_mdx_files(package, doc_folder, output_dir, page_info)
+    if not watch_mode:
+        sphinx_refs = check_toc_integrity(doc_folder, output_dir)
+        sphinx_refs.extend(convert_anchors_mapping_to_sphinx_format(anchors_mapping, package))
+        build_sphinx_objects_ref(sphinx_refs, output_dir, page_info)
     resolve_links(output_dir, package, anchors_mapping, page_info)
     generate_frontmatter(output_dir)
 
@@ -372,6 +393,8 @@ def build_doc(package_name, doc_folder, output_dir, clean=True, version="master"
             for nb_file in Path(notebook_dir).glob("**/*.ipynb"):
                 os.remove(nb_file)
         build_notebooks(doc_folder, notebook_dir, package=package, mapping=anchors_mapping, page_info=page_info)
+
+    return src_py_path_mapping
 
 
 def check_toc_integrity(doc_folder, output_dir):
