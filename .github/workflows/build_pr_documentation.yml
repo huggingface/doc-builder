@@ -68,31 +68,6 @@ jobs:
           git config --global user.name "Hugging Face Doc Builder"
           git config --global user.email docs@huggingface.co
 
-      - name: Find doc comment
-        uses: peter-evans/find-comment@v1
-        id: find_comment
-        with:
-          issue-number: ${{ inputs.pr_number }}
-          comment-author: HuggingFaceDocBuilderDev
-      
-      - name: Add doc comment if not present
-        uses: thollander/actions-comment-pull-request@v1
-        if: steps.find_comment.outputs.comment-id == ''
-
-        with:
-          message: 'The docs for this PR live [here](https://moon-ci-docs.huggingface.co/docs/${{ inputs.package }}/pr_${{ inputs.pr_number }}). All of your documentation changes will be reflected on that endpoint.'
-          GITHUB_TOKEN: ${{ env.write_token }}
-
-      - name: Update doc comment if necessary
-        if: github.event.action == 'reopened' && steps.find_comment.outputs.comment-id != ''
-        uses: peter-evans/create-or-update-comment@v1
-        with:
-          comment-id: ${{ steps.find_comment.outputs.comment-id }}
-          token: ${{ env.write_token }}
-          edit-mode: replace
-          body: |
-            The docs for this PR live [here](https://moon-ci-docs.huggingface.co/docs/${{ inputs.package }}/pr_${{ inputs.pr_number }}). All of your documentation changes will be reflected on that endpoint.
-
       - name: Make documentation
         env:
           NODE_OPTIONS: --max-old-space-size=6656
@@ -119,3 +94,28 @@ jobs:
             echo "No diff in the documentation."
           fi
         shell: bash
+      
+      - name: Find doc comment
+        uses: peter-evans/find-comment@v1
+        id: find_comment
+        with:
+          issue-number: ${{ inputs.pr_number }}
+          comment-author: HuggingFaceDocBuilderDev
+      
+      - name: Add doc comment if not present
+        uses: thollander/actions-comment-pull-request@v1
+        if: steps.find_comment.outputs.comment-id == ''
+
+        with:
+          message: 'The docs for this PR live [here](https://moon-ci-docs.huggingface.co/docs/${{ inputs.package }}/pr_${{ inputs.pr_number }}). All of your documentation changes will be reflected on that endpoint.'
+          GITHUB_TOKEN: ${{ env.write_token }}
+
+      - name: Update doc comment if necessary
+        if: github.event.action == 'reopened' && steps.find_comment.outputs.comment-id != ''
+        uses: peter-evans/create-or-update-comment@v1
+        with:
+          comment-id: ${{ steps.find_comment.outputs.comment-id }}
+          token: ${{ env.write_token }}
+          edit-mode: replace
+          body: |
+            The docs for this PR live [here](https://moon-ci-docs.huggingface.co/docs/${{ inputs.package }}/pr_${{ inputs.pr_number }}). All of your documentation changes will be reflected on that endpoint.
