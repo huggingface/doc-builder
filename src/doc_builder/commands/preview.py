@@ -145,7 +145,7 @@ def start_sveltekit_dev(tmp_dir, env, args):
     )
 
 
-def dev_command(args):
+def preview_command(args):
     if is_watchdog_available():
         read_doc_config(args.path_to_docs)
         # Error at the beginning if node is not properly installed.
@@ -204,11 +204,11 @@ def dev_command(args):
         )
 
 
-def dev_command_parser(subparsers=None):
+def preview_command_parser(subparsers=None):
     if subparsers is not None:
-        parser = subparsers.add_parser("dev")
+        parser = subparsers.add_parser("preview")
     else:
-        parser = argparse.ArgumentParser("Doc Builder dev command")
+        parser = argparse.ArgumentParser("Doc Builder preview command")
 
     parser.add_argument("library_name", type=str, help="Library name")
     parser.add_argument(
@@ -221,5 +221,5 @@ def dev_command_parser(subparsers=None):
     parser.add_argument("--version", type=str, help="Version of the documentation to generate", default="master")
 
     if subparsers is not None:
-        parser.set_defaults(func=dev_command)
+        parser.set_defaults(func=preview_command)
     return parser
