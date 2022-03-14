@@ -369,7 +369,7 @@ def build_doc(
         language (`str`, *optional*, defaults to `"en"`): The language of the doc.
         notebook_dir (`str` or `os.PathLike`, *optional*):
             If provided, where to save the notebooks generated from the doc file with an [[open-in-colab]] marker.
-        watch_mode (`bool`, *optional*):
+        watch_mode (`bool`, *optional*, default to `False`):
             If provided & true, disables toc tree check & sphinx objects.inv builds since they are not needed
             when `watch_mode` is active.
     """
