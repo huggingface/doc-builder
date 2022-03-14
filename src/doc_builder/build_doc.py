@@ -87,7 +87,7 @@ def resolve_autodoc(content, package, return_anchors=False, page_info=None):
     is_inside_codeblock = False
     lines = content.split("\n")
     new_lines = []
-    src_py = None
+    source_files = None
     if return_anchors:
         anchors = []
         errors = []
@@ -127,7 +127,7 @@ def resolve_autodoc(content, package, return_anchors=False, page_info=None):
                 doc = doc[0]
             new_lines.append(doc)
 
-            src_py = get_source_path(object_name, package)
+            source_files = get_source_path(object_name, package)
         else:
             new_lines.append(lines[idx])
             if lines[idx].startswith("```"):
@@ -139,7 +139,7 @@ def resolve_autodoc(content, package, return_anchors=False, page_info=None):
     new_content = "\n".join(new_lines)
     new_content = remove_example_tags(new_content)
 
-    return (new_content, anchors, src_py, errors) if return_anchors else new_content
+    return (new_content, anchors, source_files, errors) if return_anchors else new_content
 
 
 def build_mdx_files(package, doc_folder, output_dir, page_info):
@@ -175,11 +175,11 @@ def build_mdx_files(package, doc_folder, output_dir, page_info):
                     content = reader.read()
                 content = convert_md_to_mdx(content, page_info)
                 content = resolve_open_in_colab(content, page_info)
-                content, new_anchors, src_py, errors = resolve_autodoc(
+                content, new_anchors, source_files, errors = resolve_autodoc(
                     content, package, return_anchors=True, page_info=page_info
                 )
-                if src_py is not None:
-                    source_files_mapping[src_py] = str(file)
+                if source_files is not None:
+                    source_files_mapping[source_files] = str(file)
                 with open(dest_file, "w", encoding="utf-8") as writer:
                     writer.write(content)
                 # Make sure we clean up for next page.
@@ -192,11 +192,11 @@ def build_mdx_files(package, doc_folder, output_dir, page_info):
                     content = reader.read()
                 content = convert_rst_to_mdx(content, page_info)
                 content = resolve_open_in_colab(content, page_info)
-                content, new_anchors, src_py, errors = resolve_autodoc(
+                content, new_anchors, source_files, errors = resolve_autodoc(
                     content, package, return_anchors=True, page_info=page_info
                 )
-                if src_py is not None:
-                    source_files_mapping[src_py] = str(file)
+                if source_files is not None:
+                    source_files_mapping[source_files] = str(file)
                 with open(dest_file, "w", encoding="utf-8") as writer:
                     writer.write(content)
                 # Make sure we clean up for next page.
