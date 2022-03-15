@@ -99,7 +99,6 @@ def split_frameworks(content):
             while idx < len(lines) and lines[idx].strip() != "</frameworkcontent>":
                 if _re_framework.search(lines[idx]) is not None:
                     current_framework = _re_framework.search(lines[idx]).groups()[0]
-                    print(current_framework)
                 elif current_framework is not None and lines[idx].strip() == f"</{current_framework}>":
                     new_lines[current_framework].extend(current_lines)
                     new_lines["mixed"].extend(current_lines)
