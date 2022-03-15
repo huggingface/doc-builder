@@ -85,7 +85,7 @@ if is_watchdog_available():
 
                     with tempfile.TemporaryDirectory() as tmp_out_dir:
                         build_doc(
-                            "datasets",
+                            self.args.library_name,
                             tmp_input_dir,
                             tmp_out_dir,
                             version=self.args.version,
