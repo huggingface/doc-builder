@@ -34,25 +34,25 @@ if is_watchdog_available():
     from watchdog.events import FileSystemEventHandler
     from watchdog.observers import Observer
 
-    class Watcher(FileSystemEventHandler):
+    class WatchEventHandler(FileSystemEventHandler):
         """
-        Utility class for building updated mdx files when a file changes inside
-        `args.library_name` git_folder.
+        Utility class for building updated mdx files when a file change event is recorded.
         """
-
-        def __init__(self, args, path, source_files_mapping, kit_routes_folder):
+        def __init__(self, args, source_files_mapping, kit_routes_folder):
+            super(WatchEventHandler, self).__init__()
             self.args = args
-            self.path = path
             self.source_files_mapping = source_files_mapping
             self.kit_routes_folder = kit_routes_folder
             self.last_modified = datetime.now()
 
         def on_created(self, event):
+            super(WatchEventHandler, self).on_created(event)
             is_valid, src_path, relative_path = self.transform_path(event)
             if is_valid:
                 self.build(src_path, relative_path)
 
         def on_modified(self, event):
+            super(WatchEventHandler, self).on_modified(event)
             is_valid, src_path, relative_path = self.transform_path(event)
             if is_valid:
                 self.build(src_path, relative_path)
@@ -100,20 +100,21 @@ if is_watchdog_available():
                     dest = self.kit_routes_folder / relative_path
                     shutil.move(src, dest)
 
-        def start(self):
-            """
-            Starts `pywatchdog.observer` for listening file changes.
-            """
-            observer = Observer()
-            observer.schedule(self, self.path, recursive=True)
-            observer.start()
-            print(f"\nWatching for changes in: {self.path}\n")
-            try:
-                while True:
-                    time.sleep(1)
-            except KeyboardInterrupt:
-                observer.stop()
-            observer.join()
+
+def start_watcher(path, event_handler):
+    """
+    Starts `pywatchdog.observer` for listening changes in `path`.
+    """
+    observer = Observer()
+    observer.schedule(event_handler, path, recursive=True)
+    observer.start()
+    print(f"\nWatching for changes in: {path}\n")
+    try:
+        while True:
+            time.sleep(1)
+    except KeyboardInterrupt:
+        observer.stop()
+    observer.join()
 
 
 def start_sveltekit_dev(tmp_dir, env, args):
@@ -196,8 +197,8 @@ def preview_command(args):
             Thread(target=start_sveltekit_dev, args=(tmp_dir, env, args)).start()
 
             git_folder = find_root_git(args.path_to_docs)
-            event_handler = Watcher(args, git_folder, source_files_mapping, kit_routes_folder)
-            event_handler.start()
+            event_handler = WatchEventHandler(args, source_files_mapping, kit_routes_folder)
+            start_watcher(git_folder, event_handler)
     else:
         raise ImportError(
             "Please install `watchdog` to run `doc-builder preview` command.\nYou can do so through pip: `pip install watchdog`"
