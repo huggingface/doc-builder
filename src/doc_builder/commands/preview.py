@@ -130,13 +130,9 @@ def start_sveltekit_dev(tmp_dir, env, args):
         cwd=working_dir,
     )
 
-    url = f"http://localhost:3000/docs/{args.library_name}/{args.version}/{args.language}"
-    print(f"\nStarting Svelte dev server:\n    {url}\n")
     # start sveltekit in dev mode
     subprocess.run(
         ["npm", "run", "dev"],
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
         check=True,
         encoding="utf-8",
         cwd=working_dir,

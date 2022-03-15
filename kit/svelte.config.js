@@ -33,26 +33,27 @@ const config = {
 		},
 
 		paths: {
-			base:
-				"/docs/" +
-				(process.env.DOCS_LIBRARY || "transformers") +
-				"/" +
-				(process.env.DOCS_VERSION || "master") +
-				"/" +
-				(process.env.DOCS_LANGUAGE || "en")
+			base: process.argv.includes("dev")
+				? ""
+				: "/docs/" +
+				  (process.env.DOCS_LIBRARY || "transformers") +
+				  "/" +
+				  (process.env.DOCS_VERSION || "master") +
+				  "/" +
+				  (process.env.DOCS_LANGUAGE || "en")
 		}
 	},
 
 	onwarn: (warning, handler) => {
 		if (
-			warning.message.includes("has unused export property 'fw'")
-		 || warning.message.includes("A11y")
+			warning.message.includes("has unused export property 'fw'") ||
+			warning.message.includes("A11y")
 		) {
 			/// Too noisy
 			return;
 		}
-        handler(warning);
-    },
+		handler(warning);
+	}
 };
 
 export default config;
