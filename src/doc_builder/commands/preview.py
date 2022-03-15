@@ -38,6 +38,7 @@ if is_watchdog_available():
         """
         Utility class for building updated mdx files when a file change event is recorded.
         """
+
         def __init__(self, args, source_files_mapping, kit_routes_folder):
             super(WatchEventHandler, self).__init__()
             self.args = args
