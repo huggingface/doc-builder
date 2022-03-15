@@ -30,7 +30,8 @@
 			const { name, description } = element;
 			return { ...acc, [name]: description };
 		}, {}) || {};
-	const returnsAnchor = isYield ? "yields" : "returns";
+	const returnsTitle = isYield ? "Yields" : "Returns";
+	const returnsAnchor = returnsTitle.toLowerCase();
 
 	onMount(() => {
 		const { hash } = window.location;
@@ -170,7 +171,7 @@
 				class="flex items-center font-semibold space-x-3 text-base !mt-0 !mb-0 text-gray-800"
 				id={`${anchor}.${returnsAnchor}`}
 			>
-				<p class="text-base">Returns</p>
+				<p class="text-base">{returnsTitle}</p>
 				{#if !!returnType}
 					{@html returnType}
 				{/if}
