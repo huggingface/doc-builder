@@ -83,7 +83,7 @@
 	</div>
 	{#if isClosed}
 		<div
-			class="cursor-pointer mt-[-12.5px] flex items-center justify-center space-x-1 py-2.5 text-sm hover:underline leading-none"
+			class="cursor-pointer mt-[-12.5px] flex items-center justify-center space-x-1 py-4 text-sm hover:underline leading-none"
 			on:click={toggleHidden}
 		>
 			<IconEyeShow size={"0.9em"} />
