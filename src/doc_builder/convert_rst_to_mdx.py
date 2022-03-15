@@ -519,11 +519,14 @@ def remove_indent(text):
             elif len(current_indents) > 0:
                 # Let's find the proper level of indentation
                 level = len(current_indents) - 1
-                while level >= 0 and current_indents[level] != indent:
+                while level >= 0 and current_indents[level] > indent:
                     level -= 1
                 current_indents = current_indents[: level + 1]
                 if level >= 0:
-                    new_indents = new_indents[:level]
+                    if current_indents[level] < indent:
+                        new_indents = new_indents[: level + 1]
+                    else:
+                        new_indents = new_indents[:level]
                     new_indent = 0 if len(new_indents) == 0 else new_indents[-1]
                     lines[idx] = " " * new_indent + line[indent:]
                     new_indents.append(new_indent)
