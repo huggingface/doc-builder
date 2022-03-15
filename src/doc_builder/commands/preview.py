@@ -20,7 +20,6 @@ import shutil
 import subprocess
 import tempfile
 import time
-from datetime import datetime, timedelta
 from pathlib import Path
 from threading import Thread
 
@@ -31,7 +30,7 @@ from doc_builder.utils import is_watchdog_available, read_doc_config
 
 
 if is_watchdog_available():
-    from watchdog.events import FileSystemEventHandler, LoggingEventHandler
+    from watchdog.events import FileSystemEventHandler
     from watchdog.observers import Observer
 
     class WatchEventHandler(FileSystemEventHandler):
@@ -40,20 +39,19 @@ if is_watchdog_available():
         """
 
         def __init__(self, args, source_files_mapping, kit_routes_folder):
-            super(WatchEventHandler, self).__init__()
+            super().__init__()
             self.args = args
             self.source_files_mapping = source_files_mapping
             self.kit_routes_folder = kit_routes_folder
-            self.last_modified = datetime.now()
 
         def on_created(self, event):
-            super(WatchEventHandler, self).on_created(event)
+            super().on_created(event)
             is_valid, src_path, relative_path = self.transform_path(event)
             if is_valid:
                 self.build(src_path, relative_path)
 
         def on_modified(self, event):
-            super(WatchEventHandler, self).on_modified(event)
+            super().on_modified(event)
             is_valid, src_path, relative_path = self.transform_path(event)
             if is_valid:
                 self.build(src_path, relative_path)
@@ -63,10 +61,6 @@ if is_watchdog_available():
             Check if a file is a doc file (mdx, or py file used as autodoc).
             If so, returns mdx file path.
             """
-            if datetime.now() - self.last_modified < timedelta(seconds=1):
-                return False, None, None
-
-            self.last_modified = datetime.now()
             src_path = event.src_path
             relative_path = event.src_path[len(self.args.path_to_docs) + 1 :]
             is_valid_file = False
@@ -201,12 +195,7 @@ def preview_command(args):
             Thread(target=start_sveltekit_dev, args=(tmp_dir, env, args)).start()
 
             git_folder = find_root_git(args.path_to_docs)
-            # event_handler = WatchEventHandler(args, source_files_mapping, kit_routes_folder)
-            import logging
-            logging.basicConfig(level=logging.INFO,
-                    format='%(asctime)s - %(message)s',
-                    datefmt='%Y-%m-%d %H:%M:%S')
-            event_handler = LoggingEventHandler()
+            event_handler = WatchEventHandler(args, source_files_mapping, kit_routes_folder)
             start_watcher(git_folder, event_handler)
     else:
         raise ImportError(
