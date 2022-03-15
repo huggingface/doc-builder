@@ -10,7 +10,6 @@
 	const storeKey = ids.join("-");
 	const group = getGroupStore(storeKey);
 
-
 	let hideCopyButton = true;
 
 	function handleMouseOver() {
@@ -36,7 +35,7 @@
 				value={group1.code}
 			/>
 		</div>
-		<pre><FrameworkSwitch {ids}/>{@html group1.highlighted}</pre>
+		<pre><FrameworkSwitch {ids} />{@html group1.highlighted}</pre>
 	{:else}
 		<div class="absolute top-2.5 right-4">
 			<CopyButton
@@ -45,6 +44,6 @@
 				value={group2.code}
 			/>
 		</div>
-		<pre><FrameworkSwitch {ids}/>{@html group2.highlighted}</pre>
+		<pre><FrameworkSwitch {ids} />{@html group2.highlighted}</pre>
 	{/if}
 </div>
