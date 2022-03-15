@@ -538,7 +538,6 @@ Example::
 
 End of the arg section.
 """
-        print(parse_rst_docstring(rst_docstring))
         self.assertEqual(parse_rst_docstring(rst_docstring), expected_conversion)
 
         # test yields
