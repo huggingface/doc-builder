@@ -96,7 +96,7 @@ if is_watchdog_available():
                         dest = self.kit_routes_folder / relative_path
                         shutil.move(src, dest)
             except Exception as e:
-                print("Error building: {src_path}\n{e}")
+                print(f"Error building: {src_path}\n{e}")
 
 
 def start_watcher(path, event_handler):
