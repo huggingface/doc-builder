@@ -522,7 +522,7 @@ docstring
 
 </raises>
 
-<raisederrors>`pa.ArrowInvalidError` or `TypeError`</raisederrors>
+<raisederrors>``pa.ArrowInvalidError`` or ``TypeError``</raisederrors>
 
 <returns>
 

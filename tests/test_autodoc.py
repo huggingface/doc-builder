@@ -72,7 +72,7 @@ List of [input IDs](../glossary.html#input-ids) with the appropriate special tok
 <raises>
 - `ValuError` -- this value error will be raised on wrong input type.
 </raises>
-<raisederrors>`ValuError`</raisederrors>
+<raisederrors>``ValuError``</raisederrors>
 """
 
 TEST_DOCSTRING_WITH_EXAMPLE = """Constructs a BERTweet tokenizer, using Byte-Pair-Encoding.

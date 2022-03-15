@@ -420,7 +420,7 @@ def parse_rst_docstring(docstring):
             else:
                 while idx < len(lines) and find_indent(lines[idx]) == return_indent:
                     return_type, return_description = split_return_line(lines[idx])
-                    raised_error = re.sub(r"^\s*`?([\w\.]*)`?$", r"`\1`", return_type)
+                    raised_error = re.sub(r"^\s*`?([\w\.]*)`?$", r"``\1``", return_type)
                     lines[idx] = "- " + raised_error + " --" + return_description
                     raised_errors.append(raised_error)
                     idx += 1
