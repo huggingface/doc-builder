@@ -31,7 +31,7 @@ from doc_builder.utils import is_watchdog_available, read_doc_config
 
 
 if is_watchdog_available():
-    from watchdog.events import FileSystemEventHandler
+    from watchdog.events import FileSystemEventHandler, LoggingEventHandler
     from watchdog.observers import Observer
 
     class WatchEventHandler(FileSystemEventHandler):
@@ -201,7 +201,12 @@ def preview_command(args):
             Thread(target=start_sveltekit_dev, args=(tmp_dir, env, args)).start()
 
             git_folder = find_root_git(args.path_to_docs)
-            event_handler = WatchEventHandler(args, source_files_mapping, kit_routes_folder)
+            # event_handler = WatchEventHandler(args, source_files_mapping, kit_routes_folder)
+            import logging
+            logging.basicConfig(level=logging.INFO,
+                    format='%(asctime)s - %(message)s',
+                    datefmt='%Y-%m-%d %H:%M:%S')
+            event_handler = LoggingEventHandler()
             start_watcher(git_folder, event_handler)
     else:
         raise ImportError(
