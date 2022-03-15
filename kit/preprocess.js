@@ -117,6 +117,46 @@ export const docstringPreprocess = {
 	}
 };
 
+// Preprocessor that converts markdown into FrameworkContent
+// svelte component using mdsvexPreprocess
+export const frameworkcontentPreprocess = {
+	markup: async ({ content }) => {
+		const REGEX_FRAMEWORKCONTENT =
+			/<frameworkcontent>(((?!<frameworkcontent>).)*)<\/frameworkcontent>/gms;
+		const REGEX_PYTORCH = /<pytorch>(((?!<pytorch>).)*)<\/pytorch>/ms;
+		const REGEX_TENSORFLOW = /<tensorflow>(((?!<tensorflow>).)*)<\/tensorflow>/ms;
+		const REGEX_JAX = /<jax>(((?!<jax>).)*)<\/jax>/ms;
+		const FRAMEWORKS = [
+			{ framework: "pytorch", REGEX_FW: REGEX_PYTORCH, isExist: false },
+			{ framework: "tensorflow", REGEX_FW: REGEX_TENSORFLOW, isExist: false },
+			{ framework: "jax", REGEX_FW: REGEX_JAX, isExist: false }
+		];
+
+		content = await replaceAsync(content, REGEX_FRAMEWORKCONTENT, async (_, fwcontentBody) => {
+			let svelteSlots = "";
+
+			for (const [i, value] of Object.entries(FRAMEWORKS)) {
+				const { framework, REGEX_FW } = value;
+				if (fwcontentBody.match(REGEX_FW)) {
+					FRAMEWORKS[i].isExist = true;
+					const fwContent = fwcontentBody.match(REGEX_FW)[1];
+					svelteSlots += `<svelte:fragment slot="${framework}">
+					<Markdown>
+					\n\n${fwContent}\n\n
+					</Markdown>
+					</svelte:fragment>`;
+				}
+			}
+
+			const svelteProps = FRAMEWORKS.map((fw) => `${fw.framework}={${fw.isExist}}`).join(" ");
+
+			return `<FrameworkContent ${svelteProps}>\n${svelteSlots}\n</FrameworkContent>`;
+		});
+
+		return { code: content };
+	}
+};
+
 /**
  * Async string replace function.
  * src: https://github.com/dsblv/string-replace-async
@@ -237,7 +277,8 @@ const _mdsvexPreprocess = mdsvex({
 				lang && hljs.getLanguage(lang)
 					? hljs.highlight(lang, code, true).value
 					: hljs.highlightAuto(code).value;
-			const escape = code => code.replace(/\\/g, "\\\\").replace(/`/g, "\\`").replace(/}/g, "\\}");
+			const escape = (code) =>
+				code.replace(/\\/g, "\\\\").replace(/`/g, "\\`").replace(/}/g, "\\}");
 			const REGEX_FRAMEWORKS_SPLIT = /\s*===(PT-TF|STRINGAPI-READINSTRUCTION)-SPLIT===\s*/gm;
 
 			code = renderSvelteChars(code);
