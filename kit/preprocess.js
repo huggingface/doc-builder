@@ -123,8 +123,8 @@ export const frameworkcontentPreprocess = {
 	markup: async ({ content }) => {
 		const REGEX_FRAMEWORKCONTENT =
 			/<frameworkcontent>(((?!<frameworkcontent>).)*)<\/frameworkcontent>/gms;
-		const REGEX_PYTORCH = /<pytorch>(((?!<pytorch>).)*)<\/pytorch>/ms;
-		const REGEX_TENSORFLOW = /<tensorflow>(((?!<tensorflow>).)*)<\/tensorflow>/ms;
+		const REGEX_PYTORCH = /<pt>(((?!<pt>).)*)<\/pt>/ms;
+		const REGEX_TENSORFLOW = /<tf>(((?!<tf>).)*)<\/tf>/ms;
 		const REGEX_JAX = /<jax>(((?!<jax>).)*)<\/jax>/ms;
 		const FRAMEWORKS = [
 			{ framework: "pytorch", REGEX_FW: REGEX_PYTORCH, isExist: false },
