@@ -173,10 +173,10 @@ def preview_command(args):
             # Manual copy and overwrite from output_path to tmp_dir / "kit" / "src" / "routes"
             # We don't use shutil.copytree as tmp_dir / "kit" / "src" / "routes" exists and contains important files.
             kit_routes_folder = tmp_dir / "kit" / "src" / "routes"
-            # files/folders cannot have a name that starts with `__` since it is a reserved Sveltekit keyword 
-            for folder in output_path.glob('**/__*/*'):
-                folder.rmdir()
-            for f in output_path.glob('**/__*'):
+            # files/folders cannot have a name that starts with `__` since it is a reserved Sveltekit keyword
+            for dir in output_path.glob("**/__*/*"):
+                dir.rmdir()
+            for f in output_path.glob("**/__*"):
                 f.unlink()
             for f in output_path.iterdir():
                 dest = kit_routes_folder / f.name
