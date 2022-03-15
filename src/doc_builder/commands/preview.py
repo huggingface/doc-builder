@@ -175,9 +175,9 @@ def preview_command(args):
             kit_routes_folder = tmp_dir / "kit" / "src" / "routes"
             # files/folders cannot have a name that starts with `__` since it is a reserved Sveltekit keyword
             for dir in output_path.glob("**/__*/*"):
-                dir.rmdir()
+                subprocess.run(["rm", "-rf", str(dir)])
             for f in output_path.glob("**/__*"):
-                f.unlink()
+                subprocess.run(["rm", "-rf", str(f)])
             for f in output_path.iterdir():
                 dest = kit_routes_folder / f.name
                 if f.is_dir():
