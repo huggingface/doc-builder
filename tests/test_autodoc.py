@@ -70,7 +70,7 @@ List of [input IDs](../glossary.html#input-ids) with the appropriate special tok
 
 <returntype>            `List[int]`</returntype>
 <raises>
-- `ValuError` -- this value error will be raised on wrong input type.
+- ``ValuError`` -- this value error will be raised on wrong input type.
 </raises>
 <raisederrors>``ValuError``</raisederrors>
 """

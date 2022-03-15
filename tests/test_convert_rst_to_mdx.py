@@ -515,8 +515,8 @@ docstring
 
 <raises>
 
-- `pa.ArrowInvalidError` -- if the arrow data casting fails
-- `TypeError` -- if the target type is not supported according, e.g.
+- ``pa.ArrowInvalidError`` -- if the arrow data casting fails
+- ``TypeError`` -- if the target type is not supported according, e.g.
         - point1
         - point2
 
@@ -538,6 +538,7 @@ Example::
 
 End of the arg section.
 """
+        print(parse_rst_docstring(rst_docstring))
         self.assertEqual(parse_rst_docstring(rst_docstring), expected_conversion)
 
         # test yields
