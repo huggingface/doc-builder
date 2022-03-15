@@ -158,7 +158,6 @@ def get_cached_repo():
         _ = subprocess.run(
             "git clone https://github.com/huggingface/doc-builder.git".split(),
             stderr=subprocess.PIPE,
-            stdout=subprocess.PIPE,
             check=True,
             encoding="utf-8",
             cwd=DOC_BUILDER_CACHE,
