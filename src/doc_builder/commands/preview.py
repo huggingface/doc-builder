@@ -82,23 +82,26 @@ if is_watchdog_available():
             Build single mdx file in a temp dir.
             """
             print(f"Building: {src_path}")
-            # copy the built files into the actual build folder dawg
-            with tempfile.TemporaryDirectory() as tmp_input_dir:
-                # copy the file into srcpath
-                shutil.copy(src_path, tmp_input_dir)
+            try:
+                # copy the built files into the actual build folder dawg
+                with tempfile.TemporaryDirectory() as tmp_input_dir:
+                    # copy the file into srcpath
+                    shutil.copy(src_path, tmp_input_dir)
 
-                with tempfile.TemporaryDirectory() as tmp_out_dir:
-                    build_doc(
-                        "datasets",
-                        tmp_input_dir,
-                        tmp_out_dir,
-                        version=self.args.version,
-                        language=self.args.language,
-                        watch_mode=True,
-                    )
-                    src = Path(tmp_out_dir) / Path(src_path).name
-                    dest = self.kit_routes_folder / relative_path
-                    shutil.move(src, dest)
+                    with tempfile.TemporaryDirectory() as tmp_out_dir:
+                        build_doc(
+                            "datasets",
+                            tmp_input_dir,
+                            tmp_out_dir,
+                            version=self.args.version,
+                            language=self.args.language,
+                            watch_mode=True,
+                        )
+                        src = Path(tmp_out_dir) / Path(src_path).name
+                        dest = self.kit_routes_folder / relative_path
+                        shutil.move(src, dest)
+            except Exception as e:
+                print("Error building: {src_path}\n{e}")
 
 
 def start_watcher(path, event_handler):
