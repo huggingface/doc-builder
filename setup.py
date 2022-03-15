@@ -1,3 +1,6 @@
+# Doc-builder package setup.
+# The line above is checked by some of the utilities in this repo, do not change it.
+
 from setuptools import find_packages, setup
 
 install_requires = ["tqdm", "pyyaml", "packaging", "nbformat"]
