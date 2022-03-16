@@ -16,7 +16,7 @@ extras["dev"] = extras["all"]
 
 
 setup(
-    name="doc-builder",
+    name="hf-doc-builder",
     version="0.1.0.dev0",
     author="Hugging Face, Inc.",
     author_email="sylvain@huggingface.co",
