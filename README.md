@@ -61,7 +61,6 @@ The same works for methods so you can either use \[\`XXXClass.method\`\] or \[~\
 
 Multi-line code blocks can be useful for displaying examples. They are done between two lines of three backticks as usual in Markdown:
 
-
 ````
 ```
 # first line of code
@@ -72,6 +71,38 @@ Multi-line code blocks can be useful for displaying examples. They are done betw
 
 We follow the [doctest](https://docs.python.org/3/library/doctest.html) syntax for the examples to automatically test
 the results stay consistent with the library.
+
+To write a block that you'd like to see highlighted as a note or warning, place your content between the following
+markers:
+
+```
+<Tip>
+
+Write your note here
+
+</Tip>
+```
+
+For warnings, change the introduction to `<Tip warning={true}>`.
+
+If your documentation has a block that is framework-dependent (PyTorch vs TensorFlow vs Flax), you can use the
+following syntax:
+
+```
+<frameworkcontent>
+<pt>
+PyTorch content goes here
+</pt>
+<tf>
+TensorFlow content goes here
+</tf>
+<flax>
+Flax content goes here
+</flax>
+</frameworkcontent>
+```
+
+Note that all frameworks are optional (you can write a PyTorch-only block for instance) and the order does not matter.
 
 
 ### Writing API documentation
@@ -131,7 +162,9 @@ Here's an example showcasing everything so far:
             [What are input IDs?](../glossary#input-ids)
 ```
 
-For optional arguments or arguments with defaults we follow the following syntax: imagine we have a function with the
+You can check the full example it comes from [here](https://github.com/huggingface/transformers/blob/v4.17.0/src/transformers/models/bert/modeling_bert.py#L794-L841)
+
+For optional arguments or arguments with defaults we follow the following syntax. Imagine we have a function with the
 following signature:
 
 ```
@@ -151,6 +184,18 @@ then its documentation should look like this:
 Note that we always omit the "defaults to \`None\`" when None is the default for any argument. Also note that even
 if the first line describing your argument type and its default gets long, you can't break it on several lines. You can
 however write as many lines as you want in the indented description (see the example above with `input_ids`).
+
+If your argument has for type a class defined in the package, you can use the syntax we saw earlier to link to its
+documentation:
+
+```
+    Args:
+         config ([`BertConfig`]):
+            Model configuration class with all the parameters of the model.
+
+            Initializing with a config file does not load the weights associated with the model, only the
+            configuration. Check out the [`~PreTrainedModel.from_pretrained`] method to load the model weights.
+```
 
 The return block should be introduced with the `Returns:` prefix, followed by a line return and an indentation.
 The first line should be the type of the return, followed by a line return. No need to indent further for the elements
