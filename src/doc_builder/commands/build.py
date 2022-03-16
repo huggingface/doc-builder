@@ -23,7 +23,7 @@ import tempfile
 from pathlib import Path
 
 from doc_builder import build_doc, update_versions_file
-from doc_builder.utils import get_default_branch_name, read_doc_config
+from doc_builder.utils import get_default_branch_name, get_doc_config, read_doc_config
 
 
 def check_node_is_available():
@@ -87,7 +87,9 @@ def build_command(args):
         if "dev" in version:
             version = get_default_branch_name(args.path_to_docs)
         else:
-            version = f"v{version}"
+            doc_config = get_doc_config()
+            version_prefix = getattr(doc_config, "version_prefix", "v")
+            version = f"{version_prefix}{version}"
     else:
         version = args.version
 
