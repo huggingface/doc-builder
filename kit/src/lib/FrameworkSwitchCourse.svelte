@@ -27,7 +27,7 @@
 >
 	{#each FRAMEWORKS as f, i}
         <a
-            class="flex justify-center flex-1 py-1.5 px-2.5 focus:outline-none 
+            class="flex justify-center flex-1 py-1.5 px-2.5 focus:outline-none !no-underline mb-4
                 rounded-{i ? 'r' : 'l'} 
                 {f.id === fw ? f.classNames : 'text-gray-500 filter grayscale'}"
             href="?fw={f.id}"
