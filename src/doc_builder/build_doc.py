@@ -366,7 +366,7 @@ def build_doc(
         language (`str`, *optional*, defaults to `"en"`): The language of the doc.
         notebook_dir (`str` or `os.PathLike`, *optional*):
             If provided, where to save the notebooks generated from the doc file with an [[open-in-colab]] marker.
-        is_python_module (`bool`, *optional*):
+        is_python_module (`bool`, *optional*, defaults to `False`):
             Whether the docs being built are for python module. (For example, HF Course is not a python module).
     """
     page_info = {"version": version, "language": language, "package_name": package_name}
