@@ -35,7 +35,15 @@ def find_object_in_package(object_name, package):
         path_splits = path_splits[1:]
     module = package
     for split in path_splits:
-        module = getattr(module, split, None)
+        submodule = getattr(module, split, None)
+        # `split` could be the name of a package if `package` is a namespace package, in which case it doesn't appear
+        # as an attribute but we can still load it has a module.
+        if submodule is None and hasattr(module, "__loader__") and module.__loader__ is not None:
+            try:
+                submodule = module.__loader__.load_module(split)
+            except ImportError:
+                pass
+        module = submodule
         if module is None:
             return
     return module
