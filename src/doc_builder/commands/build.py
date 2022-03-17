@@ -147,7 +147,8 @@ def build_command(args):
             shutil.rmtree(output_path)
             shutil.copytree(tmp_dir / "kit" / "build", output_path)
             # Move the objects.inv file back
-            shutil.move(tmp_dir / "objects.inv", output_path / "objects.inv")
+            if not args.not_python_module:
+                shutil.move(tmp_dir / "objects.inv", output_path / "objects.inv")
 
 
 def build_command_parser(subparsers=None):

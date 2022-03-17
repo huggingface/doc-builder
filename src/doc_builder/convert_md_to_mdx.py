@@ -37,6 +37,7 @@ import IconCopyLink from "$lib/IconCopyLink.svelte";
 import FrameworkContent from "$lib/FrameworkContent.svelte";
 import Markdown from "$lib/Markdown.svelte";
 import Question from "$lib/Question.svelte";
+import FrameworkSwitchCourse from "$lib/FrameworkSwitchCourse.svelte";
 export let fw: "pt" | "tf"
 </script>
 <svelte:head>
