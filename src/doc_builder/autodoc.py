@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
+import importlib
 import inspect
 import json
 import re
@@ -34,13 +34,14 @@ def find_object_in_package(object_name, package):
     if path_splits[0] == package.__name__:
         path_splits = path_splits[1:]
     module = package
-    for split in path_splits:
+    for idx, split in enumerate(path_splits):
         submodule = getattr(module, split, None)
         # `split` could be the name of a package if `package` is a namespace package, in which case it doesn't appear
-        # as an attribute but we can still load it has a module.
-        if submodule is None and hasattr(module, "__loader__") and module.__loader__ is not None:
+        # as an attribute if the submodule was not imported before
+        if submodule is None and idx ==0:
             try:
-                submodule = module.__loader__.load_module(split)
+                importlib.import_module(f"{package.__name__}.{split}")
+                submodule = getattr(module, split, None)
             except ImportError:
                 pass
         module = submodule
