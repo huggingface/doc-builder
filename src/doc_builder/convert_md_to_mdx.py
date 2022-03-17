@@ -50,7 +50,7 @@ def convert_special_chars(text):
     """
     Convert { and < that have special meanings in MDX.
     """
-    _re_lcub_svelte = re.compile(r"<(Question|Tip)(((?!<).)*)>|&amp;lcub;(#if|:else}|/if})", re.DOTALL)
+    _re_lcub_svelte = re.compile(r"<(Question|Tip)(((?!(Question|Tip)).)*)>|&amp;lcub;(#if|:else}|/if})", re.DOTALL)
     text = text.replace("{", "&amp;lcub;")
     # We don't want to escape `{` that are part of svelte syntax
     text = _re_lcub_svelte.sub(lambda match: match[0].replace("&amp;lcub;", "{"), text)
