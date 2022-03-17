@@ -27,6 +27,7 @@ def convert_md_to_mdx(md_text, page_info):
     Convert a document written in md to mdx.
     """
     return """<script lang="ts">
+import {onMount} from "svelte";
 import Tip from "$lib/Tip.svelte";
 import Youtube from "$lib/Youtube.svelte";
 import Docstring from "$lib/Docstring.svelte";
@@ -38,7 +39,11 @@ import FrameworkContent from "$lib/FrameworkContent.svelte";
 import Markdown from "$lib/Markdown.svelte";
 import Question from "$lib/Question.svelte";
 import FrameworkSwitchCourse from "$lib/FrameworkSwitchCourse.svelte";
-export let fw: "pt" | "tf"
+let fw: "pt" | "tf" = "pt";
+onMount(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    fw = urlParams.get("fw") || "pt";
+});
 </script>
 <svelte:head>
   <meta name="hf:doc:metadata" content={JSON.stringify(metadata)} >
