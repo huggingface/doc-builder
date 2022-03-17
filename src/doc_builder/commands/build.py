@@ -115,7 +115,8 @@ def build_command(args):
                     shutil.copy(f, dest)
 
             # Move the objects.inv file at the root
-            shutil.move(tmp_dir / "kit" / "src" / "routes" / "objects.inv", tmp_dir / "objects.inv")
+            if not args.not_python_module:
+                shutil.move(tmp_dir / "kit" / "src" / "routes" / "objects.inv", tmp_dir / "objects.inv")
 
             # Build doc with node
             working_dir = str(tmp_dir / "kit")
