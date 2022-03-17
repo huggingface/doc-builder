@@ -337,7 +337,16 @@ def build_notebooks(doc_folder, notebook_dir, package=None, mapping=None, page_i
             raise type(e)(f"There was an error when converting {file} to a notebook.\n" + e.args[0]) from e
 
 
-def build_doc(package_name, doc_folder, output_dir, clean=True, version="master", language="en", notebook_dir=None):
+def build_doc(
+    package_name,
+    doc_folder,
+    output_dir,
+    clean=True,
+    version="master",
+    language="en",
+    notebook_dir=None,
+    is_python_module=False,
+):
     """
     Build the documentation of a package.
 
@@ -352,6 +361,8 @@ def build_doc(package_name, doc_folder, output_dir, clean=True, version="master"
         language (`str`, *optional*, defaults to `"en"`): The language of the doc.
         notebook_dir (`str` or `os.PathLike`, *optional*):
             If provided, where to save the notebooks generated from the doc file with an [[open-in-colab]] marker.
+        is_python_module (`bool`, *optional*):
+            Whether the docs being built are for python module. (For example, HF Course is not a python module).
     """
     page_info = {"version": version, "language": language, "package_name": package_name}
     if clean and Path(output_dir).exists():
@@ -359,12 +370,13 @@ def build_doc(package_name, doc_folder, output_dir, clean=True, version="master"
 
     read_doc_config(doc_folder)
 
-    package = importlib.import_module(package_name)
+    package = importlib.import_module(package_name) if is_python_module else None
     anchors_mapping = build_mdx_files(package, doc_folder, output_dir, page_info)
     sphinx_refs = check_toc_integrity(doc_folder, output_dir)
     sphinx_refs.extend(convert_anchors_mapping_to_sphinx_format(anchors_mapping, package))
-    build_sphinx_objects_ref(sphinx_refs, output_dir, page_info)
-    resolve_links(output_dir, package, anchors_mapping, page_info)
+    if is_python_module:
+        build_sphinx_objects_ref(sphinx_refs, output_dir, page_info)
+        resolve_links(output_dir, package, anchors_mapping, page_info)
     generate_frontmatter(output_dir)
 
     if notebook_dir is not None:
