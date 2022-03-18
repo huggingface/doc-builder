@@ -62,7 +62,8 @@ if is_watchdog_available():
             If so, returns mdx file path.
             """
             src_path = event.src_path
-            relative_path = event.src_path[len(self.args.path_to_docs) + 1 :]
+            parent_path_absolute = str(Path(self.args.path_to_docs).absolute())
+            relative_path = event.src_path[len(parent_path_absolute) + 1 :]
             is_valid_file = False
             if not event.is_directory:
                 if src_path.endswith(".py") and src_path in self.source_files_mapping:
