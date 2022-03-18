@@ -17,6 +17,19 @@ cd doc-builder
 pip install -e .
 ```
 
+## Previewing
+
+To preview the docs, use the following command:
+
+```bash
+doc-builder preview {package_name} {path_to_docs}
+```
+
+For example:
+```bash
+doc-builder preview datasets ~/Desktop/datasets/docs/source/
+```
+
 ## Doc building
 
 To build the documentation of a given package, use the following command:
