@@ -140,67 +140,67 @@ def start_sveltekit_dev(tmp_dir, env, args):
 
 
 def preview_command(args):
-    if is_watchdog_available():
-        read_doc_config(args.path_to_docs)
-        # Error at the beginning if node is not properly installed.
-        check_node_is_available()
-        # Error at the beginning if we can't locate the kit folder
-        kit_folder = locate_kit_folder()
-        if kit_folder is None:
-            raise EnvironmentError(
-                "Requires the kit subfolder of the doc-builder repo. We couldn't find it with "
-                "the doc-builder package installed, so you need to run the command from inside the doc-builder repo."
-            )
-
-        with tempfile.TemporaryDirectory() as tmp_dir:
-            output_path = Path(tmp_dir) / args.library_name / args.version / args.language
-
-            print("Initial build docs for", args.library_name, args.path_to_docs, output_path)
-            source_files_mapping = build_doc(
-                args.library_name,
-                args.path_to_docs,
-                output_path,
-                clean=True,
-                version=args.version,
-                language=args.language,
-            )
-
-            # convert the MDX files into HTML files.
-            tmp_dir = Path(tmp_dir)
-            # Copy everything in a tmp dir
-            shutil.copytree(kit_folder, tmp_dir / "kit")
-            # Manual copy and overwrite from output_path to tmp_dir / "kit" / "src" / "routes"
-            # We don't use shutil.copytree as tmp_dir / "kit" / "src" / "routes" exists and contains important files.
-            kit_routes_folder = tmp_dir / "kit" / "src" / "routes"
-            # files/folders cannot have a name that starts with `__` since it is a reserved Sveltekit keyword
-            for dir in output_path.glob("**/__*/*"):
-                subprocess.run(["rm", "-rf", str(dir)])
-            for f in output_path.glob("**/__*"):
-                subprocess.run(["rm", "-rf", str(f)])
-            for f in output_path.iterdir():
-                dest = kit_routes_folder / f.name
-                if f.is_dir():
-                    # Remove the dest folder if it exists
-                    if dest.is_dir():
-                        shutil.rmtree(dest)
-                    shutil.copytree(f, dest)
-                else:
-                    shutil.copy(f, dest)
-
-            # Node
-            env = os.environ.copy()
-            env["DOCS_LIBRARY"] = args.library_name
-            env["DOCS_VERSION"] = args.version
-            env["DOCS_LANGUAGE"] = args.language
-            Thread(target=start_sveltekit_dev, args=(tmp_dir, env, args)).start()
-
-            git_folder = find_root_git(args.path_to_docs)
-            event_handler = WatchEventHandler(args, source_files_mapping, kit_routes_folder)
-            start_watcher(git_folder, event_handler)
-    else:
+    if not is_watchdog_available():
         raise ImportError(
             "Please install `watchdog` to run `doc-builder preview` command.\nYou can do so through pip: `pip install watchdog`"
         )
+
+    read_doc_config(args.path_to_docs)
+    # Error at the beginning if node is not properly installed.
+    check_node_is_available()
+    # Error at the beginning if we can't locate the kit folder
+    kit_folder = locate_kit_folder()
+    if kit_folder is None:
+        raise EnvironmentError(
+            "Requires the kit subfolder of the doc-builder repo. We couldn't find it with "
+            "the doc-builder package installed, so you need to run the command from inside the doc-builder repo."
+        )
+
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        output_path = Path(tmp_dir) / args.library_name / args.version / args.language
+
+        print("Initial build docs for", args.library_name, args.path_to_docs, output_path)
+        source_files_mapping = build_doc(
+            args.library_name,
+            args.path_to_docs,
+            output_path,
+            clean=True,
+            version=args.version,
+            language=args.language,
+        )
+
+        # convert the MDX files into HTML files.
+        tmp_dir = Path(tmp_dir)
+        # Copy everything in a tmp dir
+        shutil.copytree(kit_folder, tmp_dir / "kit")
+        # Manual copy and overwrite from output_path to tmp_dir / "kit" / "src" / "routes"
+        # We don't use shutil.copytree as tmp_dir / "kit" / "src" / "routes" exists and contains important files.
+        kit_routes_folder = tmp_dir / "kit" / "src" / "routes"
+        # files/folders cannot have a name that starts with `__` since it is a reserved Sveltekit keyword
+        for dir in output_path.glob("**/__*/*"):
+            subprocess.run(["rm", "-rf", str(dir)])
+        for f in output_path.glob("**/__*"):
+            subprocess.run(["rm", "-rf", str(f)])
+        for f in output_path.iterdir():
+            dest = kit_routes_folder / f.name
+            if f.is_dir():
+                # Remove the dest folder if it exists
+                if dest.is_dir():
+                    shutil.rmtree(dest)
+                shutil.copytree(f, dest)
+            else:
+                shutil.copy(f, dest)
+
+        # Node
+        env = os.environ.copy()
+        env["DOCS_LIBRARY"] = args.library_name
+        env["DOCS_VERSION"] = args.version
+        env["DOCS_LANGUAGE"] = args.language
+        Thread(target=start_sveltekit_dev, args=(tmp_dir, env, args)).start()
+
+        git_folder = find_root_git(args.path_to_docs)
+        event_handler = WatchEventHandler(args, source_files_mapping, kit_routes_folder)
+        start_watcher(git_folder, event_handler)
 
 
 def preview_command_parser(subparsers=None):
