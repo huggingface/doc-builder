@@ -5,12 +5,12 @@
 
 	export let choices: Choice[];
 
-    interface Choice {
+	interface Choice {
 		text: string;
 		explain: string;
 		correct?: boolean;
 		selected?: boolean;
-	};
+	}
 
 	const id = randomId();
 
@@ -37,15 +37,20 @@
 		}
 		submitted = selected;
 		$answers = { ...$answers, [id]: { correct: !isIncomplete && !isFalse } };
+		const isChapterComplete = Object.values($answers).every(({ correct }) => correct);
+		if (isChapterComplete) {
+			const event = new Event("ChapterComplete");
+			window.dispatchEvent(event);
+		}
 	}
 
-    function randomId(prefix = "_"): string {
-        // Return a unique-ish random id string
-        // Math.random should be unique because of its seeding algorithm.
-        // Convert it to base 36 (numbers + letters), and grab the first 9 characters
-        // after the decimal.
-        return `${prefix}${Math.random().toString(36).substr(2, 9)}`;
-    }
+	function randomId(prefix = "_"): string {
+		// Return a unique-ish random id string
+		// Math.random should be unique because of its seeding algorithm.
+		// Convert it to base 36 (numbers + letters), and grab the first 9 characters
+		// after the decimal.
+		return `${prefix}${Math.random().toString(36).substr(2, 9)}`;
+	}
 </script>
 
 <div>
@@ -64,9 +69,7 @@
 			</label>
 			{#if submitted && submitted.includes(index)}
 				<div
-					class="alert alert-{!!choice.correct
-						? 'success'
-						: 'error'} mt-1 mb-2.5 leading-normal"
+					class="alert alert-{!!choice.correct ? 'success' : 'error'} mt-1 mb-2.5 leading-normal"
 				>
 					<span class="font-bold">
 						{!!choice.correct ? "Correct!" : "Incorrect."}
@@ -76,9 +79,7 @@
 			{/if}
 		{/each}
 		<div class="flex flex-row items-center mt-3">
-			<button class="btn px-4 mr-4" type="submit" disabled={!selected.length}>
-				Submit
-			</button>
+			<button class="btn px-4 mr-4" type="submit" disabled={!selected.length}> Submit </button>
 
 			{#if submitted.length}
 				<div class="font-semibold leading-snug">
@@ -91,9 +92,7 @@
 							You didn't select all the correct answers, there's more!
 						</span>
 					{:else}
-						<span class="text-green-900 dark:text-green-200">
-							You got all the answers!
-						</span>
+						<span class="text-green-900 dark:text-green-200"> You got all the answers! </span>
 					{/if}
 				</div>
 			{/if}
