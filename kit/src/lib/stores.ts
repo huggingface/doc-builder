@@ -26,4 +26,4 @@ export function getFrameworkStore(key: Framework): Writable<FrameworkState> {
 }
 
 // used for Question.svelte
-export const answers = writable<{ [key: string]: { correct: boolean; }; }>({});
+export const answers = writable<{ [key: string]: { correct: boolean } }>({});

@@ -45,7 +45,7 @@
 
 <div class="flex space-x-1 {classNames}" bind:this={dropdownEl}>
 	{#if googleColabOptions.length === 1}
-		<a href="{googleColabOptions[0].value}" target="_blank">
+		<a href={googleColabOptions[0].value} target="_blank">
 			<img
 				alt="Open In Colab"
 				class="!m-0"
@@ -53,29 +53,29 @@
 			/>
 		</a>
 	{:else}
-		 <Dropdown btnLabel="" classNames="colab-dropdown" noBtnClass useDeprecatedJS={false}>
-			 <slot slot="button">
-				 <img
-					 alt="Open In Colab"
-					 class="!m-0"
-					 src="https://colab.research.google.com/assets/colab-badge.svg"
-				 />
-			 </slot>
-			 <slot slot="menu">
-				 {#each googleColabOptions as { label, value }}
-					 <DropdownEntry
-						 classNames="text-sm !no-underline"
-						 iconClassNames="text-gray-500"
-						 {label}
-						 onClick={() => onClick(value)}
-						 useDeprecatedJS={false}
-					 />
-				 {/each}
-			 </slot>
-		 </Dropdown>
+		<Dropdown btnLabel="" classNames="colab-dropdown" noBtnClass useDeprecatedJS={false}>
+			<slot slot="button">
+				<img
+					alt="Open In Colab"
+					class="!m-0"
+					src="https://colab.research.google.com/assets/colab-badge.svg"
+				/>
+			</slot>
+			<slot slot="menu">
+				{#each googleColabOptions as { label, value }}
+					<DropdownEntry
+						classNames="text-sm !no-underline"
+						iconClassNames="text-gray-500"
+						{label}
+						onClick={() => onClick(value)}
+						useDeprecatedJS={false}
+					/>
+				{/each}
+			</slot>
+		</Dropdown>
 	{/if}
 	{#if awsStudioOptions.length === 1}
-		<a href="{awsStudioOptions[0].value}" target="_blank">
+		<a href={awsStudioOptions[0].value} target="_blank">
 			<img
 				alt="Open In Studio Lab"
 				class="!m-0"
@@ -83,25 +83,25 @@
 			/>
 		</a>
 	{:else}
-		 <Dropdown btnLabel="" classNames="colab-dropdown" noBtnClass useDeprecatedJS={false}>
-			 <slot slot="button">
-				 <img
-					 alt="Open In Studio Lab"
-					 class="!m-0"
-					 src="https://studiolab.sagemaker.aws/studiolab.svg"
-				 />
-			 </slot>
-			 <slot slot="menu">
-				 {#each awsStudioOptions as { label, value }}
-					 <DropdownEntry
-						 classNames="text-sm !no-underline"
-						 iconClassNames="text-gray-500"
-						 {label}
-						 onClick={() => onClick(value)}
-						 useDeprecatedJS={false}
-					 />
-				 {/each}
-			 </slot>
-		 </Dropdown>
+		<Dropdown btnLabel="" classNames="colab-dropdown" noBtnClass useDeprecatedJS={false}>
+			<slot slot="button">
+				<img
+					alt="Open In Studio Lab"
+					class="!m-0"
+					src="https://studiolab.sagemaker.aws/studiolab.svg"
+				/>
+			</slot>
+			<slot slot="menu">
+				{#each awsStudioOptions as { label, value }}
+					<DropdownEntry
+						classNames="text-sm !no-underline"
+						iconClassNames="text-gray-500"
+						{label}
+						onClick={() => onClick(value)}
+						useDeprecatedJS={false}
+					/>
+				{/each}
+			</slot>
+		</Dropdown>
 	{/if}
 </div>
