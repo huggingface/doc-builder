@@ -178,10 +178,9 @@ def preview_command(args):
         # We don't use shutil.copytree as tmp_dir / "kit" / "src" / "routes" exists and contains important files.
         kit_routes_folder = tmp_dir / "kit" / "src" / "routes"
         # files/folders cannot have a name that starts with `__` since it is a reserved Sveltekit keyword
-        for dir in output_path.glob("**/__*/*"):
-            subprocess.run(["rm", "-rf", str(dir)])
-        for f in output_path.glob("**/__*"):
-            subprocess.run(["rm", "-rf", str(f)])
+        for p in output_path.glob("**/*__*"):
+            if p.exists():
+                p.rmdir if p.is_dir() else p.unlink()
         for f in output_path.iterdir():
             dest = kit_routes_folder / f.name
             if f.is_dir():
