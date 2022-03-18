@@ -37,6 +37,8 @@ _re_header = re.compile("^#+\s+\S+")
 _re_python_code = re.compile("^```\s*(py|python)\s*$")
 # Re pattern matching markdown links
 _re_markdown_links = re.compile(r"\[([^\]]*)\]\(([^\)]*)\)")
+# Re pattern matchin framework headers like <pytorch> or <tensorflow>
+_re_framework = re.compile("^\s*<([a-z]*)>\s*$")
 
 
 def expand_links(content, page_info):
@@ -84,31 +86,27 @@ def split_frameworks(content):
     """
     Split a given doc content in three to extract the Mixed, PyTorch and TensorFlow content.
     """
-    split_pattern = "===PT-TF-SPLIT==="
     new_lines = {"mixed": [], "pt": [], "tf": []}
 
     content = clean_doctest_syntax(content)
     lines = content.split("\n")
     idx = 0
     while idx < len(lines):
-        if lines[idx].startswith("```"):
-            code_lines = [lines[idx]]
+        if lines[idx].strip() == "<frameworkcontent>":
             idx += 1
-            has_split = False
-            while idx < len(lines) and lines[idx].strip() != "```":
-                if lines[idx].strip() == split_pattern:
-                    new_lines["pt"].extend(code_lines + ["```"])
-                    new_lines["mixed"].extend(code_lines + ["```", ""])
-                    code_lines = [code_lines[0]]
-                    has_split = True
-                else:
-                    code_lines.append(lines[idx])
+            current_lines = []
+            current_framework = None
+            while idx < len(lines) and lines[idx].strip() != "</frameworkcontent>":
+                if _re_framework.search(lines[idx]) is not None:
+                    current_framework = _re_framework.search(lines[idx]).groups()[0]
+                elif current_framework is not None and lines[idx].strip() == f"</{current_framework}>":
+                    new_lines[current_framework].extend(current_lines)
+                    new_lines["mixed"].extend(current_lines)
+                    current_framework = None
+                    current_lines = []
+                elif current_framework is not None:
+                    current_lines.append(lines[idx])
                 idx += 1
-
-            new_lines["mixed"].extend(code_lines + ["```"])
-            new_lines["tf"].extend(code_lines + ["```"])
-            if not has_split:
-                new_lines["pt"].extend(code_lines + ["```"])
             idx += 1
         else:
             for key in new_lines.keys():

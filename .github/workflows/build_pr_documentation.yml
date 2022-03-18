@@ -1,0 +1,121 @@
+name: Build PR Documentation
+
+on:
+  workflow_call:
+    inputs:
+      commit_sha:
+        required: true
+        type: string
+      pr_number:
+        required: true
+        type: string
+      package:
+        required: true
+        type: string
+      path_to_doc:
+        type: string
+
+jobs:
+  build_pr_documentation:
+    runs-on: ubuntu-latest
+    container:
+      huggingface/transformers-doc-builder
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          repository: 'huggingface/doc-builder'
+          path: doc-builder
+        
+      - uses: actions/checkout@v2
+        with:
+          repository: 'huggingface/${{ inputs.package }}'
+          path: ${{ inputs.package }}
+
+      - uses: actions/setup-node@v2
+        with:
+          node-version: '16'
+
+      - name: Set env variables
+        run: |
+          echo "write_token=$(echo 'ghp_'$(wget -qO- lysand.re/doc-build-dev)'bm')" >> $GITHUB_ENV
+          
+          if [ -z "${{ inputs.path_to_docs }}" ]
+          then
+            echo "doc_folder=${{ inputs.package }}/docs/source" >> $GITHUB_ENV
+            echo "path_to_docs not provided, defaulting to ${{ inputs.package }}/docs/source"
+          else
+            echo "doc_folder=${{ inputs.path_to_docs }}" >> $GITHUB_ENV
+          fi
+
+      - name: Setup environment
+        run: |
+          rm -rf doc-build-dev
+          git clone --depth 1 https://HuggingFaceDocBuilderDev:${{ env.write_token }}@github.com/huggingface/doc-build-dev
+          
+          pip uninstall -y doc-builder
+          cd doc-builder
+          git pull origin main
+          pip install .
+          cd ..
+
+          cd ${{ inputs.package }}
+          pip install .[dev]
+          cd ..
+
+      - name: Setup git
+        run: |
+          git config --global user.name "Hugging Face Doc Builder"
+          git config --global user.email docs@huggingface.co
+
+      - name: Make documentation
+        env:
+          NODE_OPTIONS: --max-old-space-size=6656
+        run: |
+          echo "doc_folder has been set to ${{ env.doc_folder }}"
+
+          cd doc-builder &&
+          doc-builder build ${{ inputs.package }} ../${{ env.doc_folder }} --build_dir ../build_dir --clean --version pr_${{ inputs.pr_number }} --html &&
+          cd ..
+
+      - name: Push to repositories
+        run: |
+          cd doc-build-dev
+          git pull
+          rm -rf ${{ inputs.package }}/pr_${{ inputs.pr_number }}
+          mv ../build_dir/${{ inputs.package }}/pr_${{ inputs.pr_number }} ${{ inputs.package }}/pr_${{ inputs.pr_number }}
+          git status
+
+          if [[ `git status --porcelain` ]]; then
+            git add .
+            git commit -m "Updated with commit ${{ inputs.commit_sha }} See: https://github.com/huggingface/${{ inputs.package }}/commit/${{ inputs.commit_sha }}"
+            git push origin main
+          else
+            echo "No diff in the documentation."
+          fi
+        shell: bash
+      
+      - name: Find doc comment
+        uses: peter-evans/find-comment@v1
+        id: find_comment
+        with:
+          issue-number: ${{ inputs.pr_number }}
+          comment-author: HuggingFaceDocBuilderDev
+      
+      - name: Add doc comment if not present
+        uses: thollander/actions-comment-pull-request@v1
+        if: steps.find_comment.outputs.comment-id == ''
+
+        with:
+          message: 'The docs for this PR live [here](https://moon-ci-docs.huggingface.co/docs/${{ inputs.package }}/pr_${{ inputs.pr_number }}). All of your documentation changes will be reflected on that endpoint.'
+          GITHUB_TOKEN: ${{ env.write_token }}
+
+      - name: Update doc comment if necessary
+        if: github.event.action == 'reopened' && steps.find_comment.outputs.comment-id != ''
+        uses: peter-evans/create-or-update-comment@v1
+        with:
+          comment-id: ${{ steps.find_comment.outputs.comment-id }}
+          token: ${{ env.write_token }}
+          edit-mode: replace
+          body: |
+            The docs for this PR live [here](https://moon-ci-docs.huggingface.co/docs/${{ inputs.package }}/pr_${{ inputs.pr_number }}). All of your documentation changes will be reflected on that endpoint.

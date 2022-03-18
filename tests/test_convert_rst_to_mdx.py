@@ -630,6 +630,37 @@ Loulou
 Now we are out of the list.
 """
 
+        example1b = """
+    Lala
+    Loulou
+
+    - This is a list.
+      This item is long.
+    - This is the second item.
+          - This list is nested
+          - With two items.
+        Now we are at the nested level
+
+    - We return to the previous level.
+
+    Now we are out of the list.
+"""
+        expected1b = """
+Lala
+Loulou
+
+- This is a list.
+  This item is long.
+- This is the second item.
+  - This list is nested
+  - With two items.
+  Now we are at the nested level
+
+- We return to the previous level.
+
+Now we are out of the list.
+"""
+
         example2 = """
 [[autodoc]] transformers.BertModel
     - forward
@@ -672,6 +703,7 @@ def function(x):
 Loulou
 """
         self.assertEqual(remove_indent(example1), expected1)
+        self.assertEqual(remove_indent(example1b), expected1b)
         self.assertEqual(remove_indent(example2), expected2)
         self.assertEqual(remove_indent(example3), expected3)
 
@@ -699,12 +731,20 @@ bli
         expected = """
 bla
 
+<frameworkcontent>
+<pt>
 ```py
 common_code
 pytorch_code
-===PT-TF-SPLIT===
+```
+</pt>
+<tf>
+```py
+common_code
 tf_code
 ```
+</tf>
+</frameworkcontent>
 
 bli
 """

@@ -1,6 +1,6 @@
 import adapter from "@sveltejs/adapter-static";
 import preprocess from "svelte-preprocess";
-import { docstringPreprocess, mdsvexPreprocess } from "./preprocess.js";
+import { docstringPreprocess, frameworkcontentPreprocess, mdsvexPreprocess } from "./preprocess.js";
 
 /** @type {import('@sveltejs/kit').Config} */
 const config = {
@@ -10,6 +10,7 @@ const config = {
 	// for more information about preprocessors
 	preprocess: [
 		docstringPreprocess,
+		frameworkcontentPreprocess,
 		mdsvexPreprocess,
 		preprocess({ sourceMap: Boolean(process.env.DOCS_SOURCEMAP) })
 	],

@@ -23,7 +23,7 @@ import tempfile
 from pathlib import Path
 
 from doc_builder import build_doc, update_versions_file
-from doc_builder.utils import get_default_branch_name, read_doc_config
+from doc_builder.utils import get_default_branch_name, get_doc_config, locate_kit_folder, read_doc_config
 
 
 def check_node_is_available():
@@ -49,24 +49,6 @@ def check_node_is_available():
         )
 
 
-def locate_kit_folder():
-    # First try: let's search where the module is.
-    repo_root = Path(__file__).parent.parent.parent.parent
-    kit_folder = repo_root / "kit"
-    if kit_folder.is_dir():
-        return kit_folder
-
-    # Second try, maybe we are inside the doc-builder repo
-    current_dir = Path.cwd()
-    while current_dir.parent != current_dir and not (current_dir / ".git").is_dir():
-        current_dir = current_dir.parent
-    kit_folder = current_dir / "kit"
-    if kit_folder.is_dir():
-        return kit_folder
-
-    # TODO for the future if asked for, if we can't locate the kit folder git clone doc-builder and cache it somewhere.
-
-
 def build_command(args):
     read_doc_config(args.path_to_docs)
     if args.html:
@@ -87,7 +69,9 @@ def build_command(args):
         if "dev" in version:
             version = get_default_branch_name(args.path_to_docs)
         else:
-            version = f"v{version}"
+            doc_config = get_doc_config()
+            version_prefix = getattr(doc_config, "version_prefix", "v")
+            version = f"{version_prefix}{version}"
     else:
         version = args.version
 

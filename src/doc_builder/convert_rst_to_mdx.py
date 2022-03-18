@@ -519,11 +519,14 @@ def remove_indent(text):
             elif len(current_indents) > 0:
                 # Let's find the proper level of indentation
                 level = len(current_indents) - 1
-                while level >= 0 and current_indents[level] != indent:
+                while level >= 0 and current_indents[level] > indent:
                     level -= 1
                 current_indents = current_indents[: level + 1]
                 if level >= 0:
-                    new_indents = new_indents[:level]
+                    if current_indents[level] < indent:
+                        new_indents = new_indents[: level + 1]
+                    else:
+                        new_indents = new_indents[:level]
                     new_indent = 0 if len(new_indents) == 0 else new_indents[-1]
                     lines[idx] = " " * new_indent + line[indent:]
                     new_indents.append(new_indent)
@@ -618,8 +621,11 @@ def split_pt_tf_code_blocks(text):
                     code_lines["common"].append(lines[idx])
                 idx += 1
             if len(code_lines["pytorch"]) > 0 or len(code_lines["tensorflow"]) > 0:
-                block_lines = code_lines["common"].copy() + code_lines["pytorch"]
-                block_lines += ["===PT-TF-SPLIT==="] + code_lines["tensorflow"] + ["```"]
+                block_lines = ["<frameworkcontent>", "<pt>"]
+                block_lines.extend(code_lines["common"].copy() + code_lines["pytorch"])
+                block_lines.extend(["```", "</pt>", "<tf>"])
+                block_lines.extend(code_lines["common"].copy() + code_lines["tensorflow"])
+                block_lines.extend(["```", "</tf>", "</frameworkcontent>"])
                 new_lines.extend(block_lines)
             else:
                 block_lines = code_lines["common"] + ["```"]
@@ -647,6 +653,8 @@ def convert_rst_to_mdx(rst_text, page_info, add_imports=True):
             '	import CodeBlockFw from "$lib/CodeBlockFw.svelte";',
             '	import DocNotebookDropdown from "$lib/DocNotebookDropdown.svelte";',
             '	import IconCopyLink from "$lib/IconCopyLink.svelte";',
+            '	import FrameworkContent from "$lib/FrameworkContent.svelte";',
+            '	import Markdown from "$lib/Markdown.svelte";',
             "	",
             '	export let fw: "pt" | "tf"',
             "</script>",
