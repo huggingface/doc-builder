@@ -89,7 +89,9 @@ jobs:
           if [[ `git status --porcelain` ]]; then
             git add .
             git commit -m "Updated with commit ${{ inputs.commit_sha }} See: https://github.com/huggingface/${{ inputs.package }}/commit/${{ inputs.commit_sha }}"
-            git push origin main
+            git push origin main ||
+            (echo "Failed on the first try, rebasing and pushing again" && git pull --rebase git && push origin main) ||
+            (echo "Failed on the second try, rebasing and pushing again" && git pull --rebase git && push origin main)
           else
             echo "No diff in the documentation."
           fi
