@@ -81,7 +81,7 @@ if is_watchdog_available():
             try:
                 # copy the built files into the actual build folder dawg
                 with tempfile.TemporaryDirectory() as tmp_input_dir:
-                    # copy the file into srcpath
+                    # copy the file into tmp_input_dir
                     shutil.copy(src_path, tmp_input_dir)
 
                     with tempfile.TemporaryDirectory() as tmp_out_dir:
