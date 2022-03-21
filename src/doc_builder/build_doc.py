@@ -412,6 +412,9 @@ def check_toc_integrity(doc_folder, output_dir):
     while len(toc) > 0:
         part = toc.pop(0)
         toc_sections.extend([sec["local"] for sec in part["sections"] if "local" in sec])
+        for sec in part["sections"]:
+            if "local_fw" in sec:
+                toc_sections.extend(sec["local_fw"].values())
         # There should be one sphinx ref per page
         for sec in part["sections"]:
             if "local" in sec:
