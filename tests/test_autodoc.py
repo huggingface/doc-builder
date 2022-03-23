@@ -256,7 +256,7 @@ Base class for all model outputs as dataclass. Has a `__getitem__` that allows i
 tuple) or strings (like a dictionary) that will ignore the `None` attributes. Otherwise behaves like a regular
 python dictionary.
 
-<Tip warning=&amp;lcub;true}>
+<Tip warning={true}>
 
 You can't unpack a `ModelOutput` directly. Use the [`~file_utils.ModelOutput.to_tuple`] method to convert it to a
 tuple before.

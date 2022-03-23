@@ -27,6 +27,7 @@ def convert_md_to_mdx(md_text, page_info):
     Convert a document written in md to mdx.
     """
     return """<script lang="ts">
+import {onMount} from "svelte";
 import Tip from "$lib/Tip.svelte";
 import Youtube from "$lib/Youtube.svelte";
 import Docstring from "$lib/Docstring.svelte";
@@ -36,7 +37,13 @@ import DocNotebookDropdown from "$lib/DocNotebookDropdown.svelte";
 import IconCopyLink from "$lib/IconCopyLink.svelte";
 import FrameworkContent from "$lib/FrameworkContent.svelte";
 import Markdown from "$lib/Markdown.svelte";
-export let fw: "pt" | "tf"
+import Question from "$lib/Question.svelte";
+import FrameworkSwitchCourse from "$lib/FrameworkSwitchCourse.svelte";
+let fw: "pt" | "tf" = "pt";
+onMount(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    fw = urlParams.get("fw") || "pt";
+});
 </script>
 <svelte:head>
   <meta name="hf:doc:metadata" content={JSON.stringify(metadata)} >
@@ -50,9 +57,17 @@ def convert_special_chars(text):
     """
     Convert { and < that have special meanings in MDX.
     """
+    _re_lcub_svelte = re.compile(
+        r"<(Question|Tip|DocNotebookDropdown|FrameworkSwitch)(((?!<(Question|Tip|DocNotebookDropdown|FrameworkSwitch)).)*)>|&amp;lcub;(#if|:else}|/if})",
+        re.DOTALL,
+    )
     text = text.replace("{", "&amp;lcub;")
+    # We don't want to escape `{` that are part of svelte syntax
+    text = _re_lcub_svelte.sub(lambda match: match[0].replace("&amp;lcub;", "{"), text)
     # We don't want to replace those by the HTML code, so we temporarily set them at LTHTML
-    text = re.sub(r"<(img|br|hr|Youtube)", r"LTHTML\1", text)  # html void elements with no closing counterpart
+    text = re.sub(
+        r"<(img|br|hr|Youtube|Question|DocNotebookDropdown|FrameworkSwitch)", r"LTHTML\1", text
+    )  # html void elements with no closing counterpart
     _re_lt_html = re.compile(r"<(\S+)([^>]*>)(((?!</\1>).)*)<(/\1>)", re.DOTALL)
     while _re_lt_html.search(text):
         text = _re_lt_html.sub(r"LTHTML\1\2\3LTHTML\5", text)

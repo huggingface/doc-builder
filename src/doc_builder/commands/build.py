@@ -62,7 +62,9 @@ def build_command(args):
                 "the doc-builder package installed, so you need to run the command from inside the doc-builder repo."
             )
 
-    if args.version is None:
+    if args.not_python_module:
+        version = get_default_branch_name(args.path_to_docs)
+    elif args.version is None:
         module = importlib.import_module(args.library_name)
         version = module.__version__
 
@@ -86,6 +88,7 @@ def build_command(args):
         version=version,
         language=args.language,
         notebook_dir=args.notebook_dir,
+        is_python_module=not args.not_python_module,
     )
 
     # dev build should not update _versions.yml
@@ -112,7 +115,8 @@ def build_command(args):
                     shutil.copy(f, dest)
 
             # Move the objects.inv file at the root
-            shutil.move(tmp_dir / "kit" / "src" / "routes" / "objects.inv", tmp_dir / "objects.inv")
+            if not args.not_python_module:
+                shutil.move(tmp_dir / "kit" / "src" / "routes" / "objects.inv", tmp_dir / "objects.inv")
 
             # Build doc with node
             working_dir = str(tmp_dir / "kit")
@@ -143,7 +147,8 @@ def build_command(args):
             shutil.rmtree(output_path)
             shutil.copytree(tmp_dir / "kit" / "build", output_path)
             # Move the objects.inv file back
-            shutil.move(tmp_dir / "objects.inv", output_path / "objects.inv")
+            if not args.not_python_module:
+                shutil.move(tmp_dir / "objects.inv", output_path / "objects.inv")
 
 
 def build_command_parser(subparsers=None):
@@ -170,6 +175,11 @@ def build_command_parser(subparsers=None):
     )
     parser.add_argument("--notebook_dir", type=str, help="Where to save the generated notebooks.", default=None)
     parser.add_argument("--html", action="store_true", help="Whether or not to build HTML files instead of MDX files.")
+    parser.add_argument(
+        "--not_python_module",
+        action="store_true",
+        help="Whether docs files do NOT have correspoding python module (like HF course & hub docs).",
+    )
 
     if subparsers is not None:
         parser.set_defaults(func=build_command)
