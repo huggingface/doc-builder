@@ -68,7 +68,10 @@ if is_watchdog_available():
             if not event.is_directory:
                 if src_path.endswith(".py") and src_path in self.source_files_mapping:
                     src_path = self.source_files_mapping[src_path]
-                if src_path.endswith(".mdx"):
+                # if src_path.endswith(".md"):
+                #     # src_path += "x"
+                #     relative_path += "x"
+                if src_path.endswith(".mdx") or src_path.endswith(".md"):
                     is_valid_file = True
                     return is_valid_file, src_path, relative_path
             return is_valid_file, src_path, relative_path
@@ -93,6 +96,9 @@ if is_watchdog_available():
                             language=self.args.language,
                             watch_mode=True,
                         )
+                        if str(src_path).endswith(".md"):
+                            src_path += "x"
+                            relative_path += "x"
                         src = Path(tmp_out_dir) / Path(src_path).name
                         dest = self.kit_routes_folder / relative_path
                         shutil.move(src, dest)
