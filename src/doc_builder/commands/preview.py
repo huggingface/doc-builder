@@ -94,6 +94,7 @@ if is_watchdog_available():
                             tmp_out_dir,
                             version=self.args.version,
                             language=self.args.language,
+                            is_python_module=not self.args.not_python_module,
                             watch_mode=True,
                         )
                         if str(src_path).endswith(".md"):
@@ -174,6 +175,7 @@ def preview_command(args):
             clean=True,
             version=args.version,
             language=args.language,
+            is_python_module=not args.not_python_module,
         )
 
         # convert the MDX files into HTML files.
@@ -224,6 +226,11 @@ def preview_command_parser(subparsers=None):
     )
     parser.add_argument("--language", type=str, help="Language of the documentation to generate", default="en")
     parser.add_argument("--version", type=str, help="Version of the documentation to generate", default="master")
+    parser.add_argument(
+        "--not_python_module",
+        action="store_true",
+        help="Whether docs files do NOT have correspoding python module (like HF course & hub docs).",
+    )
 
     if subparsers is not None:
         parser.set_defaults(func=preview_command)
