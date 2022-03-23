@@ -108,6 +108,13 @@ def get_doc_config():
     return doc_config
 
 
+def is_watchdog_available():
+    """
+    Checks if soft dependency `watchdog` exists.
+    """
+    return importlib.util.find_spec("watchdog") is not None
+
+
 def is_doc_builder_repo(path):
     """
     Detects whether a folder is the `doc_builder` or not.

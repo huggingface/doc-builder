@@ -13,4 +13,4 @@ The generated html files and assets are in the `build` folder.
 
 ## Previewing the docs
 
-Instead of `npm run build`, do `npm run dev`. Then go to http://localhost:3000/docs/transformers/master/en (or replace `master` with the correct prefix).
+Instead of `npm run build`, do `npm run dev`. Then go to http://localhost:3000 (or replace `master` with the correct prefix).
