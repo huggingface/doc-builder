@@ -280,7 +280,7 @@ def get_source_link(obj, page_info):
     Returns the link to the source code of an object on GitHub.
     """
     package_name = page_info["package_name"]
-    version = page_info.get("version", "master")
+    version = page_info.get("version", "main")
     base_link = f"https://github.com/huggingface/{package_name}/blob/{version}/src/"
     module = obj.__module__.replace(".", "/")
     line_number = inspect.getsourcelines(obj)[1]
@@ -438,7 +438,7 @@ def resolve_links_in_text(text, package, mapping, page_info):
         page_info (`Dict[str, str]`): Some information about the page.
     """
     package_name = page_info.get("package_name", package.__name__)
-    version = page_info.get("version", "master")
+    version = page_info.get("version", "main")
     language = page_info.get("language", "en")
 
     prefix = f"/docs/{package_name}/{version}/{language}/"

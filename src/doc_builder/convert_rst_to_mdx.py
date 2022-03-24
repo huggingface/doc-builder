@@ -92,7 +92,7 @@ def convert_rst_links(text, page_info):
     if "package_name" not in page_info:
         raise ValueError("`page_info` must contain at least the package_name.")
     package_name = page_info["package_name"]
-    version = page_info.get("version", "master")
+    version = page_info.get("version", "main")
     language = page_info.get("language", "en")
     no_prefix = page_info.get("no_prefix", False)
 
@@ -116,7 +116,7 @@ def convert_rst_links(text, page_info):
 
     # Links with a prefix
     # TODO: when it exists, use the API to deal with prefix links properly.
-    prefix = f"https://github.com/huggingface/{package_name}/tree/master/"
+    prefix = f"https://github.com/huggingface/{package_name}/tree/main/"
     text = _re_prefix_links.sub(rf"[\1]({prefix}\2)", text)
     # Other links
     text = _re_links.sub(r"[\1](\2)", text)
@@ -220,7 +220,7 @@ def convert_rst_blocks(text, page_info):
     if "package_name" not in page_info:
         raise ValueError("`page_info` must contain at least the package_name.")
     package_name = page_info["package_name"]
-    version = page_info.get("version", "master")
+    version = page_info.get("version", "main")
     language = page_info.get("language", "en")
 
     lines = text.split("\n")
