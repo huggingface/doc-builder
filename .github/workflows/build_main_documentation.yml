@@ -13,6 +13,9 @@ on:
         type: string
       notebook_folder:
         type: string
+      main_branch:
+        type: string
+        default: 'main'
     secrets:
       token:
         required: true
@@ -96,11 +99,11 @@ jobs:
           if [ -z "${{ inputs.notebook_folder }}" ]
           then
             cd doc-builder &&
-            doc-builder build ${{ inputs.package }} ../${{ env.doc_folder }} --build_dir ../build_dir --clean --html &&
+            doc-builder build ${{ inputs.package }} ../${{ env.doc_folder }} --build_dir ../build_dir --version ${{ inputs.main_branch }} --clean --html &&
             cd ..
           else
             cd doc-builder &&
-            doc-builder build ${{ inputs.package }} ../${{ env.doc_folder }} --build_dir ../build_dir --notebook_dir ../notebook_dir --clean --html &&
+            doc-builder build ${{ inputs.package }} ../${{ env.doc_folder }} --build_dir ../build_dir --version ${{ inputs.main_branch }} --notebook_dir ../notebook_dir --clean --html &&
             cd ..
           fi
 
