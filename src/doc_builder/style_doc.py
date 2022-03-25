@@ -518,9 +518,6 @@ def style_doc_files(*files, max_len=119, check_only=False):
         else:
             warnings.warn(f"Ignoring {file} because it's not a py or an mdx file or a folder.")
     if len(black_errors) > 0:
-        raise ValueError(
-            "Some code examples can't be interpreted by black, which means they aren't regular python:\n\n"
-        )
         black_message = "\n\n".join(black_errors)
         raise ValueError(
             "Some code examples can't be interpreted by black, which means they aren't regular python:\n\n"
