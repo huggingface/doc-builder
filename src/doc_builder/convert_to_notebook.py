@@ -46,7 +46,7 @@ def expand_links(content, page_info):
     Expand links relative to the documentation to full links to the hf.co website.
     """
     package_name = page_info["package_name"]
-    version = page_info.get("version", "master")
+    version = page_info.get("version", "main")
     language = page_info.get("language", "en")
     page = str(page_info["page"])
 

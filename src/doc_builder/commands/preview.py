@@ -225,7 +225,7 @@ def preview_command_parser(subparsers=None):
         "documentation files should be indicated here.",
     )
     parser.add_argument("--language", type=str, help="Language of the documentation to generate", default="en")
-    parser.add_argument("--version", type=str, help="Version of the documentation to generate", default="master")
+    parser.add_argument("--version", type=str, help="Version of the documentation to generate", default="main")
     parser.add_argument(
         "--not_python_module",
         action="store_true",

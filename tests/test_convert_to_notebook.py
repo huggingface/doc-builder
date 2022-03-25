@@ -156,11 +156,11 @@ End
         page_info = {"package_name": "transformers", "page": "quicktour.html"}
         self.assertEqual(
             expand_links("Checkout the [task summary](task-summary)", page_info),
-            "Checkout the [task summary](https://huggingface.co/docs/transformers/master/en/task-summary)",
+            "Checkout the [task summary](https://huggingface.co/docs/transformers/main/en/task-summary)",
         )
         self.assertEqual(
-            expand_links("Checkout the [`Trainer`](/docs/transformers/master/en/trainer#Trainer)", page_info),
-            "Checkout the [`Trainer`](https://huggingface.co/docs/transformers/master/en/trainer#Trainer)",
+            expand_links("Checkout the [`Trainer`](/docs/transformers/main/en/trainer#Trainer)", page_info),
+            "Checkout the [`Trainer`](https://huggingface.co/docs/transformers/main/en/trainer#Trainer)",
         )
 
         page_info = {"package_name": "datasets", "page": "quicktour.html", "version": "stable", "language": "fr"}
@@ -172,5 +172,5 @@ End
         page_info = {"package_name": "transformers", "page": "data/quicktour.html"}
         self.assertEqual(
             expand_links("Checkout the [task summary](task-summary)", page_info),
-            "Checkout the [task summary](https://huggingface.co/docs/transformers/master/en/data/task-summary)",
+            "Checkout the [task summary](https://huggingface.co/docs/transformers/main/en/data/task-summary)",
         )

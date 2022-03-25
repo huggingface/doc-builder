@@ -171,7 +171,7 @@ def build_command_parser(subparsers=None):
         "--version",
         type=str,
         help="Version of the documentation to generate. Will default to the version of the package module (using "
-        "`master` for a version containing dev).",
+        "`main` for a version containing dev).",
     )
     parser.add_argument("--notebook_dir", type=str, help="Where to save the generated notebooks.", default=None)
     parser.add_argument("--html", action="store_true", help="Whether or not to build HTML files instead of MDX files.")
