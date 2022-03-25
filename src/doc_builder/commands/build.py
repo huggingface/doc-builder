@@ -62,7 +62,7 @@ def build_command(args):
                 "the doc-builder package installed, so you need to run the command from inside the doc-builder repo."
             )
 
-    if args.not_python_module:
+    if args.not_python_module and args.version is None:
         version = get_default_branch_name(args.path_to_docs)
     elif args.version is None:
         module = importlib.import_module(args.library_name)
