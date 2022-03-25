@@ -13,6 +13,9 @@ on:
         type: string
       notebook_folder:
         type: string
+      # supply --not_python_module for HF Course
+      additional_args:
+        type: string
     secrets:
       token:
         required: true
@@ -96,11 +99,11 @@ jobs:
           if [ -z "${{ inputs.notebook_folder }}" ]
           then
             cd doc-builder &&
-            doc-builder build ${{ inputs.package }} ../${{ env.doc_folder }} --build_dir ../build_dir --clean --html &&
+            doc-builder build ${{ inputs.package }} ../${{ env.doc_folder }} --build_dir ../build_dir --clean --html ${{ inputs.additional_args }} &&
             cd ..
           else
             cd doc-builder &&
-            doc-builder build ${{ inputs.package }} ../${{ env.doc_folder }} --build_dir ../build_dir --notebook_dir ../notebook_dir --clean --html &&
+            doc-builder build ${{ inputs.package }} ../${{ env.doc_folder }} --build_dir ../build_dir --notebook_dir ../notebook_dir --clean --html ${{ inputs.additional_args }} &&
             cd ..
           fi
 
