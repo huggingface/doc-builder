@@ -39,7 +39,7 @@ const config = {
 				: "/docs/" +
 				  (process.env.DOCS_LIBRARY || "transformers") +
 				  "/" +
-				  (process.env.DOCS_VERSION || "master") +
+				  (process.env.DOCS_VERSION || "main") +
 				  "/" +
 				  (process.env.DOCS_LANGUAGE || "en")
 		}

@@ -83,7 +83,7 @@ def convert_img_links(text, page_info):
     if "package_name" not in page_info:
         raise ValueError("`page_info` must contain at least the package_name.")
     package_name = page_info["package_name"]
-    version = page_info.get("version", "master")
+    version = page_info.get("version", "main")
     language = page_info.get("language", "en")
 
     _re_img_link = re.compile(r"(src=\"|\()/imgs/")
