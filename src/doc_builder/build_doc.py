@@ -49,7 +49,7 @@ def resolve_open_in_colab(content, page_info):
 
     package_name = page_info["package_name"]
     page_name = Path(page_info["page"]).stem
-    nb_prefix = f"/github/huggingface/notebooks/blob/master/{package_name}_doc/"
+    nb_prefix = f"/github/huggingface/notebooks/blob/main/{package_name}_doc/"
     nb_prefix_colab = f"https://colab.research.google.com{nb_prefix}"
     nb_prefix_awsstudio = f"https://studiolab.sagemaker.aws/import{nb_prefix}"
     links = [
@@ -355,7 +355,7 @@ def build_doc(
     doc_folder,
     output_dir,
     clean=True,
-    version="master",
+    version="main",
     language="en",
     notebook_dir=None,
     is_python_module=False,
@@ -371,7 +371,7 @@ def build_doc(
             The folder in which to put the built documentation. Will be created if it does not exist.
         clean (`bool`, *optional*, defaults to `True`):
             Whether or not to delete the content of the `output_dir` if that directory exists.
-        version (`str`, *optional*, defaults to `"master"`): The name of the version of the doc.
+        version (`str`, *optional*, defaults to `"main"`): The name of the version of the doc.
         language (`str`, *optional*, defaults to `"en"`): The language of the doc.
         notebook_dir (`str` or `os.PathLike`, *optional*):
             If provided, where to save the notebooks generated from the doc file with an [[open-in-colab]] marker.

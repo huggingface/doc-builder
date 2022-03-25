@@ -55,7 +55,7 @@ def get_default_branch_name(repo_folder):
 def update_versions_file(build_path, version, doc_folder):
     """
     Insert new version into _versions.yml file of the library
-    Assumes that _versions.yml exists and has its first entry as master version
+    Assumes that _versions.yml exists and has its first entry as main version
     """
     main_branch = get_default_branch_name(doc_folder)
     if version == main_branch:
@@ -66,7 +66,7 @@ def update_versions_file(build_path, version, doc_folder):
         if versions[0]["version"] != main_branch:
             raise ValueError(f"{build_path}/_versions.yml does not contain a {main_branch} version")
 
-        master_version, sem_versions = versions[0], versions[1:]
+        main_version, sem_versions = versions[0], versions[1:]
         new_version = {"version": version}
         did_insert = False
         for i, value in enumerate(sem_versions):
@@ -81,7 +81,7 @@ def update_versions_file(build_path, version, doc_folder):
             sem_versions.append(new_version)
 
     with open(os.path.join(build_path, "_versions.yml"), "w") as versions_file:
-        versions_updated = [master_version] + sem_versions
+        versions_updated = [main_version] + sem_versions
         yaml.dump(versions_updated, versions_file)
 
 
