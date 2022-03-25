@@ -14,6 +14,10 @@ on:
         type: string
       path_to_doc:
         type: string
+      # supply --not_python_module for HF Course
+      module_flag:
+        type: string
+        default: ''
 
 jobs:
   build_pr_documentation:
@@ -75,7 +79,7 @@ jobs:
           echo "doc_folder has been set to ${{ env.doc_folder }}"
 
           cd doc-builder &&
-          doc-builder build ${{ inputs.package }} ../${{ env.doc_folder }} --build_dir ../build_dir --clean --version pr_${{ inputs.pr_number }} --html &&
+          doc-builder build ${{ inputs.package }} ../${{ env.doc_folder }} --build_dir ../build_dir --clean --version pr_${{ inputs.pr_number }} --html ${{ inputs.module_flag }} &&
           cd ..
 
       - name: Push to repositories
