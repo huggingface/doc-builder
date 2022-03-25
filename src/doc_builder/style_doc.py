@@ -39,7 +39,7 @@ DOCTEST_PROMPTS = [">>>", "..."]
 
 def get_black_avoid_patterns():
     patterns = {"===PT-TF-SPLIT===": "### PT-TF-SPLIT"}
-    doc_config = get_doc_config
+    doc_config = get_doc_config()
     if doc_config is not None and hasattr(doc_config, "black_avoid_patterns"):
         patterns.update(doc_config.black_avoid_patterns)
     return patterns
