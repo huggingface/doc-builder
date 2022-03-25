@@ -39,7 +39,7 @@ DOCTEST_PROMPTS = [">>>", "..."]
 
 def get_black_avoid_patterns():
     patterns = {"===PT-TF-SPLIT===": "### PT-TF-SPLIT"}
-    doc_config = get_doc_config
+    doc_config = get_doc_config()
     if doc_config is not None and hasattr(doc_config, "black_avoid_patterns"):
         patterns.update(doc_config.black_avoid_patterns)
     return patterns
@@ -518,6 +518,9 @@ def style_doc_files(*files, max_len=119, check_only=False):
         else:
             warnings.warn(f"Ignoring {file} because it's not a py or an mdx file or a folder.")
     if len(black_errors) > 0:
+        raise ValueError(
+            "Some code examples can't be interpreted by black, which means they aren't regular python:\n\n"
+        )
         black_message = "\n\n".join(black_errors)
         raise ValueError(
             "Some code examples can't be interpreted by black, which means they aren't regular python:\n\n"
