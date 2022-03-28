@@ -63,8 +63,9 @@ jobs:
           pip install .
           cd ..
 
-          if [[ "${{ inputs.additional_args }}" != *"--not_python_module"* ]];
+          if ! grep -q "\--not_python_module" <<< "${{ inputs.additional_args }}";
           then
+            echo "Installing package dependencies ..."
             cd ${{ inputs.package }}
             pip install .[dev]
           fi
