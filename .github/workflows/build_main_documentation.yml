@@ -9,7 +9,7 @@ on:
       package:
         required: true
         type: string
-      path_to_doc:
+      path_to_docs:
         type: string
       notebook_folder:
         type: string
@@ -65,6 +65,7 @@ jobs:
           fi
 
       - name: Setup environment
+        shell: bash
         run: |
           pip uninstall -y doc-builder
           cd doc-builder
@@ -72,8 +73,11 @@ jobs:
           pip install .
           cd ..
 
-          cd ${{ inputs.package }}
-          pip install .[dev]
+          if [[ "${{ inputs.additional_args }}" != *"--not_python_module"* ]];
+          then
+            cd ${{ inputs.package }}
+            pip install .[dev]
+          fi
           cd ..
 
       - name: Setup git
