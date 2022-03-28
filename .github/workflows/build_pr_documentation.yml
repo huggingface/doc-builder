@@ -53,6 +53,7 @@ jobs:
           fi
 
       - name: Setup environment
+        shell: bash
         run: |
           rm -rf doc-build-dev
           git clone --depth 1 https://HuggingFaceDocBuilderDev:${{ env.write_token }}@github.com/huggingface/doc-build-dev
@@ -63,18 +64,11 @@ jobs:
           pip install .
           cd ..
 
-          case "${{ inputs.additional_args }}" in
-
-              *"--not_python_module"*)
-                  echo "--not_python_module provided, skipping installation ..."
-                  ;;
-              *)
-                  echo "Installing package depdendencies ..."
-                  cd ${{ inputs.package }}
-                  pip install .[dev]
-                  ;;
-          esac
-
+          if [[ "${{ inputs.additional_args }}" != *"--not_python_module"* ]];
+          then
+            cd ${{ inputs.package }}
+            pip install .[dev]
+          fi
           cd ..
 
       - name: Setup git
