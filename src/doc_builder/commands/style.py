@@ -17,9 +17,12 @@
 import argparse
 
 from doc_builder import style_doc_files
+from doc_builder.utils import read_doc_config
 
 
 def style_command(args):
+    if args.path_to_docs is not None:
+        read_doc_config(args.path_to_docs)
     changed = style_doc_files(*args.files, max_len=args.max_len, check_only=args.check_only)
     if args.check_only and len(changed) > 0:
         raise ValueError(f"{len(changed)} files should be restyled!")
@@ -34,6 +37,7 @@ def style_command_parser(subparsers=None):
         parser = argparse.ArgumentParser("Doc Builder style command")
 
     parser.add_argument("files", nargs="+", help="The file(s) or folder(s) to restyle.")
+    parser.add_argument("--path_to_docs", type=str, help="The path to the doc source folder if using the config.")
     parser.add_argument("--max_len", type=int, default=119, help="The maximum length of lines.")
     parser.add_argument("--check_only", action="store_true", help="Whether to only check and not fix styling issues.")
 

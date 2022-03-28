@@ -258,8 +258,8 @@ python dictionary.
 
 <Tip warning={true}>
 
-You can't unpack a `ModelOutput` directly. Use the [`~file_utils.ModelOutput.to_tuple`] method to convert it to a
-tuple before.
+You can't unpack a `ModelOutput` directly. Use the [`~utils.ModelOutput.to_tuple`] method to convert it to a tuple
+before.
 
 </Tip>
 
