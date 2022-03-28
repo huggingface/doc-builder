@@ -15,6 +15,7 @@
 
 
 import importlib
+import json
 import os
 import re
 import shutil
@@ -211,7 +212,11 @@ def build_mdx_files(package, doc_folder, output_dir, page_info):
 
         if new_anchors is not None:
             page_name = str(file.with_suffix("").relative_to(doc_folder))
-            anchor_mapping.update({anchor: page_name for anchor in new_anchors})
+            for anchor in new_anchors:
+                if isinstance(anchor, tuple):
+                    anchor_mapping.update({a: f"{page_name}#{anchor[0]}" for a in anchor[1:]})
+                    anchor = anchor[0]
+                anchor_mapping[anchor] = page_name
 
         if errors is not None:
             all_errors.extend(errors)
@@ -389,6 +394,8 @@ def build_doc(
 
     package = importlib.import_module(package_name) if is_python_module else None
     anchors_mapping, source_files_mapping = build_mdx_files(package, doc_folder, output_dir, page_info)
+    with open(os.path.join(output_dir, "anchors.json"), "w") as f:
+        f.write(json.dumps(anchors_mapping))
     if not watch_mode:
         sphinx_refs = check_toc_integrity(doc_folder, output_dir)
         sphinx_refs.extend(convert_anchors_mapping_to_sphinx_format(anchors_mapping, package))
@@ -483,7 +490,10 @@ def convert_anchors_mapping_to_sphinx_format(anchors_mapping, package):
             # so it's just to be extra defensive
             obj_type = "py:function"
 
-        sphinx_refs.append(f"{anchor} {obj_type} 1 {url}#$ -")
+        if "#" in url:
+            sphinx_refs.append(f"{anchor} {obj_type} 1 {url} -")
+        else:
+            sphinx_refs.append(f"{anchor} {obj_type} 1 {url}#$ -")
 
     return sphinx_refs
 
