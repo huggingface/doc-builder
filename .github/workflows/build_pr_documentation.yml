@@ -63,12 +63,18 @@ jobs:
           pip install .
           cd ..
 
-          if ! grep -q "\--not_python_module" <<< "${{ inputs.additional_args }}";
-          then
-            echo "Installing package dependencies ..."
-            cd ${{ inputs.package }}
-            pip install .[dev]
-          fi
+          case "${{ inputs.additional_args }}" in
+
+              *"--not_python_module"*)
+                  echo "--not_python_module provided, skipping installation ..."
+                  ;;
+              *)
+                  echo "Installing package depdendencies ..."
+                  cd ${{ inputs.package }}
+                  pip install .[dev]
+                  ;;
+          esac
+
           cd ..
 
       - name: Setup git
