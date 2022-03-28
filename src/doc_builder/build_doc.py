@@ -394,8 +394,6 @@ def build_doc(
 
     package = importlib.import_module(package_name) if is_python_module else None
     anchors_mapping, source_files_mapping = build_mdx_files(package, doc_folder, output_dir, page_info)
-    with open(os.path.join(output_dir, "anchors.json"), "w") as f:
-        f.write(json.dumps(anchors_mapping))
     if not watch_mode:
         sphinx_refs = check_toc_integrity(doc_folder, output_dir)
         sphinx_refs.extend(convert_anchors_mapping_to_sphinx_format(anchors_mapping, package))
