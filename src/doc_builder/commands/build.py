@@ -62,20 +62,25 @@ def build_command(args):
                 "the doc-builder package installed, so you need to run the command from inside the doc-builder repo."
             )
 
+    default_version = get_default_branch_name(args.path_to_docs)
     if args.not_python_module and args.version is None:
-        version = get_default_branch_name(args.path_to_docs)
+        version = default_version
     elif args.version is None:
         module = importlib.import_module(args.library_name)
         version = module.__version__
 
         if "dev" in version:
-            version = get_default_branch_name(args.path_to_docs)
+            version = default_version
         else:
             doc_config = get_doc_config()
             version_prefix = getattr(doc_config, "version_prefix", "v")
             version = f"{version_prefix}{version}"
     else:
         version = args.version
+
+    # Disable notebook building for non-master verion
+    if version != default_version:
+        args.notebook_dir = None
 
     output_path = Path(args.build_dir) / args.library_name / version / args.language
 
