@@ -16,6 +16,10 @@ on:
       # supply --not_python_module for HF Course
       additional_args:
         type: string
+      languages:
+      # supply space-separated language codes
+        type: string
+        default: 'en'
     secrets:
       token:
         required: true
@@ -95,6 +99,7 @@ jobs:
           cp doc-build/${{ inputs.package }}/_versions.yml build_dir/${{ inputs.package }}
 
       - name: Make documentation
+        shell: bash
         env:
           NODE_OPTIONS: --max-old-space-size=6656
         run: |
@@ -102,8 +107,14 @@ jobs:
 
           if [ -z "${{ inputs.notebook_folder }}" ]
           then
-            cd doc-builder &&
-            doc-builder build ${{ inputs.package }} ../${{ env.doc_folder }} --build_dir ../build_dir --clean --html ${{ inputs.additional_args }} &&
+            IFS=', ' read -r -a langs <<< "${{ inputs.languages }}"
+
+            cd doc-builder
+            for lang in "${langs[@]}"
+            do
+                echo "Generating docs for language $lang"
+                doc-builder build ${{ inputs.package }} ../${{ env.doc_folder }}/$lang --build_dir ../build_dir --clean --html ${{ inputs.additional_args }} --language $lang
+            done
             cd ..
           else
             cd doc-builder &&
