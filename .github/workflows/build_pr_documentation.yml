@@ -21,7 +21,7 @@ on:
       languages:
       # supply space-separated language codes
         type: string
-        default: 'en'
+        default: ''
 
 jobs:
   build_pr_documentation:
@@ -86,14 +86,18 @@ jobs:
         shell: bash
         run: |
           echo "doc_folder has been set to ${{ env.doc_folder }}"
-          IFS=', ' read -r -a langs <<< "${{ inputs.languages }}"
 
           cd doc-builder
-          for lang in "${langs[@]}"
-          do
-              echo "Generating docs for language $lang"
-              doc-builder build ${{ inputs.package }} ../${{ env.doc_folder }}/$lang --build_dir ../build_dir --clean --version pr_${{ inputs.pr_number }} --html ${{ inputs.additional_args }} --language $lang
-          done
+          if [ -z "${{ inputs.languages }}" ]
+            echo "languages not provided, defaulting to English"
+            doc-builder build ${{ inputs.package }} ../${{ env.doc_folder }} --build_dir ../build_dir --clean --html ${{ inputs.additional_args }}
+          else
+            IFS=', ' read -r -a langs <<< "${{ inputs.languages }}"
+            for lang in "${langs[@]}"
+            do
+                echo "Generating docs for language $lang"
+                doc-builder build ${{ inputs.package }} ../${{ env.doc_folder }}/$lang --build_dir ../build_dir --clean --version pr_${{ inputs.pr_number }} --html ${{ inputs.additional_args }} --language $lang
+            done
           cd ..
 
       - name: Push to repositories
