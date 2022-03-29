@@ -431,7 +431,7 @@ def autodoc(object_name, package, methods=None, return_anchors=False, page_info=
                 # The anchor name of the method might be different from its
                 method = find_object_in_package(f"{anchors[0]}.{method}", package=package)
                 method_name = get_shortest_path(method, package=package)
-                if anchor_name == method_name:
+                if anchor_name == method_name or method_name is None:
                     anchors.append(anchor_name)
                 else:
                     anchors.append((anchor_name, method_name))
