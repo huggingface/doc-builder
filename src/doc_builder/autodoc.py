@@ -300,7 +300,7 @@ def get_source_path(object_name, package):
     return obj_path
 
 
-def document_object(object_name, package, page_info, full_name=True):
+def document_object(object_name, package, page_info, full_name=True, anchor_name=None):
     """
     Writes the document of a function, class or method.
 
@@ -308,6 +308,7 @@ def document_object(object_name, package, page_info, full_name=True):
         object_name (`str`): The name of the object to document.
         package (`types.ModuleType`): The package of the object.
         full_name (`bool`, *optional*, defaults to `True`): Whether to write the full name of the object or not.
+        anchor_name (`str`, *optional*): The name to give to the anchor for this object.
     """
     if page_info is None:
         page_info = {}
@@ -322,7 +323,8 @@ def document_object(object_name, package, page_info, full_name=True):
         # Propreties have no __module__ or __name__ attributes, but their getter function does.
         obj = obj.fget
 
-    anchor_name = get_shortest_path(obj, package)
+    if anchor_name is None:
+        anchor_name = get_shortest_path(obj, package)
     if full_name and anchor_name is not None:
         name = anchor_name
     else:
@@ -414,14 +416,25 @@ def autodoc(object_name, package, methods=None, return_anchors=False, page_info=
             methods_to_add = find_documented_methods(obj)
             methods.extend([m for m in methods_to_add if m not in methods])
         for method in methods:
+            anchor_name = f"{anchors[0]}.{method}"
             method_doc, check = document_object(
-                object_name=f"{object_name}.{method}", package=package, page_info=page_info, full_name=False
+                object_name=f"{object_name}.{method}",
+                package=package,
+                page_info=page_info,
+                full_name=False,
+                anchor_name=anchor_name,
             )
             if check is not None:
                 errors.append(check)
             documentation += '\n<div class="docstring">' + method_doc + "</div>"
             if return_anchors:
-                anchors.append(f"{anchors[0]}.{method}")
+                # The anchor name of the method might be different from its
+                method = find_object_in_package(f"{anchors[0]}.{method}", package=package)
+                method_name = get_shortest_path(method, package=package)
+                if anchor_name == method_name:
+                    anchors.append(anchor_name)
+                else:
+                    anchors.append((anchor_name, method_name))
     documentation = '<div class="docstring">\n' + documentation + "</div>\n"
 
     return (documentation, anchors, errors) if return_anchors else documentation
@@ -463,7 +476,10 @@ def resolve_links_in_text(text, package, mapping, page_info):
         if anchor not in mapping:
             return f"`{object_name}`"
         page = f"{prefix}{mapping[anchor]}"
-        return f"[{object_name}]({page}#{anchor}){last_char}"
+        if "#" in page:
+            return f"[{object_name}]({page}){last_char}"
+        else:
+            return f"[{object_name}]({page}#{anchor}){last_char}"
 
     return re.sub(r"\[`([^`]+)`\]([^\(])", _resolve_link, text)
 
