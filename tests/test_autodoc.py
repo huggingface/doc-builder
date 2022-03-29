@@ -301,7 +301,7 @@ before.
             anchors,
             [
                 "transformers.BertTokenizer",
-                "transformers.BertTokenizer.__call__",
+                ("transformers.BertTokenizer.__call__", "transformers.PreTrainedTokenizerBase.__call__"),
                 "transformers.BertTokenizer.build_inputs_with_special_tokens",
                 "transformers.BertTokenizer.convert_tokens_to_string",
                 "transformers.BertTokenizer.create_token_type_ids_from_sequences",
@@ -310,7 +310,13 @@ before.
         )
 
         _, anchors, _ = autodoc("BertTokenizer", transformers, methods=["__call__"], return_anchors=True)
-        self.assertListEqual(anchors, ["transformers.BertTokenizer", "transformers.BertTokenizer.__call__"])
+        self.assertListEqual(
+            anchors,
+            [
+                "transformers.BertTokenizer",
+                ("transformers.BertTokenizer.__call__", "transformers.PreTrainedTokenizerBase.__call__"),
+            ],
+        )
 
     def test_resolve_links_in_text(self):
         page_info = {"package_name": "transformers"}
