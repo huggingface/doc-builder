@@ -55,6 +55,60 @@ which will build HTML files in `~/tmp/test-build`. You can then inspect those fi
 - add `[[open-in-colab]]` in the tutorial for which you want to build a notebook
 - add `--notebook_dir {path_to_notebook_folder}` to the build command.
 
+## Templates for GitHub Actions
+
+`doc-builder` provides templates for GitHub Actions, so you can build your documentation with every pull request, push to some branch etc. To use them in your project, simply create the following three files in the `.github/workflows/` directory:
+
+* `build_main_documentation.yml`: responsible for building the docs for the `main` branch, releases etc.
+* `build_pr_documentation.yml`: responsible for building the docs on each PR
+* `delete_doc_comment.yml`: responsible for removing the comments from the `HuggingFaceDocBuilderDev` bot that provides a URL to the PR docs.
+
+Within each workflow, the main thing to include is a pointer from the `uses` field to the corresponding workflow in `doc-builder`. For example, this is what the PR workflow looks like in the `datasets` library:
+
+```yaml
+name: Build PR Documentation
+
+on:
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    uses: huggingface/doc-builder/.github/workflows/build_pr_documentation.yml@main # Runs this doc-builder workflow
+    with:
+      commit_sha: ${{ github.event.pull_request.head.sha }}
+      pr_number: ${{ github.event.number }}
+      package: datasets # Replace this with your package name
+```
+
+Note the use of special arguments like `pr_number` and `package` under the `with` field. You can find the various options by inspecting each of the `doc-builder` [workflow files](https://github.com/huggingface/doc-builder/tree/main/.github/workflows).
+
+### Enabling multilingual documentation
+
+`doc-builder` can also convert documentation that's been translated from the English source into one or more languages. To enable the conversion, the documentation directories should be structured as follows:
+
+```
+doc_folder
+├── en
+│   ├── _toctree.yml
+│   ...
+└── es
+    ├── _toctree.yml
+    ...
+```
+
+Note that each language directory has it's own table of contents file `_toctree.yml` and that all languages are arranged under a single `doc_folder` directory - see the [`course`](https://github.com/huggingface/course/tree/main/chapters) repo for an example. You can then build the individual language subsets as follows:
+
+```bash
+doc-builder {package_name} {path_to_docs} --build_dir {build_dir} --language {lang_id}
+```
+
+To automatically build the documentation for all languages via the GitHub Actions templates, simply provide the `languages` argument to your workflow, with a space-separated list of the languages you wish to build, e.g. `languages: en es`.
+
+
 ## Writing documentation for Hugging Face libraries
 
 `doc-builder` expects Markdown so you should write any new documentation in `".mdx"` files for tutorials, guides, API documentations. For docstrings, we follow the [Google format](https://sphinxcontrib-napoleon.readthedocs.io/en/latest/example_google.html) with the main difference that you should use Markdown instead of restructured text (hopefully, that will be easier!)
