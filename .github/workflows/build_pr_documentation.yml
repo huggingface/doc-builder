@@ -18,6 +18,10 @@ on:
       additional_args:
         type: string
         default: ''
+      languages:
+      # supply space-separated language codes
+        type: string
+        default: ''
 
 jobs:
   build_pr_documentation:
@@ -79,11 +83,24 @@ jobs:
       - name: Make documentation
         env:
           NODE_OPTIONS: --max-old-space-size=6656
+        shell: bash
         run: |
           echo "doc_folder has been set to ${{ env.doc_folder }}"
+          cd doc-builder
+          args="--build_dir ../build_dir --clean --version pr_${{ inputs.pr_number }} --html ${{ inputs.additional_args }}"
 
-          cd doc-builder &&
-          doc-builder build ${{ inputs.package }} ../${{ env.doc_folder }} --build_dir ../build_dir --clean --version pr_${{ inputs.pr_number }} --html ${{ inputs.additional_args }} &&
+          if [ -z "${{ inputs.languages }}" ];
+          then
+            echo "languages not provided, defaulting to English"
+            doc-builder build ${{ inputs.package }} ../${{ env.doc_folder }} $args
+          else
+            IFS=', ' read -r -a langs <<< "${{ inputs.languages }}"
+            for lang in "${langs[@]}"
+            do
+                echo "Generating docs for language $lang"
+                doc-builder build ${{ inputs.package }} ../${{ env.doc_folder }}/$lang $args --language $lang
+            done
+          fi
           cd ..
 
       - name: Push to repositories

@@ -16,6 +16,10 @@ on:
       # supply --not_python_module for HF Course
       additional_args:
         type: string
+      languages:
+      # supply space-separated language codes
+        type: string
+        default: ''
     secrets:
       token:
         required: true
@@ -95,21 +99,33 @@ jobs:
           cp doc-build/${{ inputs.package }}/_versions.yml build_dir/${{ inputs.package }}
 
       - name: Make documentation
+        shell: bash
         env:
           NODE_OPTIONS: --max-old-space-size=6656
         run: |
           echo "doc_folder has been set to ${{ env.doc_folder }}"
+          cd doc-builder
+          args="--build_dir ../build_dir --clean --html ${{ inputs.additional_args }}"
 
-          if [ -z "${{ inputs.notebook_folder }}" ]
+          if [ ! -z "${{ inputs.notebook_folder }}" ];
           then
-            cd doc-builder &&
-            doc-builder build ${{ inputs.package }} ../${{ env.doc_folder }} --build_dir ../build_dir --clean --html ${{ inputs.additional_args }} &&
-            cd ..
-          else
-            cd doc-builder &&
-            doc-builder build ${{ inputs.package }} ../${{ env.doc_folder }} --build_dir ../build_dir --notebook_dir ../notebook_dir --clean --html ${{ inputs.additional_args }} &&
-            cd ..
+            args="$args --notebook_dir ../notebook_dir"
           fi
+
+          if [ -z "${{ inputs.languages }}" ];
+          then
+            echo "languages not provided, defaulting to English"
+            doc-builder build ${{ inputs.package }} ../${{ env.doc_folder }} $args
+          else
+            IFS=', ' read -r -a langs <<< "${{ inputs.languages }}"
+            for lang in "${langs[@]}"
+            do
+                echo "Generating docs for language $lang"
+                doc-builder build ${{ inputs.package }} ../${{ env.doc_folder }}/$lang $args --language $lang
+            done
+          fi
+
+          cd ..
 
       - name: Push to repositories
         run: |
