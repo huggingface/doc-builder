@@ -55,6 +55,29 @@ which will build HTML files in `~/tmp/test-build`. You can then inspect those fi
 - add `[[open-in-colab]]` in the tutorial for which you want to build a notebook
 - add `--notebook_dir {path_to_notebook_folder}` to the build command.
 
+### Enabling multilingual documentation
+
+`doc-builder` can convert documentation that's been translated from the English source into one or more languages. To enable the conversion, the documentation directories should be structured as follows:
+
+```
+doc_folder
+├── en
+│   ├── _toctree.yml
+│   ...
+└── es
+    ├── _toctree.yml
+    ...
+```
+
+Note that each language directory has it's own table of contents file `_toctree.yml` and that all languages are arranged under a single `doc_folder` directory - see the [`course`](https://github.com/huggingface/course/tree/main/chapters) repo for an example. You can then build the individual language subsets as follows:
+
+```bash
+doc-builder {package_name} {path_to_docs} --build_dir {build_dir} --language {lang_id}
+```
+
+To automatically build the documentation for all languages via the [GitHub Actions templates](https://github.com/huggingface/doc-builder/tree/main/.github/workflows), simply provide the `languages` argument to your workflow, with a space-separated list of the languages you wish to build, e.g. `languages: en es`. 
+
+
 ## Writing documentation for Hugging Face libraries
 
 `doc-builder` expects Markdown so you should write any new documentation in `".mdx"` files for tutorials, guides, API documentations. For docstrings, we follow the [Google format](https://sphinxcontrib-napoleon.readthedocs.io/en/latest/example_google.html) with the main difference that you should use Markdown instead of restructured text (hopefully, that will be easier!)
