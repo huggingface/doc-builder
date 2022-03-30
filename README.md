@@ -35,7 +35,7 @@ doc-builder preview datasets ~/Desktop/datasets/docs/source/
 To build the documentation of a given package, use the following command:
 
 ```bash
-doc-builder {package_name} {path_to_docs} --build_dir {build_dir}
+doc-builder build {package_name} {path_to_docs} --build_dir {build_dir}
 ```
 
 For instance, here is how you can build the Datasets documentation (requires `pip install datasets[dev]`) if you have cloned the repo in `~/git/datasets`:
