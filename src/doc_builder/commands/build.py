@@ -82,11 +82,7 @@ def build_command(args):
     if version != default_version:
         args.notebook_dir = None
 
-    if args.language is None:
-        args.langauge = "en"
-    elif args.notebook_dir is not None:
-        args.notebook_dir = Path(args.notebook_dir) / args.language
-
+    notebook_dir = Path(args.notebook_dir) / args.language if args.notebook_dir is not None else None
     output_path = Path(args.build_dir) / args.library_name / version / args.language
 
     print("Building docs for", args.library_name, args.path_to_docs, output_path)
@@ -97,7 +93,7 @@ def build_command(args):
         clean=args.clean,
         version=version,
         language=args.language,
-        notebook_dir=args.notebook_dir,
+        notebook_dir=notebook_dir,
         is_python_module=not args.not_python_module,
     )
 
@@ -176,7 +172,7 @@ def build_command_parser(subparsers=None):
     )
     parser.add_argument("--build_dir", type=str, help="Where the built documentation will be.", default="./build/")
     parser.add_argument("--clean", action="store_true", help="Whether or not to clean the output dir before building.")
-    parser.add_argument("--language", type=str, help="Language of the documentation to generate")
+    parser.add_argument("--language", type=str, help="Language of the documentation to generate", default="en")
     parser.add_argument(
         "--version",
         type=str,

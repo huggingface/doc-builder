@@ -48,8 +48,9 @@ def resolve_open_in_colab(content, page_info):
         return content
 
     package_name = page_info["package_name"]
+    language = page_info.get("language", "en")
     page_name = Path(page_info["page"]).stem
-    nb_prefix = f"/github/huggingface/notebooks/blob/main/{package_name}_doc/"
+    nb_prefix = f"/github/huggingface/notebooks/blob/main/{package_name}_doc/{language}/"
     nb_prefix_colab = f"https://colab.research.google.com{nb_prefix}"
     nb_prefix_awsstudio = f"https://studiolab.sagemaker.aws/import{nb_prefix}"
     links = [
