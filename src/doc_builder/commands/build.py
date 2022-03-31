@@ -176,7 +176,7 @@ def build_command_parser(subparsers=None):
     )
     parser.add_argument("--build_dir", type=str, help="Where the built documentation will be.", default="./build/")
     parser.add_argument("--clean", action="store_true", help="Whether or not to clean the output dir before building.")
-    parser.add_argument("--language", type=str, help="Language of the documentation to generate", default="en")
+    parser.add_argument("--language", type=str, help="Language of the documentation to generate")
     parser.add_argument(
         "--version",
         type=str,
