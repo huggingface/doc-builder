@@ -82,6 +82,7 @@ def build_command(args):
     if version != default_version:
         args.notebook_dir = None
 
+    notebook_dir = Path(args.notebook_dir) / args.language if args.notebook_dir is not None else None
     output_path = Path(args.build_dir) / args.library_name / version / args.language
 
     print("Building docs for", args.library_name, args.path_to_docs, output_path)
@@ -92,7 +93,7 @@ def build_command(args):
         clean=args.clean,
         version=version,
         language=args.language,
-        notebook_dir=args.notebook_dir,
+        notebook_dir=notebook_dir,
         is_python_module=not args.not_python_module,
     )
 
