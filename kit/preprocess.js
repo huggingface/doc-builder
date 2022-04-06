@@ -16,6 +16,10 @@ export const docstringPreprocess = {
 		const REGEX_PARAMSGROUPS = /<paramgroups>(((?!<paramgroups>).)*)<\/paramgroups>/ms;
 		const REGEX_RETDESC = /<retdesc>(((?!<retdesc>).)*)<\/retdesc>/ms;
 		const REGEX_RETTYPE = /<rettype>(((?!<rettype>).)*)<\/rettype>/ms;
+		const REGEX_YIELDESC = /<yieldesc>(((?!<yieldesc>).)*)<\/yieldesc>/ms;
+		const REGEX_YIELDTYPE = /<yieldtype>(((?!<yieldtype>).)*)<\/yieldtype>/ms;
+		const REGEX_RAISEDESC = /<raises>(((?!<raises>).)*)<\/raises>/ms;
+		const REGEX_RAISETYPE = /<raisederrors>(((?!<raisederrors>).)*)<\/raisederrors>/ms;
 		const REGEX_SOURCE = /<source>(((?!<source>).)*)<\/source>/ms;
 		const REGEX_TIP = /<Tip( warning={true})?>(((?!<Tip( warning={true})?>).)*)<\/Tip>/gms;
 
@@ -85,6 +89,30 @@ export const docstringPreprocess = {
 				const retType = docstringBody.match(REGEX_RETTYPE)[1];
 				const { code } = await mdsvexPreprocess.markup({ content: retType, filename });
 				svelteComponent += ` returnType={${JSON.stringify(code)}} `;
+			}
+
+			if (docstringBody.match(REGEX_YIELDESC)) {
+				const yieldDesc = docstringBody.match(REGEX_YIELDESC)[1];
+				const { code } = await mdsvexPreprocess.markup({ content: yieldDesc, filename });
+				svelteComponent += ` returnDescription={${JSON.stringify(code)}} `;
+			}
+
+			if (docstringBody.match(REGEX_YIELDTYPE)) {
+				const yieldType = docstringBody.match(REGEX_YIELDTYPE)[1];
+				const { code } = await mdsvexPreprocess.markup({ content: yieldType, filename });
+				svelteComponent += ` returnType={${JSON.stringify(code)}} isYield={true} `;
+			}
+
+			if (docstringBody.match(REGEX_RAISEDESC)) {
+				const raiseDesc = docstringBody.match(REGEX_RAISEDESC)[1];
+				const { code } = await mdsvexPreprocess.markup({ content: raiseDesc, filename });
+				svelteComponent += ` raiseDescription={${JSON.stringify(code)}} `;
+			}
+
+			if (docstringBody.match(REGEX_RAISETYPE)) {
+				const raiseType = docstringBody.match(REGEX_RAISETYPE)[1];
+				const { code } = await mdsvexPreprocess.markup({ content: raiseType, filename });
+				svelteComponent += ` raiseType={${JSON.stringify(code)}} `;
 			}
 
 			if (docstringBody.match(REGEX_PARAMSGROUPS)) {

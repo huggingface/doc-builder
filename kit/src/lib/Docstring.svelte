@@ -17,6 +17,9 @@
 	}[];
 	export let returnDescription: string;
 	export let returnType: string;
+	export let isYield = false;
+	export let raiseDescription: string;
+	export let raiseType: string;
 	export let source: string;
 
 	let parametersElement: HTMLElement;
@@ -27,6 +30,8 @@
 			const { name, description } = element;
 			return { ...acc, [name]: description };
 		}, {}) || {};
+	const returnsTitle = isYield ? "Yields" : "Returns";
+	const returnsAnchor = returnsTitle.toLowerCase();
 
 	onMount(() => {
 		const { hash } = window.location;
@@ -108,7 +113,7 @@
 				use:tooltip={returnDescription || ""}
 				class="rounded hover:bg-gray-400 {returnDescription ? 'cursor-pointer' : 'cursor-default'}"
 				on:click|preventDefault|stopPropagation={() =>
-					onClick(`${anchor}.returns`, !!returnDescription)}
+					onClick(`${anchor}.${returnsAnchor}`, !!returnDescription)}
 				>{@html replaceParagraphWithSpan(returnType)}</span
 			>
 		{/if}
@@ -164,15 +169,28 @@
 		{#if !!returnType}
 			<div
 				class="flex items-center font-semibold space-x-3 text-base !mt-0 !mb-0 text-gray-800"
-				id={`${anchor}.returns`}
+				id={`${anchor}.${returnsAnchor}`}
 			>
-				<p class="text-base">Returns</p>
+				<p class="text-base">{returnsTitle}</p>
 				{#if !!returnType}
 					{@html returnType}
 				{/if}
 				<span class="flex-auto border-t-2 border-gray-100 dark:border-gray-700" />
 			</div>
 			<p class="text-base">{@html returnDescription || ""}</p>
+		{/if}
+		{#if !!raiseType}
+			<div
+				class="flex items-center font-semibold space-x-3 text-base !mt-0 !mb-0 text-gray-800"
+				id={`${anchor}.raises`}
+			>
+				<p class="text-base">Raises</p>
+				{#if !!raiseType}
+					{@html raiseType}
+				{/if}
+				<span class="flex-auto border-t-2 border-gray-100 dark:border-gray-700" />
+			</div>
+			<p class="text-base">{@html raiseDescription || ""}</p>
 		{/if}
 	</div>
 </div>
