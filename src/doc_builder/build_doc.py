@@ -24,7 +24,7 @@ from pathlib import Path
 import yaml
 from tqdm import tqdm
 
-from .autodoc import autodoc, find_object_in_package, remove_example_tags, resolve_links_in_text
+from .autodoc import autodoc, find_object_in_package, get_source_path, remove_example_tags, resolve_links_in_text
 from .convert_md_to_mdx import convert_md_to_mdx
 from .convert_rst_to_mdx import convert_rst_to_mdx, find_indent, is_empty_line
 from .convert_to_notebook import generate_notebooks_from_file
@@ -48,8 +48,9 @@ def resolve_open_in_colab(content, page_info):
         return content
 
     package_name = page_info["package_name"]
+    language = page_info.get("language", "en")
     page_name = Path(page_info["page"]).stem
-    nb_prefix = f"/github/huggingface/notebooks/blob/master/{package_name}_doc/"
+    nb_prefix = f"/github/huggingface/notebooks/blob/main/{package_name}_doc/{language}/"
     nb_prefix_colab = f"https://colab.research.google.com{nb_prefix}"
     nb_prefix_awsstudio = f"https://studiolab.sagemaker.aws/import{nb_prefix}"
     links = [
@@ -87,6 +88,7 @@ def resolve_autodoc(content, package, return_anchors=False, page_info=None):
     is_inside_codeblock = False
     lines = content.split("\n")
     new_lines = []
+    source_files = None
     if return_anchors:
         anchors = []
         errors = []
@@ -125,6 +127,8 @@ def resolve_autodoc(content, package, return_anchors=False, page_info=None):
                 errors.extend(doc[2])
                 doc = doc[0]
             new_lines.append(doc)
+
+            source_files = get_source_path(object_name, package)
         else:
             new_lines.append(lines[idx])
             if lines[idx].startswith("```"):
@@ -136,7 +140,7 @@ def resolve_autodoc(content, package, return_anchors=False, page_info=None):
     new_content = "\n".join(new_lines)
     new_content = remove_example_tags(new_content)
 
-    return (new_content, anchors, errors) if return_anchors else new_content
+    return (new_content, anchors, source_files, errors) if return_anchors else new_content
 
 
 def build_mdx_files(package, doc_folder, output_dir, page_info):
@@ -153,6 +157,7 @@ def build_mdx_files(package, doc_folder, output_dir, page_info):
     output_dir = Path(output_dir)
     os.makedirs(output_dir, exist_ok=True)
     anchor_mapping = {}
+    source_files_mapping = {}
 
     if "package_name" not in page_info:
         page_info["package_name"] = package.__name__
@@ -171,9 +176,11 @@ def build_mdx_files(package, doc_folder, output_dir, page_info):
                     content = reader.read()
                 content = convert_md_to_mdx(content, page_info)
                 content = resolve_open_in_colab(content, page_info)
-                content, new_anchors, errors = resolve_autodoc(
+                content, new_anchors, source_files, errors = resolve_autodoc(
                     content, package, return_anchors=True, page_info=page_info
                 )
+                if source_files is not None:
+                    source_files_mapping[source_files] = str(file)
                 with open(dest_file, "w", encoding="utf-8") as writer:
                     writer.write(content)
                 # Make sure we clean up for next page.
@@ -186,9 +193,11 @@ def build_mdx_files(package, doc_folder, output_dir, page_info):
                     content = reader.read()
                 content = convert_rst_to_mdx(content, page_info)
                 content = resolve_open_in_colab(content, page_info)
-                content, new_anchors, errors = resolve_autodoc(
+                content, new_anchors, source_files, errors = resolve_autodoc(
                     content, package, return_anchors=True, page_info=page_info
                 )
+                if source_files is not None:
+                    source_files_mapping[source_files] = str(file)
                 with open(dest_file, "w", encoding="utf-8") as writer:
                     writer.write(content)
                 # Make sure we clean up for next page.
@@ -203,7 +212,11 @@ def build_mdx_files(package, doc_folder, output_dir, page_info):
 
         if new_anchors is not None:
             page_name = str(file.with_suffix("").relative_to(doc_folder))
-            anchor_mapping.update({anchor: page_name for anchor in new_anchors})
+            for anchor in new_anchors:
+                if isinstance(anchor, tuple):
+                    anchor_mapping.update({a: f"{page_name}#{anchor[0]}" for a in anchor[1:]})
+                    anchor = anchor[0]
+                anchor_mapping[anchor] = page_name
 
         if errors is not None:
             all_errors.extend(errors)
@@ -213,7 +226,7 @@ def build_mdx_files(package, doc_folder, output_dir, page_info):
             "The deployment of the documentation will fail because of the following errors:\n" + "\n".join(all_errors)
         )
 
-    return anchor_mapping
+    return anchor_mapping, source_files_mapping
 
 
 def resolve_links(doc_folder, package, mapping, page_info):
@@ -244,6 +257,7 @@ def generate_frontmatter_in_text(text, file_name=None):
     Args:
         text (`str`): The text in which to convert the links.
     """
+    is_disabled = "<!-- DISABLE-FRONTMATTER-SECTIONS -->" in text
     text = text.split("\n")
     root = None
     is_inside_codeblock = False
@@ -270,6 +284,10 @@ def generate_frontmatter_in_text(text, file_name=None):
         node = FrontmatterNode(title, local)
         if header_level == 1:
             root = node
+            # doc writers may choose to disable frontmatter generation
+            # currenly used in Quiz sections of hf course
+            if is_disabled:
+                break
         else:
             if root is None:
                 raise ValueError(
@@ -337,7 +355,17 @@ def build_notebooks(doc_folder, notebook_dir, package=None, mapping=None, page_i
             raise type(e)(f"There was an error when converting {file} to a notebook.\n" + e.args[0]) from e
 
 
-def build_doc(package_name, doc_folder, output_dir, clean=True, version="master", language="en", notebook_dir=None):
+def build_doc(
+    package_name,
+    doc_folder,
+    output_dir,
+    clean=True,
+    version="main",
+    language="en",
+    notebook_dir=None,
+    is_python_module=False,
+    watch_mode=False,
+):
     """
     Build the documentation of a package.
 
@@ -348,10 +376,15 @@ def build_doc(package_name, doc_folder, output_dir, clean=True, version="master"
             The folder in which to put the built documentation. Will be created if it does not exist.
         clean (`bool`, *optional*, defaults to `True`):
             Whether or not to delete the content of the `output_dir` if that directory exists.
-        version (`str`, *optional*, defaults to `"master"`): The name of the version of the doc.
+        version (`str`, *optional*, defaults to `"main"`): The name of the version of the doc.
         language (`str`, *optional*, defaults to `"en"`): The language of the doc.
         notebook_dir (`str` or `os.PathLike`, *optional*):
             If provided, where to save the notebooks generated from the doc file with an [[open-in-colab]] marker.
+        is_python_module (`bool`, *optional*, defaults to `False`):
+            Whether the docs being built are for python module. (For example, HF Course is not a python module).
+        watch_mode (`bool`, *optional*, default to `False`):
+            If `True`, disables the toc tree check and sphinx objects.inv builds since they are not needed
+            when this mode is active.
     """
     page_info = {"version": version, "language": language, "package_name": package_name}
     if clean and Path(output_dir).exists():
@@ -359,12 +392,15 @@ def build_doc(package_name, doc_folder, output_dir, clean=True, version="master"
 
     read_doc_config(doc_folder)
 
-    package = importlib.import_module(package_name)
-    anchors_mapping = build_mdx_files(package, doc_folder, output_dir, page_info)
-    sphinx_refs = check_toc_integrity(doc_folder, output_dir)
-    sphinx_refs.extend(convert_anchors_mapping_to_sphinx_format(anchors_mapping, package))
-    build_sphinx_objects_ref(sphinx_refs, output_dir, page_info)
-    resolve_links(output_dir, package, anchors_mapping, page_info)
+    package = importlib.import_module(package_name) if is_python_module else None
+    anchors_mapping, source_files_mapping = build_mdx_files(package, doc_folder, output_dir, page_info)
+    if not watch_mode:
+        sphinx_refs = check_toc_integrity(doc_folder, output_dir)
+        sphinx_refs.extend(convert_anchors_mapping_to_sphinx_format(anchors_mapping, package))
+    if is_python_module:
+        if not watch_mode:
+            build_sphinx_objects_ref(sphinx_refs, output_dir, page_info)
+        resolve_links(output_dir, package, anchors_mapping, page_info)
     generate_frontmatter(output_dir)
 
     if notebook_dir is not None:
@@ -372,6 +408,8 @@ def build_doc(package_name, doc_folder, output_dir, clean=True, version="master"
             for nb_file in Path(notebook_dir).glob("**/*.ipynb"):
                 os.remove(nb_file)
         build_notebooks(doc_folder, notebook_dir, package=package, mapping=anchors_mapping, page_info=page_info)
+
+    return source_files_mapping
 
 
 def check_toc_integrity(doc_folder, output_dir):
@@ -395,6 +433,9 @@ def check_toc_integrity(doc_folder, output_dir):
     while len(toc) > 0:
         part = toc.pop(0)
         toc_sections.extend([sec["local"] for sec in part["sections"] if "local" in sec])
+        for sec in part["sections"]:
+            if "local_fw" in sec:
+                toc_sections.extend(sec["local_fw"].values())
         # There should be one sphinx ref per page
         for sec in part["sections"]:
             if "local" in sec:
@@ -447,7 +488,10 @@ def convert_anchors_mapping_to_sphinx_format(anchors_mapping, package):
             # so it's just to be extra defensive
             obj_type = "py:function"
 
-        sphinx_refs.append(f"{anchor} {obj_type} 1 {url}#$ -")
+        if "#" in url:
+            sphinx_refs.append(f"{anchor} {obj_type} 1 {url} -")
+        else:
+            sphinx_refs.append(f"{anchor} {obj_type} 1 {url}#$ -")
 
     return sphinx_refs
 

@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
+import importlib
 import inspect
 import json
 import re
@@ -34,8 +34,17 @@ def find_object_in_package(object_name, package):
     if path_splits[0] == package.__name__:
         path_splits = path_splits[1:]
     module = package
-    for split in path_splits:
-        module = getattr(module, split, None)
+    for idx, split in enumerate(path_splits):
+        submodule = getattr(module, split, None)
+        # `split` could be the name of a package if `package` is a namespace package, in which case it doesn't appear
+        # as an attribute if the submodule was not imported before
+        if submodule is None and idx == 0:
+            try:
+                importlib.import_module(f"{package.__name__}.{split}")
+                submodule = getattr(module, split, None)
+            except ImportError:
+                pass
+        module = submodule
         if module is None:
             return
     return module
@@ -271,14 +280,27 @@ def get_source_link(obj, page_info):
     Returns the link to the source code of an object on GitHub.
     """
     package_name = page_info["package_name"]
-    version = page_info.get("version", "master")
+    version = page_info.get("version", "main")
     base_link = f"https://github.com/huggingface/{package_name}/blob/{version}/src/"
     module = obj.__module__.replace(".", "/")
     line_number = inspect.getsourcelines(obj)[1]
     return f"{base_link}{module}.py#L{line_number}"
 
 
-def document_object(object_name, package, page_info, full_name=True):
+def get_source_path(object_name, package):
+    """
+    Find a path to file in which given object was defined.
+
+    Args:
+    - object_name (`str`): The name of the object to retrieve.
+    - package (`types.ModuleType`): The package to look into.
+    """
+    obj = obj = find_object_in_package(object_name=object_name, package=package)
+    obj_path = inspect.getfile(obj)
+    return obj_path
+
+
+def document_object(object_name, package, page_info, full_name=True, anchor_name=None):
     """
     Writes the document of a function, class or method.
 
@@ -286,6 +308,7 @@ def document_object(object_name, package, page_info, full_name=True):
         object_name (`str`): The name of the object to document.
         package (`types.ModuleType`): The package of the object.
         full_name (`bool`, *optional*, defaults to `True`): Whether to write the full name of the object or not.
+        anchor_name (`str`, *optional*): The name to give to the anchor for this object.
     """
     if page_info is None:
         page_info = {}
@@ -300,7 +323,8 @@ def document_object(object_name, package, page_info, full_name=True):
         # Propreties have no __module__ or __name__ attributes, but their getter function does.
         obj = obj.fget
 
-    anchor_name = get_shortest_path(obj, package)
+    if anchor_name is None:
+        anchor_name = get_shortest_path(obj, package)
     if full_name and anchor_name is not None:
         name = anchor_name
     else:
@@ -392,14 +416,25 @@ def autodoc(object_name, package, methods=None, return_anchors=False, page_info=
             methods_to_add = find_documented_methods(obj)
             methods.extend([m for m in methods_to_add if m not in methods])
         for method in methods:
+            anchor_name = f"{anchors[0]}.{method}"
             method_doc, check = document_object(
-                object_name=f"{object_name}.{method}", package=package, page_info=page_info, full_name=False
+                object_name=f"{object_name}.{method}",
+                package=package,
+                page_info=page_info,
+                full_name=False,
+                anchor_name=anchor_name,
             )
             if check is not None:
                 errors.append(check)
             documentation += '\n<div class="docstring">' + method_doc + "</div>"
             if return_anchors:
-                anchors.append(f"{anchors[0]}.{method}")
+                # The anchor name of the method might be different from its
+                method = find_object_in_package(f"{anchors[0]}.{method}", package=package)
+                method_name = get_shortest_path(method, package=package)
+                if anchor_name == method_name or method_name is None:
+                    anchors.append(anchor_name)
+                else:
+                    anchors.append((anchor_name, method_name))
     documentation = '<div class="docstring">\n' + documentation + "</div>\n"
 
     return (documentation, anchors, errors) if return_anchors else documentation
@@ -416,7 +451,7 @@ def resolve_links_in_text(text, package, mapping, page_info):
         page_info (`Dict[str, str]`): Some information about the page.
     """
     package_name = page_info.get("package_name", package.__name__)
-    version = page_info.get("version", "master")
+    version = page_info.get("version", "main")
     language = page_info.get("language", "en")
 
     prefix = f"/docs/{package_name}/{version}/{language}/"
@@ -441,7 +476,10 @@ def resolve_links_in_text(text, package, mapping, page_info):
         if anchor not in mapping:
             return f"`{object_name}`"
         page = f"{prefix}{mapping[anchor]}"
-        return f"[{object_name}]({page}#{anchor}){last_char}"
+        if "#" in page:
+            return f"[{object_name}]({page}){last_char}"
+        else:
+            return f"[{object_name}]({page}#{anchor}){last_char}"
 
     return re.sub(r"\[`([^`]+)`\]([^\(])", _resolve_link, text)
 

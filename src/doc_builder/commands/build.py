@@ -23,7 +23,7 @@ import tempfile
 from pathlib import Path
 
 from doc_builder import build_doc, update_versions_file
-from doc_builder.utils import get_default_branch_name, read_doc_config
+from doc_builder.utils import get_default_branch_name, get_doc_config, locate_kit_folder, read_doc_config
 
 
 def check_node_is_available():
@@ -49,24 +49,6 @@ def check_node_is_available():
         )
 
 
-def locate_kit_folder():
-    # First try: let's search where the module is.
-    repo_root = Path(__file__).parent.parent.parent.parent
-    kit_folder = repo_root / "kit"
-    if kit_folder.is_dir():
-        return kit_folder
-
-    # Second try, maybe we are inside the doc-builder repo
-    current_dir = Path.cwd()
-    while current_dir.parent != current_dir and not (current_dir / ".git").is_dir():
-        current_dir = current_dir.parent
-    kit_folder = current_dir / "kit"
-    if kit_folder.is_dir():
-        return kit_folder
-
-    # TODO for the future if asked for, if we can't locate the kit folder git clone doc-builder and cache it somewhere.
-
-
 def build_command(args):
     read_doc_config(args.path_to_docs)
     if args.html:
@@ -80,17 +62,27 @@ def build_command(args):
                 "the doc-builder package installed, so you need to run the command from inside the doc-builder repo."
             )
 
-    if args.version is None:
+    default_version = get_default_branch_name(args.path_to_docs)
+    if args.not_python_module and args.version is None:
+        version = default_version
+    elif args.version is None:
         module = importlib.import_module(args.library_name)
         version = module.__version__
 
         if "dev" in version:
-            version = get_default_branch_name(args.path_to_docs)
+            version = default_version
         else:
-            version = f"v{version}"
+            doc_config = get_doc_config()
+            version_prefix = getattr(doc_config, "version_prefix", "v")
+            version = f"{version_prefix}{version}"
     else:
         version = args.version
 
+    # Disable notebook building for non-master verion
+    if version != default_version:
+        args.notebook_dir = None
+
+    notebook_dir = Path(args.notebook_dir) / args.language if args.notebook_dir is not None else None
     output_path = Path(args.build_dir) / args.library_name / version / args.language
 
     print("Building docs for", args.library_name, args.path_to_docs, output_path)
@@ -101,7 +93,8 @@ def build_command(args):
         clean=args.clean,
         version=version,
         language=args.language,
-        notebook_dir=args.notebook_dir,
+        notebook_dir=notebook_dir,
+        is_python_module=not args.not_python_module,
     )
 
     # dev build should not update _versions.yml
@@ -128,7 +121,8 @@ def build_command(args):
                     shutil.copy(f, dest)
 
             # Move the objects.inv file at the root
-            shutil.move(tmp_dir / "kit" / "src" / "routes" / "objects.inv", tmp_dir / "objects.inv")
+            if not args.not_python_module:
+                shutil.move(tmp_dir / "kit" / "src" / "routes" / "objects.inv", tmp_dir / "objects.inv")
 
             # Build doc with node
             working_dir = str(tmp_dir / "kit")
@@ -159,7 +153,8 @@ def build_command(args):
             shutil.rmtree(output_path)
             shutil.copytree(tmp_dir / "kit" / "build", output_path)
             # Move the objects.inv file back
-            shutil.move(tmp_dir / "objects.inv", output_path / "objects.inv")
+            if not args.not_python_module:
+                shutil.move(tmp_dir / "objects.inv", output_path / "objects.inv")
 
 
 def build_command_parser(subparsers=None):
@@ -182,10 +177,15 @@ def build_command_parser(subparsers=None):
         "--version",
         type=str,
         help="Version of the documentation to generate. Will default to the version of the package module (using "
-        "`master` for a version containing dev).",
+        "`main` for a version containing dev).",
     )
     parser.add_argument("--notebook_dir", type=str, help="Where to save the generated notebooks.", default=None)
     parser.add_argument("--html", action="store_true", help="Whether or not to build HTML files instead of MDX files.")
+    parser.add_argument(
+        "--not_python_module",
+        action="store_true",
+        help="Whether docs files do NOT have correspoding python module (like HF course & hub docs).",
+    )
 
     if subparsers is not None:
         parser.set_defaults(func=build_command)

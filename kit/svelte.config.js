@@ -30,17 +30,18 @@ const config = {
 		vite: {
 			build: {
 				sourcemap: Boolean(process.env.DOCS_SOURCEMAP)
-			}
+			},
 		},
 
 		paths: {
-			base:
-				"/docs/" +
-				(process.env.DOCS_LIBRARY || "transformers") +
-				"/" +
-				(process.env.DOCS_VERSION || "master") +
-				"/" +
-				(process.env.DOCS_LANGUAGE || "en")
+			base: process.argv.includes("dev")
+				? ""
+				: "/docs/" +
+				  (process.env.DOCS_LIBRARY || "transformers") +
+				  "/" +
+				  (process.env.DOCS_VERSION || "main") +
+				  "/" +
+				  (process.env.DOCS_LANGUAGE || "en")
 		}
 	},
 

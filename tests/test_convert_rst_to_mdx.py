@@ -220,20 +220,20 @@ third line``.
 
         self.assertEqual(
             convert_rst_links("This is a prefixed :prefix_link:`link <url>`", page_info),
-            "This is a prefixed [link](https://github.com/huggingface/transformers/tree/master/url)",
+            "This is a prefixed [link](https://github.com/huggingface/transformers/tree/main/url)",
         )
         self.assertEqual(
             convert_rst_links("This is a prefixed :prefix_link:`link <url>`", page_info),
-            "This is a prefixed [link](https://github.com/huggingface/transformers/tree/master/url)",
+            "This is a prefixed [link](https://github.com/huggingface/transformers/tree/main/url)",
         )
 
         self.assertEqual(
             convert_rst_links("This is a link to an inner page :doc:`page`.", page_info),
-            "This is a link to an inner page [page](/docs/transformers/master/en/page).",
+            "This is a link to an inner page [page](/docs/transformers/main/en/page).",
         )
         self.assertEqual(
             convert_rst_links("This is a link to an inner page :doc:`page name <page ref>`.", page_info),
-            "This is a link to an inner page [page name](/docs/transformers/master/en/page ref).",
+            "This is a link to an inner page [page name](/docs/transformers/main/en/page ref).",
         )
 
         self.assertEqual(
@@ -248,11 +248,11 @@ third line``.
         page_info["page"] = "model_doc/bert.html"
         self.assertEqual(
             convert_rst_links("This is a link to an inner section :ref:`section`.", page_info),
-            "This is a link to an inner section [section](/docs/transformers/master/en/model_doc/bert#section).",
+            "This is a link to an inner section [section](/docs/transformers/main/en/model_doc/bert#section).",
         )
         self.assertEqual(
             convert_rst_links("This is a link to an inner section :ref:`section name <section ref>`.", page_info),
-            "This is a link to an inner section [section name](/docs/transformers/master/en/model_doc/bert#section ref).",
+            "This is a link to an inner section [section name](/docs/transformers/main/en/model_doc/bert#section ref).",
         )
 
     def test_convert_rst_links_with_version_and_lang(self):
@@ -630,6 +630,37 @@ Loulou
 Now we are out of the list.
 """
 
+        example1b = """
+    Lala
+    Loulou
+
+    - This is a list.
+      This item is long.
+    - This is the second item.
+          - This list is nested
+          - With two items.
+        Now we are at the nested level
+
+    - We return to the previous level.
+
+    Now we are out of the list.
+"""
+        expected1b = """
+Lala
+Loulou
+
+- This is a list.
+  This item is long.
+- This is the second item.
+  - This list is nested
+  - With two items.
+  Now we are at the nested level
+
+- We return to the previous level.
+
+Now we are out of the list.
+"""
+
         example2 = """
 [[autodoc]] transformers.BertModel
     - forward
@@ -672,6 +703,7 @@ def function(x):
 Loulou
 """
         self.assertEqual(remove_indent(example1), expected1)
+        self.assertEqual(remove_indent(example1b), expected1b)
         self.assertEqual(remove_indent(example2), expected2)
         self.assertEqual(remove_indent(example3), expected3)
 

@@ -9,9 +9,15 @@ on:
       package:
         required: true
         type: string
-      path_to_doc:
+      path_to_docs:
         type: string
       notebook_folder:
+        type: string
+      # supply --not_python_module for HF Course
+      additional_args:
+        type: string
+      languages:
+      # supply space-separated language codes
         type: string
     secrets:
       token:
@@ -62,6 +68,7 @@ jobs:
           fi
 
       - name: Setup environment
+        shell: bash
         run: |
           pip uninstall -y doc-builder
           cd doc-builder
@@ -69,8 +76,11 @@ jobs:
           pip install .
           cd ..
 
-          cd ${{ inputs.package }}
-          pip install .[dev]
+          if [[ "${{ inputs.additional_args }}" != *"--not_python_module"* ]];
+          then
+            cd ${{ inputs.package }}
+            pip install .[dev]
+          fi
           cd ..
 
       - name: Setup git
@@ -88,21 +98,33 @@ jobs:
           cp doc-build/${{ inputs.package }}/_versions.yml build_dir/${{ inputs.package }}
 
       - name: Make documentation
+        shell: bash
         env:
           NODE_OPTIONS: --max-old-space-size=6656
         run: |
           echo "doc_folder has been set to ${{ env.doc_folder }}"
+          cd doc-builder
+          args="--build_dir ../build_dir --clean --html ${{ inputs.additional_args }}"
 
-          if [ -z "${{ inputs.notebook_folder }}" ]
+          if [ ! -z "${{ inputs.notebook_folder }}" ];
           then
-            cd doc-builder &&
-            doc-builder build ${{ inputs.package }} ../${{ env.doc_folder }} --build_dir ../build_dir --clean --html &&
-            cd ..
-          else
-            cd doc-builder &&
-            doc-builder build ${{ inputs.package }} ../${{ env.doc_folder }} --build_dir ../build_dir --notebook_dir ../notebook_dir --clean --html &&
-            cd ..
+            args="$args --notebook_dir ../notebook_dir"
           fi
+
+          if [ -z "${{ inputs.languages }}" ];
+          then
+            echo "languages not provided, defaulting to English"
+            doc-builder build ${{ inputs.package }} ../${{ env.doc_folder }} $args
+          else
+            IFS=', ' read -r -a langs <<< "${{ inputs.languages }}"
+            for lang in "${langs[@]}"
+            do
+                echo "Generating docs for language $lang"
+                doc-builder build ${{ inputs.package }} ../${{ env.doc_folder }}/$lang $args --language $lang
+            done
+          fi
+
+          cd ..
 
       - name: Push to repositories
         run: |
@@ -116,7 +138,9 @@ jobs:
           if [[ `git status --porcelain` ]]; then 
             git add .
             git commit -m "Updated with commit ${{ inputs.commit_sha }} See: https://github.com/huggingface/${{ inputs.package }}/commit/${{ inputs.commit_sha }}"
-            git push origin main
+            git push origin main ||
+            (echo "Failed on the first try, rebasing and pushing again" && git pull --rebase && git push origin main) ||
+            (echo "Failed on the second try, rebasing and pushing again" && git pull --rebase && git push origin main)
           else
             echo "No diff in the documentation."
           fi
@@ -134,7 +158,9 @@ jobs:
             if [[ `git status --porcelain` ]]; then
               git add ${{ inputs.notebook_folder }}
               git commit -m "Updated ${{ inputs.package }} doc notebooks with commit ${{ inputs.commit_sha }} \n\nSee: https://github.com/huggingface/${{ inputs.package }}/commit/${{ inputs.commit_sha }}"
-              git push origin master
+              git push origin main ||
+              (echo "Failed on the first try, rebasing and pushing again" && git pull --rebase && git push origin main) ||
+              (echo "Failed on the second try, rebasing and pushing again" && git pull --rebase && git push origin main)
             else
               echo "No diff in the notebooks."
             fi

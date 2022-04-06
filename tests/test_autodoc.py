@@ -35,11 +35,11 @@ from doc_builder.autodoc import (
     resolve_links_in_text,
 )
 from transformers import BertModel, BertTokenizer, BertTokenizerFast
-from transformers.file_utils import PushToHubMixin
+from transformers.utils import PushToHubMixin
 
 
 # This is dynamic since the Transformers library is not frozen.
-TEST_LINE_NUMBER = inspect.getsourcelines(transformers.file_utils.ModelOutput)[1]
+TEST_LINE_NUMBER = inspect.getsourcelines(transformers.utils.ModelOutput)[1]
 
 TEST_DOCSTRING = """Constructs a BERTweet tokenizer, using Byte-Pair-Encoding.
 
@@ -135,7 +135,7 @@ Builds something very cool!
 
 class AutodocTester(unittest.TestCase):
     test_source_link = (
-        f"https://github.com/huggingface/transformers/blob/master/src/transformers/file_utils.py#L{TEST_LINE_NUMBER}"
+        f"https://github.com/huggingface/transformers/blob/main/src/transformers/utils/generic.py#L{TEST_LINE_NUMBER}"
     )
 
     def test_find_object_in_package(self):
@@ -161,7 +161,7 @@ class AutodocTester(unittest.TestCase):
     def test_get_shortest_path(self):
         self.assertEqual(get_shortest_path(BertModel, transformers), "transformers.BertModel")
         self.assertEqual(get_shortest_path(BertModel.forward, transformers), "transformers.BertModel.forward")
-        self.assertEqual(get_shortest_path(PushToHubMixin, transformers), "transformers.file_utils.PushToHubMixin")
+        self.assertEqual(get_shortest_path(PushToHubMixin, transformers), "transformers.utils.PushToHubMixin")
 
     def test_get_type_name(self):
         self.assertEqual(get_type_name(str), "str")
@@ -242,13 +242,13 @@ Users should refer to this superclass for more information regarding those metho
 
     def test_get_source_link(self):
         page_info = {"package_name": "transformers"}
-        self.assertEqual(get_source_link(transformers.file_utils.ModelOutput, page_info), self.test_source_link)
+        self.assertEqual(get_source_link(transformers.utils.ModelOutput, page_info), self.test_source_link)
 
     def test_document_object(self):
         page_info = {"package_name": "transformers"}
 
         model_output_doc = """
-<docstring><name>class transformers.file_utils.ModelOutput</name><anchor>transformers.file_utils.ModelOutput</anchor><source>"""
+<docstring><name>class transformers.utils.ModelOutput</name><anchor>transformers.utils.ModelOutput</anchor><source>"""
         model_output_doc += f"{self.test_source_link}"
         model_output_doc += """</source><parameters>""</parameters></docstring>
 
@@ -256,16 +256,16 @@ Base class for all model outputs as dataclass. Has a `__getitem__` that allows i
 tuple) or strings (like a dictionary) that will ignore the `None` attributes. Otherwise behaves like a regular
 python dictionary.
 
-<Tip warning=&amp;lcub;true}>
+<Tip warning={true}>
 
-You can't unpack a `ModelOutput` directly. Use the [`~file_utils.ModelOutput.to_tuple`] method to convert it to a
-tuple before.
+You can't unpack a `ModelOutput` directly. Use the [`~utils.ModelOutput.to_tuple`] method to convert it to a tuple
+before.
 
 </Tip>
 
 
 """
-        self.assertEqual(document_object("file_utils.ModelOutput", transformers, page_info)[0], model_output_doc)
+        self.assertEqual(document_object("utils.ModelOutput", transformers, page_info)[0], model_output_doc)
 
     def test_find_document_methods(self):
         self.assertListEqual(find_documented_methods(BertModel), ["forward"])
@@ -301,7 +301,7 @@ tuple before.
             anchors,
             [
                 "transformers.BertTokenizer",
-                "transformers.BertTokenizer.__call__",
+                ("transformers.BertTokenizer.__call__", "transformers.PreTrainedTokenizerBase.__call__"),
                 "transformers.BertTokenizer.build_inputs_with_special_tokens",
                 "transformers.BertTokenizer.convert_tokens_to_string",
                 "transformers.BertTokenizer.create_token_type_ids_from_sequences",
@@ -310,7 +310,13 @@ tuple before.
         )
 
         _, anchors, _ = autodoc("BertTokenizer", transformers, methods=["__call__"], return_anchors=True)
-        self.assertListEqual(anchors, ["transformers.BertTokenizer", "transformers.BertTokenizer.__call__"])
+        self.assertListEqual(
+            anchors,
+            [
+                "transformers.BertTokenizer",
+                ("transformers.BertTokenizer.__call__", "transformers.PreTrainedTokenizerBase.__call__"),
+            ],
+        )
 
     def test_resolve_links_in_text(self):
         page_info = {"package_name": "transformers"}
@@ -329,9 +335,9 @@ tuple before.
                 page_info,
             ),
             (
-                "Link to [BertModel](/docs/transformers/master/en/model_doc/bert.html#transformers.BertModel), "
-                "[BertModel.forward()](/docs/transformers/master/en/model_doc/bert.html#transformers.BertModel.forward) "
-                "and [BertTokenizer](/docs/transformers/master/en/bert.html#transformers.BertTokenizer) as well as `SomeClass`."
+                "Link to [BertModel](/docs/transformers/main/en/model_doc/bert.html#transformers.BertModel), "
+                "[BertModel.forward()](/docs/transformers/main/en/model_doc/bert.html#transformers.BertModel.forward) "
+                "and [BertTokenizer](/docs/transformers/main/en/bert.html#transformers.BertTokenizer) as well as `SomeClass`."
             ),
         )
 
@@ -343,8 +349,8 @@ tuple before.
                 page_info,
             ),
             (
-                "Link to [BertModel](/docs/transformers/master/en/model_doc/bert.html#transformers.BertModel), "
-                "[forward()](/docs/transformers/master/en/model_doc/bert.html#transformers.BertModel.forward)."
+                "Link to [BertModel](/docs/transformers/main/en/model_doc/bert.html#transformers.BertModel), "
+                "[forward()](/docs/transformers/main/en/model_doc/bert.html#transformers.BertModel.forward)."
             ),
         )
 
@@ -356,8 +362,8 @@ tuple before.
                 page_info,
             ),
             (
-                "Link to [transformers.BertModel](/docs/transformers/master/en/model_doc/bert.html#transformers.BertModel), "
-                "[transformers.BertModel.forward()](/docs/transformers/master/en/model_doc/bert.html#transformers.BertModel.forward)."
+                "Link to [transformers.BertModel](/docs/transformers/main/en/model_doc/bert.html#transformers.BertModel), "
+                "[transformers.BertModel.forward()](/docs/transformers/main/en/model_doc/bert.html#transformers.BertModel.forward)."
             ),
         )
 

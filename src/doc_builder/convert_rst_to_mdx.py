@@ -92,7 +92,7 @@ def convert_rst_links(text, page_info):
     if "package_name" not in page_info:
         raise ValueError("`page_info` must contain at least the package_name.")
     package_name = page_info["package_name"]
-    version = page_info.get("version", "master")
+    version = page_info.get("version", "main")
     language = page_info.get("language", "en")
     no_prefix = page_info.get("no_prefix", False)
 
@@ -116,7 +116,7 @@ def convert_rst_links(text, page_info):
 
     # Links with a prefix
     # TODO: when it exists, use the API to deal with prefix links properly.
-    prefix = f"https://github.com/huggingface/{package_name}/tree/master/"
+    prefix = f"https://github.com/huggingface/{package_name}/tree/main/"
     text = _re_prefix_links.sub(rf"[\1]({prefix}\2)", text)
     # Other links
     text = _re_links.sub(r"[\1](\2)", text)
@@ -220,7 +220,7 @@ def convert_rst_blocks(text, page_info):
     if "package_name" not in page_info:
         raise ValueError("`page_info` must contain at least the package_name.")
     package_name = page_info["package_name"]
-    version = page_info.get("version", "master")
+    version = page_info.get("version", "main")
     language = page_info.get("language", "en")
 
     lines = text.split("\n")
@@ -519,11 +519,14 @@ def remove_indent(text):
             elif len(current_indents) > 0:
                 # Let's find the proper level of indentation
                 level = len(current_indents) - 1
-                while level >= 0 and current_indents[level] != indent:
+                while level >= 0 and current_indents[level] > indent:
                     level -= 1
                 current_indents = current_indents[: level + 1]
                 if level >= 0:
-                    new_indents = new_indents[:level]
+                    if current_indents[level] < indent:
+                        new_indents = new_indents[: level + 1]
+                    else:
+                        new_indents = new_indents[:level]
                     new_indent = 0 if len(new_indents) == 0 else new_indents[-1]
                     lines[idx] = " " * new_indent + line[indent:]
                     new_indents.append(new_indent)
