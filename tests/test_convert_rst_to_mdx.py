@@ -51,6 +51,7 @@ from doc_builder.convert_rst_to_mdx import (
     remove_indent,
     split_arg_line,
     split_pt_tf_code_blocks,
+    split_raise_line,
     split_return_line,
 )
 
@@ -473,6 +474,23 @@ $$formula$$
         self.assertEqual(split_return_line(":class:`IterableDataset`"), (":class:`IterableDataset`", ""))
         self.assertEqual(split_return_line("`int`"), ("`int`", ""))
 
+    def test_split_raise_line(self):
+        self.assertEqual(split_raise_line("SomeError some error"), ("SomeError", "some error"))
+        self.assertEqual(split_raise_line("SomeError: some error"), ("SomeError", "some error"))
+        self.assertEqual(
+            split_raise_line("[SomeError](https:://someurl): some error"),
+            ("[SomeError](https:://someurl)", "some error"),
+        )
+        self.assertEqual(
+            split_raise_line(
+                "[`HTTPError`](https://2.python-requests.org/en/master/api/#requests.HTTPError) if credentials are invalid"
+            ),
+            (
+                "[`HTTPError`](https://2.python-requests.org/en/master/api/#requests.HTTPError)",
+                "if credentials are invalid",
+            ),
+        )
+
     def test_split_arg_line(self):
         self.assertEqual(split_arg_line("   x (:obj:`int`): an int"), ("   x (:obj:`int`)", " an int"))
         self.assertEqual(split_arg_line("   x (:obj:`int`)"), ("   x (:obj:`int`)", ""))
@@ -492,6 +510,7 @@ Raises:
     TypeError: if the target type is not supported according, e.g.
         - point1
         - point2
+    [`HTTPError`](https://2.python-requests.org/en/master/api/#requests.HTTPError) if credentials are invalid
 
 Returns:
     :obj:`str` or :obj:`bool`: some result
@@ -519,10 +538,11 @@ docstring
 - ``TypeError`` -- if the target type is not supported according, e.g.
         - point1
         - point2
+- [`HTTPError`](https://2.python-requests.org/en/master/api/#requests.HTTPError) -- if credentials are invalid
 
 </raises>
 
-<raisederrors>``pa.ArrowInvalidError`` or ``TypeError``</raisederrors>
+<raisederrors>``pa.ArrowInvalidError`` or ``TypeError`` or ``HTTPError``</raisederrors>
 
 <returns>
 

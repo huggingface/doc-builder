@@ -343,6 +343,17 @@ def split_return_line(line):
     return ":".join(splits_on_colon[:idx]), ":".join(splits_on_colon[idx:])
 
 
+def split_raise_line(line):
+    """
+    Split the raise line with format `SomeError some doc`.
+    """
+    splits_on_colon = line.strip().split(" ")
+    error_type, doc = splits_on_colon[0], " ".join(splits_on_colon[1:])
+    if error_type and error_type[-1] == ":":
+        error_type = error_type[:-1]
+    return error_type, doc
+
+
 def split_arg_line(line):
     """
     Split the return line with format `type: some doc`. Type may contain colons in the form of :obj: or :class:.
@@ -361,6 +372,7 @@ class InvalidRstDocstringError(ValueError):
 
 
 _re_parameters = re.compile(r"<parameters>(((?!<parameters>).)*)</parameters>", re.DOTALL)
+_re_md_link = re.compile(r"\[(.+)\]\(.+\)", re.DOTALL)
 
 
 def parse_rst_docstring(docstring):
@@ -419,9 +431,13 @@ def parse_rst_docstring(docstring):
                     idx += 1
             else:
                 while idx < len(lines) and find_indent(lines[idx]) == return_indent:
-                    return_type, return_description = split_return_line(lines[idx])
+                    return_type, return_description = split_raise_line(lines[idx])
                     raised_error = re.sub(r"^\s*`?([\w\.]*)`?$", r"``\1``", return_type)
-                    lines[idx] = "- " + raised_error + " --" + return_description
+                    lines[idx] = "- " + raised_error + " -- " + return_description
+                    md_link = _re_md_link.match(raised_error)
+                    if md_link:
+                        raised_error = md_link[1]
+                        raised_error = re.sub(r"^\s*`?([\w\.]*)`?$", r"``\1``", raised_error)
                     raised_errors.append(raised_error)
                     idx += 1
                     while idx < len(lines) and (is_empty_line(lines[idx]) or find_indent(lines[idx]) > return_indent):
