@@ -474,7 +474,7 @@ def resolve_links_in_text(text, package, mapping, page_info):
         # Link to the anchor
         anchor = get_shortest_path(obj, package)
         if anchor not in mapping:
-            return f"`{object_name}`"
+            return f"`{object_name}`{last_char}"
         page = f"{prefix}{mapping[anchor]}"
         if "#" in page:
             return f"[{object_name}]({page}){last_char}"
