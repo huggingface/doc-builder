@@ -75,7 +75,7 @@
 
 <div
 	class="border-l-2 border-t-2 pl-4 pt-3.5 border-gray-100 rounded-tl-xl mb-6 mt-8 {hashlink ===
-		anchor && bgHighlightClass}"
+		anchor ? bgHighlightClass : ''}"
 >
 	<span
 		class="group flex space-x-1.5 items-center text-gray-800 bg-gradient-to-r rounded-tr-lg -mt-4 -ml-4 pt-3 px-2.5"
@@ -149,7 +149,7 @@
 			</p>
 			<ul class="px-2">
 				{#each parametersDescription as { anchor, description }}
-					<li class="text-base !pl-4 my-3 rounded {hashlink === anchor && bgHighlightClass}">
+					<li class="text-base !pl-4 my-3 rounded {hashlink === anchor ? bgHighlightClass : ''}">
 						<span class="group flex space-x-1.5 items-start">
 							<a
 								id={anchor}
@@ -177,7 +177,7 @@
 		{#if !!returnType}
 			<div
 				class="flex items-center font-semibold space-x-3 text-base !mt-0 !mb-0 text-gray-800 rounded {hashlink ===
-					anchor && bgHighlightClass}"
+					anchor ? bgHighlightClass : ''}"
 				id={`${anchor}.returns`}
 			>
 				<p class="text-base">Returns</p>
