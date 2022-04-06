@@ -30,7 +30,7 @@ const config = {
 		vite: {
 			build: {
 				sourcemap: Boolean(process.env.DOCS_SOURCEMAP)
-			},
+			}
 		},
 
 		paths: {
