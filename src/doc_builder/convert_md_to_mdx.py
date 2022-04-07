@@ -107,7 +107,8 @@ _re_literalinclude = re.compile(r"([ \t]*)<literalinclude>(((?!<literalinclude>)
 
 def convert_literalinclude_helper(match, page_info):
     """
-    Convert a docstring written in Markdown to mdx.
+    Convert a literalinclude regex match into markdown code blocks by opening a file and
+    copying specificed start-end section into markdown code block.
     """
     literalinclude_info = eval(match[2].strip())
     indent = match[1]
@@ -130,7 +131,7 @@ def convert_literalinclude_helper(match, page_info):
 
 def convert_literalinclude(text, page_info):
     """
-    Convert a docstring written in Markdown to mdx.
+    Convert a literalinclude into markdown code blocks.
     """
     text = _re_literalinclude.sub(lambda m: convert_literalinclude_helper(m, page_info), text)
     return text
@@ -148,8 +149,9 @@ def convert_md_docstring_to_mdx(docstring, page_info):
 def process_md(text, page_info):
     """
     Processes markdown by:
-        1. Converting special characters
-        2. Converting image links
+        1. Converting literalinclude
+        2. Converting special characters
+        3. Converting image links
     """
     text = convert_literalinclude(text, page_info)
     text = convert_special_chars(text)
