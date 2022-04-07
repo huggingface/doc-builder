@@ -28,7 +28,7 @@
 			const { name, description } = element;
 			return { ...acc, [name]: description };
 		}, {}) || {};
-	const bgHighlightClass = "bg-yellow-100 dark:bg-[#494a3d]";
+	const bgHighlightClass = "bg-yellow-50 dark:bg-[#494a3d]";
 
 	onMount(() => {
 		const { hash } = window.location;
