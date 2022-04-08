@@ -203,13 +203,14 @@ by default) you can put the list of methods to add in a list that contains `all`
 ```
 
 You can create a code-block by referencing a file excerpt with `<literalinclude>` (sphinx-inspired) syntax. 
+There should be json between `<literalinclude>` open & close tags.
 ```
 <literalinclude>
-{'path': './data/convert_literalinclude_dummy.txt', # relative path
-'language': 'python', # defaults to '' (empty str)
-'start-after': 'START python_import',
-'end-before': 'END python_import',
-'dedent': 7 # defaults to 0
+{"path": "./data/convert_literalinclude_dummy.txt", # relative path
+"language": "python", # defaults to " (empty str)
+"start-after": "START python_import",
+"end-before": "END python_import",
+"dedent": 7 # defaults to 0
 }
 </literalinclude>
 ```
