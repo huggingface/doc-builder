@@ -33,7 +33,7 @@
 </script>
 
 <form class="px-4 py-1.5 flex flex-wrap items-center justify-between border-b border-gray-100">
-	<ul class="flex space-x-2 items-center my-1.5 mr-8 h-7">
+	<ul class="flex space-x-2 items-center my-1.5 mr-8 h-7 !pl-0">
 		{#each LANGUAGES_CONFIG as language}
 			<li
 				class="flex items-center border rounded-lg px-1.5 py-1 leading-none select-none text-smd
