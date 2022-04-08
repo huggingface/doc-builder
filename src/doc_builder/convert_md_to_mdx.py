@@ -14,6 +14,7 @@
 # limitations under the License.
 
 
+import json
 import re
 
 from .convert_rst_to_mdx import parse_rst_docstring, remove_indent
@@ -109,7 +110,7 @@ def convert_literalinclude_helper(match, page_info):
     Convert a literalinclude regex match into markdown code blocks by opening a file and
     copying specificed start-end section into markdown code block.
     """
-    literalinclude_info = eval(match[2].strip())
+    literalinclude_info = json.loads(match[2].strip())
     indent = match[1]
     file = page_info["path"].parent / literalinclude_info["path"]
     with open(file, "r", encoding="utf-8-sig") as reader:

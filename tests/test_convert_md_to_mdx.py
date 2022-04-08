@@ -97,10 +97,10 @@ export let fw: "pt" | "tf"
         page_info = {"path": path}
         # test canonical
         text = """<literalinclude>
-{'path': './data/convert_literalinclude_dummy.txt',
-'language': 'python',
-'start-after': 'START python_import',
-'end-before': 'END python_import'}
+{"path": "./data/convert_literalinclude_dummy.txt",
+"language": "python",
+"start-after": "START python_import",
+"end-before": "END python_import"}
 </literalinclude>"""
         expected_conversion = """```python
 import numpy as np
@@ -109,9 +109,9 @@ import pandas as pd
         self.assertEqual(convert_literalinclude(text, page_info), expected_conversion)
         # test without language
         text = """<literalinclude>
-{'path': './data/convert_literalinclude_dummy.txt',
-'start-after': 'START python_import',
-'end-before': 'END python_import'}
+{"path": "./data/convert_literalinclude_dummy.txt",
+"start-after": "START python_import",
+"end-before": "END python_import"}
 </literalinclude>"""
         expected_conversion = """```
 import numpy as np
@@ -121,9 +121,9 @@ import pandas as pd
         # test with indent
         text = """Some text
     <literalinclude>
-{'path': './data/convert_literalinclude_dummy.txt',
-'start-after': 'START python_import',
-'end-before': 'END python_import'}
+{"path": "./data/convert_literalinclude_dummy.txt",
+"start-after": "START python_import",
+"end-before": "END python_import"}
 </literalinclude>"""
         expected_conversion = """Some text
     ```
@@ -134,10 +134,10 @@ import pandas as pd
         # test with dedent
         text = """Some text
     <literalinclude>
-{'path': './data/convert_literalinclude_dummy.txt',
-'start-after': 'START python_import',
-'end-before': 'END python_import',
-'dedent': 7}
+{"path": "./data/convert_literalinclude_dummy.txt",
+"start-after": "START python_import",
+"end-before": "END python_import",
+"dedent": 7}
 </literalinclude>"""
         expected_conversion = """Some text
     ```
