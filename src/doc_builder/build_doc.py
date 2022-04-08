@@ -167,7 +167,7 @@ def build_mdx_files(package, doc_folder, output_dir, page_info):
     for file in tqdm(all_files, desc="Building the MDX files"):
         new_anchors = None
         errors = None
-        page_info["file"] = file
+        page_info["path"] = file
         try:
             if file.suffix in [".md", ".mdx"]:
                 dest_file = output_dir / (file.with_suffix(".mdx").relative_to(doc_folder))

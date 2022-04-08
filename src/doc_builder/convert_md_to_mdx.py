@@ -111,7 +111,7 @@ def convert_literalinclude_helper(match, page_info):
     """
     literalinclude_info = eval(match[2].strip())
     indent = match[1]
-    file = page_info["file"].parent / literalinclude_info["path"]
+    file = page_info["path"].parent / literalinclude_info["path"]
     with open(file, "r", encoding="utf-8-sig") as reader:
         lines = reader.readlines()
     start_after, end_before = -1, -1

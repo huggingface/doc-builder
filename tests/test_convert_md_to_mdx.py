@@ -94,7 +94,7 @@ export let fw: "pt" | "tf"
 
     def test_convert_literalinclude(self):
         path = Path(__file__).resolve()
-        page_info = {"file": path}
+        page_info = {"path": path}
         # test canonical
         text = """<literalinclude>
 {'path': './data/convert_literalinclude_dummy.txt',
