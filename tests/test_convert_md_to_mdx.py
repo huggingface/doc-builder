@@ -16,6 +16,8 @@
 
 import unittest
 
+from torch import exp
+
 from doc_builder.convert_md_to_mdx import convert_img_links, convert_md_to_mdx, convert_special_chars, process_md
 
 
@@ -23,7 +25,30 @@ class ConvertMdToMdxTester(unittest.TestCase):
     def test_convert_md_to_mdx(self):
         page_info = {"package_name": "transformers", "version": "v4.10.0", "language": "fr"}
         md_text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit"
-        expected_conversion = '<script lang="ts">\nimport {onMount} from "svelte";\nimport Tip from "$lib/Tip.svelte";\nimport Youtube from "$lib/Youtube.svelte";\nimport Docstring from "$lib/Docstring.svelte";\nimport CodeBlock from "$lib/CodeBlock.svelte";\nimport CodeBlockFw from "$lib/CodeBlockFw.svelte";\nimport DocNotebookDropdown from "$lib/DocNotebookDropdown.svelte";\nimport IconCopyLink from "$lib/IconCopyLink.svelte";\nimport FrameworkContent from "$lib/FrameworkContent.svelte";\nimport Markdown from "$lib/Markdown.svelte";\nimport Question from "$lib/Question.svelte";\nimport FrameworkSwitchCourse from "$lib/FrameworkSwitchCourse.svelte";\nlet fw: "pt" | "tf" = "pt";\nonMount(() => {\n    const urlParams = new URLSearchParams(window.location.search);\n    fw = urlParams.get("fw") || "pt";\n});\n</script>\n<svelte:head>\n  <meta name="hf:doc:metadata" content={JSON.stringify(metadata)} >\n</svelte:head>\nLorem ipsum dolor sit amet, consectetur adipiscing elit'
+        expected_conversion = """<script lang="ts">
+import {onMount} from "svelte";
+import Tip from "$lib/Tip.svelte";
+import Youtube from "$lib/Youtube.svelte";
+import Docstring from "$lib/Docstring.svelte";
+import CodeBlock from "$lib/CodeBlock.svelte";
+import CodeBlockFw from "$lib/CodeBlockFw.svelte";
+import DocNotebookDropdown from "$lib/DocNotebookDropdown.svelte";
+import IconCopyLink from "$lib/IconCopyLink.svelte";
+import FrameworkContent from "$lib/FrameworkContent.svelte";
+import Markdown from "$lib/Markdown.svelte";
+import Question from "$lib/Question.svelte";
+import FrameworkSwitchCourse from "$lib/FrameworkSwitchCourse.svelte";
+import TokenizersLanguageContent from "$lib/TokenizersLanguageContent.svelte";
+let fw: "pt" | "tf" = "pt";
+onMount(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    fw = urlParams.get("fw") || "pt";
+});
+</script>
+<svelte:head>
+  <meta name="hf:doc:metadata" content={JSON.stringify(metadata)} >
+</svelte:head>
+Lorem ipsum dolor sit amet, consectetur adipiscing elit"""
         self.assertEqual(convert_md_to_mdx(md_text, page_info), expected_conversion)
 
     def test_convert_special_chars(self):
