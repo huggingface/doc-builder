@@ -15,8 +15,15 @@
 
 
 import unittest
+from pathlib import Path
 
-from doc_builder.convert_md_to_mdx import convert_img_links, convert_md_to_mdx, convert_special_chars, process_md
+from doc_builder.convert_md_to_mdx import (
+    convert_img_links,
+    convert_literalinclude,
+    convert_md_to_mdx,
+    convert_special_chars,
+    process_md,
+)
 
 
 class ConvertMdToMdxTester(unittest.TestCase):
@@ -84,3 +91,57 @@ export let fw: "pt" | "tf"
 &amp;lcub;}
 &amp;lt;>"""
         self.assertEqual(process_md(text, page_info), expected_conversion)
+
+    def test_convert_literalinclude(self):
+        path = Path(__file__).resolve()
+        page_info = {"file": path}
+        # test canonical
+        text = """<literalinclude>
+{'path': './data/convert_literalinclude_dummy.py',
+'language': 'python',
+'start-after': 'START python_import',
+'end-before': 'END python_import'}
+</literalinclude>"""
+        expected_conversion = """```python
+import numpy as np
+import pandas as pd
+```"""
+        self.assertEqual(convert_literalinclude(text, page_info), expected_conversion)
+        # test without language
+        text = """<literalinclude>
+{'path': './data/convert_literalinclude_dummy.py',
+'start-after': 'START python_import',
+'end-before': 'END python_import'}
+</literalinclude>"""
+        expected_conversion = """```
+import numpy as np
+import pandas as pd
+```"""
+        self.assertEqual(convert_literalinclude(text, page_info), expected_conversion)
+        # test with indent
+        text = """Some text
+    <literalinclude>
+{'path': './data/convert_literalinclude_dummy.py',
+'start-after': 'START python_import',
+'end-before': 'END python_import'}
+</literalinclude>"""
+        expected_conversion = """Some text
+    ```
+    import numpy as np
+    import pandas as pd
+    ```"""
+        self.assertEqual(convert_literalinclude(text, page_info), expected_conversion)
+        # test with dedent
+        text = """Some text
+    <literalinclude>
+{'path': './data/convert_literalinclude_dummy.py',
+'start-after': 'START python_import',
+'end-before': 'END python_import',
+'dedent': 7}
+</literalinclude>"""
+        expected_conversion = """Some text
+    ```
+    numpy as np
+    pandas as pd
+    ```"""
+        self.assertEqual(convert_literalinclude(text, page_info), expected_conversion)

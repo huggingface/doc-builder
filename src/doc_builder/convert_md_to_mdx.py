@@ -15,7 +15,6 @@
 
 
 import re
-from pathlib import Path
 
 from .convert_rst_to_mdx import parse_rst_docstring, remove_indent
 
@@ -125,8 +124,8 @@ def convert_literalinclude_helper(match, page_info):
         raise ValueError(f"The following 'literalinclude' does NOT exist:\n{match[0]}")
     literalinclude = lines[start_after:end_before]
     literalinclude = [indent + line[literalinclude_info.get("dedent", 0) :] for line in literalinclude]
-    literalinclude = "\n".join(literalinclude)
-    return f"""{indent}```{literalinclude_info.get('language', '')}\n{literalinclude}\n{indent}```"""
+    literalinclude = "".join(literalinclude)
+    return f"""{indent}```{literalinclude_info.get('language', '')}\n{literalinclude}{indent}```"""
 
 
 def convert_literalinclude(text, page_info):
