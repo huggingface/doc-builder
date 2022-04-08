@@ -97,7 +97,7 @@ export let fw: "pt" | "tf"
         page_info = {"file": path}
         # test canonical
         text = """<literalinclude>
-{'path': './data/convert_literalinclude_dummy.py',
+{'path': './data/convert_literalinclude_dummy.txt',
 'language': 'python',
 'start-after': 'START python_import',
 'end-before': 'END python_import'}
@@ -109,7 +109,7 @@ import pandas as pd
         self.assertEqual(convert_literalinclude(text, page_info), expected_conversion)
         # test without language
         text = """<literalinclude>
-{'path': './data/convert_literalinclude_dummy.py',
+{'path': './data/convert_literalinclude_dummy.txt',
 'start-after': 'START python_import',
 'end-before': 'END python_import'}
 </literalinclude>"""
@@ -121,7 +121,7 @@ import pandas as pd
         # test with indent
         text = """Some text
     <literalinclude>
-{'path': './data/convert_literalinclude_dummy.py',
+{'path': './data/convert_literalinclude_dummy.txt',
 'start-after': 'START python_import',
 'end-before': 'END python_import'}
 </literalinclude>"""
@@ -134,7 +134,7 @@ import pandas as pd
         # test with dedent
         text = """Some text
     <literalinclude>
-{'path': './data/convert_literalinclude_dummy.py',
+{'path': './data/convert_literalinclude_dummy.txt',
 'start-after': 'START python_import',
 'end-before': 'END python_import',
 'dedent': 7}
