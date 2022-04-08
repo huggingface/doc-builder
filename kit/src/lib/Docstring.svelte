@@ -18,6 +18,7 @@
 	export let returnDescription: string;
 	export let returnType: string;
 	export let source: string;
+	export let hashlink: string | undefined;
 
 	let parametersElement: HTMLElement;
 	let collapsed: boolean = false;
@@ -27,11 +28,13 @@
 			const { name, description } = element;
 			return { ...acc, [name]: description };
 		}, {}) || {};
+	const bgHighlightClass = "bg-yellow-50 dark:bg-[#494a3d]";
 
 	onMount(() => {
 		const { hash } = window.location;
+		hashlink = hash.substring(1);
 		const containsAnchor =
-			!!hash && parametersDescription?.some(({ anchor }) => anchor === hash.substring(1));
+			!!hash && parametersDescription?.some(({ anchor }) => anchor === hashlink);
 
 		collapsed = !containsAnchor && parametersElement.clientHeight > 500;
 	});
@@ -61,9 +64,19 @@
 		const REGEX_P = /\s*<p>(((?!<p>).)*)<\/p>\s*/gms;
 		return txt.replace(REGEX_P, (_, content) => `<span>${content}</span>`);
 	}
+
+	function onHashChange() {
+		const { hash } = window.location;
+		hashlink = hash.substring(1);
+	}
 </script>
 
-<div>
+<svelte:window on:hashchange={onHashChange} />
+
+<div
+	class="border-l-2 border-t-2 pl-4 pt-3.5 border-gray-100 rounded-tl-xl mb-6 mt-8 {hashlink ===
+		anchor ? bgHighlightClass : ''}"
+>
 	<span
 		class="group flex space-x-1.5 items-center text-gray-800 bg-gradient-to-r rounded-tr-lg -mt-4 -ml-4 pt-3 px-2.5"
 		id={anchor}
@@ -136,7 +149,7 @@
 			</p>
 			<ul class="px-2">
 				{#each parametersDescription as { anchor, description }}
-					<li class="text-base !pl-4 my-3">
+					<li class="text-base !pl-4 my-3 rounded {hashlink === anchor ? bgHighlightClass : ''}">
 						<span class="group flex space-x-1.5 items-start">
 							<a
 								id={anchor}
@@ -163,7 +176,8 @@
 		{/if}
 		{#if !!returnType}
 			<div
-				class="flex items-center font-semibold space-x-3 text-base !mt-0 !mb-0 text-gray-800"
+				class="flex items-center font-semibold space-x-3 text-base !mt-0 !mb-0 text-gray-800 rounded {hashlink ===
+					anchor ? bgHighlightClass : ''}"
 				id={`${anchor}.returns`}
 			>
 				<p class="text-base">Returns</p>
