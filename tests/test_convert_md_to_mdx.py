@@ -102,9 +102,16 @@ export let fw: "pt" | "tf"
 "start-after": "START python_import",
 "end-before": "END python_import"}
 </literalinclude>"""
+        # test entire file
+        text = """<literalinclude>
+{"path": "./data/convert_literalinclude_dummy.txt",
+"language": "python"}
+</literalinclude>"""
         expected_conversion = """```python
+# START python_import
 import numpy as np
 import pandas as pd
+# END python_import
 ```"""
         self.assertEqual(convert_literalinclude(text, page_info), expected_conversion)
         # test without language

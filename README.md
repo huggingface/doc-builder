@@ -208,8 +208,8 @@ There should be json between `<literalinclude>` open & close tags.
 <literalinclude>
 {"path": "./data/convert_literalinclude_dummy.txt", # relative path
 "language": "python", # defaults to " (empty str)
-"start-after": "START python_import",
-"end-before": "END python_import",
+"start-after": "START python_import",  # defaults to start of file
+"end-before": "END python_import",  # defaults to end of file
 "dedent": 7 # defaults to 0
 }
 </literalinclude>

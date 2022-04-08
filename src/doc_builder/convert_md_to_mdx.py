@@ -115,15 +115,17 @@ def convert_literalinclude_helper(match, page_info):
     file = page_info["path"].parent / literalinclude_info["path"]
     with open(file, "r", encoding="utf-8-sig") as reader:
         lines = reader.readlines()
-    start_after, end_before = -1, -1
-    for idx, line in enumerate(lines):
-        if literalinclude_info["start-after"] in line:
-            start_after = idx + 1
-        if literalinclude_info["end-before"] in line:
-            end_before = idx
-    if start_after == -1 or end_before == -1:
-        raise ValueError(f"The following 'literalinclude' does NOT exist:\n{match[0]}")
-    literalinclude = lines[start_after:end_before]
+    literalinclude = lines  # defaults to entire file
+    if "start-after" in literalinclude_info or "end-before" in literalinclude_info:
+        start_after, end_before = -1, -1
+        for idx, line in enumerate(lines):
+            if literalinclude_info["start-after"] in line:
+                start_after = idx + 1
+            if literalinclude_info["end-before"] in line:
+                end_before = idx
+        if start_after == -1 or end_before == -1:
+            raise ValueError(f"The following 'literalinclude' does NOT exist:\n{match[0]}")
+        literalinclude = lines[start_after:end_before]
     literalinclude = [indent + line[literalinclude_info.get("dedent", 0) :] for line in literalinclude]
     literalinclude = "".join(literalinclude)
     return f"""{indent}```{literalinclude_info.get('language', '')}\n{literalinclude}{indent}```"""
