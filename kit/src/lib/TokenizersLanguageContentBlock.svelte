@@ -1,50 +1,53 @@
 <script lang="ts">
 	import type { SvelteComponent } from "svelte";
-	import type { Framework } from "./types";
+	import type { TokenizersLanguage } from "./types";
 
 	import { onMount } from "svelte";
-	import { getFrameworkStore, AccordianState } from "./stores";
-	import IconPytorch from "./IconPytorch.svelte";
-	import IconTensorflow from "./IconTensorflow.svelte";
-	import IconJax from "./IconJax.svelte";
+	import { getTokenizersLangState, AccordianState } from "./stores";
+	import IconPython from "./IconPython.svelte";
+	import IconRust from "./IconRust.svelte";
+	import IconNode from "./IconNode.svelte";
 	import IconEyeShow from "./IconEyeShow.svelte";
 	import IconEyeHide from "./IconEyeHide.svelte";
 
-	export let framework: Framework;
+	export let language: TokenizersLanguage;
 
 	let containerEl: HTMLDivElement;
 	let hashLinks = new Set();
 
-	const FRAMEWORK_CONFIG: Record<Framework, { Icon: typeof SvelteComponent; label: string }> = {
-		pytorch: {
-			Icon: IconPytorch,
-			label: "Pytorch"
+	const TOKENIZERS_LANGUAGE_CONFIG: Record<
+		TokenizersLanguage,
+		{ Icon: typeof SvelteComponent; label: string }
+	> = {
+		python: {
+			Icon: IconPython,
+			label: "Python"
 		},
-		tensorflow: {
-			Icon: IconTensorflow,
-			label: "TensorFlow"
+		rust: {
+			Icon: IconRust,
+			label: "Rust"
 		},
-		jax: {
-			Icon: IconJax,
-			label: "JAX"
+		node: {
+			Icon: IconNode,
+			label: "Node"
 		}
 	};
-	const { Icon, label } = FRAMEWORK_CONFIG[framework];
-	const localStorageKey = `hf_doc_framework_${framework}_is_hidden`;
-	const fwStore = getFrameworkStore(framework);
+	const { Icon, label } = TOKENIZERS_LANGUAGE_CONFIG[language];
+	const localStorageKey = `hf_doc_tokenizer_lang_${language}_is_hidden`;
+	const langStore = getTokenizersLangState(language);
 
-	$: isClosed = $fwStore === AccordianState.CLOSED;
+	$: isClosed = $langStore === AccordianState.CLOSED;
 
 	function toggleHidden() {
-		$fwStore = $fwStore !== AccordianState.CLOSED ? AccordianState.CLOSED : AccordianState.OPEN;
-		localStorage.setItem(localStorageKey, $fwStore);
+		$langStore = $langStore !== AccordianState.CLOSED ? AccordianState.CLOSED : AccordianState.OPEN;
+		localStorage.setItem(localStorageKey, $langStore);
 	}
 
 	function onHashChange() {
 		const hashLink = window.location.hash.slice(1);
 		if (hashLinks.has(hashLink)) {
-			$fwStore = AccordianState.HASHASHLINK;
-			localStorage.setItem(localStorageKey, $fwStore);
+			$langStore = AccordianState.HASHASHLINK;
+			localStorage.setItem(localStorageKey, $langStore);
 		}
 	}
 
@@ -56,9 +59,9 @@
 		const localState = localStorage.getItem(localStorageKey);
 
 		if (hashLinks.has(hashLink)) {
-			$fwStore = AccordianState.HASHASHLINK;
-		} else if (localState === AccordianState.CLOSED && $fwStore !== AccordianState.HASHASHLINK) {
-			$fwStore = AccordianState.CLOSED;
+			$langStore = AccordianState.HASHASHLINK;
+		} else if (localState === AccordianState.CLOSED && $langStore !== AccordianState.HASHASHLINK) {
+			$langStore = AccordianState.CLOSED;
 		}
 	});
 </script>
@@ -90,7 +93,7 @@
 			<span>Show {label} content</span>
 		</div>
 	{:else}
-		<div class="framework-content">
+		<div class="language-content">
 			<slot />
 		</div>
 	{/if}

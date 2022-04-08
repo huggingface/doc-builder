@@ -157,6 +157,46 @@ export const frameworkcontentPreprocess = {
 	}
 };
 
+// Preprocessor that converts markdown into TokenizersLanguageContent
+// svelte component using mdsvexPreprocess
+export const tokenizersLangPreprocess = {
+	markup: async ({ content }) => {
+		const REGEX_LANGCONTENT =
+			/<tokenizerslangcontent>(((?!<tokenizerslangcontent>).)*)<\/tokenizerslangcontent>/gms;
+		const REGEX_PYTHON = /<python>(((?!<python>).)*)<\/python>/ms;
+		const REGEX_RUST = /<rust>(((?!<rust>).)*)<\/rust>/ms;
+		const REGEX_NODE = /<node>(((?!<node>).)*)<\/node>/ms;
+		const LANGUAGES = [
+			{ language: "python", REGEX_LANG: REGEX_PYTHON, isExist: false },
+			{ language: "rust", REGEX_LANG: REGEX_RUST, isExist: false },
+			{ language: "node", REGEX_LANG: REGEX_NODE, isExist: false }
+		];
+
+		content = await replaceAsync(content, REGEX_LANGCONTENT, async (_, langcontentBody) => {
+			let svelteSlots = "";
+
+			for (const [i, value] of Object.entries(LANGUAGES)) {
+				const { language, REGEX_LANG } = value;
+				if (langcontentBody.match(REGEX_LANG)) {
+					LANGUAGES[i].isExist = true;
+					const langContent = langcontentBody.match(REGEX_LANG)[1];
+					svelteSlots += `<svelte:fragment slot="${language}">
+					<Markdown>
+					\n\n${langContent}\n\n
+					</Markdown>
+					</svelte:fragment>`;
+				}
+			}
+
+			const svelteProps = LANGUAGES.map((fw) => `${fw.language}={${fw.isExist}}`).join(" ");
+
+			return `<TokenizersLanguageContent ${svelteProps}>\n${svelteSlots}\n</TokenizersLanguageContent>`;
+		});
+
+		return { code: content };
+	}
+};
+
 /**
  * Async string replace function.
  * src: https://github.com/dsblv/string-replace-async
