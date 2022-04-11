@@ -107,7 +107,7 @@ export let fw: "pt" | "tf"
 {"path": "./data/convert_literalinclude_dummy.txt",
 "language": "python"}
 </literalinclude>"""
-        expected_conversion = """```python
+        expected_conversion = '''```python
 # START python_import_answer
 import scipy as sp
 # END python_import_answer
@@ -116,7 +116,11 @@ import scipy as sp
 import numpy as np
 import pandas as pd
 # END python_import
-```"""
+
+# START node_import
+import fs
+# END node_import"""
+```'''
         self.assertEqual(convert_literalinclude(text, page_info), expected_conversion)
         # test without language
         text = """<literalinclude>
@@ -155,4 +159,14 @@ import pandas as pd
     numpy as np
     pandas as pd
     ```"""
+        self.assertEqual(convert_literalinclude(text, page_info), expected_conversion)
+        # test tag rstrip
+        text = """<literalinclude>
+{"path": "./data/convert_literalinclude_dummy.txt",
+"start-after": "START node_import",
+"end-before": "END node_import"}
+</literalinclude>"""
+        expected_conversion = """```
+import fs
+```"""
         self.assertEqual(convert_literalinclude(text, page_info), expected_conversion)

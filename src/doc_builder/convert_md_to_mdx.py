@@ -120,6 +120,7 @@ def convert_literalinclude_helper(match, page_info):
         start_after, end_before = -1, -1
         for idx, line in enumerate(lines):
             line = line.strip()
+            line = re.sub(r"\W+$", "", line)
             if line.endswith(literalinclude_info["start-after"]):
                 start_after = idx + 1
             if line.endswith(literalinclude_info["end-before"]):
