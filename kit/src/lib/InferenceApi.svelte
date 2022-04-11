@@ -32,21 +32,19 @@
 	export let curl = false;
 </script>
 
-<div class="px-4 py-1.5 flex flex-wrap items-center justify-between border-b border-gray-100">
-	<div class="flex space-x-2 items-center my-1.5 mr-8 h-7 !pl-0">
-		{#each LANGUAGES_CONFIG as language}
-			<div
-				class="flex items-center border rounded-lg px-1.5 py-1 leading-none select-none text-smd
-                {$selectedInferenceLang === language.id
-					? 'border-gray-800 bg-black dark:bg-gray-700 text-white'
-					: 'text-gray-500 cursor-pointer opacity-90 hover:text-gray-700 dark:hover:text-gray-200 hover:shadow-sm'}"
-				on:click={() => ($selectedInferenceLang = language.id)}
-			>
-				<svelte:component this={language.icon} classNames="mr-1.5" />
-				{language.label}
-			</div>
-		{/each}
-	</div>
+<div class="flex space-x-2 items-center my-1.5 mr-8 h-7 !pl-0">
+	{#each LANGUAGES_CONFIG as language}
+		<div
+			class="flex items-center border rounded-lg px-1.5 py-1 leading-none select-none text-smd
+			{$selectedInferenceLang === language.id
+				? 'border-gray-800 bg-black dark:bg-gray-700 text-white'
+				: 'text-gray-500 cursor-pointer opacity-90 hover:text-gray-700 dark:hover:text-gray-200 hover:shadow-sm'}"
+			on:click={() => ($selectedInferenceLang = language.id)}
+		>
+			<svelte:component this={language.icon} classNames="mr-1.5" />
+			{language.label}
+		</div>
+	{/each}
 </div>
 {#if python && $selectedInferenceLang === "python"}
 	<slot name="python" />
