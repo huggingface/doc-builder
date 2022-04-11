@@ -119,16 +119,17 @@ def convert_literalinclude_helper(match, page_info):
     if "start-after" in literalinclude_info or "end-before" in literalinclude_info:
         start_after, end_before = -1, -1
         for idx, line in enumerate(lines):
-            if literalinclude_info["start-after"] in line:
+            line = line.strip()
+            if line.endswith(literalinclude_info["start-after"]):
                 start_after = idx + 1
-            if literalinclude_info["end-before"] in line:
+            if line.endswith(literalinclude_info["end-before"]):
                 end_before = idx
         if start_after == -1 or end_before == -1:
             raise ValueError(f"The following 'literalinclude' does NOT exist:\n{match[0]}")
         literalinclude = lines[start_after:end_before]
     literalinclude = [indent + line[literalinclude_info.get("dedent", 0) :] for line in literalinclude]
     literalinclude = "".join(literalinclude)
-    return f"""{indent}```{literalinclude_info.get('language', '')}\n{literalinclude}{indent}```"""
+    return f"""{indent}```{literalinclude_info.get('language', '')}\n{literalinclude.rstrip()}\n{indent}```"""
 
 
 def convert_literalinclude(text, page_info):

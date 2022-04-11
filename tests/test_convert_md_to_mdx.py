@@ -108,6 +108,10 @@ export let fw: "pt" | "tf"
 "language": "python"}
 </literalinclude>"""
         expected_conversion = """```python
+# START python_import_answer
+import scipy as sp
+# END python_import_answer
+
 # START python_import
 import numpy as np
 import pandas as pd
