@@ -19,6 +19,7 @@ import os
 import re
 import shutil
 import zlib
+from collections import Counter
 from pathlib import Path
 
 import yaml
@@ -262,7 +263,7 @@ def generate_frontmatter_in_text(text, file_name=None):
     text = text.split("\n")
     root = None
     is_inside_codeblock = False
-    locals_encountered = set()
+    locals_encountered = Counter()
     for idx, line in enumerate(text):
         if line.startswith("```"):
             is_inside_codeblock = not is_inside_codeblock
@@ -283,9 +284,7 @@ def generate_frontmatter_in_text(text, file_name=None):
             local = re.sub(r"[^a-z0-9\s]+", "", title.lower())
             local = re.sub(r"\s{2,}", " ", local.strip()).replace(" ", "-")
         text[idx] = f'<h{header_level} id="{local}">{title}</h{header_level}>'
-        if local in locals_encountered:
-            raise ValueError(f"{file_name} contains non-unique (duplicate) headings '{local}'")
-        locals_encountered.add(local)
+        locals_encountered[local] += 1
         node = FrontmatterNode(title, local)
         if header_level == 1:
             root = node
@@ -300,6 +299,11 @@ def generate_frontmatter_in_text(text, file_name=None):
                     " second (or more) level header. Make sure to include one!"
                 )
             root.add_child(node, header_level)
+
+    duplicate_locals = [key for key, count in locals_encountered.items() if count > 1]
+    if duplicate_locals:
+        duplicate_locals_str = ", ".join(duplicate_locals)
+        raise ValueError(f"{file_name} contains non-unique (duplicate) headings: '{duplicate_locals_str}'")
 
     frontmatter = root.get_frontmatter()
     text = "\n".join(text)
