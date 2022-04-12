@@ -318,7 +318,7 @@ const _mdsvexPreprocess = mdsvex({
 					? hljs.highlight(lang, code, true).value
 					: hljs.highlightAuto(code).value;
 			const escape = (code) =>
-				code.replace(/\\/g, "\\\\").replace(/`/g, "\\`").replace(/}/g, "\\}").replace(/\$/g, "\\$}");
+				code.replace(/\\/g, "\\\\").replace(/`/g, "\\`").replace(/}/g, "\\}").replace(/\$/g, "\\$");
 			const REGEX_FRAMEWORKS_SPLIT = /\s*===(PT-TF|STRINGAPI-READINSTRUCTION)-SPLIT===\s*/gm;
 
 			code = renderSvelteChars(code);
