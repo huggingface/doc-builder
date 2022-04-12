@@ -202,6 +202,19 @@ by default) you can put the list of methods to add in a list that contains `all`
     - __call__
 ```
 
+You can create a code-block by referencing a file excerpt with `<literalinclude>` (sphinx-inspired) syntax. 
+There should be json between `<literalinclude>` open & close tags.
+```
+<literalinclude>
+{"path": "./data/convert_literalinclude_dummy.txt", # relative path
+"language": "python", # defaults to " (empty str)
+"start-after": "START python_import",  # defaults to start of file
+"end-before": "END python_import",  # defaults to end of file
+"dedent": 7 # defaults to 0
+}
+</literalinclude>
+```
+
 ### Writing source documentation
 
 Arguments of a function/class/method should be defined with the `Args:` (or `Arguments:` or `Parameters:`) prefix, followed by a line return and
