@@ -9,4 +9,3 @@ cp src/routes/_toctree.yml build/_toctree.yml
 # 2. making `rel="stylesheet"` -> `rel="modulepreload"`
 > $(find . -regex '.*build.*.css')
 cd build
-find . -name '*.html' -exec sed -i '' 's/rel="stylesheet"/rel="modulepreload"/g' {} \;
