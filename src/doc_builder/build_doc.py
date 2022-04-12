@@ -262,6 +262,7 @@ def generate_frontmatter_in_text(text, file_name=None):
     text = text.split("\n")
     root = None
     is_inside_codeblock = False
+    locals_encountered = set()
     for idx, line in enumerate(text):
         if line.startswith("```"):
             is_inside_codeblock = not is_inside_codeblock
@@ -282,6 +283,9 @@ def generate_frontmatter_in_text(text, file_name=None):
             local = re.sub(r"[^a-z0-9\s]+", "", title.lower())
             local = re.sub(r"\s{2,}", " ", local.strip()).replace(" ", "-")
         text[idx] = f'<h{header_level} id="{local}">{title}</h{header_level}>'
+        if local in locals_encountered:
+            raise ValueError(f"{file_name} contains non-unique (duplicate) headings '{local}'")
+        locals_encountered.add(local)
         node = FrontmatterNode(title, local)
         if header_level == 1:
             root = node
