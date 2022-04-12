@@ -16,6 +16,7 @@
 
 import json
 import re
+import tempfile
 
 from .convert_rst_to_mdx import parse_rst_docstring, remove_indent
 
@@ -113,6 +114,8 @@ def convert_literalinclude_helper(match, page_info):
     """
     literalinclude_info = json.loads(match[2].strip())
     indent = match[1]
+    if tempfile.gettempdir() in str(page_info["path"]):
+        return "\n`Please restart doc-builder preview commands to see literalinclude rendered`\n"
     file = page_info["path"].parent / literalinclude_info["path"]
     with open(file, "r", encoding="utf-8-sig") as reader:
         lines = reader.readlines()
