@@ -1,6 +1,6 @@
 import type { Writable } from "svelte/store";
 import { writable } from "svelte/store";
-import type { Group, Framework } from "./types";
+import type { Group, Framework, InferenceSnippetLang } from "./types";
 
 // used for CodeBlockFw.svelte
 const groups: Record<string, Writable<Group>> = {};
@@ -27,3 +27,6 @@ export function getFrameworkStore(key: Framework): Writable<FrameworkState> {
 
 // used for Question.svelte
 export const answers = writable<{ [key: string]: { correct: boolean } }>({});
+
+// used for InferenceApi.svelte
+export const selectedInferenceLang = writable<InferenceSnippetLang>("python");
