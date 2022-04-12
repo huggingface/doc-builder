@@ -88,11 +88,3 @@ class BuildDocTester(unittest.TestCase):
             generate_frontmatter_in_text("# Bert 1\n## BertTokenizer 2 3\n### BertTokenizer 4 5 6 Method"),
             '---\nlocal: bert-1\nsections:\n- local: berttokenizer-2-3\n  sections:\n  - local: berttokenizer-4-5-6-method\n    title: BertTokenizer 4 5 6 Method\n  title: BertTokenizer 2 3\ntitle: Bert 1\n---\n<h1 id="bert-1">Bert 1</h1>\n<h2 id="berttokenizer-2-3">BertTokenizer 2 3</h2>\n<h3 id="berttokenizer-4-5-6-method">BertTokenizer 4 5 6 Method</h3>',
         )
-
-        # test missing header h1
-        with self.assertRaises(ValueError):
-            generate_frontmatter_in_text("## Bert")
-
-        # test non-unique (duplicate) headers
-        with self.assertRaises(ValueError):
-            generate_frontmatter_in_text("# Bert \n## Bert")
