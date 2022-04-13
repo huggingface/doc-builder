@@ -348,7 +348,7 @@ def document_object(object_name, package, page_info, full_name=True, anchor_name
 
     try:
         source_link = get_source_link(obj, page_info)
-    except (AttributeError, OSError):
+    except (AttributeError, OSError, TypeError):
         # tokenizers obj do NOT have `__module__` attribute & can NOT be used with inspect.getsourcelines
         source_link = None
     component = get_signature_component(signature_name, anchor_name, signature, object_doc, source_link)

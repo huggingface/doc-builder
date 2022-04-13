@@ -130,7 +130,7 @@ def resolve_autodoc(content, package, return_anchors=False, page_info=None):
 
             try:
                 source_files = source_files = get_source_path(object_name, package)
-            except (AttributeError, OSError):
+            except (AttributeError, OSError, TypeError):
                 # tokenizers obj do NOT have `__module__` attribute & can NOT be used with inspect.getfile
                 source_files = None
         else:
