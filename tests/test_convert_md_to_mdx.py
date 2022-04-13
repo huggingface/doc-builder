@@ -25,6 +25,7 @@ from doc_builder.convert_md_to_mdx import (
     process_md,
 )
 
+
 class ConvertMdToMdxTester(unittest.TestCase):
     def test_convert_md_to_mdx(self):
         page_info = {"package_name": "transformers", "version": "v4.10.0", "language": "fr"}
