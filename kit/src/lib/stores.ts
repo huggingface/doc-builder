@@ -1,6 +1,6 @@
 import type { Writable } from "svelte/store";
 import { writable } from "svelte/store";
-import type { Group, Framework, TokenizersLanguage } from "./types";
+import type { Group, Framework, InferenceSnippetLang, TokenizersLanguage } from "./types";
 
 // used for CodeBlockFw.svelte
 const groups: Record<string, Writable<Group>> = {};
@@ -36,3 +36,6 @@ export function getTokenizersLangState(key: TokenizersLanguage): Writable<Accord
 
 // used for Question.svelte
 export const answers = writable<{ [key: string]: { correct: boolean } }>({});
+
+// used for InferenceApi.svelte
+export const selectedInferenceLang = writable<InferenceSnippetLang>("python");

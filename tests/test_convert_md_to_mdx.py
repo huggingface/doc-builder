@@ -15,11 +15,15 @@
 
 
 import unittest
+from pathlib import Path
 
-from torch import exp
-
-from doc_builder.convert_md_to_mdx import convert_img_links, convert_md_to_mdx, convert_special_chars, process_md
-
+from doc_builder.convert_md_to_mdx import (
+    convert_img_links,
+    convert_literalinclude,
+    convert_md_to_mdx,
+    convert_special_chars,
+    process_md,
+)
 
 class ConvertMdToMdxTester(unittest.TestCase):
     def test_convert_md_to_mdx(self):
@@ -38,6 +42,7 @@ import FrameworkContent from "$lib/FrameworkContent.svelte";
 import Markdown from "$lib/Markdown.svelte";
 import Question from "$lib/Question.svelte";
 import FrameworkSwitchCourse from "$lib/FrameworkSwitchCourse.svelte";
+import InferenceApi from "$lib/InferenceApi.svelte";
 import TokenizersLanguageContent from "$lib/TokenizersLanguageContent.svelte";
 let fw: "pt" | "tf" = "pt";
 onMount(() => {
@@ -109,3 +114,82 @@ export let fw: "pt" | "tf"
 &amp;lcub;}
 &amp;lt;>"""
         self.assertEqual(process_md(text, page_info), expected_conversion)
+
+    def test_convert_literalinclude(self):
+        path = Path(__file__).resolve()
+        page_info = {"path": path}
+        # test canonical
+        text = """<literalinclude>
+{"path": "./data/convert_literalinclude_dummy.txt",
+"language": "python",
+"start-after": "START python_import",
+"end-before": "END python_import"}
+</literalinclude>"""
+        # test entire file
+        text = """<literalinclude>
+{"path": "./data/convert_literalinclude_dummy.txt",
+"language": "python"}
+</literalinclude>"""
+        expected_conversion = '''```python
+# START python_import_answer
+import scipy as sp
+# END python_import_answer
+
+# START python_import
+import numpy as np
+import pandas as pd
+# END python_import
+
+# START node_import
+import fs
+# END node_import"""
+```'''
+        self.assertEqual(convert_literalinclude(text, page_info), expected_conversion)
+        # test without language
+        text = """<literalinclude>
+{"path": "./data/convert_literalinclude_dummy.txt",
+"start-after": "START python_import",
+"end-before": "END python_import"}
+</literalinclude>"""
+        expected_conversion = """```
+import numpy as np
+import pandas as pd
+```"""
+        self.assertEqual(convert_literalinclude(text, page_info), expected_conversion)
+        # test with indent
+        text = """Some text
+    <literalinclude>
+{"path": "./data/convert_literalinclude_dummy.txt",
+"start-after": "START python_import",
+"end-before": "END python_import"}
+</literalinclude>"""
+        expected_conversion = """Some text
+    ```
+    import numpy as np
+    import pandas as pd
+    ```"""
+        self.assertEqual(convert_literalinclude(text, page_info), expected_conversion)
+        # test with dedent
+        text = """Some text
+    <literalinclude>
+{"path": "./data/convert_literalinclude_dummy.txt",
+"start-after": "START python_import",
+"end-before": "END python_import",
+"dedent": 7}
+</literalinclude>"""
+        expected_conversion = """Some text
+    ```
+    numpy as np
+    pandas as pd
+    ```"""
+        self.assertEqual(convert_literalinclude(text, page_info), expected_conversion)
+        # test tag rstrip
+        text = """<literalinclude>
+{"path": "./data/convert_literalinclude_dummy.txt",
+"start-after": "START node_import",
+"end-before": "END node_import"}
+</literalinclude>"""
+        expected_conversion = """```
+import fs
+```"""
+        self.assertEqual(convert_literalinclude(text, page_info), expected_conversion)
