@@ -201,34 +201,34 @@ export const inferenceSnippetPreprocess = {
 // svelte component using mdsvexPreprocess
 export const tokenizersLangPreprocess = {
 	markup: async ({ content }) => {
-		const REGEX_LANGCONTENT =
+		const REGEX_FRAMEWORKCONTENT =
 			/<tokenizerslangcontent>(((?!<tokenizerslangcontent>).)*)<\/tokenizerslangcontent>/gms;
 		const REGEX_PYTHON = /<python>(((?!<python>).)*)<\/python>/ms;
-		const REGEX_RUST = /<rust>(((?!<rust>).)*)<\/rust>/ms;
+		const RGEX_RUST = /<rust>(((?!<rust>).)*)<\/rust>/ms;
 		const REGEX_NODE = /<node>(((?!<node>).)*)<\/node>/ms;
-		const LANGUAGES = [
-			{ language: "python", REGEX_LANG: REGEX_PYTHON, isExist: false },
-			{ language: "rust", REGEX_LANG: REGEX_RUST, isExist: false },
-			{ language: "node", REGEX_LANG: REGEX_NODE, isExist: false }
+		const FRAMEWORKS = [
+			{ framework: "python", REGEX_FW: REGEX_PYTHON, isExist: false },
+			{ framework: "rust", REGEX_FW: RGEX_RUST, isExist: false },
+			{ framework: "node", REGEX_FW: REGEX_NODE, isExist: false }
 		];
 
-		content = await replaceAsync(content, REGEX_LANGCONTENT, async (_, langcontentBody) => {
+		content = await replaceAsync(content, REGEX_FRAMEWORKCONTENT, async (_, fwcontentBody) => {
 			let svelteSlots = "";
 
-			for (const [i, value] of Object.entries(LANGUAGES)) {
-				const { language, REGEX_LANG } = value;
-				if (langcontentBody.match(REGEX_LANG)) {
-					LANGUAGES[i].isExist = true;
-					const langContent = langcontentBody.match(REGEX_LANG)[1];
-					svelteSlots += `<svelte:fragment slot="${language}">
+			for (const [i, value] of Object.entries(FRAMEWORKS)) {
+				const { framework, REGEX_FW } = value;
+				if (fwcontentBody.match(REGEX_FW)) {
+					FRAMEWORKS[i].isExist = true;
+					const fwContent = fwcontentBody.match(REGEX_FW)[1];
+					svelteSlots += `<svelte:fragment slot="${framework}">
 					<Markdown>
-					\n\n${langContent}\n\n
+					\n\n${fwContent}\n\n
 					</Markdown>
 					</svelte:fragment>`;
 				}
 			}
 
-			const svelteProps = LANGUAGES.map((fw) => `${fw.language}={${fw.isExist}}`).join(" ");
+			const svelteProps = FRAMEWORKS.map((fw) => `${fw.framework}={${fw.isExist}}`).join(" ");
 
 			return `<TokenizersLanguageContent ${svelteProps}>\n${svelteSlots}\n</TokenizersLanguageContent>`;
 		});

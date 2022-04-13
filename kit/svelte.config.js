@@ -5,7 +5,7 @@ import {
 	frameworkcontentPreprocess,
 	mdsvexPreprocess,
 	inferenceSnippetPreprocess,
-	tokenizersLangPreprocess,
+	tokenizersLangPreprocess
 } from "./preprocess.js";
 
 /** @type {import('@sveltejs/kit').Config} */

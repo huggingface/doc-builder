@@ -25,17 +25,11 @@ export function getFrameworkStore(key: Framework): Writable<AccordianState> {
 	return frameworks[key];
 }
 
-// used for FrameworkContent.svelte
-const tokenizersLangs: { [key in TokenizersLanguage]?: Writable<AccordianState> } = {};
-export function getTokenizersLangState(key: TokenizersLanguage): Writable<AccordianState> {
-	if (!tokenizersLangs[key]) {
-		tokenizersLangs[key] = writable<AccordianState>(AccordianState.OPEN);
-	}
-	return tokenizersLangs[key];
-}
-
 // used for Question.svelte
 export const answers = writable<{ [key: string]: { correct: boolean } }>({});
 
 // used for InferenceApi.svelte
 export const selectedInferenceLang = writable<InferenceSnippetLang>("python");
+
+// used for TokenizersLanguageContent.svelte
+export const selectedTokenizersLang = writable<TokenizersLanguage>("python");
