@@ -46,12 +46,14 @@
 		</div>
 	{/each}
 </div>
-{#if python && $selectedTokenizersLang === "python"}
-	<slot name="python" />
-{/if}
-{#if rust && $selectedTokenizersLang === "rust"}
-	<slot name="rust" />
-{/if}
-{#if node && $selectedTokenizersLang === "node"}
-	<slot name="node" />
-{/if}
+<div class="language-select">
+	{#if python && $selectedTokenizersLang === "python"}
+		<slot name="python" />
+	{/if}
+	{#if rust && $selectedTokenizersLang === "rust"}
+		<slot name="rust" />
+	{/if}
+	{#if node && $selectedTokenizersLang === "node"}
+		<slot name="node" />
+	{/if}
+</div>

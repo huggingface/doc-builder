@@ -46,12 +46,14 @@
 		</div>
 	{/each}
 </div>
-{#if python && $selectedInferenceLang === "python"}
-	<slot name="python" />
-{/if}
-{#if js && $selectedInferenceLang === "js"}
-	<slot name="js" />
-{/if}
-{#if curl && $selectedInferenceLang === "curl"}
-	<slot name="curl" />
-{/if}
+<div class="language-select">
+	{#if python && $selectedInferenceLang === "python"}
+		<slot name="python" />
+	{/if}
+	{#if js && $selectedInferenceLang === "js"}
+		<slot name="js" />
+	{/if}
+	{#if curl && $selectedInferenceLang === "curl"}
+		<slot name="curl" />
+	{/if}
+</div>
