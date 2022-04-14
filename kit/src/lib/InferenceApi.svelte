@@ -32,7 +32,7 @@
 	export let curl = false;
 </script>
 
-<div class="flex space-x-2 items-center my-1.5 mr-8 h-7 !pl-0 -mx-3 md:mx-0 2xl:-mx-4">
+<div class="flex space-x-2 items-center my-1.5 mr-8 h-7 !pl-0 -mx-3 md:mx-0">
 	{#each LANGUAGES_CONFIG as language}
 		<div
 			class="flex items-center border rounded-lg px-1.5 py-1 leading-none select-none text-smd
@@ -46,12 +46,14 @@
 		</div>
 	{/each}
 </div>
-{#if python && $selectedInferenceLang === "python"}
-	<slot name="python" />
-{/if}
-{#if js && $selectedInferenceLang === "js"}
-	<slot name="js" />
-{/if}
-{#if curl && $selectedInferenceLang === "curl"}
-	<slot name="curl" />
-{/if}
+<div class="language-select">
+	{#if python && $selectedInferenceLang === "python"}
+		<slot name="python" />
+	{/if}
+	{#if js && $selectedInferenceLang === "js"}
+		<slot name="js" />
+	{/if}
+	{#if curl && $selectedInferenceLang === "curl"}
+		<slot name="curl" />
+	{/if}
+</div>

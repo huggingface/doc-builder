@@ -3,7 +3,7 @@
 	import type { Framework } from "./types";
 
 	import { onMount } from "svelte";
-	import { getFrameworkStore, FrameworkState } from "./stores";
+	import { getFrameworkStore, AccordianState } from "./stores";
 	import IconPytorch from "./IconPytorch.svelte";
 	import IconTensorflow from "./IconTensorflow.svelte";
 	import IconJax from "./IconJax.svelte";
@@ -33,17 +33,17 @@
 	const localStorageKey = `hf_doc_framework_${framework}_is_hidden`;
 	const fwStore = getFrameworkStore(framework);
 
-	$: isClosed = $fwStore === FrameworkState.CLOSED;
+	$: isClosed = $fwStore === AccordianState.CLOSED;
 
 	function toggleHidden() {
-		$fwStore = $fwStore !== FrameworkState.CLOSED ? FrameworkState.CLOSED : FrameworkState.OPEN;
+		$fwStore = $fwStore !== AccordianState.CLOSED ? AccordianState.CLOSED : AccordianState.OPEN;
 		localStorage.setItem(localStorageKey, $fwStore);
 	}
 
 	function onHashChange() {
 		const hashLink = window.location.hash.slice(1);
 		if (hashLinks.has(hashLink)) {
-			$fwStore = FrameworkState.HASHASHLINK;
+			$fwStore = AccordianState.HASHASHLINK;
 			localStorage.setItem(localStorageKey, $fwStore);
 		}
 	}
@@ -56,9 +56,9 @@
 		const localState = localStorage.getItem(localStorageKey);
 
 		if (hashLinks.has(hashLink)) {
-			$fwStore = FrameworkState.HASHASHLINK;
-		} else if (localState === FrameworkState.CLOSED && $fwStore !== FrameworkState.HASHASHLINK) {
-			$fwStore = FrameworkState.CLOSED;
+			$fwStore = AccordianState.HASHASHLINK;
+		} else if (localState === AccordianState.CLOSED && $fwStore !== AccordianState.HASHASHLINK) {
+			$fwStore = AccordianState.CLOSED;
 		}
 	});
 </script>

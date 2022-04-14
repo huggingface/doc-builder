@@ -42,6 +42,7 @@ import Markdown from "$lib/Markdown.svelte";
 import Question from "$lib/Question.svelte";
 import FrameworkSwitchCourse from "$lib/FrameworkSwitchCourse.svelte";
 import InferenceApi from "$lib/InferenceApi.svelte";
+import TokenizersLanguageContent from "$lib/TokenizersLanguageContent.svelte";
 let fw: "pt" | "tf" = "pt";
 onMount(() => {
     const urlParams = new URLSearchParams(window.location.search);
