@@ -25,13 +25,10 @@ export const docstringPreprocess = {
 			const name = docstringBody.match(REGEX_NAME)[1];
 			const anchor = docstringBody.match(REGEX_ANCHOR)[1];
 			const signature = docstringBody.match(REGEX_SIGNATURE)[1];
-			const source = docstringBody.match(REGEX_SOURCE)[1];
 
 			let svelteComponent = `<Docstring name={${JSON.stringify(
 				unescapeUnderscores(name)
-			)}} anchor={${JSON.stringify(anchor)}} parameters={${signature}} source={${JSON.stringify(
-				source
-			)}} `;
+			)}} anchor={${JSON.stringify(anchor)}} parameters={${signature}} `;
 
 			if (docstringBody.match(REGEX_PARAMSDESC)) {
 				let content = docstringBody.match(REGEX_PARAMSDESC)[1];
@@ -73,6 +70,11 @@ export const docstringPreprocess = {
 					}
 					svelteComponent += ` parametersDescription={${JSON.stringify(result)}} `;
 				}
+			}
+
+			if (docstringBody.match(REGEX_SOURCE)) {
+				const source = docstringBody.match(REGEX_SOURCE)[1];
+				svelteComponent += ` source={${JSON.stringify(source)}} `;
 			}
 
 			if (docstringBody.match(REGEX_RETDESC)) {

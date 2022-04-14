@@ -128,7 +128,11 @@ def resolve_autodoc(content, package, return_anchors=False, page_info=None):
                 doc = doc[0]
             new_lines.append(doc)
 
-            source_files = get_source_path(object_name, package)
+            try:
+                source_files = source_files = get_source_path(object_name, package)
+            except (AttributeError, OSError, TypeError):
+                # tokenizers obj do NOT have `__module__` attribute & can NOT be used with inspect.getfile
+                source_files = None
         else:
             new_lines.append(lines[idx])
             if lines[idx].startswith("```"):

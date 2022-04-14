@@ -66,7 +66,7 @@ def get_shortest_path(obj, package):
         # Propreties have no __module__ or __name__ attributes, but their getter function does.
         obj = obj.fget
 
-    if not hasattr(obj, "__module__"):
+    if not hasattr(obj, "__module__") or obj.__module__ is None:
         return None
     long_path = obj.__module__
     # Sometimes methods are defined in another module from the class (flax.struct.dataclass)
@@ -139,7 +139,7 @@ _re_raises = re.compile(r"<raises>(.*)</raises>", re.DOTALL)
 _re_raisederrors = re.compile(r"<raisederrors>(.*)</raisederrors>", re.DOTALL)
 
 
-def get_signature_component(name, anchor, signature, object_doc, source_link):
+def get_signature_component(name, anchor, signature, object_doc, source_link=None):
     """
     Returns the svelte `Docstring` component string.
 
@@ -148,7 +148,7 @@ def get_signature_component(name, anchor, signature, object_doc, source_link):
     - **anchor** (`str`) -- The anchor name of the function or class that will be used for hash links.
     - **signature** (`List(Dict(str,str))`) -- The signature of the object.
     - **object_doc** (`str`) -- The docstring of the the object.
-    - **source_link** (`str`) -- The github source link of the the object.
+    - **source_link** (Union[`str`, `None`], *optional*, defaults to `None`) -- The github source link of the the object.
     """
 
     def inside_example_finder_closure(match, tag):
@@ -190,7 +190,8 @@ def get_signature_component(name, anchor, signature, object_doc, source_link):
     svelte_str = "<docstring>"
     svelte_str += f"<name>{name}</name>"
     svelte_str += f"<anchor>{anchor}</anchor>"
-    svelte_str += f"<source>{source_link}</source>"
+    if source_link:
+        svelte_str += f"<source>{source_link}</source>"
     svelte_str += f"<parameters>{json.dumps(signature)}</parameters>"
 
     if parameters is not None:
@@ -345,7 +346,11 @@ def document_object(object_name, package, page_info, full_name=True, anchor_name
             check = quality_check_docstring(object_doc, object_name=object_name)
             object_doc = convert_md_docstring_to_mdx(obj.__doc__, page_info)
 
-    source_link = get_source_link(obj, page_info)
+    try:
+        source_link = get_source_link(obj, page_info)
+    except (AttributeError, OSError, TypeError):
+        # tokenizers obj do NOT have `__module__` attribute & can NOT be used with inspect.getsourcelines
+        source_link = None
     component = get_signature_component(signature_name, anchor_name, signature, object_doc, source_link)
     documentation = "\n" + component + "\n"
     return documentation, check

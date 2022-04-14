@@ -17,7 +17,7 @@
 	}[];
 	export let returnDescription: string;
 	export let returnType: string;
-	export let source: string;
+	export let source: string | undefined = undefined;
 	export let hashlink: string | undefined;
 
 	let parametersElement: HTMLElement;
@@ -75,7 +75,9 @@
 
 <div
 	class="border-l-2 border-t-2 pl-4 pt-3.5 border-gray-100 rounded-tl-xl mb-6 mt-8 {hashlink ===
-		anchor ? bgHighlightClass : ''}"
+	anchor
+		? bgHighlightClass
+		: ''}"
 >
 	<span
 		class="group flex space-x-1.5 items-center text-gray-800 bg-gradient-to-r rounded-tr-lg -mt-4 -ml-4 pt-3 px-2.5"
@@ -89,15 +91,17 @@
 		>
 			<IconCopyLink />
 		</a>
-		<a
-			class="!ml-auto !text-gray-400 !no-underline text-sm flex items-center"
-			href={source}
-			target="_blank"
-		>
-			<span>&lt;</span>
-			<span class="hidden md:block mx-0.5 hover:!underline">source</span>
-			<span>&gt;</span>
-		</a>
+		{#if source}
+			<a
+				class="!ml-auto !text-gray-400 !no-underline text-sm flex items-center"
+				href={source}
+				target="_blank"
+			>
+				<span>&lt;</span>
+				<span class="hidden md:block mx-0.5 hover:!underline">source</span>
+				<span>&gt;</span>
+			</a>
+		{/if}
 	</span>
 	<p class="font-mono text-xs md:text-sm !leading-relaxed !my-6">
 		<span>(</span>
@@ -177,7 +181,9 @@
 		{#if !!returnType}
 			<div
 				class="flex items-center font-semibold space-x-3 text-base !mt-0 !mb-0 text-gray-800 rounded {hashlink ===
-					anchor ? bgHighlightClass : ''}"
+				anchor
+					? bgHighlightClass
+					: ''}"
 				id={`${anchor}.returns`}
 			>
 				<p class="text-base">Returns</p>
