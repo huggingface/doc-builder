@@ -3,8 +3,9 @@ import preprocess from "svelte-preprocess";
 import {
 	docstringPreprocess,
 	frameworkcontentPreprocess,
+	mdsvexPreprocess,
 	inferenceSnippetPreprocess,
-	mdsvexPreprocess
+	tokenizersLangPreprocess
 } from "./preprocess.js";
 
 /** @type {import('@sveltejs/kit').Config} */
@@ -17,6 +18,7 @@ const config = {
 		docstringPreprocess,
 		frameworkcontentPreprocess,
 		inferenceSnippetPreprocess,
+		tokenizersLangPreprocess,
 		mdsvexPreprocess,
 		preprocess({ sourceMap: Boolean(process.env.DOCS_SOURCEMAP) })
 	],
