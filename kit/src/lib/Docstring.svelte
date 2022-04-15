@@ -35,8 +35,8 @@
 		const { hash } = window.location;
 		hashlink = hash.substring(1);
 		const containsAnchor =
-		!!hash && parametersDescription?.some(({ anchor }) => anchor === hashlink);
-		
+			!!hash && parametersDescription?.some(({ anchor }) => anchor === hashlink);
+
 		collapsed = !containsAnchor && parametersElement.clientHeight > 500;
 		onHashChange();
 	});
@@ -70,12 +70,12 @@
 	function onHashChange() {
 		const { hash } = window.location;
 		hashlink = hash.substring(1);
-		if(containerEl){
+		if (containerEl) {
 			containerEl.classList.remove(...bgHighlightClass.split(" "));
 		}
-		if(hashlink === anchor){
+		if (hashlink === anchor) {
 			containerEl = document.getElementById(hashlink)?.closest(".docstring");
-			if(containerEl){
+			if (containerEl) {
 				containerEl.classList.add(...bgHighlightClass.split(" "));
 			}
 		}
