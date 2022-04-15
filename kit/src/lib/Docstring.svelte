@@ -21,6 +21,7 @@
 	export let hashlink: string | undefined;
 
 	let parametersElement: HTMLElement;
+	let containerEl: HTMLElement;
 	let collapsed: boolean = false;
 
 	const tooltipMapper: Record<string, string> =
@@ -34,9 +35,10 @@
 		const { hash } = window.location;
 		hashlink = hash.substring(1);
 		const containsAnchor =
-			!!hash && parametersDescription?.some(({ anchor }) => anchor === hashlink);
-
+		!!hash && parametersDescription?.some(({ anchor }) => anchor === hashlink);
+		
 		collapsed = !containsAnchor && parametersElement.clientHeight > 500;
+		onHashChange();
 	});
 
 	async function onClick(anchor: string, isAnchorExists: boolean) {
@@ -68,17 +70,21 @@
 	function onHashChange() {
 		const { hash } = window.location;
 		hashlink = hash.substring(1);
+		if(containerEl){
+			containerEl.classList.remove(...bgHighlightClass.split(" "));
+		}
+		if(hashlink === anchor){
+			containerEl = document.getElementById(hashlink)?.closest(".docstring");
+			if(containerEl){
+				containerEl.classList.add(...bgHighlightClass.split(" "));
+			}
+		}
 	}
 </script>
 
 <svelte:window on:hashchange={onHashChange} />
 
-<div
-	class="border-l-2 border-t-2 pl-4 pt-3.5 border-gray-100 rounded-tl-xl mb-6 mt-8 {hashlink ===
-	anchor
-		? bgHighlightClass
-		: ''}"
->
+<div>
 	<span
 		class="group flex space-x-1.5 items-center text-gray-800 bg-gradient-to-r rounded-tr-lg -mt-4 -ml-4 pt-3 px-2.5"
 		id={anchor}
