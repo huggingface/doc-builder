@@ -368,7 +368,9 @@ def document_object(object_name, package, page_info, full_name=True, anchor_name
         # tokenizers obj do NOT have `__module__` attribute & can NOT be used with inspect.getsourcelines
         source_link = None
     is_getset_desc = is_getset_descriptor(obj)
-    component = get_signature_component(signature_name, anchor_name, signature, object_doc, source_link, is_getset_desc)
+    component = get_signature_component(
+        signature_name, anchor_name, signature, object_doc, source_link, is_getset_desc
+    )
     documentation = "\n" + component + "\n"
     return documentation, check
 
