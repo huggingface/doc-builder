@@ -462,7 +462,14 @@ before.
 
         self.assertFalse(is_dataclass_autodoc(AutomaticSpeechRecognition))
 
-    def test_autodoc_tokenizers(self):
+    def test_autodoc_getset_descriptor(self):
         import tokenizers
 
-        _, anchors, _ = autodoc("AddedToken.content", tokenizers, return_anchors=True)
+        documentation = autodoc("AddedToken.content", tokenizers, return_anchors=False)
+        expected_documentation = """<div class="docstring border-l-2 border-t-2 pl-4 pt-3.5 border-gray-100 rounded-tl-xl mb-6 mt-8">
+
+<docstring><name>content</name><anchor>None</anchor><parameters>[]</parameters><isgetsetdescriptor></docstring>
+Get the content of this `AddedToken`
+
+</div>\n"""
+        self.assertEqual(documentation, expected_documentation)
