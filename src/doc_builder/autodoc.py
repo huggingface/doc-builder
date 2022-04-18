@@ -197,7 +197,7 @@ def get_signature_component(name, anchor, signature, object_doc, source_link=Non
         svelte_str += f"<source>{source_link}</source>"
     svelte_str += f"<parameters>{json.dumps(signature)}</parameters>"
     if is_getset_desc:
-        svelte_str += f"<isgetsetdescriptor>"
+        svelte_str += "<isgetsetdescriptor>"
 
     if parameters is not None:
         parameters_str = ""
