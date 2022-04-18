@@ -461,3 +461,8 @@ before.
             transcription_column: str = "transcription"
 
         self.assertFalse(is_dataclass_autodoc(AutomaticSpeechRecognition))
+
+    def test_autodoc_tokenizers(self):
+        import tokenizers
+
+        _, anchors, _ = autodoc("AddedToken.content", tokenizers, return_anchors=True)
