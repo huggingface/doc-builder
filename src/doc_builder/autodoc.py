@@ -101,12 +101,14 @@ def format_signature(obj):
     Returns `List(Dict(str, str))` (i.e. [{'do_lower_case', ' = True'}, ...])
     where `key` of `Dict` is f'{param_name}' & `value` of `Dict` is f': {annotation}  = {default}'
     """
+    params = []
+    if is_getset_descriptor(obj):
+        return params
     try:
         signature = inspect.signature(obj)
     except ValueError:
         # TODO: This fails for ModelOutput. Check if this is normal.
         return ""
-    params = []
 
     for idx, param in enumerate(signature.parameters.values()):
         param_name = param.name
@@ -139,7 +141,7 @@ _re_raises = re.compile(r"<raises>(.*)</raises>", re.DOTALL)
 _re_raisederrors = re.compile(r"<raisederrors>(.*)</raisederrors>", re.DOTALL)
 
 
-def get_signature_component(name, anchor, signature, object_doc, source_link=None):
+def get_signature_component(name, anchor, signature, object_doc, source_link=None, is_getset_desc=False):
     """
     Returns the svelte `Docstring` component string.
 
@@ -149,6 +151,7 @@ def get_signature_component(name, anchor, signature, object_doc, source_link=Non
     - **signature** (`List(Dict(str,str))`) -- The signature of the object.
     - **object_doc** (`str`) -- The docstring of the the object.
     - **source_link** (Union[`str`, `None`], *optional*, defaults to `None`) -- The github source link of the the object.
+    - **is_getset_desc** (`bool`, *optional*, defaults to `False`) -- Whether the type of obj is `getset_descriptor`.
     """
 
     def inside_example_finder_closure(match, tag):
@@ -193,6 +196,8 @@ def get_signature_component(name, anchor, signature, object_doc, source_link=Non
     if source_link:
         svelte_str += f"<source>{source_link}</source>"
     svelte_str += f"<parameters>{json.dumps(signature)}</parameters>"
+    if is_getset_desc:
+        svelte_str += "<isgetsetdescriptor>"
 
     if parameters is not None:
         parameters_str = ""
@@ -265,6 +270,8 @@ def is_dataclass_autodoc(obj):
     """
     Returns boolean whether object's doc was generated automatically by `dataclass`.
     """
+    if is_getset_descriptor(obj):
+        return False
     try:
         signature = str(inspect.signature(obj))
     except ValueError:
@@ -274,6 +281,15 @@ def is_dataclass_autodoc(obj):
     doc_generated = obj.__name__ + signature
     is_generated = doc in doc_generated
     return is_generated
+
+
+def is_getset_descriptor(obj):
+    """
+    Returns boolean whether object is `getset_descriptor`.
+    """
+    # used by tokenizers @property bindings
+    obj_repr = str(type(obj))
+    return "getset_descriptor" in obj_repr
 
 
 def get_source_link(obj, page_info):
@@ -351,7 +367,10 @@ def document_object(object_name, package, page_info, full_name=True, anchor_name
     except (AttributeError, OSError, TypeError):
         # tokenizers obj do NOT have `__module__` attribute & can NOT be used with inspect.getsourcelines
         source_link = None
-    component = get_signature_component(signature_name, anchor_name, signature, object_doc, source_link)
+    is_getset_desc = is_getset_descriptor(obj)
+    component = get_signature_component(
+        signature_name, anchor_name, signature, object_doc, source_link, is_getset_desc
+    )
     documentation = "\n" + component + "\n"
     return documentation, check
 
