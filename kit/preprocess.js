@@ -18,6 +18,7 @@ export const docstringPreprocess = {
 		const REGEX_RETTYPE = /<rettype>(((?!<rettype>).)*)<\/rettype>/ms;
 		const REGEX_SOURCE = /<source>(((?!<source>).)*)<\/source>/ms;
 		const REGEX_TIP = /<Tip( warning={true})?>(((?!<Tip( warning={true})?>).)*)<\/Tip>/gms;
+		const REGEX_IS_GETSET_DESC = /<isgetsetdescriptor>/ms;
 
 		content = await replaceAsync(content, REGEX_DOCSTRING, async (_, docstringBody) => {
 			docstringBody = renderSvelteChars(docstringBody);
@@ -87,6 +88,10 @@ export const docstringPreprocess = {
 				const retType = docstringBody.match(REGEX_RETTYPE)[1];
 				const { code } = await mdsvexPreprocess.markup({ content: retType, filename });
 				svelteComponent += ` returnType={${JSON.stringify(code)}} `;
+			}
+
+			if (docstringBody.match(REGEX_IS_GETSET_DESC)) {
+				svelteComponent += ` isGetSetDescriptor={true} `;
 			}
 
 			if (docstringBody.match(REGEX_PARAMSGROUPS)) {
