@@ -19,6 +19,10 @@ on:
       languages:
       # supply space-separated language codes
         type: string
+      package_path:
+        type: string
+      install_rust:
+        type: boolean
     secrets:
       token:
         required: true
@@ -67,6 +71,12 @@ jobs:
             echo "doc_folder=${{ inputs.path_to_docs }}" >> $GITHUB_ENV
           fi
 
+      - name: Install Rust
+        uses: actions-rs/toolchain@v1
+        if: inputs.install_rust
+        with:
+          toolchain: stable
+
       - name: Setup environment
         shell: bash
         run: |
@@ -76,7 +86,11 @@ jobs:
           pip install .
           cd ..
 
-          if [[ "${{ inputs.additional_args }}" != *"--not_python_module"* ]];
+          if [[ -n "${{ inputs.package_path }}" ]]
+          then
+            cd ${{ inputs.package_path }}
+            pip install .[dev]
+          elif [[ "${{ inputs.additional_args }}" != *"--not_python_module"* ]];
           then
             cd ${{ inputs.package }}
             pip install .[dev]
