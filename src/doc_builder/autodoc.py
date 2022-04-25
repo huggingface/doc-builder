@@ -269,20 +269,20 @@ def hashlink_example_codeblock(object_doc, object_anchor):
     - **anchor** (`str`) -- The anchor name of the function or class that will be used for hash links.
     """
 
-    def svelte_generator():
-        id = 1
-        while True:
-            id_str = "" if id == 1 else f"-{id}"
-            example_anchor = f"{object_anchor}.example{id_str}"
-            match = yield
-            yield f'<ExampleCodeBlock anchor="{example_anchor}">\n\n{match.group(1)}\n\n</ExampleCodeBlock>'
-            id += 1
+    example_id = 0
 
-    svelte_example_block = svelte_generator()
+    def svelte_example_closure(match):
+        """
+        This closure matches `_re_example_codeblock` regex & creates `ExampleCodeBlock` svelte component
+        """
+        nonlocal example_id
 
-    object_doc = _re_example_codeblock.sub(
-        lambda m: (next(svelte_example_block), svelte_example_block.send(m))[-1], object_doc
-    )
+        example_id += 1
+        id_str = "" if example_id == 1 else f"-{example_id}"
+        example_anchor = f"{object_anchor}.example{id_str}"
+        return f'<ExampleCodeBlock anchor="{example_anchor}">\n\n{match.group(1)}\n\n</ExampleCodeBlock>'
+
+    object_doc = _re_example_codeblock.sub(svelte_example_closure, object_doc)
     return object_doc
 
 
