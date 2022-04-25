@@ -189,6 +189,7 @@ def get_signature_component(name, anchor, signature, object_doc, source_link=Non
     object_doc, yieldtype = regex_closure(object_doc, _re_yieldtype)
     object_doc, raise_description = regex_closure(object_doc, _re_raises)
     object_doc, raisederrors = regex_closure(object_doc, _re_raisederrors)
+    object_doc = hashlink_example_codeblock(object_doc, anchor)
 
     svelte_str = "<docstring>"
     svelte_str += f"<name>{name}</name>"
@@ -253,6 +254,35 @@ def is_rst_docstring(docstring):
     if _re_rst_example.search(docstring) is not None:
         return True
     return False
+
+
+# Re pattern to catch example introduction & example code block.
+_re_example_codeblock = re.compile(r"((.*(E|e)xample.*:\s+)?```(((?!```)(.|\n))*)+```)")
+
+
+def hashlink_example_codeblock(object_doc, object_anchor):
+    """
+    Returns the svelte `ExampleCodeBlock` component string.
+
+    Args:
+    - **object_doc** (`str`) -- The docstring of the the object.
+    - **anchor** (`str`) -- The anchor name of the function or class that will be used for hash links.
+    """
+
+    def svelte_generator():
+        id = 1
+        while True:
+            id_str = "" if id == 1 else f"-{id}"
+            example_anchor = f"{object_anchor}.example{id_str}"
+            match = yield
+            yield f'<ExampleCodeBlock anchor="{example_anchor}">\n\n{match.group(1)}\n\n</ExampleCodeBlock>'
+            id += 1
+
+    svelte_example_block = svelte_generator()
+    next(svelte_example_block)  # run up to the first yield
+
+    object_doc = _re_example_codeblock.sub(lambda m: svelte_example_block.send(m), object_doc)
+    return object_doc
 
 
 # Re pattern to numpystyle docstring (e.g Parameter -------).
