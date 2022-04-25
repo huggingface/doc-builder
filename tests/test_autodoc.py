@@ -522,7 +522,6 @@ import numpy as np
 ```
 
 </ExampleCodeBlock>"""
-        # print(hashlink_example_codeblock(original_md, dummy_anchor))
         self.assertEqual(hashlink_example_codeblock(original_md, dummy_anchor), expected_conversion)
 
         # test complex example introduction
@@ -538,7 +537,6 @@ import numpy as np
 ```
 
 </ExampleCodeBlock>"""
-        # print(hashlink_example_codeblock(original_md, dummy_anchor))
         self.assertEqual(hashlink_example_codeblock(original_md, dummy_anchor), expected_conversion)
 
         # test doc description with multiple examples
