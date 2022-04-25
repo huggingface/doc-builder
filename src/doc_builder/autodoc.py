@@ -279,9 +279,10 @@ def hashlink_example_codeblock(object_doc, object_anchor):
             id += 1
 
     svelte_example_block = svelte_generator()
-    next(svelte_example_block)  # run up to the first yield
 
-    object_doc = _re_example_codeblock.sub(lambda m: svelte_example_block.send(m), object_doc)
+    object_doc = _re_example_codeblock.sub(
+        lambda m: (next(svelte_example_block), svelte_example_block.send(m))[-1], object_doc
+    )
     return object_doc
 
 
