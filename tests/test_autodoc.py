@@ -569,7 +569,7 @@ import scipy as sp
         self.assertEqual(hashlink_example_codeblock(original_md, dummy_anchor), expected_conversion)
 
         # test example with inline ``` (inline ``` should be escaped)
-        original_md = """The tokenization method is `<tokens> <eos> <language code>` for source language documents, and ``<language code>
+        original_md = """The tokenization method is `<tokens> <eos> <language code>` for source language documents, and ```<language code>
 <tokens> <eos>``` for target language documents.
 
 Examples:
@@ -585,7 +585,7 @@ Examples:
 ...     labels = tokenizer(expected_translation_romanian, return_tensors="pt")
 >>> inputs["labels"] = labels["input_ids"]
 ```"""
-        expected_conversion = """The tokenization method is `<tokens> <eos> <language code>` for source language documents, and ``<language code>
+        expected_conversion = """The tokenization method is `<tokens> <eos> <language code>` for source language documents, and ```<language code>
 <tokens> <eos>``` for target language documents.
 
 <ExampleCodeBlock anchor="myfunc.example">
