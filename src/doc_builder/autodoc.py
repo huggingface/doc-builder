@@ -271,7 +271,7 @@ def hashlink_example_codeblock(object_doc, object_anchor):
 
     example_id = 0
 
-    def svelte_example_closure(match):
+    def add_example_svelte_blocks(match):
         """
         This closure matches `_re_example_codeblock` regex & creates `ExampleCodeBlock` svelte component
         """
@@ -282,7 +282,7 @@ def hashlink_example_codeblock(object_doc, object_anchor):
         example_anchor = f"{object_anchor}.example{id_str}"
         return f'<ExampleCodeBlock anchor="{example_anchor}">\n\n{match.group(1)}\n\n</ExampleCodeBlock>'
 
-    object_doc = _re_example_codeblock.sub(svelte_example_closure, object_doc)
+    object_doc = _re_example_codeblock.sub(add_example_svelte_blocks, object_doc)
     return object_doc
 
 
