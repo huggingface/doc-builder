@@ -567,3 +567,42 @@ import scipy as sp
 
 </ExampleCodeBlock>"""
         self.assertEqual(hashlink_example_codeblock(original_md, dummy_anchor), expected_conversion)
+
+        # test example with inline ``` (inline ``` should be escaped)
+        original_md = """The tokenization method is `<tokens> <eos> <language code>` for source language documents, and ``<language code>
+<tokens> <eos>``` for target language documents.
+
+Examples:
+
+```python
+>>> from transformers import MBartTokenizer
+
+>>> tokenizer = MBartTokenizer.from_pretrained("facebook/mbart-large-en-ro", src_lang="en_XX", tgt_lang="ro_RO")
+>>> example_english_phrase = " UN Chief Says There Is No Military Solution in Syria"
+>>> expected_translation_romanian = "Şeful ONU declară că nu există o soluţie militară în Siria"
+>>> inputs = tokenizer(example_english_phrase, return_tensors="pt")
+>>> with tokenizer.as_target_tokenizer():
+...     labels = tokenizer(expected_translation_romanian, return_tensors="pt")
+>>> inputs["labels"] = labels["input_ids"]
+```"""
+        expected_conversion = """The tokenization method is `<tokens> <eos> <language code>` for source language documents, and ``<language code>
+<tokens> <eos>``` for target language documents.
+
+<ExampleCodeBlock anchor="myfunc.example">
+
+Examples:
+
+```python
+>>> from transformers import MBartTokenizer
+
+>>> tokenizer = MBartTokenizer.from_pretrained("facebook/mbart-large-en-ro", src_lang="en_XX", tgt_lang="ro_RO")
+>>> example_english_phrase = " UN Chief Says There Is No Military Solution in Syria"
+>>> expected_translation_romanian = "Şeful ONU declară că nu există o soluţie militară în Siria"
+>>> inputs = tokenizer(example_english_phrase, return_tensors="pt")
+>>> with tokenizer.as_target_tokenizer():
+...     labels = tokenizer(expected_translation_romanian, return_tensors="pt")
+>>> inputs["labels"] = labels["input_ids"]
+```
+
+</ExampleCodeBlock>"""
+        self.assertEqual(hashlink_example_codeblock(original_md, dummy_anchor), expected_conversion)
