@@ -133,7 +133,7 @@ export const frameworkcontentPreprocess = {
 		const REGEX_PYTORCH = /<pt>(((?!<pt>).)*)<\/pt>/ms;
 		const REGEX_TENSORFLOW = /<tf>(((?!<tf>).)*)<\/tf>/ms;
 		const REGEX_JAX = /<jax>(((?!<jax>).)*)<\/jax>/ms;
-		
+
 		content = await replaceAsync(content, REGEX_FRAMEWORKCONTENT, async (_, fwcontentBody) => {
 			const FRAMEWORKS = [
 				{ framework: "pytorch", REGEX_FW: REGEX_PYTORCH, isExist: false },

@@ -655,6 +655,7 @@ def convert_rst_to_mdx(rst_text, page_info, add_imports=True):
             '	import IconCopyLink from "$lib/IconCopyLink.svelte";',
             '	import FrameworkContent from "$lib/FrameworkContent.svelte";',
             '	import Markdown from "$lib/Markdown.svelte";',
+            '	import ExampleCodeBlock from "$lib/ExampleCodeBlock.svelte";',
             "	",
             '	export let fw: "pt" | "tf"',
             "</script>",

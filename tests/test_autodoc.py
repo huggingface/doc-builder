@@ -30,6 +30,7 @@ from doc_builder.autodoc import (
     get_signature_component,
     get_source_link,
     get_type_name,
+    hashlink_example_codeblock,
     is_dataclass_autodoc,
     remove_example_tags,
     resolve_links_in_text,
@@ -473,3 +474,143 @@ Get the content of this `AddedToken`
 
 </div>\n"""
         self.assertEqual(documentation, expected_documentation)
+
+    def test_hashlink_example_codeblock(self):
+        dummy_anchor = "myfunc"
+        # test canonical
+        original_md = """Example:
+```python
+import numpy as np
+```"""
+        expected_conversion = """<ExampleCodeBlock anchor="myfunc.example">
+
+Example:
+```python
+import numpy as np
+```
+
+</ExampleCodeBlock>"""
+        self.assertEqual(hashlink_example_codeblock(original_md, dummy_anchor), expected_conversion)
+
+        # test `Examples` ending in `s`
+        original_md = """Examples:
+```python
+import numpy as np
+```"""
+        expected_conversion = """<ExampleCodeBlock anchor="myfunc.example">
+
+Examples:
+```python
+import numpy as np
+```
+
+</ExampleCodeBlock>"""
+        self.assertEqual(hashlink_example_codeblock(original_md, dummy_anchor), expected_conversion)
+
+        # test part of bigger doc description
+        original_md = """Some description about this function
+Example:
+```python
+import numpy as np
+```"""
+        expected_conversion = """Some description about this function
+<ExampleCodeBlock anchor="myfunc.example">
+
+Example:
+```python
+import numpy as np
+```
+
+</ExampleCodeBlock>"""
+        self.assertEqual(hashlink_example_codeblock(original_md, dummy_anchor), expected_conversion)
+
+        # test complex example introduction
+        original_md = """Here is a classification example:
+```python
+import numpy as np
+```"""
+        expected_conversion = """<ExampleCodeBlock anchor="myfunc.example">
+
+Here is a classification example:
+```python
+import numpy as np
+```
+
+</ExampleCodeBlock>"""
+        self.assertEqual(hashlink_example_codeblock(original_md, dummy_anchor), expected_conversion)
+
+        # test doc description with multiple examples
+        original_md = """Here is a classification example:
+```python
+import numpy as np
+```
+
+Here is a regression example:
+```python
+import scipy as sp
+```"""
+        expected_conversion = """<ExampleCodeBlock anchor="myfunc.example">
+
+Here is a classification example:
+```python
+import numpy as np
+```
+
+</ExampleCodeBlock>
+
+<ExampleCodeBlock anchor="myfunc.example-2">
+
+Here is a regression example:
+```python
+import scipy as sp
+```
+
+</ExampleCodeBlock>"""
+        self.assertEqual(hashlink_example_codeblock(original_md, dummy_anchor), expected_conversion)
+
+        # test example with inline ``` (inline ``` should be escaped)
+        original_md = """The tokenization method is `<tokens> <eos> <language code>` for source language documents, and ```<language code>
+<tokens> <eos>``` for target language documents.
+
+Examples:
+
+```python
+>>> from transformers import MBartTokenizer
+
+>>> tokenizer = MBartTokenizer.from_pretrained("facebook/mbart-large-en-ro", src_lang="en_XX", tgt_lang="ro_RO")
+>>> example_english_phrase = " UN Chief Says There Is No Military Solution in Syria"
+>>> expected_translation_romanian = "Şeful ONU declară că nu există o soluţie militară în Siria"
+>>> inputs = tokenizer(example_english_phrase, return_tensors="pt")
+>>> with tokenizer.as_target_tokenizer():
+...     labels = tokenizer(expected_translation_romanian, return_tensors="pt")
+>>> inputs["labels"] = labels["input_ids"]
+```"""
+        expected_conversion = """The tokenization method is `<tokens> <eos> <language code>` for source language documents, and ```<language code>
+<tokens> <eos>``` for target language documents.
+
+<ExampleCodeBlock anchor="myfunc.example">
+
+Examples:
+
+```python
+>>> from transformers import MBartTokenizer
+
+>>> tokenizer = MBartTokenizer.from_pretrained("facebook/mbart-large-en-ro", src_lang="en_XX", tgt_lang="ro_RO")
+>>> example_english_phrase = " UN Chief Says There Is No Military Solution in Syria"
+>>> expected_translation_romanian = "Şeful ONU declară că nu există o soluţie militară în Siria"
+>>> inputs = tokenizer(example_english_phrase, return_tensors="pt")
+>>> with tokenizer.as_target_tokenizer():
+...     labels = tokenizer(expected_translation_romanian, return_tensors="pt")
+>>> inputs["labels"] = labels["input_ids"]
+```
+
+</ExampleCodeBlock>"""
+        self.assertEqual(hashlink_example_codeblock(original_md, dummy_anchor), expected_conversion)
+
+        # test indentation (there should be no indendetation)
+        original_md = """Some example with indentation
+        ```
+        some pythong
+        ```
+        """
+        self.assertEqual(hashlink_example_codeblock(original_md, dummy_anchor), original_md)
