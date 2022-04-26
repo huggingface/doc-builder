@@ -142,7 +142,6 @@ def resolve_autodoc(content, package, return_anchors=False, page_info=None):
             idx += 1
 
     new_content = "\n".join(new_lines)
-    new_content = remove_example_tags(new_content)
 
     return (new_content, anchors, source_files, errors) if return_anchors else new_content
 

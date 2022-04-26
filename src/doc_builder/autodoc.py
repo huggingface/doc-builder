@@ -189,6 +189,7 @@ def get_signature_component(name, anchor, signature, object_doc, source_link=Non
     object_doc, yieldtype = regex_closure(object_doc, _re_yieldtype)
     object_doc, raise_description = regex_closure(object_doc, _re_raises)
     object_doc, raisederrors = regex_closure(object_doc, _re_raisederrors)
+    object_doc = remove_example_tags(object_doc)
     object_doc = hashlink_example_codeblock(object_doc, anchor)
 
     svelte_str = "<docstring>"
