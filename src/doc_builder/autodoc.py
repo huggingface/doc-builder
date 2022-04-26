@@ -333,6 +333,9 @@ def get_source_link(obj, page_info):
     base_link = f"https://github.com/huggingface/{package_name}/blob/{version_tag}/src/"
     module = obj.__module__.replace(".", "/")
     line_number = inspect.getsourcelines(obj)[1]
+    source_file = inspect.getsourcefile(obj)
+    if source_file.endswith("__init__.py"):
+        return f"{base_link}{module}/__init__.py#L{line_number}"
     return f"{base_link}{module}.py#L{line_number}"
 
 
