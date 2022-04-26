@@ -24,7 +24,7 @@ from pathlib import Path
 import yaml
 from tqdm import tqdm
 
-from .autodoc import autodoc, find_object_in_package, get_source_path, remove_example_tags, resolve_links_in_text
+from .autodoc import autodoc, find_object_in_package, get_source_path, resolve_links_in_text
 from .convert_md_to_mdx import convert_md_to_mdx
 from .convert_rst_to_mdx import convert_rst_to_mdx, find_indent, is_empty_line
 from .convert_to_notebook import generate_notebooks_from_file
@@ -142,7 +142,6 @@ def resolve_autodoc(content, package, return_anchors=False, page_info=None):
             idx += 1
 
     new_content = "\n".join(new_lines)
-    new_content = remove_example_tags(new_content)
 
     return (new_content, anchors, source_files, errors) if return_anchors else new_content
 
