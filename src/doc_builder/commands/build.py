@@ -72,11 +72,17 @@ def build_command(args):
         if "dev" in version:
             version = default_version
         else:
-            doc_config = get_doc_config()
-            version_prefix = getattr(doc_config, "version_prefix", "v")
-            version = f"{version_prefix}{version}"
+            version = f"v{version}"
     else:
         version = args.version
+
+    # version will always start with prefix `v`
+    # version_tag does not have to start with prefix `v` (see: https://github.com/huggingface/datasets/tags)
+    version_tag = version
+    if args.version is None and "dev" not in version:
+        doc_config = get_doc_config()
+        version_prefix = getattr(doc_config, "version_prefix", "v")
+        version_tag = f"{version_prefix}{version}"
 
     # Disable notebook building for non-master verion
     if version != default_version:
@@ -92,6 +98,7 @@ def build_command(args):
         output_path,
         clean=args.clean,
         version=version,
+        version_tag=version_tag,
         language=args.language,
         notebook_dir=notebook_dir,
         is_python_module=not args.not_python_module,
