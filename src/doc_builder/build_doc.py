@@ -382,7 +382,7 @@ def build_doc(
         clean (`bool`, *optional*, defaults to `True`):
             Whether or not to delete the content of the `output_dir` if that directory exists.
         version (`str`, *optional*, defaults to `"main"`): The name of the version of the doc.
-        version_tag (`str`, *optional*, defaults to `"main"`): The name of the version tag (on GH) of the doc.
+        version_tag (`str`, *optional*, defaults to `"main"`): The name of the version tag (on GitHub) of the doc.
         language (`str`, *optional*, defaults to `"en"`): The language of the doc.
         notebook_dir (`str` or `os.PathLike`, *optional*):
             If provided, where to save the notebooks generated from the doc file with an [[open-in-colab]] marker.
