@@ -329,8 +329,8 @@ def get_source_link(obj, page_info):
     Returns the link to the source code of an object on GitHub.
     """
     package_name = page_info["package_name"]
-    version = page_info.get("version", "main")
-    base_link = f"https://github.com/huggingface/{package_name}/blob/{version}/src/"
+    version_tag = page_info.get("version_tag", "main")
+    base_link = f"https://github.com/huggingface/{package_name}/blob/{version_tag}/src/"
     module = obj.__module__.replace(".", "/")
     line_number = inspect.getsourcelines(obj)[1]
     return f"{base_link}{module}.py#L{line_number}"

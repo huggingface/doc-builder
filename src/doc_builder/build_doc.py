@@ -365,6 +365,7 @@ def build_doc(
     output_dir,
     clean=True,
     version="main",
+    version_tag="main",
     language="en",
     notebook_dir=None,
     is_python_module=False,
@@ -381,6 +382,7 @@ def build_doc(
         clean (`bool`, *optional*, defaults to `True`):
             Whether or not to delete the content of the `output_dir` if that directory exists.
         version (`str`, *optional*, defaults to `"main"`): The name of the version of the doc.
+        version_tag (`str`, *optional*, defaults to `"main"`): The name of the version tag (on GitHub) of the doc.
         language (`str`, *optional*, defaults to `"en"`): The language of the doc.
         notebook_dir (`str` or `os.PathLike`, *optional*):
             If provided, where to save the notebooks generated from the doc file with an [[open-in-colab]] marker.
@@ -390,7 +392,7 @@ def build_doc(
             If `True`, disables the toc tree check and sphinx objects.inv builds since they are not needed
             when this mode is active.
     """
-    page_info = {"version": version, "language": language, "package_name": package_name}
+    page_info = {"version": version, "version_tag": version_tag, "language": language, "package_name": package_name}
     if clean and Path(output_dir).exists():
         shutil.rmtree(output_dir)
 
