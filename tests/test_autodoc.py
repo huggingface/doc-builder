@@ -606,3 +606,11 @@ Examples:
 
 </ExampleCodeBlock>"""
         self.assertEqual(hashlink_example_codeblock(original_md, dummy_anchor), expected_conversion)
+
+        # test indentation (there should be no indendetation)
+        original_md = """Some example with indentation
+        ```
+        some pythong
+        ```
+        """
+        self.assertEqual(hashlink_example_codeblock(original_md, dummy_anchor), original_md)
