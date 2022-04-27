@@ -79,7 +79,7 @@ def build_command(args):
     # `version` will always start with prefix `v`
     # `version_tag` does not have to start with prefix `v` (see: https://github.com/huggingface/datasets/tags)
     version_tag = version
-    if args.version is None and "dev" not in version:
+    if args.version is None and version != default_version:
         doc_config = get_doc_config()
         version_prefix = getattr(doc_config, "version_prefix", "v")
         version_ = version[1:]  # v2.1.0 -> 2.1.0
