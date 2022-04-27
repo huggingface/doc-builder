@@ -82,7 +82,8 @@ def build_command(args):
     if args.version is None and "dev" not in version:
         doc_config = get_doc_config()
         version_prefix = getattr(doc_config, "version_prefix", "v")
-        version_tag = f"{version_prefix}{version}"
+        version_ = version[1:]  # v2.1.0 -> 2.1.0
+        version_tag = f"{version_prefix}{version_}"
 
     # Disable notebook building for non-master verion
     if version != default_version:
