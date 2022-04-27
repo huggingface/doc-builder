@@ -41,6 +41,7 @@ from transformers.utils import PushToHubMixin
 
 # This is dynamic since the Transformers library is not frozen.
 TEST_LINE_NUMBER = inspect.getsourcelines(transformers.utils.ModelOutput)[1]
+TEST_LINE_NUMBER2 = inspect.getsourcelines(transformers.pipeline)[1]
 
 TEST_DOCSTRING = """Constructs a BERTweet tokenizer, using Byte-Pair-Encoding.
 
@@ -138,6 +139,7 @@ class AutodocTester(unittest.TestCase):
     test_source_link = (
         f"https://github.com/huggingface/transformers/blob/main/src/transformers/utils/generic.py#L{TEST_LINE_NUMBER}"
     )
+    test_source_link_init = f"https://github.com/huggingface/transformers/blob/main/src/transformers/pipelines/__init__.py#L{TEST_LINE_NUMBER2}"
 
     def test_find_object_in_package(self):
         self.assertEqual(find_object_in_package("BertModel", transformers), BertModel)
@@ -244,6 +246,7 @@ Users should refer to this superclass for more information regarding those metho
     def test_get_source_link(self):
         page_info = {"package_name": "transformers"}
         self.assertEqual(get_source_link(transformers.utils.ModelOutput, page_info), self.test_source_link)
+        self.assertEqual(get_source_link(transformers.pipeline, page_info), self.test_source_link_init)
 
     def test_document_object(self):
         page_info = {"package_name": "transformers"}
