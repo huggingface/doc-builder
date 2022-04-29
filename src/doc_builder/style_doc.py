@@ -235,6 +235,9 @@ def style_docstring(docstring, max_len):
     Returns:
         `str`: The styled docstring
     """
+    if is_empty_line(docstring):
+        return docstring
+
     lines = docstring.split("\n")
     new_lines = []
 
