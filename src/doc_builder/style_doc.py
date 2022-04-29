@@ -161,7 +161,7 @@ def format_code_example(code: str, max_len: int, in_docstring: bool = False):
             if has_doctest and not is_empty_line(line):
                 prefix = (
                     "... "
-                    if line.startswith(" ") or line in [")", "]", "}"] or in_triple_quotes or in_decorator
+                    if line.startswith(" ") or line[0] in [")", "]", "}"] or in_triple_quotes or in_decorator
                     else ">>> "
                 )
             else:
