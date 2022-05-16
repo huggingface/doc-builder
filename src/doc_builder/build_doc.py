@@ -438,6 +438,10 @@ def check_toc_integrity(doc_folder, output_dir):
     # We don't just loop directly in toc as we will add more into it as we un-nest things.
     while len(toc) > 0:
         part = toc.pop(0)
+        if "local" in part:
+            toc_sections.append(part["local"])
+        if "sections" not in part:
+            continue
         toc_sections.extend([sec["local"] for sec in part["sections"] if "local" in sec])
         for sec in part["sections"]:
             if "local_fw" in sec:
