@@ -119,10 +119,10 @@ def format_signature(obj):
         elif param.kind == inspect._ParameterKind.VAR_KEYWORD:
             param_name = f"**{param_name}"
         param_type_val = ""
-        if param.annotation != inspect._empty:
+        if param.annotation is not inspect._empty:
             annotation = get_type_name(param.annotation)
             param_type_val += f": {annotation}"
-        if param.default != inspect._empty:
+        if param.default is not inspect._empty:
             default = param.default
             default = repr(default)
             param_type_val += f" = {default}"
