@@ -30,7 +30,7 @@ For example:
 doc-builder preview datasets ~/Desktop/datasets/docs/source/
 ```
 
-**`preview` command only works with existing doc files. When you add a completely new file, you need update `_toctree.yml` & restart `preview` command (`ctrl-c` to stop it & call `doc-builder preview ...` again).
+**`preview` command only works with existing doc files. When you add a completely new file, you need to update `_toctree.yml` & restart `preview` command (`ctrl-c` to stop it & call `doc-builder preview ...` again).
 ## Doc building
 
 To build the documentation of a given package, use the following command:
