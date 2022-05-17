@@ -12,6 +12,9 @@ on:
       package:
         required: true
         type: string
+      package_name:
+        type: string
+        description: "Should be used when a package name differs from its repostory name"
       path_to_docs:
         type: string
       # supply --not_python_module for HF Course
@@ -130,7 +133,12 @@ jobs:
           cd doc-build-dev
           git pull
           rm -rf ${{ inputs.package }}/pr_${{ inputs.pr_number }}
-          mv ../build_dir/${{ inputs.package }}/pr_${{ inputs.pr_number }} ${{ inputs.package }}/pr_${{ inputs.pr_number }}
+          if [ -z "${{ inputs.package_name }}" ];
+          then
+            mv ../build_dir/${{ inputs.package }}/pr_${{ inputs.pr_number }} ${{ inputs.package }}/pr_${{ inputs.pr_number }}
+          else
+            mv ../build_dir/${{ inputs.package }}/pr_${{ inputs.pr_number }} ${{ inputs.package_name }}/pr_${{ inputs.pr_number }}
+          fi
           git status
 
           if [[ `git status --porcelain` ]]; then
