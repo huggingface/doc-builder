@@ -15,16 +15,12 @@
 
 import argparse
 import base64
-import re
 from pathlib import Path
 
 import requests
 from gql import Client, gql
 from gql.transport.aiohttp import AIOHTTPTransport
 from gql.transport.exceptions import TransportQueryError
-
-
-_re_head_oid = re.compile(r"\"sha\":\"([0-9a-z]+)\"")
 
 
 def get_head_oid(repo_id, token, branch="main"):
@@ -36,7 +32,8 @@ def get_head_oid(repo_id, token, branch="main"):
         headers={"Authorization": f"bearer {token}"},
     )
     if res.status_code == 200:
-        head_oid = _re_head_oid.search(res.text)[1]
+        res_json = res.json()
+        head_oid = res_json["object"]["sha"]
         return head_oid
     else:
         raise Exception(f"get_head_oid failed: {res.message}")
