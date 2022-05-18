@@ -74,6 +74,13 @@ jobs:
             echo "doc_folder=${{ inputs.path_to_docs }}" >> $GITHUB_ENV
           fi
 
+          if [ -z "${{ inputs.package_name }}" ];
+          then
+            echo "package_name=${{ inputs.package }}" >> $GITHUB_ENV
+          else
+            echo "package_name=${{ inputs.package_name }}" >> $GITHUB_ENV
+          fi
+
       - name: Install Rust
         uses: actions-rs/toolchain@v1
         if: inputs.install_rust
@@ -147,16 +154,9 @@ jobs:
         run: |
           cd doc-build
           git pull
-          if [ -z "${{ inputs.package_name }}" ];
-          then
-            mv ../build_dir/${{ inputs.package }}/_versions.yml ${{ inputs.package }}/
-            rm -rf ${{ inputs.package }}/$(ls ../build_dir/${{ inputs.package }})
-            mv ../build_dir/${{ inputs.package }}/$(ls ../build_dir/${{ inputs.package }}) ${{ inputs.package }}/$(ls ../build_dir/${{ inputs.package }})
-          else
-            mv ../build_dir/${{ inputs.package }}/_versions.yml ${{ inputs.package_name }}/
-            rm -rf ${{ inputs.package_name }}/$(ls ../build_dir/${{ inputs.package }})
-            mv ../build_dir/${{ inputs.package }}/$(ls ../build_dir/${{ inputs.package }}) ${{ inputs.package_name }}/$(ls ../build_dir/${{ inputs.package }})
-          fi
+          mv ../build_dir/${{ inputs.package }}/_versions.yml ${{ env.package_name }}/
+          rm -rf ${{ env.package_name }}/$(ls ../build_dir/${{ inputs.package }})
+          mv ../build_dir/${{ inputs.package }}/$(ls ../build_dir/${{ inputs.package }}) ${{ env.package_name }}/$(ls ../build_dir/${{ inputs.package }})
           git status
 
           if [[ `git status --porcelain` ]]; then 

@@ -71,6 +71,13 @@ jobs:
             echo "hub_docs_url=${{ inputs.hub_base_path }}/${{ inputs.package }}/pr_${{ inputs.pr_number }}" >> $GITHUB_ENV
           fi
 
+          if [ -z "${{ inputs.package_name }}" ];
+          then
+            echo "package_name=${{ inputs.package }}" >> $GITHUB_ENV
+          else
+            echo "package_name=${{ inputs.package_name }}" >> $GITHUB_ENV
+          fi
+
       - name: Install Rust
         uses: actions-rs/toolchain@v1
         if: inputs.install_rust
@@ -133,12 +140,7 @@ jobs:
           cd doc-build-dev
           git pull
           rm -rf ${{ inputs.package }}/pr_${{ inputs.pr_number }}
-          if [ -z "${{ inputs.package_name }}" ];
-          then
-            mv ../build_dir/${{ inputs.package }}/pr_${{ inputs.pr_number }} ${{ inputs.package }}/pr_${{ inputs.pr_number }}
-          else
-            mv ../build_dir/${{ inputs.package }}/pr_${{ inputs.pr_number }} ${{ inputs.package_name }}/pr_${{ inputs.pr_number }}
-          fi
+          mv ../build_dir/${{ inputs.package }}/pr_${{ inputs.pr_number }} ${{ env.package_name }}/pr_${{ inputs.pr_number }}
           git status
 
           if [[ `git status --porcelain` ]]; then
