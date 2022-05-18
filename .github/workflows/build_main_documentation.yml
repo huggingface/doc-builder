@@ -103,8 +103,8 @@ jobs:
         run: |
           mkdir build_dir
           mkdir build_dir/${{ inputs.package }}
+          cd build_dir/${{ inputs.package }}
           wget https://raw.githubusercontent.com/huggingface/doc-build/main/${{ inputs.package }}/_versions.yml
-          mv _versions.yml ./build_dir
 
       - name: Make documentation
         shell: bash
@@ -137,11 +137,10 @@ jobs:
 
       - name: Push to repositories
         run: |
-          mv ./build_dir/${{ inputs.package }}/_versions.yml ${{ env.package_name }}/
-          rm -rf ${{ env.package_name }}/$(ls ./build_dir/${{ inputs.package }})
-          mv ./build_dir/${{ inputs.package }}/$(ls ./build_dir/${{ inputs.package }}) ${{ env.package_name }}/$(ls ./build_dir/${{ inputs.package }})
-          git status
-
+          cd build_dir
+          if [ "${{ inputs.package }}" != "${{ env.package_name }}" ]; then
+            mv ${{ inputs.package }} ${{ env.package_name }}
+          fi
           doc-builder commit ${{ env.package_name }} --doc_build_repo_id "huggingface/doc-build" --token ${{ secrets.token }} --commit_msg "Updated with commit ${{ inputs.commit_sha }} See: https://github.com/huggingface/${{ inputs.package }}/commit/${{ inputs.commit_sha }}"
 
           if [ -d "notebook_dir" ]
