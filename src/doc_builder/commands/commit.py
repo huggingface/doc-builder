@@ -32,14 +32,14 @@ def get_head_oid(repo_id, token, branch="main"):
     Returns last commit sha from repostory `repo_id` & branch `branch`
     """
     res = requests.get(
-        f"https://api.github.com/repos/{repo_id}/git/refs/heads/${branch}",
+        f"https://api.github.com/repos/{repo_id}/git/refs/heads/{branch}",
         headers={"Authorization": f"bearer {token}"},
     )
     if res.status_code == 200:
         head_oid = _re_head_oid.search(res.text)[1]
         return head_oid
     else:
-        raise Exception("get_head_oid failed: {{status: {res.status}, msg:{res.text}}}")
+        raise Exception(f"get_head_oid failed: {res.message}")
 
 
 def create_additions_str(path_to_built_docs):

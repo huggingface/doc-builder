@@ -44,6 +44,7 @@ jobs:
         with:
           repository: 'huggingface/doc-builder'
           path: doc-builder
+          ref: use_gh_graphql
 
       - uses: actions/checkout@v2
         with:
@@ -92,7 +93,7 @@ jobs:
         run: |
           pip uninstall -y doc-builder
           cd doc-builder
-          git pull origin main
+          git pull origin use_gh_graphql
           pip install .
           cd ..
 
@@ -136,11 +137,13 @@ jobs:
           cd ..
 
       - name: Push to repositories
-        run: |
-          mv ./build_dir/${{ inputs.package }}/pr_${{ inputs.pr_number }} ${{ env.package_name }}/pr_${{ inputs.pr_number }}
-          doc-builder commit ${{ env.package_name }} --doc_build_repo_id "huggingface/doc-build-dev" --token ${{ secrets.token }} --commit_msg "Updated with commit ${{ inputs.commit_sha }} See: https://github.com/huggingface/${{ inputs.package }}/commit/${{ inputs.commit_sha }}"
-
         shell: bash
+        run: |
+          cd build_dir
+          if [ "${{ inputs.package }}" != "${{ env.package_name }}" ]; then
+            mv ${{ inputs.package }} ${{ env.package_name }}
+          fi
+          doc-builder commit ${{ env.package_name }} --doc_build_repo_id "huggingface/doc-build-dev" --token ${{ secrets.token }} --commit_msg "Test commit GraphQL"
 
       - name: Find doc comment
         uses: peter-evans/find-comment@v1
