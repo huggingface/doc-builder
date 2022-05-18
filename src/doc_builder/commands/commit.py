@@ -111,6 +111,7 @@ def commit_command(args):
         try:
             head_oid = get_head_oid(args.doc_build_repo_id, args.token)
             commit_additions(additions_str, args.doc_build_repo_id, head_oid, args.token, args.commit_msg)
+            break
         except TransportQueryError as e:
             error_msg = str(e)
             if "Expected branch to point to" in error_msg:
