@@ -41,7 +41,7 @@ def get_head_oid(repo_id, token, branch="main"):
 
 def create_additions_str(path_to_built_docs):
     """
-    Given `path_to_built_docs` dir, returns a str that is in format: `{path: "some_path", contents: "base64_repr_contents"}, ...`
+    Given `path_to_built_docs` dir, returns [FileAddition!]!: [{path: "some_path", contents: "base64_repr_contents"}, ...]
     see more here: https://docs.github.com/en/graphql/reference/input-objects#filechanges
     """
     p = Path(path_to_built_docs)
@@ -53,13 +53,12 @@ def create_additions_str(path_to_built_docs):
             content = reader.read()
             content_base64 = base64.b64encode(content)
             content_base64 = str(content_base64, "utf-8")
-            additions.append(f'{{path: "{fpath}", contents: "{content_base64}"}}')
+            additions.append({"path": str(fpath), "contents": content_base64})
 
-    additions_str = ", ".join(additions)
-    return additions_str
+    return additions
 
 
-def commit_additions(additions_str, repo_id, head_oid, token, commit_msg):
+def commit_additions(additions, repo_id, head_oid, token, commit_msg):
     """
     Commits additions to a repository using Github GraphQL mutation `createCommitOnBranch`
     see more here: https://docs.github.com/en/graphql/reference/mutations#createcommitonbranch
@@ -70,30 +69,31 @@ def commit_additions(additions_str, repo_id, head_oid, token, commit_msg):
     client = Client(transport=transport, fetch_schema_from_transport=True)
     # Provide a GraphQL query
     query = gql(
-        f"""
-  mutation{{
+        """
+  mutation ($repo_id: String!, $additions: [FileAddition!]!, $head_oid: GitObjectID!, $commit_msg: String!) {
     createCommitOnBranch(
-      input: {{
-        branch:{{
-          repositoryNameWithOwner: "{repo_id}",
+      input: {
+        branch:{
+          repositoryNameWithOwner: $repo_id,
           branchName: "main"
-        }},
-        message: {{
-          headline: "{commit_msg}"
-        }},
-        fileChanges: {{
-          additions: [{additions_str}]
-        }},
-        expectedHeadOid: "{head_oid}"
-      }}
-    ) {{
+        },
+        message: {
+          headline: $commit_msg
+        },
+        fileChanges: {
+          additions: $additions
+        },
+        expectedHeadOid: $head_oid
+      }
+    ) {
       clientMutationId
-    }}
-  }}
+    }
+  }
   """
     )
     # Execute the query on the transport
-    result = client.execute(query)
+    params = {"additions": additions, "repo_id": repo_id, "head_oid": head_oid, "commit_msg": commit_msg}
+    result = client.execute(query, variable_values=params)
     return result
 
 
