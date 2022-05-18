@@ -29,6 +29,9 @@ on:
         type: string
       install_rust:
         type: boolean
+    secrets:
+      token:
+        required: true
 
 jobs:
   build_pr_documentation:
@@ -87,9 +90,6 @@ jobs:
       - name: Setup environment
         shell: bash
         run: |
-          rm -rf doc-build-dev
-          git clone --depth 1 https://HuggingFaceDocBuilderDev:${{ env.write_token }}@github.com/huggingface/doc-build-dev
-
           pip uninstall -y doc-builder
           cd doc-builder
           git pull origin main
@@ -137,21 +137,9 @@ jobs:
 
       - name: Push to repositories
         run: |
-          cd doc-build-dev
-          git pull
-          rm -rf ${{ inputs.package }}/pr_${{ inputs.pr_number }}
-          mv ../build_dir/${{ inputs.package }}/pr_${{ inputs.pr_number }} ${{ env.package_name }}/pr_${{ inputs.pr_number }}
-          git status
+          mv ./build_dir/${{ inputs.package }}/pr_${{ inputs.pr_number }} ${{ env.package_name }}/pr_${{ inputs.pr_number }}
+          doc-builder commit ${{ env.package_name }} --doc_build_repo_id "huggingface/doc-build-dev" --token ${{ secrets.token }} --commit_msg "Updated with commit ${{ inputs.commit_sha }} See: https://github.com/huggingface/${{ inputs.package }}/commit/${{ inputs.commit_sha }}"
 
-          if [[ `git status --porcelain` ]]; then
-            git add .
-            git commit -m "Updated with commit ${{ inputs.commit_sha }} See: https://github.com/huggingface/${{ inputs.package }}/commit/${{ inputs.commit_sha }}"
-            git push origin main ||
-            (echo "Failed on the first try, rebasing and pushing again" && git pull --rebase && git push origin main) ||
-            (echo "Failed on the second try, rebasing and pushing again" && git pull --rebase && git push origin main)
-          else
-            echo "No diff in the documentation."
-          fi
         shell: bash
 
       - name: Find doc comment

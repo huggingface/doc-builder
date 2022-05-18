@@ -46,19 +46,6 @@ jobs:
         with:
           repository: 'huggingface/${{ inputs.package }}'
           path: ${{ inputs.package }}
-      
-      - uses: actions/checkout@v2
-        with:
-          repository: 'huggingface/doc-build'
-          path: doc-build
-          token: ${{ secrets.token }}
-      
-      - uses: actions/checkout@v2
-        if: inputs.notebook_folder != ''
-        with:
-          repository: 'huggingface/notebooks'
-          path: notebooks
-          token: ${{ secrets.token }}
 
       - uses: actions/setup-node@v2
         with:
@@ -114,12 +101,10 @@ jobs:
 
       - name: Create build directory
         run: |
-          cd doc-build
-          git pull
-          cd ..
           mkdir build_dir
           mkdir build_dir/${{ inputs.package }}
-          cp doc-build/${{ inputs.package }}/_versions.yml build_dir/${{ inputs.package }}
+          wget https://raw.githubusercontent.com/huggingface/doc-build/main/${{ inputs.package }}/_versions.yml
+          mv _versions.yml ./build_dir
 
       - name: Make documentation
         shell: bash
@@ -152,42 +137,17 @@ jobs:
 
       - name: Push to repositories
         run: |
-          cd doc-build
-          git pull
-          mv ../build_dir/${{ inputs.package }}/_versions.yml ${{ env.package_name }}/
-          rm -rf ${{ env.package_name }}/$(ls ../build_dir/${{ inputs.package }})
-          mv ../build_dir/${{ inputs.package }}/$(ls ../build_dir/${{ inputs.package }}) ${{ env.package_name }}/$(ls ../build_dir/${{ inputs.package }})
+          mv ./build_dir/${{ inputs.package }}/_versions.yml ${{ env.package_name }}/
+          rm -rf ${{ env.package_name }}/$(ls ./build_dir/${{ inputs.package }})
+          mv ./build_dir/${{ inputs.package }}/$(ls ./build_dir/${{ inputs.package }}) ${{ env.package_name }}/$(ls ./build_dir/${{ inputs.package }})
           git status
 
-          if [[ `git status --porcelain` ]]; then 
-            git add .
-            git commit -m "Updated with commit ${{ inputs.commit_sha }} See: https://github.com/huggingface/${{ inputs.package }}/commit/${{ inputs.commit_sha }}"
-            git push origin main ||
-            (echo "Failed on the first try, rebasing and pushing again" && git pull --rebase && git push origin main) ||
-            (echo "Failed on the second try, rebasing and pushing again" && git pull --rebase && git push origin main)
-          else
-            echo "No diff in the documentation."
-          fi
-
-          cd ..
+          doc-builder commit ${{ env.package_name }} --doc_build_repo_id "huggingface/doc-build" --token ${{ secrets.token }} --commit_msg "Updated with commit ${{ inputs.commit_sha }} See: https://github.com/huggingface/${{ inputs.package }}/commit/${{ inputs.commit_sha }}"
 
           if [ -d "notebook_dir" ]
           then
-            cd notebooks
-            git pull
-            cp -r ../notebook_dir/. ${{ inputs.notebook_folder }}
-            git status
-            if [[ `git status --porcelain` ]]; then
-              git add ${{ inputs.notebook_folder }}
-              git commit -m "Updated ${{ inputs.package }} doc notebooks with commit ${{ inputs.commit_sha }} \n\nSee: https://github.com/huggingface/${{ inputs.package }}/commit/${{ inputs.commit_sha }}"
-              git push origin main ||
-              (echo "Failed on the first try, rebasing and pushing again" && git pull --rebase && git push origin main) ||
-              (echo "Failed on the second try, rebasing and pushing again" && git pull --rebase && git push origin main)
-            else
-              echo "No diff in the notebooks."
-            fi
-            cd ..
-          else
-            echo "Notebooks creation was not enabled."
+            mkdir ${{ inputs.notebook_folder }}
+            cp -r ./notebook_dir/. ${{ inputs.notebook_folder }}
+            doc-builder commit ${{ inputs.notebook_folder }} --doc_build_repo_id "huggingface/doc-build" --token ${{ secrets.token }} --commit_msg 
           fi
         shell: bash
