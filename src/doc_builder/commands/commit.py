@@ -125,15 +125,18 @@ def commit_command_parser(subparsers=None):
     parser.add_argument(
         "path_to_built_docs",
         type=str,
-        help="Local path to library documentation. The library should be cloned, and the folder containing the "
-        "documentation files should be indicated here.",
+        help="Path/dir where built doc artifacts reside in",
     )
-    parser.add_argument("--doc_build_repo_id", type=str, help="Language of the documentation to generate")
-    parser.add_argument("--token", type=str, help="Language of the documentation to generate")
+    parser.add_argument(
+        "--doc_build_repo_id",
+        type=str,
+        help="Repo to which doc artifcats will be committed (e.g. `huggingface/doc-build-dev`)",
+    )
+    parser.add_argument("--token", type=str, help="Github token that has write/push premission to `doc_build_repo_id`")
     parser.add_argument(
         "--commit_msg",
         type=str,
-        help="Version of the documentation to generate",
+        help="Git commit message",
         default="Github GraphQL createcommitonbranch commit",
     )
 
