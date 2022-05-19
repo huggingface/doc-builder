@@ -31,20 +31,20 @@ def get_head_oid(repo_id, token, branch="main"):
         f"https://api.github.com/repos/{repo_id}/git/refs/heads/{branch}",
         headers={"Authorization": f"bearer {token}"},
     )
-    if res.status_code == 200:
-        res_json = res.json()
-        head_oid = res_json["object"]["sha"]
-        return head_oid
-    else:
+    if res.status_code != 200:
         raise Exception(f"get_head_oid failed: {res.message}")
 
+    res_json = res.json()
+    head_oid = res_json["object"]["sha"]
+    return head_oid
 
-def create_additions(path_to_built_docs):
+
+def create_additions(library_name):
     """
-    Given `path_to_built_docs` dir, returns [FileAddition!]!: [{path: "some_path", contents: "base64_repr_contents"}, ...]
+    Given `library_name` dir, returns [FileAddition!]!: [{path: "some_path", contents: "base64_repr_contents"}, ...]
     see more here: https://docs.github.com/en/graphql/reference/input-objects#filechanges
     """
-    p = Path(path_to_built_docs)
+    p = Path(library_name)
     files = [x for x in p.glob("**/*") if x.is_file()]
     additions = []
 
@@ -58,10 +58,80 @@ def create_additions(path_to_built_docs):
     return additions
 
 
+MAX_CHUNK_LEN = 3e7  # 30 Megabytes
+
+
+def chunk_additions(additions):
+    additions_chunks = []
+    current_chunk = []
+    current_len = 0
+
+    while additions:
+        addition = additions.pop()
+        addition_len = len(addition["contents"])
+        if current_len + addition_len < MAX_CHUNK_LEN:
+            # can add to current_chunk
+            current_chunk.append(addition)
+            current_len += addition_len
+        else:
+            # create a new chunk
+            additions_chunks.append(current_chunk)
+            current_chunk = []
+            current_len = 0
+
+    if current_chunk:
+        additions_chunks.append(current_chunk)
+
+    return additions_chunks
+
+
+def create_deletions(repo_id, library_name, token):
+    """
+    Given `repo_id/library_name` dir, returns [FileDeletion!]!: [{path: "some_path"}, ...]
+    see more here: https://docs.github.com/en/graphql/reference/input-objects#filechanges
+    """
+    # GET doc-build-dev/transformers
+    res = requests.get(
+        f"https://api.github.com/repos/{repo_id}/git/trees/heads/main", headers={"Authorization": f"bearer {token}"}
+    )
+    if res.status_code != 200:
+        raise Exception(f"create_deletions failed (GET tree root): {res.message}")
+    json = res.json()
+    node = next(filter(lambda node: node["path"] == library_name, json["tree"]), None)
+    url = node["url"]
+
+    # GET doc-build-dev/transformers/pr_xyz
+    root_folder = Path(library_name)
+    doc_version_folder = next(root_folder.glob("*")).relative_to(root_folder)
+    doc_version_folder = str(doc_version_folder)
+    res = requests.get(url, headers={"Authorization": f"bearer {token}"})
+    if res.status_code != 200:
+        raise Exception(f"create_deletions failed (GET tree root/{repo_id}): {res.message}")
+    json = res.json()
+    node = next(filter(lambda node: node["path"] == doc_version_folder, json["tree"]), None)
+    if node is None:
+        # the no need to delete since the path does not exist
+        return []
+    url = node["url"]
+
+    # GET doc-build-dev/transformers/pr_xyz/**/*
+    res = requests.get(f"{url}?recursive=true", headers={"Authorization": f"bearer {token}"})
+    if res.status_code != 200:
+        raise Exception(f"create_deletions failed (GET tree root/{repo_id}/{doc_version_folder}): {res.message}")
+    json = res.json()
+    tree = json["tree"]
+    deletions = [
+        {"path": f"{library_name}/{doc_version_folder}/{node['path']}"} for node in tree if node["type"] == "blob"
+    ]
+
+    return deletions
+
+
 CREATE_COMMIT_ON_BRANCH_GRAPHQL = """
 mutation (
   $repo_id: String!
   $additions: [FileAddition!]!
+  $deletions: [FileDeletion!]!
   $head_oid: GitObjectID!
   $commit_msg: String!
 ) {
@@ -69,7 +139,7 @@ mutation (
     input: {
       branch: { repositoryNameWithOwner: $repo_id, branchName: "main" }
       message: { headline: $commit_msg }
-      fileChanges: { additions: $additions }
+      fileChanges: { additions: $additions, deletions: $deletions }
       expectedHeadOid: $head_oid
     }
   ) {
@@ -79,20 +149,23 @@ mutation (
 """
 
 
-def commit_additions(additions, repo_id, head_oid, token, commit_msg):
+def create_commit(gql_client, repo_id, additions, deletions, token, commit_msg):
     """
     Commits additions to a repository using Github GraphQL mutation `createCommitOnBranch`
     see more here: https://docs.github.com/en/graphql/reference/mutations#createcommitonbranch
     """
-    # Select your transport with a defined url endpoint
-    transport = AIOHTTPTransport(url="https://api.github.com/graphql", headers={"Authorization": f"bearer {token}"})
-    # Create a GraphQL client using the defined transport
-    client = Client(transport=transport, fetch_schema_from_transport=True)
     # Provide a GraphQL query
     query = gql(CREATE_COMMIT_ON_BRANCH_GRAPHQL)
-    # Execute the query on the transport
-    params = {"additions": additions, "repo_id": repo_id, "head_oid": head_oid, "commit_msg": commit_msg}
-    result = client.execute(query, variable_values=params)
+    head_oid = get_head_oid(repo_id, token)
+    params = {
+        "additions": additions,
+        "deletions": deletions,
+        "repo_id": repo_id,
+        "head_oid": head_oid,
+        "commit_msg": commit_msg,
+    }
+    # Execute the query
+    result = gql_client.execute(query, variable_values=params)
     return result
 
 
@@ -106,17 +179,41 @@ def push_command(args):
 
     max_n_retries = args.n_retries + 1
     number_of_retries = args.n_retries
-    additions_str = create_additions(args.path_to_built_docs)
+
+    # Select your transport with a defined url endpoint
+    transport = AIOHTTPTransport(
+        url="https://api.github.com/graphql", headers={"Authorization": f"bearer {args.token}"}
+    )
+    # Create a GraphQL client using the defined transport
+    gql_client = Client(transport=transport, fetch_schema_from_transport=True, execute_timeout=None)
+
+    # simulate overwrite behaviour by cleaning/removing existing files and adding new files afterwards
+    # commit file deletions
+    deletions = create_deletions(args.doc_build_repo_id, args.library_name, args.token)
+    create_commit(gql_client, args.doc_build_repo_id, [], deletions, args.token, f"Clean before: {args.commit_msg}")
+    # commit file additions
+    additions = create_additions(args.library_name)
+    additions_chunks = chunk_additions(additions)
+    partial_commit = False
     while number_of_retries:
         try:
-            head_oid = get_head_oid(args.doc_build_repo_id, args.token)
-            commit_additions(additions_str, args.doc_build_repo_id, head_oid, args.token, args.commit_msg)
+            for i, additions in enumerate(additions_chunks):
+                create_commit(gql_client, args.doc_build_repo_id, additions, [], args.token, args.commit_msg)
+                print(f"Committed additions chunk: {i+1}/{len(additions_chunks)}")
+                partial_commit = True
             break
         except TransportQueryError as e:
             error_msg = str(e)
             if "Expected branch to point to" in error_msg:
                 number_of_retries -= 1
                 print(f"Failed on try #{max_n_retries-number_of_retries}, pushing again")
+        except Exception as e:
+            if partial_commit:
+                deletions = create_deletions(args.doc_build_repo_id, args.library_name, args.token)
+                create_commit(
+                    gql_client, args.doc_build_repo_id, [], deletions, args.token, f"Clean before: {args.commit_msg}"
+                )
+            raise RuntimeError("create_commit additions failed") from e
 
 
 def push_command_parser(subparsers=None):
@@ -126,9 +223,9 @@ def push_command_parser(subparsers=None):
         parser = argparse.ArgumentParser("Doc Builder push command")
 
     parser.add_argument(
-        "path_to_built_docs",
+        "library_name",
         type=str,
-        help="The path where built doc artifacts reside in",
+        help="The name of the library, which also acts as a path where built doc artifacts reside in",
     )
     parser.add_argument(
         "--doc_build_repo_id",
