@@ -58,6 +58,27 @@ def create_additions(path_to_built_docs):
     return additions
 
 
+CREATE_COMMIT_ON_BRANCH_GRAPHQL = """
+mutation (
+  $repo_id: String!
+  $additions: [FileAddition!]!
+  $head_oid: GitObjectID!
+  $commit_msg: String!
+) {
+  createCommitOnBranch(
+    input: {
+      branch: { repositoryNameWithOwner: $repo_id, branchName: "main" }
+      message: { headline: $commit_msg }
+      fileChanges: { additions: $additions }
+      expectedHeadOid: $head_oid
+    }
+  ) {
+    clientMutationId
+  }
+}
+"""
+
+
 def commit_additions(additions, repo_id, head_oid, token, commit_msg):
     """
     Commits additions to a repository using Github GraphQL mutation `createCommitOnBranch`
@@ -68,29 +89,7 @@ def commit_additions(additions, repo_id, head_oid, token, commit_msg):
     # Create a GraphQL client using the defined transport
     client = Client(transport=transport, fetch_schema_from_transport=True)
     # Provide a GraphQL query
-    query = gql(
-        """
-  mutation ($repo_id: String!, $additions: [FileAddition!]!, $head_oid: GitObjectID!, $commit_msg: String!) {
-    createCommitOnBranch(
-      input: {
-        branch:{
-          repositoryNameWithOwner: $repo_id,
-          branchName: "main"
-        },
-        message: {
-          headline: $commit_msg
-        },
-        fileChanges: {
-          additions: $additions
-        },
-        expectedHeadOid: $head_oid
-      }
-    ) {
-      clientMutationId
-    }
-  }
-  """
-    )
+    query = gql(CREATE_COMMIT_ON_BRANCH_GRAPHQL)
     # Execute the query on the transport
     params = {"additions": additions, "repo_id": repo_id, "head_oid": head_oid, "commit_msg": commit_msg}
     result = client.execute(query, variable_values=params)
