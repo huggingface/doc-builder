@@ -116,7 +116,7 @@ def push_command(args):
             error_msg = str(e)
             if "Expected branch to point to" in error_msg:
                 number_of_retries -= 1
-                print(f"Failed on try #{MAX_N_RETRIES-number_of_retries}, pushing again")
+                print(f"Failed on try #{max_n_retries-number_of_retries}, pushing again")
 
 
 def push_command_parser(subparsers=None):
