@@ -39,7 +39,7 @@ def get_head_oid(repo_id, token, branch="main"):
         raise Exception(f"get_head_oid failed: {res.message}")
 
 
-def create_additions_str(path_to_built_docs):
+def create_additions(path_to_built_docs):
     """
     Given `path_to_built_docs` dir, returns [FileAddition!]!: [{path: "some_path", contents: "base64_repr_contents"}, ...]
     see more here: https://docs.github.com/en/graphql/reference/input-objects#filechanges
@@ -103,7 +103,7 @@ def commit_command(args):
     Usage: doc-builder commit $args
     """
     number_of_retries = 5
-    additions_str = create_additions_str(args.path_to_built_docs)
+    additions_str = create_additions(args.path_to_built_docs)
     while number_of_retries:
         try:
             head_oid = get_head_oid(args.doc_build_repo_id, args.token)
