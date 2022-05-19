@@ -101,7 +101,11 @@ def push_command(args):
     Commit file additions using Github GraphQL rather than `git`.
     Usage: doc-builder push $args
     """
-    number_of_retries = 5
+    if args.n_retries < 1:
+        raise ValueError(f"CLI arg `n_retries` MUST be positive & non-zero; supplied value was {args.n_retries}")
+
+    MAX_N_RETRIES = args.n_retries + 1
+    number_of_retries = args.n_retries
     additions_str = create_additions(args.path_to_built_docs)
     while number_of_retries:
         try:
@@ -112,7 +116,7 @@ def push_command(args):
             error_msg = str(e)
             if "Expected branch to point to" in error_msg:
                 number_of_retries -= 1
-                print(f"Failed on try #{6-number_of_retries}, pushing again")
+                print(f"Failed on try #{MAX_N_RETRIES-number_of_retries}, pushing again")
 
 
 def push_command_parser(subparsers=None):
@@ -138,6 +142,7 @@ def push_command_parser(subparsers=None):
         help="Git commit message",
         default="Github GraphQL createcommitonbranch commit",
     )
+    parser.add_argument("--n_retries", type=int, help="Number of push retries in the event of conflict", default=1)
 
     if subparsers is not None:
         parser.set_defaults(func=push_command)
