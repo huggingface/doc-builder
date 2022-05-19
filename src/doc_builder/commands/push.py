@@ -104,7 +104,7 @@ def push_command(args):
     if args.n_retries < 1:
         raise ValueError(f"CLI arg `n_retries` MUST be positive & non-zero; supplied value was {args.n_retries}")
 
-    MAX_N_RETRIES = args.n_retries + 1
+    max_n_retries = args.n_retries + 1
     number_of_retries = args.n_retries
     additions_str = create_additions(args.path_to_built_docs)
     while number_of_retries:
