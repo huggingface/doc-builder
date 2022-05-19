@@ -141,12 +141,12 @@ jobs:
           if [ "${{ inputs.package }}" != "${{ env.package_name }}" ]; then
             mv ${{ inputs.package }} ${{ env.package_name }}
           fi
-          doc-builder commit ${{ env.package_name }} --doc_build_repo_id "huggingface/doc-build" --token ${{ secrets.token }} --commit_msg "Updated with commit ${{ inputs.commit_sha }} See: https://github.com/huggingface/${{ inputs.package }}/commit/${{ inputs.commit_sha }}"
+          doc-builder push ${{ env.package_name }} --doc_build_repo_id "huggingface/doc-build" --token ${{ secrets.token }} --commit_msg "Updated with commit ${{ inputs.commit_sha }} See: https://github.com/huggingface/${{ inputs.package }}/commit/${{ inputs.commit_sha }}"
 
           if [ -d "notebook_dir" ]
           then
             mkdir ${{ inputs.notebook_folder }}
             cp -r ./notebook_dir/. ${{ inputs.notebook_folder }}
-            doc-builder commit ${{ inputs.notebook_folder }} --doc_build_repo_id "huggingface/doc-build" --token ${{ secrets.token }} --commit_msg 
+            doc-builder push ${{ inputs.notebook_folder }} --doc_build_repo_id "huggingface/doc-build" --token ${{ secrets.token }} --commit_msg 
           fi
         shell: bash

@@ -97,10 +97,10 @@ def commit_additions(additions, repo_id, head_oid, token, commit_msg):
     return result
 
 
-def commit_command(args):
+def push_command(args):
     """
     Commit file additions using Github GraphQL rather than `git`.
-    Usage: doc-builder commit $args
+    Usage: doc-builder push $args
     """
     number_of_retries = 5
     additions_str = create_additions(args.path_to_built_docs)
@@ -116,11 +116,11 @@ def commit_command(args):
                 print(f"Failed on try #{6-number_of_retries}, pushing again")
 
 
-def commit_command_parser(subparsers=None):
+def push_command_parser(subparsers=None):
     if subparsers is not None:
-        parser = subparsers.add_parser("commit")
+        parser = subparsers.add_parser("push")
     else:
-        parser = argparse.ArgumentParser("Doc Builder commit command")
+        parser = argparse.ArgumentParser("Doc Builder push command")
 
     parser.add_argument(
         "path_to_built_docs",
@@ -141,5 +141,5 @@ def commit_command_parser(subparsers=None):
     )
 
     if subparsers is not None:
-        parser.set_defaults(func=commit_command)
+        parser.set_defaults(func=push_command)
     return parser
