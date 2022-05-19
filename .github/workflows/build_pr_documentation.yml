@@ -29,9 +29,6 @@ on:
         type: string
       install_rust:
         type: boolean
-    secrets:
-      token:
-        required: true
 
 jobs:
   build_pr_documentation:
@@ -143,7 +140,7 @@ jobs:
           if [ "${{ inputs.package }}" != "${{ env.package_name }}" ]; then
             mv ${{ inputs.package }} ${{ env.package_name }}
           fi
-          doc-builder commit ${{ env.package_name }} --doc_build_repo_id "huggingface/doc-build-dev" --token ${{ secrets.token }} --commit_msg "Updated with commit ${{ inputs.commit_sha }} See: https://github.com/huggingface/${{ inputs.package }}/commit/${{ inputs.commit_sha }}"
+          doc-builder commit ${{ env.package_name }} --doc_build_repo_id "huggingface/doc-build-dev" --token ${{ env.write_token }} --commit_msg "Updated with commit ${{ inputs.commit_sha }} See: https://github.com/huggingface/${{ inputs.package }}/commit/${{ inputs.commit_sha }}"
 
       - name: Find doc comment
         uses: peter-evans/find-comment@v1
