@@ -125,7 +125,7 @@ def commit_command_parser(subparsers=None):
     parser.add_argument(
         "path_to_built_docs",
         type=str,
-        help="Path/dir where built doc artifacts reside in",
+        help="The path where built doc artifacts reside in",
     )
     parser.add_argument(
         "--doc_build_repo_id",
