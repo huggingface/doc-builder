@@ -16,6 +16,7 @@
 import argparse
 import base64
 from pathlib import Path
+from time import time
 from typing import List, Optional, TypedDict
 
 import requests
@@ -206,9 +207,14 @@ def push_command(args):
     deletions = create_deletions(args.doc_build_repo_id, args.library_name, args.token)
     create_commit(gql_client, args.doc_build_repo_id, [], deletions, args.token, f"Clean before: {args.commit_msg}")
     # commit file additions
+    time_start = time()
     additions = create_additions(args.library_name)
+    time_end = time()
+    print(f"create_additions took {time_end-time_start} seconds or {(time_end-time_start)/60.0:.2f} mins")
     additions_chunks = chunk_additions(additions)
     partial_commit = False
+
+    time_start = time()
     while number_of_retries:
         try:
             for i, additions in enumerate(additions_chunks):
@@ -229,6 +235,9 @@ def push_command(args):
                     gql_client, args.doc_build_repo_id, [], deletions, args.token, f"Clean before: {args.commit_msg}"
                 )
             raise RuntimeError("create_commit additions failed") from e
+
+    time_end = time()
+    print(f"commit_additions took {time_end-time_start} seconds or {(time_end-time_start)/60.0:.2f} mins")
 
 
 def push_command_parser(subparsers=None):
