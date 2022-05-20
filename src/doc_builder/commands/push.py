@@ -210,7 +210,7 @@ def push_command(args):
     time_start = time()
     additions = create_additions(args.library_name)
     time_end = time()
-    print(f"create_additions took {time_end-time_start} seconds or {(time_end-time_start)/60.0:.2f} mins")
+    print(f"create_additions took {time_end-time_start:.4f} seconds or {(time_end-time_start)/60.0:.2f} mins")
     additions_chunks = chunk_additions(additions)
     partial_commit = False
 
@@ -237,7 +237,7 @@ def push_command(args):
             raise RuntimeError("create_commit additions failed") from e
 
     time_end = time()
-    print(f"commit_additions took {time_end-time_start} seconds or {(time_end-time_start)/60.0:.2f} mins")
+    print(f"commit_additions took {time_end-time_start:.4f} seconds or {(time_end-time_start)/60.0:.2f} mins")
 
 
 def push_command_parser(subparsers=None):
