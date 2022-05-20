@@ -204,8 +204,11 @@ def push_command(args):
 
     # simulate overwrite behaviour by cleaning/removing existing files and adding new files afterwards
     # commit file deletions
-    deletions = create_deletions(args.doc_build_repo_id, args.library_name, args.token)
-    create_commit(gql_client, args.doc_build_repo_id, [], deletions, args.token, f"Clean before: {args.commit_msg}")
+    if args.clean:
+        deletions = create_deletions(args.doc_build_repo_id, args.library_name, args.token)
+        create_commit(
+            gql_client, args.doc_build_repo_id, [], deletions, args.token, f"Clean before: {args.commit_msg}"
+        )
     # commit file additions
     time_start = time()
     additions = create_additions(args.library_name)
@@ -229,7 +232,7 @@ def push_command(args):
                 print(f"Failed on try #{max_n_retries-number_of_retries}, pushing again")
         except Exception as e:
             # if some of the chunks were added & some failed, we should delete the added chunks
-            if partial_commit:
+            if args.clean and partial_commit:
                 deletions = create_deletions(args.doc_build_repo_id, args.library_name, args.token)
                 create_commit(
                     gql_client, args.doc_build_repo_id, [], deletions, args.token, f"Clean before: {args.commit_msg}"
@@ -264,6 +267,9 @@ def push_command_parser(subparsers=None):
         default="Github GraphQL createcommitonbranch commit",
     )
     parser.add_argument("--n_retries", type=int, help="Number of push retries in the event of conflict", default=1)
+    parser.add_argument(
+        "--clean", action="store_true", help="Whether or not to clean the output dir in the repo before pushing"
+    )
 
     if subparsers is not None:
         parser.set_defaults(func=push_command)
