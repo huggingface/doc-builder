@@ -62,6 +62,11 @@ MAX_CHUNK_LEN = 3e7  # 30 Megabytes
 
 
 def chunk_additions(additions):
+    """
+    Github GraphQL `createCommitOnBranch` mutation fails when a payload is bigger than 50 MB.
+    Therefore, in those cases (transfoerms doc ~ 100 MB), we need to commit using
+    multiple smaller `createCommitOnBranch` mutation calls.
+    """
     additions_chunks = []
     current_chunk = []
     current_len = 0
@@ -87,7 +92,7 @@ def chunk_additions(additions):
 
 def create_deletions(repo_id, library_name, token):
     """
-    Given `repo_id/library_name` dir, returns [FileDeletion!]!: [{path: "some_path"}, ...]
+    Given `repo_id/library_name` path, returns [FileDeletion!]!: [{path: "some_path"}, ...]
     see more here: https://docs.github.com/en/graphql/reference/input-objects#filechanges
     """
     # GET doc-build-dev/transformers
@@ -151,7 +156,7 @@ mutation (
 
 def create_commit(gql_client, repo_id, additions, deletions, token, commit_msg):
     """
-    Commits additions to a repository using Github GraphQL mutation `createCommitOnBranch`
+    Commits additions and/or deletions to a repository using Github GraphQL mutation `createCommitOnBranch`
     see more here: https://docs.github.com/en/graphql/reference/mutations#createcommitonbranch
     """
     # Provide a GraphQL query
@@ -180,11 +185,10 @@ def push_command(args):
     max_n_retries = args.n_retries + 1
     number_of_retries = args.n_retries
 
-    # Select your transport with a defined url endpoint
+    # Create Github GraphQL client
     transport = AIOHTTPTransport(
         url="https://api.github.com/graphql", headers={"Authorization": f"bearer {args.token}"}
     )
-    # Create a GraphQL client using the defined transport
     gql_client = Client(transport=transport, fetch_schema_from_transport=True, execute_timeout=None)
 
     # simulate overwrite behaviour by cleaning/removing existing files and adding new files afterwards
@@ -208,6 +212,7 @@ def push_command(args):
                 number_of_retries -= 1
                 print(f"Failed on try #{max_n_retries-number_of_retries}, pushing again")
         except Exception as e:
+            # if some of the chunks were added & some failed, we should delete the added chunks
             if partial_commit:
                 deletions = create_deletions(args.doc_build_repo_id, args.library_name, args.token)
                 create_commit(
