@@ -16,6 +16,7 @@
 import argparse
 import base64
 from pathlib import Path
+from typing import List, Optional, TypedDict
 
 import requests
 from gql import Client, gql
@@ -23,7 +24,7 @@ from gql.transport.aiohttp import AIOHTTPTransport
 from gql.transport.exceptions import TransportQueryError
 
 
-def get_head_oid(repo_id, token, branch="main"):
+def get_head_oid(repo_id: str, token: str, branch: Optional[str] = "main") -> str:
     """
     Returns last commit sha from repostory `repo_id` & branch `branch`
     """
@@ -39,7 +40,12 @@ def get_head_oid(repo_id, token, branch="main"):
     return head_oid
 
 
-def create_additions(library_name):
+class FileAddition(TypedDict):
+    path: str
+    contents: int
+
+
+def create_additions(library_name: str) -> List[FileAddition]:
     """
     Given `library_name` dir, returns [FileAddition!]!: [{path: "some_path", contents: "base64_repr_contents"}, ...]
     see more here: https://docs.github.com/en/graphql/reference/input-objects#filechanges
@@ -61,7 +67,7 @@ def create_additions(library_name):
 MAX_CHUNK_LEN = 3e7  # 30 Megabytes
 
 
-def chunk_additions(additions):
+def chunk_additions(additions: List[FileAddition]) -> List[List[FileAddition]]:
     """
     Github GraphQL `createCommitOnBranch` mutation fails when a payload is bigger than 50 MB.
     Therefore, in those cases (transfoerms doc ~ 100 MB), we need to commit using
@@ -90,7 +96,11 @@ def chunk_additions(additions):
     return additions_chunks
 
 
-def create_deletions(repo_id, library_name, token):
+class FileDeletion(TypedDict):
+    path: str
+
+
+def create_deletions(repo_id: str, library_name: str, token: str) -> List[FileDeletion]:
     """
     Given `repo_id/library_name` path, returns [FileDeletion!]!: [{path: "some_path"}, ...]
     see more here: https://docs.github.com/en/graphql/reference/input-objects#filechanges
@@ -154,7 +164,7 @@ mutation (
 """
 
 
-def create_commit(gql_client, repo_id, additions, deletions, token, commit_msg):
+def create_commit(gql_client: Client, repo_id: str, additions, deletions, token: str, commit_msg: str):
     """
     Commits additions and/or deletions to a repository using Github GraphQL mutation `createCommitOnBranch`
     see more here: https://docs.github.com/en/graphql/reference/mutations#createcommitonbranch
