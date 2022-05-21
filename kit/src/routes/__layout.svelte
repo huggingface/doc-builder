@@ -36,11 +36,9 @@
 		}
 	</style>
 	<div
-		style="width: 100vh; height: 100vh; margin: 0; padding: 0; display: flex; flex-direction: row"
+		class="flex space-x-4"
 	>
-		<aside
-			style="width: 270px; min-width: 270px; max-width: 270px; border-right: 1px solid gray; height: 100vh; position: fixed; overflow-y: auto; display: flex; flex-direction: column"
-		>
+		<div class="border-r-2">
 			<ul class="pt-2 flex flex-col pl-3">
 				{#each toc as section}
 					{#if section.local}
@@ -57,8 +55,8 @@
 					{/if}
 				{/each}
 			</ul>
-		</aside>
-		<div style="margin-left: 270px;" class="px-4 pt-3">
+		</div>
+		<div class="px-4 pt-3">
 			<div class="prose prose-doc dark:prose-light max-w-4xl mx-auto break-words relative">
 				<slot />
 			</div>
