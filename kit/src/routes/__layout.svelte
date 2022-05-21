@@ -18,15 +18,11 @@
 
 <script lang="ts">
 	import type { LoadInput } from "@sveltejs/kit";
+	import type { RawChapter } from "./endpoints/toc";
 	import { prerendering } from "$app/env";
 	import "../app.css";
 
-	export let toc: Array<{
-		sections: Array<
-			{ title: string } & ({ local: string } | { sections: { title: string; local: string }[] })
-		>;
-		title: string;
-	}>;
+	export let toc: RawChapter[];
 </script>
 
 {#if prerendering || !import.meta.env.DEV}
@@ -47,39 +43,18 @@
 		>
 			<ul class="pt-2 flex flex-col pl-3">
 				{#each toc as section}
-					<h3
-						class="flex group-hover:after:content-['▶'] after:absolute after:right-4 after:text-gray-500 after:transition after:duration-100 after:ease-in after:transform after:rotate-90"
-					>
-						{section.title}
-					</h3>
-					<div class="pl-4">
-						{#each section.sections as subsection}
-							{#if "sections" in subsection}
-								<h3
-									class="flex group-hover:after:content-['▶'] after:absolute after:right-4 after:text-gray-500 after:transition after:duration-100 after:ease-in after:transform after:rotate-90"
-								>
-									{subsection.title}
-								</h3>
-
-								<ul class="pt-2 flex flex-col pl-3">
-									{#each subsection.sections as finalsection}
-										<a
-											role="navigation"
-											class="block text-gray-500 pr-2 hover:text-black dark:hover:text-gray-300 py-1 transform transition-all hover:translate-x-px first:mt-1 last:mb-4 pl-2 ml-2"
-											href="{base}/{finalsection.local.replace(/\bindex$/, '')}"
-											>{finalsection.title}</a
-										>
-									{/each}
-								</ul>
-							{:else}
-								<a
-									role="navigation"
-									class="block text-gray-500 pr-2 hover:text-black dark:hover:text-gray-300 py-1 transform transition-all hover:translate-x-px first:mt-1 last:mb-4 pl-2 ml-2"
-									href="{base}/{subsection.local.replace(/\bindex$/, '')}">{subsection.title}</a
-								>
-							{/if}
-						{/each}
-					</div>
+			{#if section.local}
+			<a
+			role="navigation"
+			class="block text-gray-500 pr-2 hover:text-black dark:hover:text-gray-300 py-1 transform transition-all hover:translate-x-px first:mt-1 last:mb-4 pl-2 ml-2"
+			href="{base}/{section.local.replace(/\bindex$/, '')}">{section.title}</a
+		>
+			{:else}
+			<span
+			role="navigation"
+			class="block text-gray-500 pr-2 hover:text-black dark:hover:text-gray-300 py-1 transform transition-all hover:translate-x-px first:mt-1 last:mb-4 pl-2 ml-2"
+			>{section.title}</span>
+			{/if}
 				{/each}
 			</ul>
 		</aside>
