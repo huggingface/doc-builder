@@ -43,18 +43,18 @@
 		>
 			<ul class="pt-2 flex flex-col pl-3">
 				{#each toc as section}
-			{#if section.local}
-			<a
-			role="navigation"
-			class="block text-gray-500 pr-2 hover:text-black dark:hover:text-gray-300 py-1 transform transition-all hover:translate-x-px first:mt-1 last:mb-4 pl-2 ml-2"
-			href="{base}/{section.local.replace(/\bindex$/, '')}">{section.title}</a
-		>
-			{:else}
-			<span
-			role="navigation"
-			class="block text-gray-500 pr-2 hover:text-black dark:hover:text-gray-300 py-1 transform transition-all hover:translate-x-px first:mt-1 last:mb-4 pl-2 ml-2"
-			>{section.title}</span>
-			{/if}
+					{#if section.local}
+						<a
+							role="navigation"
+							class="block text-gray-500 pr-2 hover:text-black dark:hover:text-gray-300 py-1"
+							href="{base}/{section.local.replace(/\bindex$/, '')}">{section.title}</a
+						>
+					{:else}
+						<span
+						role="navigation"
+						class="opacity-50 text-lg block text-gray-500 pr-2 hover:text-black dark:hover:text-gray-300 py-1"
+						>{section.title}</span>
+					{/if}
 				{/each}
 			</ul>
 		</aside>
