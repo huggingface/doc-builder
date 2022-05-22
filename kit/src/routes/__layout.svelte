@@ -36,10 +36,10 @@
 		}
 	</style>
 	<div
-		class="flex space-x-4"
+		class="flex"
 	>
-		<div class="border-r-2">
-			<ul class="pt-2 flex flex-col pl-3">
+		<div class="w-[270px] 2xl:w-[300px] hidden md:block border-r-2 shrink-0">
+			<ul class="pt-2 flex flex-col pl-3 w-full">
 				{#each toc as section}
 					{#if section.local}
 						<a
@@ -56,10 +56,13 @@
 				{/each}
 			</ul>
 		</div>
-		<div class="px-4 pt-3">
+		<div class="px-4 pt-3 grow">
 			<div class="prose prose-doc dark:prose-light max-w-4xl mx-auto break-words relative">
 				<slot />
 			</div>
+		</div>
+		<div class="w-[270px] 2xl:w-[305px] hidden lg:block border-l-2 shrink-0 opacity-50 p-4">
+			Sub side menu
 		</div>
 	</div>
 {/if}
