@@ -86,8 +86,8 @@ def create_additions_chunks(additions: List[FileAddition]) -> List[List[FileAddi
         else:
             # create a new chunk
             additions_chunks.append(current_chunk)
-            current_chunk = []
-            current_len = 0
+            current_chunk = [addition]
+            current_len = addition_len
 
     if current_chunk:
         additions_chunks.append(current_chunk)
