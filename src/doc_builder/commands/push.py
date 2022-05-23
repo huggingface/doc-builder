@@ -17,7 +17,7 @@ import argparse
 import base64
 from pathlib import Path
 from time import time
-from typing import List, Optional, TypedDict
+from typing import Dict, List, Optional
 
 import requests
 from gql import Client, gql
@@ -40,12 +40,7 @@ def get_head_oid(repo_id: str, token: str, branch: Optional[str] = "main") -> st
     return head_oid
 
 
-class FileAddition(TypedDict):
-    path: str
-    contents: int
-
-
-def create_additions(library_name: str) -> List[FileAddition]:
+def create_additions(library_name: str) -> List[Dict]:
     """
     Given `library_name` dir, returns [FileAddition!]!: [{path: "some_path", contents: "base64_repr_contents"}, ...]
     see more here: https://docs.github.com/en/graphql/reference/input-objects#filechanges
@@ -67,7 +62,7 @@ def create_additions(library_name: str) -> List[FileAddition]:
 MAX_CHUNK_LEN = 3e7  # 30 Megabytes
 
 
-def create_additions_chunks(additions: List[FileAddition]) -> List[List[FileAddition]]:
+def create_additions_chunks(additions: List[Dict]) -> List[List[Dict]]:
     """
     Github GraphQL `createCommitOnBranch` mutation fails when a payload is bigger than 50 MB.
     Therefore, in those cases (transformers doc ~ 100 MB), we need to commit using
@@ -117,7 +112,7 @@ mutation (
 """
 
 
-def create_commit(gql_client: Client, repo_id: str, additions: List[FileAddition], token: str, commit_msg: str):
+def create_commit(gql_client: Client, repo_id: str, additions: List[Dict], token: str, commit_msg: str):
     """
     Commits additions and/or deletions to a repository using Github GraphQL mutation `createCommitOnBranch`
     see more here: https://docs.github.com/en/graphql/reference/mutations#createcommitonbranch
