@@ -15,6 +15,7 @@
 
 import argparse
 import base64
+import logging
 from pathlib import Path
 from time import time
 from typing import Dict, List, Optional
@@ -152,7 +153,7 @@ def push_command(args):
     time_start = time()
     additions = create_additions(args.library_name)
     time_end = time()
-    print(f"create_additions took {time_end-time_start:.4f} seconds or {(time_end-time_start)/60.0:.2f} mins")
+    logging.debug(f"create_additions took {time_end-time_start:.4f} seconds or {(time_end-time_start)/60.0:.2f} mins")
     additions_chunks = create_additions_chunks(additions)
 
     time_start = time()
@@ -169,7 +170,7 @@ def push_command(args):
                 print(f"Failed on try #{max_n_retries-number_of_retries}, pushing again")
 
     time_end = time()
-    print(f"commit_additions took {time_end-time_start:.4f} seconds or {(time_end-time_start)/60.0:.2f} mins")
+    logging.debug(f"commit_additions took {time_end-time_start:.4f} seconds or {(time_end-time_start)/60.0:.2f} mins")
 
 
 def push_command_parser(subparsers=None):
