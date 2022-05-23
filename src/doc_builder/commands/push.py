@@ -22,7 +22,6 @@ from typing import List, Optional, TypedDict
 import requests
 from gql import Client, gql
 from gql.transport.aiohttp import AIOHTTPTransport
-from gql.transport.exceptions import TransportQueryError
 
 
 def get_head_oid(repo_id: str, token: str, branch: Optional[str] = "main") -> str:
