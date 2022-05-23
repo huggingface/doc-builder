@@ -202,20 +202,12 @@ def push_command(args):
     )
     gql_client = Client(transport=transport, fetch_schema_from_transport=True, execute_timeout=None)
 
-    # simulate overwrite behaviour by cleaning/removing existing files and adding new files afterwards
-    # commit file deletions
-    if args.clean:
-        deletions = create_deletions(args.doc_build_repo_id, args.library_name, args.token)
-        create_commit(
-            gql_client, args.doc_build_repo_id, [], deletions, args.token, f"Clean before: {args.commit_msg}"
-        )
     # commit file additions
     time_start = time()
     additions = create_additions(args.library_name)
     time_end = time()
     print(f"create_additions took {time_end-time_start:.4f} seconds or {(time_end-time_start)/60.0:.2f} mins")
     additions_chunks = chunk_additions(additions)
-    partial_commit = False
 
     time_start = time()
     while number_of_retries:
@@ -223,21 +215,12 @@ def push_command(args):
             for i, additions in enumerate(additions_chunks):
                 create_commit(gql_client, args.doc_build_repo_id, additions, [], args.token, args.commit_msg)
                 print(f"Committed additions chunk: {i+1}/{len(additions_chunks)}")
-                partial_commit = True
             break
-        except TransportQueryError as e:
-            error_msg = str(e)
-            if "Expected branch to point to" in error_msg:
-                number_of_retries -= 1
-                print(f"Failed on try #{max_n_retries-number_of_retries}, pushing again")
         except Exception as e:
-            # if some of the chunks were added & some failed, we should delete the added chunks
-            if args.clean and partial_commit:
-                deletions = create_deletions(args.doc_build_repo_id, args.library_name, args.token)
-                create_commit(
-                    gql_client, args.doc_build_repo_id, [], deletions, args.token, f"Clean before: {args.commit_msg}"
-                )
-            raise RuntimeError("create_commit additions failed") from e
+            number_of_retries -= 1
+            print(f"createCommitOnBranch error occurred: {e}")
+            if number_of_retries:
+                print(f"Failed on try #{max_n_retries-number_of_retries}, pushing again")
 
     time_end = time()
     print(f"commit_additions took {time_end-time_start:.4f} seconds or {(time_end-time_start)/60.0:.2f} mins")
@@ -267,9 +250,6 @@ def push_command_parser(subparsers=None):
         default="Github GraphQL createcommitonbranch commit",
     )
     parser.add_argument("--n_retries", type=int, help="Number of push retries in the event of conflict", default=1)
-    parser.add_argument(
-        "--clean", action="store_true", help="Whether or not to clean the output dir in the repo before pushing"
-    )
 
     if subparsers is not None:
         parser.set_defaults(func=push_command)
