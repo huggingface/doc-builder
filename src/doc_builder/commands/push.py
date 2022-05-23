@@ -67,7 +67,7 @@ def create_additions(library_name: str) -> List[FileAddition]:
 MAX_CHUNK_LEN = 3e7  # 30 Megabytes
 
 
-def chunk_additions(additions: List[FileAddition]) -> List[List[FileAddition]]:
+def create_additions_chunks(additions: List[FileAddition]) -> List[List[FileAddition]]:
     """
     Github GraphQL `createCommitOnBranch` mutation fails when a payload is bigger than 50 MB.
     Therefore, in those cases (transfoerms doc ~ 100 MB), we need to commit using
@@ -159,7 +159,7 @@ def push_command(args):
     additions = create_additions(args.library_name)
     time_end = time()
     print(f"create_additions took {time_end-time_start:.4f} seconds or {(time_end-time_start)/60.0:.2f} mins")
-    additions_chunks = chunk_additions(additions)
+    additions_chunks = create_additions_chunks(additions)
 
     time_start = time()
     while number_of_retries:
