@@ -70,7 +70,7 @@ MAX_CHUNK_LEN = 3e7  # 30 Megabytes
 def create_additions_chunks(additions: List[FileAddition]) -> List[List[FileAddition]]:
     """
     Github GraphQL `createCommitOnBranch` mutation fails when a payload is bigger than 50 MB.
-    Therefore, in those cases (transfoerms doc ~ 100 MB), we need to commit using
+    Therefore, in those cases (transformers doc ~ 100 MB), we need to commit using
     multiple smaller `createCommitOnBranch` mutation calls.
     """
     additions_chunks = []
