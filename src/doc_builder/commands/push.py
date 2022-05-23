@@ -77,8 +77,7 @@ def create_additions_chunks(additions: List[FileAddition]) -> List[List[FileAddi
     current_chunk = []
     current_len = 0
 
-    while additions:
-        addition = additions.pop()
+    for addition in additions:
         addition_len = len(addition["contents"])
         if current_len + addition_len < MAX_CHUNK_LEN:
             # can add to current_chunk
