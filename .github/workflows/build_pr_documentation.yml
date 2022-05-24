@@ -63,12 +63,13 @@ jobs:
             echo "doc_folder=${{ inputs.path_to_docs }}" >> $GITHUB_ENV
           fi
 
+          package_name="${${{ inputs.package_name }}:-${${{ inputs.package }}:-default}}"
           if [ -z "${{ inputs.hub_base_path }}" ]
           then
-            echo "hub_docs_url=https://moon-ci-docs.huggingface.co/docs/${{ inputs.package }}/pr_${{ inputs.pr_number }}" >> $GITHUB_ENV
+            echo "hub_docs_url=https://moon-ci-docs.huggingface.co/docs/$package_name/pr_${{ inputs.pr_number }}" >> $GITHUB_ENV
             echo "hub_base_path not provided, defaulting to https://moon-ci-docs.huggingface.co/docs"
           else
-            echo "hub_docs_url=${{ inputs.hub_base_path }}/${{ inputs.package }}/pr_${{ inputs.pr_number }}" >> $GITHUB_ENV
+            echo "hub_docs_url=${{ inputs.hub_base_path }}/$package_name/pr_${{ inputs.pr_number }}" >> $GITHUB_ENV
           fi
 
           if [ -z "${{ inputs.package_name }}" ];
