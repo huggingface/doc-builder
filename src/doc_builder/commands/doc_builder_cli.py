@@ -19,6 +19,7 @@ from argparse import ArgumentParser
 from doc_builder.commands.build import build_command_parser
 from doc_builder.commands.convert_doc_file import convert_command_parser
 from doc_builder.commands.preview import preview_command_parser
+from doc_builder.commands.push import push_command_parser
 from doc_builder.commands.style import style_command_parser
 
 
@@ -31,6 +32,7 @@ def main():
     build_command_parser(subparsers=subparsers)
     style_command_parser(subparsers=subparsers)
     preview_command_parser(subparsers=subparsers)
+    push_command_parser(subparsers=subparsers)
 
     # Let's go
     args = parser.parse_args()

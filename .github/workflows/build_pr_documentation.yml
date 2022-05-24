@@ -71,6 +71,13 @@ jobs:
             echo "hub_docs_url=${{ inputs.hub_base_path }}/${{ inputs.package }}/pr_${{ inputs.pr_number }}" >> $GITHUB_ENV
           fi
 
+          if [ -z "${{ inputs.package_name }}" ];
+          then
+            echo "package_name=${{ inputs.package }}" >> $GITHUB_ENV
+          else
+            echo "package_name=${{ inputs.package_name }}" >> $GITHUB_ENV
+          fi
+
       - name: Install Rust
         uses: actions-rs/toolchain@v1
         if: inputs.install_rust
@@ -80,9 +87,6 @@ jobs:
       - name: Setup environment
         shell: bash
         run: |
-          rm -rf doc-build-dev
-          git clone --depth 1 https://HuggingFaceDocBuilderDev:${{ env.write_token }}@github.com/huggingface/doc-build-dev
-
           pip uninstall -y doc-builder
           cd doc-builder
           git pull origin main
@@ -99,11 +103,6 @@ jobs:
             pip install .[dev]
           fi
           cd ..
-
-      - name: Setup git
-        run: |
-          git config --global user.name "Hugging Face Doc Builder"
-          git config --global user.email docs@huggingface.co
 
       - name: Make documentation
         env:
@@ -129,28 +128,13 @@ jobs:
           cd ..
 
       - name: Push to repositories
-        run: |
-          cd doc-build-dev
-          git pull
-          rm -rf ${{ inputs.package }}/pr_${{ inputs.pr_number }}
-          if [ -z "${{ inputs.package_name }}" ];
-          then
-            mv ../build_dir/${{ inputs.package }}/pr_${{ inputs.pr_number }} ${{ inputs.package }}/pr_${{ inputs.pr_number }}
-          else
-            mv ../build_dir/${{ inputs.package }}/pr_${{ inputs.pr_number }} ${{ inputs.package_name }}/pr_${{ inputs.pr_number }}
-          fi
-          git status
-
-          if [[ `git status --porcelain` ]]; then
-            git add .
-            git commit -m "Updated with commit ${{ inputs.commit_sha }} See: https://github.com/huggingface/${{ inputs.package }}/commit/${{ inputs.commit_sha }}"
-            git push origin main ||
-            (echo "Failed on the first try, rebasing and pushing again" && git pull --rebase && git push origin main) ||
-            (echo "Failed on the second try, rebasing and pushing again" && git pull --rebase && git push origin main)
-          else
-            echo "No diff in the documentation."
-          fi
         shell: bash
+        run: |
+          cd build_dir
+          if [ "${{ inputs.package }}" != "${{ env.package_name }}" ]; then
+            mv ${{ inputs.package }} ${{ env.package_name }}
+          fi
+          doc-builder push ${{ env.package_name }} --doc_build_repo_id "huggingface/doc-build-dev" --token ${{ env.write_token }} --commit_msg "Updated with commit ${{ inputs.commit_sha }} See: https://github.com/huggingface/${{ inputs.package }}/commit/${{ inputs.commit_sha }}" --n_retries 5
 
       - name: Find doc comment
         uses: peter-evans/find-comment@v1
