@@ -167,6 +167,8 @@ def push_command(args):
             print(f"createCommitOnBranch error occurred: {e}")
             if number_of_retries:
                 print(f"Failed on try #{max_n_retries-number_of_retries}, pushing again")
+            else:
+                raise RuntimeError("create_commit additions failed") from e
 
     time_end = time()
     logging.debug(f"commit_additions took {time_end-time_start:.4f} seconds or {(time_end-time_start)/60.0:.2f} mins")
