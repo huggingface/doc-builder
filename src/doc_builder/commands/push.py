@@ -95,7 +95,6 @@ CREATE_COMMIT_ON_BRANCH_GRAPHQL = """
 mutation (
   $repo_id: String!
   $additions: [FileAddition!]!
-  $deletions: [FileDeletion!]!
   $head_oid: GitObjectID!
   $commit_msg: String!
 ) {
