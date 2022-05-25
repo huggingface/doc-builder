@@ -112,11 +112,14 @@ mutation (
 """
 
 
-def create_commit(gql_client: Client, repo_id: str, additions: List[Dict], token: str, commit_msg: str):
+def create_commit(repo_id: str, additions: List[Dict], token: str, commit_msg: str):
     """
     Commits additions and/or deletions to a repository using Github GraphQL mutation `createCommitOnBranch`
     see more here: https://docs.github.com/en/graphql/reference/mutations#createcommitonbranch
     """
+    # Create Github GraphQL client
+    transport = AIOHTTPTransport(url="https://api.github.com/graphql", headers={"Authorization": f"bearer {token}"})
+    gql_client = Client(transport=transport, fetch_schema_from_transport=True, execute_timeout=None)
     # Provide a GraphQL query
     query = gql(CREATE_COMMIT_ON_BRANCH_GRAPHQL)
     head_oid = get_head_oid(repo_id, token)
@@ -143,12 +146,6 @@ def push_command(args):
     number_of_retries = args.n_retries
     n_seconds_sleep = 5
 
-    # Create Github GraphQL client
-    transport = AIOHTTPTransport(
-        url="https://api.github.com/graphql", headers={"Authorization": f"bearer {args.token}"}
-    )
-    gql_client = Client(transport=transport, fetch_schema_from_transport=True, execute_timeout=None)
-
     # commit file additions
     time_start = time()
     additions = create_additions(args.library_name)
@@ -160,7 +157,7 @@ def push_command(args):
     while number_of_retries:
         try:
             for i, additions in enumerate(additions_chunks):
-                create_commit(gql_client, args.doc_build_repo_id, additions, args.token, args.commit_msg)
+                create_commit(args.doc_build_repo_id, additions, args.token, args.commit_msg)
                 print(f"Committed additions chunk: {i+1}/{len(additions_chunks)}")
             break
         except Exception as e:
