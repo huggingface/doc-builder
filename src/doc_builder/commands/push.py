@@ -17,7 +17,7 @@ import argparse
 import base64
 import logging
 from pathlib import Path
-from time import time
+from time import sleep, time
 from typing import Dict, List, Optional
 
 import requests
@@ -141,6 +141,7 @@ def push_command(args):
 
     max_n_retries = args.n_retries + 1
     number_of_retries = args.n_retries
+    n_seconds_sleep = 5
 
     # Create Github GraphQL client
     transport = AIOHTTPTransport(
@@ -166,7 +167,8 @@ def push_command(args):
             number_of_retries -= 1
             print(f"createCommitOnBranch error occurred: {e}")
             if number_of_retries:
-                print(f"Failed on try #{max_n_retries-number_of_retries}, pushing again")
+                print(f"Failed on try #{max_n_retries-number_of_retries}, pushing again in {n_seconds_sleep} seconds")
+                sleep(n_seconds_sleep)
             else:
                 raise RuntimeError("create_commit additions failed") from e
 
