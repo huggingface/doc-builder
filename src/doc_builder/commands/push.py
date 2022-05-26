@@ -160,7 +160,7 @@ def push_command(args):
     while number_of_retries:
         try:
             for i, additions in enumerate(additions_chunks):
-                create_commit(gql_client, additions, args.token, args.commit_msg)
+                create_commit(gql_client, args.doc_build_repo_id, additions, args.token, args.commit_msg)
                 print(f"Committed additions chunk: {i+1}/{len(additions_chunks)}")
             break
         except Exception as e:
