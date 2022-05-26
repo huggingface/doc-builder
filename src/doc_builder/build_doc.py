@@ -206,7 +206,8 @@ def build_mdx_files(package, doc_folder, output_dir, page_info):
                     writer.write(content)
                 # Make sure we clean up for next page.
                 del page_info["page"]
-            elif file.is_file():
+            elif file.is_file() and "__" not in str(file):
+                # __ is a reserved svelte file/folder prefix
                 dest_file = output_dir / (file.relative_to(doc_folder))
                 os.makedirs(dest_file.parent, exist_ok=True)
                 shutil.copy(file, dest_file)
