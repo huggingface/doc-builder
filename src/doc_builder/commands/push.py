@@ -152,7 +152,7 @@ def push_command(args):
 
     # Create Github GraphQL client
     transport = RequestsHTTPTransport(
-        url="https://api.github.com/graphql", headers={"Authorization": f"bearer {token}"}, verify=True
+        url="https://api.github.com/graphql", headers={"Authorization": f"bearer {args.token}"}, verify=True
     )
     gql_client = Client(transport=transport, fetch_schema_from_transport=True, execute_timeout=None)
 
