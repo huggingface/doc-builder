@@ -116,10 +116,6 @@ def build_command(args):
             tmp_dir = Path(tmp_dir)
             # Copy everything in a tmp dir
             shutil.copytree(kit_folder, tmp_dir / "kit")
-            # files/folders cannot have a name that starts with `__` since it is a reserved Sveltekit keyword
-            for p in output_path.glob("**/*__*"):
-                if p.exists():
-                    p.rmdir if p.is_dir() else p.unlink()
             # Manual copy and overwrite from output_path to tmp_dir / "kit" / "src" / "routes"
             # We don't use shutil.copytree as tmp_dir / "kit" / "src" / "routes" exists and contains important files.
             for f in output_path.iterdir():
