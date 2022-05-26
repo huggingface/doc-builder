@@ -22,7 +22,7 @@ from typing import Dict, List, Optional
 
 import requests
 from gql import Client, gql
-from gql.transport.aiohttp import AIOHTTPTransport
+from gql.transport.requests import RequestsHTTPTransport
 
 
 def get_head_oid(repo_id: str, token: str, branch: Optional[str] = "main") -> str:
@@ -118,7 +118,9 @@ def create_commit(repo_id: str, additions: List[Dict], token: str, commit_msg: s
     see more here: https://docs.github.com/en/graphql/reference/mutations#createcommitonbranch
     """
     # Create Github GraphQL client
-    transport = AIOHTTPTransport(url="https://api.github.com/graphql", headers={"Authorization": f"bearer {token}"})
+    transport = RequestsHTTPTransport(
+        url="https://api.github.com/graphql", headers={"Authorization": f"bearer {token}"}, verify=True
+    )
     gql_client = Client(transport=transport, fetch_schema_from_transport=True, execute_timeout=None)
     # Provide a GraphQL query
     query = gql(CREATE_COMMIT_ON_BRANCH_GRAPHQL)

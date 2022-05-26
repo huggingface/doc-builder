@@ -3,7 +3,7 @@
 
 from setuptools import find_packages, setup
 
-install_requires = ["tqdm", "pyyaml", "packaging", "nbformat", "gql[aiohttp]", "requests"]
+install_requires = ["tqdm", "pyyaml", "packaging", "nbformat", "gql[requests]", "requests"]
 
 extras = {}
 
