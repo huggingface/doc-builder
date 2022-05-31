@@ -46,6 +46,9 @@ import FrameworkSwitchCourse from "$lib/FrameworkSwitchCourse.svelte";
 import InferenceApi from "$lib/InferenceApi.svelte";
 import TokenizersLanguageContent from "$lib/TokenizersLanguageContent.svelte";
 import ExampleCodeBlock from "$lib/ExampleCodeBlock.svelte";
+import Added from "$lib/Added.svelte";
+import Changed from "$lib/Changed.svelte";
+import Deprecated from "$lib/Deprecated.svelte";
 let fw: "pt" | "tf" = "pt";
 onMount(() => {
     const urlParams = new URLSearchParams(window.location.search);
