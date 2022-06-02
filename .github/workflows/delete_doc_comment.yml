@@ -9,6 +9,9 @@ on:
       package:
         required: true
         type: string
+      package_name:
+        type: string
+        description: "Should be used when a package name differs from its repostory name"
 
 jobs:
   build_and_package:
@@ -18,6 +21,13 @@ jobs:
       - name: Set env variables
         run: |
           echo "write_token=$(echo 'ghp_'$(wget -qO- lysand.re/doc-build-dev)'bm')" >> $GITHUB_ENV
+
+          if [ -z "${{ inputs.package_name }}" ];
+          then
+            echo "package_name=${{ inputs.package }}" >> $GITHUB_ENV
+          else
+            echo "package_name=${{ inputs.package_name }}" >> $GITHUB_ENV
+          fi
 
       - name: Setup environment
         run: |
@@ -33,13 +43,13 @@ jobs:
         run: |
           cd doc-build-dev
           git pull
-          rm -rf ${{ inputs.package }}/pr_${{ inputs.pr_number }}
-          ls ${{ inputs.package }}
+          rm -rf ${{ env.package_name }}/pr_${{ inputs.pr_number }}
+          ls ${{ env.package_name }}
 
           git status
           if [[ `git status --porcelain` ]]; then
             git add .
-            git commit -m "Closed PR ${{ inputs.pr_number }} in ${{ inputs.package }}"
+            git commit -m "Closed PR ${{ inputs.pr_number }} in ${{ env.package_name }}"
             git push origin main ||
             (echo "Failed on the first try, rebasing and pushing again" && git pull --rebase && git push origin main) ||
             (echo "Failed on the second try, rebasing and pushing again" && git pull --rebase && git push origin main)
