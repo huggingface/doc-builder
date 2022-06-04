@@ -172,6 +172,16 @@ Flax content goes here
 
 Note that all frameworks are optional (you can write a PyTorch-only block for instance) and the order does not matter.
 
+Anchor links for markdown headings are generated automatically (with the following rule: 1. lowercase, 2. replace space with dash `-`, 3. strip [^a-z0-9-]):
+```
+## My awesome section
+// the anchor link is: `my-awesome-section`
+```
+Moreover, there is a way to customize the anchor link. Example:
+```
+## My awesome section[[some-section]]
+// the anchor link is: `some-section`
+```
 
 ### Writing API documentation
 
