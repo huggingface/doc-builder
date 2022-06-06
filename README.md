@@ -309,3 +309,27 @@ Here's an example for tuple return, comprising several objects:
         - **prediction_scores** (`torch.FloatTensor` of shape `(batch_size, sequence_length, config.vocab_size)`) --
           Prediction scores of the language modeling head (scores for each vocabulary token before SoftMax).
 ```
+
+There are directives for `Added`, `Changed`, & `Deprecated`.
+Here's an example:
+```
+    Args:
+        cache_dir (`str`, *optional*): Directory to cache data.
+        config_name (`str`, *optional*): Name of the dataset configuration.
+            It affects the data generated on disk: different configurations will have their own subdirectories and
+            versions.
+            If not provided, the default configuration is used (if it exists).
+
+            <Added version="2.3.0">
+
+            `name` was renamed to `config_name`.
+
+            </Added>
+        name (`str`): Configuration name for the dataset.
+
+            <Deprecated version="2.3.0">
+
+            Use `config_name` instead.
+
+            </Deprecated>
+```
