@@ -18,6 +18,8 @@ export const docstringPreprocess = {
 		const REGEX_RETTYPE = /<rettype>(((?!<rettype>).)*)<\/rettype>/ms;
 		const REGEX_SOURCE = /<source>(((?!<source>).)*)<\/source>/ms;
 		const REGEX_TIP = /<Tip( warning={true})?>(((?!<Tip( warning={true})?>).)*)<\/Tip>/gms;
+		const REGEX_CHANGED =
+			/<(Added|Changed|Deprecated) version="([0-9.v]+)"\/?>((((?!<(Added|Changed|Deprecated) version="([0-9.v]+)"\/?>).)*)<\/(Added|Changed|Deprecated)>)?/gms;
 		const REGEX_IS_GETSET_DESC = /<isgetsetdescriptor>/ms;
 
 		content = await replaceAsync(content, REGEX_DOCSTRING, async (_, docstringBody) => {
@@ -36,8 +38,8 @@ export const docstringPreprocess = {
 				// escape }} by adding void character `&zwnj;` in between
 				content = content.replace(/}}/g, "}&zwnj;}");
 				let { code } = await mdsvexPreprocess.markup({ content, filename });
+				// render <Tip> components that are inside parameter descriptions
 				code = code.replace(REGEX_TIP, (_, isWarning, tipContent) => {
-					// render <Tip> components that are inside parameter descriptions
 					const color = isWarning ? "orange" : "green";
 					return `<div
 						class="course-tip ${
@@ -45,6 +47,18 @@ export const docstringPreprocess = {
 						} bg-gradient-to-br dark:bg-gradient-to-r before:border-${color}-500 dark:before:border-${color}-800 from-${color}-50 dark:from-gray-900 to-white dark:to-gray-950 border border-${color}-50 text-${color}-700 dark:text-gray-400"
 					>
 						${tipContent}
+					</div>`;
+				});
+				// render <Addded>, <Changed>, <Deprecated> components that are inside parameter descriptions
+				code = code.replace(REGEX_CHANGED, (_, componentType, version, __, descriptionContent) => {
+					const color = /Added|Changed/.test(componentType) ? "green" : "orange";
+					return `<div
+						class="course-tip ${
+							color === "orange" ? "course-tip-orange" : ""
+						} bg-gradient-to-br dark:bg-gradient-to-r before:border-${color}-500 dark:before:border-${color}-800 from-${color}-50 dark:from-gray-900 to-white dark:to-gray-950 border border-${color}-50 text-${color}-700 dark:text-gray-400"
+					>
+						<p class="font-medium">${componentType} in ${version}</p>
+						${descriptionContent}
 					</div>`;
 				});
 
