@@ -66,7 +66,7 @@ def convert_special_chars(text):
     Convert { and < that have special meanings in MDX.
     """
     _re_lcub_svelte = re.compile(
-        r"<(Question|Tip|DocNotebookDropdown|FrameworkSwitch)(((?!<(Question|Tip|DocNotebookDropdown|FrameworkSwitch)).)*)>|&amp;lcub;(#if|:else}|/if})",
+        r"<(Question|Tip|Added|Changed|Deprecated|DocNotebookDropdown|FrameworkSwitch)(((?!<(Question|Tip|Added|Changed|Deprecated|DocNotebookDropdown|FrameworkSwitch)).)*)>|&amp;lcub;(#if|:else}|/if})",
         re.DOTALL,
     )
     text = text.replace("{", "&amp;lcub;")
