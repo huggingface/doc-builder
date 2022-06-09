@@ -157,15 +157,13 @@ def push_command(args):
             transport = RequestsHTTPTransport(
                 url="https://api.github.com/graphql", headers={"Authorization": f"bearer {args.token}"}, verify=True
             )
-            gql_client = Client(transport=transport, fetch_schema_from_transport=True, execute_timeout=None)
-            # commit push chunks additions
-            for i, additions in enumerate(additions_chunks):
-                create_commit(gql_client, args.doc_build_repo_id, additions, args.token, args.commit_msg)
-                print(f"Committed additions chunk: {i+1}/{len(additions_chunks)}")
+            with Client(transport=transport, fetch_schema_from_transport=True, execute_timeout=None) as gql_client:
+                # commit push chunks additions
+                for i, additions in enumerate(additions_chunks):
+                    create_commit(gql_client, args.doc_build_repo_id, additions, args.token, args.commit_msg)
+                    print(f"Committed additions chunk: {i+1}/{len(additions_chunks)}")
             break
         except Exception as e:
-            # close transport gracefully
-            transport.close()
             number_of_retries -= 1
             print(f"createCommitOnBranch error occurred: {e}")
             if number_of_retries:
