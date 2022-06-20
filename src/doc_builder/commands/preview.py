@@ -201,7 +201,7 @@ def preview_command(args):
 
         # Node
         env = os.environ.copy()
-        env["DOCS_LIBRARY"] = args.library_name
+        env["DOCS_LIBRARY"] = os.environ["package_name"] or args.library_name
         env["DOCS_VERSION"] = args.version
         env["DOCS_LANGUAGE"] = args.language
         Thread(target=start_sveltekit_dev, args=(tmp_dir, env, args)).start()
