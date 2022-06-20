@@ -374,7 +374,7 @@ const _mdsvexPreprocess = mdsvex({
 	extensions: ["mdx"],
 	highlight: {
 		highlighter: function (code, lang) {
-			const REGEX_CODE_INPUT = /^(>>>\s|\.\.\.\s|$)/;
+			const REGEX_CODE_INPUT = /^(>>>\s|\.\.\.\s|$)/m;
 			const _highlight = (code) =>
 				lang && hljs.getLanguage(lang)
 					? hljs.highlight(lang, code, true).value
