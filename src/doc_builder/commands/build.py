@@ -144,7 +144,7 @@ def build_command(args):
             )
 
             env = os.environ.copy()
-            env["DOCS_LIBRARY"] = os.environ["package_name"] or args.library_name
+            env["DOCS_LIBRARY"] = env["package_name"] or args.library_name
             env["DOCS_VERSION"] = version
             env["DOCS_LANGUAGE"] = args.language
             print("Building HTML files. This will take a while :-)")
