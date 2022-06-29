@@ -134,7 +134,7 @@ export const docstringPreprocess = {
 								const name = domUtils.innerText(nameEl);
 								const paramAnchor = `${anchor}.${name}`;
 								let description = domUtils.getInnerHTML(childEl).trim();
-		
+
 								// strip enclosing paragraph tags <p> & </p>
 								if (description.startsWith("<p>")) {
 									description = description.slice("<p>".length);
@@ -142,11 +142,12 @@ export const docstringPreprocess = {
 								if (description.endsWith("</p>")) {
 									description = description.slice(0, -"</p>".length);
 								}
-		
+
 								result.push({ anchor: paramAnchor, description, name });
 							}
 						}
 						parameterGroups.push({ title, parametersDescription: result });
+					}
 					svelteComponent += ` parameterGroups={${JSON.stringify(parameterGroups)}} `;
 				}
 			}
