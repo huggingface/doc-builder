@@ -124,29 +124,8 @@ export const docstringPreprocess = {
 						const title = docstringBody.match(REGEX_GROUP_TITLE)[1];
 						const content = docstringBody.match(REGEX_GROUP_CONTENT)[1];
 						const { code } = await mdsvexPreprocess.markup({ content, filename });
-						const dom = htmlparser2.parseDocument(code);
-						const lists = domUtils.getElementsByTagName("ul", dom);
-						const result = [];
-						if (lists.length) {
-							const list = lists[0];
-							for (const childEl of list.childNodes.filter(({ type }) => type === "tag")) {
-								const nameEl = domUtils.getElementsByTagName("strong", childEl)[0];
-								const name = domUtils.innerText(nameEl);
-								const paramAnchor = `${anchor}.${name}`;
-								let description = domUtils.getInnerHTML(childEl).trim();
-		
-								// strip enclosing paragraph tags <p> & </p>
-								if (description.startsWith("<p>")) {
-									description = description.slice("<p>".length);
-								}
-								if (description.endsWith("</p>")) {
-									description = description.slice(0, -"</p>".length);
-								}
-		
-								result.push({ anchor: paramAnchor, description, name });
-							}
-						}
-						parameterGroups.push({ title, parametersDescription: result });
+						parameterGroups.push({ title, parametersDescription: code });
+					}
 					svelteComponent += ` parameterGroups={${JSON.stringify(parameterGroups)}} `;
 				}
 			}
