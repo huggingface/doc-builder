@@ -191,22 +191,24 @@
 				<p class="flex items-center font-semibold">
 					{title} <span class="flex-auto border-t-2 ml-3" />
 				</p>
-				{#each parametersDescription as { anchor, description }}
-					<li class="text-base !pl-4 my-3 rounded {hashlink === anchor ? bgHighlightClass : ''}">
-						<span class="group flex space-x-1.5 items-start">
-							<a
-								id={anchor}
-								class="header-link block pr-0.5 text-lg no-hover:hidden with-hover:absolute with-hover:p-1.5 with-hover:opacity-0 with-hover:group-hover:opacity-100 with-hover:right-full"
-								href={`#${anchor}`}
-							>
-								<span><IconCopyLink classNames="text-smd" /></span>
-							</a>
-							<span>
-								{@html description}
+				<ul class="px-2">
+					{#each parametersDescription as { anchor, description }}
+						<li class="text-base !pl-4 my-3 rounded {hashlink === anchor ? bgHighlightClass : ''}">
+							<span class="group flex space-x-1.5 items-start">
+								<a
+									id={anchor}
+									class="header-link block pr-0.5 text-lg no-hover:hidden with-hover:absolute with-hover:p-1.5 with-hover:opacity-0 with-hover:group-hover:opacity-100 with-hover:right-full"
+									href={`#${anchor}`}
+								>
+									<span><IconCopyLink classNames="text-smd" /></span>
+								</a>
+								<span>
+									{@html description}
+								</span>
 							</span>
-						</span>
-					</li>
-				{/each}
+						</li>
+					{/each}
+				</ul>
 			{/each}
 		{/if}
 		{#if !!returnType}
