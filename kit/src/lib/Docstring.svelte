@@ -3,17 +3,19 @@
 	import { tooltip } from "./tooltip";
 	import IconCopyLink from "./IconCopyLink.svelte";
 
-	export let anchor: string;
-	export let name: string;
-	export let parameters: { name: string; val: string }[] = [];
-	export let parametersDescription: {
+	type Parameter = {
 		anchor: string;
 		name: string;
 		description: string;
-	}[];
+	};
+
+	export let anchor: string;
+	export let name: string;
+	export let parameters: { name: string; val: string }[] = [];
+	export let parametersDescription: Parameter[];
 	export let parameterGroups: {
 		title: string;
-		parametersDescription: string;
+		parametersDescription: Parameter[];
 	}[];
 	export let returnDescription: string;
 	export let returnType: string;
@@ -189,7 +191,22 @@
 				<p class="flex items-center font-semibold">
 					{title} <span class="flex-auto border-t-2 ml-3" />
 				</p>
-				<p>{@html parametersDescription}</p>
+				{#each parametersDescription as { anchor, description }}
+					<li class="text-base !pl-4 my-3 rounded {hashlink === anchor ? bgHighlightClass : ''}">
+						<span class="group flex space-x-1.5 items-start">
+							<a
+								id={anchor}
+								class="header-link block pr-0.5 text-lg no-hover:hidden with-hover:absolute with-hover:p-1.5 with-hover:opacity-0 with-hover:group-hover:opacity-100 with-hover:right-full"
+								href={`#${anchor}`}
+							>
+								<span><IconCopyLink classNames="text-smd" /></span>
+							</a>
+							<span>
+								{@html description}
+							</span>
+						</span>
+					</li>
+				{/each}
 			{/each}
 		{/if}
 		{#if !!returnType}
