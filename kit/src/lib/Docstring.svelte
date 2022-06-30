@@ -23,7 +23,7 @@
 	export let hashlink: string | undefined;
 	export let isGetSetDescriptor = false;
 
-	let parametersElement: HTMLElement;
+	let detailsElement: HTMLElement;
 	let containerEl: HTMLElement;
 	let collapsed: boolean = false;
 
@@ -41,7 +41,7 @@
 			document.querySelectorAll<HTMLAnchorElement>('[href^="#"]');
 		const hashlinks = [...hashlinksEls].map(el => el.id);
 		const containsAnchor = hashlinks.includes(hashlink);
-		collapsed = !containsAnchor && parametersElement.clientHeight > 500;
+		collapsed = !containsAnchor && detailsElement.clientHeight > 500;
 		onHashChange();
 	});
 
@@ -150,47 +150,13 @@
 
 	<!-- `docstring-details` class is used for crawling & populating meilisearch -->
 	<div
-		class="!mb-10 relative docstring-details {collapsed ? 'max-h-96 overflow-hidden' : ''}"
-		bind:this={parametersElement}
+		class="!mb-10 relative docstring-details"
+		bind:this={detailsElement}
 	>
-		{#if collapsed}
-			<div
-				class="absolute inset-0 bg-gradient-to-t from-white to-white/0 dark:from-gray-950 dark:to-gray-950/0 z-10 flex justify-center"
-			>
-				<button
-					on:click={() => (collapsed = false)}
-					class="absolute leading-tight px-3 py-1.5 dark:bg-gray-900 bg-black text-gray-200 hover:text-white rounded-xl bottom-12 ring-offset-2 hover:ring-black hover:ring-2"
-					>Expand {parametersDescription?.length} parameters</button
-				>
-			</div>
-		{/if}
-		{#if !!parametersDescription}
-			<p class="flex items-center font-semibold !mt-2 !mb-2 text-gray-800">
-				Parameters <span class="flex-auto border-t-2 border-gray-100 dark:border-gray-700 ml-3" />
-			</p>
-			<ul class="px-2">
-				{#each parametersDescription as { anchor, description }}
-					<li class="text-base !pl-4 my-3 rounded {hashlink === anchor ? bgHighlightClass : ''}">
-						<span class="group flex space-x-1.5 items-start">
-							<a
-								id={anchor}
-								class="header-link block pr-0.5 text-lg no-hover:hidden with-hover:absolute with-hover:p-1.5 with-hover:opacity-0 with-hover:group-hover:opacity-100 with-hover:right-full"
-								href={`#${anchor}`}
-							>
-								<span><IconCopyLink classNames="text-smd" /></span>
-							</a>
-							<span>
-								{@html description}
-							</span>
-						</span>
-					</li>
-				{/each}
-			</ul>
-		{/if}
-		{#if parameterGroups}
-			{#each parameterGroups as { title, parametersDescription }}
-				<p class="flex items-center font-semibold">
-					{title} <span class="flex-auto border-t-2 ml-3" />
+		<div class="{collapsed ? 'max-h-96 overflow-y-scroll' : ''}">
+			{#if !!parametersDescription}
+				<p class="flex items-center font-semibold !mt-2 !mb-2 text-gray-800">
+					Parameters <span class="flex-auto border-t-2 border-gray-100 dark:border-gray-700 ml-3" />
 				</p>
 				<ul class="px-2">
 					{#each parametersDescription as { anchor, description }}
@@ -210,7 +176,41 @@
 						</li>
 					{/each}
 				</ul>
-			{/each}
+			{/if}
+			{#if parameterGroups}
+				{#each parameterGroups as { title, parametersDescription }}
+					<p class="flex items-center font-semibold">
+						{title} <span class="flex-auto border-t-2 ml-3" />
+					</p>
+					<ul class="px-2">
+						{#each parametersDescription as { anchor, description }}
+							<li class="text-base !pl-4 my-3 rounded {hashlink === anchor ? bgHighlightClass : ''}">
+								<span class="group flex space-x-1.5 items-start">
+									<a
+										id={anchor}
+										class="header-link block pr-0.5 text-lg no-hover:hidden with-hover:absolute with-hover:p-1.5 with-hover:opacity-0 with-hover:group-hover:opacity-100 with-hover:right-full"
+										href={`#${anchor}`}
+									>
+										<span><IconCopyLink classNames="text-smd" /></span>
+									</a>
+									<span>
+										{@html description}
+									</span>
+								</span>
+							</li>
+						{/each}
+					</ul>
+				{/each}
+			{/if}
+		</div>
+		{#if collapsed}
+			<div class="flex justify-center">
+				<button
+					on:click={() => (collapsed = false)}
+					class="px-3 py-1.5 dark:bg-gray-900 bg-black text-gray-200 hover:text-white rounded-xl bottom-12 ring-offset-2 hover:ring-black hover:ring-2"
+					>Expand {parametersDescription?.length} parameters</button
+				>
+			</div>
 		{/if}
 		{#if !!returnType}
 			<div
