@@ -38,7 +38,7 @@
 		const { hash } = window.location;
 		hashlink = hash.substring(1);
 		const hashlinksEls =
-			parametersElement.querySelectorAll<HTMLAnchorElement>('[href^="#"]');
+			detailsElement.querySelectorAll<HTMLAnchorElement>('[href^="#"]');
 		const hashlinks = [...hashlinksEls].map(el => el.id);
 		const containsAnchor = hashlinks.includes(hashlink);
 		collapsed = !containsAnchor && detailsElement.clientHeight > 500;
