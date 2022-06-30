@@ -37,9 +37,10 @@
 	onMount(() => {
 		const { hash } = window.location;
 		hashlink = hash.substring(1);
-		const containsAnchor =
-			!!hash && parametersDescription?.some(({ anchor }) => anchor === hashlink);
-
+		const hashlinksEls =
+			document.querySelectorAll<HTMLAnchorElement>('[href^="#"]');
+		const hashlinks = [...hashlinksEls].map(el => el.id);
+		const containsAnchor = hashlinks.includes(hashlink);
 		collapsed = !containsAnchor && parametersElement.clientHeight > 500;
 		onHashChange();
 	});
