@@ -3,12 +3,12 @@
 
 from setuptools import find_packages, setup
 
-install_requires = ["tqdm", "pyyaml", "packaging", "nbformat", "gql[requests]", "requests"]
+install_requires = ["GitPython", "tqdm", "pyyaml", "packaging", "nbformat", "gql[requests]", "requests"]
 
 extras = {}
 
 extras["transformers"] = ["transformers[dev]"]
-extras["testing"] = ["GitPython", "pytest", "pytest-xdist", "torch", "transformers", "tokenizers"]
+extras["testing"] = ["pytest", "pytest-xdist", "torch", "transformers", "tokenizers"]
 extras["quality"] = ["black~=22.0", "isort>=5.5.4", "flake8>=3.8.3"]
 
 extras["all"] = extras["testing"] + extras["quality"]
