@@ -466,6 +466,32 @@ before.
 
         self.assertFalse(is_dataclass_autodoc(AutomaticSpeechRecognition))
 
+    def test_resolve_links_in_text_other_docs(self):
+        page_info = {"package_name": "transformers", "version": "main", "language": "en"}
+        self.assertEqual(
+            resolve_links_in_text(
+                "Link to [`~accelerate.Accelerator`], [`~accelerate.Accelerator.prepare`].",
+                transformers,
+                {},
+                page_info,
+            ),
+            (
+                "Link to [Accelerator](https://huggingface.co/docs/accelerate/main/en/accelerator#accelerate.Accelerator), "
+                "[prepare](https://huggingface.co/docs/accelerate/main/en/accelerator#accelerate.Accelerator.prepare)."
+            ),
+        )
+        self.assertEqual(
+            resolve_links_in_text(
+                "Link to [`datasets.Dataset`].",
+                transformers,
+                {},
+                page_info,
+            ),
+            (
+                "Link to [datasets.Dataset](https://huggingface.co/docs/datasets/main/en/package_reference/main_classes#datasets.Dataset)."
+            ),
+        )
+
     def test_autodoc_getset_descriptor(self):
         import tokenizers
 

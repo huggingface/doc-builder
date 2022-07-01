@@ -20,6 +20,7 @@ import re
 
 from .convert_md_to_mdx import convert_md_docstring_to_mdx
 from .convert_rst_to_mdx import convert_rst_docstring_to_mdx, find_indent, is_empty_line
+from .external import HUGGINFACE_LIBS, get_external_object_link
 
 
 def find_object_in_package(object_name, package):
@@ -520,6 +521,13 @@ def resolve_links_in_text(text, package, mapping, page_info):
 
     def _resolve_link(search):
         object_name, last_char = search.groups()
+        # Deal with external libs first.
+        lib_name = object_name.split(".")[0]
+        if lib_name.startswith("~"):
+            lib_name = lib_name[1:]
+        if lib_name in HUGGINFACE_LIBS and lib_name != package_name:
+            link = get_external_object_link(object_name, page_info)
+            return f"{link}{last_char}"
         # If the name begins with `~`, we shortcut to the last part.
         if object_name.startswith("~"):
             obj = find_object_in_package(object_name[1:], package)
