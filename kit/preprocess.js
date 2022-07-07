@@ -396,7 +396,7 @@ const _mdsvexPreprocess = mdsvex({
 	extensions: ["mdx"],
 	highlight: {
 		highlighter: function (code, lang) {
-			const REGEX_CODE_INPUT = /^(>>>\s|\.\.\.\s|$)/m;
+			const REGEX_CODE_INPUT = /^(>>>\s|\.\.\.\s)/m;
 			const _highlight = (code) =>
 				lang && hljs.getLanguage(lang)
 					? hljs.highlight(lang, code, true).value
@@ -416,15 +416,15 @@ const _mdsvexPreprocess = mdsvex({
 				if (codeGroup1.match(REGEX_CODE_INPUT)) {
 					codeGroup1 = codeGroup1
 						.split("\n")
-						.filter((line) => line.match(REGEX_CODE_INPUT))
-						.map((line) => line.slice(4))
+						.filter((line) => line.match(REGEX_CODE_INPUT) || !line)
+						.map((line) => line.replace(REGEX_CODE_INPUT, ""))
 						.join("\n");
 				}
 				if (codeGroup2.match(REGEX_CODE_INPUT)) {
 					codeGroup2 = codeGroup2
 						.split("\n")
-						.filter((line) => line.match(REGEX_CODE_INPUT))
-						.map((line) => line.slice(4))
+						.filter((line) => line.match(REGEX_CODE_INPUT) || !line)
+						.map((line) => line.replace(REGEX_CODE_INPUT, ""))
 						.join("\n");
 				}
 				return `
@@ -447,8 +447,8 @@ const _mdsvexPreprocess = mdsvex({
 				if (code.match(REGEX_CODE_INPUT)) {
 					code = code
 						.split("\n")
-						.filter((line) => line.match(REGEX_CODE_INPUT))
-						.map((line) => line.slice(4))
+						.filter((line) => line.match(REGEX_CODE_INPUT) || !line)
+						.map((line) => line.replace(REGEX_CODE_INPUT, ""))
 						.join("\n");
 				}
 				return `
