@@ -538,7 +538,7 @@ def resolve_links_in_text(text, package, mapping, page_info):
             return f"`{object_name}`{last_char}"
 
         # If the object is not a class, we add ()
-        if not isinstance(obj, type):
+        if not isinstance(obj, (type, property)):
             object_name = f"{object_name}()"
 
         # Link to the anchor
