@@ -255,6 +255,21 @@ Here's an example showcasing everything so far:
 
 You can check the full example it comes from [here](https://github.com/huggingface/transformers/blob/v4.17.0/src/transformers/models/bert/modeling_bert.py#L794-L841)
 
+If a class is similar to that of a dataclass but the parameters do not align to the available attributes of the class, such as in the below example, `Attributes` instance should be rewritten as `**Attributes**` in order to have the documentation properly render these. Otherwise it will assume that `Attributes` is synonymous to `Parameters`.
+
+```diff
+  class SomeClass:
+      """
+      Docstring
+-     Attributes:
++     *Attributes*:
+          - **attr_a** (`type_a`) -- Doc a
+          - **attr_b** (`type_b`) -- Doc b
+      """
+      def __init__(self, param_a, param_b):
+          ...
+```
+
 For optional arguments or arguments with defaults we follow the following syntax. Imagine we have a function with the
 following signature:
 
