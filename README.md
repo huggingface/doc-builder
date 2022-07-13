@@ -262,7 +262,7 @@ If a class is similar to that of a dataclass but the parameters do not align to 
       """
       Docstring
 -     Attributes:
-+     *Attributes*:
++     **Attributes**:
           - **attr_a** (`type_a`) -- Doc a
           - **attr_b** (`type_b`) -- Doc b
       """
