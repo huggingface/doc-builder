@@ -52,6 +52,9 @@ export const docstringPreprocess = {
 				// render <Addded>, <Changed>, <Deprecated> components that are inside parameter descriptions
 				code = code.replace(REGEX_CHANGED, (_, componentType, version, __, descriptionContent) => {
 					const color = /Added|Changed/.test(componentType) ? "green" : "orange";
+					if(!descriptionContent){
+						descriptionContent = "";
+					}
 					return `<div
 						class="course-tip ${
 							color === "orange" ? "course-tip-orange" : ""
