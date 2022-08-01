@@ -19,7 +19,7 @@ export const docstringPreprocess = {
 		const REGEX_SOURCE = /<source>(((?!<source>).)*)<\/source>/ms;
 		const REGEX_TIP = /<Tip( warning={true})?>(((?!<Tip( warning={true})?>).)*)<\/Tip>/gms;
 		const REGEX_CHANGED =
-			/<(Added|Changed|Deprecated) version="([0-9.v]+)"\/?>((((?!<(Added|Changed|Deprecated) version="([0-9.v]+)"\/?>).)*)<\/(Added|Changed|Deprecated)>)?/gms;
+			/<(Added|Changed|Deprecated) version="([0-9.v]+)" ?\/?>((((?!<(Added|Changed|Deprecated) version="([0-9.v]+)"\/?>).)*)<\/(Added|Changed|Deprecated)>)?/gms;
 		const REGEX_IS_GETSET_DESC = /<isgetsetdescriptor>/ms;
 
 		content = await replaceAsync(content, REGEX_DOCSTRING, async (_, docstringBody) => {
