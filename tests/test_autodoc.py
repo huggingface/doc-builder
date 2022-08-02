@@ -476,8 +476,8 @@ before.
                 page_info,
             ),
             (
-                "Link to [Accelerator](https://huggingface.co/docs/accelerate/main/en/accelerator#accelerate.Accelerator), "
-                "[prepare](https://huggingface.co/docs/accelerate/main/en/accelerator#accelerate.Accelerator.prepare)."
+                "Link to [Accelerator](https://huggingface.co/docs/accelerate/main/en/package_reference/accelerator#accelerate.Accelerator), "
+                "[prepare](https://huggingface.co/docs/accelerate/main/en/package_reference/accelerator#accelerate.Accelerator.prepare)."
             ),
         )
         self.assertEqual(
