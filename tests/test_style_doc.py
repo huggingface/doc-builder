@@ -24,6 +24,7 @@ from doc_builder.style_doc import (
     format_code_example,
     format_text,
     parse_code_example,
+    style_docstring,
 )
 
 
@@ -144,3 +145,20 @@ class BuildDocTester(unittest.TestCase):
             for i, line in enumerate(formatted_text.split("\n")):
                 self.assertTrue(line.startswith("    " if i > 0 else "  - "))
                 self.assertTrue(len(line) <= max_len)
+
+    def test_format_docstring_empty_line(self):
+        test_docstring = """Function description
+
+Params:
+
+    x (`int`): This is x.
+    y (`float`): this is y.
+"""
+        expected_result = """Function description
+
+Params:
+    x (`int`): This is x.
+    y (`float`): this is y.
+"""
+
+        self.assertEqual(style_docstring(test_docstring, 119)[0], expected_result)
