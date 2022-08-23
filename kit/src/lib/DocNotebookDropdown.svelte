@@ -44,6 +44,7 @@
 <svelte:window on:resize={onResize} />
 
 <div class="flex space-x-1 {classNames}" bind:this={dropdownEl}>
+	<slot/>
 	{#if googleColabOptions.length === 1}
 		<a href={googleColabOptions[0].value} target="_blank">
 			<img
