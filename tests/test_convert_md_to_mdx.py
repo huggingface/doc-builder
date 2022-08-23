@@ -38,6 +38,7 @@ import Docstring from "$lib/Docstring.svelte";
 import CodeBlock from "$lib/CodeBlock.svelte";
 import CodeBlockFw from "$lib/CodeBlockFw.svelte";
 import DocNotebookDropdown from "$lib/DocNotebookDropdown.svelte";
+import CourseFloatingBanner from "$lib/CourseFloatingBanner.svelte";
 import IconCopyLink from "$lib/IconCopyLink.svelte";
 import FrameworkContent from "$lib/FrameworkContent.svelte";
 import Markdown from "$lib/Markdown.svelte";
