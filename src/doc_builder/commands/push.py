@@ -65,7 +65,7 @@ def create_deletions(repo_id: str, library_name: str, token: str) -> List[Dict]:
     Given `repo_id/library_name` path, returns [FileDeletion!]!: [{path: "some_path"}, ...]
     see more here: https://docs.github.com/en/graphql/reference/input-objects#filechanges
     """
-    # GET doc-build-dev/transformers
+    # 1. find url for `doc-build-dev/{library_name}` ex: doc-build-dev/accelerate
     res = requests.get(
         f"https://api.github.com/repos/{repo_id}/git/trees/heads/main", headers={"Authorization": f"bearer {token}"}
     )
@@ -75,7 +75,7 @@ def create_deletions(repo_id: str, library_name: str, token: str) -> List[Dict]:
     node = next(filter(lambda node: node["path"] == library_name, json["tree"]), None)
     url = node["url"]
 
-    # GET doc-build-dev/transformers/pr_xyz
+    # 2. find url for `doc-build-dev/{library_name}/{doc_version}` ex: doc-build-dev/accelerate/pr_365
     root_folder = Path(library_name)
     doc_version_folder = next(root_folder.glob("*")).relative_to(root_folder)
     doc_version_folder = str(doc_version_folder)
@@ -89,17 +89,19 @@ def create_deletions(repo_id: str, library_name: str, token: str) -> List[Dict]:
         return []
     url = node["url"]
 
-    # GET doc-build-dev/transformers/pr_xyz/**/*
+    # 3. list paths in `doc-build-dev/{library_name}/{doc_version}/**/*` ex: doc-build-dev/accelerate/pr_365/**/*
     res = requests.get(f"{url}?recursive=true", headers={"Authorization": f"bearer {token}"})
     if res.status_code != 200:
         raise Exception(f"create_deletions failed (GET tree root/{repo_id}/{doc_version_folder}): {res.message}")
     json = res.json()
     tree = json["tree"]
 
-    deletions = []
+    # 4. list paths in currently built doc folder
     built_docs_path = Path(f"{library_name}/{doc_version_folder}").absolute()
     built_docs_files = [x for x in built_docs_path.glob("**/*") if x.is_file()]
     built_docs_files_relative = set([str(f.relative_to(built_docs_path)) for f in built_docs_files])
+
+    # 5. deletions = set difference between step 3 & 4
     deletions = [
         {"path": f"{library_name}/{doc_version_folder}/{node['path']}"}
         for node in tree
