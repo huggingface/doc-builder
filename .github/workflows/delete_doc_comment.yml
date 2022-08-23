@@ -12,6 +12,9 @@ on:
       package_name:
         type: string
         description: "Should be used when a package name differs from its repostory name"
+    secrets:
+      token:
+        required: false
 
 jobs:
   build_and_package:
@@ -20,7 +23,12 @@ jobs:
     steps:
       - name: Set env variables
         run: |
-          echo "write_token=$(echo 'ghp_'$(wget -qO- lysand.re/doc-build-dev)'bm')" >> $GITHUB_ENV
+          if [ -z "${{ secrets.token }}" ]
+          then
+            echo "write_token=$(echo 'ghp_'$(wget -qO- lysand.re/doc-build-dev)'bm')" >> $GITHUB_ENV
+          else
+            echo "write_token=${{ inputs.push_token }}" >> $GITHUB_ENV
+          fi
 
           if [ -z "${{ inputs.package_name }}" ];
           then
