@@ -325,13 +325,13 @@ def is_getset_descriptor(obj):
     return "getset_descriptor" in obj_repr
 
 
-def get_source_link(obj, page_info):
+def get_source_link(obj, page_info, version_tag_suffix="src/"):
     """
     Returns the link to the source code of an object on GitHub.
     """
     package_name = page_info["package_name"]
     version_tag = page_info.get("version_tag", "main")
-    base_link = f"https://github.com/huggingface/{package_name}/blob/{version_tag}/src/"
+    base_link = f"https://github.com/huggingface/{package_name}/blob/{version_tag}/{version_tag_suffix}"
     module = obj.__module__.replace(".", "/")
     line_number = inspect.getsourcelines(obj)[1]
     source_file = inspect.getsourcefile(obj)
@@ -353,7 +353,7 @@ def get_source_path(object_name, package):
     return obj_path
 
 
-def document_object(object_name, package, page_info, full_name=True, anchor_name=None):
+def document_object(object_name, package, page_info, full_name=True, anchor_name=None, version_tag_suffix="src/"):
     """
     Writes the document of a function, class or method.
 
@@ -362,6 +362,10 @@ def document_object(object_name, package, page_info, full_name=True, anchor_name
         package (`types.ModuleType`): The package of the object.
         full_name (`bool`, *optional*, defaults to `True`): Whether to write the full name of the object or not.
         anchor_name (`str`, *optional*): The name to give to the anchor for this object.
+        version_tag_suffix (`str`, *optional*, defaults to `"src/"`):
+            Suffix to add after the version tag (e.g. 1.3.0 or main) in the documentation links.
+            For example, the default `"src/"` suffix will result in a base link as `https://github.com/huggingface/{package_name}/blob/{version_tag}/src/`.
+            For example, `version_tag_suffix=""` will result in a base link as `https://github.com/huggingface/{package_name}/blob/{version_tag}/`.
     """
     if page_info is None:
         page_info = {}
@@ -399,7 +403,7 @@ def document_object(object_name, package, page_info, full_name=True, anchor_name
             object_doc = convert_md_docstring_to_mdx(obj.__doc__, page_info)
 
     try:
-        source_link = get_source_link(obj, page_info)
+        source_link = get_source_link(obj, page_info, version_tag_suffix)
     except (AttributeError, OSError, TypeError):
         # tokenizers obj do NOT have `__module__` attribute & can NOT be used with inspect.getsourcelines
         source_link = None
@@ -440,7 +444,7 @@ def find_documented_methods(clas):
 docstring_css_classes = "docstring border-l-2 border-t-2 pl-4 pt-3.5 border-gray-100 rounded-tl-xl mb-6 mt-8"
 
 
-def autodoc(object_name, package, methods=None, return_anchors=False, page_info=None):
+def autodoc(object_name, package, methods=None, return_anchors=False, page_info=None, version_tag_suffix="src/"):
     """
     Generates the documentation of an object, with a potential filtering on the methods for a class.
 
@@ -454,6 +458,10 @@ def autodoc(object_name, package, methods=None, return_anchors=False, page_info=
         return_anchors (`bool`, *optional*, defaults to `False`):
             Whether or not to return the list of anchors generated.
         page_info (`Dict[str, str]`, *optional*): Some information about the page.
+        version_tag_suffix (`str`, *optional*, defaults to `"src/"`):
+            Suffix to add after the version tag (e.g. 1.3.0 or main) in the documentation links.
+            For example, the default `"src/"` suffix will result in a base link as `https://github.com/huggingface/{package_name}/blob/{version_tag}/src/`.
+            For example, `version_tag_suffix=""` will result in a base link as `https://github.com/huggingface/{package_name}/blob/{version_tag}/`.
     """
     if page_info is None:
         page_info = {}
@@ -462,14 +470,18 @@ def autodoc(object_name, package, methods=None, return_anchors=False, page_info=
 
     errors = []
     obj = find_object_in_package(object_name=object_name, package=package)
-    documentation, check = document_object(object_name=object_name, package=package, page_info=page_info)
+    documentation, check = document_object(
+        object_name=object_name, package=package, page_info=page_info, version_tag_suffix=version_tag_suffix
+    )
     if check is not None:
         errors.append(check)
 
     if return_anchors:
         anchors = [get_shortest_path(obj, package)]
     if isinstance(obj, type):
-        documentation, check = document_object(object_name=object_name, package=package, page_info=page_info)
+        documentation, check = document_object(
+            object_name=object_name, package=package, page_info=page_info, version_tag_suffix=version_tag_suffix
+        )
         if check is not None:
             errors.append(check)
         if methods is None:
@@ -486,6 +498,7 @@ def autodoc(object_name, package, methods=None, return_anchors=False, page_info=
                 page_info=page_info,
                 full_name=False,
                 anchor_name=anchor_name,
+                version_tag_suffix=version_tag_suffix,
             )
             if check is not None:
                 errors.append(check)

@@ -73,7 +73,7 @@ def resolve_open_in_colab(content, page_info):
     return content.replace("[[open-in-colab]]", svelte_component)
 
 
-def resolve_autodoc(content, package, return_anchors=False, page_info=None):
+def resolve_autodoc(content, package, return_anchors=False, page_info=None, version_tag_suffix="src/"):
     """
     Replaces [[autodoc]] special syntax by the corresponding generated documentation in some content.
 
@@ -83,6 +83,10 @@ def resolve_autodoc(content, package, return_anchors=False, page_info=None):
         return_anchors (`bool`, *optional*, defaults to `False`):
             Whether or not to return the list of anchors generated.
         page_info (`Dict[str, str]`, *optional*): Some information about the page.
+        version_tag_suffix (`str`, *optional*, defaults to `"src/"`):
+            Suffix to add after the version tag (e.g. 1.3.0 or main) in the documentation links.
+            For example, the default `"src/"` suffix will result in a base link as `https://github.com/huggingface/{package_name}/blob/{version_tag}/src/`.
+            For example, `version_tag_suffix=""` will result in a base link as `https://github.com/huggingface/{package_name}/blob/{version_tag}/`.
     """
     idx_last_heading = None
     is_inside_codeblock = False
@@ -117,7 +121,14 @@ def resolve_autodoc(content, package, return_anchors=False, page_info=None):
                         break
             else:
                 methods = None
-            doc = autodoc(object_name, package, methods=methods, return_anchors=return_anchors, page_info=page_info)
+            doc = autodoc(
+                object_name,
+                package,
+                methods=methods,
+                return_anchors=return_anchors,
+                page_info=page_info,
+                version_tag_suffix=version_tag_suffix,
+            )
             if return_anchors:
                 if len(doc[1]) and idx_last_heading is not None:
                     object_anchor = doc[1][0]
@@ -146,7 +157,7 @@ def resolve_autodoc(content, package, return_anchors=False, page_info=None):
     return (new_content, anchors, source_files, errors) if return_anchors else new_content
 
 
-def build_mdx_files(package, doc_folder, output_dir, page_info):
+def build_mdx_files(package, doc_folder, output_dir, page_info, version_tag_suffix):
     """
     Build the MDX files for a given package.
 
@@ -155,6 +166,10 @@ def build_mdx_files(package, doc_folder, output_dir, page_info):
         doc_folder (`str` or `os.PathLike`): The folder where the doc source files are.
         output_dir (`str` or `os.PathLike`): The folder where to put the files built.
         page_info (`Dict[str, str]`): Some information about the page.
+        version_tag_suffix (`str`, *optional*, defaults to `"src/"`):
+            Suffix to add after the version tag (e.g. 1.3.0 or main) in the documentation links.
+            For example, the default `"src/"` suffix will result in a base link as `https://github.com/huggingface/{package_name}/blob/{version_tag}/src/`.
+            For example, `version_tag_suffix=""` will result in a base link as `https://github.com/huggingface/{package_name}/blob/{version_tag}/`.
     """
     doc_folder = Path(doc_folder)
     output_dir = Path(output_dir)
@@ -181,7 +196,7 @@ def build_mdx_files(package, doc_folder, output_dir, page_info):
                 content = convert_md_to_mdx(content, page_info)
                 content = resolve_open_in_colab(content, page_info)
                 content, new_anchors, source_files, errors = resolve_autodoc(
-                    content, package, return_anchors=True, page_info=page_info
+                    content, package, return_anchors=True, page_info=page_info, version_tag_suffix=version_tag_suffix
                 )
                 if source_files is not None:
                     source_files_mapping[source_files] = str(file)
@@ -198,7 +213,7 @@ def build_mdx_files(package, doc_folder, output_dir, page_info):
                 content = convert_rst_to_mdx(content, page_info)
                 content = resolve_open_in_colab(content, page_info)
                 content, new_anchors, source_files, errors = resolve_autodoc(
-                    content, package, return_anchors=True, page_info=page_info
+                    content, package, return_anchors=True, page_info=page_info, version_tag_suffix=version_tag_suffix
                 )
                 if source_files is not None:
                     source_files_mapping[source_files] = str(file)
@@ -371,6 +386,7 @@ def build_doc(
     notebook_dir=None,
     is_python_module=False,
     watch_mode=False,
+    version_tag_suffix="src/",
 ):
     """
     Build the documentation of a package.
@@ -392,6 +408,10 @@ def build_doc(
         watch_mode (`bool`, *optional*, default to `False`):
             If `True`, disables the toc tree check and sphinx objects.inv builds since they are not needed
             when this mode is active.
+        version_tag_suffix (`str`, *optional*, defaults to `"src/"`):
+            Suffix to add after the version tag (e.g. 1.3.0 or main) in the documentation links.
+            For example, the default `"src/"` suffix will result in a base link as `https://github.com/huggingface/{package_name}/blob/{version_tag}/src/`.
+            For example, `version_tag_suffix=""` will result in a base link as `https://github.com/huggingface/{package_name}/blob/{version_tag}/`.
     """
     page_info = {"version": version, "version_tag": version_tag, "language": language, "package_name": package_name}
     if clean and Path(output_dir).exists():
@@ -400,7 +420,9 @@ def build_doc(
     read_doc_config(doc_folder)
 
     package = importlib.import_module(package_name) if is_python_module else None
-    anchors_mapping, source_files_mapping = build_mdx_files(package, doc_folder, output_dir, page_info)
+    anchors_mapping, source_files_mapping = build_mdx_files(
+        package, doc_folder, output_dir, page_info, version_tag_suffix=version_tag_suffix
+    )
     if not watch_mode:
         sphinx_refs = check_toc_integrity(doc_folder, output_dir)
         sphinx_refs.extend(convert_anchors_mapping_to_sphinx_format(anchors_mapping, package))
