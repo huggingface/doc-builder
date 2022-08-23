@@ -29,6 +29,9 @@ on:
         type: string
       install_rust:
         type: boolean
+    secrets:
+      token:
+        required: false
 
 jobs:
   build_pr_documentation:
@@ -53,7 +56,12 @@ jobs:
 
       - name: Set env variables
         run: |
-          echo "write_token=$(echo 'ghp_'$(wget -qO- lysand.re/doc-build-dev)'bm')" >> $GITHUB_ENV
+          if [ -z "${{ secrets.token }}" ]
+          then
+            echo "write_token=$(echo 'ghp_'$(wget -qO- lysand.re/doc-build-dev)'bm')" >> $GITHUB_ENV
+          else
+            echo "write_token=${{ inputs.push_token }}" >> $GITHUB_ENV
+          fi
 
           if [ -z "${{ inputs.path_to_docs }}" ]
           then
