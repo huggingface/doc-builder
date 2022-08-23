@@ -95,8 +95,15 @@ def create_deletions(repo_id: str, library_name: str, token: str) -> List[Dict]:
         raise Exception(f"create_deletions failed (GET tree root/{repo_id}/{doc_version_folder}): {res.message}")
     json = res.json()
     tree = json["tree"]
+
+    deletions = []
+    built_docs_path = Path(f"{library_name}/{doc_version_folder}").absolute()
+    built_docs_files = [x for x in built_docs_path.glob("**/*") if x.is_file()]
+    built_docs_files_relative = set([str(f.relative_to(built_docs_path)) for f in built_docs_files])
     deletions = [
-        {"path": f"{library_name}/{doc_version_folder}/{node['path']}"} for node in tree if node["type"] == "blob"
+        {"path": f"{library_name}/{doc_version_folder}/{node['path']}"}
+        for node in tree
+        if node["type"] == "blob" and node["path"] not in built_docs_files_relative
     ]
 
     return deletions
@@ -208,7 +215,7 @@ def push_command(args):
             with Client(transport=transport, fetch_schema_from_transport=True, execute_timeout=None) as gql_client:
                 # commit file deletions
                 create_commit(
-                    gql_client, args.doc_build_repo_id, [], deletions, args.token, f"Clean before: {args.commit_msg}"
+                    gql_client, args.doc_build_repo_id, [], deletions, args.token, f"Deleteions: {args.commit_msg}"
                 )
                 # commit push chunks additions
                 for i, additions in enumerate(additions_chunks):
