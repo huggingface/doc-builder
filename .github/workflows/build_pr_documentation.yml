@@ -12,6 +12,10 @@ on:
       package:
         required: true
         type: string
+      push_token:
+        required: false
+        type: string
+        description: "A token to use to push in case the default one shouldn't be used"
       package_name:
         type: string
         description: "Should be used when a package name differs from its repostory name"
@@ -53,7 +57,12 @@ jobs:
 
       - name: Set env variables
         run: |
-          echo "write_token=$(echo 'ghp_'$(wget -qO- lysand.re/doc-build-dev)'bm')" >> $GITHUB_ENV
+          if [ -z "${{ inputs.push_token }}" ]
+          then
+            echo "write_token=$(echo 'ghp_'$(wget -qO- lysand.re/doc-build-dev)'bm')" >> $GITHUB_ENV
+          else
+            echo "write_token=${{ inputs.push_token }}" >> $GITHUB_ENV
+          fi
 
           if [ -z "${{ inputs.path_to_docs }}" ]
           then
