@@ -53,7 +53,7 @@
 				src="https://colab.research.google.com/assets/colab-badge.svg"
 			/>
 		</a>
-	{:else}
+	{:else if googleColabOptions.length > 1}
 		<Dropdown btnLabel="" classNames="colab-dropdown" noBtnClass useDeprecatedJS={false}>
 			<slot slot="button">
 				<img
@@ -83,7 +83,7 @@
 				src="https://studiolab.sagemaker.aws/studiolab.svg"
 			/>
 		</a>
-	{:else}
+	{:else if awsStudioOptions.length > 1}
 		<Dropdown btnLabel="" classNames="colab-dropdown" noBtnClass useDeprecatedJS={false}>
 			<slot slot="button">
 				<img
