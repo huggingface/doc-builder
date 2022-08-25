@@ -37,33 +37,9 @@ jobs:
             echo "package_name=${{ inputs.package_name }}" >> $GITHUB_ENV
           fi
 
-      - name: Setup environment
-        run: |
-          rm -rf doc-build-dev
-          git clone --depth 1 https://HuggingFaceDocBuilderDev:${{ env.write_token }}@github.com/huggingface/doc-build-dev
-
-      - name: Setup git
-        run: |
-          git config --global user.name "Hugging Face Doc Builder"
-          git config --global user.email docs@huggingface.co
-
       - name: Push to repositories
         run: |
-          cd doc-build-dev
-          git pull
-          rm -rf ${{ env.package_name }}/pr_${{ inputs.pr_number }}
-          ls ${{ env.package_name }}
-
-          git status
-          if [[ `git status --porcelain` ]]; then
-            git add .
-            git commit -m "Closed PR ${{ inputs.pr_number }} in ${{ env.package_name }}"
-            git push origin main ||
-            (echo "Failed on the first try, rebasing and pushing again" && git pull --rebase && git push origin main) ||
-            (echo "Failed on the second try, rebasing and pushing again" && git pull --rebase && git push origin main)
-          else
-            echo "Branch was already deleted, nothing to do."
-          fi
+          doc-builder push ${{ env.package_name }} --doc_build_repo_id "huggingface/doc-build-dev" --token ${{ env.write_token }} --commit_msg "Closed PR ${{ inputs.pr_number }} in ${{ env.package_name }}" --n_retries 5 --doc_version_folder "pr_${{ inputs.pr_number }}" --is_remove
         shell: bash
 
       - name: Find doc comment
