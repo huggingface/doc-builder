@@ -60,7 +60,9 @@ def create_additions(library_name: str) -> List[Dict]:
     return additions
 
 
-def create_deletions(repo_id: str, library_name: str, token: str) -> List[Dict]:
+def create_deletions(
+    repo_id: str, library_name: str, token: str, doc_version_folder: Optional[str] = None, is_delete_all: bool = False
+) -> List[Dict]:
     """
     Given `repo_id/library_name` path, returns [FileDeletion!]!: [{path: "some_path"}, ...]
     see more here: https://docs.github.com/en/graphql/reference/input-objects#filechanges
@@ -76,9 +78,12 @@ def create_deletions(repo_id: str, library_name: str, token: str) -> List[Dict]:
     url = node["url"]
 
     # 2. find url for `doc-build-dev/{library_name}/{doc_version}` ex: doc-build-dev/accelerate/pr_365
-    root_folder = Path(library_name)
-    doc_version_folder = next(filter(lambda x: not x.is_file(), root_folder.glob("*")), None).relative_to(root_folder)
-    doc_version_folder = str(doc_version_folder)
+    if doc_version_folder is None:
+        root_folder = Path(library_name)
+        doc_version_folder = next(filter(lambda x: not x.is_file(), root_folder.glob("*")), None).relative_to(
+            root_folder
+        )
+        doc_version_folder = str(doc_version_folder)
     res = requests.get(url, headers={"Authorization": f"bearer {token}"})
     if res.status_code != 200:
         raise Exception(f"create_deletions failed (GET tree root/{repo_id}): {res.message}")
@@ -96,17 +101,24 @@ def create_deletions(repo_id: str, library_name: str, token: str) -> List[Dict]:
     json = res.json()
     tree = json["tree"]
 
-    # 4. list paths in currently built doc folder
-    built_docs_path = Path(f"{library_name}/{doc_version_folder}").absolute()
-    built_docs_files = [x for x in built_docs_path.glob("**/*") if x.is_file()]
-    built_docs_files_relative = set([str(f.relative_to(built_docs_path)) for f in built_docs_files])
+    if is_delete_all:
+        # 4. deletios for all files found in current git tree
+        deletions = [
+            {"path": f"{library_name}/{doc_version_folder}/{node['path']}"} for node in tree if node["type"] == "blob"
+        ]
+    else:
+        # only delete files that were not part of current doc build
+        # 4. list paths in currently built doc folder
+        built_docs_path = Path(f"{library_name}/{doc_version_folder}").absolute()
+        built_docs_files = [x for x in built_docs_path.glob("**/*") if x.is_file()]
+        built_docs_files_relative = set([str(f.relative_to(built_docs_path)) for f in built_docs_files])
 
-    # 5. deletions = set difference between step 3 & 4
-    deletions = [
-        {"path": f"{library_name}/{doc_version_folder}/{node['path']}"}
-        for node in tree
-        if node["type"] == "blob" and node["path"] not in built_docs_files_relative
-    ]
+        # 5. deletions = set difference between step 3 & 4
+        deletions = [
+            {"path": f"{library_name}/{doc_version_folder}/{node['path']}"}
+            for node in tree
+            if node["type"] == "blob" and node["path"] not in built_docs_files_relative
+        ]
 
     return deletions
 
@@ -188,16 +200,25 @@ def create_commit(
 
 def push_command(args):
     """
-    Commit file additions using Github GraphQL rather than `git`.
+    Commit file additions and/or deletions using Github GraphQL rather than `git`.
     Usage: doc-builder push $args
     """
     if args.n_retries < 1:
         raise ValueError(f"CLI arg `n_retries` MUST be positive & non-zero; supplied value was {args.n_retries}")
+    if args.is_remove:
+        push_command_remove(args)
+    else:
+        push_command_add(args)
 
+
+def push_command_add(args):
+    """
+    Commit file changes (additions & deletions) using Github GraphQL rather than `git`.
+    Used in: build_main_documentation.yml & build_pr_documentation.yml
+    """
     max_n_retries = args.n_retries + 1
     number_of_retries = args.n_retries
     n_seconds_sleep = 5
-
     # file deletions
     deletions = create_deletions(args.doc_build_repo_id, args.library_name, args.token)
     # file additions
@@ -237,6 +258,38 @@ def push_command(args):
     logging.debug(f"commit_additions took {time_end-time_start:.4f} seconds or {(time_end-time_start)/60.0:.2f} mins")
 
 
+def push_command_remove(args):
+    """
+    Commit file deletions only using Github GraphQL rather than `git`.
+    Used in: delete_doc_comment.yml
+    """
+    max_n_retries = args.n_retries + 1
+    number_of_retries = args.n_retries
+    n_seconds_sleep = 5
+    doc_version_folder = args.doc_version
+    # file deletions
+    deletions = create_deletions(args.doc_build_repo_id, args.library_name, args.token, doc_version_folder, True)
+
+    while number_of_retries:
+        try:
+            # Create Github GraphQL client
+            transport = RequestsHTTPTransport(
+                url="https://api.github.com/graphql", headers={"Authorization": f"bearer {args.token}"}, verify=True
+            )
+            with Client(transport=transport, fetch_schema_from_transport=True, execute_timeout=None) as gql_client:
+                # commit file deletions
+                create_commit(gql_client, args.doc_build_repo_id, [], deletions, args.token, args.commit_msg)
+            break
+        except Exception as e:
+            number_of_retries -= 1
+            print(f"createCommitOnBranch error occurred: {e}")
+            if number_of_retries:
+                print(f"Failed on try #{max_n_retries-number_of_retries}, pushing again in {n_seconds_sleep} seconds")
+                sleep(n_seconds_sleep)
+            else:
+                raise RuntimeError("create_commit additions failed") from e
+
+
 def push_command_parser(subparsers=None):
     if subparsers is not None:
         parser = subparsers.add_parser("push")
@@ -261,6 +314,17 @@ def push_command_parser(subparsers=None):
         default="Github GraphQL createcommitonbranch commit",
     )
     parser.add_argument("--n_retries", type=int, help="Number of push retries in the event of conflict", default=1)
+    parser.add_argument(
+        "--doc_version",
+        type=str,
+        default=None,
+        help="Version of the generated documentation.",
+    )
+    parser.add_argument(
+        "--is_remove",
+        action="store_true",
+        help="Whether or not to remove entire folder ('--doc_version_folder') from git tree",
+    )
 
     if subparsers is not None:
         parser.set_defaults(func=push_command)
