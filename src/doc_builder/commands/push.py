@@ -74,11 +74,13 @@ def create_deletions(repo_id: str, library_name: str, token: str) -> List[Dict]:
     json = res.json()
     node = next(filter(lambda node: node["path"] == library_name, json["tree"]), None)
     url = node["url"]
+    print("Step 1 url:", url)
 
     # 2. find url for `doc-build-dev/{library_name}/{doc_version}` ex: doc-build-dev/accelerate/pr_365
     root_folder = Path(library_name)
     doc_version_folder = next(root_folder.glob("*")).relative_to(root_folder)
     doc_version_folder = str(doc_version_folder)
+    print("Step 2 doc_version_folder:", doc_version_folder)
     res = requests.get(url, headers={"Authorization": f"bearer {token}"})
     if res.status_code != 200:
         raise Exception(f"create_deletions failed (GET tree root/{repo_id}): {res.message}")
@@ -88,6 +90,7 @@ def create_deletions(repo_id: str, library_name: str, token: str) -> List[Dict]:
         # there is no need to delete since the path does not exist
         return []
     url = node["url"]
+    print("Step 2 url:", url)
 
     # 3. list paths in `doc-build-dev/{library_name}/{doc_version}/**/*` ex: doc-build-dev/accelerate/pr_365/**/*
     res = requests.get(f"{url}?recursive=true", headers={"Authorization": f"bearer {token}"})
