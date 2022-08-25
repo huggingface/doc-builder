@@ -21,6 +21,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - uses: actions/checkout@v2
+        with:
+          repository: 'huggingface/doc-builder'
+          path: doc-builder
+
       - name: Set env variables
         run: |
           if [ -z "${{ secrets.token }}" ]
@@ -36,6 +41,15 @@ jobs:
           else
             echo "package_name=${{ inputs.package_name }}" >> $GITHUB_ENV
           fi
+
+      - name: Setup environment
+        shell: bash
+        run: |
+          pip uninstall -y doc-builder
+          cd doc-builder
+          git pull origin main
+          pip install .
+          cd ..
 
       - name: Push to repositories
         run: |
