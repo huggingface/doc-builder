@@ -60,60 +60,6 @@ def create_additions(library_name: str) -> List[Dict]:
     return additions
 
 
-def create_deletions(repo_id: str, library_name: str, token: str) -> List[Dict]:
-    """
-    Given `repo_id/library_name` path, returns [FileDeletion!]!: [{path: "some_path"}, ...]
-    see more here: https://docs.github.com/en/graphql/reference/input-objects#filechanges
-    """
-    # 1. find url for `doc-build-dev/{library_name}` ex: doc-build-dev/accelerate
-    res = requests.get(
-        f"https://api.github.com/repos/{repo_id}/git/trees/heads/main", headers={"Authorization": f"bearer {token}"}
-    )
-    if res.status_code != 200:
-        raise Exception(f"create_deletions failed (GET tree root): {res.message}")
-    json = res.json()
-    node = next(filter(lambda node: node["path"] == library_name, json["tree"]), None)
-    url = node["url"]
-    print("Step 1 url:", url)
-
-    # 2. find url for `doc-build-dev/{library_name}/{doc_version}` ex: doc-build-dev/accelerate/pr_365
-    root_folder = Path(library_name)
-    doc_version_folder = next(root_folder.glob("*")).relative_to(root_folder)
-    doc_version_folder = str(doc_version_folder)
-    print("Step 2 doc_version_folder:", doc_version_folder)
-    res = requests.get(url, headers={"Authorization": f"bearer {token}"})
-    if res.status_code != 200:
-        raise Exception(f"create_deletions failed (GET tree root/{repo_id}): {res.message}")
-    json = res.json()
-    node = next(filter(lambda node: node["path"] == doc_version_folder, json["tree"]), None)
-    if node is None:
-        # there is no need to delete since the path does not exist
-        return []
-    url = node["url"]
-    print("Step 2 url:", url)
-
-    # 3. list paths in `doc-build-dev/{library_name}/{doc_version}/**/*` ex: doc-build-dev/accelerate/pr_365/**/*
-    res = requests.get(f"{url}?recursive=true", headers={"Authorization": f"bearer {token}"})
-    if res.status_code != 200:
-        raise Exception(f"create_deletions failed (GET tree root/{repo_id}/{doc_version_folder}): {res.message}")
-    json = res.json()
-    tree = json["tree"]
-
-    # 4. list paths in currently built doc folder
-    built_docs_path = Path(f"{library_name}/{doc_version_folder}").absolute()
-    built_docs_files = [x for x in built_docs_path.glob("**/*") if x.is_file()]
-    built_docs_files_relative = set([str(f.relative_to(built_docs_path)) for f in built_docs_files])
-
-    # 5. deletions = set difference between step 3 & 4
-    deletions = [
-        {"path": f"{library_name}/{doc_version_folder}/{node['path']}"}
-        for node in tree
-        if node["type"] == "blob" and node["path"] not in built_docs_files_relative
-    ]
-
-    return deletions
-
-
 MAX_CHUNK_LEN = 3e7  # 30 Megabytes
 
 
@@ -149,7 +95,6 @@ CREATE_COMMIT_ON_BRANCH_GRAPHQL = """
 mutation (
   $repo_id: String!
   $additions: [FileAddition!]!
-  $deletions: [FileDeletion!]!
   $head_oid: GitObjectID!
   $commit_msg: String!
 ) {
@@ -157,7 +102,7 @@ mutation (
     input: {
       branch: { repositoryNameWithOwner: $repo_id, branchName: "main" }
       message: { headline: $commit_msg }
-      fileChanges: { additions: $additions, deletions: $deletions }
+      fileChanges: { additions: $additions }
       expectedHeadOid: $head_oid
     }
   ) {
@@ -167,9 +112,7 @@ mutation (
 """
 
 
-def create_commit(
-    client: Client, repo_id: str, additions: List[Dict], deletions: List[Dict], token: str, commit_msg: str
-):
+def create_commit(client: Client, repo_id: str, additions: List[Dict], token: str, commit_msg: str):
     """
     Commits additions and/or deletions to a repository using Github GraphQL mutation `createCommitOnBranch`
     see more here: https://docs.github.com/en/graphql/reference/mutations#createcommitonbranch
@@ -179,7 +122,6 @@ def create_commit(
     head_oid = get_head_oid(repo_id, token)
     params = {
         "additions": additions,
-        "deletions": deletions,
         "repo_id": repo_id,
         "head_oid": head_oid,
         "commit_msg": commit_msg,
@@ -201,9 +143,7 @@ def push_command(args):
     number_of_retries = args.n_retries
     n_seconds_sleep = 5
 
-    # file deletions
-    deletions = create_deletions(args.doc_build_repo_id, args.library_name, args.token)
-    # file additions
+    # commit file additions
     time_start = time()
     additions = create_additions(args.library_name)
     time_end = time()
@@ -218,13 +158,9 @@ def push_command(args):
                 url="https://api.github.com/graphql", headers={"Authorization": f"bearer {args.token}"}, verify=True
             )
             with Client(transport=transport, fetch_schema_from_transport=True, execute_timeout=None) as gql_client:
-                # commit file deletions
-                create_commit(
-                    gql_client, args.doc_build_repo_id, [], deletions, args.token, f"Deleteions: {args.commit_msg}"
-                )
                 # commit push chunks additions
                 for i, additions in enumerate(additions_chunks):
-                    create_commit(gql_client, args.doc_build_repo_id, additions, [], args.token, args.commit_msg)
+                    create_commit(gql_client, args.doc_build_repo_id, additions, args.token, args.commit_msg)
                     print(f"Committed additions chunk: {i+1}/{len(additions_chunks)}")
             break
         except Exception as e:
