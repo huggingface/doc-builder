@@ -323,7 +323,7 @@ def push_command_parser(subparsers=None):
     parser.add_argument(
         "--is_remove",
         action="store_true",
-        help="Whether or not to remove entire folder ('--doc_version_folder') from git tree",
+        help="Whether or not to remove entire folder ('--doc_version') from git tree",
     )
 
     if subparsers is not None:
