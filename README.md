@@ -324,6 +324,26 @@ Here's an example for tuple return, comprising several objects:
         - **prediction_scores** (`torch.FloatTensor` of shape `(batch_size, sequence_length, config.vocab_size)`) --
           Prediction scores of the language modeling head (scores for each vocabulary token before SoftMax).
 ```
+Here's an example with `Raise`:
+```
+    Args:
+         config ([`BertConfig`]):
+            Model configuration class with all the parameters of the model.
+
+            Initializing with a config file does not load the weights associated with the model, only the
+            configuration. Check out the [`~PreTrainedModel.from_pretrained`] method to load the model weights.
+
+    Raises:
+        `pa.ArrowInvalidError`: if the arrow data casting fails
+        TypeError: if the target type is not supported according, e.g.
+            - point1
+            - point2
+        [`HTTPError`](https://2.python-requests.org/en/master/api/#requests.HTTPError) if credentials are invalid
+        [`HTTPError`](https://2.python-requests.org/en/master/api/#requests.HTTPError) if connection got lost
+
+    Returns:
+        `List[int]`: A list of integers in the range [0, 1] --- 1 for a special token, 0 for a sequence token.
+```
 
 There are directives for `Added`, `Changed`, & `Deprecated`.
 Here's an example:
