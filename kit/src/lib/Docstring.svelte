@@ -19,6 +19,9 @@
 	}[];
 	export let returnDescription: string;
 	export let returnType: string;
+	export let isYield = false;
+	export let raiseDescription: string;
+	export let raiseType: string;
 	export let source: string | undefined = undefined;
 	export let hashlink: string | undefined;
 	export let isGetSetDescriptor = false;
@@ -32,6 +35,8 @@
 			const { name, description } = element;
 			return { ...acc, [name]: description };
 		}, {}) || {};
+	const returnsTitle = isYield ? "Yields" : "Returns";
+	const returnsAnchor = returnsTitle.toLowerCase();
 	const bgHighlightClass = "bg-yellow-50 dark:bg-[#494a3d]";
 
 	onMount(() => {
@@ -141,7 +146,7 @@
 						? 'cursor-pointer'
 						: 'cursor-default'}"
 					on:click|preventDefault|stopPropagation={() =>
-						onClick(`${anchor}.returns`, !!returnDescription)}
+						onClick(`${anchor}.${returnsAnchor}`, !!returnDescription)}
 					>{@html replaceParagraphWithSpan(returnType)}</span
 				>
 			{/if}
@@ -214,19 +219,32 @@
 		{/if}
 		{#if !!returnType}
 			<div
+				id={`${anchor}.${returnsAnchor}`}
 				class="flex items-center font-semibold space-x-3 text-base !mt-0 !mb-0 text-gray-800 rounded {hashlink ===
 				anchor
 					? bgHighlightClass
 					: ''}"
-				id={`${anchor}.returns`}
 			>
-				<p class="text-base">Returns</p>
+				<p class="text-base">{returnsTitle}</p>
 				{#if !!returnType}
 					{@html returnType}
 				{/if}
 				<span class="flex-auto border-t-2 border-gray-100 dark:border-gray-700" />
 			</div>
 			<p class="text-base">{@html returnDescription || ""}</p>
+		{/if}
+		{#if !!raiseType}
+			<div
+				class="flex items-center font-semibold space-x-3 text-base !mt-0 !mb-0 text-gray-800"
+				id={`${anchor}.raises`}
+			>
+				<p class="text-base">Raises</p>
+				{#if !!raiseType}
+					{@html raiseType}
+				{/if}
+				<span class="flex-auto border-t-2 border-gray-100 dark:border-gray-700" />
+			</div>
+			<p class="text-base">{@html raiseDescription || ""}</p>
 		{/if}
 	</div>
 </div>
