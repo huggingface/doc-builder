@@ -348,3 +348,46 @@ Here's an example:
 
             </Deprecated>
 ```
+
+### Developing svelte locally
+
+We use svelte components for doc UI ([Tip component](https://github.com/huggingface/doc-builder/blob/890df105f4173fb8dc299ad6ba3e4db378d2e53d/kit/src/lib/Tip.svelte), [Docstring component](https://github.com/huggingface/doc-builder/blob/a9598feb5a681a3817e58ef8d792349e85a30d1e/kit/src/lib/Docstring.svelte), etc.).
+
+Follow these steps to develop svelte locally:
+1. Create this file if it doesn't already exist: `doc-builder/kit/src/routes/_toctree.yml`. Contents should be:
+```
+- sections: 
+  - local: index
+    title: Index page
+  title: Index page
+```
+2. Create this file if it doesn't already exist: `doc-builder/kit/src/routes/index.mdx`. Contents should be whatever you'd like to test. For example:
+```
+<script lang="ts">
+import Tip from "$lib/Tip.svelte";
+import Youtube from "$lib/Youtube.svelte";
+import Docstring from "$lib/Docstring.svelte";
+import CodeBlock from "$lib/CodeBlock.svelte";
+import CodeBlockFw from "$lib/CodeBlockFw.svelte";
+</script>
+
+<Tip>
+
+  [Here](https://myurl.com)
+
+</Tip>
+
+## Some heading
+And some text [Here](https://myurl.com)
+
+Physics is the natural science that studies matter,[a] its fundamental constituents, its motion and behavior through space and time, and the related entities of energy and force.[2] Physics is one of the most fundamental scientific disciplines, with its main goal being to understand how the universe behaves.[b][3][4][5] A scientist who specializes in the field of physics is called a physicist.
+```
+3. Install dependencies & run dev mode
+```bash
+cd doc-builder/kit
+npm ci
+npm run dev -- --open
+```
+4. Start developing. See svelte files in `doc-builder/kit/src/lib` for reference. The flow should be:
+    1. Create a svelte component in `doc-builder/kit/src/lib`
+    2. Import it & test it in `doc-builder/kit/src/routes/index.mdx`
