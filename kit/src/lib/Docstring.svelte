@@ -219,13 +219,11 @@
 		{/if}
 		{#if !!returnType}
 			<div
-				class="flex items-center font-semibold space-x-3 text-base !mt-0 !mb-0 text-gray-800"
 				id={`${anchor}.${returnsAnchor}`}
 				class="flex items-center font-semibold space-x-3 text-base !mt-0 !mb-0 text-gray-800 rounded {hashlink ===
 				anchor
 					? bgHighlightClass
 					: ''}"
-				id={`${anchor}.${returnsAnchor}`}
 			>
 				<p class="text-base">{returnsTitle}</p>
 				{#if !!returnType}
