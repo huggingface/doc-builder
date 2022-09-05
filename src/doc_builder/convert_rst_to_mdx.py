@@ -438,7 +438,8 @@ def parse_rst_docstring(docstring):
                     if md_link:
                         raised_error = md_link[1]
                         raised_error = re.sub(r"^\s*`?([\w\.]*)`?$", r"``\1``", raised_error)
-                    raised_errors.append(raised_error)
+                    if raised_error not in raised_errors:
+                        raised_errors.append(raised_error)
                     idx += 1
                     while idx < len(lines) and (is_empty_line(lines[idx]) or find_indent(lines[idx]) > return_indent):
                         idx += 1

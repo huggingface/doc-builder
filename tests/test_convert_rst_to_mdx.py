@@ -511,6 +511,7 @@ Raises:
         - point1
         - point2
     [`HTTPError`](https://2.python-requests.org/en/master/api/#requests.HTTPError) if credentials are invalid
+    [`HTTPError`](https://2.python-requests.org/en/master/api/#requests.HTTPError) if connection got lost
 
 Returns:
     :obj:`str` or :obj:`bool`: some result
@@ -539,6 +540,7 @@ docstring
         - point1
         - point2
 - [`HTTPError`](https://2.python-requests.org/en/master/api/#requests.HTTPError) -- if credentials are invalid
+- [`HTTPError`](https://2.python-requests.org/en/master/api/#requests.HTTPError) -- if connection got lost
 
 </raises>
 
