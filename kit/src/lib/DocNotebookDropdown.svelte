@@ -44,6 +44,7 @@
 <svelte:window on:resize={onResize} />
 
 <div class="flex space-x-1 {classNames}" bind:this={dropdownEl}>
+	<slot name="alwaysVisible"/>
 	{#if googleColabOptions.length === 1}
 		<a href={googleColabOptions[0].value} target="_blank">
 			<img
@@ -52,7 +53,7 @@
 				src="https://colab.research.google.com/assets/colab-badge.svg"
 			/>
 		</a>
-	{:else}
+	{:else if googleColabOptions.length > 1}
 		<Dropdown btnLabel="" classNames="colab-dropdown" noBtnClass useDeprecatedJS={false}>
 			<slot slot="button">
 				<img
@@ -82,7 +83,7 @@
 				src="https://studiolab.sagemaker.aws/studiolab.svg"
 			/>
 		</a>
-	{:else}
+	{:else if awsStudioOptions.length > 1}
 		<Dropdown btnLabel="" classNames="colab-dropdown" noBtnClass useDeprecatedJS={false}>
 			<slot slot="button">
 				<img

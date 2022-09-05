@@ -22,6 +22,9 @@ export const docstringPreprocess = {
 		const REGEX_RAISETYPE = /<raisederrors>(((?!<raisederrors>).)*)<\/raisederrors>/ms;
 		const REGEX_SOURCE = /<source>(((?!<source>).)*)<\/source>/ms;
 		const REGEX_TIP = /<Tip( warning={true})?>(((?!<Tip( warning={true})?>).)*)<\/Tip>/gms;
+		const REGEX_CHANGED =
+			/<(Added|Changed|Deprecated) version="([0-9.v]+)" ?\/?>((((?!<(Added|Changed|Deprecated) version="([0-9.v]+)"\/?>).)*)<\/(Added|Changed|Deprecated)>)?/gms;
+		const REGEX_IS_GETSET_DESC = /<isgetsetdescriptor>/ms;
 
 		content = await replaceAsync(content, REGEX_DOCSTRING, async (_, docstringBody) => {
 			docstringBody = renderSvelteChars(docstringBody);
@@ -29,21 +32,18 @@ export const docstringPreprocess = {
 			const name = docstringBody.match(REGEX_NAME)[1];
 			const anchor = docstringBody.match(REGEX_ANCHOR)[1];
 			const signature = docstringBody.match(REGEX_SIGNATURE)[1];
-			const source = docstringBody.match(REGEX_SOURCE)[1];
 
 			let svelteComponent = `<Docstring name={${JSON.stringify(
 				unescapeUnderscores(name)
-			)}} anchor={${JSON.stringify(anchor)}} parameters={${signature}} source={${JSON.stringify(
-				source
-			)}} `;
+			)}} anchor={${JSON.stringify(anchor)}} parameters={${signature}} `;
 
 			if (docstringBody.match(REGEX_PARAMSDESC)) {
 				let content = docstringBody.match(REGEX_PARAMSDESC)[1];
 				// escape }} by adding void character `&zwnj;` in between
 				content = content.replace(/}}/g, "}&zwnj;}");
 				let { code } = await mdsvexPreprocess.markup({ content, filename });
+				// render <Tip> components that are inside parameter descriptions
 				code = code.replace(REGEX_TIP, (_, isWarning, tipContent) => {
-					// render <Tip> components that are inside parameter descriptions
 					const color = isWarning ? "orange" : "green";
 					return `<div
 						class="course-tip ${
@@ -51,6 +51,21 @@ export const docstringPreprocess = {
 						} bg-gradient-to-br dark:bg-gradient-to-r before:border-${color}-500 dark:before:border-${color}-800 from-${color}-50 dark:from-gray-900 to-white dark:to-gray-950 border border-${color}-50 text-${color}-700 dark:text-gray-400"
 					>
 						${tipContent}
+					</div>`;
+				});
+				// render <Addded>, <Changed>, <Deprecated> components that are inside parameter descriptions
+				code = code.replace(REGEX_CHANGED, (_, componentType, version, __, descriptionContent) => {
+					const color = /Added|Changed/.test(componentType) ? "green" : "orange";
+					if(!descriptionContent){
+						descriptionContent = "";
+					}
+					return `<div
+						class="course-tip ${
+							color === "orange" ? "course-tip-orange" : ""
+						} bg-gradient-to-br dark:bg-gradient-to-r before:border-${color}-500 dark:before:border-${color}-800 from-${color}-50 dark:from-gray-900 to-white dark:to-gray-950 border border-${color}-50 text-${color}-700 dark:text-gray-400"
+					>
+						<p class="font-medium">${componentType} in ${version}</p>
+						${descriptionContent}
 					</div>`;
 				});
 
@@ -77,6 +92,11 @@ export const docstringPreprocess = {
 					}
 					svelteComponent += ` parametersDescription={${JSON.stringify(result)}} `;
 				}
+			}
+
+			if (docstringBody.match(REGEX_SOURCE)) {
+				const source = docstringBody.match(REGEX_SOURCE)[1];
+				svelteComponent += ` source={${JSON.stringify(source)}} `;
 			}
 
 			if (docstringBody.match(REGEX_RETDESC)) {
@@ -113,6 +133,10 @@ export const docstringPreprocess = {
 				const raiseType = docstringBody.match(REGEX_RAISETYPE)[1];
 				const { code } = await mdsvexPreprocess.markup({ content: raiseType, filename });
 				svelteComponent += ` raiseType={${JSON.stringify(code)}} `;
+      }
+      
+			if (docstringBody.match(REGEX_IS_GETSET_DESC)) {
+				svelteComponent += ` isGetSetDescriptor={true} `;
 			}
 
 			if (docstringBody.match(REGEX_PARAMSGROUPS)) {
@@ -131,7 +155,29 @@ export const docstringPreprocess = {
 						const title = docstringBody.match(REGEX_GROUP_TITLE)[1];
 						const content = docstringBody.match(REGEX_GROUP_CONTENT)[1];
 						const { code } = await mdsvexPreprocess.markup({ content, filename });
-						parameterGroups.push({ title, parametersDescription: code });
+						const dom = htmlparser2.parseDocument(code);
+						const lists = domUtils.getElementsByTagName("ul", dom);
+						const result = [];
+						if (lists.length) {
+							const list = lists[0];
+							for (const childEl of list.childNodes.filter(({ type }) => type === "tag")) {
+								const nameEl = domUtils.getElementsByTagName("strong", childEl)[0];
+								const name = domUtils.innerText(nameEl);
+								const paramAnchor = `${anchor}.${name}`;
+								let description = domUtils.getInnerHTML(childEl).trim();
+
+								// strip enclosing paragraph tags <p> & </p>
+								if (description.startsWith("<p>")) {
+									description = description.slice("<p>".length);
+								}
+								if (description.endsWith("</p>")) {
+									description = description.slice(0, -"</p>".length);
+								}
+
+								result.push({ anchor: paramAnchor, description, name });
+							}
+						}
+						parameterGroups.push({ title, parametersDescription: result });
 					}
 					svelteComponent += ` parameterGroups={${JSON.stringify(parameterGroups)}} `;
 				}
@@ -154,10 +200,51 @@ export const frameworkcontentPreprocess = {
 		const REGEX_PYTORCH = /<pt>(((?!<pt>).)*)<\/pt>/ms;
 		const REGEX_TENSORFLOW = /<tf>(((?!<tf>).)*)<\/tf>/ms;
 		const REGEX_JAX = /<jax>(((?!<jax>).)*)<\/jax>/ms;
+
+		content = await replaceAsync(content, REGEX_FRAMEWORKCONTENT, async (_, fwcontentBody) => {
+			const FRAMEWORKS = [
+				{ framework: "pytorch", REGEX_FW: REGEX_PYTORCH, isExist: false },
+				{ framework: "tensorflow", REGEX_FW: REGEX_TENSORFLOW, isExist: false },
+				{ framework: "jax", REGEX_FW: REGEX_JAX, isExist: false }
+			];
+
+			let svelteSlots = "";
+
+			for (const [i, value] of Object.entries(FRAMEWORKS)) {
+				const { framework, REGEX_FW } = value;
+				if (fwcontentBody.match(REGEX_FW)) {
+					FRAMEWORKS[i].isExist = true;
+					const fwContent = fwcontentBody.match(REGEX_FW)[1];
+					svelteSlots += `<svelte:fragment slot="${framework}">
+					<Markdown>
+					\n\n${fwContent}\n\n
+					</Markdown>
+					</svelte:fragment>`;
+				}
+			}
+
+			const svelteProps = FRAMEWORKS.map((fw) => `${fw.framework}={${fw.isExist}}`).join(" ");
+
+			return `<FrameworkContent ${svelteProps}>\n${svelteSlots}\n</FrameworkContent>`;
+		});
+
+		return { code: content };
+	}
+};
+
+// Preprocessor that converts markdown into InferenceApi
+// svelte component using mdsvexPreprocess
+export const inferenceSnippetPreprocess = {
+	markup: async ({ content }) => {
+		const REGEX_FRAMEWORKCONTENT =
+			/<inferencesnippet>(((?!<inferencesnippet>).)*)<\/inferencesnippet>/gms;
+		const REGEX_PYTHON = /<python>(((?!<python>).)*)<\/python>/ms;
+		const REGEX_JS = /<js>(((?!<js>).)*)<\/js>/ms;
+		const REGEX_CURL = /<curl>(((?!<curl>).)*)<\/curl>/ms;
 		const FRAMEWORKS = [
-			{ framework: "pytorch", REGEX_FW: REGEX_PYTORCH, isExist: false },
-			{ framework: "tensorflow", REGEX_FW: REGEX_TENSORFLOW, isExist: false },
-			{ framework: "jax", REGEX_FW: REGEX_JAX, isExist: false }
+			{ framework: "python", REGEX_FW: REGEX_PYTHON, isExist: false },
+			{ framework: "js", REGEX_FW: REGEX_JS, isExist: false },
+			{ framework: "curl", REGEX_FW: REGEX_CURL, isExist: false }
 		];
 
 		content = await replaceAsync(content, REGEX_FRAMEWORKCONTENT, async (_, fwcontentBody) => {
@@ -178,7 +265,47 @@ export const frameworkcontentPreprocess = {
 
 			const svelteProps = FRAMEWORKS.map((fw) => `${fw.framework}={${fw.isExist}}`).join(" ");
 
-			return `<FrameworkContent ${svelteProps}>\n${svelteSlots}\n</FrameworkContent>`;
+			return `<InferenceApi ${svelteProps}>\n${svelteSlots}\n</InferenceApi>`;
+		});
+
+		return { code: content };
+	}
+};
+
+// Preprocessor that converts markdown into TokenizersLanguageContent
+// svelte component using mdsvexPreprocess
+export const tokenizersLangPreprocess = {
+	markup: async ({ content }) => {
+		const REGEX_FRAMEWORKCONTENT =
+			/<tokenizerslangcontent>(((?!<tokenizerslangcontent>).)*)<\/tokenizerslangcontent>/gms;
+		const REGEX_PYTHON = /<python>(((?!<python>).)*)<\/python>/ms;
+		const RGEX_RUST = /<rust>(((?!<rust>).)*)<\/rust>/ms;
+		const REGEX_NODE = /<node>(((?!<node>).)*)<\/node>/ms;
+		const FRAMEWORKS = [
+			{ framework: "python", REGEX_FW: REGEX_PYTHON, isExist: false },
+			{ framework: "rust", REGEX_FW: RGEX_RUST, isExist: false },
+			{ framework: "node", REGEX_FW: REGEX_NODE, isExist: false }
+		];
+
+		content = await replaceAsync(content, REGEX_FRAMEWORKCONTENT, async (_, fwcontentBody) => {
+			let svelteSlots = "";
+
+			for (const [i, value] of Object.entries(FRAMEWORKS)) {
+				const { framework, REGEX_FW } = value;
+				if (fwcontentBody.match(REGEX_FW)) {
+					FRAMEWORKS[i].isExist = true;
+					const fwContent = fwcontentBody.match(REGEX_FW)[1];
+					svelteSlots += `<svelte:fragment slot="${framework}">
+					<Markdown>
+					\n\n${fwContent}\n\n
+					</Markdown>
+					</svelte:fragment>`;
+				}
+			}
+
+			const svelteProps = FRAMEWORKS.map((fw) => `${fw.framework}={${fw.isExist}}`).join(" ");
+
+			return `<TokenizersLanguageContent ${svelteProps}>\n${svelteSlots}\n</TokenizersLanguageContent>`;
 		});
 
 		return { code: content };
@@ -300,13 +427,13 @@ const _mdsvexPreprocess = mdsvex({
 	extensions: ["mdx"],
 	highlight: {
 		highlighter: function (code, lang) {
-			const REGEX_CODE_INPUT = /^(>>>\s|\.\.\.\s|$)/;
+			const REGEX_CODE_INPUT = /^(>>>\s|\.\.\.\s)/m;
 			const _highlight = (code) =>
 				lang && hljs.getLanguage(lang)
 					? hljs.highlight(lang, code, true).value
 					: hljs.highlightAuto(code).value;
 			const escape = (code) =>
-				code.replace(/\\/g, "\\\\").replace(/`/g, "\\`").replace(/}/g, "\\}");
+				code.replace(/\\/g, "\\\\").replace(/`/g, "\\`").replace(/}/g, "\\}").replace(/\$/g, "\\$");
 			const REGEX_FRAMEWORKS_SPLIT = /\s*===(PT-TF|STRINGAPI-READINSTRUCTION)-SPLIT===\s*/gm;
 
 			code = renderSvelteChars(code);
@@ -320,15 +447,15 @@ const _mdsvexPreprocess = mdsvex({
 				if (codeGroup1.match(REGEX_CODE_INPUT)) {
 					codeGroup1 = codeGroup1
 						.split("\n")
-						.filter((line) => line.match(REGEX_CODE_INPUT))
-						.map((line) => line.slice(4))
+						.filter((line) => line.match(REGEX_CODE_INPUT) || !line)
+						.map((line) => line.replace(REGEX_CODE_INPUT, ""))
 						.join("\n");
 				}
 				if (codeGroup2.match(REGEX_CODE_INPUT)) {
 					codeGroup2 = codeGroup2
 						.split("\n")
-						.filter((line) => line.match(REGEX_CODE_INPUT))
-						.map((line) => line.slice(4))
+						.filter((line) => line.match(REGEX_CODE_INPUT) || !line)
+						.map((line) => line.replace(REGEX_CODE_INPUT, ""))
 						.join("\n");
 				}
 				return `
@@ -351,8 +478,8 @@ const _mdsvexPreprocess = mdsvex({
 				if (code.match(REGEX_CODE_INPUT)) {
 					code = code
 						.split("\n")
-						.filter((line) => line.match(REGEX_CODE_INPUT))
-						.map((line) => line.slice(4))
+						.filter((line) => line.match(REGEX_CODE_INPUT) || !line)
+						.map((line) => line.replace(REGEX_CODE_INPUT, ""))
 						.join("\n");
 				}
 				return `

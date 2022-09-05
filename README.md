@@ -30,6 +30,7 @@ For example:
 doc-builder preview datasets ~/Desktop/datasets/docs/source/
 ```
 
+**`preview` command only works with existing doc files. When you add a completely new file, you need to update `_toctree.yml` & restart `preview` command (`ctrl-c` to stop it & call `doc-builder preview ...` again).
 ## Doc building
 
 To build the documentation of a given package, use the following command:
@@ -171,6 +172,16 @@ Flax content goes here
 
 Note that all frameworks are optional (you can write a PyTorch-only block for instance) and the order does not matter.
 
+Anchor links for markdown headings are generated automatically (with the following rule: 1. lowercase, 2. replace space with dash `-`, 3. strip [^a-z0-9-]):
+```
+## My awesome section
+// the anchor link is: `my-awesome-section`
+```
+Moreover, there is a way to customize the anchor link. Example:
+```
+## My awesome section[[some-section]]
+// the anchor link is: `some-section`
+```
 
 ### Writing API documentation
 
@@ -202,6 +213,19 @@ by default) you can put the list of methods to add in a list that contains `all`
     - __call__
 ```
 
+You can create a code-block by referencing a file excerpt with `<literalinclude>` (sphinx-inspired) syntax. 
+There should be json between `<literalinclude>` open & close tags.
+```
+<literalinclude>
+{"path": "./data/convert_literalinclude_dummy.txt", # relative path
+"language": "python", # defaults to " (empty str)
+"start-after": "START python_import",  # defaults to start of file
+"end-before": "END python_import",  # defaults to end of file
+"dedent": 7 # defaults to 0
+}
+</literalinclude>
+```
+
 ### Writing source documentation
 
 Arguments of a function/class/method should be defined with the `Args:` (or `Arguments:` or `Parameters:`) prefix, followed by a line return and
@@ -230,6 +254,21 @@ Here's an example showcasing everything so far:
 ```
 
 You can check the full example it comes from [here](https://github.com/huggingface/transformers/blob/v4.17.0/src/transformers/models/bert/modeling_bert.py#L794-L841)
+
+If a class is similar to that of a dataclass but the parameters do not align to the available attributes of the class, such as in the below example, `Attributes` instance should be rewritten as `**Attributes**` in order to have the documentation properly render these. Otherwise it will assume that `Attributes` is synonymous to `Parameters`.
+
+```diff
+  class SomeClass:
+      """
+      Docstring
+-     Attributes:
++     **Attributes**:
+          - **attr_a** (`type_a`) -- Doc a
+          - **attr_b** (`type_b`) -- Doc b
+      """
+      def __init__(self, param_a, param_b):
+          ...
+```
 
 For optional arguments or arguments with defaults we follow the following syntax. Imagine we have a function with the
 following signature:
@@ -284,4 +323,28 @@ Here's an example for tuple return, comprising several objects:
           Total loss as the sum of the masked language modeling loss and the next sequence prediction (classification) loss.
         - **prediction_scores** (`torch.FloatTensor` of shape `(batch_size, sequence_length, config.vocab_size)`) --
           Prediction scores of the language modeling head (scores for each vocabulary token before SoftMax).
+```
+
+There are directives for `Added`, `Changed`, & `Deprecated`.
+Here's an example:
+```
+    Args:
+        cache_dir (`str`, *optional*): Directory to cache data.
+        config_name (`str`, *optional*): Name of the dataset configuration.
+            It affects the data generated on disk: different configurations will have their own subdirectories and
+            versions.
+            If not provided, the default configuration is used (if it exists).
+
+            <Added version="2.3.0">
+
+            `name` was renamed to `config_name`.
+
+            </Added>
+        name (`str`): Configuration name for the dataset.
+
+            <Deprecated version="2.3.0">
+
+            Use `config_name` instead.
+
+            </Deprecated>
 ```

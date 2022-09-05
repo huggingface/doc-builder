@@ -24,7 +24,7 @@ from pathlib import Path
 import yaml
 from tqdm import tqdm
 
-from .autodoc import autodoc, find_object_in_package, get_source_path, remove_example_tags, resolve_links_in_text
+from .autodoc import autodoc, find_object_in_package, get_source_path, resolve_links_in_text
 from .convert_md_to_mdx import convert_md_to_mdx
 from .convert_rst_to_mdx import convert_rst_to_mdx, find_indent, is_empty_line
 from .convert_to_notebook import generate_notebooks_from_file
@@ -128,7 +128,11 @@ def resolve_autodoc(content, package, return_anchors=False, page_info=None):
                 doc = doc[0]
             new_lines.append(doc)
 
-            source_files = get_source_path(object_name, package)
+            try:
+                source_files = source_files = get_source_path(object_name, package)
+            except (AttributeError, OSError, TypeError):
+                # tokenizers obj do NOT have `__module__` attribute & can NOT be used with inspect.getfile
+                source_files = None
         else:
             new_lines.append(lines[idx])
             if lines[idx].startswith("```"):
@@ -138,7 +142,6 @@ def resolve_autodoc(content, package, return_anchors=False, page_info=None):
             idx += 1
 
     new_content = "\n".join(new_lines)
-    new_content = remove_example_tags(new_content)
 
     return (new_content, anchors, source_files, errors) if return_anchors else new_content
 
@@ -167,6 +170,7 @@ def build_mdx_files(package, doc_folder, output_dir, page_info):
     for file in tqdm(all_files, desc="Building the MDX files"):
         new_anchors = None
         errors = None
+        page_info["path"] = file
         try:
             if file.suffix in [".md", ".mdx"]:
                 dest_file = output_dir / (file.with_suffix(".mdx").relative_to(doc_folder))
@@ -202,7 +206,8 @@ def build_mdx_files(package, doc_folder, output_dir, page_info):
                     writer.write(content)
                 # Make sure we clean up for next page.
                 del page_info["page"]
-            elif file.is_file():
+            elif file.is_file() and "__" not in str(file):
+                # __ is a reserved svelte file/folder prefix
                 dest_file = output_dir / (file.relative_to(doc_folder))
                 os.makedirs(dest_file.parent, exist_ok=True)
                 shutil.copy(file, dest_file)
@@ -361,6 +366,7 @@ def build_doc(
     output_dir,
     clean=True,
     version="main",
+    version_tag="main",
     language="en",
     notebook_dir=None,
     is_python_module=False,
@@ -377,6 +383,7 @@ def build_doc(
         clean (`bool`, *optional*, defaults to `True`):
             Whether or not to delete the content of the `output_dir` if that directory exists.
         version (`str`, *optional*, defaults to `"main"`): The name of the version of the doc.
+        version_tag (`str`, *optional*, defaults to `"main"`): The name of the version tag (on GitHub) of the doc.
         language (`str`, *optional*, defaults to `"en"`): The language of the doc.
         notebook_dir (`str` or `os.PathLike`, *optional*):
             If provided, where to save the notebooks generated from the doc file with an [[open-in-colab]] marker.
@@ -386,7 +393,7 @@ def build_doc(
             If `True`, disables the toc tree check and sphinx objects.inv builds since they are not needed
             when this mode is active.
     """
-    page_info = {"version": version, "language": language, "package_name": package_name}
+    page_info = {"version": version, "version_tag": version_tag, "language": language, "package_name": package_name}
     if clean and Path(output_dir).exists():
         shutil.rmtree(output_dir)
 
@@ -432,6 +439,10 @@ def check_toc_integrity(doc_folder, output_dir):
     # We don't just loop directly in toc as we will add more into it as we un-nest things.
     while len(toc) > 0:
         part = toc.pop(0)
+        if "local" in part:
+            toc_sections.append(part["local"])
+        if "sections" not in part:
+            continue
         toc_sections.extend([sec["local"] for sec in part["sections"] if "local" in sec])
         for sec in part["sections"]:
             if "local_fw" in sec:

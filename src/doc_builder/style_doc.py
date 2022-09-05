@@ -161,7 +161,7 @@ def format_code_example(code: str, max_len: int, in_docstring: bool = False):
             if has_doctest and not is_empty_line(line):
                 prefix = (
                     "... "
-                    if line.startswith(" ") or line in [")", "]", "}"] or in_triple_quotes or in_decorator
+                    if line.startswith(" ") or line[0] in [")", "]", "}"] or in_triple_quotes or in_decorator
                     else ">>> "
                 )
             else:
@@ -235,6 +235,9 @@ def style_docstring(docstring, max_len):
     Returns:
         `str`: The styled docstring
     """
+    if is_empty_line(docstring):
+        return docstring
+
     lines = docstring.split("\n")
     new_lines = []
 
@@ -257,7 +260,9 @@ def style_docstring(docstring, max_len):
     ):
         param_indent = find_indent(lines[idx])
 
-    for idx, line in enumerate(lines):
+    idx = 0
+    while idx < len(lines):
+        line = lines[idx]
         # Doing all re searches once for the one we need to repeat.
         list_search = _re_list.search(line)
         code_search = _re_code.search(line)
@@ -313,7 +318,13 @@ def style_docstring(docstring, max_len):
             current_paragraph = [line[current_indent:]]
         elif _re_args.search(line):
             new_lines.append(line)
-            param_indent = find_indent(lines[idx + 1])
+            idx += 1
+            while idx < len(lines) and is_empty_line(lines[idx]):
+                idx += 1
+            if idx < len(lines):
+                param_indent = find_indent(lines[idx])
+                # We still need to treat that line
+                idx -= 1
         elif _re_tip.search(line):
             # Add a new line before if not present
             if not is_empty_line(new_lines[-1]):
@@ -352,6 +363,8 @@ def style_docstring(docstring, max_len):
                 prefix = ""
         elif current_paragraph is not None:
             current_paragraph.append(line.lstrip())
+
+        idx += 1
 
     if current_paragraph is not None and len(current_paragraph) > 0:
         paragraph = " ".join(current_paragraph)

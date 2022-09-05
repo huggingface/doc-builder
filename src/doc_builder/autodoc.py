@@ -20,6 +20,7 @@ import re
 
 from .convert_md_to_mdx import convert_md_docstring_to_mdx
 from .convert_rst_to_mdx import convert_rst_docstring_to_mdx, find_indent, is_empty_line
+from .external import HUGGINFACE_LIBS, get_external_object_link
 
 
 def find_object_in_package(object_name, package):
@@ -66,7 +67,7 @@ def get_shortest_path(obj, package):
         # Propreties have no __module__ or __name__ attributes, but their getter function does.
         obj = obj.fget
 
-    if not hasattr(obj, "__module__"):
+    if not hasattr(obj, "__module__") or obj.__module__ is None:
         return None
     long_path = obj.__module__
     # Sometimes methods are defined in another module from the class (flax.struct.dataclass)
@@ -75,8 +76,8 @@ def get_shortest_path(obj, package):
     long_name = obj.__qualname__ if hasattr(obj, "__qualname__") else obj.__name__
     short_name = long_name.split(".")[0]
     path_splits = long_path.split(".")
-    idx = 0
     module = package
+    idx = module.__name__.count(".")
     while idx < len(path_splits) and not hasattr(module, short_name):
         idx += 1
         module = getattr(module, path_splits[idx])
@@ -101,12 +102,14 @@ def format_signature(obj):
     Returns `List(Dict(str, str))` (i.e. [{'do_lower_case', ' = True'}, ...])
     where `key` of `Dict` is f'{param_name}' & `value` of `Dict` is f': {annotation}  = {default}'
     """
+    params = []
+    if is_getset_descriptor(obj):
+        return params
     try:
         signature = inspect.signature(obj)
     except ValueError:
         # TODO: This fails for ModelOutput. Check if this is normal.
         return ""
-    params = []
 
     for idx, param in enumerate(signature.parameters.values()):
         param_name = param.name
@@ -139,7 +142,7 @@ _re_raises = re.compile(r"<raises>(.*)</raises>", re.DOTALL)
 _re_raisederrors = re.compile(r"<raisederrors>(.*)</raisederrors>", re.DOTALL)
 
 
-def get_signature_component(name, anchor, signature, object_doc, source_link):
+def get_signature_component(name, anchor, signature, object_doc, source_link=None, is_getset_desc=False):
     """
     Returns the svelte `Docstring` component string.
 
@@ -148,7 +151,8 @@ def get_signature_component(name, anchor, signature, object_doc, source_link):
     - **anchor** (`str`) -- The anchor name of the function or class that will be used for hash links.
     - **signature** (`List(Dict(str,str))`) -- The signature of the object.
     - **object_doc** (`str`) -- The docstring of the the object.
-    - **source_link** (`str`) -- The github source link of the the object.
+    - **source_link** (Union[`str`, `None`], *optional*, defaults to `None`) -- The github source link of the the object.
+    - **is_getset_desc** (`bool`, *optional*, defaults to `False`) -- Whether the type of obj is `getset_descriptor`.
     """
 
     def inside_example_finder_closure(match, tag):
@@ -186,12 +190,17 @@ def get_signature_component(name, anchor, signature, object_doc, source_link):
     object_doc, yieldtype = regex_closure(object_doc, _re_yieldtype)
     object_doc, raise_description = regex_closure(object_doc, _re_raises)
     object_doc, raisederrors = regex_closure(object_doc, _re_raisederrors)
+    object_doc = remove_example_tags(object_doc)
+    object_doc = hashlink_example_codeblock(object_doc, anchor)
 
     svelte_str = "<docstring>"
     svelte_str += f"<name>{name}</name>"
     svelte_str += f"<anchor>{anchor}</anchor>"
-    svelte_str += f"<source>{source_link}</source>"
+    if source_link:
+        svelte_str += f"<source>{source_link}</source>"
     svelte_str += f"<parameters>{json.dumps(signature)}</parameters>"
+    if is_getset_desc:
+        svelte_str += "<isgetsetdescriptor>"
 
     if parameters is not None:
         parameters_str = ""
@@ -249,6 +258,36 @@ def is_rst_docstring(docstring):
     return False
 
 
+# Re pattern to catch example introduction & example code block.
+_re_example_codeblock = re.compile(r"((.*:\s+)?^```(((?!```)(.|\n))*)+```)", re.MULTILINE)
+
+
+def hashlink_example_codeblock(object_doc, object_anchor):
+    """
+    Returns the svelte `ExampleCodeBlock` component string.
+
+    Args:
+    - **object_doc** (`str`) -- The docstring of the the object.
+    - **anchor** (`str`) -- The anchor name of the function or class that will be used for hash links.
+    """
+
+    example_id = 0
+
+    def add_example_svelte_blocks(match):
+        """
+        This closure matches `_re_example_codeblock` regex & creates `ExampleCodeBlock` svelte component
+        """
+        nonlocal example_id
+
+        example_id += 1
+        id_str = "" if example_id == 1 else f"-{example_id}"
+        example_anchor = f"{object_anchor}.example{id_str}"
+        return f'<ExampleCodeBlock anchor="{example_anchor}">\n\n{match.group(1)}\n\n</ExampleCodeBlock>'
+
+    object_doc = _re_example_codeblock.sub(add_example_svelte_blocks, object_doc)
+    return object_doc
+
+
 # Re pattern to numpystyle docstring (e.g Parameter -------).
 _re_numpydocstring = re.compile(r"(Parameter|Raise|Return|Yield)s?\n\s*----+\n")
 
@@ -264,6 +303,8 @@ def is_dataclass_autodoc(obj):
     """
     Returns boolean whether object's doc was generated automatically by `dataclass`.
     """
+    if is_getset_descriptor(obj):
+        return False
     try:
         signature = str(inspect.signature(obj))
     except ValueError:
@@ -275,15 +316,27 @@ def is_dataclass_autodoc(obj):
     return is_generated
 
 
+def is_getset_descriptor(obj):
+    """
+    Returns boolean whether object is `getset_descriptor`.
+    """
+    # used by tokenizers @property bindings
+    obj_repr = str(type(obj))
+    return "getset_descriptor" in obj_repr
+
+
 def get_source_link(obj, page_info):
     """
     Returns the link to the source code of an object on GitHub.
     """
     package_name = page_info["package_name"]
-    version = page_info.get("version", "main")
-    base_link = f"https://github.com/huggingface/{package_name}/blob/{version}/src/"
+    version_tag = page_info.get("version_tag", "main")
+    base_link = f"https://github.com/huggingface/{package_name}/blob/{version_tag}/src/"
     module = obj.__module__.replace(".", "/")
     line_number = inspect.getsourcelines(obj)[1]
+    source_file = inspect.getsourcefile(obj)
+    if source_file.endswith("__init__.py"):
+        return f"{base_link}{module}/__init__.py#L{line_number}"
     return f"{base_link}{module}.py#L{line_number}"
 
 
@@ -345,8 +398,15 @@ def document_object(object_name, package, page_info, full_name=True, anchor_name
             check = quality_check_docstring(object_doc, object_name=object_name)
             object_doc = convert_md_docstring_to_mdx(obj.__doc__, page_info)
 
-    source_link = get_source_link(obj, page_info)
-    component = get_signature_component(signature_name, anchor_name, signature, object_doc, source_link)
+    try:
+        source_link = get_source_link(obj, page_info)
+    except (AttributeError, OSError, TypeError):
+        # tokenizers obj do NOT have `__module__` attribute & can NOT be used with inspect.getsourcelines
+        source_link = None
+    is_getset_desc = is_getset_descriptor(obj)
+    component = get_signature_component(
+        signature_name, anchor_name, signature, object_doc, source_link, is_getset_desc
+    )
     documentation = "\n" + component + "\n"
     return documentation, check
 
@@ -375,6 +435,9 @@ def find_documented_methods(clas):
             )
         }
     return list(documented_methods.keys())
+
+
+docstring_css_classes = "docstring border-l-2 border-t-2 pl-4 pt-3.5 border-gray-100 rounded-tl-xl mb-6 mt-8"
 
 
 def autodoc(object_name, package, methods=None, return_anchors=False, page_info=None):
@@ -426,7 +489,7 @@ def autodoc(object_name, package, methods=None, return_anchors=False, page_info=
             )
             if check is not None:
                 errors.append(check)
-            documentation += '\n<div class="docstring">' + method_doc + "</div>"
+            documentation += f'\n<div class="{docstring_css_classes}">' + method_doc + "</div>"
             if return_anchors:
                 # The anchor name of the method might be different from its
                 method = find_object_in_package(f"{anchors[0]}.{method}", package=package)
@@ -435,7 +498,7 @@ def autodoc(object_name, package, methods=None, return_anchors=False, page_info=
                     anchors.append(anchor_name)
                 else:
                     anchors.append((anchor_name, method_name))
-    documentation = '<div class="docstring">\n' + documentation + "</div>\n"
+    documentation = f'<div class="{docstring_css_classes}">\n' + documentation + "</div>\n"
 
     return (documentation, anchors, errors) if return_anchors else documentation
 
@@ -458,6 +521,13 @@ def resolve_links_in_text(text, package, mapping, page_info):
 
     def _resolve_link(search):
         object_name, last_char = search.groups()
+        # Deal with external libs first.
+        lib_name = object_name.split(".")[0]
+        if lib_name.startswith("~"):
+            lib_name = lib_name[1:]
+        if lib_name in HUGGINFACE_LIBS and lib_name != package_name:
+            link = get_external_object_link(object_name, page_info)
+            return f"{link}{last_char}"
         # If the name begins with `~`, we shortcut to the last part.
         if object_name.startswith("~"):
             obj = find_object_in_package(object_name[1:], package)
@@ -468,13 +538,13 @@ def resolve_links_in_text(text, package, mapping, page_info):
             return f"`{object_name}`{last_char}"
 
         # If the object is not a class, we add ()
-        if not isinstance(obj, type):
+        if not isinstance(obj, (type, property)):
             object_name = f"{object_name}()"
 
         # Link to the anchor
         anchor = get_shortest_path(obj, package)
         if anchor not in mapping:
-            return f"`{object_name}`"
+            return f"`{object_name}`{last_char}"
         page = f"{prefix}{mapping[anchor]}"
         if "#" in page:
             return f"[{object_name}]({page}){last_char}"

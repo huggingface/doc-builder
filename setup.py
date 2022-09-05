@@ -3,12 +3,12 @@
 
 from setuptools import find_packages, setup
 
-install_requires = ["tqdm", "pyyaml", "packaging", "nbformat"]
+install_requires = ["GitPython", "tqdm", "pyyaml", "packaging", "nbformat", "gql[requests]", "requests"]
 
 extras = {}
 
 extras["transformers"] = ["transformers[dev]"]
-extras["testing"] = ["pytest", "pytest-xdist", "torch", "transformers"]
+extras["testing"] = ["pytest", "pytest-xdist", "torch", "transformers", "tokenizers"]
 extras["quality"] = ["black~=22.0", "isort>=5.5.4", "flake8>=3.8.3"]
 
 extras["all"] = extras["testing"] + extras["quality"]
@@ -17,7 +17,7 @@ extras["dev"] = extras["all"]
 
 setup(
     name="hf-doc-builder",
-    version="0.3.0.dev0",
+    version="0.5.0.dev0",
     author="Hugging Face, Inc.",
     author_email="sylvain@huggingface.co",
     description="Doc building utility",

@@ -72,11 +72,18 @@ def build_command(args):
         if "dev" in version:
             version = default_version
         else:
-            doc_config = get_doc_config()
-            version_prefix = getattr(doc_config, "version_prefix", "v")
-            version = f"{version_prefix}{version}"
+            version = f"v{version}"
     else:
         version = args.version
+
+    # `version` will always start with prefix `v`
+    # `version_tag` does not have to start with prefix `v` (see: https://github.com/huggingface/datasets/tags)
+    version_tag = version
+    if version != default_version:
+        doc_config = get_doc_config()
+        version_prefix = getattr(doc_config, "version_prefix", "v")
+        version_ = version[1:]  # v2.1.0 -> 2.1.0
+        version_tag = f"{version_prefix}{version_}"
 
     # Disable notebook building for non-master verion
     if version != default_version:
@@ -92,6 +99,7 @@ def build_command(args):
         output_path,
         clean=args.clean,
         version=version,
+        version_tag=version_tag,
         language=args.language,
         notebook_dir=notebook_dir,
         is_python_module=not args.not_python_module,
@@ -136,7 +144,9 @@ def build_command(args):
             )
 
             env = os.environ.copy()
-            env["DOCS_LIBRARY"] = args.library_name
+            env["DOCS_LIBRARY"] = (
+                env["package_name"] or args.library_name if "package_name" in env else args.library_name
+            )
             env["DOCS_VERSION"] = version
             env["DOCS_LANGUAGE"] = args.language
             print("Building HTML files. This will take a while :-)")

@@ -14,7 +14,9 @@
 # limitations under the License.
 
 
+import json
 import re
+import tempfile
 
 from .convert_rst_to_mdx import parse_rst_docstring, remove_indent
 
@@ -34,11 +36,18 @@ import Docstring from "$lib/Docstring.svelte";
 import CodeBlock from "$lib/CodeBlock.svelte";
 import CodeBlockFw from "$lib/CodeBlockFw.svelte";
 import DocNotebookDropdown from "$lib/DocNotebookDropdown.svelte";
+import CourseFloatingBanner from "$lib/CourseFloatingBanner.svelte";
 import IconCopyLink from "$lib/IconCopyLink.svelte";
 import FrameworkContent from "$lib/FrameworkContent.svelte";
 import Markdown from "$lib/Markdown.svelte";
 import Question from "$lib/Question.svelte";
 import FrameworkSwitchCourse from "$lib/FrameworkSwitchCourse.svelte";
+import InferenceApi from "$lib/InferenceApi.svelte";
+import TokenizersLanguageContent from "$lib/TokenizersLanguageContent.svelte";
+import ExampleCodeBlock from "$lib/ExampleCodeBlock.svelte";
+import Added from "$lib/Added.svelte";
+import Changed from "$lib/Changed.svelte";
+import Deprecated from "$lib/Deprecated.svelte";
 let fw: "pt" | "tf" = "pt";
 onMount(() => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -58,7 +67,7 @@ def convert_special_chars(text):
     Convert { and < that have special meanings in MDX.
     """
     _re_lcub_svelte = re.compile(
-        r"<(Question|Tip|DocNotebookDropdown|FrameworkSwitch)(((?!<(Question|Tip|DocNotebookDropdown|FrameworkSwitch)).)*)>|&amp;lcub;(#if|:else}|/if})",
+        r"<(Question|Tip|Added|Changed|Deprecated|DocNotebookDropdown|CourseFloatingBanner|FrameworkSwitch)(((?!<(Question|Tip|Added|Changed|Deprecated|DocNotebookDropdown|CourseFloatingBanner|FrameworkSwitch)).)*)>|&amp;lcub;(#if|:else}|/if})",
         re.DOTALL,
     )
     text = text.replace("{", "&amp;lcub;")
@@ -66,7 +75,7 @@ def convert_special_chars(text):
     text = _re_lcub_svelte.sub(lambda match: match[0].replace("&amp;lcub;", "{"), text)
     # We don't want to replace those by the HTML code, so we temporarily set them at LTHTML
     text = re.sub(
-        r"<(img|br|hr|Youtube|Question|DocNotebookDropdown|FrameworkSwitch)", r"LTHTML\1", text
+        r"<(img|br|hr|Youtube|Question|DocNotebookDropdown|CourseFloatingBanner|FrameworkSwitch)", r"LTHTML\1", text
     )  # html void elements with no closing counterpart
     _re_lt_html = re.compile(r"<(\S+)([^>]*>)(((?!</\1>).)*)<(/\1>)", re.DOTALL)
     while _re_lt_html.search(text):
@@ -101,6 +110,47 @@ def clean_doctest_syntax(text):
     return text
 
 
+_re_literalinclude = re.compile(r"([ \t]*)<literalinclude>(((?!<literalinclude>).)*)<\/literalinclude>", re.DOTALL)
+
+
+def convert_literalinclude_helper(match, page_info):
+    """
+    Convert a literalinclude regex match into markdown code blocks by opening a file and
+    copying specificed start-end section into markdown code block.
+    """
+    literalinclude_info = json.loads(match[2].strip())
+    indent = match[1]
+    if tempfile.gettempdir() in str(page_info["path"]):
+        return "\n`Please restart doc-builder preview commands to see literalinclude rendered`\n"
+    file = page_info["path"].parent / literalinclude_info["path"]
+    with open(file, "r", encoding="utf-8-sig") as reader:
+        lines = reader.readlines()
+    literalinclude = lines  # defaults to entire file
+    if "start-after" in literalinclude_info or "end-before" in literalinclude_info:
+        start_after, end_before = -1, -1
+        for idx, line in enumerate(lines):
+            line = line.strip()
+            line = re.sub(r"\W+$", "", line)
+            if line.endswith(literalinclude_info["start-after"]):
+                start_after = idx + 1
+            if line.endswith(literalinclude_info["end-before"]):
+                end_before = idx
+        if start_after == -1 or end_before == -1:
+            raise ValueError(f"The following 'literalinclude' does NOT exist:\n{match[0]}")
+        literalinclude = lines[start_after:end_before]
+    literalinclude = [indent + line[literalinclude_info.get("dedent", 0) :] for line in literalinclude]
+    literalinclude = "".join(literalinclude)
+    return f"""{indent}```{literalinclude_info.get('language', '')}\n{literalinclude.rstrip()}\n{indent}```"""
+
+
+def convert_literalinclude(text, page_info):
+    """
+    Convert a literalinclude into markdown code blocks.
+    """
+    text = _re_literalinclude.sub(lambda m: convert_literalinclude_helper(m, page_info), text)
+    return text
+
+
 def convert_md_docstring_to_mdx(docstring, page_info):
     """
     Convert a docstring written in Markdown to mdx.
@@ -113,9 +163,11 @@ def convert_md_docstring_to_mdx(docstring, page_info):
 def process_md(text, page_info):
     """
     Processes markdown by:
-        1. Converting special characters
-        2. Converting image links
+        1. Converting literalinclude
+        2. Converting special characters
+        3. Converting image links
     """
+    text = convert_literalinclude(text, page_info)
     text = convert_special_chars(text)
     text = clean_doctest_syntax(text)
     text = convert_img_links(text, page_info)

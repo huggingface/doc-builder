@@ -9,6 +9,9 @@ on:
       package:
         required: true
         type: string
+      package_name:
+        type: string
+        description: "Should be used when a package name differs from its repostory name"
       path_to_docs:
         type: string
       notebook_folder:
@@ -19,6 +22,10 @@ on:
       languages:
       # supply space-separated language codes
         type: string
+      package_path:
+        type: string
+      install_rust:
+        type: boolean
     secrets:
       token:
         required: true
@@ -39,19 +46,6 @@ jobs:
         with:
           repository: 'huggingface/${{ inputs.package }}'
           path: ${{ inputs.package }}
-      
-      - uses: actions/checkout@v2
-        with:
-          repository: 'huggingface/doc-build'
-          path: doc-build
-          token: ${{ secrets.token }}
-      
-      - uses: actions/checkout@v2
-        if: inputs.notebook_folder != ''
-        with:
-          repository: 'huggingface/notebooks'
-          path: notebooks
-          token: ${{ secrets.token }}
 
       - uses: actions/setup-node@v2
         with:
@@ -67,6 +61,19 @@ jobs:
             echo "doc_folder=${{ inputs.path_to_docs }}" >> $GITHUB_ENV
           fi
 
+          if [ -z "${{ inputs.package_name }}" ];
+          then
+            echo "package_name=${{ inputs.package }}" >> $GITHUB_ENV
+          else
+            echo "package_name=${{ inputs.package_name }}" >> $GITHUB_ENV
+          fi
+
+      - name: Install Rust
+        uses: actions-rs/toolchain@v1
+        if: inputs.install_rust
+        with:
+          toolchain: stable
+
       - name: Setup environment
         shell: bash
         run: |
@@ -76,26 +83,23 @@ jobs:
           pip install .
           cd ..
 
-          if [[ "${{ inputs.additional_args }}" != *"--not_python_module"* ]];
+          if [[ -n "${{ inputs.package_path }}" ]]
+          then
+            cd ${{ inputs.package_path }}
+            pip install .[dev]
+          elif [[ "${{ inputs.additional_args }}" != *"--not_python_module"* ]];
           then
             cd ${{ inputs.package }}
             pip install .[dev]
           fi
           cd ..
 
-      - name: Setup git
-        run: |
-          git config --global user.name "Hugging Face Doc Builder"
-          git config --global user.email docs@huggingface.co
-
       - name: Create build directory
         run: |
-          cd doc-build
-          git pull
-          cd ..
           mkdir build_dir
-          mkdir build_dir/${{ inputs.package }}
-          cp doc-build/${{ inputs.package }}/_versions.yml build_dir/${{ inputs.package }}
+          mkdir build_dir/${{ env.package_name }}
+          cd build_dir/${{ env.package_name }}
+          wget https://raw.githubusercontent.com/huggingface/doc-build/main/${{ env.package_name }}/_versions.yml
 
       - name: Make documentation
         shell: bash
@@ -128,42 +132,16 @@ jobs:
 
       - name: Push to repositories
         run: |
-          cd doc-build
-          git pull
-          mv ../build_dir/${{ inputs.package }}/_versions.yml ${{ inputs.package }}/
-          rm -rf ${{ inputs.package }}/$(ls ../build_dir/${{ inputs.package }})
-          mv ../build_dir/${{ inputs.package }}/$(ls ../build_dir/${{ inputs.package }}) ${{ inputs.package }}/$(ls ../build_dir/${{ inputs.package }})
-          git status
-
-          if [[ `git status --porcelain` ]]; then 
-            git add .
-            git commit -m "Updated with commit ${{ inputs.commit_sha }} See: https://github.com/huggingface/${{ inputs.package }}/commit/${{ inputs.commit_sha }}"
-            git push origin main ||
-            (echo "Failed on the first try, rebasing and pushing again" && git pull --rebase && git push origin main) ||
-            (echo "Failed on the second try, rebasing and pushing again" && git pull --rebase && git push origin main)
-          else
-            echo "No diff in the documentation."
+          cd build_dir
+          if [ "${{ inputs.package }}" != "${{ env.package_name }}" ]; then
+            mv ${{ inputs.package }}/* ${{ env.package_name }}
           fi
+          doc-builder push ${{ env.package_name }} --doc_build_repo_id "huggingface/doc-build" --token ${{ secrets.token }} --commit_msg "Updated with commit ${{ inputs.commit_sha }} See: https://github.com/huggingface/${{ inputs.package }}/commit/${{ inputs.commit_sha }}" --n_retries 5
 
-          cd ..
-
-          if [ -z "${{ inputs.notebook_folder }}" ]
+          if [ -d "notebook_dir" ]
           then
-            echo "Notebooks creation was not enabled."
-          else
-            cd notebooks
-            git pull
-            cp -r ../notebook_dir/. ${{ inputs.notebook_folder }}
-            git status
-            if [[ `git status --porcelain` ]]; then
-              git add ${{ inputs.notebook_folder }}
-              git commit -m "Updated ${{ inputs.package }} doc notebooks with commit ${{ inputs.commit_sha }} \n\nSee: https://github.com/huggingface/${{ inputs.package }}/commit/${{ inputs.commit_sha }}"
-              git push origin main ||
-              (echo "Failed on the first try, rebasing and pushing again" && git pull --rebase && git push origin main) ||
-              (echo "Failed on the second try, rebasing and pushing again" && git pull --rebase && git push origin main)
-            else
-              echo "No diff in the notebooks."
-            fi
-            cd ..
+            mkdir ${{ inputs.notebook_folder }}
+            cp -r ./notebook_dir/. ${{ inputs.notebook_folder }}
+            doc-builder push ${{ inputs.notebook_folder }} --doc_build_repo_id "huggingface/notebooks" --token ${{ secrets.token }} --commit_msg "Updated ${{ inputs.package }} doc notebooks with commit ${{ inputs.commit_sha }} \n\nSee: https://github.com/huggingface/${{ inputs.package }}/commit/${{ inputs.commit_sha }}" --n_retries 5
           fi
         shell: bash
