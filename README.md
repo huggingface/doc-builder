@@ -42,13 +42,13 @@ doc-builder build {package_name} {path_to_docs} --build_dir {build_dir}
 For instance, here is how you can build the Datasets documentation (requires `pip install datasets[dev]`) if you have cloned the repo in `~/git/datasets`:
 
 ```bash
-doc-builder datasets ~/git/datasets/docs/source --build_dir ~/tmp/test-build
+doc-builder build datasets ~/git/datasets/docs/source --build_dir ~/tmp/test-build
 ```
 
 This will generate MDX files that you can preview like any Markdown file in your favorite editor. To have a look at the documentation in HTML, you need to install node version 14 or higher. Then you can run (still with the example on Datasets)
 
 ```bash
-doc-builder datasets ~/git/datasets/docs/source --build_dir ~/tmp/test-build --html
+doc-builder build datasets ~/git/datasets/docs/source --build_dir ~/tmp/test-build --html
 ```
 which will build HTML files in `~/tmp/test-build`. You can then inspect those files in your browser.
 
@@ -104,7 +104,7 @@ doc_folder
 Note that each language directory has it's own table of contents file `_toctree.yml` and that all languages are arranged under a single `doc_folder` directory - see the [`course`](https://github.com/huggingface/course/tree/main/chapters) repo for an example. You can then build the individual language subsets as follows:
 
 ```bash
-doc-builder {package_name} {path_to_docs} --build_dir {build_dir} --language {lang_id}
+doc-builder build {package_name} {path_to_docs} --build_dir {build_dir} --language {lang_id}
 ```
 
 To automatically build the documentation for all languages via the GitHub Actions templates, simply provide the `languages` argument to your workflow, with a space-separated list of the languages you wish to build, e.g. `languages: en es`.
