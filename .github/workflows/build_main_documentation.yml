@@ -26,6 +26,8 @@ on:
         type: string
       install_rust:
         type: boolean
+      install_libgl1:
+        type: boolean
     secrets:
       token:
         required: true
@@ -67,6 +69,10 @@ jobs:
           else
             echo "package_name=${{ inputs.package_name }}" >> $GITHUB_ENV
           fi
+
+      - name: Install libgl1
+        if: inputs.install_libgl1
+        run: apt-get install -y libgl1
 
       - name: Install Rust
         uses: actions-rs/toolchain@v1
