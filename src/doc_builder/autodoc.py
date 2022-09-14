@@ -259,7 +259,7 @@ def is_rst_docstring(docstring):
 
 
 # Re pattern to catch example introduction & example code block.
-_re_example_codeblock = re.compile(r"((.*:\s+)?^```(((?!```)(.|\n))*)+```)", re.MULTILINE)
+_re_example_codeblock = re.compile(r"((.*:\s+)?^```((?!```)(.|\n))*```)", re.MULTILINE)
 
 
 def hashlink_example_codeblock(object_doc, object_anchor):
