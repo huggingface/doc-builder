@@ -92,6 +92,9 @@ jobs:
             echo "package_name=${{ inputs.package_name }}" >> $GITHUB_ENV
           fi
 
+      - name: Install libgl1
+        run: sudo apt-get install -y libgl1
+
       - name: Install Rust
         uses: actions-rs/toolchain@v1
         if: inputs.install_rust
@@ -103,7 +106,7 @@ jobs:
         run: |
           pip uninstall -y doc-builder
           cd doc-builder
-          git pull origin main
+          git pull origin install_libgl
           pip install .
           cd ..
 
