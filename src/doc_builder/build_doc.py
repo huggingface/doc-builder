@@ -174,7 +174,7 @@ def build_mdx_files(package, doc_folder, output_dir, page_info):
         try:
             if file.suffix in [".md", ".mdx"]:
                 dest_file = output_dir / (file.with_suffix(".mdx").relative_to(doc_folder))
-                page_info["page"] = file.with_suffix(".html").relative_to(doc_folder)
+                page_info["page"] = file.with_suffix(".html").relative_to(doc_folder).as_posix()
                 os.makedirs(dest_file.parent, exist_ok=True)
                 with open(file, "r", encoding="utf-8-sig") as reader:
                     content = reader.read()
@@ -428,7 +428,7 @@ def check_toc_integrity(doc_folder, output_dir):
         output_dir (`str` or `os.PathLike`): The folder where the doc is built.
     """
     output_dir = Path(output_dir)
-    doc_files = [str(f.relative_to(output_dir).with_suffix("")) for f in output_dir.glob("**/*.mdx")]
+    doc_files = [str(f.relative_to(output_dir).with_suffix("").as_posix()) for f in output_dir.glob("**/*.mdx")]
 
     toc_file = Path(doc_folder) / "_toctree.yml"
     with open(toc_file, "r", encoding="utf-8") as f:
