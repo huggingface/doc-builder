@@ -103,6 +103,7 @@ def build_command(args):
         language=args.language,
         notebook_dir=notebook_dir,
         is_python_module=not args.not_python_module,
+        version_tag_suffix=args.version_tag_suffix,
     )
 
     # dev build should not update _versions.yml
@@ -195,6 +196,12 @@ def build_command_parser(subparsers=None):
         "--not_python_module",
         action="store_true",
         help="Whether docs files do NOT have correspoding python module (like HF course & hub docs).",
+    )
+    parser.add_argument(
+        "--version_tag_suffix",
+        type=str,
+        default="src/",
+        help="Suffix to add after the version tag (e.g. 1.3.0 or main) in the documentation links. For example, the default `src/` suffix will result in a base link as `https://github.com/huggingface/{package_name}/blob/{version_tag}/src/`.",
     )
 
     if subparsers is not None:
