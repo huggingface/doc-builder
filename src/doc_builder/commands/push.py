@@ -50,7 +50,13 @@ def create_additions(library_name: str) -> List[Dict]:
     files = [x for x in p.glob("**/*") if x.is_file()]
     additions = []
 
+    doc_version_folder = next(filter(lambda x: not x.is_file(), p.glob("*")), None).relative_to(p)
+    doc_version_folder = str(doc_version_folder)
+
     for fpath in files:
+        # do NOT commit _versions.yml on `main` branch builds as change in `_versions.yml` can collide with other doc builds
+        if doc_version_folder == "main" and str(fpath).endswith("_versions.yml"):
+            continue
         with open(fpath, "rb") as reader:
             content = reader.read()
             content_base64 = base64.b64encode(content)
