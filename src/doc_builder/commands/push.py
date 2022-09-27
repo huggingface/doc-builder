@@ -78,6 +78,8 @@ def create_deletions(
     res = requests.get(
         f"https://api.github.com/repos/{repo_id}/git/trees/heads/main", headers={"Authorization": f"bearer {token}"}
     )
+    print(res)
+    print(res.text)
     if res.status_code != 200:
         raise Exception(f"create_deletions failed (GET tree root): {res.message}")
     json = res.json()
