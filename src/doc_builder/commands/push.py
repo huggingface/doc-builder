@@ -74,6 +74,7 @@ def create_deletions(
     see more here: https://docs.github.com/en/graphql/reference/input-objects#filechanges
     """
     # 1. find url for `doc-build-dev/{library_name}` ex: doc-build-dev/accelerate
+    print("DEBUG HERE:", f"https://api.github.com/repos/{repo_id}/git/trees/heads/main")
     res = requests.get(
         f"https://api.github.com/repos/{repo_id}/git/trees/heads/main", headers={"Authorization": f"bearer {token}"}
     )
