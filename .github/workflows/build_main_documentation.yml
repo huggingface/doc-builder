@@ -28,6 +28,10 @@ on:
         type: boolean
       install_libgl1:
         type: boolean
+      repo_owner:
+        type: string
+        default: 'huggingface'
+        description: "Owner of the repo to build documentation for. Defaults to 'huggingface'."
     secrets:
       token:
         required: true
@@ -46,7 +50,7 @@ jobs:
         
       - uses: actions/checkout@v2
         with:
-          repository: 'huggingface/${{ inputs.package }}'
+          repository: '${{ inputs.repo_owner }}/${{ inputs.package }}'
           path: ${{ inputs.package }}
 
       - uses: actions/setup-node@v2
@@ -142,12 +146,12 @@ jobs:
           if [ "${{ inputs.package }}" != "${{ env.package_name }}" ]; then
             mv ${{ inputs.package }}/* ${{ env.package_name }}
           fi
-          doc-builder push ${{ env.package_name }} --doc_build_repo_id "huggingface/doc-build" --token ${{ secrets.token }} --commit_msg "Updated with commit ${{ inputs.commit_sha }} See: https://github.com/huggingface/${{ inputs.package }}/commit/${{ inputs.commit_sha }}" --n_retries 5
+          doc-builder push ${{ env.package_name }} --doc_build_repo_id "huggingface/doc-build" --token ${{ secrets.token }} --commit_msg "Updated with commit ${{ inputs.commit_sha }} See: https://github.com/${{ inputs.repo_owner }}/${{ inputs.package }}/commit/${{ inputs.commit_sha }}" --n_retries 5
 
           if [ -d "notebook_dir" ]
           then
             mkdir ${{ inputs.notebook_folder }}
             cp -r ./notebook_dir/. ${{ inputs.notebook_folder }}
-            doc-builder push ${{ inputs.notebook_folder }} --doc_build_repo_id "huggingface/notebooks" --token ${{ secrets.token }} --commit_msg "Updated ${{ inputs.package }} doc notebooks with commit ${{ inputs.commit_sha }} \n\nSee: https://github.com/huggingface/${{ inputs.package }}/commit/${{ inputs.commit_sha }}" --n_retries 5
+            doc-builder push ${{ inputs.notebook_folder }} --doc_build_repo_id "huggingface/notebooks" --token ${{ secrets.token }} --commit_msg "Updated ${{ inputs.package }} doc notebooks with commit ${{ inputs.commit_sha }} \n\nSee: https://github.com/${{ inputs.repo_owner }}/${{ inputs.package }}/commit/${{ inputs.commit_sha }}" --n_retries 5
           fi
         shell: bash
