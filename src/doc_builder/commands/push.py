@@ -78,7 +78,7 @@ def create_deletions(
         f"https://api.github.com/repos/{repo_id}/git/trees/heads/main", headers={"Authorization": f"bearer {token}"}
     )
     if res.status_code != 200:
-        raise Exception(f"create_deletions failed (GET tree root): {res.message}")
+        raise Exception(f"create_deletions failed (GET tree root): {res.text}")
     json = res.json()
     node = next(filter(lambda node: node["path"] == library_name, json["tree"]), None)
     url = node["url"]
@@ -92,7 +92,7 @@ def create_deletions(
         doc_version_folder = str(doc_version_folder)
     res = requests.get(url, headers={"Authorization": f"bearer {token}"})
     if res.status_code != 200:
-        raise Exception(f"create_deletions failed (GET tree root/{repo_id}): {res.message}")
+        raise Exception(f"create_deletions failed (GET tree root/{repo_id}): {res.text}")
     json = res.json()
     node = next(filter(lambda node: node["path"] == doc_version_folder, json["tree"]), None)
     if node is None:
@@ -103,7 +103,7 @@ def create_deletions(
     # 3. list paths in `doc-build-dev/{library_name}/{doc_version}/**/*` ex: doc-build-dev/accelerate/pr_365/**/*
     res = requests.get(f"{url}?recursive=true", headers={"Authorization": f"bearer {token}"})
     if res.status_code != 200:
-        raise Exception(f"create_deletions failed (GET tree root/{repo_id}/{doc_version_folder}): {res.message}")
+        raise Exception(f"create_deletions failed (GET tree root/{repo_id}/{doc_version_folder}): {res.text}")
     json = res.json()
     tree = json["tree"]
 
