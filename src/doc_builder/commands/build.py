@@ -135,6 +135,9 @@ def build_command(args):
 
             # Build doc with node
             working_dir = str(tmp_dir / "kit")
+            if os.name == "nt":
+                # windows uses back slash for paths
+                working_dir = working_dir.replace("/", "\\")
             print("Installing node dependencies")
             subprocess.run(
                 ["npm", "ci"],

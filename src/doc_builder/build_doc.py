@@ -454,7 +454,11 @@ def check_toc_integrity(doc_folder, output_dir):
 
     toc_file = Path(doc_folder) / "_toctree.yml"
     with open(toc_file, "r", encoding="utf-8") as f:
-        toc = yaml.safe_load(f.read())
+        toc_content = f.read()
+        if os.name == "nt":
+            # windows uses back slash for paths
+            toc_content = toc_content.replace("/", "\\")
+        toc = yaml.safe_load(toc_content)
 
     toc_sections = []
     sphinx_refs = []

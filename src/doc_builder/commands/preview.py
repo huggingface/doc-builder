@@ -128,6 +128,9 @@ def start_sveltekit_dev(tmp_dir, env, args):
     Installs sveltekit node dependencies & starts sveltekit in dev mode in a temp dir.
     """
     working_dir = str(tmp_dir / "kit")
+    if os.name == "nt":
+        # windows uses back slash for paths
+        working_dir = working_dir.replace("/", "\\")
     print("Installing node dependencies")
     subprocess.run(
         ["npm", "ci"],
