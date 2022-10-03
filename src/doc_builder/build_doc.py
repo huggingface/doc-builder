@@ -455,6 +455,7 @@ def check_toc_integrity(doc_folder, output_dir):
     toc_file = Path(doc_folder) / "_toctree.yml"
     with open(toc_file, "r", encoding="utf-8") as f:
         toc_content = f.read()
+        print("DEBUG: HANDLE WINDOWS BACK SLASH")
         if os.name == "nt":
             # windows uses back slash for paths
             toc_content = toc_content.replace("/", "\\")
