@@ -100,8 +100,8 @@ if is_watchdog_available():
                         if str(src_path).endswith(".md"):
                             src_path += "x"
                             relative_path += "x"
-                        src = Path(tmp_out_dir) / Path(src_path).name
-                        dest = self.kit_routes_folder / relative_path
+                        src = Path(os.path.join(tmp_out_dir, Path(src_path.name)))
+                        dest = Path(os.path.join(self.kit_routes_folder, relative_path))
                         shutil.move(src, dest)
             except Exception as e:
                 print(f"Error building: {src_path}\n{e}")
@@ -127,10 +127,7 @@ def start_sveltekit_dev(tmp_dir, env, args):
     """
     Installs sveltekit node dependencies & starts sveltekit in dev mode in a temp dir.
     """
-    working_dir = str(tmp_dir / "kit")
-    if os.name == "nt":
-        # windows uses back slash for paths
-        working_dir = working_dir.replace("/", "\\")
+    working_dir = os.path.join(tmp_dir, "kit")
     print("Installing node dependencies")
     subprocess.run(
         ["npm", "ci"],
@@ -138,6 +135,7 @@ def start_sveltekit_dev(tmp_dir, env, args):
         check=True,
         encoding="utf-8",
         cwd=working_dir,
+        shell=True,
     )
 
     # start sveltekit in dev mode
@@ -147,6 +145,7 @@ def start_sveltekit_dev(tmp_dir, env, args):
         encoding="utf-8",
         cwd=working_dir,
         env=env,
+        shell=True,
     )
 
 
@@ -168,7 +167,7 @@ def preview_command(args):
         )
 
     with tempfile.TemporaryDirectory() as tmp_dir:
-        output_path = Path(tmp_dir) / args.library_name / args.version / args.language
+        output_path = Path(os.path.join(tmp_dir, args.library_name, args.version, args.language))
 
         print("Initial build docs for", args.library_name, args.path_to_docs, output_path)
         source_files_mapping = build_doc(
@@ -184,16 +183,16 @@ def preview_command(args):
         # convert the MDX files into HTML files.
         tmp_dir = Path(tmp_dir)
         # Copy everything in a tmp dir
-        shutil.copytree(kit_folder, tmp_dir / "kit")
+        shutil.copytree(kit_folder, os.path.join(tmp_dir, "kit"))
         # Manual copy and overwrite from output_path to tmp_dir / "kit" / "src" / "routes"
         # We don't use shutil.copytree as tmp_dir / "kit" / "src" / "routes" exists and contains important files.
-        kit_routes_folder = tmp_dir / "kit" / "src" / "routes"
+        kit_routes_folder = os.path.join(tmp_dir, "kit", "src", "routes")
         # files/folders cannot have a name that starts with `__` since it is a reserved Sveltekit keyword
         for p in output_path.glob("**/*__*"):
             if p.exists():
                 p.rmdir if p.is_dir() else p.unlink()
         for f in output_path.iterdir():
-            dest = kit_routes_folder / f.name
+            dest = Path(os.path.join(kit_routes_folder, f.name))
             if f.is_dir():
                 # Remove the dest folder if it exists
                 if dest.is_dir():

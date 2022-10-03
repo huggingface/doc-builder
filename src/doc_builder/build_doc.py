@@ -451,6 +451,8 @@ def check_toc_integrity(doc_folder, output_dir):
     """
     output_dir = Path(output_dir)
     doc_files = [str(f.relative_to(output_dir).with_suffix("").as_posix()) for f in output_dir.glob("**/*.mdx")]
+    if os.name == "nt":
+        doc_files = [file.replace("/", "\\") for file in doc_files]
 
     toc_file = Path(doc_folder) / "_toctree.yml"
     with open(toc_file, "r", encoding="utf-8") as f:
