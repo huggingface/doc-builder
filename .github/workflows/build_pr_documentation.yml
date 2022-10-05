@@ -140,13 +140,13 @@ jobs:
           if [ -z "${{ inputs.languages }}" ];
           then
             echo "languages not provided, defaulting to English"
-            doc-builder build ${{ inputs.package }} ../${{ env.doc_folder }} $args
+            doc-builder build ${{ env.package_name }} ../${{ env.doc_folder }} $args
           else
             IFS=', ' read -r -a langs <<< "${{ inputs.languages }}"
             for lang in "${langs[@]}"
             do
                 echo "Generating docs for language $lang"
-                doc-builder build ${{ inputs.package }} ../${{ env.doc_folder }}/$lang $args --language $lang
+                doc-builder build ${{ env.package_name }} ../${{ env.doc_folder }}/$lang $args --language $lang
             done
           fi
           cd ..
