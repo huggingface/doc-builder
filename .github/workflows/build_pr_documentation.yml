@@ -140,13 +140,13 @@ jobs:
           if [ -z "${{ inputs.languages }}" ];
           then
             echo "languages not provided, defaulting to English"
-            doc-builder build ${{ inputs.package }} ../${{ env.doc_folder }} $args
+            doc-builder build ${{ env.package_name }} ../${{ env.doc_folder }} $args
           else
             IFS=', ' read -r -a langs <<< "${{ inputs.languages }}"
             for lang in "${langs[@]}"
             do
                 echo "Generating docs for language $lang"
-                doc-builder build ${{ inputs.package }} ../${{ env.doc_folder }}/$lang $args --language $lang
+                doc-builder build ${{ env.package_name }} ../${{ env.doc_folder }}/$lang $args --language $lang
             done
           fi
           cd ..
@@ -155,9 +155,6 @@ jobs:
         shell: bash
         run: |
           cd build_dir
-          if [ "${{ inputs.package }}" != "${{ env.package_name }}" ]; then
-            mv ${{ inputs.package }} ${{ env.package_name }}
-          fi
           doc-builder push ${{ env.package_name }} --doc_build_repo_id "huggingface/doc-build-dev" --token ${{ env.write_token }} --commit_msg "Updated with commit ${{ inputs.commit_sha }} See: https://github.com/${{ inputs.repo_owner }}/${{ inputs.package }}/commit/${{ inputs.commit_sha }}" --n_retries 5
 
       - name: Find doc comment
