@@ -533,36 +533,52 @@ def resolve_links_in_text(text, package, mapping, page_info):
     prefix = f"/docs/{package_name}/{version}/{language}/"
 
     def _resolve_link(search):
-        object_name, last_char = search.groups()
+        object_or_param_name, last_char = search.groups()
         # Deal with external libs first.
-        lib_name = object_name.split(".")[0]
+        lib_name = object_or_param_name.split(".")[0]
         if lib_name.startswith("~"):
             lib_name = lib_name[1:]
         if lib_name in HUGGINFACE_LIBS and lib_name != package_name:
-            link = get_external_object_link(object_name, page_info)
+            link = get_external_object_link(object_or_param_name, page_info)
             return f"{link}{last_char}"
+        object_name, param_name = None, None
+        # If `#` is in the name, assume it's a link to the function/method parameter.
+        if "#" in object_or_param_name:
+            object_name_for_param = object_or_param_name.split("#", 1)[0]
+            # Strip preceding `~` if it's there.
+            object_name_for_param = (
+                object_name_for_param[1:] if object_name_for_param.startswith("~") else object_name_for_param
+            )
+            obj = find_object_in_package(object_name_for_param, package)
+            param_name = object_or_param_name.split("#", 1)[-1]
         # If the name begins with `~`, we shortcut to the last part.
-        if object_name.startswith("~"):
-            obj = find_object_in_package(object_name[1:], package)
-            object_name = object_name.split(".")[-1]
+        elif object_or_param_name.startswith("~"):
+            obj = find_object_in_package(object_or_param_name[1:], package)
+            object_name = object_or_param_name.split(".")[-1]
         else:
-            obj = find_object_in_package(object_name, package)
+            obj = find_object_in_package(object_or_param_name, package)
+            object_name = object_or_param_name
+        # Object not found, return the original link text.
         if obj is None:
-            return f"`{object_name}`{last_char}"
+            return f"`{object_or_param_name}`{last_char}"
 
-        # If the object is not a class, we add ()
-        if not isinstance(obj, (type, property)):
-            object_name = f"{object_name}()"
+        link_name = object_name if param_name is None else param_name
+
+        # If the link points to an object and the object is not a class, we add ()
+        if param_name is None and not isinstance(obj, (type, property)):
+            link_name = f"{link_name}()"
 
         # Link to the anchor
         anchor = get_shortest_path(obj, package)
         if anchor not in mapping:
-            return f"`{object_name}`{last_char}"
+            return f"`{link_name}`{last_char}"
         page = f"{prefix}{mapping[anchor]}"
+        if param_name:
+            anchor = f"{anchor}.{param_name}"
         if "#" in page:
-            return f"[{object_name}]({page}){last_char}"
+            return f"[{link_name}]({page}){last_char}"
         else:
-            return f"[{object_name}]({page}#{anchor}){last_char}"
+            return f"[{link_name}]({page}#{anchor}){last_char}"
 
     return re.sub(r"\[`([^`]+)`\]([^\(])", _resolve_link, text)
 
