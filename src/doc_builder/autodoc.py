@@ -542,14 +542,19 @@ def resolve_links_in_text(text, package, mapping, page_info):
             link = get_external_object_link(object_or_param_name, page_info)
             return f"{link}{last_char}"
         object_name, param_name = None, None
+        # If `#` is in the name, assume it's a link to the function/method parameter.
+        if "#" in object_or_param_name:
+            object_name_for_param = object_or_param_name.split("#", 1)[0]
+            # Strip preceding `~` if it's there.
+            object_name_for_param = (
+                object_name_for_param[1:] if object_name_for_param.startswith("~") else object_name_for_param
+            )
+            obj = find_object_in_package(object_name_for_param, package)
+            param_name = object_or_param_name.split("#", 1)[-1]
         # If the name begins with `~`, we shortcut to the last part.
-        if object_or_param_name.startswith("~"):
+        elif object_or_param_name.startswith("~"):
             obj = find_object_in_package(object_or_param_name[1:], package)
             object_name = object_or_param_name.split(".")[-1]
-        # If "#" is in the name, assume it's a link to the function/method parameter.
-        elif "#" in object_or_param_name:
-            obj = find_object_in_package(object_or_param_name.split("#", 1)[0], package)
-            param_name = object_or_param_name.split("#", 1)[-1]
         else:
             obj = find_object_in_package(object_or_param_name, package)
             object_name = object_or_param_name

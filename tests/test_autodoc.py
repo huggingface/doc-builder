@@ -373,13 +373,13 @@ before.
 
         self.assertEqual(
             resolve_links_in_text(
-                "Link to [`transformers.BertModel.forward#input_ids`].",
+                "Link to [`transformers.BertModel.forward#input_ids`], [`~transformers.BertModel.forward#input_ids`].",
                 transformers,
                 small_mapping,
                 page_info,
             ),
             (
-                "Link to [input_ids](/docs/transformers/main/en/model_doc/bert.html#transformers.BertModel.forward.input_ids)."
+                "Link to [input_ids](/docs/transformers/main/en/model_doc/bert.html#transformers.BertModel.forward.input_ids), [input_ids](/docs/transformers/main/en/model_doc/bert.html#transformers.BertModel.forward.input_ids)."
             ),
         )
 
