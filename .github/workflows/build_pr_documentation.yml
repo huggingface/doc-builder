@@ -37,7 +37,7 @@ on:
         description: "Owner of the repo to build documentation for. Defaults to 'huggingface'."
     secrets:
       token:
-        required: false
+        required: true
 
 jobs:
   build_pr_documentation:
@@ -50,6 +50,7 @@ jobs:
         with:
           repository: 'huggingface/doc-builder'
           path: doc-builder
+          ref: use_hf_hub
 
       - uses: actions/checkout@v2
         with:
@@ -113,7 +114,7 @@ jobs:
         run: |
           pip uninstall -y doc-builder
           cd doc-builder
-          git pull origin main
+          git pull origin use_hf_hub
           pip install .
           cd ..
 
@@ -155,7 +156,7 @@ jobs:
         shell: bash
         run: |
           cd build_dir
-          doc-builder push ${{ env.package_name }} --doc_build_repo_id "hf-doc-build/doc-build-dev" --token ${{ env.write_token }} --commit_msg "Updated with commit ${{ inputs.commit_sha }} See: https://github.com/${{ inputs.repo_owner }}/${{ inputs.package }}/commit/${{ inputs.commit_sha }}" --n_retries 5
+          doc-builder push ${{ env.package_name }} --doc_build_repo_id "hf-doc-build/doc-build-dev" --token "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" --commit_msg "Updated with commit ${{ inputs.commit_sha }} See: https://github.com/${{ inputs.repo_owner }}/${{ inputs.package }}/commit/${{ inputs.commit_sha }}" --n_retries 5
 
       - name: Find doc comment
         uses: peter-evans/find-comment@v1
