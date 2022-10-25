@@ -21,14 +21,17 @@ from time import sleep, time
 from huggingface_hub import CommitOperationDelete, HfApi
 
 
+REPO_TYPE = "dataset"
+
+
 def delete_folder(repo_id, folder_path_in_repo, token, commit_message="Delete folder"):
     api = HfApi()
-    repo_files = api.list_repo_files(repo_id)
+    repo_files = api.list_repo_files(repo_id, repo_type=REPO_TYPE)
     files_to_delete = [rf for rf in repo_files if rf.startswith(folder_path_in_repo)]
     delete_operations = [CommitOperationDelete(path_in_repo=rf) for rf in files_to_delete]
     api.create_commit(
         repo_id=repo_id,
-        repo_type="dataset",
+        repo_type=REPO_TYPE,
         operations=delete_operations,
         commit_message=commit_message,
         token=token,
@@ -75,7 +78,7 @@ def push_command_add(args):
             )
             api.upload_folder(
                 repo_id=args.doc_build_repo_id,
-                repo_type="dataset",
+                repo_type=REPO_TYPE,
                 folder_path=folder_path,
                 path_in_repo=folder_path,
                 commit_message=args.commit_msg,
