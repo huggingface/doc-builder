@@ -28,6 +28,7 @@ def delete_folder(repo_id, folder_path_in_repo, token, commit_message="Delete fo
     delete_operations = [CommitOperationDelete(path_in_repo=rf) for rf in files_to_delete]
     api.create_commit(
         repo_id=repo_id,
+        repo_type="dataset",
         operations=delete_operations,
         commit_message=commit_message,
         token=token,
@@ -74,6 +75,7 @@ def push_command_add(args):
             )
             api.upload_folder(
                 repo_id=args.doc_build_repo_id,
+                repo_type="dataset",
                 folder_path=folder_path,
                 path_in_repo=folder_path,
                 commit_message=args.commit_msg,
