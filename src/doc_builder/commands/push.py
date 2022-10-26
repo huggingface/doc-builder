@@ -39,6 +39,13 @@ def delete_folder(repo_id, folder_path_in_repo, token, commit_message="Delete fo
     )
 
 
+def create_zip_name(library_name, version, with_ext=True):
+    file_name = f"{library_name}-{version}"
+    if with_ext:
+        file_name += ".zip"
+    return file_name
+
+
 def push_command(args):
     """
     Commit file additions and/or deletions using Github GraphQL rather than `git`.
