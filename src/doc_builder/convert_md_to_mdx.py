@@ -69,7 +69,7 @@ def convert_special_chars(text):
     Convert { and < that have special meanings in MDX.
     """
     _re_lcub_svelte = re.compile(
-        r"<(Question|Tip|Added|Changed|Deprecated|DocNotebookDropdown|CourseFloatingBanner|FrameworkSwitch|audio)(((?!<(Question|Tip|Added|Changed|Deprecated|DocNotebookDropdown|CourseFloatingBanner|FrameworkSwitch|audio)).)*)>|&amp;lcub;(#if|:else}|/if})",
+        r"<(Question|Tip|Added|Changed|Deprecated|DocNotebookDropdown|CourseFloatingBanner|FrameworkSwitch|audio|PipelineIcon|PipelineTag)(((?!<(Question|Tip|Added|Changed|Deprecated|DocNotebookDropdown|CourseFloatingBanner|FrameworkSwitch|audio|PipelineIcon|PipelineTag)).)*)>|&amp;lcub;(#if|:else}|/if})",
         re.DOTALL,
     )
     text = text.replace("{", "&amp;lcub;")
@@ -77,7 +77,7 @@ def convert_special_chars(text):
     text = _re_lcub_svelte.sub(lambda match: match[0].replace("&amp;lcub;", "{"), text)
     # We don't want to replace those by the HTML code, so we temporarily set them at LTHTML
     text = re.sub(
-        r"<(img|br|hr|Youtube|Question|DocNotebookDropdown|CourseFloatingBanner|FrameworkSwitch|audio)",
+        r"<(img|br|hr|Youtube|Question|DocNotebookDropdown|CourseFloatingBanner|FrameworkSwitch|audio|PipelineIcon|PipelineTag)",
         r"LTHTML\1",
         text,
     )  # html void elements with no closing counterpart
