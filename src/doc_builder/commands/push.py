@@ -25,20 +25,6 @@ from huggingface_hub import CommitOperationDelete, HfApi
 REPO_TYPE = "dataset"
 
 
-def delete_folder(repo_id, folder_path_in_repo, token, commit_message="Delete folder"):
-    api = HfApi()
-    repo_files = api.list_repo_files(repo_id, repo_type=REPO_TYPE)
-    files_to_delete = [rf for rf in repo_files if rf.startswith(folder_path_in_repo)]
-    delete_operations = [CommitOperationDelete(path_in_repo=rf) for rf in files_to_delete]
-    api.create_commit(
-        repo_id=repo_id,
-        repo_type=REPO_TYPE,
-        operations=delete_operations,
-        commit_message=commit_message,
-        token=token,
-    )
-
-
 def create_zip_name(library_name, version, with_ext=True):
     file_name = f"{library_name}-{version}"
     if with_ext:
@@ -121,11 +107,14 @@ def push_command_remove(args):
     doc_build_repo_id = args.doc_build_repo_id
     commit_msg = args.commit_msg
 
-    folder_path = f"{library_name}/{doc_version_folder}"
+    api = HfApi()
+    zip_file_path = create_zip_name(library_name, doc_version_folder)
 
     while number_of_retries:
         try:
-            delete_folder(doc_build_repo_id, folder_path, args.token, commit_message=commit_msg)
+            api.delete_file(
+                zip_file_path, doc_build_repo_id, token=args.token, repo_type=REPO_TYPE, commit_message=commit_msg
+            )
             break
         except Exception as e:
             number_of_retries -= 1
