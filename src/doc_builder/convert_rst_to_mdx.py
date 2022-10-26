@@ -677,6 +677,8 @@ def convert_rst_to_mdx(rst_text, page_info, add_imports=True):
             '	import Added from "$lib/Added.svelte";',
             '	import Changed from "$lib/Changed.svelte";',
             '	import Deprecated from "$lib/Deprecated.svelte";',
+            '	import PipelineIcon from "$lib/PipelineIcon.svelte";',
+            '	import PipelineTag from "$lib/PipelineTag.svelte";',
             "	",
             '	export let fw: "pt" | "tf"',
             "</script>",
