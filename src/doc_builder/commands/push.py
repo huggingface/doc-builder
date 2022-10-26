@@ -81,6 +81,7 @@ def push_command_add(args):
                 repo_id=args.doc_build_repo_id,
                 repo_type=REPO_TYPE,
                 path_or_fileobj=zip_file_path,
+                path_in_repo=zip_file_path,
                 commit_message=args.commit_msg,
                 token=args.token,
             )
