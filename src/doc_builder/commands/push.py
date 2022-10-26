@@ -15,6 +15,7 @@
 
 import argparse
 import logging
+import shutil
 from pathlib import Path
 from time import sleep, time
 
@@ -68,19 +69,18 @@ def push_command_add(args):
     doc_version_folder = str(doc_version_folder)
 
     folder_path = f"{library_name}/{doc_version_folder}"
+    zip_file_path = f"{library_name}-{doc_version_folder}.zip"
+    shutil.make_archive(zip_file_path, "zip", folder_path)
+
     api = HfApi()
 
     time_start = time()
     while number_of_retries:
         try:
-            delete_folder(
-                args.doc_build_repo_id, folder_path, args.token, commit_message=f"Deleteions: {args.commit_msg}"
-            )
-            api.upload_folder(
+            api.upload_file(
                 repo_id=args.doc_build_repo_id,
                 repo_type=REPO_TYPE,
-                folder_path=folder_path,
-                path_in_repo=folder_path,
+                path_or_fileobj=zip_file_path,
                 commit_message=args.commit_msg,
                 token=args.token,
             )
