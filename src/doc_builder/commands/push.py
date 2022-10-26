@@ -82,15 +82,15 @@ def push_command_add(args):
             break
         except Exception as e:
             number_of_retries -= 1
-            print(f"createCommitOnBranch error occurred: {e}")
+            print(f"push_command_add error occurred: {e}")
             if number_of_retries:
                 print(f"Failed on try #{max_n_retries-number_of_retries}, pushing again in {n_seconds_sleep} seconds")
                 sleep(n_seconds_sleep)
             else:
-                raise RuntimeError("create_commit additions failed") from e
+                raise RuntimeError("push_command_add failed") from e
 
     time_end = time()
-    logging.debug(f"commit_additions took {time_end-time_start:.4f} seconds or {(time_end-time_start)/60.0:.2f} mins")
+    logging.debug(f"push_command_add took {time_end-time_start:.4f} seconds or {(time_end-time_start)/60.0:.2f} mins")
 
 
 def push_command_remove(args):
@@ -118,12 +118,12 @@ def push_command_remove(args):
             break
         except Exception as e:
             number_of_retries -= 1
-            print(f"createCommitOnBranch error occurred: {e}")
+            print(f"push_command_remove error occurred: {e}")
             if number_of_retries:
                 print(f"Failed on try #{max_n_retries-number_of_retries}, pushing again in {n_seconds_sleep} seconds")
                 sleep(n_seconds_sleep)
             else:
-                raise RuntimeError("create_commit additions failed") from e
+                raise RuntimeError("push_command_remove failed") from e
 
 
 def push_command_parser(subparsers=None):
