@@ -34,7 +34,7 @@ def create_zip_name(library_name, version, with_ext=True):
 
 def push_command(args):
     """
-    Commit file additions and/or deletions using Github GraphQL rather than `git`.
+    Commit file doc builds changes using: 1. zip doc build artifcats 2. hf_hub client to upload/delete zip file
     Usage: doc-builder push $args
     """
     if args.n_retries < 1:
@@ -47,7 +47,7 @@ def push_command(args):
 
 def push_command_add(args):
     """
-    Commit file changes (additions & deletions) using Github GraphQL rather than `git`.
+    Commit file changes using: 1. zip doc build artifcats 2. hf_hub client to upload zip file
     Used in: build_main_documentation.yml & build_pr_documentation.yml
     """
     max_n_retries = args.n_retries + 1
@@ -95,7 +95,7 @@ def push_command_add(args):
 
 def push_command_remove(args):
     """
-    Commit file deletions only using Github GraphQL rather than `git`.
+    Commit file deletions using hf_hub client to delete zip file
     Used in: delete_doc_comment.yml
     """
     max_n_retries = args.n_retries + 1
