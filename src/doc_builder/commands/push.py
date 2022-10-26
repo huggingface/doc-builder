@@ -69,8 +69,7 @@ def push_command_add(args):
     doc_version_folder = str(doc_version_folder)
 
     folder_path = f"{library_name}/{doc_version_folder}"
-    zip_file_path = f"{library_name}-{doc_version_folder}.zip"
-    shutil.make_archive(zip_file_path, "zip", folder_path)
+    zip_file_path = shutil.make_archive(f"{library_name}-{doc_version_folder}", "zip", folder_path)
 
     api = HfApi()
 
