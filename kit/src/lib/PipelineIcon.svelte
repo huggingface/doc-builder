@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { SvelteComponent } from "svelte";
+	import { PIPELINE_DATA } from "./pipeline";
 
 	import IconAudioClassification from "./PipelineIcons/IconAudioClassification.svelte";
 	import IconAudioToAudio from "./PipelineIcons/IconAudioToAudio.svelte";
@@ -69,9 +70,16 @@
 		"tabular-regression": IconTabularRegression,
 		"document-question-answering": IconDocumentQuestionAnswering,
 	};
+
+	const PIPELINE_TAG_ICO_CLASS = Object.fromEntries(
+		Object.entries(PIPELINE_DATA).map(([tagType, data]) => [
+			tagType,
+			`tag-ico-${data.color}`,
+		])
+	);
 </script>
 
 <svelte:component
 	this={ICON_COMPONENTS[pipeline] ?? IconFillMask}
-	{classNames}
+	classNames="{classNames} tag-ico {PIPELINE_TAG_ICO_CLASS[pipeline]}"
 />
