@@ -19,7 +19,7 @@ import shutil
 from pathlib import Path
 from time import sleep, time
 
-from huggingface_hub import CommitOperationDelete, HfApi
+from huggingface_hub import HfApi
 
 
 REPO_TYPE = "dataset"
