@@ -6,7 +6,7 @@
 	export let pipeline = "";
 </script>
 
-<div class="inline-flex items-center {classNames}">
+<div class="inline-flex items-center border pr-1 rounded-xl {classNames}">
 	<PipelineIcon classNames="mr-1" {pipeline} />
 	<span>
 		{PIPELINE_DATA[pipeline].name ?? pipeline}
