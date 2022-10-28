@@ -23,10 +23,11 @@ from huggingface_hub import HfApi
 
 
 REPO_TYPE = "dataset"
+SEPARATOR = "@@@"
 
 
 def create_zip_name(library_name, version, with_ext=True):
-    file_name = f"{library_name}/{version}"
+    file_name = f"{library_name}{SEPARATOR}{version}"
     if with_ext:
         file_name += ".zip"
     return file_name
