@@ -95,9 +95,11 @@ Note the use of special arguments like `pr_number` and `package` under the `with
 doc_folder
 ├── en
 │   ├── _toctree.yml
+│   ├── _redirects.yml
 │   ...
 └── es
     ├── _toctree.yml
+    ├── _redirects.yml
     ...
 ```
 
@@ -109,6 +111,15 @@ doc-builder {package_name} {path_to_docs} --build_dir {build_dir} --language {la
 
 To automatically build the documentation for all languages via the GitHub Actions templates, simply provide the `languages` argument to your workflow, with a space-separated list of the languages you wish to build, e.g. `languages: en es`.
 
+#### Redirects
+
+You can optionally provide `_redirects.yml` for "old links". The yml file should look like:
+
+```yml
+how_to: getting_started
+package_reference/classes: package_reference/main_classes
+# old_local: new_local
+```
 
 ## Writing documentation for Hugging Face libraries
 
