@@ -4,6 +4,11 @@ IFS=$'\n\t'
 
 cp src/routes/_toctree.yml build/_toctree.yml
 
+# Copy redirects yml file if exists
+if [ -e src/routes/_redirects.yml ]
+ then cp src/routes/_redirects.yml build/_redirects.yml
+fi
+
 # To avoid conflict with Hub Tailwind CSS build, 
 # 1. making doc-builder's PostCSS geenrated file an empty one
 # 2. making `rel="stylesheet"` -> `rel="modulepreload"`
