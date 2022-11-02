@@ -125,6 +125,14 @@ jobs:
           then
             cd ${{ inputs.package }}
             pip install .[dev]
+          elif [[ "${{ inputs.package }}" == *"safetensors"* ]];
+          then
+            cd ${{ inputs.package }}
+            pip install -U pip
+            pip install pytest requests setuptools_rust numpy pyarrow datasets
+            pip install tensorflow numpy
+            pip install jax jaxlib flax
+            python setup.py develop
           fi
           cd ..
 
