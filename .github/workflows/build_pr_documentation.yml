@@ -121,7 +121,11 @@ jobs:
           if [[ -n "${{ inputs.package_path }}" ]]
           then
             cd ${{ inputs.package_path }}
-            pip install .[dev]
+            pip install pytest requests setuptools_rust numpy pyarrow datasets
+            pip install tensorflow numpy
+            pip install jax jaxlib flax
+            pip install setuptools_rust
+            python setup.py develop
           elif [[ "${{ inputs.additional_args }}" != *"--not_python_module"* ]];
           then
             cd ${{ inputs.package }}
@@ -129,7 +133,6 @@ jobs:
           elif [[ "${{ inputs.package }}" == *"safetensors"* ]];
           then
             cd ${{ inputs.package }}
-            pip install -U pip
             pip install pytest requests setuptools_rust numpy pyarrow datasets
             pip install tensorflow numpy
             pip install jax jaxlib flax
