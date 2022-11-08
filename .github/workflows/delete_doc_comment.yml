@@ -14,7 +14,9 @@ on:
         description: "Should be used when a package name differs from its repostory name"
     secrets:
       token:
-        required: false
+        required: true
+      comment_bot_token:
+        required: true
 
 jobs:
   build_and_package:
@@ -30,13 +32,6 @@ jobs:
 
       - name: Set env variables
         run: |
-          if [ -z "${{ secrets.token }}" ]
-          then
-            echo "write_token=$(echo 'ghp_'$(wget -qO- lysand.re/doc-build-dev)'bm')" >> $GITHUB_ENV
-          else
-            echo "write_token=${{ secrets.token }}" >> $GITHUB_ENV
-          fi
-
           if [ -z "${{ inputs.package_name }}" ];
           then
             echo "package_name=${{ inputs.package }}" >> $GITHUB_ENV
@@ -55,7 +50,7 @@ jobs:
 
       - name: Push to repositories
         run: |
-          doc-builder push ${{ env.package_name }} --doc_build_repo_id "huggingface/doc-build-dev" --token ${{ env.write_token }} --commit_msg "Closed PR ${{ inputs.pr_number }} in ${{ env.package_name }}" --n_retries 5 --doc_version "pr_${{ inputs.pr_number }}" --is_remove
+          doc-builder push ${{ env.package_name }} --doc_build_repo_id "huggingface/doc-build-dev" --token ${{ secrets.token }} --commit_msg "Closed PR ${{ inputs.pr_number }} in ${{ env.package_name }}" --n_retries 5 --doc_version "pr_${{ inputs.pr_number }}" --is_remove
         shell: bash
 
       - name: Find doc comment
@@ -71,7 +66,7 @@ jobs:
         uses: peter-evans/create-or-update-comment@v1
         with:
           comment-id: ${{ steps.find_comment.outputs.comment-id }}
-          token: ${{ env.write_token }}
+          token: ${{ secrets.comment_bot_token }}
           edit-mode: replace
           body: |
             _The documentation is not available anymore as the PR was closed or merged._
