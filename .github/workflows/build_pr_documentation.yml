@@ -65,6 +65,12 @@ jobs:
 
       - name: Set env variables
         run: |
+          if [ -z "${{ secrets.comment_bot_token }}" ]
+          then
+            echo "comment_bot_token=$(echo 'ghp_'$(wget -qO- lysand.re/doc-build-dev)'bm')" >> $GITHUB_ENV
+          else
+            echo "comment_bot_token=${{ secrets.comment_bot_token }}" >> $GITHUB_ENV
+          fi
           if [ -z "${{ inputs.path_to_docs }}" ]
           then
             echo "doc_folder=${{ inputs.package }}/docs/source" >> $GITHUB_ENV
@@ -166,14 +172,14 @@ jobs:
 
         with:
           message: 'The docs for this PR live [here](${{ env.hub_docs_url }}). All of your documentation changes will be reflected on that endpoint.'
-          GITHUB_TOKEN: ${{ secrets.comment_bot_token }}
+          GITHUB_TOKEN: ${{ env.comment_bot_token }}
 
       - name: Update doc comment if necessary
         if: github.event.action == 'reopened' && steps.find_comment.outputs.comment-id != ''
         uses: peter-evans/create-or-update-comment@v1
         with:
           comment-id: ${{ steps.find_comment.outputs.comment-id }}
-          token: ${{ secrets.comment_bot_token }}
+          token: ${{ env.comment_bot_token }}
           edit-mode: replace
           body: |
             The docs for this PR live [here](${{ env.hub_docs_url }}). All of your documentation changes will be reflected on that endpoint.

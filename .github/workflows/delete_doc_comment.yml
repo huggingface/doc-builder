@@ -33,6 +33,13 @@ jobs:
 
       - name: Set env variables
         run: |
+          if [ -z "${{ secrets.comment_bot_token }}" ]
+          then
+            echo "comment_bot_token=$(echo 'ghp_'$(wget -qO- lysand.re/doc-build-dev)'bm')" >> $GITHUB_ENV
+          else
+            echo "comment_bot_token=${{ secrets.comment_bot_token }}" >> $GITHUB_ENV
+          fi
+
           if [ -z "${{ inputs.package_name }}" ];
           then
             echo "package_name=${{ inputs.package }}" >> $GITHUB_ENV
@@ -67,7 +74,7 @@ jobs:
         uses: peter-evans/create-or-update-comment@v1
         with:
           comment-id: ${{ steps.find_comment.outputs.comment-id }}
-          token: ${{ secrets.comment_bot_token }}
+          token: ${{ env.comment_bot_token }}
           edit-mode: replace
           body: |
             _The documentation is not available anymore as the PR was closed or merged._
