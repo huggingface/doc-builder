@@ -163,8 +163,14 @@ jobs:
         uses: peter-evans/find-comment@v2
         id: fc
         with:
+          token: ${{ env.comment_bot_token }}
           issue-number: ${{ inputs.pr_number }}
           comment-author: HuggingFaceDocBuilderDev
+
+      - run: |
+          echo ${{ steps.fc.outputs.comment-id }}
+          echo ${{ steps.fc.outputs.comment-body }}
+          echo ${{ steps.fc.outputs.comment-author }}
 
       - name: Log comment id
         run: |
