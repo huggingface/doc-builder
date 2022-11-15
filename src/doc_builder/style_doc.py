@@ -263,9 +263,11 @@ def style_docstring(docstring, max_len):
     idx = 0
     while idx < len(lines):
         line = lines[idx]
-        # Doing all re searches once for the one we need to repeat.
+        # Doing all re searches once for the ones we need to repeat.
         list_search = _re_list.search(line)
         code_search = _re_code.search(line)
+        args_search = _re_args.search(line)
+        tip_search = _re_tip.search(line)
 
         # Are we starting a new paragraph?
         # New indentation or new line:
@@ -275,12 +277,17 @@ def style_docstring(docstring, max_len):
         # Code block beginning
         new_paragraph = new_paragraph or code_search is not None
         # Beginning/end of tip
-        new_paragraph = new_paragraph or _re_tip.search(line)
+        new_paragraph = new_paragraph or tip_search is not None
+        # Beginning of Args
+        new_paragraph = new_paragraph or args_search is not None
 
         # In this case, we treat the current paragraph
         if not in_code and new_paragraph and current_paragraph is not None and len(current_paragraph) > 0:
             paragraph = " ".join(current_paragraph)
             new_lines.append(format_text(paragraph, max_len, prefix=prefix, min_indent=current_indent))
+            # A blank line may be missing before the start of an argument block
+            if args_search is not None and not is_empty_line(current_paragraph[-1]):
+                new_lines.append("")
             current_paragraph = None
 
         if code_search is not None:
@@ -316,7 +323,7 @@ def style_docstring(docstring, max_len):
             prefix = list_search.groups()[0]
             current_indent = len(prefix)
             current_paragraph = [line[current_indent:]]
-        elif _re_args.search(line):
+        elif args_search:
             new_lines.append(line)
             idx += 1
             while idx < len(lines) and is_empty_line(lines[idx]):
@@ -325,7 +332,7 @@ def style_docstring(docstring, max_len):
                 param_indent = find_indent(lines[idx])
                 # We still need to treat that line
                 idx -= 1
-        elif _re_tip.search(line):
+        elif tip_search:
             # Add a new line before if not present
             if not is_empty_line(new_lines[-1]):
                 new_lines.append("")
