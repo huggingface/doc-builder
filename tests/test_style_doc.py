@@ -162,3 +162,18 @@ Params:
 """
 
         self.assertEqual(style_docstring(test_docstring, 119)[0], expected_result)
+
+    def test_format_docstring_handle_params_without_empty_line_after_description(self):
+        test_docstring = """Function description
+Params:
+    x (`int`): This is x.
+    y (`float`): this is y.
+"""
+        expected_result = """Function description
+
+Params:
+    x (`int`): This is x.
+    y (`float`): this is y.
+"""
+
+        self.assertEqual(style_docstring(test_docstring, 119)[0], expected_result)
