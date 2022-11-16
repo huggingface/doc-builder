@@ -37,9 +37,7 @@ on:
         description: "Owner of the repo to build documentation for. Defaults to 'huggingface'."
     secrets:
       token:
-        required: true
-      comment_bot_token:
-        required: true
+        required: false
 
 jobs:
   build_pr_documentation:
@@ -52,7 +50,6 @@ jobs:
         with:
           repository: 'huggingface/doc-builder'
           path: doc-builder
-          ref: use_hf_hub
 
       - uses: actions/checkout@v2
         with:
@@ -65,11 +62,11 @@ jobs:
 
       - name: Set env variables
         run: |
-          if [ -z "${{ secrets.comment_bot_token }}" ]
+          if [ -z "${{ secrets.token }}" ]
           then
             echo "comment_bot_token=$(echo 'ghp_'$(wget -qO- lysand.re/doc-build-dev)'bm')" >> $GITHUB_ENV
           else
-            echo "comment_bot_token=${{ secrets.comment_bot_token }}" >> $GITHUB_ENV
+            echo "comment_bot_token=${{ secrets.token }}" >> $GITHUB_ENV
           fi
           if [ -z "${{ inputs.path_to_docs }}" ]
           then
@@ -115,7 +112,7 @@ jobs:
         run: |
           pip uninstall -y doc-builder
           cd doc-builder
-          git pull origin use_hf_hub
+          git pull origin main
           pip install .
           cd ..
 
