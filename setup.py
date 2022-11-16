@@ -3,7 +3,7 @@
 
 from setuptools import find_packages, setup
 
-install_requires = ["GitPython", "tqdm", "pyyaml", "packaging", "nbformat", "gql[requests]", "requests"]
+install_requires = ["GitPython", "tqdm", "pyyaml", "packaging", "nbformat", "huggingface_hub"]
 
 extras = {}
 

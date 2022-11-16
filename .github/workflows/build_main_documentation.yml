@@ -109,7 +109,7 @@ jobs:
           mkdir build_dir
           mkdir build_dir/${{ env.package_name }}
           cd build_dir/${{ env.package_name }}
-          wget https://raw.githubusercontent.com/huggingface/doc-build/main/${{ env.package_name }}/_versions.yml
+          wget https://huggingface.co/datasets/hf-doc-build/doc-build/raw/main/${{ env.package_name }}/_versions.yml
 
       - name: Make documentation
         shell: bash
@@ -143,12 +143,25 @@ jobs:
       - name: Push to repositories
         run: |
           cd build_dir
-          doc-builder push ${{ env.package_name }} --doc_build_repo_id "huggingface/doc-build" --token ${{ secrets.token }} --commit_msg "Updated with commit ${{ inputs.commit_sha }} See: https://github.com/${{ inputs.repo_owner }}/${{ inputs.package }}/commit/${{ inputs.commit_sha }}" --n_retries 5
+          doc-builder push ${{ env.package_name }} --doc_build_repo_id "hf-doc-build/doc-build" --token "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" --commit_msg "Updated with commit ${{ inputs.commit_sha }} See: https://github.com/${{ inputs.repo_owner }}/${{ inputs.package }}/commit/${{ inputs.commit_sha }}" --n_retries 5 --upload_version_yml
 
           if [ -d "notebook_dir" ]
           then
-            mkdir ${{ inputs.notebook_folder }}
-            cp -r ./notebook_dir/. ${{ inputs.notebook_folder }}
-            doc-builder push ${{ inputs.notebook_folder }} --doc_build_repo_id "huggingface/notebooks" --token ${{ secrets.token }} --commit_msg "Updated ${{ inputs.package }} doc notebooks with commit ${{ inputs.commit_sha }} \n\nSee: https://github.com/${{ inputs.repo_owner }}/${{ inputs.package }}/commit/${{ inputs.commit_sha }}" --n_retries 5
+            cd notebooks
+            git pull
+            cp -r ../notebook_dir/. ${{ inputs.notebook_folder }}
+            git status
+            if [[ `git status --porcelain` ]]; then
+              git add ${{ inputs.notebook_folder }}
+              git commit -m "Updated ${{ inputs.package }} doc notebooks with commit ${{ inputs.commit_sha }} \n\nSee: https://github.com/huggingface/${{ inputs.package }}/commit/${{ inputs.commit_sha }}"
+              git push origin main ||
+              (echo "Failed on the first try, rebasing and pushing again" && git pull --rebase && git push origin main) ||
+              (echo "Failed on the second try, rebasing and pushing again" && git pull --rebase && git push origin main)
+            else
+              echo "No diff in the notebooks."
+            fi
+            cd ..
+          else
+            echo "Notebooks creation was not enabled."
           fi
         shell: bash
