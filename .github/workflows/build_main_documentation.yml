@@ -109,7 +109,7 @@ jobs:
           mkdir build_dir
           mkdir build_dir/${{ env.package_name }}
           cd build_dir/${{ env.package_name }}
-          wget https://raw.githubusercontent.com/huggingface/doc-build/main/${{ env.package_name }}/_versions.yml
+          wget https://huggingface.co/datasets/hf-doc-build/doc-build/raw/main/${{ env.package_name }}/_versions.yml
 
       - name: Make documentation
         shell: bash
@@ -143,7 +143,7 @@ jobs:
       - name: Push to repositories
         run: |
           cd build_dir
-          doc-builder push ${{ env.package_name }} --doc_build_repo_id "hf-doc-build/doc-build" --token "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" --commit_msg "Updated with commit ${{ inputs.commit_sha }} See: https://github.com/${{ inputs.repo_owner }}/${{ inputs.package }}/commit/${{ inputs.commit_sha }}" --n_retries 5
+          doc-builder push ${{ env.package_name }} --doc_build_repo_id "hf-doc-build/doc-build" --token "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" --commit_msg "Updated with commit ${{ inputs.commit_sha }} See: https://github.com/${{ inputs.repo_owner }}/${{ inputs.package }}/commit/${{ inputs.commit_sha }}" --n_retries 5 --upload_version_yml
 
           if [ -d "notebook_dir" ]
           then
