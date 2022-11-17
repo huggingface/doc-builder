@@ -341,7 +341,6 @@ def generate_frontmatter(doc_folder):
 
 
 def build_notebooks(doc_folder, notebook_dir, package=None, mapping=None, page_info=None):
-    print("build_notebooks was called", notebook_dir)
     """
     Build the notebooks associated to the MDX files in the documentation with an [[open-in-colab]] marker.
 
