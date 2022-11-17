@@ -47,6 +47,7 @@ jobs:
         with:
           repository: 'huggingface/doc-builder'
           path: doc-builder
+          ref: fix_nb
         
       - uses: actions/checkout@v2
         with:
@@ -89,7 +90,7 @@ jobs:
         run: |
           pip uninstall -y doc-builder
           cd doc-builder
-          git pull origin main
+          git pull origin fix_nb
           pip install .
           cd ..
 
@@ -124,6 +125,8 @@ jobs:
           then
             args="$args --notebook_dir ../notebook_dir"
           fi
+
+          echo $args
 
           if [ -z "${{ inputs.languages }}" ];
           then
