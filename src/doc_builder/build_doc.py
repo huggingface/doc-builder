@@ -19,6 +19,7 @@ import os
 import re
 import shutil
 import zlib
+from multiprocessing import Pool
 from pathlib import Path
 
 import yaml
@@ -182,64 +183,76 @@ def build_mdx_files(package, doc_folder, output_dir, page_info, version_tag_suff
 
     all_files = list(doc_folder.glob("**/*"))
     all_errors = []
-    for file in tqdm(all_files, desc="Building the MDX files"):
-        new_anchors = None
-        errors = None
-        page_info["path"] = file
-        try:
-            if file.suffix in [".md", ".mdx"]:
-                dest_file = output_dir / (file.with_suffix(".mdx").relative_to(doc_folder))
-                page_info["page"] = file.with_suffix(".html").relative_to(doc_folder).as_posix()
-                os.makedirs(dest_file.parent, exist_ok=True)
-                with open(file, "r", encoding="utf-8-sig") as reader:
-                    content = reader.read()
-                content = convert_md_to_mdx(content, page_info)
-                content = resolve_open_in_colab(content, page_info)
-                content, new_anchors, source_files, errors = resolve_autodoc(
-                    content, package, return_anchors=True, page_info=page_info, version_tag_suffix=version_tag_suffix
-                )
-                if source_files is not None:
-                    source_files_mapping[source_files] = str(file)
-                with open(dest_file, "w", encoding="utf-8") as writer:
-                    writer.write(content)
-                # Make sure we clean up for next page.
-                del page_info["page"]
-            elif file.suffix in [".rst"]:
-                dest_file = output_dir / (file.with_suffix(".mdx").relative_to(doc_folder))
-                page_info["page"] = file.with_suffix(".html").relative_to(doc_folder)
-                os.makedirs(dest_file.parent, exist_ok=True)
-                with open(file, "r", encoding="utf-8") as reader:
-                    content = reader.read()
-                content = convert_rst_to_mdx(content, page_info)
-                content = resolve_open_in_colab(content, page_info)
-                content, new_anchors, source_files, errors = resolve_autodoc(
-                    content, package, return_anchors=True, page_info=page_info, version_tag_suffix=version_tag_suffix
-                )
-                if source_files is not None:
-                    source_files_mapping[source_files] = str(file)
-                with open(dest_file, "w", encoding="utf-8") as writer:
-                    writer.write(content)
-                # Make sure we clean up for next page.
-                del page_info["page"]
-            elif file.is_file() and "__" not in str(file):
-                # __ is a reserved svelte file/folder prefix
-                dest_file = output_dir / (file.relative_to(doc_folder))
-                os.makedirs(dest_file.parent, exist_ok=True)
-                shutil.copy(file, dest_file)
 
-        except Exception as e:
-            raise type(e)(f"There was an error when converting {file} to the MDX format.\n" + e.args[0]) from e
+    with Pool():
+        with tqdm(all_files, desc="Building the MDX files") as pbar:
+            for file in all_files:
+                new_anchors = None
+                errors = None
+                page_info["path"] = file
+                try:
+                    if file.suffix in [".md", ".mdx"]:
+                        dest_file = output_dir / (file.with_suffix(".mdx").relative_to(doc_folder))
+                        page_info["page"] = file.with_suffix(".html").relative_to(doc_folder).as_posix()
+                        os.makedirs(dest_file.parent, exist_ok=True)
+                        with open(file, "r", encoding="utf-8-sig") as reader:
+                            content = reader.read()
+                        content = convert_md_to_mdx(content, page_info)
+                        content = resolve_open_in_colab(content, page_info)
+                        content, new_anchors, source_files, errors = resolve_autodoc(
+                            content,
+                            package,
+                            return_anchors=True,
+                            page_info=page_info,
+                            version_tag_suffix=version_tag_suffix,
+                        )
+                        if source_files is not None:
+                            source_files_mapping[source_files] = str(file)
+                        with open(dest_file, "w", encoding="utf-8") as writer:
+                            writer.write(content)
+                        # Make sure we clean up for next page.
+                        del page_info["page"]
+                    elif file.suffix in [".rst"]:
+                        dest_file = output_dir / (file.with_suffix(".mdx").relative_to(doc_folder))
+                        page_info["page"] = file.with_suffix(".html").relative_to(doc_folder)
+                        os.makedirs(dest_file.parent, exist_ok=True)
+                        with open(file, "r", encoding="utf-8") as reader:
+                            content = reader.read()
+                        content = convert_rst_to_mdx(content, page_info)
+                        content = resolve_open_in_colab(content, page_info)
+                        content, new_anchors, source_files, errors = resolve_autodoc(
+                            content,
+                            package,
+                            return_anchors=True,
+                            page_info=page_info,
+                            version_tag_suffix=version_tag_suffix,
+                        )
+                        if source_files is not None:
+                            source_files_mapping[source_files] = str(file)
+                        with open(dest_file, "w", encoding="utf-8") as writer:
+                            writer.write(content)
+                        # Make sure we clean up for next page.
+                        del page_info["page"]
+                    elif file.is_file() and "__" not in str(file):
+                        # __ is a reserved svelte file/folder prefix
+                        dest_file = output_dir / (file.relative_to(doc_folder))
+                        os.makedirs(dest_file.parent, exist_ok=True)
+                        shutil.copy(file, dest_file)
 
-        if new_anchors is not None:
-            page_name = str(file.with_suffix("").relative_to(doc_folder))
-            for anchor in new_anchors:
-                if isinstance(anchor, tuple):
-                    anchor_mapping.update({a: f"{page_name}#{anchor[0]}" for a in anchor[1:]})
-                    anchor = anchor[0]
-                anchor_mapping[anchor] = page_name
+                except Exception as e:
+                    raise type(e)(f"There was an error when converting {file} to the MDX format.\n" + e.args[0]) from e
 
-        if errors is not None:
-            all_errors.extend(errors)
+                if new_anchors is not None:
+                    page_name = str(file.with_suffix("").relative_to(doc_folder))
+                    for anchor in new_anchors:
+                        if isinstance(anchor, tuple):
+                            anchor_mapping.update({a: f"{page_name}#{anchor[0]}" for a in anchor[1:]})
+                            anchor = anchor[0]
+                        anchor_mapping[anchor] = page_name
+
+                if errors is not None:
+                    all_errors.extend(errors)
+            pbar.update()
 
     if len(all_errors) > 0:
         raise ValueError(
@@ -262,12 +275,16 @@ def resolve_links(doc_folder, package, mapping, page_info):
     """
     doc_folder = Path(doc_folder)
     all_files = list(doc_folder.glob("**/*.mdx"))
-    for file in tqdm(all_files, desc="Resolving internal links"):
-        with open(file, "r", encoding="utf-8") as reader:
-            content = reader.read()
-        content = resolve_links_in_text(content, package, mapping, page_info)
-        with open(file, "w", encoding="utf-8") as writer:
-            writer.write(content)
+    with Pool():
+        with tqdm(all_files, desc="Resolving internal links") as pbar:
+            for file in all_files:
+                with open(file, "r", encoding="utf-8") as reader:
+                    content = reader.read()
+                content = resolve_links_in_text(content, package, mapping, page_info)
+                with open(file, "w", encoding="utf-8") as writer:
+                    writer.write(content)
+
+                pbar.update()
 
 
 def generate_frontmatter_in_text(text, file_name=None):
@@ -331,13 +348,16 @@ def generate_frontmatter(doc_folder):
     """
     doc_folder = Path(doc_folder)
     all_files = list(doc_folder.glob("**/*.mdx"))
-    for file_name in tqdm(all_files, desc="Generating frontmatter"):
-        # utf-8-sig is needed to correctly open community.md file
-        with open(file_name, "r", encoding="utf-8-sig") as reader:
-            content = reader.read()
-        content = generate_frontmatter_in_text(content, file_name=file_name)
-        with open(file_name, "w", encoding="utf-8") as writer:
-            writer.write(content)
+    with Pool():
+        with tqdm(all_files, desc="Generating frontmatter") as pbar:
+            for file_name in all_files:
+                # utf-8-sig is needed to correctly open community.md file
+                with open(file_name, "r", encoding="utf-8-sig") as reader:
+                    content = reader.read()
+                content = generate_frontmatter_in_text(content, file_name=file_name)
+                with open(file_name, "w", encoding="utf-8") as writer:
+                    writer.write(content)
+                pbar.update()
 
 
 def build_notebooks(doc_folder, notebook_dir, package=None, mapping=None, page_info=None):
