@@ -4,11 +4,12 @@
 	export let chapter: number;
 	export let notebooks: { label: string; value: string }[] = [];
 	export let classNames = "";
+	export let askForHelpUrl = `https://discuss.huggingface.co/t/chapter-${chapter}-questions`
 </script>
 
 <DocNotebookDropdown options={notebooks} {classNames}>
 	<svelte:fragment slot="alwaysVisible">
-		<a href="https://discuss.huggingface.co/t/chapter-{chapter}-questions" target="_blank">
+		<a href="{askForHelpUrl}" target="_blank">
 			<img
 				alt="Ask a Question"
 				class="!m-0"
