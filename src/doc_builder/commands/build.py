@@ -105,6 +105,7 @@ def build_command(args):
         is_python_module=not args.not_python_module,
         version_tag_suffix=args.version_tag_suffix,
         repo_owner=args.repo_owner,
+        repo_name=args.repo_name,
     )
 
     # dev build should not update _versions.yml
@@ -209,6 +210,12 @@ def build_command_parser(subparsers=None):
         type=str,
         default="huggingface",
         help="Owner of the repo (e.g. huggingface, rwightman, etc.).",
+    )
+    parser.add_argument(
+        "--repo_name",
+        type=str,
+        default=None,
+        help="Name of the repo (e.g. transformers, timm, etc.). By default, this is the same as the library_name.",
     )
     if subparsers is not None:
         parser.set_defaults(func=build_command)
