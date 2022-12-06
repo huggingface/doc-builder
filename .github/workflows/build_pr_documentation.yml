@@ -35,10 +35,6 @@ on:
         type: string
         default: 'huggingface'
         description: "Owner of the repo to build documentation for. Defaults to 'huggingface'."
-      version_tag_suffix:
-        type: string
-        default: 'src/'
-        description: Suffix to add after the version tag (e.g. 1.3.0 or main) in the documentation links. For example, the default `src/` suffix will result in a base link as `https://github.com/huggingface/{package_name}/blob/{version_tag}/src/`.
     secrets:
       token:
         required: false
@@ -139,7 +135,7 @@ jobs:
         run: |
           echo "doc_folder has been set to ${{ env.doc_folder }}"
           cd doc-builder
-          args="--build_dir ../build_dir --clean --version pr_${{ inputs.pr_number }} --html ${{ inputs.additional_args }} --repo_owner ${{ inputs.repo_owner }} --repo_name ${{ inputs.package }} --version_tag_suffix "${{ inputs.version_tag_suffix }}""
+          args="--build_dir ../build_dir --clean --version pr_${{ inputs.pr_number }} --html ${{ inputs.additional_args }} --repo_owner ${{ inputs.repo_owner }} --repo_name ${{ inputs.package }}"
 
           if [ -z "${{ inputs.languages }}" ];
           then
