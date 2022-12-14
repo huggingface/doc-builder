@@ -29,7 +29,7 @@ from .convert_md_to_mdx import convert_md_to_mdx
 from .convert_rst_to_mdx import convert_rst_to_mdx, find_indent, is_empty_line
 from .convert_to_notebook import generate_notebooks_from_file
 from .frontmatter_node import FrontmatterNode
-from .utils import read_doc_config
+from .utils import get_doc_config, read_doc_config
 
 
 _re_autodoc = re.compile("^\s*\[\[autodoc\]\]\s+(\S+)\s*$")
@@ -477,7 +477,9 @@ def check_toc_integrity(doc_folder, output_dir):
         toc.extend([sec for sec in part["sections"] if "sections" in sec])
 
     files_not_in_toc = [f for f in doc_files if f not in toc_sections]
-    if len(files_not_in_toc) > 0:
+    doc_config = get_doc_config()
+    disable_toc_check = getattr(doc_config, "disable_toc_check", False)
+    if len(files_not_in_toc) > 0 and not disable_toc_check:
         message = "\n".join([f"- {f}" for f in files_not_in_toc])
         raise RuntimeError(
             "The following files are not present in the table of contents:\n" + message + f"\nAdd them to {toc_file}."
