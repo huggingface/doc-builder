@@ -63,7 +63,7 @@ def get_stable_version(package_name, repo_owner="huggingface", repo_name=None):
         repo_owner (`str`): The owner of the GitHub repo.
         repo_name (`str`): The name of the GitHub repo. If not provided, will be the same as the package name.
     """
-    repo_name = repo_name or package_name
+    repo_name = repo_name if repo_name is not None else package_name
     github_url = f"https://github.com/{repo_owner}/{repo_name}"
     try:
         # Get the version tags from the GitHub repo in decreasing order (that's what '-v:refname' means)
@@ -94,7 +94,7 @@ def get_objects_map(package_name, version="main", language="en", repo_owner="hug
         repo_owner (`str`, *optional*, defaults to `"huggingface"`): The owner of the GitHub repo.
         repo_name (`str`, *optional*): The name of the GitHub repo. If not provided, will be the same as the package name.
     """
-    repo_name = repo_name or package_name
+    repo_name = repo_name if repo_name is not None else package_name
     # We link to main in `package_name` from the main doc (or PR docs) but to the last stable release otherwise.
     if version in ["main", "master"] or version.startswith("pr_"):
         package_version = "main"
