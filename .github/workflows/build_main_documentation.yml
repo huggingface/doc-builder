@@ -32,6 +32,9 @@ on:
         type: string
         default: 'huggingface'
         description: "Owner of the repo to build documentation for. Defaults to 'huggingface'."
+      hf_doc_token:
+        type: string
+        default: "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"
     secrets:
       token:
         required: false
@@ -155,7 +158,7 @@ jobs:
       - name: Push to repositories
         run: |
           cd build_dir
-          doc-builder push ${{ env.package_name }} --doc_build_repo_id "hf-doc-build/doc-build" --token "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" --commit_msg "Updated with commit ${{ inputs.commit_sha }} See: https://github.com/${{ inputs.repo_owner }}/${{ inputs.package }}/commit/${{ inputs.commit_sha }}" --n_retries 5 --upload_version_yml
+          doc-builder push ${{ env.package_name }} --doc_build_repo_id "hf-doc-build/doc-build" --token {{ inputs.hf_doc_token }} --commit_msg "Updated with commit ${{ inputs.commit_sha }} See: https://github.com/${{ inputs.repo_owner }}/${{ inputs.package }}/commit/${{ inputs.commit_sha }}" --n_retries 5 --upload_version_yml
           cd ..
 
           if [ -d "notebook_dir" ]
