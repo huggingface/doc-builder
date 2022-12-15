@@ -329,7 +329,8 @@ def get_source_link(obj, page_info, version_tag_suffix="src/"):
     """
     Returns the link to the source code of an object on GitHub.
     """
-    repo_name = page_info["repo_name"]
+    # Repo name defaults to package_name, but if provided in page_info, it will be used instead.
+    repo_name = page_info.get("repo_name", page_info.get("package_name"))
     version_tag = page_info.get("version_tag", "main")
     repo_owner = page_info.get("repo_owner", "huggingface")
     base_link = f"https://github.com/{repo_owner}/{repo_name}/blob/{version_tag}/{version_tag_suffix}"

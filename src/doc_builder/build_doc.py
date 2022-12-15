@@ -425,7 +425,7 @@ def build_doc(
         "language": language,
         "package_name": package_name,
         "repo_owner": repo_owner,
-        "repo_name": repo_name or package_name,
+        "repo_name": repo_name if repo_name is not None else package_name,
     }
     if clean and Path(output_dir).exists():
         shutil.rmtree(output_dir)
