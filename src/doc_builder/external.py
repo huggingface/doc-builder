@@ -101,7 +101,7 @@ def get_objects_map(package_name, version="main", language="en", repo_owner="hug
     else:
         package_version = get_stable_version(package_name, repo_owner, repo_name)
 
-    doc_url = f"{HF_DOC_PREFIX}{repo_name}/{package_version}/{language}"
+    doc_url = f"{HF_DOC_PREFIX}{package_name}/{package_version}/{language}"
     url = f"{doc_url}/objects.inv"
     try:
         request = requests.get(url, stream=True)
