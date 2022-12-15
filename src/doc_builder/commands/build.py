@@ -215,7 +215,7 @@ def build_command_parser(subparsers=None):
         "--repo_name",
         type=str,
         default=None,
-        help="Name of the repo (e.g. transformers, timm, etc.). By default, this is the same as the library_name.",
+        help="Name of the repo (e.g. transformers, pytorch-image-models, etc.). By default, this is the same as the library_name.",
     )
     if subparsers is not None:
         parser.set_defaults(func=build_command)
