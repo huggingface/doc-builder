@@ -254,7 +254,7 @@ Users should refer to this superclass for more information regarding those metho
         self.assertEqual(get_source_link(transformers.pipeline, page_info), self.test_source_link_init)
 
     def test_get_source_link_different_repo_owner(self):
-        page_info = {"package_name": "pytorch-image-models", "repo_owner": "rwightman"}
+        page_info = {"package_name": "timm", "repo_owner": "rwightman", "repo_name": "pytorch-image-models"}
         self.assertEqual(
             get_source_link(timm.create_model, page_info, version_tag_suffix=""), self.test_source_link_timm
         )

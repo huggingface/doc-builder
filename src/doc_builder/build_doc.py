@@ -416,7 +416,7 @@ def build_doc(
             For example, `version_tag_suffix=""` will result in a base link as `https://github.com/huggingface/{package_name}/blob/{version_tag}/`.
         repo_owner (`str`, *optional*, defaults to `"huggingface"`):
             The owner of the repository on GitHub. In most cases, this is `"huggingface"`. However, for the `timm` library, the owner is `"rwightman"`.
-        repo_name (`str`, *optional*):
+        repo_name (`str`, *optional*, defaults to `package_name`):
             The name of the repository on GitHub. In most cases, this is the same as `package_name`. However, for the `timm` library, the name is `"pytorch-image-models"` instead of `"timm"`.
     """
     page_info = {

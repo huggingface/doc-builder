@@ -61,7 +61,8 @@ def get_stable_version(package_name, repo_owner="huggingface", repo_name=None):
     Args:
         package_name (`str`): The name of the package.
         repo_owner (`str`): The owner of the GitHub repo.
-        repo_name (`str`): The name of the GitHub repo. If not provided, will be the same as the package name.
+        repo_name (`str`, *optional*, defaults to `package_name`):
+            The name of the GitHub repo. If not provided, will be the same as the package name.
     """
     repo_name = repo_name if repo_name is not None else package_name
     github_url = f"https://github.com/{repo_owner}/{repo_name}"
@@ -92,7 +93,8 @@ def get_objects_map(package_name, version="main", language="en", repo_owner="hug
         version (`str`, *optional*, defaults to `"main"`): The version of the package for which documentation is built.
         language (`str`, *optional*, defaults to `"en"`): The langauge of the documentation being built.
         repo_owner (`str`, *optional*, defaults to `"huggingface"`): The owner of the GitHub repo.
-        repo_name (`str`, *optional*): The name of the GitHub repo. If not provided, will be the same as the package name.
+        repo_name (`str`, *optional*, defaults to `package_name`):
+            The name of the GitHub repo. If not provided, it will be the same as the package name.
     """
     repo_name = repo_name if repo_name is not None else package_name
     # We link to main in `package_name` from the main doc (or PR docs) but to the last stable release otherwise.

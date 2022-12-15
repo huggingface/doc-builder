@@ -9,9 +9,10 @@ on:
       package:
         required: true
         type: string
+        description: "Name of the GitHub repo."
       package_name:
         type: string
-        description: "Should be used when a package name differs from its repostory name"
+        description: "Name of the Python package if it differs from repo name."
       path_to_docs:
         type: string
       notebook_folder:
@@ -130,7 +131,7 @@ jobs:
         run: |
           echo "doc_folder has been set to ${{ env.doc_folder }}"
           cd doc-builder
-          args="--build_dir ../build_dir --clean --html ${{ inputs.additional_args }}"
+          args="--build_dir ../build_dir --clean --html ${{ inputs.additional_args }} --repo_owner ${{ inputs.repo_owner }} --repo_name ${{ inputs.package }}"
 
           if [ ! -z "${{ inputs.notebook_folder }}" ];
           then
