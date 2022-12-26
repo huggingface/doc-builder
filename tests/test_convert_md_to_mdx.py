@@ -98,6 +98,9 @@ export let fw: "pt" | "tf"
         img_code = '<img src="someSrc">'
         self.assertEqual(convert_special_chars(img_code), img_code)
 
+        video_code = '<video src="someSrc">'
+        self.assertEqual(convert_special_chars(video_code), video_code)
+
         comment = "<!-- comment -->"
         self.assertEqual(convert_special_chars(comment), comment)
 
