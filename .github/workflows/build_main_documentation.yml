@@ -9,9 +9,10 @@ on:
       package:
         required: true
         type: string
+        description: "Name of the GitHub repo."
       package_name:
         type: string
-        description: "Should be used when a package name differs from its repostory name"
+        description: "Name of the Python package if it differs from repo name."
       path_to_docs:
         type: string
       notebook_folder:
@@ -32,6 +33,10 @@ on:
         type: string
         default: 'huggingface'
         description: "Owner of the repo to build documentation for. Defaults to 'huggingface'."
+      version_tag_suffix:
+        type: string
+        default: "src/"
+        description: "Suffix to add after the version tag (e.g. 1.3.0 or main) in the documentation links."
     secrets:
       token:
         required: false
@@ -130,7 +135,7 @@ jobs:
         run: |
           echo "doc_folder has been set to ${{ env.doc_folder }}"
           cd doc-builder
-          args="--build_dir ../build_dir --clean --html ${{ inputs.additional_args }}"
+          args="--build_dir ../build_dir --clean --html ${{ inputs.additional_args }} --repo_owner ${{ inputs.repo_owner }} --repo_name ${{ inputs.package }} --version_tag_suffix=${{ inputs.version_tag_suffix }}"
 
           if [ ! -z "${{ inputs.notebook_folder }}" ];
           then

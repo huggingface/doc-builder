@@ -329,9 +329,11 @@ def get_source_link(obj, page_info, version_tag_suffix="src/"):
     """
     Returns the link to the source code of an object on GitHub.
     """
-    package_name = page_info["package_name"]
+    # Repo name defaults to package_name, but if provided in page_info, it will be used instead.
+    repo_name = page_info.get("repo_name", page_info.get("package_name"))
     version_tag = page_info.get("version_tag", "main")
-    base_link = f"https://github.com/huggingface/{package_name}/blob/{version_tag}/{version_tag_suffix}"
+    repo_owner = page_info.get("repo_owner", "huggingface")
+    base_link = f"https://github.com/{repo_owner}/{repo_name}/blob/{version_tag}/{version_tag_suffix}"
     module = obj.__module__.replace(".", "/")
     line_number = inspect.getsourcelines(obj)[1]
     source_file = inspect.getsourcefile(obj)
@@ -364,8 +366,8 @@ def document_object(object_name, package, page_info, full_name=True, anchor_name
         anchor_name (`str`, *optional*): The name to give to the anchor for this object.
         version_tag_suffix (`str`, *optional*, defaults to `"src/"`):
             Suffix to add after the version tag (e.g. 1.3.0 or main) in the documentation links.
-            For example, the default `"src/"` suffix will result in a base link as `https://github.com/huggingface/{package_name}/blob/{version_tag}/src/`.
-            For example, `version_tag_suffix=""` will result in a base link as `https://github.com/huggingface/{package_name}/blob/{version_tag}/`.
+            For example, the default `"src/"` suffix will result in a base link as `https://github.com/{repo_owner}/{package_name}/blob/{version_tag}/src/`.
+            For example, `version_tag_suffix=""` will result in a base link as `https://github.com/{repo_owner}/{package_name}/blob/{version_tag}/`.
     """
     if page_info is None:
         page_info = {}
@@ -460,8 +462,8 @@ def autodoc(object_name, package, methods=None, return_anchors=False, page_info=
         page_info (`Dict[str, str]`, *optional*): Some information about the page.
         version_tag_suffix (`str`, *optional*, defaults to `"src/"`):
             Suffix to add after the version tag (e.g. 1.3.0 or main) in the documentation links.
-            For example, the default `"src/"` suffix will result in a base link as `https://github.com/huggingface/{package_name}/blob/{version_tag}/src/`.
-            For example, `version_tag_suffix=""` will result in a base link as `https://github.com/huggingface/{package_name}/blob/{version_tag}/`.
+            For example, the default `"src/"` suffix will result in a base link as `https://github.com/{repo_owner}/{package_name}/blob/{version_tag}/src/`.
+            For example, `version_tag_suffix=""` will result in a base link as `https://github.com/{repo_owner}/{package_name}/blob/{version_tag}/`.
     """
     if page_info is None:
         page_info = {}
