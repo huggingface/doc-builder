@@ -29,7 +29,7 @@ LEGACY_SEPARATOR = "@@@"
 
 
 def create_zip_name(library_name, version, with_ext=True, legacy_separator=False):
-    file_name = f"{library_name}{SEPARATOR}{version}"
+    file_name = f"{library_name}{LEGACY_SEPARATOR if legacy_separator else SEPARATOR}{version}"
     if with_ext:
         file_name += ".zip"
     return file_name
