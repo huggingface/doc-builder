@@ -44,20 +44,8 @@ on:
 jobs:
   build_main_documentation:
     runs-on: ubuntu-latest
-    container:
-      huggingface/transformers-doc-builder
 
     steps:
-      - uses: actions/checkout@v2
-        with:
-          repository: 'huggingface/doc-builder'
-          path: doc-builder
-        
-      - uses: actions/checkout@v2
-        with:
-          repository: '${{ inputs.repo_owner }}/${{ inputs.package }}'
-          path: ${{ inputs.package }}
-
       - uses: actions/checkout@v2
         if: inputs.notebook_folder != ''
         with:
@@ -96,12 +84,20 @@ jobs:
         with:
           toolchain: stable
 
+      - uses: actions/checkout@v2
+        with:
+          repository: 'huggingface/doc-builder'
+          path: doc-builder
+        
+      - uses: actions/checkout@v2
+        with:
+          repository: '${{ inputs.repo_owner }}/${{ inputs.package }}'
+          path: ${{ inputs.package }}
+
       - name: Setup environment
         shell: bash
         run: |
-          pip uninstall -y doc-builder
           cd doc-builder
-          git pull origin main
           pip install .
           cd ..
 
