@@ -37,7 +37,7 @@ _re_header = re.compile("^#+\s+\S+")
 _re_python_code = re.compile("^```\s*(py|python)\s*$")
 # Re pattern matching markdown links
 _re_markdown_links = re.compile(r"\[([^\]]*)\]\(([^\)]*)\)")
-# Re pattern matchin framework headers like <pytorch> or <tensorflow>
+# Re pattern matching framework headers like <pytorch> or <tensorflow>
 _re_framework = re.compile("^\s*<([a-z]*)>\s*$")
 
 

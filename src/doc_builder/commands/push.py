@@ -38,7 +38,7 @@ def create_zip_name(library_name, version, with_ext=True, legacy_separator=False
 
 def push_command(args):
     """
-    Commit file doc builds changes using: 1. zip doc build artifcats 2. hf_hub client to upload/delete zip file
+    Commit file doc builds changes using: 1. zip doc build artifacts 2. hf_hub client to upload/delete zip file
     Usage: doc-builder push $args
     """
     if args.n_retries < 1:
@@ -64,7 +64,7 @@ def push_command(args):
 
 def push_command_add(args):
     """
-    Commit file changes using: 1. zip doc build artifcats 2. hf_hub client to upload zip file
+    Commit file changes using: 1. zip doc build artifacts 2. hf_hub client to upload zip file
     Used in: build_main_documentation.yml & build_pr_documentation.yml
     """
     max_n_retries = args.n_retries + 1
@@ -181,9 +181,9 @@ def push_command_parser(subparsers=None):
     parser.add_argument(
         "--doc_build_repo_id",
         type=str,
-        help="Repo to which doc artifcats will be committed (e.g. `huggingface/doc-build-dev`)",
+        help="Repo to which doc artifacts will be committed (e.g. `huggingface/doc-build-dev`)",
     )
-    parser.add_argument("--token", type=str, help="Github token that has write/push premission to `doc_build_repo_id`")
+    parser.add_argument("--token", type=str, help="Github token that has write/push permission to `doc_build_repo_id`")
     parser.add_argument(
         "--commit_msg",
         type=str,

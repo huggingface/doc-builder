@@ -229,7 +229,7 @@ def preview_command_parser(subparsers=None):
     parser.add_argument(
         "--not_python_module",
         action="store_true",
-        help="Whether docs files do NOT have correspoding python module (like HF course & hub docs).",
+        help="Whether docs files do NOT have corresponding python module (like HF course & hub docs).",
     )
 
     if subparsers is not None:
