@@ -135,10 +135,10 @@ automarically adds a link to its documentation: \[\`XXXClass\`\] or \[\`function
 function to be in the main package.
 
 If you want to create a link to some internal class or function, you need to
-provide its path. For instance, in the Transformers documentation \[\`file_utils.ModelOutput\`\] will create a link to the documnetation of `ModelOutput`. This link will have `file_utils.ModelOutput` in the description. To get rid of the path and only keep the name of the object you are
+provide its path. For instance, in the Transformers documentation \[\`file_utils.ModelOutput\`\] will create a link to the documentation of `ModelOutput`. This link will have `file_utils.ModelOutput` in the description. To get rid of the path and only keep the name of the object you are
 linking to in the description, add a ~: \[\`~file_utils.ModelOutput\`\] will generate a link with `ModelOutput` in the description.
 
-The same works for methods so you can either use \[\`XXXClass.method\`\] or \[~\`XXXClass.method\`\].
+The same works for methods so you can either use \[\`XXXClass.method\`\] or \[\`~XXXClass.method\`\].
 
 Multi-line code blocks can be useful for displaying examples. They are done between two lines of three backticks as usual in Markdown:
 
