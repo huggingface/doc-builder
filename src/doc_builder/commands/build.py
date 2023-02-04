@@ -85,7 +85,7 @@ def build_command(args):
         version_ = version[1:]  # v2.1.0 -> 2.1.0
         version_tag = f"{version_prefix}{version_}"
 
-    # Disable notebook building for non-master verion
+    # Disable notebook building for non-master version
     if version != default_version:
         args.notebook_dir = None
 
@@ -197,7 +197,7 @@ def build_command_parser(subparsers=None):
     parser.add_argument(
         "--not_python_module",
         action="store_true",
-        help="Whether docs files do NOT have correspoding python module (like HF course & hub docs).",
+        help="Whether docs files do NOT have corresponding python module (like HF course & hub docs).",
     )
     parser.add_argument(
         "--version_tag_suffix",
