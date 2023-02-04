@@ -51,7 +51,7 @@ def parse_code_example(code_lines):
 
     Args:
         code_lines (`List[str]`): The code lines to parse.
-        max_len (`int`): The maximum lengh per line.
+        max_len (`int`): The maximum length per line.
 
     Returns:
         (List[`str`], List[`str`]): The list of code samples and the list of outputs.
@@ -98,7 +98,7 @@ def format_code_example(code: str, max_len: int, in_docstring: bool = False):
 
     Args:
         code (`str`): The code example to format.
-        max_len (`int`): The maximum lengh per line.
+        max_len (`int`): The maximum length per line.
         in_docstring (`bool`, *optional*, defaults to `False`): Whether or not the code example is inside a docstring.
 
     Returns:

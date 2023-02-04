@@ -17,7 +17,7 @@ cd build
 find . -name '*.html' -exec perl -pi -e 's/rel="stylesheet"/rel="modulepreload"/g' {} +
 cd ..
 
-# Replace hash in filenames of build artifcats with substring `hf-doc-builder`
+# Replace hash in filenames of build artifacts with substring `hf-doc-builder`
 # so that git diff can be smaller since different hashes create new files that dont share git history
 # ex: assets/paths-4b3c6e7e.js -> assets/paths-hf-doc-builder.js
 cd build

@@ -105,7 +105,7 @@ doc_folder
     ...
 ```
 
-Note that each language directory has it's own table of contents file `_toctree.yml` and that all languages are arranged under a single `doc_folder` directory - see the [`course`](https://github.com/huggingface/course/tree/main/chapters) repo for an example. You can then build the individual language subsets as follows:
+Note that each language directory has its own table of contents file `_toctree.yml` and that all languages are arranged under a single `doc_folder` directory - see the [`course`](https://github.com/huggingface/course/tree/main/chapters) repo for an example. You can then build the individual language subsets as follows:
 
 ```bash
 doc-builder {package_name} {path_to_docs} --build_dir {build_dir} --language {lang_id}
@@ -131,14 +131,14 @@ Values that should be put in `code` should either be surrounded by backticks: \`
 and objects like True, None or any strings should usually be put in `code`.
 
 When mentioning a class, function or method, it is recommended to use the following syntax for internal links so that our tool
-automarically adds a link to its documentation: \[\`XXXClass\`\] or \[\`function\`\]. This requires the class or 
+automatically adds a link to its documentation: \[\`XXXClass\`\] or \[\`function\`\]. This requires the class or 
 function to be in the main package.
 
 If you want to create a link to some internal class or function, you need to
-provide its path. For instance, in the Transformers documentation \[\`file_utils.ModelOutput\`\] will create a link to the documnetation of `ModelOutput`. This link will have `file_utils.ModelOutput` in the description. To get rid of the path and only keep the name of the object you are
+provide its path. For instance, in the Transformers documentation \[\`file_utils.ModelOutput\`\] will create a link to the documentation of `ModelOutput`. This link will have `file_utils.ModelOutput` in the description. To get rid of the path and only keep the name of the object you are
 linking to in the description, add a ~: \[\`~file_utils.ModelOutput\`\] will generate a link with `ModelOutput` in the description.
 
-The same works for methods so you can either use \[\`XXXClass.method\`\] or \[~\`XXXClass.method\`\].
+The same works for methods, so you can either use \[\`XXXClass.method\`\] or \[~\`XXXClass.method\`\].
 
 Multi-line code blocks can be useful for displaying examples. They are done between two lines of three backticks as usual in Markdown:
 

@@ -120,7 +120,7 @@ _re_literalinclude = re.compile(r"([ \t]*)<literalinclude>(((?!<literalinclude>)
 def convert_literalinclude_helper(match, page_info):
     """
     Convert a literalinclude regex match into markdown code blocks by opening a file and
-    copying specificed start-end section into markdown code block.
+    copying specified start-end section into markdown code block.
     """
     literalinclude_info = json.loads(match[2].strip())
     indent = match[1]

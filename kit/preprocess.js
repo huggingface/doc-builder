@@ -53,7 +53,7 @@ export const docstringPreprocess = {
 						${tipContent}
 					</div>`;
 				});
-				// render <Addded>, <Changed>, <Deprecated> components that are inside parameter descriptions
+				// render <Added>, <Changed>, <Deprecated> components that are inside parameter descriptions
 				code = code.replace(REGEX_CHANGED, (_, componentType, version, __, descriptionContent) => {
 					const color = /Added|Changed/.test(componentType) ? "green" : "orange";
 					if(!descriptionContent){
@@ -379,7 +379,7 @@ function renderSvelteChars(code) {
 }
 
 /**
- * The mdx file contains unnecessarily espaced underscores in the docstring's name
+ * The mdx file contains unnecessarily escaped underscores in the docstring's name
  */
 function unescapeUnderscores(content) {
 	return content.replace(/\\_/g, "_");

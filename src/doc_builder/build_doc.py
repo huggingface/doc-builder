@@ -305,7 +305,7 @@ def generate_frontmatter_in_text(text, file_name=None):
         if header_level == 1:
             root = node
             # doc writers may choose to disable frontmatter generation
-            # currenly used in Quiz sections of hf course
+            # currently used in Quiz sections of hf course
             if is_disabled:
                 break
         else:

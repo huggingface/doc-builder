@@ -91,7 +91,7 @@ def get_objects_map(package_name, version="main", language="en", repo_owner="hug
     Args:
         package_name (`str`): The name of the external package.
         version (`str`, *optional*, defaults to `"main"`): The version of the package for which documentation is built.
-        language (`str`, *optional*, defaults to `"en"`): The langauge of the documentation being built.
+        language (`str`, *optional*, defaults to `"en"`): The language of the documentation being built.
         repo_owner (`str`, *optional*, defaults to `"huggingface"`): The owner of the GitHub repo.
         repo_name (`str`, *optional*, defaults to `package_name`):
             The name of the GitHub repo. If not provided, it will be the same as the package name.
