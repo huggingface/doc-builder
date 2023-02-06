@@ -21,16 +21,14 @@ from pathlib import Path
 from time import sleep, time
 
 from huggingface_hub import HfApi
-from huggingface_hub.utils import EntryNotFoundError
 
 
 REPO_TYPE = "dataset"
 SEPARATOR = "/"
-LEGACY_SEPARATOR = "@@@"
 
 
-def create_zip_name(library_name, version, with_ext=True, legacy_separator=False):
-    file_name = f"{library_name}{LEGACY_SEPARATOR if legacy_separator else SEPARATOR}{version}"
+def create_zip_name(library_name, version, with_ext=True):
+    file_name = f"{library_name}{SEPARATOR}{version}"
     if with_ext:
         file_name += ".zip"
     return file_name
@@ -87,18 +85,6 @@ def push_command_add(args):
 
     time_start = time()
 
-    try:
-        # Temporary code while there are legacy xxx@@@yyy.zip in the repos
-        legacy_zip_file_path = create_zip_name(library_name, doc_version_folder, legacy_separator=True)
-        api.delete_file(
-            legacy_zip_file_path,
-            args.doc_build_repo_id,
-            token=args.token,
-            repo_type=REPO_TYPE,
-            commit_message="Delete legacy " + legacy_zip_file_path,
-        )
-    except EntryNotFoundError:
-        pass
     while number_of_retries:
         try:
             api.upload_file(
@@ -144,17 +130,6 @@ def push_command_remove(args):
         try:
             api.delete_file(
                 zip_file_path, doc_build_repo_id, token=args.token, repo_type=REPO_TYPE, commit_message=commit_msg
-            )
-            break
-        except EntryNotFoundError:
-            # Temporary code while there are legacy xxx@@@yyy.zip in the repos
-            legacy_zip_file_path = create_zip_name(library_name, doc_version_folder, legacy_separator=True)
-            api.delete_file(
-                legacy_zip_file_path,
-                doc_build_repo_id,
-                token=args.token,
-                repo_type=REPO_TYPE,
-                commit_message=commit_msg,
             )
             break
         except Exception as e:
