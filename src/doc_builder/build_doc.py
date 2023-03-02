@@ -463,7 +463,7 @@ def check_toc_integrity(doc_folder, output_dir):
         output_dir (`str` or `os.PathLike`): The folder where the doc is built.
     """
     output_dir = Path(output_dir)
-    doc_files = [str(f.relative_to(output_dir).with_suffix("").as_posix()) for f in output_dir.glob("**/*.mdx")]
+    doc_files = [str(f.relative_to(output_dir).with_suffix("")) for f in output_dir.glob("**/*.mdx")]
 
     toc_file = Path(doc_folder) / "_toctree.yml"
     with open(toc_file, "r", encoding="utf-8") as f:
@@ -489,6 +489,8 @@ def check_toc_integrity(doc_folder, output_dir):
         # Toc has some nested sections in the API doc for instance, so we recurse.
         toc.extend([sec for sec in part["sections"] if "sections" in sec])
 
+    # normalize paths to current OS
+    toc_sections = [str(Path(path)) for path in toc_sections]
     files_not_in_toc = [f for f in doc_files if f not in toc_sections]
     doc_config = get_doc_config()
     disable_toc_check = getattr(doc_config, "disable_toc_check", False)

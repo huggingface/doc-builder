@@ -16,6 +16,7 @@
 
 import argparse
 import os
+import platform
 import shutil
 import subprocess
 import tempfile
@@ -135,6 +136,7 @@ def start_sveltekit_dev(tmp_dir, env, args):
         check=True,
         encoding="utf-8",
         cwd=working_dir,
+        shell=platform.system() == "Windows",
     )
 
     # start sveltekit in dev mode
@@ -144,6 +146,7 @@ def start_sveltekit_dev(tmp_dir, env, args):
         encoding="utf-8",
         cwd=working_dir,
         env=env,
+        shell=platform.system() == "Windows",
     )
 
 

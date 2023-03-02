@@ -1,6 +1,7 @@
 import path from "path";
 import fs from "fs";
 import yaml from "js-yaml";
+import { fileURLToPath } from "url";
 
 export interface RawChapter {
   title: string;
@@ -23,7 +24,7 @@ const flattener = (_flatChapters: RawChapter[], chapter: RawChapter): RawChapter
 };
 
 export async function get() {
-  const filepath = path.join(import.meta.url.replace('file://', ''), '../..', '_toctree.yml');
+  const filepath = path.join(fileURLToPath(import.meta.url), '../..', '_toctree.yml');
   const content = (await fs.promises.readFile(filepath)).toString("utf-8");
 
   const chapters: RawChapter[] = yaml.load(content) as RawChapter[];
