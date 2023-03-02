@@ -1,6 +1,6 @@
 #!/usr/bin/env -S deno run --allow-env --allow-net --allow-run --allow-read
 // To format: npx prettier --write .
-import { commit, listFiles } from "npm:@huggingface/hub@0.1.2";
+import { commit, listFiles } from "npm:@huggingface/hub@0.1.3";
 
 const oneMonthAgo = new Date(Date.now() - 30 * 24 * 3600 * 1000);
 
@@ -16,7 +16,7 @@ for await (const file of allFiles) {
 		continue;
 	}
 
-	const date = file.lastCommit?.author.date;
+	const date = file.lastCommit?.date;
 
 	if (!date) {
 		continue;
