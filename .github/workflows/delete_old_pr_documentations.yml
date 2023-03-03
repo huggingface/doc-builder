@@ -2,6 +2,7 @@ name: Delete old PRs docs
 on:
   schedule:
     - cron: "11 11 * * *"
+  push:
 
 
 defaults:
@@ -15,6 +16,7 @@ jobs:
       - uses: denoland/setup-deno@v1
         with:
           deno-version: v1.x
+      - run: pwd
       - run: deno run --allow-env --allow-net --allow-run --allow-read ./delete-old-prs.ts
         env:
           HF_ACCESS_TOKEN: ${{ secrets.HF_ACCESS_TOKEN }}
