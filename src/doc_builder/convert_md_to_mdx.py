@@ -77,7 +77,7 @@ def convert_special_chars(text):
     text = _re_lcub_svelte.sub(lambda match: match[0].replace("&amp;lcub;", "{"), text)
     # We don't want to replace those by the HTML code, so we temporarily set them at LTHTML
     text = re.sub(
-        r"<(img|video|br|hr|Youtube|Question|DocNotebookDropdown|CourseFloatingBanner|FrameworkSwitch|audio|PipelineIcon|PipelineTag)",
+        r"<(img|video|br|hr|source|Youtube|Question|DocNotebookDropdown|CourseFloatingBanner|FrameworkSwitch|audio|PipelineIcon|PipelineTag)",
         r"LTHTML\1",
         text,
     )  # html void elements with no closing counterpart

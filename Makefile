@@ -2,6 +2,7 @@
 
 check_dirs := tests src
 
+# Make sure to install timm, pytest, transformers
 test:
 	python -m pytest -n 1 --dist=loadfile -s -v ./tests/
 
