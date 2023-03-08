@@ -38,6 +38,7 @@ doc-builder preview datasets ~/Desktop/datasets/docs/source/
 To build the documentation of a given package, use the following command:
 
 ```bash
+#Add --not_python_module if not building doc for a python lib
 doc-builder build {package_name} {path_to_docs} --build_dir {build_dir}
 ```
 
@@ -196,9 +197,9 @@ Moreover, there is a way to customize the anchor link. Example:
 // the anchor link is: `some-section`
 ```
 
-### Writing API documentation
+### Writing API documentation (Python)
 
-To show the full documentation of any object of the library you are documenting, use the `[[autodoc]]` marker:
+To show the full documentation of any object of the python library you are documenting, use the `[[autodoc]]` marker:
 
 ```
 [[autodoc]] SomeObject

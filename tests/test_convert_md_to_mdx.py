@@ -68,6 +68,9 @@ Lorem ipsum dolor sit amet, consectetur adipiscing elit"""
         self.assertEqual(convert_special_chars("{ lala }"), "&amp;lcub; lala }")
         self.assertEqual(convert_special_chars("< blo"), "&amp;lt; blo")
         self.assertEqual(convert_special_chars("<source></source>"), "<source></source>")
+        self.assertEqual(convert_special_chars("<br>"), "<br>")
+        self.assertEqual(convert_special_chars("<hr>"), "<hr>")
+        self.assertEqual(convert_special_chars("<source>"), "<source>")
         self.assertEqual(convert_special_chars("<Youtube id='my_vid' />"), "<Youtube id='my_vid' />")
 
         longer_test = """<script lang="ts">
