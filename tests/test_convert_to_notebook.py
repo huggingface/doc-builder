@@ -110,6 +110,11 @@ pt_sample
 tf_sample
 ```
 </tf>
+<jax>
+```py
+jax_sample
+```
+</jax>
 </frameworkcontent>
 End
 """
@@ -124,6 +129,9 @@ pt_sample
 ```
 ```py
 tf_sample
+```
+```py
+jax_sample
 ```
 End
 """
@@ -146,6 +154,17 @@ common_code_sample
 Content
 ```py
 tf_sample
+```
+End
+"""
+        jax_content = """
+Intro
+```py
+common_code_sample
+```
+Content
+```py
+jax_sample
 ```
 End
 """
