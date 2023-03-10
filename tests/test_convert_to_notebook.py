@@ -110,6 +110,11 @@ pt_sample
 tf_sample
 ```
 </tf>
+<jax>
+```py
+jax_sample
+```
+</jax>
 </frameworkcontent>
 End
 """
@@ -124,6 +129,9 @@ pt_sample
 ```
 ```py
 tf_sample
+```
+```py
+jax_sample
 ```
 End
 """
@@ -149,7 +157,20 @@ tf_sample
 ```
 End
 """
-        for expected, obtained in zip([mixed_content, pt_content, tf_content], split_frameworks(test_content)):
+        jax_content = """
+Intro
+```py
+common_code_sample
+```
+Content
+```py
+jax_sample
+```
+End
+"""
+        for expected, obtained in zip(
+            [mixed_content, pt_content, tf_content, jax_content], split_frameworks(test_content)
+        ):
             self.assertEqual(expected, obtained)
 
     def test_expand_links(self):
