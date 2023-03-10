@@ -168,7 +168,7 @@ jax_sample
 ```
 End
 """
-        for expected, obtained in zip([mixed_content, pt_content, tf_content], split_frameworks(test_content)):
+        for expected, obtained in zip([mixed_content, pt_content, tf_content, jax_content], split_frameworks(test_content)):
             self.assertEqual(expected, obtained)
 
     def test_expand_links(self):
