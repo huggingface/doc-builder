@@ -86,7 +86,7 @@ def split_frameworks(content):
     """
     Split a given doc content in three to extract the Mixed, PyTorch and TensorFlow content.
     """
-    new_lines = {"mixed": [], "pt": [], "tf": []}
+    new_lines = {"mixed": [], "pt": [], "tf": [], "jax": []}
 
     content = clean_doctest_syntax(content)
     lines = content.split("\n")
