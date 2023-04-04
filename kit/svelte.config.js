@@ -20,7 +20,11 @@ const config = {
 		inferenceSnippetPreprocess,
 		tokenizersLangPreprocess,
 		mdsvexPreprocess,
-		preprocess({ sourceMap: Boolean(process.env.DOCS_SOURCEMAP) })
+		preprocess({ 
+			sourceMap: Boolean(process.env.DOCS_SOURCEMAP),
+			// So there can be code snippets with <script type="module"> in the docs
+			preserve: ["module"]
+		})
 	],
 
 	kit: {
