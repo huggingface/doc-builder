@@ -29,6 +29,9 @@ on:
         type: boolean
       install_libgl1:
         type: boolean
+      # Command to execute before building the documentation
+      pre_command:
+        type: string
       repo_owner:
         type: string
         default: 'huggingface'
@@ -137,6 +140,11 @@ jobs:
           echo "doc_folder has been set to ${{ env.doc_folder }}"
           cd doc-builder
           args="--build_dir ../build_dir --clean --html ${{ inputs.additional_args }} --repo_owner ${{ inputs.repo_owner }} --repo_name ${{ inputs.package }} --version_tag_suffix=${{ inputs.version_tag_suffix }}"
+
+          if [ ! -z "${{ inputs.pre_command }}"]
+          then
+            bash -c "${{ inputs.pre_command }}"
+          fi
 
           if [ ! -z "${{ inputs.notebook_folder }}" ];
           then
