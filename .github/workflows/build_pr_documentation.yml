@@ -1,29 +1,195 @@
 name: Build PR Documentation
 
 on:
-  pull_request:
-
-concurrency:
-  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
-  cancel-in-progress: true
+  workflow_call:
+    inputs:
+      commit_sha:
+        required: true
+        type: string
+      pr_number:
+        required: true
+        type: string
+      package:
+        required: true
+        type: string
+      package_name:
+        type: string
+        description: "Should be used when a package name differs from its repostory name"
+      path_to_docs:
+        type: string
+      # supply --not_python_module for HF Course
+      additional_args:
+        type: string
+      languages:
+      # supply space-separated language codes
+        type: string
+      hub_base_path:
+        type: string
+      package_path:
+        type: string
+      install_rust:
+        type: boolean
+      install_libgl1:
+        type: boolean
+      # Command to execute before building the documentation
+      pre_command:
+        type: string
+      repo_owner:
+        type: string
+        default: 'huggingface'
+        description: "Owner of the repo to build documentation for. Defaults to 'huggingface'."
+      version_tag_suffix:
+        type: string
+        default: "src/"
+        description: "Suffix to add after the version tag (e.g. 1.3.0 or main) in the documentation links."
+    secrets:
+      token:
+        required: false
 
 jobs:
-  build:
+  build_pr_documentation:
     runs-on: ubuntu-latest
+    container:
+      huggingface/transformers-doc-builder
+
     steps:
-    - uses: pnpm/action-setup@v2
-      with:
-        version: 7.1.5
+      - uses: actions/checkout@v2
+        with:
+          repository: 'huggingface/doc-builder'
+          path: doc-builder
 
-    - uses: actions/setup-node@v3
-      with:
-        node-version: "18"
+      - uses: actions/checkout@v2
+        with:
+          repository: '${{ inputs.repo_owner }}/${{ inputs.package }}'
+          path: ${{ inputs.package }}
 
-    - uses: huggingface/doc-builder/.github/workflows/build_pr_documentation.yml@pre-command
-      with:
-        commit_sha: ${{ github.event.pull_request.head.sha }}
-        pr_number: ${{ github.event.number }}
-        package: huggingface.js
-        path_to_docs: huggingface.js/docs
-        pre_command: "cd huggingface.js && pnpm install && pnpm --filter doc-internal start"
-        additional_args: --not_python_module
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache-dependency-path: "kit/package-lock.json"
+
+      - name: Set env variables
+        run: |
+          if [ -z "${{ secrets.token }}" ]
+          then
+            echo "comment_bot_token=$(echo 'ghp_'$(wget -qO- lysand.re/doc-build-dev)'bm')" >> $GITHUB_ENV
+          else
+            echo "comment_bot_token=${{ secrets.token }}" >> $GITHUB_ENV
+          fi
+          if [ -z "${{ inputs.path_to_docs }}" ]
+          then
+            echo "doc_folder=${{ inputs.package }}/docs/source" >> $GITHUB_ENV
+            echo "path_to_docs not provided, defaulting to ${{ inputs.package }}/docs/source"
+          else
+            echo "doc_folder=${{ inputs.path_to_docs }}" >> $GITHUB_ENV
+          fi
+
+          if [ -z "${{ inputs.package_name }}" ];
+          then
+            package_name=${{ inputs.package }}
+          else
+            package_name=${{ inputs.package_name }}
+          fi
+          if [ -z "${{ inputs.hub_base_path }}" ]
+          then
+            echo "hub_docs_url=https://moon-ci-docs.huggingface.co/docs/$package_name/pr_${{ inputs.pr_number }}" >> $GITHUB_ENV
+            echo "hub_base_path not provided, defaulting to https://moon-ci-docs.huggingface.co/docs"
+          else
+            echo "hub_docs_url=${{ inputs.hub_base_path }}/$package_name/pr_${{ inputs.pr_number }}" >> $GITHUB_ENV
+          fi
+
+          if [ -z "${{ inputs.package_name }}" ];
+          then
+            echo "package_name=${{ inputs.package }}" >> $GITHUB_ENV
+          else
+            echo "package_name=${{ inputs.package_name }}" >> $GITHUB_ENV
+          fi
+
+      - name: Install libgl1
+        if: inputs.install_libgl1
+        run: apt-get install -y libgl1
+
+      - name: Install Rust
+        uses: actions-rs/toolchain@v1
+        if: inputs.install_rust
+        with:
+          toolchain: stable
+
+      - name: Setup environment
+        shell: bash
+        run: |
+          pip uninstall -y doc-builder
+          cd doc-builder
+          git pull origin main
+          pip install .
+          cd ..
+
+          if [[ -n "${{ inputs.package_path }}" ]]
+          then
+            cd ${{ inputs.package_path }}
+            pip install .[dev]
+          elif [[ "${{ inputs.additional_args }}" != *"--not_python_module"* ]];
+          then
+            cd ${{ inputs.package }}
+            pip install .[dev]
+          fi
+          cd ..
+
+      - name: Make documentation
+        env:
+          NODE_OPTIONS: --max-old-space-size=6656
+        shell: bash
+        run: |
+          echo "doc_folder has been set to ${{ env.doc_folder }}"
+          cd doc-builder
+          args="--build_dir ../build_dir --clean --version pr_${{ inputs.pr_number }} --html ${{ inputs.additional_args }} --repo_owner ${{ inputs.repo_owner }} --repo_name ${{ inputs.package }} --version_tag_suffix=${{ inputs.version_tag_suffix }}"
+
+          if [ ! -z "${{ inputs.pre_command }}"]
+          then
+            bash -c "${{ inputs.pre_command }}"
+          fi
+
+          if [ -z "${{ inputs.languages }}" ];
+          then
+            echo "languages not provided, defaulting to English"
+            doc-builder build ${{ env.package_name }} ../${{ env.doc_folder }} $args
+          else
+            IFS=', ' read -r -a langs <<< "${{ inputs.languages }}"
+            for lang in "${langs[@]}"
+            do
+                echo "Generating docs for language $lang"
+                doc-builder build ${{ env.package_name }} ../${{ env.doc_folder }}/$lang $args --language $lang
+            done
+          fi
+          cd ..
+
+      - name: Push to repositories
+        shell: bash
+        run: |
+          cd build_dir
+          doc-builder push ${{ env.package_name }} --doc_build_repo_id "hf-doc-build/doc-build-dev" --token "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" --commit_msg "Updated with commit ${{ inputs.commit_sha }} See: https://github.com/${{ inputs.repo_owner }}/${{ inputs.package }}/commit/${{ inputs.commit_sha }}" --n_retries 5
+
+      - name: Find doc comment
+        uses: peter-evans/find-comment@v2
+        id: find_comment
+        with:
+          issue-number: ${{ inputs.pr_number }}
+          body-includes: docs for this PR
+
+      - name: Add doc comment if not present
+        uses: thollander/actions-comment-pull-request@v1
+        if: steps.find_comment.outputs.comment-id == ''
+
+        with:
+          message: 'The docs for this PR live [here](${{ env.hub_docs_url }}). All of your documentation changes will be reflected on that endpoint.'
+          GITHUB_TOKEN: ${{ env.comment_bot_token }}
+
+      - name: Update doc comment if necessary
+        if: github.event.action == 'reopened' && steps.find_comment.outputs.comment-id != ''
+        uses: peter-evans/create-or-update-comment@v1
+        with:
+          comment-id: ${{ steps.find_comment.outputs.comment-id }}
+          token: ${{ env.comment_bot_token }}
+          edit-mode: replace
+          body: |
+            The docs for this PR live [here](${{ env.hub_docs_url }}). All of your documentation changes will be reflected on that endpoint.
