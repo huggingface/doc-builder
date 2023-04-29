@@ -150,8 +150,8 @@ def convert_file_include_helper(match, page_info, is_code=True):
             raise ValueError(f"The following '{include_name}' does NOT exist:\n{match[0]}")
         include = lines[start_after:end_before]
     include = [indent + line[include_info.get("dedent", 0) :] for line in include]
-    include = "".join(include)
-    return f"""{indent}```{include_info.get('language', '')}\n{include.rstrip()}\n{indent}```""" if is_code else include
+    include = "".join(include).rstrip()
+    return f"""{indent}```{include_info.get('language', '')}\n{include}\n{indent}```""" if is_code else include
 
 
 def convert_include(text, page_info):
