@@ -132,6 +132,14 @@ jobs:
           cd build_dir/${{ env.package_name }}
           wget https://huggingface.co/datasets/hf-doc-build/doc-build/raw/main/${{ env.package_name }}/_versions.yml
 
+      - name: Run pre-command
+        shell: bash
+        run: |
+          if [ ! -z "${{ inputs.pre_command }}" ]
+          then
+            bash -c "${{ inputs.pre_command }}"
+          fi
+
       - name: Make documentation
         shell: bash
         env:
@@ -140,11 +148,6 @@ jobs:
           echo "doc_folder has been set to ${{ env.doc_folder }}"
           cd doc-builder
           args="--build_dir ../build_dir --clean --html ${{ inputs.additional_args }} --repo_owner ${{ inputs.repo_owner }} --repo_name ${{ inputs.package }} --version_tag_suffix=${{ inputs.version_tag_suffix }}"
-
-          if [ ! -z "${{ inputs.pre_command }}" ]
-          then
-            bash -c "${{ inputs.pre_command }}"
-          fi
 
           if [ ! -z "${{ inputs.notebook_folder }}" ];
           then
