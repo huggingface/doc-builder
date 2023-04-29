@@ -115,44 +115,58 @@ def clean_doctest_syntax(text):
     return text
 
 
-_re_literalinclude = re.compile(r"([ \t]*)<literalinclude>(((?!<literalinclude>).)*)<\/literalinclude>", re.DOTALL)
+_re_include_template = r"([ \t]*)<{include_name}>(((?!<{include_name}>).)*)<\/{include_name}>"
+_re_include = re.compile(_re_include_template.format(include_name='include'), re.DOTALL)
+_re_literalinclude = re.compile(_re_include_template.format(include_name='literalinclude'), re.DOTALL)
 
 
-def convert_literalinclude_helper(match, page_info):
+def convert_file_include_helper(match, page_info, is_code=True):
     """
-    Convert a literalinclude regex match into markdown code blocks by opening a file and
-    copying specified start-end section into markdown code block.
+    Convert an `include` or `literalinclude` regex match into markdown blocks or markdown code blocks,
+    by opening a file and copying specified start-end section into markdown block.
+
+    If `is_code` is True, the block will be rendered as a code block, otherwise it will be rendered
+    as a markdown block.
     """
-    literalinclude_info = json.loads(match[2].strip())
+    include_info = json.loads(match[2].strip())
     indent = match[1]
+    include_name = 'literalinclude' if is_code else 'include'
     if tempfile.gettempdir() in str(page_info["path"]):
-        return "\n`Please restart doc-builder preview commands to see literalinclude rendered`\n"
-    file = page_info["path"].parent / literalinclude_info["path"]
+        return f"\n`Please restart doc-builder preview commands to see {include_name} rendered`\n"
+    file = page_info["path"].parent / include_info["path"]
     with open(file, "r", encoding="utf-8-sig") as reader:
         lines = reader.readlines()
-    literalinclude = lines  # defaults to entire file
-    if "start-after" in literalinclude_info or "end-before" in literalinclude_info:
+    include = lines  # defaults to entire file
+    if "start-after" in include_info or "end-before" in include_info:
         start_after, end_before = -1, -1
         for idx, line in enumerate(lines):
             line = line.strip()
             line = re.sub(r"\W+$", "", line)
-            if line.endswith(literalinclude_info["start-after"]):
+            if line.endswith(include_info["start-after"]):
                 start_after = idx + 1
-            if line.endswith(literalinclude_info["end-before"]):
+            if line.endswith(include_info["end-before"]):
                 end_before = idx
         if start_after == -1 or end_before == -1:
-            raise ValueError(f"The following 'literalinclude' does NOT exist:\n{match[0]}")
-        literalinclude = lines[start_after:end_before]
-    literalinclude = [indent + line[literalinclude_info.get("dedent", 0) :] for line in literalinclude]
-    literalinclude = "".join(literalinclude)
-    return f"""{indent}```{literalinclude_info.get('language', '')}\n{literalinclude.rstrip()}\n{indent}```"""
+            raise ValueError(f"The following '{include_name}' does NOT exist:\n{match[0]}")
+        include = lines[start_after:end_before]
+    include = [indent + line[include_info.get("dedent", 0) :] for line in include]
+    include = "".join(include)
+    return f"""{indent}```{include_info.get('language', '')}\n{include.rstrip()}\n{indent}```""" if is_code else include
+
+
+def convert_include(text, page_info):
+    """
+    Convert an `include` into markdown.
+    """
+    text = _re_include.sub(lambda m: convert_file_include_helper(m, page_info, is_code=False), text)
+    return text
 
 
 def convert_literalinclude(text, page_info):
     """
-    Convert a literalinclude into markdown code blocks.
+    Convert a `literalinclude` into markdown code blocks.
     """
-    text = _re_literalinclude.sub(lambda m: convert_literalinclude_helper(m, page_info), text)
+    text = _re_literalinclude.sub(lambda m: convert_file_include_helper(m, page_info, is_code=True), text)
     return text
 
 
@@ -168,10 +182,13 @@ def convert_md_docstring_to_mdx(docstring, page_info):
 def process_md(text, page_info):
     """
     Processes markdown by:
-        1. Converting literalinclude
-        2. Converting special characters
-        3. Converting image links
+        1. Converting include
+        2. Converting literalinclude
+        3. Converting special characters
+        4. Clean doctest syntax
+        5. Converting image links
     """
+    text = convert_include(text, page_info)
     text = convert_literalinclude(text, page_info)
     text = convert_special_chars(text)
     text = clean_doctest_syntax(text)
