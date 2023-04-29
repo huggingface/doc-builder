@@ -19,6 +19,7 @@ from pathlib import Path
 
 from doc_builder.convert_md_to_mdx import (
     convert_img_links,
+    convert_include,
     convert_literalinclude,
     convert_md_to_mdx,
     convert_special_chars,
@@ -128,6 +129,64 @@ export let fw: "pt" | "tf"
 &amp;lcub;}
 &amp;lt;>"""
         self.assertEqual(process_md(text, page_info), expected_conversion)
+
+    def test_convert_include(self):
+        path = Path(__file__).resolve()
+        page_info = {"path": path}
+
+        # test canonical
+        text = """<include>
+{"path": "./data/convert_include_dummy.txt",
+"start-after": "START header_1",
+"end-before": "END header_1"}
+</include>"""
+
+        # test entire file
+        text = """<include>
+{"path": "./data/convert_include_dummy.txt"}
+</include>"""
+        expected_conversion = '''<!-- START header_1 -->
+# This is the first header
+Other text 1
+<!-- END header_1 -->
+
+<!-- START header_2 -->
+# This is the second header
+Other text 2
+<!-- END header_2 -->
+
+<!-- START header_3 -->
+# This is the third header
+Other text 3
+<!-- END header_3 -->'''
+        self.assertEqual(convert_include(text, page_info), expected_conversion)
+
+        # test with indent
+        text = """Some text
+    <include>
+{"path": "./data/convert_include_dummy.txt",
+"start-after": "START header_1",
+"end-before": "END header_1"}
+</include>"""
+        expected_conversion = """Some text
+    # This is the first header
+    Other text 1
+"""
+        self.assertEqual(convert_include(text, page_info), expected_conversion)
+
+        # test with dedent
+        text = """Some text
+    <include>
+{"path": "./data/convert_include_dummy.txt",
+"start-after": "START header_1",
+"end-before": "END header_1",
+"dedent": 10}
+</include>"""
+        expected_conversion = """Some text
+    the first header
+     1
+"""
+        self.assertEqual(convert_include(text, page_info), expected_conversion)
 
     def test_convert_literalinclude(self):
         path = Path(__file__).resolve()
