@@ -145,7 +145,7 @@ export let fw: "pt" | "tf"
         text = """<include>
 {"path": "./data/convert_include_dummy.txt"}
 </include>"""
-        expected_conversion = '''<!-- START header_1 -->
+        expected_conversion = """<!-- START header_1 -->
 # This is the first header
 Other text 1
 <!-- END header_1 -->
@@ -158,7 +158,7 @@ Other text 2
 <!-- START header_3 -->
 # This is the third header
 Other text 3
-<!-- END header_3 -->'''
+<!-- END header_3 -->"""
         self.assertEqual(convert_include(text, page_info), expected_conversion)
 
         # test with indent

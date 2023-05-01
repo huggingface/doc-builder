@@ -116,8 +116,8 @@ def clean_doctest_syntax(text):
 
 
 _re_include_template = r"([ \t]*)<{include_name}>(((?!<{include_name}>).)*)<\/{include_name}>"
-_re_include = re.compile(_re_include_template.format(include_name='include'), re.DOTALL)
-_re_literalinclude = re.compile(_re_include_template.format(include_name='literalinclude'), re.DOTALL)
+_re_include = re.compile(_re_include_template.format(include_name="include"), re.DOTALL)
+_re_literalinclude = re.compile(_re_include_template.format(include_name="literalinclude"), re.DOTALL)
 
 
 def convert_file_include_helper(match, page_info, is_code=True):
@@ -130,7 +130,7 @@ def convert_file_include_helper(match, page_info, is_code=True):
     """
     include_info = json.loads(match[2].strip())
     indent = match[1]
-    include_name = 'literalinclude' if is_code else 'include'
+    include_name = "literalinclude" if is_code else "include"
     if tempfile.gettempdir() in str(page_info["path"]):
         return f"\n`Please restart doc-builder preview commands to see {include_name} rendered`\n"
     file = page_info["path"].parent / include_info["path"]
