@@ -170,8 +170,7 @@ Other text 3
 </include>"""
         expected_conversion = """Some text
     # This is the first header
-    Other text 1
-"""
+    Other text 1"""
         self.assertEqual(convert_include(text, page_info), expected_conversion)
 
         # test with dedent
@@ -184,8 +183,7 @@ Other text 3
 </include>"""
         expected_conversion = """Some text
     the first header
-     1
-"""
+     1"""
         self.assertEqual(convert_include(text, page_info), expected_conversion)
 
     def test_convert_literalinclude(self):
