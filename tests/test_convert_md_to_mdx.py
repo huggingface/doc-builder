@@ -134,12 +134,14 @@ export let fw: "pt" | "tf"
         path = Path(__file__).resolve()
         page_info = {"path": path}
 
-        # test canonical
-        text = """<include>
-{"path": "./data/convert_include_dummy.txt",
-"start-after": "START header_1",
-"end-before": "END header_1"}
-</include>"""
+        # canonical test:
+        # <include>
+        # {
+        #     "path": "./data/convert_include_dummy.txt",
+        #     "start-after": "START header_1",
+        #     "end-before": "END header_1"
+        # }
+        # </include>
 
         # test entire file
         text = """<include>
@@ -189,13 +191,17 @@ Other text 3
     def test_convert_literalinclude(self):
         path = Path(__file__).resolve()
         page_info = {"path": path}
-        # test canonical
-        text = """<literalinclude>
-{"path": "./data/convert_literalinclude_dummy.txt",
-"language": "python",
-"start-after": "START python_import",
-"end-before": "END python_import"}
-</literalinclude>"""
+
+        # canonical test:
+        # <literalinclude>
+        # {
+        #     "path": "./data/convert_literalinclude_dummy.txt",
+        #     "language": "python",
+        #     "start-after": "START python_import",
+        #     "end-before": "END python_import"
+        # }
+        # </literalinclude>
+
         # test entire file
         text = """<literalinclude>
 {"path": "./data/convert_literalinclude_dummy.txt",
