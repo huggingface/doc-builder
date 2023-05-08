@@ -78,7 +78,7 @@ def convert_special_chars(text):
     # We don't want to replace those by the HTML code, so we temporarily set them at LTHTML
     # source is a special tag, it can be standalone (html tag) or closing (doc tag)
     text = re.sub(
-        r"<(img|video|br|hr|/?source|Youtube|Question|DocNotebookDropdown|CourseFloatingBanner|FrameworkSwitch|audio|PipelineIcon|PipelineTag)",
+        r"<(img|video|br|hr|/?source|Youtube|Question|DocNotebookDropdown|CourseFloatingBanner|FrameworkSwitch|/?audio|PipelineIcon|PipelineTag)",
         r"LTHTML\1",
         text,
     )  # html void elements with no closing counterpart
