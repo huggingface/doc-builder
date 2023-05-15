@@ -21,7 +21,7 @@
 	});
 
 	function handleClick() {
-		copyToClipboard(value);
+		copyToClipboard(decodeURIComponent(atob(value)));
 		isSuccess = true;
 		if (timeout) {
 			clearTimeout(timeout);

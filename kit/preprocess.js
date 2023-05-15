@@ -432,6 +432,7 @@ const _mdsvexPreprocess = mdsvex({
 				lang && hljs.getLanguage(lang)
 					? hljs.highlight(lang, code, true).value
 					: hljs.highlightAuto(code).value;
+			const base64 = (val) => btoa(encodeURIComponent(val));
 			const escape = (code) =>
 				code.replace(/\\/g, "\\\\").replace(/`/g, "\\`").replace(/}/g, "\\}").replace(/\$/g, "\\$");
 			const REGEX_FRAMEWORKS_SPLIT = /\s*===(PT-TF|STRINGAPI-READINSTRUCTION)-SPLIT===\s*/gm;
@@ -462,12 +463,12 @@ const _mdsvexPreprocess = mdsvex({
 	<CodeBlockFw
 		group1={{
 			id: '${isPtTf ? "pt" : "stringapi"}',
-			code: \`${escape(codeGroup1)}\`,
+			code: \`${base64(codeGroup1)}\`,
 			highlighted: \`${escape(highlightedPt)}\`
 		}}
 		group2={{
 			id: '${isPtTf ? "tf" : "readinstruction"}',
-			code: \`${escape(codeGroup2)}\`,
+			code: \`${base64(codeGroup2)}\`,
 			highlighted: \`${escape(highlightedTf)}\`
 		}}
 	/>`;
@@ -484,7 +485,7 @@ const _mdsvexPreprocess = mdsvex({
 				}
 				return `
 	<CodeBlock 
-		code={\`${escape(code)}\`}
+		code={\`${base64(code)}\`}
 		highlighted={\`${escape(highlighted)}\`}
 	/>`;
 			}
