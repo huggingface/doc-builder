@@ -517,7 +517,7 @@ def style_doc_files(*files, max_len=119, check_only=False):
                     changed.append(file)
                 if len(black_error) > 0:
                     black_errors.append(
-                        f"There was a problem while formatting an example in {file} with black:\m{black_error}"
+                        f"There was a problem while formatting an example in {file} with black:\n{black_error}"
                     )
             except Exception:
                 print(f"There is a problem in {file}.")
@@ -530,7 +530,7 @@ def style_doc_files(*files, max_len=119, check_only=False):
                     changed.append(file)
                 if len(black_error) > 0:
                     black_errors.append(
-                        f"There was a problem while formatting an example in {file} with black:\m{black_error}"
+                        f"There was a problem while formatting an example in {file} with black:\n{black_error}"
                     )
             except Exception:
                 print(f"There is a problem in {file}.")
