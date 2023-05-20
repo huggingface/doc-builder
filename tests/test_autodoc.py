@@ -143,7 +143,7 @@ class AutodocTester(unittest.TestCase):
     )
     test_source_link_init = f"https://github.com/huggingface/transformers/blob/main/src/transformers/pipelines/__init__.py#L{TEST_LINE_NUMBER2}"
     test_source_link_timm = (
-        f"https://github.com/rwightman/pytorch-image-models/blob/main/timm/models/factory.py#L{TEST_LINE_NUMBER_TIMM}"
+        f"https://github.com/rwightman/pytorch-image-models/blob/main/timm/models/_factory.py#L{TEST_LINE_NUMBER_TIMM}"
     )
 
     def test_find_object_in_package(self):
