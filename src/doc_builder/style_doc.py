@@ -32,7 +32,7 @@ _re_code = re.compile(r"^(\s*)```(.*)$")
 # Matches the special tag to ignore some paragraphs.
 _re_docstyle_ignore = re.compile(r"#\s*docstyle-ignore")
 # Re pattern that matches <Tip>, </Tip> and <Tip warning={true}> blocks.
-_re_tip = re.compile("^\s*</?Tip(>|\s+warning={true}>)\s*$")
+_re_tip = re.compile(r"^\s*</?Tip(>|\s+warning={true}>)\s*$")
 
 DOCTEST_PROMPTS = [">>>", "..."]
 
