@@ -77,14 +77,10 @@ def convert_special_chars(text):
     text = _re_lcub_svelte.sub(lambda match: match[0].replace("&amp;lcub;", "{"), text)
     # We don't want to replace those by the HTML code, so we temporarily set them at LTHTML
     # source is a special tag, it can be standalone (html tag) or closing (doc tag)
-    
+
     # NOTE: \w+ necessary since tags must start with a letter
     _re_lt_html = re.compile(r"<(\s*\/?\s*\w+[^>]*?)>", re.DOTALL)
-    text = re.sub(
-        _re_lt_html,
-        r"LTHTML\1>",
-        text
-    )
+    text = re.sub(_re_lt_html, r"LTHTML\1>", text)
     text = re.sub(r"(^|[^<])<([^(<|!)]|$)", r"\1&amp;lt;\2", text)
     text = text.replace("LTHTML", "<")
     return text
