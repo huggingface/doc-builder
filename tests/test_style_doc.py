@@ -122,7 +122,7 @@ class BuildDocTester(unittest.TestCase):
 
     def test_format_text(self):
         text = "This is an example text   that will \nbe used in\n  these examples. "
-        clean_text = re.sub("\s+", " ", text).strip()
+        clean_text = re.sub(r"\s+", " ", text).strip()
         for max_len in [20, 30, 50, 100]:
             formatted_text = format_text(text, max_len=max_len)
             # Nothing was lost

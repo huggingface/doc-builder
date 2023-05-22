@@ -121,13 +121,13 @@ def convert_rst_links(text, page_info):
     # Other links
     text = _re_links.sub(r"[\1](\2)", text)
     # Relative links or Transformers links need to remove the .html
-    if "(https://https://huggingface.co/" in text or re.search("\(\.+/", text) is not None:
+    if "(https://https://huggingface.co/" in text or re.search(r"\(\.+/", text) is not None:
         text = text.replace(".html", "")
     return text
 
 
 # Re pattern that catches examples blocks of the form `Example::`.
-_re_example = re.compile("^\s*(\S.*)::\s*$")
+_re_example = re.compile(r"^\s*(\S.*)::\s*$")
 # Re pattern that catches rst blocks of the form `.. block_name::`.
 _re_block = re.compile(r"^\s*\.\.\s+(\S+)::")
 # Re pattern that catches what's after the :: in rst blocks of the form `.. block_name:: something`.
@@ -142,13 +142,13 @@ def find_indent(line):
     """
     Returns the number of spaces that start a line indent.
     """
-    search = re.search("^(\s*)(?:\S|$)", line)
+    search = re.search(r"^(\s*)(?:\S|$)", line)
     if search is None:
         return 0
     return len(search.groups()[0])
 
 
-_re_rst_option = re.compile("^\s*:(\S+):(.*)$")
+_re_rst_option = re.compile(r"^\s*:(\S+):(.*)$")
 
 
 def convert_special_chars(text):
@@ -323,9 +323,9 @@ def convert_rst_blocks(text, page_info):
 
 
 # Re pattern that catches rst args blocks of the form `Parameters:`.
-_re_args = re.compile("^\s*(Args?|Arguments?|Attributes?|Params?|Parameters?):\s*$")
+_re_args = re.compile(r"^\s*(Args?|Arguments?|Attributes?|Params?|Parameters?):\s*$")
 # Re pattern that catches return blocks of the form `Return:`.
-_re_returns = re.compile("^\s*(Return|Yield|Raise)s?:\s*$")
+_re_returns = re.compile(r"^\s*(Return|Yield|Raise)s?:\s*$")
 
 
 def split_return_line(line):
@@ -470,8 +470,8 @@ def parse_rst_docstring(docstring):
     return result
 
 
-_re_list = re.compile("^\s*(-|\*|\d+\.)\s")
-_re_autodoc = re.compile("^\s*\[\[autodoc\]\]\s+(\S+)\s*$")
+_re_list = re.compile(r"^\s*(-|\*|\d+\.)\s")
+_re_autodoc = re.compile(r"^\s*\[\[autodoc\]\]\s+(\S+)\s*$")
 
 
 def remove_indent(text):
@@ -601,11 +601,11 @@ def process_titles(lines):
 
 
 # Matches lines with a pattern of a table new line in rst.
-_re_ignore_line_table = re.compile("^(\+[\-\s]+)+\+\s*$")
+_re_ignore_line_table = re.compile(r"^(\+[\-\s]+)+\+\s*$")
 # Matches lines with a pattern of a table new line in rst, with a first column empty.
-_re_ignore_line_table1 = re.compile("^\|\s+(\+[\-\s]+)+\+\s*$")
+_re_ignore_line_table1 = re.compile(r"^\|\s+(\+[\-\s]+)+\+\s*$")
 # Matches lines with a pattern of a first table line in rst.
-_re_sep_line_table = re.compile("^(\+[=\s]+)+\+\s*$")
+_re_sep_line_table = re.compile(r"^(\+[=\s]+)+\+\s*$")
 # Re pattern that catches anchors of the type .. reference:
 _re_anchor_section = re.compile(r"^\.\.\s+_(\S+):")
 

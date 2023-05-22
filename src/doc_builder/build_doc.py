@@ -32,8 +32,8 @@ from .frontmatter_node import FrontmatterNode
 from .utils import get_doc_config, read_doc_config
 
 
-_re_autodoc = re.compile("^\s*\[\[autodoc\]\]\s+(\S+)\s*$")
-_re_list_item = re.compile("^\s*-\s+(\S+)\s*$")
+_re_autodoc = re.compile(r"^\s*\[\[autodoc\]\]\s+(\S+)\s*$")
+_re_list_item = re.compile(r"^\s*-\s+(\S+)\s*$")
 
 
 def resolve_open_in_colab(content, page_info):

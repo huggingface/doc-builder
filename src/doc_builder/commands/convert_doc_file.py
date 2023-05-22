@@ -46,7 +46,7 @@ def find_root_git(folder):
 
 
 # Re pattern that matches links of the form [`some_class`]
-_re_internal_ref = re.compile("\[`([^`]*)`\]")
+_re_internal_ref = re.compile(r"\[`([^`]*)`\]")
 
 
 def shorten_internal_refs(content):

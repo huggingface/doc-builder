@@ -21,7 +21,7 @@ import tempfile
 from .convert_rst_to_mdx import parse_rst_docstring, remove_indent
 
 
-_re_doctest_flags = re.compile("^(>>>.*\S)(\s+)# doctest:\s+\+[A-Z_]+\s*$", flags=re.MULTILINE)
+_re_doctest_flags = re.compile(r"^(>>>.*\S)(\s+)# doctest:\s+\+[A-Z_]+\s*$", flags=re.MULTILINE)
 
 
 def convert_md_to_mdx(md_text, page_info):

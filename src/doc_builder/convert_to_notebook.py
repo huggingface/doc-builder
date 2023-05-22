@@ -28,17 +28,17 @@ from .utils import get_doc_config
 # Re pattern that matches inline math in MDX: \\(formula\\)
 _re_math_delimiter = re.compile(r"\\\\\((.*?)\\\\\)")
 # Re pattern that matches the copyright paragraph in an MDX file
-_re_copyright = re.compile("<!--\s*Copyright(.*?)-->", flags=re.DOTALL)
+_re_copyright = re.compile(r"<!--\s*Copyright(.*?)-->", flags=re.DOTALL)
 # Re pattern that matches YouTube Svelte components and extract the id
 _re_youtube = re.compile(r'<Youtube id="([^"]+)"/>')
 # Re pattern matching header lines in Markdown
-_re_header = re.compile("^#+\s+\S+")
+_re_header = re.compile(r"^#+\s+\S+")
 # Re pattern matching Python code samples
-_re_python_code = re.compile("^```\s*(py|python)\s*$")
+_re_python_code = re.compile(r"^```\s*(py|python)\s*$")
 # Re pattern matching markdown links
 _re_markdown_links = re.compile(r"\[([^\]]*)\]\(([^\)]*)\)")
 # Re pattern matching framework headers like <pytorch> or <tensorflow>
-_re_framework = re.compile("^\s*<([a-z]*)>\s*$")
+_re_framework = re.compile(r"^\s*<([a-z]*)>\s*$")
 
 
 def expand_links(content, page_info):
