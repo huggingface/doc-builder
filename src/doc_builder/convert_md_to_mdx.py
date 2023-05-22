@@ -78,10 +78,12 @@ def convert_special_chars(text):
     # We don't want to replace those by the HTML code, so we temporarily set them at LTHTML
     # source is a special tag, it can be standalone (html tag) or closing (doc tag)
 
-    # NOTE: \w+ necessary since tags must start with a letter
-    _re_lt_html = re.compile(r"<(\s*\/?\s*\w+[^>]*?)>", re.DOTALL)
+    # Temporarily replace all valid HTML tags with LTHTML
+    _re_lt_html = re.compile(r"<(((!(DOCTYPE|--))|((\/\s*)?\w+))[^>]*?)>", re.DOTALL)
     text = re.sub(_re_lt_html, r"LTHTML\1>", text)
-    text = re.sub(r"(^|[^<])<([^(<|!)]|$)", r"\1&amp;lt;\2", text)
+    # Encode remaining < symbols
+    text = text.replace("<", "&amp;lt;")
+    # Put back the HTML tags
     text = text.replace("LTHTML", "<")
     return text
 
