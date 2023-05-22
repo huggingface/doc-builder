@@ -32,7 +32,7 @@ _re_code = re.compile(r"^(\s*)```(.*)$")
 # Matches the special tag to ignore some paragraphs.
 _re_docstyle_ignore = re.compile(r"#\s*docstyle-ignore")
 # Re pattern that matches <Tip>, </Tip> and <Tip warning={true}> blocks.
-_re_tip = re.compile("^\s*</?Tip(>|\s+warning={true}>)\s*$")
+_re_tip = re.compile(r"^\s*</?Tip(>|\s+warning={true}>)\s*$")
 
 DOCTEST_PROMPTS = [">>>", "..."]
 
@@ -517,7 +517,7 @@ def style_doc_files(*files, max_len=119, check_only=False):
                     changed.append(file)
                 if len(black_error) > 0:
                     black_errors.append(
-                        f"There was a problem while formatting an example in {file} with black:\m{black_error}"
+                        f"There was a problem while formatting an example in {file} with black:\n{black_error}"
                     )
             except Exception:
                 print(f"There is a problem in {file}.")
@@ -530,7 +530,7 @@ def style_doc_files(*files, max_len=119, check_only=False):
                     changed.append(file)
                 if len(black_error) > 0:
                     black_errors.append(
-                        f"There was a problem while formatting an example in {file} with black:\m{black_error}"
+                        f"There was a problem while formatting an example in {file} with black:\n{black_error}"
                     )
             except Exception:
                 print(f"There is a problem in {file}.")
