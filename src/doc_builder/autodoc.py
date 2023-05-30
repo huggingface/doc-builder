@@ -588,7 +588,7 @@ def resolve_links_in_text(text, package, mapping, page_info):
 # Re pattern that catches the start of a block code with potential indent.
 _re_start_code_block = re.compile(r"^\s*```.*$", flags=re.MULTILINE)
 # Re pattern that catches return blocks of the form `Return:`.
-_re_returns_block = re.compile("^\s*Returns?:\s*$")
+_re_returns_block = re.compile(r"^\s*Returns?:\s*$")
 
 
 def quality_check_docstring(docstring, object_name=None):
