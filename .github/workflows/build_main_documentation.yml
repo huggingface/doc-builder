@@ -169,29 +169,6 @@ jobs:
 
           cd ..
 
-      - name: Push to repositories
-        run: |
-          cd build_dir
-          doc-builder push ${{ env.package_name }} --doc_build_repo_id "hf-doc-build/doc-build" --token "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" --commit_msg "Updated with commit ${{ inputs.commit_sha }} See: https://github.com/${{ inputs.repo_owner }}/${{ inputs.package }}/commit/${{ inputs.commit_sha }}" --n_retries 5 --upload_version_yml
-          cd ..
-
-          if [ -d "notebook_dir" ]
-          then
-            cd notebooks
-            git pull
-            cp -r ../notebook_dir/. ${{ inputs.notebook_folder }}
-            git status
-            if [[ `git status --porcelain` ]]; then
-              git add ${{ inputs.notebook_folder }}
-              git commit -m "Updated ${{ inputs.package }} doc notebooks with commit ${{ inputs.commit_sha }} \n\nSee: https://github.com/huggingface/${{ inputs.package }}/commit/${{ inputs.commit_sha }}"
-              git push origin main ||
-              (echo "Failed on the first try, rebasing and pushing again" && git pull --rebase && git push origin main) ||
-              (echo "Failed on the second try, rebasing and pushing again" && git pull --rebase && git push origin main)
-            else
-              echo "No diff in the notebooks."
-            fi
-            cd ..
-          else
-            echo "Notebooks creation was not enabled."
-          fi
-        shell: bash
+      - uses: actions/upload-artifact@v3
+        with:
+          path: build_dir/${{ env.package_name }}
