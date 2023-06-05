@@ -6,12 +6,6 @@ on:
       pr_number:
         required: true
         type: string
-      package:
-        required: true
-        type: string
-      package_name:
-        type: string
-        description: "Should be used when a package name differs from its repostory name"
     secrets:
       token:
         required: false
@@ -30,18 +24,6 @@ jobs:
             echo "comment_bot_token=${{ secrets.token }}" >> $GITHUB_ENV
           fi
 
-          if [ -z "${{ inputs.package_name }}" ];
-          then
-            echo "package_name=${{ inputs.package }}" >> $GITHUB_ENV
-          else
-            echo "package_name=${{ inputs.package_name }}" >> $GITHUB_ENV
-          fi
-
-      - name: Setup environment
-        shell: bash
-        run: |
-          mkdir build_dir
-
       - name: Find doc comment
         if: ${{ always() }}
         uses: peter-evans/find-comment@v2
@@ -59,11 +41,3 @@ jobs:
           edit-mode: replace
           body: |
             _The documentation is not available anymore as the PR was closed or merged._
-
-      - name: Save commit_sha & pr_number
-        run: echo ${{ inputs.pr_number }} > ./build_dir/pr_number
-
-      - uses: actions/upload-artifact@v3
-        with:
-          name: doc-delete-artifact
-          path: build_dir/
