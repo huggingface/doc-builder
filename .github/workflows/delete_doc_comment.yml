@@ -2,34 +2,53 @@ name: Delete Doc Comment
 
 on:
   workflow_call:
-    inputs:
-      pr_number:
-        required: true
-        type: string
     secrets:
-      token:
-        required: false
+      comment_bot_token:
+        required: true
 
 jobs:
-  build_and_package:
+  upload_pr_documentation:
     runs-on: ubuntu-latest
+    if: >
+      github.event.workflow_run.conclusion == 'success'
 
     steps:
-      - name: Set env variables
+      - name: 'Download artifact'
+        uses: actions/github-script@v3.1.0
+        with:
+          script: |
+            var artifacts = await github.actions.listWorkflowRunArtifacts({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              run_id: ${{github.event.workflow_run.id }},
+            });
+            var matchArtifact = artifacts.data.artifacts.filter((artifact) => {
+              return artifact.name == "doc-delete-artifact"
+            })[0];
+            var download = await github.actions.downloadArtifact({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              artifact_id: matchArtifact.id,
+              archive_format: 'zip',
+            });
+            var fs = require('fs');
+            fs.writeFileSync('${{github.workspace}}/doc-delete-artifact.zip', Buffer.from(download.data));
+        
+      - run: |
+          mkdir build_dir
+          unzip doc-delete-artifact.zip -d build_dir
+
+      - name: Get pr_number
         run: |
-          if [ -z "${{ secrets.token }}" ]
-          then
-            echo "comment_bot_token=$(echo 'ghp_'$(wget -qO- lysand.re/doc-build-dev)'bm')" >> $GITHUB_ENV
-          else
-            echo "comment_bot_token=${{ secrets.token }}" >> $GITHUB_ENV
-          fi
+          echo "pr_number=$(cat ./build_dir/pr_number)" >> $GITHUB_ENV
+          rm -rf ./build_dir/pr_number
 
       - name: Find doc comment
         if: ${{ always() }}
         uses: peter-evans/find-comment@v2
         id: find_comment
         with:
-          issue-number: ${{ inputs.pr_number }}
+          issue-number: ${{ env.pr_number }}
           body-includes: docs for this PR
 
       - name: Update doc comment if necessary
@@ -37,7 +56,7 @@ jobs:
         uses: peter-evans/create-or-update-comment@v1
         with:
           comment-id: ${{ steps.find_comment.outputs.comment-id }}
-          token: ${{ env.comment_bot_token }}
+          token: ${{ secrets.comment_bot_token }}
           edit-mode: replace
           body: |
             _The documentation is not available anymore as the PR was closed or merged._

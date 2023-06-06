@@ -1,4 +1,4 @@
-name: Build PR Documentation
+name: Delete Doc Comment
 
 on:
   workflow_call:
@@ -15,8 +15,8 @@ on:
     secrets:
       hf_token:
         required: true
-      token:
-        required: false
+      comment_bot_token:
+        required: true
 
 jobs:
   upload_pr_documentation:
@@ -31,15 +31,6 @@ jobs:
           repository: 'huggingface/doc-builder'
           path: doc-builder
           ref: fix-token-issue
-
-      - name: Set env variables
-        run: |
-          if [ -z "${{ secrets.token }}" ]
-          then
-            echo "comment_bot_token=$(echo 'ghp_'$(wget -qO- lysand.re/doc-build-dev)'bm')" >> $GITHUB_ENV
-          else
-            echo "comment_bot_token=${{ secrets.token }}" >> $GITHUB_ENV
-          fi
 
       - name: Setup environment
         shell: bash
@@ -117,14 +108,14 @@ jobs:
         with:
           message: 'The docs for this PR live [here](${{ env.hub_docs_url }}). All of your documentation changes will be reflected on that endpoint.'
           pr_number: ${{ env.pr_number }}
-          GITHUB_TOKEN: ${{ env.comment_bot_token }}
+          GITHUB_TOKEN: ${{ secrets.comment_bot_token }}
 
       - name: Update doc comment if necessary
         if: github.event.action == 'reopened' && steps.find_comment.outputs.comment-id != ''
         uses: peter-evans/create-or-update-comment@v1
         with:
           comment-id: ${{ steps.find_comment.outputs.comment-id }}
-          token: ${{ env.comment_bot_token }}
+          token: ${{ secrets.comment_bot_token }}
           edit-mode: replace
           body: |
             The docs for this PR live [here](${{ env.hub_docs_url }}). All of your documentation changes will be reflected on that endpoint.
