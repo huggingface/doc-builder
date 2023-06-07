@@ -41,6 +41,8 @@ on:
         default: "src/"
         description: "Suffix to add after the version tag (e.g. 1.3.0 or main) in the documentation links."
     secrets:
+      hf_token:
+        required: true
       token:
         required: false
 
@@ -172,7 +174,7 @@ jobs:
       - name: Push to repositories
         run: |
           cd build_dir
-          doc-builder push ${{ env.package_name }} --doc_build_repo_id "hf-doc-build/doc-build" --token "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" --commit_msg "Updated with commit ${{ inputs.commit_sha }} See: https://github.com/${{ inputs.repo_owner }}/${{ inputs.package }}/commit/${{ inputs.commit_sha }}" --n_retries 5 --upload_version_yml
+          doc-builder push ${{ env.package_name }} --doc_build_repo_id "hf-doc-build/doc-build" --token "${{ secrets.hf_token }}" --commit_msg "Updated with commit ${{ inputs.commit_sha }} See: https://github.com/${{ inputs.repo_owner }}/${{ inputs.package }}/commit/${{ inputs.commit_sha }}" --n_retries 5 --upload_version_yml
           cd ..
 
           if [ -d "notebook_dir" ]
