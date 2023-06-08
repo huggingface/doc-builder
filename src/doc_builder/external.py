@@ -119,7 +119,7 @@ def get_objects_map(package_name, version="main", language="en", repo_owner="hug
                 object_lines = reader.readlines()[4:]
                 object_data = zlib.decompress(b"".join(object_lines)).decode().split("\n")
             return post_process_objects_inv(object_data, doc_url)
-    except requests.HTTPError:
+    except Exception:
         return {}
 
 
