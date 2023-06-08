@@ -119,7 +119,7 @@ def get_objects_map(package_name, version="main", language="en", repo_owner="hug
                 object_lines = reader.readlines()[4:]
                 object_data = zlib.decompress(b"".join(object_lines)).decode().split("\n")
             return post_process_objects_inv(object_data, doc_url)
-    except requests.HTTPError:
+    except Exception:
         return {}
 
 
@@ -142,6 +142,7 @@ def get_external_object_link(object_name, page_info):
         return f"`{link_name}`"
 
     if package_name not in EXTERNAL_DOC_OBJECTS_CACHE:
+        print(package_name)
         EXTERNAL_DOC_OBJECTS_CACHE[package_name] = get_objects_map(package_name, version=version, language=language)
     object_url = EXTERNAL_DOC_OBJECTS_CACHE[package_name].get(object_name, None)
 
