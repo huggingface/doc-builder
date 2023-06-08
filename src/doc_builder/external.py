@@ -142,7 +142,6 @@ def get_external_object_link(object_name, page_info):
         return f"`{link_name}`"
 
     if package_name not in EXTERNAL_DOC_OBJECTS_CACHE:
-        print(package_name)
         EXTERNAL_DOC_OBJECTS_CACHE[package_name] = get_objects_map(package_name, version=version, language=language)
     object_url = EXTERNAL_DOC_OBJECTS_CACHE[package_name].get(object_name, None)
 
