@@ -37,6 +37,10 @@ module.exports = {
 			maxWidth: {
 				"2xs": "16rem"
 			},
+			screens: {
+				"with-hover": { raw: "(hover: hover)" },
+				"no-hover": { raw: "(hover: none)" }
+			},
 			gridTemplateRows: {
 				full: "100%"
 			},
