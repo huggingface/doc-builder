@@ -104,7 +104,7 @@
 		{@html highlightSignature(name)}
 		<a
 			id={anchor}
-			class="header-link invisible group-hover:visible pr-2"
+			class="header-link invisible hover:group-hover:visible pr-2"
 			href="#{anchor}"
 		>
 			<IconCopyLink />
@@ -179,7 +179,7 @@
 						<span class="group flex space-x-1.5 items-start">
 							<a
 								id={anchor}
-								class="header-link text-lg hidden group-hover:block absolute p-1.5 right-full"
+								class="header-link pr-0.5 text-lg hidden hover:block hover:absolute hover:p-1.5 hover:opacity-0 hover:group-hover:opacity-100 hover:right-full"
 								href={`#${anchor}`}
 							>
 								<span><IconCopyLink classNames="text-smd" /></span>
@@ -203,7 +203,7 @@
 							<span class="group flex space-x-1.5 items-start">
 								<a
 									id={anchor}
-									class="header-link text-lg hidden group-hover:block absolute p-1.5 right-full"
+									class="header-link pr-0.5 text-lg hidden hover:block hover:absolute hover:p-1.5 hover:opacity-0 hover:group-hover:opacity-100 hover:right-full"
 									href={`#${anchor}`}
 								>
 									<span><IconCopyLink classNames="text-smd" /></span>

@@ -511,7 +511,7 @@ function headingWithAnchorLink(code) {
 		return `<h${level} class="relative group">
 	<a 
 		id="${id}" 
-		class="header-link text-lg hidden group-hover:block absolute right-full p-1.5" 
+		class="header-link pr-1.5 text-lg hidden hover:block hover:absolute hover:p-1.5 hover:opacity-0 hover:group-hover:opacity-100 hover:right-full" 
 		href="#${id}"
 	>
 		<span><IconCopyLink/></span>
