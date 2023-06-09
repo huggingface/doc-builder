@@ -30,7 +30,7 @@
 <div class="relative group rounded-md" bind:this={containerEl}>
 	<a
 		id={anchor}
-		class="header-link pr-0.5 text-lg hidden hover:block hover:absolute hover:p-1.5 hover:opacity-0 hover:group-hover:opacity-100 hover:right-full"
+		class="header-link block pr-0.5 text-lg no-hover:hidden with-hover:absolute with-hover:p-1.5 with-hover:opacity-0 with-hover:group-hover:opacity-100 with-hover:right-full"
 		href={`#${anchor}`}
 	>
 		<span><IconCopyLink classNames="text-smd" /></span>
