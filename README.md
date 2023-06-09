@@ -186,8 +186,6 @@ Flax content goes here
 
 Note that all frameworks are optional (you can write a PyTorch-only block for instance) and the order does not matter.
 
-### Anchor link
-
 Anchor links for markdown headings are generated automatically (with the following rule: 1. lowercase, 2. replace space with dash `-`, 3. strip [^a-z0-9-]):
 ```
 ## My awesome section
