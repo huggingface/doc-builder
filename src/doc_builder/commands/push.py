@@ -15,7 +15,6 @@
 
 import argparse
 import logging
-import os
 import shutil
 from pathlib import Path
 from time import sleep, time
