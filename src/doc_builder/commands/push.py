@@ -41,19 +41,6 @@ def push_command(args):
     """
     if args.n_retries < 1:
         raise ValueError(f"CLI arg `n_retries` MUST be positive & non-zero; supplied value was {args.n_retries}")
-    if args.upload_version_yml:
-        library_name = args.library_name
-        version_file_path = f"{library_name}/_versions.yml"
-        api = HfApi()
-        api.upload_file(
-            repo_id=args.doc_build_repo_id,
-            repo_type=REPO_TYPE,
-            path_or_fileobj=version_file_path,
-            path_in_repo=version_file_path,
-            commit_message="Updating _version.yml",
-            token=args.token,
-        )
-        os.remove(version_file_path)
     if args.is_remove:
         push_command_remove(args)
     else:
@@ -87,14 +74,26 @@ def push_command_add(args):
 
     while number_of_retries:
         try:
-            api.upload_file(
-                repo_id=args.doc_build_repo_id,
-                repo_type=REPO_TYPE,
-                path_or_fileobj=zip_file_path,
-                path_in_repo=zip_file_path,
-                commit_message=args.commit_msg,
-                token=args.token,
-            )
+            if args.upload_version_yml:
+                # removing doc artifact folder to upload 2 files using `upload_folder`: _version.yml and zipped doc artifact file
+                shutil.rmtree(f"{library_name}/{doc_version_folder}")
+                api.upload_folder(
+                    repo_id=args.doc_build_repo_id,
+                    repo_type=REPO_TYPE,
+                    folder_path=library_name,
+                    path_in_repo=library_name,
+                    commit_message=args.commit_msg,
+                    token=args.token,
+                )
+            else:
+                api.upload_file(
+                    repo_id=args.doc_build_repo_id,
+                    repo_type=REPO_TYPE,
+                    path_or_fileobj=zip_file_path,
+                    path_in_repo=zip_file_path,
+                    commit_message=args.commit_msg,
+                    token=args.token,
+                )
             break
         except Exception as e:
             number_of_retries -= 1
