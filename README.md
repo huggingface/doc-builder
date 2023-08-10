@@ -65,8 +65,8 @@ which will build HTML files in `~/tmp/test-build`. You can then inspect those fi
 
 * `build_main_documentation.yml`: responsible for building the docs for the `main` branch, releases etc.
 * `build_pr_documentation.yml`: responsible for building the docs on each PR.
-* `delete_doc_comment.yml`: responsible for removing the comments from the `HuggingFaceDocBuilder` bot that provides a URL to the PR docs.
 * `upload_pr_documentation.yml`: responsible for uploading the PR artifacts to the Hugging Face Hub.
+* `delete_doc_comment_trigger.yml`: responsible for removing the comments from the `HuggingFaceDocBuilder` bot that provides a URL to the PR docs.
 
 Within each workflow, the main thing to include is a pointer from the `uses` field to the corresponding workflow in `doc-builder`. For example, this is what the PR workflow looks like in the `datasets` library:
 
