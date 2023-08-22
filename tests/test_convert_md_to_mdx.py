@@ -73,6 +73,20 @@ Lorem ipsum dolor sit amet, consectetur adipiscing elit"""
         self.assertEqual(convert_special_chars("<hr>"), "<hr>")
         self.assertEqual(convert_special_chars("<source>"), "<source>")
         self.assertEqual(convert_special_chars("<Youtube id='my_vid' />"), "<Youtube id='my_vid' />")
+        self.assertEqual(convert_special_chars("</br>"), "</br>")
+        self.assertEqual(convert_special_chars("<br />"), "<br />")
+        self.assertEqual(convert_special_chars("<p>5 <= 10</p>"), "<p>5 &amp;lt;= 10</p>")
+        self.assertEqual(
+            convert_special_chars("<p align='center'>5 <= 10</p>"), "<p align='center'>5 &amp;lt;= 10</p>"
+        )
+        self.assertEqual(convert_special_chars("<p>5 <= 10"), "<p>5 &amp;lt;= 10")  # no closing tag
+        self.assertEqual(convert_special_chars("5 <= 10</p>"), "5 &amp;lt;= 10</p>")  # no opening tag
+        self.assertEqual(convert_special_chars("<a>test</b>"), "<a>test</b>")  # mismatched tags
+        self.assertEqual(convert_special_chars("<p>5 < 10</p>"), "<p>5 &amp;lt; 10</p>")
+        self.assertEqual(convert_special_chars("<p>5 > 10</p>"), "<p>5 > 10</p>")
+        self.assertEqual(convert_special_chars("<!--...-->"), "<!--...-->")  # comment
+        self.assertEqual(convert_special_chars("<!-- < -->"), "<!-- &amp;lt; -->")  # comment
+        self.assertEqual(convert_special_chars("<!DOCTYPE html> 1 < 2"), "<!DOCTYPE html> 1 &amp;lt; 2")
 
         longer_test = """<script lang="ts">
 import Tip from "$lib/Tip.svelte";
