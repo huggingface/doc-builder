@@ -22,7 +22,8 @@ jobs:
   upload_pr_documentation:
     runs-on: ubuntu-latest
     if: >
-      github.event.workflow_run.event == 'pull_request' &&
+      (github.event.workflow_run.event == 'pull_request' ||
+      github.event.workflow_run.event == 'pull_request_target') &&
       github.event.workflow_run.conclusion == 'success'
 
     steps:
@@ -62,11 +63,11 @@ jobs:
             });
             var fs = require('fs');
             fs.writeFileSync('${{env.current_work_dir}}/doc-build-artifact.zip', Buffer.from(download.data));
-      
+
       - run: |
           mkdir build_dir
           unzip doc-build-artifact.zip -d build_dir
-      
+
       - name: Display structure of downloaded files
         run: ls -l
 
