@@ -125,7 +125,7 @@ export let fw: "pt" | "tf"
         comment = "<!-- multi line\ncomment -->"
         self.assertEqual(convert_special_chars(comment), comment)
 
-        # Regression test for huggingface_hub
+        # Regression test for https://github.com/huggingface/doc-builder/pull/394
         # '<' must not be considered an HTML tag before a number
         self.assertEqual(
             convert_special_chars("something <5MB something else -> here"),
