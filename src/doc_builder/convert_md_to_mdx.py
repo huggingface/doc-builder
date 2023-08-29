@@ -22,6 +22,11 @@ from .convert_rst_to_mdx import parse_rst_docstring, remove_indent
 
 
 _re_doctest_flags = re.compile(r"^(>>>.*\S)(\s+)# doctest:\s+\+[A-Z_]+\s*$", flags=re.MULTILINE)
+_re_lt_html = re.compile(r"<(((!(DOCTYPE|--))|((\/\s*)?[a-z]+))[^>]*?)>", re.IGNORECASE)
+_re_lcub_svelte = re.compile(
+    r"<(Question|Tip|Added|Changed|Deprecated|DocNotebookDropdown|CourseFloatingBanner|FrameworkSwitch|audio|PipelineIcon|PipelineTag)(((?!<(Question|Tip|Added|Changed|Deprecated|DocNotebookDropdown|CourseFloatingBanner|FrameworkSwitch|audio|PipelineIcon|PipelineTag)).)*)>|&amp;lcub;(#if|:else}|/if})",
+    re.DOTALL,
+)
 
 
 def convert_md_to_mdx(md_text, page_info):
@@ -68,10 +73,6 @@ def convert_special_chars(text):
     """
     Convert { and < that have special meanings in MDX.
     """
-    _re_lcub_svelte = re.compile(
-        r"<(Question|Tip|Added|Changed|Deprecated|DocNotebookDropdown|CourseFloatingBanner|FrameworkSwitch|audio|PipelineIcon|PipelineTag)(((?!<(Question|Tip|Added|Changed|Deprecated|DocNotebookDropdown|CourseFloatingBanner|FrameworkSwitch|audio|PipelineIcon|PipelineTag)).)*)>|&amp;lcub;(#if|:else}|/if})",
-        re.DOTALL,
-    )
     text = text.replace("{", "&amp;lcub;")
     # We don't want to escape `{` that are part of svelte syntax
     text = _re_lcub_svelte.sub(lambda match: match[0].replace("&amp;lcub;", "{"), text)
@@ -79,7 +80,6 @@ def convert_special_chars(text):
     # source is a special tag, it can be standalone (html tag) or closing (doc tag)
 
     # Temporarily replace all valid HTML tags with LTHTML
-    _re_lt_html = re.compile(r"<(((!(DOCTYPE|--))|((\/\s*)?\w+))[^>]*?)>", re.DOTALL)
     text = re.sub(_re_lt_html, r"LTHTML\1>", text)
     # Encode remaining < symbols
     text = text.replace("<", "&amp;lt;")
