@@ -122,6 +122,16 @@ export let fw: "pt" | "tf"
         comment = "<!-- comment -->"
         self.assertEqual(convert_special_chars(comment), comment)
 
+        comment = "<!-- multi line\ncomment -->"
+        self.assertEqual(convert_special_chars(comment), comment)
+
+        # Regression test for https://github.com/huggingface/doc-builder/pull/394
+        # '<' must not be considered an HTML tag before a number
+        self.assertEqual(
+            convert_special_chars("something <5MB something else -> here"),
+            "something &amp;lt;5MB something else -> here",
+        )
+
     def test_convert_img_links(self):
         page_info = {"package_name": "transformers", "version": "v4.10.0", "language": "fr"}
 
