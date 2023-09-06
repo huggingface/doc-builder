@@ -357,7 +357,7 @@ function renderCode(code) {
 
 export const mdsvexPreprocess = {
 	markup: async ({ content, filename }) => {
-		if (filename.endsWith(".mdx")) {
+		if (filename.endsWith(".svelte")) {
 			const markedKatex = {};
 			// if (filename.includes("course/")) {
 			// 	content = addCourseImports(content);
@@ -481,7 +481,7 @@ function escapeSvelteSpecialChars() {
 
 const _mdsvexPreprocess = mdsvex({
 	remarkPlugins: [escapeSvelteSpecialChars],
-	extensions: ["mdx"],
+	extensions: ["svelte"],
 	highlight: {
 		highlighter: function (code, lang) {
 			const REGEX_CODE_INPUT = /^(>>>\s|\.\.\.\s)/m;

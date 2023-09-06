@@ -2,6 +2,7 @@ import path from "path";
 import fs from "fs";
 import yaml from "js-yaml";
 import { fileURLToPath } from "url";
+import { json } from '@sveltejs/kit';
 
 export interface RawChapter {
   title: string;
@@ -23,14 +24,12 @@ const flattener = (_flatChapters: RawChapter[], chapter: RawChapter): RawChapter
   return _flatChapters;
 };
 
-export async function get() {
-  const filepath = path.join(fileURLToPath(import.meta.url), '../..', '_toctree.yml');
+export async function GET() {
+  const filepath = path.join(fileURLToPath(import.meta.url), '../../..', '_toctree.yml');
   const content = (await fs.promises.readFile(filepath)).toString("utf-8");
 
   const chapters: RawChapter[] = yaml.load(content) as RawChapter[];
   const chaptersFlat: RawChapter[] = chapters.reduce(flattener, []);
 
-  return {
-    body: chaptersFlat
-  }
+  return json(chaptersFlat);
 }
