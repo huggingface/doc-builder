@@ -15,6 +15,8 @@ const plugins = [
     autoprefixer,
 ]
 
+// make the resulting CSS files empty during "build" process
+// to not conflict with the already existing hub tailwind
 if(process.argv.includes("build")){
   plugins.push(removeAllCss)
 }
