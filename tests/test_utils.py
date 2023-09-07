@@ -19,7 +19,7 @@ import unittest
 from pathlib import Path
 
 import yaml
-from doc_builder.utils import update_versions_file
+from doc_builder.utils import sveltify_file_route, update_versions_file
 
 
 class UtilsTester(unittest.TestCase):
@@ -66,3 +66,19 @@ class UtilsTester(unittest.TestCase):
                 yml_str = tmp_yml.read()
                 expected_yml = "- version: main\n- version: v4.2.2\n"
                 self.assertEqual(yml_str, expected_yml)
+
+    def test_sveltify_file_route(self):
+        mdx_file_path = "guide.mdx"
+        svelte_file_path = sveltify_file_route(mdx_file_path)
+        expected_path = "guide/+page.svelte"
+        self.assertEqual(svelte_file_path, expected_path)
+
+        mdx_file_path = "xyz/abc/guide.mdx"
+        svelte_file_path = sveltify_file_route(mdx_file_path)
+        expected_path = "xyz/abc/guide/+page.svelte"
+        self.assertEqual(svelte_file_path, expected_path)
+
+        mdx_file_path = "/xyz/abc/guide.mdx"
+        svelte_file_path = sveltify_file_route(mdx_file_path)
+        expected_path = "/xyz/abc/guide/+page.svelte"
+        self.assertEqual(svelte_file_path, expected_path)
