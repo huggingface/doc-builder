@@ -132,7 +132,7 @@ export let fw: "pt" | "tf"
             "something &amp;lt;5MB something else -> here",
         )
 
-        # Regression test for
+        # Regression test for https://github.com/huggingface/doc-builder/pull/398
         # '10K<n<100K' must be caught correctly and not grouped with the next HTML tag.
         self.assertEqual(
             convert_special_chars("""10K<n<100K\n<Tip>\nThis is a tip.\n</Tip>"""),

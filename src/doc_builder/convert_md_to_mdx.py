@@ -23,7 +23,7 @@ from .convert_rst_to_mdx import parse_rst_docstring, remove_indent
 
 _re_doctest_flags = re.compile(r"^(>>>.*\S)(\s+)# doctest:\s+\+[A-Z_]+\s*$", flags=re.MULTILINE)
 _re_lt_html = re.compile(
-    r"""
+    r"""# This regex is meant to detect any HTML tag or comment, but not standalone '<' characters.
     <(                   # HTML tag with...
     (
         !DOCTYPE         # ... !DOCTYPE
