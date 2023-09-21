@@ -40,6 +40,12 @@ on:
         type: string
         default: "src/"
         description: "Suffix to add after the version tag (e.g. 1.3.0 or main) in the documentation links."
+      # Debug purposes only!
+      doc_builder_revision:
+        type: string
+        default: "main"
+        description: "Debug purposes only. Revision of `doc-builder` repo to use. Useful to test changes on `doc-builder`."
+
 
 jobs:
   build_pr_documentation:
@@ -52,6 +58,7 @@ jobs:
         with:
           repository: 'huggingface/doc-builder'
           path: doc-builder
+          ref: ${{ inputs.doc_builder_revision }}
 
       - uses: actions/checkout@v2
         with:
@@ -102,7 +109,7 @@ jobs:
         run: |
           pip uninstall -y doc-builder
           cd doc-builder
-          git pull origin main
+          git pull origin ${{ inputs.doc_builder_revision }}
           pip install .
           cd ..
 
