@@ -265,7 +265,7 @@ Users should refer to this superclass for more information regarding those metho
         model_output_doc = """
 <docstring><name>class transformers.utils.ModelOutput</name><anchor>transformers.utils.ModelOutput</anchor><source>"""
         model_output_doc += f"{self.test_source_link}"
-        model_output_doc += """</source><parameters>""</parameters></docstring>
+        model_output_doc += """</source><parameters>[{"name": "*args", "val": ""}, {"name": "**kwargs", "val": ""}]</parameters></docstring>
 
 Base class for all model outputs as dataclass. Has a `__getitem__` that allows indexing by integer or slice (like a
 tuple) or strings (like a dictionary) that will ignore the `None` attributes. Otherwise behaves like a regular
