@@ -22,7 +22,21 @@ from .convert_rst_to_mdx import parse_rst_docstring, remove_indent
 
 
 _re_doctest_flags = re.compile(r"^(>>>.*\S)(\s+)# doctest:\s+\+[A-Z_]+\s*$", flags=re.MULTILINE)
-_re_lt_html = re.compile(r"<(((!(DOCTYPE|--))|((\/\s*)?[a-z]+))[^>]*?)>", re.IGNORECASE)
+_re_lt_html = re.compile(
+    r"""# This regex is meant to detect any HTML tag or comment, but not standalone '<' characters.
+    <(                   # HTML tag with...
+    (
+        !DOCTYPE         # ... !DOCTYPE
+    |
+        ((\/\s*)?[a-z]+) # ... or any regular tag (i.e. starts with [a-z]
+    )
+    [^><]*?              # ... followed by anything until next closing ">"
+    )>
+    |
+    <(!--[^>]*?--)>      # Or an HTML comment
+    """,
+    re.IGNORECASE | re.VERBOSE,
+)
 _re_lcub_svelte = re.compile(
     r"<(Question|Tip|Added|Changed|Deprecated|DocNotebookDropdown|CourseFloatingBanner|FrameworkSwitch|audio|PipelineIcon|PipelineTag)(((?!<(Question|Tip|Added|Changed|Deprecated|DocNotebookDropdown|CourseFloatingBanner|FrameworkSwitch|audio|PipelineIcon|PipelineTag)).)*)>|&amp;lcub;(#if|:else}|/if})",
     re.DOTALL,
@@ -80,11 +94,14 @@ def convert_special_chars(text):
     # source is a special tag, it can be standalone (html tag) or closing (doc tag)
 
     # Temporarily replace all valid HTML tags with LTHTML
-    text = re.sub(_re_lt_html, r"LTHTML\1>", text)
+    # Replace with '\1\5' => 2 possible groups to catch the tag but in practice only one is not empty.
+    text = re.sub(_re_lt_html, r"LTHTML\1\5>", text)
+
     # Encode remaining < symbols
     text = text.replace("<", "&amp;lt;")
     # Put back the HTML tags
     text = text.replace("LTHTML", "<")
+
     return text
 
 

@@ -132,6 +132,13 @@ export let fw: "pt" | "tf"
             "something &amp;lt;5MB something else -> here",
         )
 
+        # Regression test for https://github.com/huggingface/doc-builder/pull/398
+        # '10K<n<100K' must be caught correctly and not grouped with the next HTML tag.
+        self.assertEqual(
+            convert_special_chars("""10K<n<100K\n<Tip>\nThis is a tip.\n</Tip>"""),
+            "10K&amp;lt;n&amp;lt;100K\n<Tip>\nThis is a tip.\n</Tip>",
+        )
+
     def test_convert_img_links(self):
         page_info = {"package_name": "transformers", "version": "v4.10.0", "language": "fr"}
 
