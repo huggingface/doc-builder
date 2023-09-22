@@ -132,7 +132,7 @@ If you are working on a fix or an update of the doc-builder tool itself, you wil
 ```yml
 jobs:
   build:
-    uses: huggingface/doc-builder/.github/workflows/build_pr_documentation.yml@main
+    uses: huggingface/doc-builder/.github/workflows/build_pr_documentation.yml@my-test-branch
     with:
       repo_owner: xenova
       commit_sha: ${{ github.sha }}
