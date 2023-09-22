@@ -125,6 +125,27 @@ package_reference/classes: package_reference/main_classes
 # old_local: new_local
 ```
 
+## Fixing and testing doc-builder
+
+If you are working on a fix or an update of the doc-builder tool itself, you will eventually want to test it in the CI of another repository (transformers, diffusers, courses, etc.). To do so you should set the `doc_builder_revision` argument in your workflow file to point to your branch. Here is an example of what it would look like in the [`transformers.js` project](https://github.com/xenova/transformers.js/blob/main/.github/workflows/pr-documentation.yml):
+
+```yml
+jobs:
+  build:
+    uses: huggingface/doc-builder/.github/workflows/build_pr_documentation.yml@my-test-branch
+    with:
+      repo_owner: xenova
+      commit_sha: ${{ github.sha }}
+      pr_number: ${{ github.event.number }}
+      package: transformers.js
+      path_to_docs: transformers.js/docs/source
+      pre_command: cd transformers.js && npm install && npm run docs-api
+      additional_args: --not_python_module
+      doc_builder_revision: my-test-branch # <- add this line
+```
+
+Once the docs build is complete in your project, you can drop that change.
+
 ## Writing documentation for Hugging Face libraries
 
 `doc-builder` expects Markdown so you should write any new documentation in `".mdx"` files for tutorials, guides, API documentations. For docstrings, we follow the [Google format](https://sphinxcontrib-napoleon.readthedocs.io/en/latest/example_google.html) with the main difference that you should use Markdown instead of restructured text (hopefully, that will be easier!)
