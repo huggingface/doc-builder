@@ -392,7 +392,7 @@ function unescapeUnderscores(content) {
  * @param {Record<any, any>} markedKatex
  */
 function markKatex(content, markedKatex) {
-	const REGEX_LATEX_DISPLAY = /\n\$\$([\s\S]+?)\$\$/g;
+	const REGEX_LATEX_DISPLAY = /\$\$([\s\S]+?)\$\$/g;
 	const REGEX_LATEX_INLINE = /\\\\\(([\s\S]+?)\\\\\)/g;
 	let counter = 0;
 	return content
@@ -412,11 +412,14 @@ function markKatex(content, markedKatex) {
 
 function renderKatex(code, markedKatex) {
 	return code.replace(/KATEXPARSE[0-9]+MARKER/g, (marker) => {
-		const { tex, displayMode } = markedKatex[marker];
-		const html = katex.renderToString(renderSvelteChars(tex), {
+		let { tex, displayMode } = markedKatex[marker];
+		tex = tex.replaceAll('&#123;', "{");
+		tex = tex.replaceAll('&#60;', "<");
+		let html = katex.renderToString(renderSvelteChars(tex), {
 			displayMode,
 			throwOnError: false
 		});
+		html = html.replace("katex-html", "katex-html hidden");
 		if (html.includes(`katex-error`)) {
 			throw new Error(`[KaTeX] Error while parsing markdown\n ${html}`);
 		}
