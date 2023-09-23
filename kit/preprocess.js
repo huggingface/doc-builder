@@ -3,7 +3,8 @@ import htmlparser2 from "htmlparser2";
 import hljs from "highlight.js";
 import { mdsvex } from "mdsvex";
 import katex from "katex";
-import { visit } from 'unist-util-visit'
+import { visit } from 'unist-util-visit';
+import htmlTags from 'html-tags';
 
 // Preprocessor that converts markdown into Docstring
 // svelte component using mdsvexPreprocess
@@ -432,12 +433,21 @@ function escapeSvelteSpecialChars() {
 	return transform;
 
 	function transform(tree) {
-		visit(tree, 'text', ontext);
+		visit(tree, 'text', onText);
+		visit(tree, 'html', onHtml);
 	}
 
-	function ontext(node) {
+	function onText(node) {
 		node.value = node.value.replaceAll("{", '&#123;');
 		node.value = node.value.replaceAll("<", '&#60;');
+	}
+
+	function onHtml(node) {
+		const RE_TAG_NAME = /<\/?(\w+)/;
+		const tagName = node.value.match(RE_TAG_NAME)[1];
+		if(!htmlTags.includes(tagName)){
+			node.value = node.value.replaceAll("<", '&#60;');
+		}
 	}
 }
 
