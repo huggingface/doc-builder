@@ -82,8 +82,8 @@ Lorem ipsum dolor sit amet, consectetur adipiscing elit"""
 {}
 <>"""
         expected_conversion = """[img](/docs/transformers/v4.10.0/fr/imgs/img.gif)
-&amp;lcub;}
-&amp;lt;>"""
+{}
+<>"""
         self.assertEqual(process_md(text, page_info), expected_conversion)
 
     def test_convert_include(self):
