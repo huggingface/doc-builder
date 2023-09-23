@@ -3,6 +3,7 @@ import htmlparser2 from "htmlparser2";
 import hljs from "highlight.js";
 import { mdsvex } from "mdsvex";
 import katex from "katex";
+import { visit } from 'unist-util-visit'
 
 // Preprocessor that converts markdown into Docstring
 // svelte component using mdsvexPreprocess
@@ -423,7 +424,22 @@ function renderKatex(code, markedKatex) {
 	});
 }
 
+
+function escapeSvelteSpecialChars() {
+	return transform;
+
+	function transform(tree) {
+		visit(tree, 'text', ontext);
+	}
+
+	function ontext(node) {
+		node.value = node.value.replaceAll("{", '&#123;');
+		node.value = node.value.replaceAll("<", '&#60;');
+	}
+}
+
 const _mdsvexPreprocess = mdsvex({
+	remarkPlugins: [escapeSvelteSpecialChars],
 	extensions: ["mdx"],
 	highlight: {
 		highlighter: function (code, lang) {
