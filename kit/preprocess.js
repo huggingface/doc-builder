@@ -460,6 +460,7 @@ function escapeSvelteSpecialChars() {
 	function transform(tree) {
 		visit(tree, "text", onText);
 		visit(tree, "html", onHtml);
+		visit(tree, "inlineCode", onInlineCode);
 	}
 
 	function onText(node) {
@@ -476,6 +477,16 @@ function escapeSvelteSpecialChars() {
 				node.value = node.value.replaceAll("<", "&#60;");
 			}
 		}
+	}
+
+	function onInlineCode(node) {
+		let value = node.value;
+		value = value.replaceAll("{", "&#123;");
+		value = value.replaceAll("&lcub;", "&#123;");
+		value = value.replaceAll("<", "&#60;");
+		value = value.replaceAll("&lt;", "&#60;");
+		node.type = "html";
+		node.value = `<code>${value}</code>`;
 	}
 }
 
