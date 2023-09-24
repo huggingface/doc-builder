@@ -5,6 +5,8 @@ import { mdsvex } from "mdsvex";
 import katex from "katex";
 import { visit } from 'unist-util-visit';
 import htmlTags from 'html-tags';
+import { readdir } from 'fs/promises';
+import path from 'path';
 
 // Preprocessor that converts markdown into Docstring
 // svelte component using mdsvexPreprocess
@@ -428,6 +430,29 @@ function renderKatex(code, markedKatex) {
 	});
 }
 
+async function findSvelteComponentNames(startDir) {
+    let svelteFiles = [];
+
+    async function searchDir(directory) {
+        const files = await readdir(directory, { withFileTypes: true });
+
+        for (const file of files) {
+            const filePath = path.join(directory, file.name);
+            if (file.isDirectory()) {
+                await searchDir(filePath);
+            } else if (path.extname(file.name) === '.svelte') {
+                svelteFiles.push(path.basename(file.name, '.svelte')); // strip the directory and .svelte extension
+            }
+        }
+    }
+
+    await searchDir(startDir);
+    return svelteFiles;
+}
+
+const dirPath = './src/lib';
+const svelteTags = await findSvelteComponentNames(dirPath);
+const validTags = [...htmlTags, ...svelteTags];
 
 function escapeSvelteSpecialChars() {
 	return transform;
@@ -444,8 +469,9 @@ function escapeSvelteSpecialChars() {
 
 	function onHtml(node) {
 		const RE_TAG_NAME = /<\/?(\w+)/;
+		// TODO: list current dir in lib and list all of our own stuff
 		const tagName = node.value.match(RE_TAG_NAME)[1];
-		if(!htmlTags.includes(tagName)){
+		if(!validTags.includes(tagName)){
 			node.value = node.value.replaceAll("<", '&#60;');
 		}
 	}
