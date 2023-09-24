@@ -1,72 +1,59 @@
 import adapter from "@sveltejs/adapter-static";
-import preprocess from "svelte-preprocess";
+import { vitePreprocess } from "@sveltejs/kit/vite";
+
 import {
-	docstringPreprocess,
-	frameworkcontentPreprocess,
-	mdsvexPreprocess,
-	inferenceSnippetPreprocess,
-	tokenizersLangPreprocess
+  docstringPreprocess,
+  frameworkcontentPreprocess,
+  mdsvexPreprocess,
+  inferenceSnippetPreprocess,
+  tokenizersLangPreprocess,
 } from "./preprocess.js";
 
 /** @type {import('@sveltejs/kit').Config} */
 const config = {
-	extensions: [".svelte", ".mdx"],
+  // Consult https://kit.svelte.dev/docs/integrations#preprocessors
+  // for more information about preprocessors
+  preprocess: [
+    docstringPreprocess,
+    frameworkcontentPreprocess,
+    inferenceSnippetPreprocess,
+    tokenizersLangPreprocess,
+    mdsvexPreprocess,
+    vitePreprocess({}),
+  ],
 
-	// Consult https://github.com/sveltejs/svelte-preprocess
-	// for more information about preprocessors
-	preprocess: [
-		docstringPreprocess,
-		frameworkcontentPreprocess,
-		inferenceSnippetPreprocess,
-		tokenizersLangPreprocess,
-		mdsvexPreprocess,
-		preprocess({ 
-			sourceMap: Boolean(process.env.DOCS_SOURCEMAP),
-			// So there can be code snippets with <script type="module"> in the docs
-			preserve: ["module"]
-		})
-	],
+  kit: {
+    // adapter-auto only supports some environments, see https://kit.svelte.dev/docs/adapter-auto for a list.
+    // If your environment is not supported or you settled on a specific environment, switch out the adapter.
+    // See https://kit.svelte.dev/docs/adapters for more information about adapters.
+    adapter: adapter({strict: false}),
 
-	kit: {
-		adapter: adapter(),
-		// inlineStyleThreshold: 100_000,
-		browser: {
-			hydrate: true,
-			router: false
-		},
+    prerender: {
+      crawl: false, // Do not throw if linked page doesn't exist (eg when forgetting the language prefix)
+    },
 
-		prerender: {
-			crawl: false // Do not throw if linked page doesn't exist (eg when forgetting the language prefix)
-		},
+    paths: {
+      base: process.argv.includes("dev")
+        ? ""
+        : "/docs/" +
+          (process.env.DOCS_LIBRARY || "transformers") +
+          "/" +
+          (process.env.DOCS_VERSION || "main") +
+          "/" +
+          (process.env.DOCS_LANGUAGE || "en"),
+    },
+  },
 
-		vite: {
-			build: {
-				sourcemap: Boolean(process.env.DOCS_SOURCEMAP)
-			}
-		},
-
-		paths: {
-			base: process.argv.includes("dev")
-				? ""
-				: "/docs/" +
-				  (process.env.DOCS_LIBRARY || "transformers") +
-				  "/" +
-				  (process.env.DOCS_VERSION || "main") +
-				  "/" +
-				  (process.env.DOCS_LANGUAGE || "en")
-		}
-	},
-
-	onwarn: (warning, handler) => {
-		if (
-			warning.message.includes("has unused export property 'fw'") ||
-			warning.message.includes("A11y")
-		) {
-			/// Too noisy
-			return;
-		}
-		handler(warning);
-	}
+  onwarn: (warning, handler) => {
+    if (
+      warning.message.includes("has unused export property 'fw'") ||
+      warning.message.includes("A11y")
+    ) {
+      /// Too noisy
+      return;
+    }
+    handler(warning);
+  },
 };
 
 export default config;

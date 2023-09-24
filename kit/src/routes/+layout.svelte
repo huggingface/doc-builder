@@ -1,31 +1,14 @@
-<script context="module" lang="ts">
-	import { base } from "$app/paths";
-
-	export async function load(input: LoadInput) {
-		if (prerendering || !import.meta.env.DEV) {
-			return {};
-		}
-
-		const toc = await input.fetch(base + "/endpoints/toc");
-
-		return {
-			props: {
-				toc: await toc.json()
-			}
-		};
-	}
-</script>
 
 <script lang="ts">
-	import type { LoadInput } from "@sveltejs/kit";
-	import type { RawChapter } from "./endpoints/toc";
-	import { prerendering } from "$app/env";
+	import { base } from "$app/paths";
+	import type { RawChapter } from "./endpoints/toc/+server";
 	import "../app.css";
 
-	export let toc: RawChapter[];
+	export let data;
+	export let toc: RawChapter[] = data.toc ?? [];
 </script>
 
-{#if prerendering || !import.meta.env.DEV}
+{#if !import.meta.env.DEV}
 	<slot />
 {:else}
 	<style>

@@ -180,3 +180,16 @@ def get_cached_repo():
             cwd=cache_repo_path,
         )
     return cache_repo_path
+
+
+def sveltify_file_route(filename):
+    """
+    Given `filename` /path/abc/xyz.mdx, return /path/abc/xyz/+page.svelte
+    """
+    # filename can be PosixPath or str
+    filename = str(filename)
+    # Check if the filename ends with '.svelte'
+    if filename.endswith(".mdx"):
+        # Replace the '{name}.mdx' with '{name}/+page.svelte'
+        return filename.rsplit(".", 1)[0] + "/+page.svelte"
+    return filename
