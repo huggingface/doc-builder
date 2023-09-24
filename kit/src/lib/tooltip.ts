@@ -11,15 +11,15 @@ export function tooltip(element: HTMLElement, txt: string): any {
 				txt,
 				x: event.pageX,
 				y: event.pageY,
-				id
+				id,
 			},
-			target: document.body
+			target: document.body,
 		});
 	}
 	function mouseMove(event: MouseEvent) {
 		tooltipComponent.$set({
 			x: event.pageX,
-			y: event.pageY
+			y: event.pageY,
 		});
 	}
 	function mouseLeave() {
@@ -42,6 +42,6 @@ export function tooltip(element: HTMLElement, txt: string): any {
 			element.removeEventListener("mouseover", mouseOver);
 			element.removeEventListener("mouseleave", mouseLeave);
 			element.removeEventListener("mousemove", mouseMove);
-		}
+		},
 	};
 }
