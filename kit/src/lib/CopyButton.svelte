@@ -33,7 +33,7 @@
 </script>
 
 <button
-	class="inline-flex items-center relative text-sm focus:text-green-500  cursor-pointer focus:outline-none
+	class="inline-flex items-center relative text-sm focus:text-green-500 cursor-pointer focus:outline-none
 		{classNames}
 		{style === 'text' ? 'mx-0.5' : ''}
 		{style === 'button' ? 'btn' : ''}
