@@ -23,7 +23,13 @@ import tempfile
 from pathlib import Path
 
 from doc_builder import build_doc, update_versions_file
-from doc_builder.utils import get_default_branch_name, get_doc_config, locate_kit_folder, read_doc_config
+from doc_builder.utils import (
+    get_default_branch_name,
+    get_doc_config,
+    locate_kit_folder,
+    read_doc_config,
+    sveltify_file_route,
+)
 
 
 def check_node_is_available():
@@ -121,8 +127,9 @@ def build_command(args):
             shutil.copytree(kit_folder, tmp_dir / "kit")
             # Manual copy and overwrite from output_path to tmp_dir / "kit" / "src" / "routes"
             # We don't use shutil.copytree as tmp_dir / "kit" / "src" / "routes" exists and contains important files.
+            svelte_kit_routes_dir = tmp_dir / "kit" / "src" / "routes"
             for f in output_path.iterdir():
-                dest = tmp_dir / "kit" / "src" / "routes" / f.name
+                dest = svelte_kit_routes_dir / f.name
                 if f.is_dir():
                     # Remove the dest folder if it exists
                     if dest.is_dir():
@@ -130,6 +137,13 @@ def build_command(args):
                     shutil.copytree(f, dest)
                 else:
                     shutil.copy(f, dest)
+            # make mdx file paths comply with the sveltekit 1.0 routing mechanism
+            # see more: https://learn.svelte.dev/tutorial/pages
+            for mdx_file_path in svelte_kit_routes_dir.rglob("*.mdx"):
+                new_path = sveltify_file_route(mdx_file_path)
+                parent_path = os.path.dirname(new_path)
+                os.makedirs(parent_path, exist_ok=True)
+                shutil.move(mdx_file_path, new_path)
 
             # Move the objects.inv file at the root
             if not args.not_python_module:
