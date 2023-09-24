@@ -469,10 +469,12 @@ function escapeSvelteSpecialChars() {
 
 	function onHtml(node) {
 		const RE_TAG_NAME = /<\/?(\w+)/;
-		// TODO: list current dir in lib and list all of our own stuff
-		const tagName = node.value.match(RE_TAG_NAME)[1];
-		if(!validTags.includes(tagName)){
-			node.value = node.value.replaceAll("<", '&#60;');
+		const match = node.value.match(RE_TAG_NAME);
+		if(match){
+			const tagName = match[1];
+			if(!validTags.includes(tagName)){
+				node.value = node.value.replaceAll("<", '&#60;');
+			}
 		}
 	}
 }
