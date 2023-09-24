@@ -22,25 +22,6 @@ from .convert_rst_to_mdx import parse_rst_docstring, remove_indent
 
 
 _re_doctest_flags = re.compile(r"^(>>>.*\S)(\s+)# doctest:\s+\+[A-Z_]+\s*$", flags=re.MULTILINE)
-_re_lt_html = re.compile(
-    r"""# This regex is meant to detect any HTML tag or comment, but not standalone '<' characters.
-    <(                   # HTML tag with...
-    (
-        !DOCTYPE         # ... !DOCTYPE
-    |
-        ((\/\s*)?[a-z]+) # ... or any regular tag (i.e. starts with [a-z]
-    )
-    [^><]*?              # ... followed by anything until next closing ">"
-    )>
-    |
-    <(!--[^>]*?--)>      # Or an HTML comment
-    """,
-    re.IGNORECASE | re.VERBOSE,
-)
-_re_lcub_svelte = re.compile(
-    r"<(Question|Tip|Added|Changed|Deprecated|DocNotebookDropdown|CourseFloatingBanner|FrameworkSwitch|audio|PipelineIcon|PipelineTag)(((?!<(Question|Tip|Added|Changed|Deprecated|DocNotebookDropdown|CourseFloatingBanner|FrameworkSwitch|audio|PipelineIcon|PipelineTag)).)*)>|&amp;lcub;(#if|:else}|/if})",
-    re.DOTALL,
-)
 
 
 def convert_md_to_mdx(md_text, page_info):
@@ -81,28 +62,6 @@ onMount(() => {
 """ + process_md(
         md_text, page_info
     )
-
-
-def convert_special_chars(text):
-    """
-    Convert { and < that have special meanings in MDX.
-    """
-    text = text.replace("{", "&amp;lcub;")
-    # We don't want to escape `{` that are part of svelte syntax
-    text = _re_lcub_svelte.sub(lambda match: match[0].replace("&amp;lcub;", "{"), text)
-    # We don't want to replace those by the HTML code, so we temporarily set them at LTHTML
-    # source is a special tag, it can be standalone (html tag) or closing (doc tag)
-
-    # Temporarily replace all valid HTML tags with LTHTML
-    # Replace with '\1\5' => 2 possible groups to catch the tag but in practice only one is not empty.
-    text = re.sub(_re_lt_html, r"LTHTML\1\5>", text)
-
-    # Encode remaining < symbols
-    text = text.replace("<", "&amp;lt;")
-    # Put back the HTML tags
-    text = text.replace("LTHTML", "<")
-
-    return text
 
 
 def convert_img_links(text, page_info):
@@ -199,13 +158,11 @@ def process_md(text, page_info):
     Processes markdown by:
         1. Converting include
         2. Converting literalinclude
-        3. Converting special characters
-        4. Clean doctest syntax
-        5. Converting image links
+        3. Clean doctest syntax
+        4. Converting image links
     """
     text = convert_include(text, page_info)
     text = convert_literalinclude(text, page_info)
-    text = convert_special_chars(text)
     text = clean_doctest_syntax(text)
     text = convert_img_links(text, page_info)
     return text
