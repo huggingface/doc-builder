@@ -15,7 +15,7 @@ export function getGroupStore(key: string): Writable<Group> {
 export enum AccordianState {
 	OPEN = "OPEN",
 	CLOSED = "CLOSED",
-	HASHASHLINK = "HASHASHLINK"
+	HASHASHLINK = "HASHASHLINK",
 }
 const frameworks: { [key in Framework]?: Writable<AccordianState> } = {};
 export function getFrameworkStore(key: Framework): Writable<AccordianState> {

@@ -3,10 +3,10 @@ import htmlparser2 from "htmlparser2";
 import hljs from "highlight.js";
 import { mdsvex } from "mdsvex";
 import katex from "katex";
-import { visit } from 'unist-util-visit';
-import htmlTags from 'html-tags';
-import { readdir } from 'fs/promises';
-import path from 'path';
+import { visit } from "unist-util-visit";
+import htmlTags from "html-tags";
+import { readdir } from "fs/promises";
+import path from "path";
 
 // Preprocessor that converts markdown into Docstring
 // svelte component using mdsvexPreprocess
@@ -60,7 +60,7 @@ export const docstringPreprocess = {
 				// render <Added>, <Changed>, <Deprecated> components that are inside parameter descriptions
 				code = code.replace(REGEX_CHANGED, (_, componentType, version, __, descriptionContent) => {
 					const color = /Added|Changed/.test(componentType) ? "green" : "orange";
-					if(!descriptionContent){
+					if (!descriptionContent) {
 						descriptionContent = "";
 					}
 					return `<div
@@ -137,8 +137,8 @@ export const docstringPreprocess = {
 				const raiseType = docstringBody.match(REGEX_RAISETYPE)[1];
 				const { code } = await mdsvexPreprocess.markup({ content: raiseType, filename });
 				svelteComponent += ` raiseType={${JSON.stringify(code)}} `;
-      }
-      
+			}
+
 			if (docstringBody.match(REGEX_IS_GETSET_DESC)) {
 				svelteComponent += ` isGetSetDescriptor={true} `;
 			}
@@ -192,7 +192,7 @@ export const docstringPreprocess = {
 		});
 
 		return { code: content };
-	}
+	},
 };
 
 // Preprocessor that converts markdown into FrameworkContent
@@ -209,7 +209,7 @@ export const frameworkcontentPreprocess = {
 			const FRAMEWORKS = [
 				{ framework: "pytorch", REGEX_FW: REGEX_PYTORCH, isExist: false },
 				{ framework: "tensorflow", REGEX_FW: REGEX_TENSORFLOW, isExist: false },
-				{ framework: "jax", REGEX_FW: REGEX_JAX, isExist: false }
+				{ framework: "jax", REGEX_FW: REGEX_JAX, isExist: false },
 			];
 
 			let svelteSlots = "";
@@ -233,7 +233,7 @@ export const frameworkcontentPreprocess = {
 		});
 
 		return { code: content };
-	}
+	},
 };
 
 // Preprocessor that converts markdown into InferenceApi
@@ -248,7 +248,7 @@ export const inferenceSnippetPreprocess = {
 		const FRAMEWORKS = [
 			{ framework: "python", REGEX_FW: REGEX_PYTHON, isExist: false },
 			{ framework: "js", REGEX_FW: REGEX_JS, isExist: false },
-			{ framework: "curl", REGEX_FW: REGEX_CURL, isExist: false }
+			{ framework: "curl", REGEX_FW: REGEX_CURL, isExist: false },
 		];
 
 		content = await replaceAsync(content, REGEX_FRAMEWORKCONTENT, async (_, fwcontentBody) => {
@@ -273,7 +273,7 @@ export const inferenceSnippetPreprocess = {
 		});
 
 		return { code: content };
-	}
+	},
 };
 
 // Preprocessor that converts markdown into TokenizersLanguageContent
@@ -288,7 +288,7 @@ export const tokenizersLangPreprocess = {
 		const FRAMEWORKS = [
 			{ framework: "python", REGEX_FW: REGEX_PYTHON, isExist: false },
 			{ framework: "rust", REGEX_FW: RGEX_RUST, isExist: false },
-			{ framework: "node", REGEX_FW: REGEX_NODE, isExist: false }
+			{ framework: "node", REGEX_FW: REGEX_NODE, isExist: false },
 		];
 
 		content = await replaceAsync(content, REGEX_FRAMEWORKCONTENT, async (_, fwcontentBody) => {
@@ -313,7 +313,7 @@ export const tokenizersLangPreprocess = {
 		});
 
 		return { code: content };
-	}
+	},
 };
 
 /**
@@ -370,7 +370,7 @@ export const mdsvexPreprocess = {
 			return processed;
 		}
 		return { code: content };
-	}
+	},
 };
 
 /**
@@ -416,11 +416,11 @@ function markKatex(content, markedKatex) {
 function renderKatex(code, markedKatex) {
 	return code.replace(/KATEXPARSE[0-9]+MARKER/g, (marker) => {
 		let { tex, displayMode } = markedKatex[marker];
-		tex = tex.replaceAll('&#123;', "{");
-		tex = tex.replaceAll('&#60;', "<");
+		tex = tex.replaceAll("&#123;", "{");
+		tex = tex.replaceAll("&#60;", "<");
 		let html = katex.renderToString(renderSvelteChars(tex), {
 			displayMode,
-			throwOnError: false
+			throwOnError: false,
 		});
 		html = html.replace("katex-html", "katex-html hidden");
 		if (html.includes(`katex-error`)) {
@@ -431,26 +431,26 @@ function renderKatex(code, markedKatex) {
 }
 
 async function findSvelteComponentNames(startDir) {
-    let svelteFiles = [];
+	let svelteFiles = [];
 
-    async function searchDir(directory) {
-        const files = await readdir(directory, { withFileTypes: true });
+	async function searchDir(directory) {
+		const files = await readdir(directory, { withFileTypes: true });
 
-        for (const file of files) {
-            const filePath = path.join(directory, file.name);
-            if (file.isDirectory()) {
-                await searchDir(filePath);
-            } else if (path.extname(file.name) === '.svelte') {
-                svelteFiles.push(path.basename(file.name, '.svelte')); // strip the directory and .svelte extension
-            }
-        }
-    }
+		for (const file of files) {
+			const filePath = path.join(directory, file.name);
+			if (file.isDirectory()) {
+				await searchDir(filePath);
+			} else if (path.extname(file.name) === ".svelte") {
+				svelteFiles.push(path.basename(file.name, ".svelte")); // strip the directory and .svelte extension
+			}
+		}
+	}
 
-    await searchDir(startDir);
-    return svelteFiles;
+	await searchDir(startDir);
+	return svelteFiles;
 }
 
-const dirPath = './src/lib';
+const dirPath = "./src/lib";
 const svelteTags = await findSvelteComponentNames(dirPath);
 const validTags = [...htmlTags, ...svelteTags];
 
@@ -458,22 +458,22 @@ function escapeSvelteSpecialChars() {
 	return transform;
 
 	function transform(tree) {
-		visit(tree, 'text', onText);
-		visit(tree, 'html', onHtml);
+		visit(tree, "text", onText);
+		visit(tree, "html", onHtml);
 	}
 
 	function onText(node) {
-		node.value = node.value.replaceAll("{", '&#123;');
-		node.value = node.value.replaceAll("<", '&#60;');
+		node.value = node.value.replaceAll("{", "&#123;");
+		node.value = node.value.replaceAll("<", "&#60;");
 	}
 
 	function onHtml(node) {
 		const RE_TAG_NAME = /<\/?(\w+)/;
 		const match = node.value.match(RE_TAG_NAME);
-		if(match){
+		if (match) {
 			const tagName = match[1];
-			if(!validTags.includes(tagName)){
-				node.value = node.value.replaceAll("<", '&#60;');
+			if (!validTags.includes(tagName)) {
+				node.value = node.value.replaceAll("<", "&#60;");
 			}
 		}
 	}
@@ -546,8 +546,8 @@ const _mdsvexPreprocess = mdsvex({
 		highlighted={\`${escape(highlighted)}\`}
 	/>`;
 			}
-		}
-	}
+		},
+	},
 });
 
 /**
