@@ -22,7 +22,6 @@ from doc_builder.convert_md_to_mdx import (
     convert_include,
     convert_literalinclude,
     convert_md_to_mdx,
-    convert_special_chars,
     process_md,
 )
 
@@ -65,80 +64,6 @@ onMount(() => {
 Lorem ipsum dolor sit amet, consectetur adipiscing elit"""
         self.assertEqual(convert_md_to_mdx(md_text, page_info), expected_conversion)
 
-    def test_convert_special_chars(self):
-        self.assertEqual(convert_special_chars("{ lala }"), "&amp;lcub; lala }")
-        self.assertEqual(convert_special_chars("< blo"), "&amp;lt; blo")
-        self.assertEqual(convert_special_chars("<source></source>"), "<source></source>")
-        self.assertEqual(convert_special_chars("<br>"), "<br>")
-        self.assertEqual(convert_special_chars("<hr>"), "<hr>")
-        self.assertEqual(convert_special_chars("<source>"), "<source>")
-        self.assertEqual(convert_special_chars("<Youtube id='my_vid' />"), "<Youtube id='my_vid' />")
-        self.assertEqual(convert_special_chars("</br>"), "</br>")
-        self.assertEqual(convert_special_chars("<br />"), "<br />")
-        self.assertEqual(convert_special_chars("<p>5 <= 10</p>"), "<p>5 &amp;lt;= 10</p>")
-        self.assertEqual(
-            convert_special_chars("<p align='center'>5 <= 10</p>"), "<p align='center'>5 &amp;lt;= 10</p>"
-        )
-        self.assertEqual(convert_special_chars("<p>5 <= 10"), "<p>5 &amp;lt;= 10")  # no closing tag
-        self.assertEqual(convert_special_chars("5 <= 10</p>"), "5 &amp;lt;= 10</p>")  # no opening tag
-        self.assertEqual(convert_special_chars("<a>test</b>"), "<a>test</b>")  # mismatched tags
-        self.assertEqual(convert_special_chars("<p>5 < 10</p>"), "<p>5 &amp;lt; 10</p>")
-        self.assertEqual(convert_special_chars("<p>5 > 10</p>"), "<p>5 > 10</p>")
-        self.assertEqual(convert_special_chars("<!--...-->"), "<!--...-->")  # comment
-        self.assertEqual(convert_special_chars("<!-- < -->"), "<!-- &amp;lt; -->")  # comment
-        self.assertEqual(convert_special_chars("<!DOCTYPE html> 1 < 2"), "<!DOCTYPE html> 1 &amp;lt; 2")
-
-        longer_test = """<script lang="ts">
-import Tip from "$lib/Tip.svelte";
-import Youtube from "$lib/Youtube.svelte";
-import Docstring from "$lib/Docstring.svelte";
-import CodeBlock from "$lib/CodeBlock.svelte";
-export let fw: "pt" | "tf"
-</script>"""
-        self.assertEqual(convert_special_chars(longer_test), longer_test)
-
-        nested_test = """<blockquote>
-   sometext
-   <blockquote>
-        sometext
-   </blockquote>
-</blockquote>"""
-        self.assertEqual(convert_special_chars(nested_test), nested_test)
-
-        html_code = '<a href="Some URl">some_text</a>'
-        self.assertEqual(convert_special_chars(html_code), html_code)
-
-        inner_less = """<blockquote>
-   sometext 4 &amp;lt; 5
-</blockquote>"""
-        self.assertEqual(convert_special_chars(inner_less), inner_less)
-
-        img_code = '<img src="someSrc">'
-        self.assertEqual(convert_special_chars(img_code), img_code)
-
-        video_code = '<video src="someSrc">'
-        self.assertEqual(convert_special_chars(video_code), video_code)
-
-        comment = "<!-- comment -->"
-        self.assertEqual(convert_special_chars(comment), comment)
-
-        comment = "<!-- multi line\ncomment -->"
-        self.assertEqual(convert_special_chars(comment), comment)
-
-        # Regression test for https://github.com/huggingface/doc-builder/pull/394
-        # '<' must not be considered an HTML tag before a number
-        self.assertEqual(
-            convert_special_chars("something <5MB something else -> here"),
-            "something &amp;lt;5MB something else -> here",
-        )
-
-        # Regression test for https://github.com/huggingface/doc-builder/pull/398
-        # '10K<n<100K' must be caught correctly and not grouped with the next HTML tag.
-        self.assertEqual(
-            convert_special_chars("""10K<n<100K\n<Tip>\nThis is a tip.\n</Tip>"""),
-            "10K&amp;lt;n&amp;lt;100K\n<Tip>\nThis is a tip.\n</Tip>",
-        )
-
     def test_convert_img_links(self):
         page_info = {"package_name": "transformers", "version": "v4.10.0", "language": "fr"}
 
@@ -157,8 +82,8 @@ export let fw: "pt" | "tf"
 {}
 <>"""
         expected_conversion = """[img](/docs/transformers/v4.10.0/fr/imgs/img.gif)
-&amp;lcub;}
-&amp;lt;>"""
+{}
+<>"""
         self.assertEqual(process_md(text, page_info), expected_conversion)
 
     def test_convert_include(self):

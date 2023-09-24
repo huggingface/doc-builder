@@ -3,6 +3,10 @@ import htmlparser2 from "htmlparser2";
 import hljs from "highlight.js";
 import { mdsvex } from "mdsvex";
 import katex from "katex";
+import { visit } from 'unist-util-visit';
+import htmlTags from 'html-tags';
+import { readdir } from 'fs/promises';
+import path from 'path';
 
 // Preprocessor that converts markdown into Docstring
 // svelte component using mdsvexPreprocess
@@ -391,7 +395,7 @@ function unescapeUnderscores(content) {
  * @param {Record<any, any>} markedKatex
  */
 function markKatex(content, markedKatex) {
-	const REGEX_LATEX_DISPLAY = /\n\$\$([\s\S]+?)\$\$/g;
+	const REGEX_LATEX_DISPLAY = /\$\$([\s\S]+?)\$\$/g;
 	const REGEX_LATEX_INLINE = /\\\\\(([\s\S]+?)\\\\\)/g;
 	let counter = 0;
 	return content
@@ -411,11 +415,14 @@ function markKatex(content, markedKatex) {
 
 function renderKatex(code, markedKatex) {
 	return code.replace(/KATEXPARSE[0-9]+MARKER/g, (marker) => {
-		const { tex, displayMode } = markedKatex[marker];
-		const html = katex.renderToString(renderSvelteChars(tex), {
+		let { tex, displayMode } = markedKatex[marker];
+		tex = tex.replaceAll('&#123;', "{");
+		tex = tex.replaceAll('&#60;', "<");
+		let html = katex.renderToString(renderSvelteChars(tex), {
 			displayMode,
 			throwOnError: false
 		});
+		html = html.replace("katex-html", "katex-html hidden");
 		if (html.includes(`katex-error`)) {
 			throw new Error(`[KaTeX] Error while parsing markdown\n ${html}`);
 		}
@@ -423,7 +430,57 @@ function renderKatex(code, markedKatex) {
 	});
 }
 
+async function findSvelteComponentNames(startDir) {
+    let svelteFiles = [];
+
+    async function searchDir(directory) {
+        const files = await readdir(directory, { withFileTypes: true });
+
+        for (const file of files) {
+            const filePath = path.join(directory, file.name);
+            if (file.isDirectory()) {
+                await searchDir(filePath);
+            } else if (path.extname(file.name) === '.svelte') {
+                svelteFiles.push(path.basename(file.name, '.svelte')); // strip the directory and .svelte extension
+            }
+        }
+    }
+
+    await searchDir(startDir);
+    return svelteFiles;
+}
+
+const dirPath = './src/lib';
+const svelteTags = await findSvelteComponentNames(dirPath);
+const validTags = [...htmlTags, ...svelteTags];
+
+function escapeSvelteSpecialChars() {
+	return transform;
+
+	function transform(tree) {
+		visit(tree, 'text', onText);
+		visit(tree, 'html', onHtml);
+	}
+
+	function onText(node) {
+		node.value = node.value.replaceAll("{", '&#123;');
+		node.value = node.value.replaceAll("<", '&#60;');
+	}
+
+	function onHtml(node) {
+		const RE_TAG_NAME = /<\/?(\w+)/;
+		const match = node.value.match(RE_TAG_NAME);
+		if(match){
+			const tagName = match[1];
+			if(!validTags.includes(tagName)){
+				node.value = node.value.replaceAll("<", '&#60;');
+			}
+		}
+	}
+}
+
 const _mdsvexPreprocess = mdsvex({
+	remarkPlugins: [escapeSvelteSpecialChars],
 	extensions: ["mdx"],
 	highlight: {
 		highlighter: function (code, lang) {
