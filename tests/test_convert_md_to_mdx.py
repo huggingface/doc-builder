@@ -22,6 +22,7 @@ from doc_builder.convert_md_to_mdx import (
     convert_include,
     convert_literalinclude,
     convert_md_to_mdx,
+    escape_img_alt_description,
     process_md,
 )
 
@@ -74,6 +75,23 @@ Lorem ipsum dolor sit amet, consectetur adipiscing elit"""
         self.assertEqual(
             convert_img_links(img_html, page_info), '<img src="/docs/transformers/v4.10.0/fr/imgs/img.gif"/>'
         )
+
+    def test_escape_img_alt_description(self):
+        multiple_imgs_md = """![Animation exploring `model_args.pipeline_tag`](imgsrc)
+
+### Some heading
+
+![Animation exploring `model_args.pipeline_tag`](imgsrc)
+
+![Animation exploring model_args.pipeline_tag](imgsrc)"""
+        expected_conversion = """![Animation exploring 'model_args.pipeline_tag'](imgsrc)
+
+### Some heading
+
+![Animation exploring 'model_args.pipeline_tag'](imgsrc)
+
+![Animation exploring model_args.pipeline_tag](imgsrc)"""
+        self.assertEqual(escape_img_alt_description(multiple_imgs_md), expected_conversion)
 
     def test_process_md(self):
         page_info = {"package_name": "transformers", "version": "v4.10.0", "language": "fr"}
