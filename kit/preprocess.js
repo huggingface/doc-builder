@@ -7,6 +7,7 @@ import { visit } from "unist-util-visit";
 import htmlTags from "html-tags";
 import { readdir } from "fs/promises";
 import path from "path";
+import cheerio from "cheerio";
 
 // Preprocessor that converts markdown into Docstring
 // svelte component using mdsvexPreprocess
@@ -453,6 +454,8 @@ async function findSvelteComponentNames(startDir) {
 const dirPath = "./src/lib";
 const svelteTags = await findSvelteComponentNames(dirPath);
 const validTags = [...htmlTags, ...svelteTags];
+let hfDocBodyStart = false;
+let hfDocBodyEnd = false;
 
 function escapeSvelteSpecialChars() {
 	return transform;
@@ -468,12 +471,29 @@ function escapeSvelteSpecialChars() {
 	}
 
 	function onHtml(node) {
+		if(node.value === "<!--HF DOCBUILD BODY START-->"){
+			hfDocBodyStart = true;
+			hfDocBodyEnd = false;
+		}
+		if(node.value === "<!--HF DOCBUILD BODY END-->"){
+			hfDocBodyEnd = true;
+		}
 		const RE_TAG_NAME = /<\/?(\w+)/;
 		const match = node.value.match(RE_TAG_NAME);
 		if (match) {
 			const tagName = match[1];
 			if (!validTags.includes(tagName)) {
 				node.value = node.value.replaceAll("<", "&#60;");
+			}else if(hfDocBodyStart && !hfDocBodyEnd && htmlTags.includes(tagName)){
+				const $ = cheerio.load(node.value);
+				// Go through each text node in the HTML and replace "{" with "&#123;"
+				$('*').contents().each((index, element) => {
+					if (element.type === 'text') {
+						element.data = element.data.replaceAll("{", "&#123;");
+					}
+				});
+				// Update the remark HTML node with the modified HTML
+				node.value = $('body').html();
 			}
 		}
 	}

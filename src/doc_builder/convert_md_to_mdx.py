@@ -28,7 +28,8 @@ def convert_md_to_mdx(md_text, page_info):
     """
     Convert a document written in md to mdx.
     """
-    return """<script lang="ts">
+    return (
+        """<script lang="ts">
 import {onMount} from "svelte";
 import Tip from "$lib/Tip.svelte";
 import Youtube from "$lib/Youtube.svelte";
@@ -59,8 +60,15 @@ onMount(() => {
 <svelte:head>
   <meta name="hf:doc:metadata" content={JSON.stringify(metadata)} >
 </svelte:head>
-""" + process_md(
-        md_text, page_info
+
+<!--HF DOCBUILD BODY START-->
+
+"""
+        + process_md(md_text, page_info)
+        + """
+
+<!--HF DOCBUILD BODY END-->
+"""
     )
 
 

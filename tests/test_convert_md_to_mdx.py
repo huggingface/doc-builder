@@ -62,7 +62,14 @@ onMount(() => {
 <svelte:head>
   <meta name="hf:doc:metadata" content={JSON.stringify(metadata)} >
 </svelte:head>
-Lorem ipsum dolor sit amet, consectetur adipiscing elit"""
+
+<!--HF DOCBUILD BODY START-->
+
+Lorem ipsum dolor sit amet, consectetur adipiscing elit
+
+<!--HF DOCBUILD BODY END-->
+"""
+        print(convert_md_to_mdx(md_text, page_info))
         self.assertEqual(convert_md_to_mdx(md_text, page_info), expected_conversion)
 
     def test_convert_img_links(self):
