@@ -80,6 +80,31 @@ def convert_img_links(text, page_info):
     return text
 
 
+_re_md_img_tag_alt = re.compile(r"!\[([^\]]+)\]", re.I)
+
+
+def escape_img_alt_description(text):
+    """
+    Escapes ` with ' inside <img> alt description since it causes svelte/mdsvex compiler error.
+    """
+
+    def replace_alt_content(match):
+        alt_content = match.group(1)
+        new_alt_content = alt_content.replace("`", "'")
+        return match.group(0).replace(alt_content, new_alt_content)
+
+    if _re_md_img_tag_alt.search(text):
+        text = _re_md_img_tag_alt.sub(replace_alt_content, text)
+
+    return text
+
+
+def fix_img_links(text, page_info):
+    text = convert_img_links(text, page_info)
+    text = escape_img_alt_description(text)
+    return text
+
+
 def clean_doctest_syntax(text):
     """
     Clean the doctest artifacts in a given content.
@@ -156,13 +181,13 @@ def convert_md_docstring_to_mdx(docstring, page_info):
 def process_md(text, page_info):
     """
     Processes markdown by:
-        1. Converting include
-        2. Converting literalinclude
+        1. Convert include
+        2. Convert literalinclude
         3. Clean doctest syntax
-        4. Converting image links
+        4. Fix image links
     """
     text = convert_include(text, page_info)
     text = convert_literalinclude(text, page_info)
     text = clean_doctest_syntax(text)
-    text = convert_img_links(text, page_info)
+    text = fix_img_links(text, page_info)
     return text
