@@ -176,8 +176,12 @@ Multi-line code blocks can be useful for displaying examples. They are done betw
 We follow the [doctest](https://docs.python.org/3/library/doctest.html) syntax for the examples to automatically test
 the results stay consistent with the library.
 
+### Tip
+
 To write a block that you'd like to see highlighted as a note or warning, place your content between the following
-markers:
+markers.
+
+Syntax:
 
 ```
 <Tip>
@@ -187,10 +191,23 @@ Write your note here
 </Tip>
 ```
 
-For warnings, change the introduction to `<Tip warning={true}>`.
+Example: [here](https://github.com/huggingface/transformers/blob/0f0e1a2c2bff68541a5b9770d78e0fb6feb7de72/docs/source/en/create_a_model.md#L282-L286)
+
+For warnings, change the introduction to:
+
+Syntax:
+```
+`<Tip warning={true}>`
+```
+
+Example: [here](https://github.com/huggingface/transformers/blob/eb849f6604c7dcc0e96d68f4851e52e253b9f0e5/docs/source/de/autoclass_tutorial.md#L102-L108)
+
+### Framework Content
 
 If your documentation has a block that is framework-dependent (PyTorch vs TensorFlow vs Flax), you can use the
 following syntax:
+
+Syntax:
 
 ```
 <frameworkcontent>
@@ -205,6 +222,8 @@ Flax content goes here
 </flax>
 </frameworkcontent>
 ```
+
+Example: [here](https://github.com/huggingface/transformers/blob/eb849f6604c7dcc0e96d68f4851e52e253b9f0e5/docs/source/de/autoclass_tutorial.md#L84-L131)
 
 Note that all frameworks are optional (you can write a PyTorch-only block for instance) and the order does not matter.
 
