@@ -222,13 +222,13 @@ export const frameworkcontentPreprocess = {
 					const fwContent = fwcontentBody.match(REGEX_FW)[1];
 					svelteSlots += `<svelte:fragment slot="${framework}">
 
-					<Markdown>
+<Markdown>
 
-					\n\n${fwContent}\n\n
+\n\n${fwContent}\n\n
 
-					</Markdown>
-					
-					</svelte:fragment>`;
+</Markdown>
+
+</svelte:fragment>`;
 				}
 			}
 
