@@ -2,6 +2,35 @@
 
 This is the package we use to build the documentation of our Hugging Face repos.
 
+## Table of Contents
+
+- [doc-builder](#doc-builder)
+  * [Installation](#installation)
+  * [Previewing](#previewing)
+  * [Doc building](#doc-building)
+  * [Templates for GitHub Actions](#templates-for-github-actions)
+    + [Enabling multilingual documentation](#enabling-multilingual-documentation)
+    + [Redirects](#redirects)
+  * [Fixing and testing doc-builder](#fixing-and-testing-doc-builder)
+  * [Writing documentation for Hugging Face libraries](#writing-documentation-for-hugging-face-libraries)
+    + [Tip](#tip)
+    + [Framework Content](#framework-content)
+    + [Anchor link](#anchor-link)
+    + [LaTeX](#latex)
+  * [Writing API documentation (Python)](#writing-api-documentation--python-)
+    + [Autodoc](#autodoc)
+    + [Code Blocks from file references](#code-blocks-from-file-references)
+    + [Writing source documentation](#writing-source-documentation)
+    + [Description](#description)
+    + [Arguments](#arguments)
+    + [Attributes](#attributes)
+    + [Parmeter typing and default value](#parmeter-typing-and-default-value)
+    + [Returns](#returns)
+    + [Yields](#yields)
+    + [Raises](#raises)
+    + [Directives for Added, Changed, Deprecated](#directives-for-added--changed--deprecated)
+    + [Developing svelte locally](#developing-svelte-locally)
+
 ## Installation
 
 You can install from PyPi with
@@ -115,7 +144,7 @@ doc-builder build {package_name} {path_to_docs} --build_dir {build_dir} --langua
 
 To automatically build the documentation for all languages via the GitHub Actions templates, simply provide the `languages` argument to your workflow, with a space-separated list of the languages you wish to build, e.g. `languages: en es`.
 
-#### Redirects
+### Redirects
 
 You can optionally provide `_redirects.yml` for "old links". The yml file should look like:
 
@@ -176,8 +205,12 @@ Multi-line code blocks can be useful for displaying examples. They are done betw
 We follow the [doctest](https://docs.python.org/3/library/doctest.html) syntax for the examples to automatically test
 the results stay consistent with the library.
 
+### Tip
+
 To write a block that you'd like to see highlighted as a note or warning, place your content between the following
-markers:
+markers.
+
+Syntax:
 
 ```
 <Tip>
@@ -187,10 +220,23 @@ Write your note here
 </Tip>
 ```
 
-For warnings, change the introduction to `<Tip warning={true}>`.
+Example: [here](https://github.com/huggingface/transformers/blob/0f0e1a2c2bff68541a5b9770d78e0fb6feb7de72/docs/source/en/create_a_model.md#L282-L286)
+
+For warnings, change the introduction to:
+
+Syntax:
+```
+`<Tip warning={true}>`
+```
+
+Example: [here](https://github.com/huggingface/transformers/blob/eb849f6604c7dcc0e96d68f4851e52e253b9f0e5/docs/source/de/autoclass_tutorial.md#L102-L108)
+
+### Framework Content
 
 If your documentation has a block that is framework-dependent (PyTorch vs TensorFlow vs Flax), you can use the
 following syntax:
+
+Syntax:
 
 ```
 <frameworkcontent>
@@ -206,31 +252,72 @@ Flax content goes here
 </frameworkcontent>
 ```
 
+Example: [here](https://github.com/huggingface/transformers/blob/eb849f6604c7dcc0e96d68f4851e52e253b9f0e5/docs/source/de/autoclass_tutorial.md#L84-L131)
+
 Note that all frameworks are optional (you can write a PyTorch-only block for instance) and the order does not matter.
 
 ### Anchor link
 
 Anchor links for markdown headings are generated automatically (with the following rule: 1. lowercase, 2. replace space with dash `-`, 3. strip [^a-z0-9-]):
+
+Syntax:
 ```
 ## My awesome section
 // the anchor link is: `my-awesome-section`
 ```
-Moreover, there is a way to customize the anchor link. Example:
+
+Example: [here](https://github.com/huggingface/transformers/blob/eb849f6604c7dcc0e96d68f4851e52e253b9f0e5/docs/source/en/model_doc/bert.md#L132)
+
+Moreover, there is a way to customize the anchor link.
+
+Syntax:
 ```
 ## My awesome section[[some-section]]
 // the anchor link is: `some-section`
 ```
 
-### Writing API documentation (Python)
+Example: [here](https://github.com/huggingface/transformers/blob/eb849f6604c7dcc0e96d68f4851e52e253b9f0e5/docs/source/en/model_summary.md#L79)
 
-To show the full documentation of any object of the python library you are documenting, use the `[[autodoc]]` marker:
+### LaTeX
+
+Latex display mode. `$$...$$`
+
+Syntax:
+
+```
+$$Y = X * \textbf{dequantize}(W); \text{quantize}(W)$$
+```
+
+Example: [here](https://github.com/huggingface/transformers/blob/main/docs/source/en/model_doc/rwkv.md?plain=1#L107)
+
+Latex inline mode. `\\( ... )\\`
+
+Syntax:
+
+```
+\\( Y = X * \textbf{dequantize}(W); \text{quantize}(W) )\\
+```
+
+Example: [here](https://github.com/huggingface/transformers/blob/main/docs/source/en/model_doc/rwkv.md?plain=1#L93)
+
+## Writing API documentation (Python)
+
+### Autodoc
+
+To show the full documentation of any object of the python library you are documenting, use the `[[autodoc]]` marker.
+
+Syntax:
 
 ```
 [[autodoc]] SomeObject
 ```
 
+Example: [here](https://github.com/huggingface/transformers/blob/eb849f6604c7dcc0e96d68f4851e52e253b9f0e5/docs/source/en/model_doc/bert.md?plain=1#L142)
+
 If the object is a class, this will include every public method of it that is documented. If for some reason you wish for a method
 not to be displayed in the documentation, you can do so by specifying which methods should be in the docs, here is an example:
+
+Syntax:
 
 ```
 [[autodoc]] XXXTokenizer
@@ -240,8 +327,12 @@ not to be displayed in the documentation, you can do so by specifying which meth
     - save_vocabulary
 ```
 
+Example: [here](https://github.com/huggingface/transformers/blob/eb849f6604c7dcc0e96d68f4851e52e253b9f0e5/docs/source/en/model_doc/bert.md?plain=1#L158-L159)
+
 If you just want to add a method that is not documented (for instance magic method like `__call__` are not documented
 by default) you can put the list of methods to add in a list that contains `all`:
+
+Syntax:
 
 ```
 ## XXXTokenizer
@@ -251,8 +342,15 @@ by default) you can put the list of methods to add in a list that contains `all`
     - __call__
 ```
 
+Example: [here](https://github.com/huggingface/transformers/blob/eb849f6604c7dcc0e96d68f4851e52e253b9f0e5/docs/source/en/model_doc/bert.md?plain=1#L258-L259)
+
+### Code Blocks from file references
+
 You can create a code-block by referencing a file excerpt with `<literalinclude>` (sphinx-inspired) syntax. 
 There should be json between `<literalinclude>` open & close tags.
+
+Syntax:
+
 ```
 <literalinclude>
 {"path": "./data/convert_literalinclude_dummy.txt", # relative path
@@ -266,19 +364,31 @@ There should be json between `<literalinclude>` open & close tags.
 
 ### Writing source documentation
 
+### Description
+
+For a class or function description string, use markdown with [all the custom syntax of doc-builder](#writing-documentation-for-hugging-face-libraries).
+
+Example: [here](https://github.com/huggingface/transformers/blob/910faa3e1f1c566b23a0318f78f5caf5bda8d3b2/examples/flax/language-modeling/run_t5_mlm_flax.py#L257-L267)
+
+### Arguments
+
 Arguments of a function/class/method should be defined with the `Args:` (or `Arguments:` or `Parameters:`) prefix, followed by a line return and
 an indentation. The argument should be followed by its type, with its shape if it is a tensor, a colon, and its
 description:
+
+Syntax:
 
 ```
     Args:
         n_layers (`int`): The number of layers of the model.
 ```
 
+Example: [here](https://github.com/huggingface/transformers/blob/6f79d264422245d88c7a34032c1a8254a0c65752/src/transformers/models/bert/tokenization_bert_fast.py#L168-L198)
+
 If the description is too long to fit in one line, another indentation is necessary before writing the description
 after the argument.
 
-Here's an example showcasing everything so far:
+Syntax:
 
 ```
     Args:
@@ -291,9 +401,15 @@ Here's an example showcasing everything so far:
             [What are input IDs?](../glossary#input-ids)
 ```
 
+Example: [here](https://github.com/huggingface/transformers/blob/6f79d264422245d88c7a34032c1a8254a0c65752/src/transformers/models/bert/tokenization_bert_fast.py#L173-L175)
+
 You can check the full example it comes from [here](https://github.com/huggingface/transformers/blob/v4.17.0/src/transformers/models/bert/modeling_bert.py#L794-L841)
 
+### Attributes
+
 If a class is similar to that of a dataclass but the parameters do not align to the available attributes of the class, such as in the below example, `Attributes` instance should be rewritten as `**Attributes**` in order to have the documentation properly render these. Otherwise it will assume that `Attributes` is synonymous to `Parameters`.
+
+Syntax:
 
 ```diff
   class SomeClass:
@@ -308,6 +424,8 @@ If a class is similar to that of a dataclass but the parameters do not align to 
           ...
 ```
 
+### Parmeter typing and default value
+
 For optional arguments or arguments with defaults we follow the following syntax. Imagine we have a function with the
 following signature:
 
@@ -317,6 +435,8 @@ def my_function(x: str = None, a: float = 1):
 
 then its documentation should look like this:
 
+Syntax: 
+
 ```
     Args:
         x (`str`, *optional*):
@@ -324,6 +444,8 @@ then its documentation should look like this:
         a (`float`, *optional*, defaults to 1):
             This argument is used to ...
 ```
+
+Example: [here](https://github.com/huggingface/transformers/blob/6f79d264422245d88c7a34032c1a8254a0c65752/src/transformers/models/bert/tokenization_bert_fast.py#L176)
 
 Note that we always omit the "defaults to \`None\`" when None is the default for any argument. Also note that even
 if the first line describing your argument type and its default gets long, you can't break it on several lines. You can
@@ -341,18 +463,26 @@ documentation:
             configuration. Check out the [`~PreTrainedModel.from_pretrained`] method to load the model weights.
 ```
 
+### Returns
+
 The return block should be introduced with the `Returns:` prefix, followed by a line return and an indentation.
 The first line should be the type of the return, followed by a line return. No need to indent further for the elements
 building the return.
 
 Here's an example for a single value return:
 
+Syntax:
+
 ```
     Returns:
         `List[int]`: A list of integers in the range [0, 1] --- 1 for a special token, 0 for a sequence token.
 ```
 
+Example: [here](https://github.com/huggingface/transformers/blob/910faa3e1f1c566b23a0318f78f5caf5bda8d3b2/examples/flax/language-modeling/run_t5_mlm_flax.py#L273-L275)
+
 Here's an example for tuple return, comprising several objects:
+
+Syntax:
 
 ```
     Returns:
@@ -362,7 +492,29 @@ Here's an example for tuple return, comprising several objects:
         - **prediction_scores** (`torch.FloatTensor` of shape `(batch_size, sequence_length, config.vocab_size)`) --
           Prediction scores of the language modeling head (scores for each vocabulary token before SoftMax).
 ```
-Here's an example with `Raise`:
+
+Example: [here](https://github.com/huggingface/transformers/blob/003a0cf8cc4d78e47ef9debfb1e93a5c1197ca9a/examples/research_projects/bert-loses-patience/pabee/modeling_pabee_albert.py#L107-L130)
+
+### Yields
+
+Similarly, `Yields` is also supported.
+
+Syntax:
+
+```
+Yields:
+    `tuple[str, io.BufferedReader]`:
+        2-tuple (path_within_archive, file_object).
+        File object is opened in binary mode.
+```
+
+Example: [here](https://github.com/huggingface/datasets/blob/f56fd9d6c877ffa6fb44fb832c13b61227c9cc5b/src/datasets/download/download_manager.py#L459-L462C17)
+
+### Raises
+
+You can also document `Raises`.
+
+Syntax:
 ```
     Args:
          config ([`BertConfig`]):
@@ -383,8 +535,12 @@ Here's an example with `Raise`:
         `List[int]`: A list of integers in the range [0, 1] --- 1 for a special token, 0 for a sequence token.
 ```
 
+Example: [here](https://github.com/huggingface/transformers/blob/1b2381c46b834a89e447f7a01f0961c4e940d117/src/transformers/models/mask2former/image_processing_mask2former.py#L167-L168)
+
+### Directives for Added, Changed, Deprecated
+
 There are directives for `Added`, `Changed`, & `Deprecated`.
-Here's an example:
+Syntax:
 ```
     Args:
         cache_dir (`str`, *optional*): Directory to cache data.
@@ -406,6 +562,8 @@ Here's an example:
 
             </Deprecated>
 ```
+
+Example: [here](https://github.com/huggingface/datasets/blob/a1e1867e932f14233244fb25713f3c94c46ff50a/src/datasets/combine.py#L53)
 
 ### Developing svelte locally
 
