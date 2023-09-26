@@ -115,7 +115,7 @@ doc-builder build {package_name} {path_to_docs} --build_dir {build_dir} --langua
 
 To automatically build the documentation for all languages via the GitHub Actions templates, simply provide the `languages` argument to your workflow, with a space-separated list of the languages you wish to build, e.g. `languages: en es`.
 
-#### Redirects
+### Redirects
 
 You can optionally provide `_redirects.yml` for "old links". The yml file should look like:
 
@@ -249,9 +249,31 @@ Syntax:
 
 Example: [here](https://github.com/huggingface/transformers/blob/eb849f6604c7dcc0e96d68f4851e52e253b9f0e5/docs/source/en/model_summary.md#L79)
 
-### Writing API documentation (Python)
+### LaTeX
 
-#### Autodoc
+Latex display mode. `$$...$$`
+
+Syntax:
+
+```
+$$Y = X * \textbf{dequantize}(W); \text{quantize}(W)$$
+```
+
+Example: [here](https://github.com/huggingface/transformers/blob/main/docs/source/en/model_doc/rwkv.md?plain=1#L107)
+
+Latex inline mode. `\\( ... )\\`
+
+Syntax:
+
+```
+\\( Y = X * \textbf{dequantize}(W); \text{quantize}(W) )\\
+```
+
+Example: [here](https://github.com/huggingface/transformers/blob/main/docs/source/en/model_doc/rwkv.md?plain=1#L93)
+
+## Writing API documentation (Python)
+
+### Autodoc
 
 To show the full documentation of any object of the python library you are documenting, use the `[[autodoc]]` marker.
 
@@ -293,7 +315,7 @@ Syntax:
 
 Example: [here](https://github.com/huggingface/transformers/blob/eb849f6604c7dcc0e96d68f4851e52e253b9f0e5/docs/source/en/model_doc/bert.md?plain=1#L258-L259)
 
-#### Code Blocks from file references
+### Code Blocks from file references
 
 You can create a code-block by referencing a file excerpt with `<literalinclude>` (sphinx-inspired) syntax. 
 There should be json between `<literalinclude>` open & close tags.
@@ -313,7 +335,7 @@ Syntax:
 
 ### Writing source documentation
 
-#### Arguments
+### Arguments
 
 Arguments of a function/class/method should be defined with the `Args:` (or `Arguments:` or `Parameters:`) prefix, followed by a line return and
 an indentation. The argument should be followed by its type, with its shape if it is a tensor, a colon, and its
@@ -348,7 +370,7 @@ Example: [here](https://github.com/huggingface/transformers/blob/6f79d264422245d
 
 You can check the full example it comes from [here](https://github.com/huggingface/transformers/blob/v4.17.0/src/transformers/models/bert/modeling_bert.py#L794-L841)
 
-#### Attributes
+### Attributes
 
 If a class is similar to that of a dataclass but the parameters do not align to the available attributes of the class, such as in the below example, `Attributes` instance should be rewritten as `**Attributes**` in order to have the documentation properly render these. Otherwise it will assume that `Attributes` is synonymous to `Parameters`.
 
@@ -367,7 +389,7 @@ Syntax:
           ...
 ```
 
-#### Parmeter typing and default value
+### Parmeter typing and default value
 
 For optional arguments or arguments with defaults we follow the following syntax. Imagine we have a function with the
 following signature:
@@ -406,7 +428,7 @@ documentation:
             configuration. Check out the [`~PreTrainedModel.from_pretrained`] method to load the model weights.
 ```
 
-#### Returns
+### Returns
 
 The return block should be introduced with the `Returns:` prefix, followed by a line return and an indentation.
 The first line should be the type of the return, followed by a line return. No need to indent further for the elements
@@ -438,7 +460,7 @@ Syntax:
 
 Example: [here](https://github.com/huggingface/transformers/blob/003a0cf8cc4d78e47ef9debfb1e93a5c1197ca9a/examples/research_projects/bert-loses-patience/pabee/modeling_pabee_albert.py#L107-L130)
 
-#### Yields
+### Yields
 
 Similarly, `Yields` is also supported.
 
@@ -453,7 +475,7 @@ Yields:
 
 Example: [here](https://github.com/huggingface/datasets/blob/f56fd9d6c877ffa6fb44fb832c13b61227c9cc5b/src/datasets/download/download_manager.py#L459-L462C17)
 
-#### Raises
+### Raises
 
 You can also document `Raises`.
 
@@ -480,7 +502,7 @@ Syntax:
 
 Example: [here](https://github.com/huggingface/transformers/blob/1b2381c46b834a89e447f7a01f0961c4e940d117/src/transformers/models/mask2former/image_processing_mask2former.py#L167-L168)
 
-#### Directives for Added, Changed, Deprecated
+### Directives for Added, Changed, Deprecated
 
 There are directives for `Added`, `Changed`, & `Deprecated`.
 Syntax:
