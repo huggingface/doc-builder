@@ -41,6 +41,7 @@ const config = {
 				  (process.env.DOCS_VERSION || "main") +
 				  "/" +
 				  (process.env.DOCS_LANGUAGE || "en"),
+			relative: false,
 		},
 	},
 
