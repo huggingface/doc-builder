@@ -18,9 +18,9 @@
 
 		if (!forceAlignement) {
 			const docWidth = document.documentElement.clientWidth;
-			const domRect = element?.getBoundingClientRect() || {};
-			const left = domRect["left"] ?? 0;
-			const width = domRect["width"] ?? 0;
+			const domRect = element?.getBoundingClientRect();
+			const left = domRect?.["left"] ?? 0;
+			const width = domRect?.["width"] ?? 0;
 			alignement = left + width > docWidth ? "right" : "left";
 		}
 
