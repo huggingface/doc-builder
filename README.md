@@ -17,7 +17,7 @@ This is the package we use to build the documentation of our Hugging Face repos.
     + [Framework Content](#framework-content)
     + [Anchor link](#anchor-link)
     + [LaTeX](#latex)
-  * [Writing API documentation (Python)](#writing-api-documentation--python-)
+  * [Writing API documentation (Python)](#writing-api-documentation-python)
     + [Autodoc](#autodoc)
     + [Code Blocks from file references](#code-blocks-from-file-references)
     + [Writing source documentation](#writing-source-documentation)
@@ -28,7 +28,7 @@ This is the package we use to build the documentation of our Hugging Face repos.
     + [Returns](#returns)
     + [Yields](#yields)
     + [Raises](#raises)
-    + [Directives for Added, Changed, Deprecated](#directives-for-added--changed--deprecated)
+    + [Directives for Added, Changed, Deprecated](#directives-for-added-changed-deprecated)
     + [Developing svelte locally](#developing-svelte-locally)
 
 ## Installation
