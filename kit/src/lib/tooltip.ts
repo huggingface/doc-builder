@@ -3,7 +3,7 @@ import Tooltip from "./TooltipFromAction.svelte";
 const id = "docstring-tooltip";
 
 export function tooltip(element: HTMLElement, txt: string): any {
-	let tooltipComponent: any;
+	let tooltipComponent;
 	function mouseOver(event: MouseEvent) {
 		cleanPrevious();
 		tooltipComponent = new Tooltip({

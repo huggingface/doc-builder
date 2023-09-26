@@ -17,9 +17,12 @@ export enum AccordianState {
 	CLOSED = "CLOSED",
 	HASHASHLINK = "HASHASHLINK",
 }
-const frameworks: Partial<Record<Framework, Writable<AccordianState>>> = {};
+const frameworks: { [key in Framework]?: Writable<AccordianState> } = {};
 export function getFrameworkStore(key: Framework): Writable<AccordianState> {
-	return (frameworks[key] = frameworks[key] || writable<AccordianState>(AccordianState.OPEN));
+	if (!frameworks[key]) {
+		frameworks[key] = writable<AccordianState>(AccordianState.OPEN);
+	}
+	return frameworks[key];
 }
 
 // used for Question.svelte

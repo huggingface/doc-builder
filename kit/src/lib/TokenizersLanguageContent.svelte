@@ -13,18 +13,18 @@
 		{
 			id: "python",
 			icon: IconPython,
-			label: "Python",
+			label: "Python"
 		},
 		{
 			id: "rust",
 			icon: IconRust,
-			label: "Rust",
+			label: "Rust"
 		},
 		{
 			id: "node",
 			icon: IconNode,
-			label: "Node",
-		},
+			label: "Node"
+		}
 	];
 
 	export let python = false;

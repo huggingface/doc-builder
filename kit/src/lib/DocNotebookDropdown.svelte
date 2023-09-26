@@ -25,10 +25,7 @@
 			// correct calculation of dropdownEl's width; othwrwise, the width can count in negative (empty) spaces
 			let dropdownWidth = 0;
 			for (let i = 0; i < dropdownEl.children.length; i++) {
-				const child = dropdownEl.children.item(i);
-				if (child) {
-					dropdownWidth += child.clientWidth;
-				}
+				dropdownWidth += dropdownEl.children.item(i).clientWidth;
 			}
 			const bufferMargin = 20;
 			if (h1Widht - spanWidth < dropdownWidth + bufferMargin) {
@@ -47,7 +44,7 @@
 <svelte:window on:resize={onResize} />
 
 <div class="flex space-x-1 {classNames}" bind:this={dropdownEl}>
-	<slot name="alwaysVisible" />
+	<slot name="alwaysVisible"/>
 	{#if googleColabOptions.length === 1}
 		<a href={googleColabOptions[0].value} target="_blank">
 			<img

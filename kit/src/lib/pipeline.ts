@@ -1,6 +1,4 @@
-import type { Pipeline } from "./types";
-
-export const PIPELINE_DATA: Record<string, Pipeline> = {
+export const PIPELINE_DATA = {
 	"text-classification": {
 		name: "Text Classification",
 		subtasks: [
