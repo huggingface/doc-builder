@@ -364,7 +364,7 @@ export const mdsvexPreprocess = {
 			// 	content = addCourseImports(content);
 			// }
 			content = markKatex(content, markedKatex);
-			content = escapeSvelteConditiols(content)
+			content = escapeSvelteConditionals(content)
 			const processed = await _mdsvexPreprocess.markup({ content, filename });
 			processed.code = renderKatex(processed.code, markedKatex);
 			processed.code = headingWithAnchorLink(processed.code);
@@ -605,7 +605,7 @@ function headingWithAnchorLink(code) {
 	});
 }
 
-function escapeSvelteConditiols(code){
+function escapeSvelteConditionals(code){
 	const REGEX_SVELTE_IF_START = /(\{#if[^}]+\})/g;
 	const SVELTE_ELSE = "{:else}";
 	const SVELTE_IF_END = "{/if}";
