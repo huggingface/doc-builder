@@ -1,4 +1,5 @@
 <script lang="ts">
+	import type { SvelteComponent } from "svelte";
 	import type { Framework } from "./types";
 
 	import { onMount } from "svelte";
@@ -14,21 +15,19 @@
 	let containerEl: HTMLDivElement;
 	let hashLinks = new Set();
 
-	type SvelteComponent = typeof IconPytorch;
-
-	const FRAMEWORK_CONFIG: Record<Framework, { Icon: SvelteComponent; label: string }> = {
+	const FRAMEWORK_CONFIG: Record<Framework, { Icon: typeof SvelteComponent; label: string }> = {
 		pytorch: {
 			Icon: IconPytorch,
-			label: "Pytorch",
+			label: "Pytorch"
 		},
 		tensorflow: {
 			Icon: IconTensorflow,
-			label: "TensorFlow",
+			label: "TensorFlow"
 		},
 		jax: {
 			Icon: IconJax,
-			label: "JAX",
-		},
+			label: "JAX"
+		}
 	};
 	const { Icon, label } = FRAMEWORK_CONFIG[framework];
 	const localStorageKey = `hf_doc_framework_${framework}_is_hidden`;
