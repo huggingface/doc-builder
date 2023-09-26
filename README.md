@@ -285,6 +285,8 @@ Syntax:
 
 ### Writing source documentation
 
+#### Arguments
+
 Arguments of a function/class/method should be defined with the `Args:` (or `Arguments:` or `Parameters:`) prefix, followed by a line return and
 an indentation. The argument should be followed by its type, with its shape if it is a tensor, a colon, and its
 description:
@@ -318,6 +320,8 @@ Example: [here](https://github.com/huggingface/transformers/blob/6f79d264422245d
 
 You can check the full example it comes from [here](https://github.com/huggingface/transformers/blob/v4.17.0/src/transformers/models/bert/modeling_bert.py#L794-L841)
 
+#### Attributes
+
 If a class is similar to that of a dataclass but the parameters do not align to the available attributes of the class, such as in the below example, `Attributes` instance should be rewritten as `**Attributes**` in order to have the documentation properly render these. Otherwise it will assume that `Attributes` is synonymous to `Parameters`.
 
 Syntax:
@@ -334,6 +338,8 @@ Syntax:
       def __init__(self, param_a, param_b):
           ...
 ```
+
+#### Parmeter typing and default value
 
 For optional arguments or arguments with defaults we follow the following syntax. Imagine we have a function with the
 following signature:
@@ -372,6 +378,8 @@ documentation:
             configuration. Check out the [`~PreTrainedModel.from_pretrained`] method to load the model weights.
 ```
 
+#### Returns
+
 The return block should be introduced with the `Returns:` prefix, followed by a line return and an indentation.
 The first line should be the type of the return, followed by a line return. No need to indent further for the elements
 building the return.
@@ -402,6 +410,23 @@ Syntax:
 
 Example: [here](https://github.com/huggingface/transformers/blob/003a0cf8cc4d78e47ef9debfb1e93a5c1197ca9a/examples/research_projects/bert-loses-patience/pabee/modeling_pabee_albert.py#L107-L130)
 
+#### Yields
+
+Similarly, `Yields` is also supported.
+
+Syntax:
+
+```
+Yields:
+    `tuple[str, io.BufferedReader]`:
+        2-tuple (path_within_archive, file_object).
+        File object is opened in binary mode.
+```
+
+Example: [here](https://github.com/huggingface/datasets/blob/f56fd9d6c877ffa6fb44fb832c13b61227c9cc5b/src/datasets/download/download_manager.py#L459-L462C17)
+
+#### Raises
+
 You can also document `Raises`.
 
 Syntax:
@@ -426,6 +451,8 @@ Syntax:
 ```
 
 Example: [here](https://github.com/huggingface/transformers/blob/1b2381c46b834a89e447f7a01f0961c4e940d117/src/transformers/models/mask2former/image_processing_mask2former.py#L167-L168)
+
+#### Directives for Added, Changed, Deprecated
 
 There are directives for `Added`, `Changed`, & `Deprecated`.
 Syntax:
