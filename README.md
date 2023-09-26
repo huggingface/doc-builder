@@ -223,14 +223,22 @@ Moreover, there is a way to customize the anchor link. Example:
 
 ### Writing API documentation (Python)
 
-To show the full documentation of any object of the python library you are documenting, use the `[[autodoc]]` marker:
+#### Autodoc
+
+To show the full documentation of any object of the python library you are documenting, use the `[[autodoc]]` marker.
+
+Syntax:
 
 ```
 [[autodoc]] SomeObject
 ```
 
+Example: [here](https://github.com/huggingface/transformers/blob/eb849f6604c7dcc0e96d68f4851e52e253b9f0e5/docs/source/en/model_doc/bert.md?plain=1#L142)
+
 If the object is a class, this will include every public method of it that is documented. If for some reason you wish for a method
 not to be displayed in the documentation, you can do so by specifying which methods should be in the docs, here is an example:
+
+Syntax:
 
 ```
 [[autodoc]] XXXTokenizer
@@ -240,8 +248,12 @@ not to be displayed in the documentation, you can do so by specifying which meth
     - save_vocabulary
 ```
 
+Example: [here](https://github.com/huggingface/transformers/blob/eb849f6604c7dcc0e96d68f4851e52e253b9f0e5/docs/source/en/model_doc/bert.md?plain=1#L158-L159)
+
 If you just want to add a method that is not documented (for instance magic method like `__call__` are not documented
 by default) you can put the list of methods to add in a list that contains `all`:
+
+Syntax:
 
 ```
 ## XXXTokenizer
@@ -251,8 +263,15 @@ by default) you can put the list of methods to add in a list that contains `all`
     - __call__
 ```
 
+Example: [here](https://github.com/huggingface/transformers/blob/eb849f6604c7dcc0e96d68f4851e52e253b9f0e5/docs/source/en/model_doc/bert.md?plain=1#L258-L259)
+
+#### Code Blocks from file references
+
 You can create a code-block by referencing a file excerpt with `<literalinclude>` (sphinx-inspired) syntax. 
 There should be json between `<literalinclude>` open & close tags.
+
+Syntax:
+
 ```
 <literalinclude>
 {"path": "./data/convert_literalinclude_dummy.txt", # relative path
@@ -270,15 +289,19 @@ Arguments of a function/class/method should be defined with the `Args:` (or `Arg
 an indentation. The argument should be followed by its type, with its shape if it is a tensor, a colon, and its
 description:
 
+Syntax:
+
 ```
     Args:
         n_layers (`int`): The number of layers of the model.
 ```
 
+Example: [here](https://github.com/huggingface/transformers/blob/6f79d264422245d88c7a34032c1a8254a0c65752/src/transformers/models/bert/tokenization_bert_fast.py#L168-L198)
+
 If the description is too long to fit in one line, another indentation is necessary before writing the description
 after the argument.
 
-Here's an example showcasing everything so far:
+Syntax:
 
 ```
     Args:
@@ -291,9 +314,13 @@ Here's an example showcasing everything so far:
             [What are input IDs?](../glossary#input-ids)
 ```
 
+Example: [here](https://github.com/huggingface/transformers/blob/6f79d264422245d88c7a34032c1a8254a0c65752/src/transformers/models/bert/tokenization_bert_fast.py#L173-L175)
+
 You can check the full example it comes from [here](https://github.com/huggingface/transformers/blob/v4.17.0/src/transformers/models/bert/modeling_bert.py#L794-L841)
 
 If a class is similar to that of a dataclass but the parameters do not align to the available attributes of the class, such as in the below example, `Attributes` instance should be rewritten as `**Attributes**` in order to have the documentation properly render these. Otherwise it will assume that `Attributes` is synonymous to `Parameters`.
+
+Syntax:
 
 ```diff
   class SomeClass:
@@ -317,6 +344,8 @@ def my_function(x: str = None, a: float = 1):
 
 then its documentation should look like this:
 
+Syntax: 
+
 ```
     Args:
         x (`str`, *optional*):
@@ -324,6 +353,8 @@ then its documentation should look like this:
         a (`float`, *optional*, defaults to 1):
             This argument is used to ...
 ```
+
+Example: [here](https://github.com/huggingface/transformers/blob/6f79d264422245d88c7a34032c1a8254a0c65752/src/transformers/models/bert/tokenization_bert_fast.py#L176)
 
 Note that we always omit the "defaults to \`None\`" when None is the default for any argument. Also note that even
 if the first line describing your argument type and its default gets long, you can't break it on several lines. You can
@@ -347,12 +378,18 @@ building the return.
 
 Here's an example for a single value return:
 
+Syntax:
+
 ```
     Returns:
         `List[int]`: A list of integers in the range [0, 1] --- 1 for a special token, 0 for a sequence token.
 ```
 
+Example: [here](https://github.com/huggingface/transformers/blob/910faa3e1f1c566b23a0318f78f5caf5bda8d3b2/examples/flax/language-modeling/run_t5_mlm_flax.py#L273-L275)
+
 Here's an example for tuple return, comprising several objects:
+
+Syntax:
 
 ```
     Returns:
@@ -362,7 +399,12 @@ Here's an example for tuple return, comprising several objects:
         - **prediction_scores** (`torch.FloatTensor` of shape `(batch_size, sequence_length, config.vocab_size)`) --
           Prediction scores of the language modeling head (scores for each vocabulary token before SoftMax).
 ```
-Here's an example with `Raise`:
+
+Example: [here](https://github.com/huggingface/transformers/blob/003a0cf8cc4d78e47ef9debfb1e93a5c1197ca9a/examples/research_projects/bert-loses-patience/pabee/modeling_pabee_albert.py#L107-L130)
+
+You can also document `Raises`.
+
+Syntax:
 ```
     Args:
          config ([`BertConfig`]):
@@ -383,8 +425,10 @@ Here's an example with `Raise`:
         `List[int]`: A list of integers in the range [0, 1] --- 1 for a special token, 0 for a sequence token.
 ```
 
+Example: [here](https://github.com/huggingface/transformers/blob/1b2381c46b834a89e447f7a01f0961c4e940d117/src/transformers/models/mask2former/image_processing_mask2former.py#L167-L168)
+
 There are directives for `Added`, `Changed`, & `Deprecated`.
-Here's an example:
+Syntax:
 ```
     Args:
         cache_dir (`str`, *optional*): Directory to cache data.
@@ -406,6 +450,8 @@ Here's an example:
 
             </Deprecated>
 ```
+
+Example: [here](https://github.com/huggingface/datasets/blob/a1e1867e932f14233244fb25713f3c94c46ff50a/src/datasets/combine.py#L53)
 
 ### Developing svelte locally
 
