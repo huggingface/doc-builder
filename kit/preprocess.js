@@ -7,6 +7,7 @@ import { visit } from "unist-util-visit";
 import htmlTags from "html-tags";
 import { readdir } from "fs/promises";
 import path from "path";
+import cheerio from "cheerio";
 
 // Preprocessor that converts markdown into Docstring
 // svelte component using mdsvexPreprocess
@@ -229,7 +230,7 @@ export const frameworkcontentPreprocess = {
 
 			const svelteProps = FRAMEWORKS.map((fw) => `${fw.framework}={${fw.isExist}}`).join(" ");
 
-			return `<FrameworkContent ${svelteProps}>\n${svelteSlots}\n</FrameworkContent>`;
+			return `\n\n<FrameworkContent ${svelteProps}>\n${svelteSlots}\n</FrameworkContent>\n\n`;
 		});
 
 		return { code: content };
@@ -363,6 +364,7 @@ export const mdsvexPreprocess = {
 			// 	content = addCourseImports(content);
 			// }
 			content = markKatex(content, markedKatex);
+			content = escapeSvelteConditionals(content)
 			const processed = await _mdsvexPreprocess.markup({ content, filename });
 			processed.code = renderKatex(processed.code, markedKatex);
 			processed.code = headingWithAnchorLink(processed.code);
@@ -453,6 +455,8 @@ async function findSvelteComponentNames(startDir) {
 const dirPath = "./src/lib";
 const svelteTags = await findSvelteComponentNames(dirPath);
 const validTags = [...htmlTags, ...svelteTags];
+let hfDocBodyStart = false;
+let hfDocBodyEnd = false;
 
 function escapeSvelteSpecialChars() {
 	return transform;
@@ -468,12 +472,33 @@ function escapeSvelteSpecialChars() {
 	}
 
 	function onHtml(node) {
+		if(node.value === "<!--HF DOCBUILD BODY START-->"){
+			hfDocBodyStart = true;
+			hfDocBodyEnd = false;
+		}
+		if(node.value === "<!--HF DOCBUILD BODY END-->"){
+			hfDocBodyEnd = true;
+		}
 		const RE_TAG_NAME = /<\/?(\w+)/;
 		const match = node.value.match(RE_TAG_NAME);
 		if (match) {
 			const tagName = match[1];
 			if (!validTags.includes(tagName)) {
 				node.value = node.value.replaceAll("<", "&#60;");
+			}else if(hfDocBodyStart && !hfDocBodyEnd && htmlTags.includes(tagName)){
+				const REGEX_VALID_START_END_TAG = /^<(\w+)[^>]*>.*<\/\1>$/s;
+				if(!REGEX_VALID_START_END_TAG.test(node.value.trim())){
+					return;
+				}
+				const $ = cheerio.load(node.value);
+				// Go through each text node in the HTML and replace "{" with "&#123;"
+				$('*').contents().each((index, element) => {
+					if (element.type === 'text') {
+						element.data = element.data.replaceAll("{", "&#123;");
+					}
+				});
+				// Update the remark HTML node with the modified HTML
+				node.value = $('body').html();
 			}
 		}
 	}
@@ -578,4 +603,14 @@ function headingWithAnchorLink(code) {
 	</span>
 </h${level}>\n`;
 	});
+}
+
+function escapeSvelteConditionals(code){
+	const REGEX_SVELTE_IF_START = /(\{#if[^}]+\})/g;
+	const SVELTE_ELSE = "{:else}";
+	const SVELTE_IF_END = "{/if}";
+	code = code.replace(REGEX_SVELTE_IF_START, '\n\n$1\n\n');
+	code = code.replaceAll(SVELTE_ELSE, `\n\n${SVELTE_ELSE}\n\n`);
+	code = code.replaceAll(SVELTE_IF_END, `\n\n${SVELTE_IF_END}\n\n`);
+	return code;
 }

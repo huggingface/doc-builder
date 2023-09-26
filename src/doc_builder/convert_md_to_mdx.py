@@ -28,7 +28,8 @@ def convert_md_to_mdx(md_text, page_info):
     """
     Convert a document written in md to mdx.
     """
-    return """<script lang="ts">
+    return (
+        """<script lang="ts">
 import {onMount} from "svelte";
 import Tip from "$lib/Tip.svelte";
 import Youtube from "$lib/Youtube.svelte";
@@ -59,8 +60,15 @@ onMount(() => {
 <svelte:head>
   <meta name="hf:doc:metadata" content={JSON.stringify(metadata)} >
 </svelte:head>
-""" + process_md(
-        md_text, page_info
+
+<!--HF DOCBUILD BODY START-->
+
+"""
+        + process_md(md_text, page_info)
+        + """
+
+<!--HF DOCBUILD BODY END-->
+"""
     )
 
 
@@ -81,6 +89,7 @@ def convert_img_links(text, page_info):
 
 
 _re_md_img_tag_alt = re.compile(r"!\[([^\]]+)\]", re.I)
+_re_html_img_tag_alt = re.compile(r"<img [^>]*?alt=([\"'])([^\1]*?)\1[^>]*?>", re.I)
 
 
 def escape_img_alt_description(text):
@@ -88,13 +97,23 @@ def escape_img_alt_description(text):
     Escapes ` with ' inside <img> alt description since it causes svelte/mdsvex compiler error.
     """
 
-    def replace_alt_content(match):
+    def replace_md_alt_content(match):
         alt_content = match.group(1)
         new_alt_content = alt_content.replace("`", "'")
         return match.group(0).replace(alt_content, new_alt_content)
 
+    def replace_html_alt_content(match):
+        alt_content = match.group(2)  # group(2) contains the alt text for the HTML regex
+        new_alt_content = alt_content.replace("`", "'")
+        return match.group(0).replace(alt_content, new_alt_content)
+
+    # Replace markdown style image alt text
     if _re_md_img_tag_alt.search(text):
-        text = _re_md_img_tag_alt.sub(replace_alt_content, text)
+        text = _re_md_img_tag_alt.sub(replace_md_alt_content, text)
+
+    # Replace HTML style image alt text
+    if _re_html_img_tag_alt.search(text):
+        text = _re_html_img_tag_alt.sub(replace_html_alt_content, text)
 
     return text
 
