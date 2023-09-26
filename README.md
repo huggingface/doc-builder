@@ -211,15 +211,24 @@ Note that all frameworks are optional (you can write a PyTorch-only block for in
 ### Anchor link
 
 Anchor links for markdown headings are generated automatically (with the following rule: 1. lowercase, 2. replace space with dash `-`, 3. strip [^a-z0-9-]):
+
+Syntax:
 ```
 ## My awesome section
 // the anchor link is: `my-awesome-section`
 ```
-Moreover, there is a way to customize the anchor link. Example:
+
+Example: [here](https://github.com/huggingface/transformers/blob/eb849f6604c7dcc0e96d68f4851e52e253b9f0e5/docs/source/en/model_doc/bert.md#L132)
+
+Moreover, there is a way to customize the anchor link.
+
+Syntax:
 ```
 ## My awesome section[[some-section]]
 // the anchor link is: `some-section`
 ```
+
+Example: [here](https://github.com/huggingface/transformers/blob/eb849f6604c7dcc0e96d68f4851e52e253b9f0e5/docs/source/en/model_summary.md#L79)
 
 ### Writing API documentation (Python)
 
