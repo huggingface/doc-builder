@@ -18,7 +18,6 @@
 	on:focus={handleMouseOver}
 	on:mouseout={handleMouseOut}
 	on:blur={handleMouseOut}
-	role="button"
 >
 	<div class="absolute top-2.5 right-4">
 		<CopyButton
