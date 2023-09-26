@@ -88,14 +88,26 @@ Lorem ipsum dolor sit amet, consectetur adipiscing elit
 
 ### Some heading
 
+<img src="somesrc" alt="Animation exploring `model_args.pipeline_tag`">
+
 ![Animation exploring `model_args.pipeline_tag`](imgsrc)
+
+<img src="somesrc" alt='Animation exploring `model_args.pipeline_tag`'>
+
+<img src="somesrc">
 
 ![Animation exploring model_args.pipeline_tag](imgsrc)"""
         expected_conversion = """![Animation exploring 'model_args.pipeline_tag'](imgsrc)
 
 ### Some heading
 
+<img src="somesrc" alt="Animation exploring 'model_args.pipeline_tag'">
+
 ![Animation exploring 'model_args.pipeline_tag'](imgsrc)
+
+<img src="somesrc" alt='Animation exploring 'model_args.pipeline_tag''>
+
+<img src="somesrc">
 
 ![Animation exploring model_args.pipeline_tag](imgsrc)"""
         self.assertEqual(escape_img_alt_description(multiple_imgs_md), expected_conversion)
