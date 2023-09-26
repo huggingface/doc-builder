@@ -221,20 +221,16 @@ export const frameworkcontentPreprocess = {
 					FRAMEWORKS[i].isExist = true;
 					const fwContent = fwcontentBody.match(REGEX_FW)[1];
 					svelteSlots += `<svelte:fragment slot="${framework}">
-
-<Markdown>
-
-\n\n${fwContent}\n\n
-
-</Markdown>
-
-</svelte:fragment>`;
+					<Markdown>
+					\n\n${fwContent}\n\n
+					</Markdown>
+					</svelte:fragment>`;
 				}
 			}
 
 			const svelteProps = FRAMEWORKS.map((fw) => `${fw.framework}={${fw.isExist}}`).join(" ");
 
-			return `<FrameworkContent ${svelteProps}>\n${svelteSlots}\n</FrameworkContent>`;
+			return `\n\n<FrameworkContent ${svelteProps}>\n${svelteSlots}\n</FrameworkContent>\n\n`;
 		});
 
 		return { code: content };
