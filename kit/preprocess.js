@@ -486,6 +486,10 @@ function escapeSvelteSpecialChars() {
 			if (!validTags.includes(tagName)) {
 				node.value = node.value.replaceAll("<", "&#60;");
 			}else if(hfDocBodyStart && !hfDocBodyEnd && htmlTags.includes(tagName)){
+				const REGEX_VALID_START_END_TAG = /^<(\w+)[^>]*>.*<\/\1>$/s;
+				if(!REGEX_VALID_START_END_TAG.test(node.value.trim())){
+					return;
+				}
 				const $ = cheerio.load(node.value);
 				// Go through each text node in the HTML and replace "{" with "&#123;"
 				$('*').contents().each((index, element) => {
