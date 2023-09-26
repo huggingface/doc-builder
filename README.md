@@ -2,6 +2,35 @@
 
 This is the package we use to build the documentation of our Hugging Face repos.
 
+## Table of Contents
+
+- [doc-builder](#doc-builder)
+  * [Installation](#installation)
+  * [Previewing](#previewing)
+  * [Doc building](#doc-building)
+  * [Templates for GitHub Actions](#templates-for-github-actions)
+    + [Enabling multilingual documentation](#enabling-multilingual-documentation)
+    + [Redirects](#redirects)
+  * [Fixing and testing doc-builder](#fixing-and-testing-doc-builder)
+  * [Writing documentation for Hugging Face libraries](#writing-documentation-for-hugging-face-libraries)
+    + [Tip](#tip)
+    + [Framework Content](#framework-content)
+    + [Anchor link](#anchor-link)
+    + [LaTeX](#latex)
+  * [Writing API documentation (Python)](#writing-api-documentation--python-)
+    + [Autodoc](#autodoc)
+    + [Code Blocks from file references](#code-blocks-from-file-references)
+    + [Writing source documentation](#writing-source-documentation)
+    + [Description](#description)
+    + [Arguments](#arguments)
+    + [Attributes](#attributes)
+    + [Parmeter typing and default value](#parmeter-typing-and-default-value)
+    + [Returns](#returns)
+    + [Yields](#yields)
+    + [Raises](#raises)
+    + [Directives for Added, Changed, Deprecated](#directives-for-added--changed--deprecated)
+    + [Developing svelte locally](#developing-svelte-locally)
+
 ## Installation
 
 You can install from PyPi with
