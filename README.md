@@ -335,6 +335,12 @@ Syntax:
 
 ### Writing source documentation
 
+### Description
+
+For a class or function description string, use markdown with [all the custom syntax of doc-builder](#writing-documentation-for-hugging-face-libraries).
+
+Example: [here](https://github.com/huggingface/transformers/blob/910faa3e1f1c566b23a0318f78f5caf5bda8d3b2/examples/flax/language-modeling/run_t5_mlm_flax.py#L257-L267)
+
 ### Arguments
 
 Arguments of a function/class/method should be defined with the `Args:` (or `Arguments:` or `Parameters:`) prefix, followed by a line return and
