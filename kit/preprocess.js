@@ -461,17 +461,6 @@ let hfDocBodyEnd = false;
 function escapeSvelteSpecialChars() {
 	return transform;
 
-	function isWithinDocBody(node) {
-		if (node.value === "<!--HF DOCBUILD BODY START-->") {
-			hfDocBodyStart = true;
-			hfDocBodyEnd = false;
-		}
-		if (node.value === "<!--HF DOCBUILD BODY END-->") {
-			hfDocBodyEnd = true;
-		}
-		return hfDocBodyStart && !hfDocBodyEnd;
-	}
-
 	function transform(tree) {
 		visit(tree, "text", onText);
 		visit(tree, "html", onHtml);
@@ -497,25 +486,29 @@ function escapeSvelteSpecialChars() {
 	}
 
 	function onText(node) {
-		if (!isWithinDocBody(node)) {
-			return;
-		}
 		node.value = node.value.replaceAll("{", "&#123;");
 		node.value = node.value.replaceAll("<", "&#60;");
 	}
 
 	function onHtml(node) {
-		if (!isWithinDocBody(node)) {
-			return;
+		if (node.value === "<!--HF DOCBUILD BODY START-->") {
+			hfDocBodyStart = true;
+			hfDocBodyEnd = false;
+		}
+		if (node.value === "<!--HF DOCBUILD BODY END-->") {
+			hfDocBodyEnd = true;
 		}
 		const RE_TAG_NAME = /<\/?(\w+)/;
 		const match = node.value.match(RE_TAG_NAME);
-		const REGEX_VALID_START_END_TAG = /^<(\w+)[^>]*>.*<\/\1>$/s;
 		if (match) {
 			const tagName = match[1];
 			if (!validTags.includes(tagName)) {
 				node.value = node.value.replaceAll("<", "&#60;");
-			} else if (htmlTags.includes(tagName) && REGEX_VALID_START_END_TAG.test(node.value.trim())) {
+			} else if (hfDocBodyStart && !hfDocBodyEnd && htmlTags.includes(tagName)) {
+				const REGEX_VALID_START_END_TAG = /^<(\w+)[^>]*>.*<\/\1>$/s;
+				if (!REGEX_VALID_START_END_TAG.test(node.value.trim())) {
+					return;
+				}
 				const $ = cheerio.load(node.value);
 				// Go through each text node in the HTML and replace "{" with "&#123;"
 				$("*")
