@@ -466,7 +466,7 @@ function escapeSvelteSpecialChars() {
 		visit(tree, "html", onHtml);
 	}
 
-	function isWithinDocBody(node, nodeType) {
+	function isWithinDocBody(node) {
 		if (["<!--HF DOCBUILD BODY START-->", "HF_DOC_BODY_START"].includes(node.value)) {
 			hfDocBodyStart = true;
 			hfDocBodyEnd = false;
