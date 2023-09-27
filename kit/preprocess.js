@@ -466,21 +466,21 @@ function escapeSvelteSpecialChars() {
 		visit(tree, "html", onHtml);
 	}
 
-	function isWithinDocBody(node) {
+	function isWithinDocBody(node, nodeType) {
 		if (["<!--HF DOCBUILD BODY START-->", "HF_DOC_BODY_START"].includes(node.value)) {
 			hfDocBodyStart = true;
 			hfDocBodyEnd = false;
 			// delete the marker
-			// if(node.value === "HF_DOC_BODY_START"){
-			// 	node.value = "";
-			// }
+			if(node.value === "HF_DOC_BODY_START"){
+				node.value = "";
+			}
 		}
 		if (["<!--HF DOCBUILD BODY END-->", "HF_DOC_BODY_END"].includes(node.value)) {
 			hfDocBodyEnd = true;
 			// delete the marker
-			// if(node.value === "HF_DOC_BODY_END"){
-			// 	node.value = "";
-			// }
+			if(node.value === "HF_DOC_BODY_END"){
+				node.value = "";
+			}
 		}
 		return hfDocBodyStart && !hfDocBodyEnd;
 	}

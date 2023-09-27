@@ -63,11 +63,16 @@ onMount(() => {
 
 <!--HF DOCBUILD BODY START-->
 
+HF_DOC_BODY_START
+
 """
         + process_md(md_text, page_info)
         + """
 
 <!--HF DOCBUILD BODY END-->
+
+HF_DOC_BODY_END
+
 """
     )
 
