@@ -466,30 +466,45 @@ function escapeSvelteSpecialChars() {
 		visit(tree, "html", onHtml);
 	}
 
+	function isWithinDocBody(node) {
+		if (["<!--HF DOCBUILD BODY START-->", "HF_DOC_BODY_START"].includes(node.value)) {
+			hfDocBodyStart = true;
+			hfDocBodyEnd = false;
+			// delete the marker
+			if(node.value === "HF_DOC_BODY_START"){
+				node.value = "";
+			}
+		}
+		if (["<!--HF DOCBUILD BODY END-->", "HF_DOC_BODY_END"].includes(node.value)) {
+			hfDocBodyEnd = true;
+			// delete the marker
+			if(node.value === "HF_DOC_BODY_END"){
+				node.value = "";
+			}
+		}
+		return hfDocBodyStart && !hfDocBodyEnd;
+	}
+
 	function onText(node) {
+		if (!isWithinDocBody(node)) {
+			return;
+		}
 		node.value = node.value.replaceAll("{", "&#123;");
 		node.value = node.value.replaceAll("<", "&#60;");
 	}
 
 	function onHtml(node) {
-		if(node.value === "<!--HF DOCBUILD BODY START-->"){
-			hfDocBodyStart = true;
-			hfDocBodyEnd = false;
-		}
-		if(node.value === "<!--HF DOCBUILD BODY END-->"){
-			hfDocBodyEnd = true;
+		if (!isWithinDocBody(node)) {
+			return;
 		}
 		const RE_TAG_NAME = /<\/?(\w+)/;
 		const match = node.value.match(RE_TAG_NAME);
+		const REGEX_VALID_START_END_TAG = /^<(\w+)[^>]*>.*<\/\1>$/s;
 		if (match) {
 			const tagName = match[1];
 			if (!validTags.includes(tagName)) {
 				node.value = node.value.replaceAll("<", "&#60;");
-			}else if(hfDocBodyStart && !hfDocBodyEnd && htmlTags.includes(tagName)){
-				const REGEX_VALID_START_END_TAG = /^<(\w+)[^>]*>.*<\/\1>$/s;
-				if(!REGEX_VALID_START_END_TAG.test(node.value.trim())){
-					return;
-				}
+			}else if(htmlTags.includes(tagName) && REGEX_VALID_START_END_TAG.test(node.value.trim())){
 				const $ = cheerio.load(node.value);
 				// Go through each text node in the HTML and replace "{" with "&#123;"
 				$('*').contents().each((index, element) => {
