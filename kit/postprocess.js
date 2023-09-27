@@ -23,16 +23,16 @@ function readFiles(directory) {
 const REGEX_HF_METADATA = /<!-- HEAD_svelte-.{7}_START -->(.+)<!-- HEAD_svelte-.{7}_END -->/s;
 
 function processFile(filePath) {
-    // Read the file synchronously
-    const data = fs.readFileSync(filePath, 'utf8');
-    // Extract the matched group using the regex
-    const match = data.match(REGEX_HF_METADATA);
+	// Read the file synchronously
+	const data = fs.readFileSync(filePath, "utf8");
+	// Extract the matched group using the regex
+	const match = data.match(REGEX_HF_METADATA);
 	// Append macthed group 1 to the first line
-	const lines = data.split('\n');
+	const lines = data.split("\n");
 	lines[0] += match[1];
 	// Join the lines back and write to the file synchronously
-	const updatedData = lines.join('\n');
-	fs.writeFileSync(filePath, updatedData, 'utf8');
+	const updatedData = lines.join("\n");
+	fs.writeFileSync(filePath, updatedData, "utf8");
 }
 
 readFiles(directoryPath);

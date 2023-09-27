@@ -1,5 +1,4 @@
 <script lang="ts">
-	import type { SvelteComponent } from "svelte";
 	import { PIPELINE_DATA } from "./pipeline";
 
 	import IconAudioClassification from "./PipelineIcons/IconAudioClassification.svelte";
@@ -36,7 +35,9 @@
 	export let classNames = "";
 	export let pipeline = "";
 
-	const ICON_COMPONENTS: Record<string, typeof SvelteComponent> = {
+	type SvelteComponent = typeof IconTextClassification;
+
+	const ICON_COMPONENTS: Record<string, SvelteComponent> = {
 		/// Keep same order as in huggingface_hub/Types.ts
 		/// for easy mapping.
 		"text-classification": IconTextClassification,
@@ -72,10 +73,7 @@
 	};
 
 	const PIPELINE_TAG_ICO_CLASS = Object.fromEntries(
-		Object.entries(PIPELINE_DATA).map(([tagType, data]) => [
-			tagType,
-			`tag-ico-${data.color}`,
-		])
+		Object.entries(PIPELINE_DATA).map(([tagType, data]) => [tagType, `tag-ico-${data.color}`])
 	);
 </script>
 

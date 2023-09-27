@@ -42,9 +42,8 @@
 	onMount(() => {
 		const { hash } = window.location;
 		hashlink = hash.substring(1);
-		const hashlinksEls =
-			parametersElement.querySelectorAll<HTMLAnchorElement>('[href^="#"]');
-		const hashlinks = [...hashlinksEls].map(el => el.id);
+		const hashlinksEls = parametersElement.querySelectorAll<HTMLAnchorElement>('[href^="#"]');
+		const hashlinks = [...hashlinksEls].map((el) => el.id);
 		const containsAnchor = hashlinks.includes(hashlink);
 		collapsed = !containsAnchor && parametersElement.clientHeight > 500;
 		onHashChange();
@@ -86,8 +85,9 @@
 			containerEl.classList.remove(...bgHighlightClass.split(" "));
 		}
 		if (hashlink === anchor) {
-			containerEl = document.getElementById(hashlink)?.closest(".docstring");
-			if (containerEl) {
+			const _containerEl = document.getElementById(hashlink)?.closest(".docstring");
+			if (_containerEl) {
+				containerEl = _containerEl as HTMLElement;
 				containerEl.classList.add(...bgHighlightClass.split(" "));
 			}
 		}

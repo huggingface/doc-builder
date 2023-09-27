@@ -19,11 +19,7 @@
 	let isOpen = false;
 </script>
 
-<div
-	class="relative {classNames} {useDeprecatedJS ? 'v2-dropdown' : ''}"
-	bind:this={element}
-	selected-value={selectedValue || undefined}
->
+<div class="relative {classNames} {useDeprecatedJS ? 'v2-dropdown' : ''}" bind:this={element}>
 	<!-- Button -->
 	<button
 		class="
