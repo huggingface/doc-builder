@@ -11,14 +11,14 @@
 			id: "pt",
 			classNames: "bg-red-50 dark:bg-transparent text-red-600",
 			icon: IconPytorch,
-			name: "Pytorch"
+			name: "Pytorch",
 		},
 		{
 			id: "tf",
 			classNames: "bg-orange-50 dark:bg-transparent text-yellow-600",
 			icon: IconTensorflow,
-			name: "TensorFlow"
-		}
+			name: "TensorFlow",
+		},
 	] as const;
 </script>
 

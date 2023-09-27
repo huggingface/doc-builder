@@ -6,7 +6,7 @@
 
 <div
 	class="
-		absolute pointer-events-none transition-opacity bg-black text-white py-1 px-2 leading-tight rounded font-normal shadow 
+		absolute pointer-events-none transition-opacity bg-black text-white py-1 px-2 leading-tight rounded font-normal shadow
 		{position}
 		{classNames}
 	"

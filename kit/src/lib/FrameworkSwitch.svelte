@@ -14,27 +14,27 @@
 			classNames: "",
 			icon: IconPytorch,
 			name: "Pytorch",
-			group: "group1"
+			group: "group1",
 		},
 		{
 			id: "tf",
 			classNames: "",
 			icon: IconTensorflow,
 			name: "TensorFlow",
-			group: "group2"
+			group: "group2",
 		},
 		{
 			id: "stringapi",
 			classNames: "text-blue-600",
 			name: "String API",
-			group: "group1"
+			group: "group1",
 		},
 		{
 			id: "readinstruction",
 			classNames: "text-blue-600",
 			name: "ReadInstruction",
-			group: "group2"
-		}
+			group: "group2",
+		},
 	];
 
 	function changeGroup(_group: string) {
