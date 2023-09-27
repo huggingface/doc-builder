@@ -30,6 +30,7 @@ const config = {
 
 		prerender: {
 			crawl: false, // Do not throw if linked page doesn't exist (eg when forgetting the language prefix)
+			handleHttpError: "warn", // Otherwise, TRL docs is failing https://github.com/huggingface/trl/actions/runs/6316410973/job/17150947986
 		},
 
 		paths: {
