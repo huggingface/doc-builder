@@ -364,7 +364,7 @@ export const mdsvexPreprocess = {
 			// 	content = addCourseImports(content);
 			// }
 			content = markKatex(content, markedKatex);
-			content = escapeSvelteConditionals(content)
+			content = escapeSvelteConditionals(content);
 			const processed = await _mdsvexPreprocess.markup({ content, filename });
 			processed.code = renderKatex(processed.code, markedKatex);
 			processed.code = headingWithAnchorLink(processed.code);
@@ -471,14 +471,14 @@ function escapeSvelteSpecialChars() {
 			hfDocBodyStart = true;
 			hfDocBodyEnd = false;
 			// delete the marker
-			if(node.value === "HF_DOC_BODY_START"){
+			if (node.value === "HF_DOC_BODY_START") {
 				node.value = "";
 			}
 		}
 		if (["<!--HF DOCBUILD BODY END-->", "HF_DOC_BODY_END"].includes(node.value)) {
 			hfDocBodyEnd = true;
 			// delete the marker
-			if(node.value === "HF_DOC_BODY_END"){
+			if (node.value === "HF_DOC_BODY_END") {
 				node.value = "";
 			}
 		}
@@ -504,16 +504,18 @@ function escapeSvelteSpecialChars() {
 			const tagName = match[1];
 			if (!validTags.includes(tagName)) {
 				node.value = node.value.replaceAll("<", "&#60;");
-			}else if(htmlTags.includes(tagName) && REGEX_VALID_START_END_TAG.test(node.value.trim())){
+			} else if (htmlTags.includes(tagName) && REGEX_VALID_START_END_TAG.test(node.value.trim())) {
 				const $ = cheerio.load(node.value);
 				// Go through each text node in the HTML and replace "{" with "&#123;"
-				$('*').contents().each((index, element) => {
-					if (element.type === 'text') {
-						element.data = element.data.replaceAll("{", "&#123;");
-					}
-				});
+				$("*")
+					.contents()
+					.each((index, element) => {
+						if (element.type === "text") {
+							element.data = element.data.replaceAll("{", "&#123;");
+						}
+					});
 				// Update the remark HTML node with the modified HTML
-				node.value = $('body').html();
+				node.value = $("body").html();
 			}
 		}
 	}
@@ -620,11 +622,11 @@ function headingWithAnchorLink(code) {
 	});
 }
 
-function escapeSvelteConditionals(code){
+function escapeSvelteConditionals(code) {
 	const REGEX_SVELTE_IF_START = /(\{#if[^}]+\})/g;
 	const SVELTE_ELSE = "{:else}";
 	const SVELTE_IF_END = "{/if}";
-	code = code.replace(REGEX_SVELTE_IF_START, '\n\n$1\n\n');
+	code = code.replace(REGEX_SVELTE_IF_START, "\n\n$1\n\n");
 	code = code.replaceAll(SVELTE_ELSE, `\n\n${SVELTE_ELSE}\n\n`);
 	code = code.replaceAll(SVELTE_IF_END, `\n\n${SVELTE_IF_END}\n\n`);
 	return code;
