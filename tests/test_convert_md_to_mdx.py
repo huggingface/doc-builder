@@ -65,9 +65,14 @@ onMount(() => {
 
 <!--HF DOCBUILD BODY START-->
 
+HF_DOC_BODY_START
+
 Lorem ipsum dolor sit amet, consectetur adipiscing elit
 
 <!--HF DOCBUILD BODY END-->
+
+HF_DOC_BODY_END
+
 """
         print(convert_md_to_mdx(md_text, page_info))
         self.assertEqual(convert_md_to_mdx(md_text, page_info), expected_conversion)
