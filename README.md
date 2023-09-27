@@ -29,7 +29,7 @@ This is the package we use to build the documentation of our Hugging Face repos.
     + [Yields](#yields)
     + [Raises](#raises)
     + [Directives for Added, Changed, Deprecated](#directives-for-added-changed-deprecated)
-    + [Developing svelte locally](#developing-svelte-locally)
+  * [Developing svelte locally](#developing-svelte-locally)
 
 ## Installation
 
@@ -565,7 +565,7 @@ Syntax:
 
 Example: [here](https://github.com/huggingface/datasets/blob/a1e1867e932f14233244fb25713f3c94c46ff50a/src/datasets/combine.py#L53)
 
-### Developing svelte locally
+## Developing svelte locally
 
 We use svelte components for doc UI ([Tip component](https://github.com/huggingface/doc-builder/blob/890df105f4173fb8dc299ad6ba3e4db378d2e53d/kit/src/lib/Tip.svelte), [Docstring component](https://github.com/huggingface/doc-builder/blob/a9598feb5a681a3817e58ef8d792349e85a30d1e/kit/src/lib/Docstring.svelte), etc.).
 
