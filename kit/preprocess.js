@@ -356,6 +356,9 @@ function renderCode(code) {
 	);
 }
 
+const WRAP_CODE_BLOCKS_FLAG = "<!-- WRAP CODE BLOCKS -->";
+let wrapCodeBlocks = false;
+
 export const mdsvexPreprocess = {
 	markup: async ({ content, filename }) => {
 		if (filename.endsWith(".svelte")) {
@@ -363,6 +366,7 @@ export const mdsvexPreprocess = {
 			// if (filename.includes("course/")) {
 			// 	content = addCourseImports(content);
 			// }
+			wrapCodeBlocks = content.includes(WRAP_CODE_BLOCKS_FLAG);
 			content = markKatex(content, markedKatex);
 			content = escapeSvelteConditionals(content);
 			const processed = await _mdsvexPreprocess.markup({ content, filename });
@@ -570,6 +574,7 @@ const _mdsvexPreprocess = mdsvex({
 			code: \`${base64(codeGroup2)}\`,
 			highlighted: \`${escape(highlightedTf)}\`
 		}}
+		wrap={${wrapCodeBlocks}}
 	/>`;
 			} else {
 				const highlighted = _highlight(code);
@@ -586,6 +591,7 @@ const _mdsvexPreprocess = mdsvex({
 	<CodeBlock 
 		code={\`${base64(code)}\`}
 		highlighted={\`${escape(highlighted)}\`}
+		wrap={${wrapCodeBlocks}}
 	/>`;
 			}
 		},
