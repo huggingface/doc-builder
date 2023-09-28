@@ -27,5 +27,5 @@
 			value={code}
 		/>
 	</div>
-	<pre class={wrap ? "whitespace-normal" : ""}>{@html highlighted}</pre>
+	<pre class={wrap ? "whitespace-pre-wrap" : ""}>{@html highlighted}</pre>
 </div>

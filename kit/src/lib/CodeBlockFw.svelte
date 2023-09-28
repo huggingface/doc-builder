@@ -36,7 +36,7 @@
 				value={group1.code}
 			/>
 		</div>
-		<pre class={wrap ? "whitespace-normal" : ""}><FrameworkSwitch
+		<pre class={wrap ? "whitespace-pre-wrap" : ""}><FrameworkSwitch
 				{ids}
 			/>{@html group1.highlighted}</pre>
 	{:else}
@@ -47,7 +47,7 @@
 				value={group2.code}
 			/>
 		</div>
-		<pre class={wrap ? "whitespace-normal" : ""}><FrameworkSwitch
+		<pre class={wrap ? "whitespace-pre-wrap" : ""}><FrameworkSwitch
 				{ids}
 			/>{@html group2.highlighted}</pre>
 	{/if}
