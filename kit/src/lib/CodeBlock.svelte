@@ -3,6 +3,7 @@
 	let hideCopyButton = true;
 	export let code = "";
 	export let highlighted = "";
+	export let wrap = false;
 
 	function handleMouseOver() {
 		hideCopyButton = false;
@@ -26,5 +27,5 @@
 			value={code}
 		/>
 	</div>
-	<pre>{@html highlighted}</pre>
+	<pre class={wrap ? "whitespace-normal" : ""}>{@html highlighted}</pre>
 </div>
