@@ -17,6 +17,7 @@ This is the package we use to build the documentation of our Hugging Face repos.
     + [Framework Content](#framework-content)
     + [Anchor link](#anchor-link)
     + [LaTeX](#latex)
+    + [Code Blocks](#code-blocks)
   * [Writing API documentation (Python)](#writing-api-documentation-python)
     + [Autodoc](#autodoc)
     + [Code Blocks from file references](#code-blocks-from-file-references)
@@ -299,6 +300,17 @@ Syntax:
 ```
 
 Example: [here](https://github.com/huggingface/transformers/blob/main/docs/source/en/model_doc/rwkv.md?plain=1#L93)
+
+### Code Blocks
+
+Code blocks are written using a regular markdown syntax ```. However, there is a special flag you can put in your mdx files to change the wrapping style of the resulting html from overflow/scrollbar to wrap.
+
+Syntax:
+```
+<!-- WRAP CODE BLOCKS -->
+```
+
+Example: [here](https://github.com/huggingface/text-generation-inference/blob/724199aaf172590c3658018c0e6bc6152cda4c2f/docs/source/basic_tutorials/launcher.md?plain=1#L3)
 
 ## Writing API documentation (Python)
 
