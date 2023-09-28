@@ -616,9 +616,11 @@ function headingWithAnchorLink(code) {
 		<span><IconCopyLink/></span>
 	</a>
 	<span>
-		${text.replace(REGEX_CODE, (_, group1) => `<code>${group1.replaceAll("<", "&#60;")}</code>`)}
+		${text
+			.replaceAll("{", "&#123;")
+			.replace(REGEX_CODE, (_, group1) => `<code>${group1.replaceAll("<", "&#60;")}</code>`)}
 	</span>
-</h${level}>\n`;
+</h${level}>\n\n`;
 	});
 }
 
