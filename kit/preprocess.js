@@ -361,7 +361,7 @@ let wrapCodeBlocks = false;
 
 export const mdsvexPreprocess = {
 	markup: async ({ content, filename }) => {
-		if (filename.endsWith(".svelte")) {
+		if (filename.endsWith("+page.svelte")) {
 			const markedKatex = {};
 			// if (filename.includes("course/")) {
 			// 	content = addCourseImports(content);
