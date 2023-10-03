@@ -507,7 +507,10 @@ function escapeSvelteSpecialChars() {
 			// Create a svelte node (in remark grammar, the type is "html")
 			const svelteNode = {
 				type: "html",
-				value: `<Heading title="${title.replaceAll("{", "&#123;")}" local="${local}" headingTag="h${depth}"/>`,
+				value: `<Heading title="${title.replaceAll(
+					"{",
+					"&#123;"
+				)}" local="${local}" headingTag="h${depth}"/>`,
 			};
 			// Replace the old node with the new Svelte node
 			parent.children[index] = svelteNode;
@@ -517,7 +520,7 @@ function escapeSvelteSpecialChars() {
 
 		if (headings.length) {
 			const headingsStr = JSON.stringify(headings);
-			const mystring = `<svelte:head><meta name="hf:doc:metadata" content={${headingsStr}} ></svelte:head>`
+			const mystring = `<svelte:head><meta name="hf:doc:metadata" content={${headingsStr}} ></svelte:head>`;
 			tree.children.unshift({
 				type: "html",
 				value: mystring,
