@@ -471,8 +471,6 @@ function addToTree(tree, node) {
 	return tree;
 }
 
-import yaml from "js-yaml";
-
 function getTitleText(node) {
 	if (!node.children || node.children.length === 0) {
 		return node.value ? node.value.trim() : "";
@@ -509,7 +507,7 @@ function escapeSvelteSpecialChars() {
 			// Create a svelte node (in remark grammar, the type is "html")
 			const svelteNode = {
 				type: "html",
-				value: `<Heading title="${title}" local="${local}" headingTag="h${depth}"/>`,
+				value: `<Heading title="${title.replaceAll("{", "&#123;")}" local="${local}" headingTag="h${depth}"/>`,
 			};
 			// Replace the old node with the new Svelte node
 			parent.children[index] = svelteNode;
@@ -518,12 +516,11 @@ function escapeSvelteSpecialChars() {
 		visit(tree, "html", onHtml);
 
 		if (headings.length) {
-			const yamlToc = yaml.dump(headings, { indent: 2 });
-			// Prepend YAML frontmatter to the beginning of the file
-			const yamlString = ["---", yamlToc, "---"].join("\n");
+			const headingsStr = JSON.stringify(headings);
+			const mystring = `<svelte:head><meta name="hf:doc:metadata" content={${headingsStr}} ></svelte:head>`
 			tree.children.unshift({
-				type: "yaml",
-				value: yamlString,
+				type: "html",
+				value: mystring,
 			});
 		}
 	}

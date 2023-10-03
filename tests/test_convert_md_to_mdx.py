@@ -60,9 +60,6 @@ onMount(() => {
     fw = urlParams.get("fw") || "pt";
 });
 </script>
-<svelte:head>
-  <meta name="hf:doc:metadata" content={JSON.stringify(metadata)} >
-</svelte:head>
 
 <!--HF DOCBUILD BODY START-->
 
