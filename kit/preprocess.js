@@ -518,14 +518,12 @@ function escapeSvelteSpecialChars() {
 		visit(tree, "text", onText);
 		visit(tree, "html", onHtml);
 
-		if (headings.length) {
-			const headingsStr = JSON.stringify(headings);
-			const mystring = `<svelte:head><meta name="hf:doc:metadata" content={${headingsStr}} ></svelte:head>`;
-			tree.children.unshift({
-				type: "html",
-				value: mystring,
-			});
-		}
+		const headingsStr = JSON.stringify(headings);
+		const mystring = `<svelte:head><meta name="hf:doc:metadata" content={${headingsStr}} ></svelte:head>`;
+		tree.children.unshift({
+			type: "html",
+			value: mystring,
+		});
 	}
 
 	function isWithinDocBody(node) {
