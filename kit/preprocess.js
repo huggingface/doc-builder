@@ -520,7 +520,9 @@ function escapeSvelteSpecialChars() {
 
 		tree.children.unshift({
 			type: "html",
-			value: `<script context="module">export const metadata = '${JSON.stringify(headings)}';</script>`,
+			value: `<script context="module">export const metadata = '${JSON.stringify(
+				headings
+			)}';</script>`,
 		});
 	}
 
