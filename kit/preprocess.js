@@ -361,7 +361,7 @@ let wrapCodeBlocks = false;
 
 export const mdsvexPreprocess = {
 	markup: async ({ content, filename }) => {
-		if (filename.endsWith(".svelte")) {
+		if (filename.endsWith("+page.svelte")) {
 			const markedKatex = {};
 			// if (filename.includes("course/")) {
 			// 	content = addCourseImports(content);
@@ -371,7 +371,6 @@ export const mdsvexPreprocess = {
 			content = escapeSvelteConditionals(content);
 			const processed = await _mdsvexPreprocess.markup({ content, filename });
 			processed.code = renderKatex(processed.code, markedKatex);
-			processed.code = headingWithAnchorLink(processed.code);
 			processed.code = renderCode(processed.code, filename);
 			return processed;
 		}
@@ -462,12 +461,69 @@ const validTags = [...htmlTags, ...svelteTags];
 let hfDocBodyStart = false;
 let hfDocBodyEnd = false;
 
+function addToTree(tree, node) {
+	if (tree.length === 0 || tree[tree.length - 1].depth >= node.depth) {
+		tree.push(node);
+	} else {
+		const sections = tree[tree.length - 1].sections || [];
+		tree[tree.length - 1].sections = addToTree(sections, node);
+	}
+	return tree;
+}
+
+function getTitleText(node) {
+	if (!node.children || node.children.length === 0) {
+		return node.value ? node.value.trim() : "";
+	}
+
+	return node.children
+		.map((child) => getTitleText(child))
+		.join(" ")
+		.trim();
+}
+
 function escapeSvelteSpecialChars() {
 	return transform;
 
 	function transform(tree) {
+		let headings = [];
+		visit(tree, "heading", (node, index, parent) => {
+			const depth = node.depth;
+			let title = getTitleText(node);
+			let local = "";
+			const match = title.match(/\[\s(.*?)\s\]$/);
+			if (match && match[1]) {
+				local = match[1];
+				title = title.replace(match[0], "").trim();
+			} else {
+				local = title
+					.trim()
+					.toLowerCase()
+					.replace(/\s+/g, "-") // Replace spaces with hyphens
+					.replace(/[^\p{L}\p{N}-]+/gu, ""); // Keep letters, numbers, and hyphens only
+			}
+			headings = addToTree(headings, { title, local, sections: [], depth });
+
+			// Create a svelte node (in remark grammar, the type is "html")
+			const svelteNode = {
+				type: "html",
+				value: `<Heading title="${title.replaceAll(
+					"{",
+					"&#123;"
+				)}" local="${local}" headingTag="h${depth}"/>`,
+			};
+			// Replace the old node with the new Svelte node
+			parent.children[index] = svelteNode;
+		});
 		visit(tree, "text", onText);
 		visit(tree, "html", onHtml);
+
+		tree.children.unshift({
+			type: "html",
+			value: `<script context="module">export const metadata = '${JSON.stringify(
+				headings[0]
+			)}';</script>`,
+		});
 	}
 
 	function isWithinDocBody(node) {
@@ -597,38 +653,6 @@ const _mdsvexPreprocess = mdsvex({
 		},
 	},
 });
-
-/**
- * Dynamically add anchor links to html heading tags
- * @param {string} code
- */
-function headingWithAnchorLink(code) {
-	const REGEX_HEADER = /<h([1-6]) ?(id="(.+)")?>(.*)<\/h[1-6]>/gm;
-	const REGEX_CODE = /`(((?!`).)*)`/gms;
-	return code.replace(REGEX_HEADER, (_, level, __, id, text) => {
-		if (!id) {
-			id = text
-				.replace(/(.*)<a href.+>(.+)<\/a>(.*)/gm, (_, g1, g2, g3) => `${g1}${g2}${g3}`)
-				.toLowerCase()
-				.split(" ")
-				.join("-");
-		}
-		return `<h${level} class="relative group">
-	<a 
-		id="${id}" 
-		class="header-link block pr-1.5 text-lg no-hover:hidden with-hover:absolute with-hover:p-1.5 with-hover:opacity-0 with-hover:group-hover:opacity-100 with-hover:right-full" 
-		href="#${id}"
-	>
-		<span><IconCopyLink/></span>
-	</a>
-	<span>
-		${text
-			.replaceAll("{", "&#123;")
-			.replace(REGEX_CODE, (_, group1) => `<code>${group1.replaceAll("<", "&#60;")}</code>`)}
-	</span>
-</h${level}>\n\n`;
-	});
-}
 
 function escapeSvelteConditionals(code) {
 	const REGEX_SVELTE_IF_START = /(\{#if[^}]+\})/g;
