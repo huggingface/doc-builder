@@ -20,7 +20,7 @@ function readFiles(directory) {
 }
 
 // Regex to match `meta name="hf:doc:metadata"`
-const REGEX_HF_METADATA = /<!-- HEAD_svelte-.{7}_START -->(.+)<!-- HEAD_svelte-.{7}_END -->/s;
+const REGEX_HF_METADATA = /<!-- HEAD_svelte-.+_START -->(.+)<!-- HEAD_svelte-.+_END -->/s;
 
 function processFile(filePath) {
 	// Read the file synchronously

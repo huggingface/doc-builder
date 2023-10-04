@@ -28,7 +28,6 @@ from .autodoc import autodoc, find_object_in_package, get_source_path, resolve_l
 from .convert_md_to_mdx import convert_md_to_mdx
 from .convert_rst_to_mdx import convert_rst_to_mdx, find_indent, is_empty_line
 from .convert_to_notebook import generate_notebooks_from_file
-from .frontmatter_node import FrontmatterNode
 from .utils import get_doc_config, read_doc_config
 
 
@@ -270,76 +269,6 @@ def resolve_links(doc_folder, package, mapping, page_info):
             writer.write(content)
 
 
-def generate_frontmatter_in_text(text, file_name=None):
-    """
-    Adds frontmatter & turns markdown headers into markdown headers with hash links.
-
-    Args:
-        text (`str`): The text in which to convert the links.
-    """
-    is_disabled = "<!-- DISABLE-FRONTMATTER-SECTIONS -->" in text
-    text = text.split("\n")
-    root = None
-    is_inside_codeblock = False
-    for idx, line in enumerate(text):
-        if line.startswith("```"):
-            is_inside_codeblock = not is_inside_codeblock
-        if is_inside_codeblock or is_empty_line(line):
-            continue
-        header_search = re.search(r"^(#+)\s+(\S.*)$", line)
-        if header_search is None:
-            continue
-        first_word, title = header_search.groups()
-        header_level = len(first_word)
-        serach_local = re.search(r"\[\[(.*)]]", title)
-        if serach_local:
-            # id/local already exists
-            local = serach_local.group(1)
-            title = re.sub(r"\[\[(.*)]]", "", title)
-        else:
-            # create id/local
-            local = re.sub(r"[^a-z0-9\s]+", "", title.lower())
-            local = re.sub(r"\s{2,}", " ", local.strip()).replace(" ", "-")
-        text[idx] = f'<h{header_level} id="{local}">{title}</h{header_level}>'
-        node = FrontmatterNode(title, local)
-        if header_level == 1:
-            root = node
-            # doc writers may choose to disable frontmatter generation
-            # currently used in Quiz sections of hf course
-            if is_disabled:
-                break
-        else:
-            if root is None:
-                raise ValueError(
-                    f"{file_name} does not contain a level 1 header (more commonly known as title) before the first "
-                    " second (or more) level header. Make sure to include one!"
-                )
-            root.add_child(node, header_level)
-
-    frontmatter = root.get_frontmatter()
-    text = "\n".join(text)
-    text = frontmatter + text
-    return text
-
-
-def generate_frontmatter(doc_folder):
-    """
-    Adds frontmatter & turns markdown headers into markdown headers with hash links for all files in a folder.
-
-    Args:
-        doc_folder (`str` or `os.PathLike`): The folder in which to look for files.
-    """
-    doc_folder = Path(doc_folder)
-    all_files = list(doc_folder.glob("**/*.mdx"))
-    for file_name in tqdm(all_files, desc="Generating frontmatter"):
-        # utf-8-sig is needed to correctly open community.md file
-        with open(file_name, "r", encoding="utf-8-sig") as reader:
-            content = reader.read()
-        content = generate_frontmatter_in_text(content, file_name=file_name)
-        with open(file_name, "w", encoding="utf-8") as writer:
-            writer.write(content)
-
-
 def build_notebooks(doc_folder, notebook_dir, package=None, mapping=None, page_info=None):
     """
     Build the notebooks associated to the MDX files in the documentation with an [[open-in-colab]] marker.
@@ -443,7 +372,6 @@ def build_doc(
         if not watch_mode:
             build_sphinx_objects_ref(sphinx_refs, output_dir, page_info)
         resolve_links(output_dir, package, anchors_mapping, page_info)
-    generate_frontmatter(output_dir)
 
     if notebook_dir is not None:
         if clean and Path(notebook_dir).exists():
