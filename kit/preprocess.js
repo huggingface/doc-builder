@@ -499,8 +499,8 @@ function escapeSvelteSpecialChars() {
 				local = title
 					.trim()
 					.toLowerCase()
-					.replace(/[^\w\s-]/g, "")
-					.replace(/[\s_-]+/g, "-");
+					.replace(/\s+/g, '-')  // Replace spaces with hyphens
+					.replace(/[^\p{L}\p{N}-]+/gu, '');  // Keep letters, numbers, and hyphens only
 			}
 			headings = addToTree(headings, { title, local, sections: [], depth });
 
