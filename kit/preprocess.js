@@ -522,7 +522,7 @@ function escapeSvelteSpecialChars() {
 			type: "html",
 			value: `<script context="module">export const metadata = '${JSON.stringify(
 				headings[0]
-			)}';</script>`,
+			).replaceAll("'", "\\'")}';</script>`,
 		});
 	}
 
