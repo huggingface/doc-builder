@@ -518,11 +518,14 @@ function escapeSvelteSpecialChars() {
 		visit(tree, "text", onText);
 		visit(tree, "html", onHtml);
 
+		let jsonString = JSON.stringify(headings[0]);
+		if (jsonString) {
+			jsonString = jsonString.replaceAll("'", "\\'");
+		}
+
 		tree.children.unshift({
 			type: "html",
-			value: `<script context="module">export const metadata = '${JSON.stringify(
-				headings[0]
-			).replaceAll("'", "\\'")}';</script>`,
+			value: `<script context="module">export const metadata = '${jsonString}';</script>`,
 		});
 	}
 
