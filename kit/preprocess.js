@@ -427,7 +427,6 @@ function renderKatex(code, markedKatex) {
 			displayMode,
 			throwOnError: false,
 		});
-		html = html.replace("katex-html", "katex-html hidden");
 		if (html.includes(`katex-error`)) {
 			throw new Error(`[KaTeX] Error while parsing markdown\n ${html}`);
 		}
