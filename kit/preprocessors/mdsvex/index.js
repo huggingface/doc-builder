@@ -81,11 +81,10 @@ function renderKatex(code, markedKatex) {
 		let { tex, displayMode } = markedKatex[marker];
 		tex = tex.replaceAll("&#123;", "{");
 		tex = tex.replaceAll("&#60;", "<");
-		let html = katex.renderToString(renderSvelteChars(tex), {
+		const html = katex.renderToString(renderSvelteChars(tex), {
 			displayMode,
 			throwOnError: false,
 		});
-		html = html.replace("katex-html", "katex-html hidden");
 		if (html.includes(`katex-error`)) {
 			throw new Error(`[KaTeX] Error while parsing markdown\n ${html}`);
 		}
