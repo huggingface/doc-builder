@@ -1,14 +1,13 @@
-import { replaceAsync } from "./utils.js";
+import { replaceAsync, generateTagRegex } from "./utils.js";
 
 // Preprocessor that converts markdown into FrameworkContent
 // svelte component using mdsvexPreprocess
 export const frameworkcontentPreprocess = {
 	markup: async ({ content }) => {
-		const REGEX_FRAMEWORKCONTENT =
-			/<frameworkcontent>(((?!<frameworkcontent>).)*)<\/frameworkcontent>/gms;
-		const REGEX_PYTORCH = /<pt>(((?!<pt>).)*)<\/pt>/ms;
-		const REGEX_TENSORFLOW = /<tf>(((?!<tf>).)*)<\/tf>/ms;
-		const REGEX_JAX = /<jax>(((?!<jax>).)*)<\/jax>/ms;
+		const REGEX_FRAMEWORKCONTENT = generateTagRegex("frameworkcontent", true);
+		const REGEX_PYTORCH = generateTagRegex("pt");
+		const REGEX_TENSORFLOW = generateTagRegex("tf");
+		const REGEX_JAX = generateTagRegex("jax");
 
 		content = await replaceAsync(content, REGEX_FRAMEWORKCONTENT, async (_, fwcontentBody) => {
 			const FRAMEWORKS = [

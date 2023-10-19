@@ -1,14 +1,13 @@
-import { replaceAsync } from "./utils.js";
+import { replaceAsync, generateTagRegex } from "./utils.js";
 
 // Preprocessor that converts markdown into TokenizersLanguageContent
 // svelte component using mdsvexPreprocess
 export const tokenizersLangPreprocess = {
 	markup: async ({ content }) => {
-		const REGEX_FRAMEWORKCONTENT =
-			/<tokenizerslangcontent>(((?!<tokenizerslangcontent>).)*)<\/tokenizerslangcontent>/gms;
-		const REGEX_PYTHON = /<python>(((?!<python>).)*)<\/python>/ms;
-		const RGEX_RUST = /<rust>(((?!<rust>).)*)<\/rust>/ms;
-		const REGEX_NODE = /<node>(((?!<node>).)*)<\/node>/ms;
+		const REGEX_FRAMEWORKCONTENT = generateTagRegex("tokenizerslangcontent", true);
+		const REGEX_PYTHON = generateTagRegex("python");
+		const RGEX_RUST = generateTagRegex("rust");
+		const REGEX_NODE = generateTagRegex("node");
 		const FRAMEWORKS = [
 			{ framework: "python", REGEX_FW: REGEX_PYTHON, isExist: false },
 			{ framework: "rust", REGEX_FW: RGEX_RUST, isExist: false },

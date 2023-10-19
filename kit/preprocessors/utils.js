@@ -31,3 +31,17 @@ export async function replaceAsync(string, searchValue, replacer) {
 export function renderSvelteChars(code) {
 	return code.replace(/&amp;lcub;/g, "{").replace(/&amp;lt;/g, "<");
 }
+
+/**
+ * Create a regex that captures html-like opening and closing tag and its contents.
+ * used for parsing hf custom syntax
+ * example: generateTagRegex("inferenceSnippet", true) -> /<inferenceSnippet>(.*?)<\/inferenceSnippet>/msg
+ * @param {string} tag - The name of the tag to match content within.
+ * @param {boolean} [global=false] - Whether to create a global pattern that matches all occurrences.
+ * @returns {RegExp} - The generated RegExp pattern.
+ */
+export function generateTagRegex(tag, global = false) {
+	const flags = global ? "msg" : "ms";
+	const pattern = new RegExp(`<${tag}>(.*?)<\\/${tag}>`, flags);
+	return pattern;
+}

@@ -1,14 +1,13 @@
-import { replaceAsync } from "./utils.js";
+import { replaceAsync, generateTagRegex } from "./utils.js";
 
 // Preprocessor that converts markdown into InferenceApi
 // svelte component using mdsvexPreprocess
 export const inferenceSnippetPreprocess = {
 	markup: async ({ content }) => {
-		const REGEX_FRAMEWORKCONTENT =
-			/<inferencesnippet>(((?!<inferencesnippet>).)*)<\/inferencesnippet>/gms;
-		const REGEX_PYTHON = /<python>(((?!<python>).)*)<\/python>/ms;
-		const REGEX_JS = /<js>(((?!<js>).)*)<\/js>/ms;
-		const REGEX_CURL = /<curl>(((?!<curl>).)*)<\/curl>/ms;
+		const REGEX_FRAMEWORKCONTENT = generateTagRegex("inferencesnippet", true);
+		const REGEX_PYTHON = generateTagRegex("python");
+		const REGEX_JS = generateTagRegex("js");
+		const REGEX_CURL = generateTagRegex("curl");
 		const FRAMEWORKS = [
 			{ framework: "python", REGEX_FW: REGEX_PYTHON, isExist: false },
 			{ framework: "js", REGEX_FW: REGEX_JS, isExist: false },
