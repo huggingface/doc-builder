@@ -1,25 +1,25 @@
 import domUtils from "domutils";
 import htmlparser2 from "htmlparser2";
-import { replaceAsync, renderSvelteChars } from "./utils.js";
+import { replaceAsync, renderSvelteChars, generateTagRegex } from "./utils.js";
 import { mdsvexPreprocess } from "./mdsvex/index.js";
 
 // Preprocessor that converts markdown into Docstring
 // svelte component using mdsvexPreprocess
 export const docstringPreprocess = {
 	markup: async ({ content, filename }) => {
-		const REGEX_DOCSTRING = /<docstring>(((?!<docstring>).)*)<\/docstring>/gms;
-		const REGEX_NAME = /<name>(((?!<name>).)*)<\/name>/ms;
-		const REGEX_ANCHOR = /<anchor>(((?!<anchor>).)*)<\/anchor>/ms;
-		const REGEX_SIGNATURE = /<parameters>(((?!<parameters>).)*)<\/parameters>/ms;
-		const REGEX_PARAMSDESC = /<paramsdesc>(((?!<paramsdesc>).)*)<\/paramsdesc>/ms;
-		const REGEX_PARAMSGROUPS = /<paramgroups>(((?!<paramgroups>).)*)<\/paramgroups>/ms;
-		const REGEX_RETDESC = /<retdesc>(((?!<retdesc>).)*)<\/retdesc>/ms;
-		const REGEX_RETTYPE = /<rettype>(((?!<rettype>).)*)<\/rettype>/ms;
-		const REGEX_YIELDESC = /<yieldesc>(((?!<yieldesc>).)*)<\/yieldesc>/ms;
-		const REGEX_YIELDTYPE = /<yieldtype>(((?!<yieldtype>).)*)<\/yieldtype>/ms;
-		const REGEX_RAISEDESC = /<raises>(((?!<raises>).)*)<\/raises>/ms;
-		const REGEX_RAISETYPE = /<raisederrors>(((?!<raisederrors>).)*)<\/raisederrors>/ms;
-		const REGEX_SOURCE = /<source>(((?!<source>).)*)<\/source>/ms;
+		const REGEX_DOCSTRING = generateTagRegex("docstring", true);
+		const REGEX_NAME = generateTagRegex("name");
+		const REGEX_ANCHOR = generateTagRegex("anchor");
+		const REGEX_SIGNATURE = generateTagRegex("parameters");
+		const REGEX_PARAMSDESC = generateTagRegex("paramsdesc");
+		const REGEX_PARAMSGROUPS = generateTagRegex("paramgroups");
+		const REGEX_RETDESC = generateTagRegex("retdesc");
+		const REGEX_RETTYPE = generateTagRegex("rettype");
+		const REGEX_YIELDESC = generateTagRegex("yieldesc");
+		const REGEX_YIELDTYPE = generateTagRegex("yieldtype");
+		const REGEX_RAISEDESC = generateTagRegex("raises");
+		const REGEX_RAISETYPE = generateTagRegex("raisederrors");
+		const REGEX_SOURCE = generateTagRegex("source");
 		const REGEX_TIP = /<Tip( warning={true})?>(((?!<Tip( warning={true})?>).)*)<\/Tip>/gms;
 		const REGEX_CHANGED =
 			/<(Added|Changed|Deprecated) version="([0-9.v]+)" ?\/?>((((?!<(Added|Changed|Deprecated) version="([0-9.v]+)"\/?>).)*)<\/(Added|Changed|Deprecated)>)?/gms;
