@@ -7,7 +7,7 @@ import {
 	mdsvexPreprocess,
 	inferenceSnippetPreprocess,
 	tokenizersLangPreprocess,
-} from "./preprocess.js";
+} from "./preprocessors/index.js";
 
 /** @type {import('@sveltejs/kit').Config} */
 const config = {
