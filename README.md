@@ -13,6 +13,8 @@ This is the package we use to build the documentation of our Hugging Face repos.
     + [Redirects](#redirects)
   * [Fixing and testing doc-builder](#fixing-and-testing-doc-builder)
   * [Writing documentation for Hugging Face libraries](#writing-documentation-for-hugging-face-libraries)
+    + [Internal link to object](#internal-link-to-object)
+    + [External link to object](#external-link-to-object)
     + [Tip](#tip)
     + [Framework Content](#framework-content)
     + [Anchor link](#anchor-link)
@@ -183,16 +185,6 @@ Once the docs build is complete in your project, you can drop that change.
 Values that should be put in `code` should either be surrounded by backticks: \`like so\`. Note that argument names
 and objects like True, None or any strings should usually be put in `code`.
 
-When mentioning a class, function or method, it is recommended to use the following syntax for internal links so that our tool
-automatically adds a link to its documentation: \[\`XXXClass\`\] or \[\`function\`\]. This requires the class or 
-function to be in the main package.
-
-If you want to create a link to some internal class or function, you need to
-provide its path. For instance, in the Transformers documentation \[\`file_utils.ModelOutput\`\] will create a link to the documentation of `ModelOutput`. This link will have `file_utils.ModelOutput` in the description. To get rid of the path and only keep the name of the object you are
-linking to in the description, add a ~: \[\`~file_utils.ModelOutput\`\] will generate a link with `ModelOutput` in the description.
-
-The same works for methods, so you can either use \[\`XXXClass.method\`\] or \[~\`XXXClass.method\`\].
-
 Multi-line code blocks can be useful for displaying examples. They are done between two lines of three backticks as usual in Markdown:
 
 ````
@@ -205,6 +197,36 @@ Multi-line code blocks can be useful for displaying examples. They are done betw
 
 We follow the [doctest](https://docs.python.org/3/library/doctest.html) syntax for the examples to automatically test
 the results stay consistent with the library.
+
+### Internal link to object
+
+Syntax:
+```
+[`XXXClass`] or [~`XXXClass`] // for class
+[`XXXClass.method`] or [~`XXXClass.method`] // for method
+```
+
+Example: [here](https://github.com/huggingface/transformers/blob/eb849f6604c7dcc0e96d68f4851e52e253b9f0e5/docs/source/en/model_doc/sew-d.md?plain=1#L39) & [here](https://github.com/huggingface/transformers/blob/6f79d264422245d88c7a34032c1a8254a0c65752/examples/research_projects/performer/modeling_flax_performer.py#L48) (as used inside docstring).
+
+When mentioning a class, function or method, it is recommended to use the following syntax for internal links so that our tool
+automatically adds a link to its documentation: \[\`XXXClass\`\] or \[\`function\`\]. This requires the class or 
+function to be in the main package.
+
+If you want to create a link to some internal class or function, you need to
+provide its path. For instance, in the Transformers documentation \[\`file_utils.ModelOutput\`\] will create a link to the documentation of `ModelOutput`. This link will have `file_utils.ModelOutput` in the description. To get rid of the path and only keep the name of the object you are
+linking to in the description, add a ~: \[\`~file_utils.ModelOutput\`\] will generate a link with `ModelOutput` in the description.
+
+The same works for methods, so you can either use \[\`XXXClass.method\`\] or \[~\`XXXClass.method\`\].
+
+### External link to object
+
+Syntax:
+```
+[`XXXLibrary.XXXClass`] or [~`XXXLibrary.XXXClass`] // for class
+[`XXXLibrary.XXXClass.method`] or [~`XXXLibrary.XXXClass.method`] // for method
+```
+
+Example: [here](https://github.com/huggingface/transformers/blob/0f0e1a2c2bff68541a5b9770d78e0fb6feb7de72/docs/source/en/accelerate.md?plain=1#L29) linking object from `accelerate` inside `transformers`.
 
 ### Tip
 
