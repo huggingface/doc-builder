@@ -54,6 +54,8 @@ import Deprecated from "$lib/Deprecated.svelte";
 import PipelineIcon from "$lib/PipelineIcon.svelte";
 import PipelineTag from "$lib/PipelineTag.svelte";
 import Heading from "$lib/Heading.svelte";
+import HfOptions from "$lib/HfOptions.svelte";
+import HfOption from "$lib/HfOption.svelte";
 let fw: "pt" | "tf" = "pt";
 onMount(() => {
     const urlParams = new URLSearchParams(window.location.search);

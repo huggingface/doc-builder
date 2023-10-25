@@ -30,3 +30,6 @@ export const selectedInferenceLang = writable<InferenceSnippetLang>("python");
 
 // used for TokenizersLanguageContent.svelte
 export const selectedTokenizersLang = writable<TokenizersLanguage>("python");
+
+// used for HfOptions.svelte
+export const selectedHfOptions = writable<Record<string, string>>({});
