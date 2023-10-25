@@ -32,6 +32,7 @@ HUGGINFACE_LIBS = [
     "optimum",
     "tokenizers",
     "transformers",
+    "trl",
 ]
 
 
