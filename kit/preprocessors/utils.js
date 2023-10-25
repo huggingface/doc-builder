@@ -45,3 +45,17 @@ export function generateTagRegex(tag, global = false) {
 	const pattern = new RegExp(`<${tag}>(.*?)<\\/${tag}>`, flags);
 	return pattern;
 }
+
+/**
+ * Create a regex that captures html-like opening and closing tag with attribute "id" and its contents.
+ * used for parsing hf custom syntax
+ * example: generateTagRegex("inferenceSnippet", true) -> /<inferenceSnippet\s+id=["'](.+)["']\s*>(.*?)<\/inferenceSnippet>/msg
+ * @param {string} tag - The name of the tag to match content within.
+ * @param {boolean} [global=false] - Whether to create a global pattern that matches all occurrences.
+ * @returns {RegExp} - The generated RegExp pattern.
+ */
+export function generateTagRegexWithId(tag, global = false) {
+	const flags = global ? "msg" : "ms";
+	const pattern = new RegExp(`<${tag}\\s+id=["'](.+?)["']\\s*>(.*?)<\\/${tag}>`, flags);
+	return pattern;
+}
