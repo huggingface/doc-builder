@@ -1,4 +1,4 @@
-export function updateQueryParamAndPushToHistory(key: string, value: string) {
+export function updateQueryParamAndReplaceHistory(key: string, value: string) {
 	// 1. Parse the current URL.
 	const currentUrl = new URL(window.location.href);
 	// 2. Use URLSearchParams to manipulate the query parameters.
@@ -8,7 +8,7 @@ export function updateQueryParamAndPushToHistory(key: string, value: string) {
 	// 4. Construct the new URL.
 	currentUrl.search = searchParams.toString();
 	// 5. Push the new URL to browser's history.
-	history.pushState(null, "", currentUrl.toString());
+	history.replaceState(null, "", currentUrl.toString());
 }
 
 export function getQueryParamValue(key: string) {

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount } from "svelte";
 	import { selectedHfOptions } from "./stores";
-	import { getQueryParamValue, updateQueryParamAndPushToHistory } from "./utils";
+	import { getQueryParamValue, updateQueryParamAndReplaceHistory } from "./utils";
 
 	export let id: string;
 	export let options: string[];
@@ -10,7 +10,7 @@
 
 	function updateSelectedOption(option: string) {
 		$selectedHfOptions[id] = option;
-		updateQueryParamAndPushToHistory(id, option);
+		updateQueryParamAndReplaceHistory(id, option);
 	}
 
 	onMount(() => {

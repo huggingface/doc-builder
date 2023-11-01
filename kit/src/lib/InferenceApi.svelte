@@ -2,7 +2,7 @@
 	import type { InferenceSnippetLang } from "./types";
 	import { onMount } from "svelte";
 	import { selectedInferenceLang } from "./stores";
-	import { getQueryParamValue, updateQueryParamAndPushToHistory } from "./utils";
+	import { getQueryParamValue, updateQueryParamAndReplaceHistory } from "./utils";
 	import IconPython from "./IconPython.svelte";
 	import IconJs from "./IconJs.svelte";
 	import IconCurl from "./IconCurl.svelte";
@@ -38,7 +38,7 @@
 
 	function updateSelectedOption(lang: InferenceSnippetLang) {
 		$selectedInferenceLang = lang;
-		updateQueryParamAndPushToHistory(queryParamKey, lang);
+		updateQueryParamAndReplaceHistory(queryParamKey, lang);
 	}
 
 	onMount(() => {
