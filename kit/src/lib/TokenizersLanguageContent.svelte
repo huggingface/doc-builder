@@ -2,7 +2,7 @@
 	import type { TokenizersLanguage } from "./types";
 	import { onMount } from "svelte";
 	import { selectedTokenizersLang } from "./stores";
-	import { getQueryParamValue, updateQueryParamAndPushToHistory } from "./utils";
+	import { getQueryParamValue, updateQueryParamAndReplaceHistory } from "./utils";
 	import IconPython from "./IconPython.svelte";
 	import IconRust from "./IconRust.svelte";
 	import IconNode from "./IconNode.svelte";
@@ -36,7 +36,7 @@
 
 	function updateSelectedOption(lang: TokenizersLanguage) {
 		$selectedTokenizersLang = lang;
-		updateQueryParamAndPushToHistory(queryParamKey, lang);
+		updateQueryParamAndReplaceHistory(queryParamKey, lang);
 	}
 
 	onMount(() => {
