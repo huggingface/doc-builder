@@ -58,8 +58,8 @@ function renderSvelteChars(code) {
  * @param {Record<any, any>} markedKatex
  */
 function markKatex(content, markedKatex) {
-	const REGEX_LATEX_DISPLAY = /\$\$([\s\S]+?)\$\$/g;
-	const REGEX_LATEX_INLINE = /\\\\\(([\s\S]+?)\\\\\)/g;
+	const REGEX_LATEX_DISPLAY = /\n\$\$([\s\S]+?)\$\$/g;
+	const REGEX_LATEX_INLINE = /\s\\\\\(([\s\S]+?)\\\\\)/g;
 	let counter = 0;
 	return content
 		.replace(REGEX_LATEX_DISPLAY, (_, tex) => {
