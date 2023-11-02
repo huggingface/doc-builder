@@ -202,7 +202,7 @@ the results stay consistent with the library.
 ### Internal link to object
 
 Syntax:
-```
+```html
 [`XXXClass`] or [~`XXXClass`] // for class
 [`XXXClass.method`] or [~`XXXClass.method`] // for method
 ```
@@ -222,7 +222,7 @@ The same works for methods, so you can either use \[\`XXXClass.method\`\] or \[~
 ### External link to object
 
 Syntax:
-```
+```html
 [`XXXLibrary.XXXClass`] or [~`XXXLibrary.XXXClass`] // for class
 [`XXXLibrary.XXXClass.method`] or [~`XXXLibrary.XXXClass.method`] // for method
 ```
@@ -236,7 +236,7 @@ markers.
 
 Syntax:
 
-```
+```html
 <Tip>
 
 Write your note here
@@ -249,7 +249,7 @@ Example: [here](https://github.com/huggingface/transformers/blob/0f0e1a2c2bff685
 For warnings, change the introduction to:
 
 Syntax:
-```
+```html
 `<Tip warning={true}>`
 ```
 
@@ -262,7 +262,7 @@ following syntax:
 
 Syntax:
 
-```
+```html
 <frameworkcontent>
 <pt>
 PyTorch content goes here
@@ -286,7 +286,7 @@ Show alternatives (let's say code blocks for different version of a library etc.
 
 Syntax:
 
-```
+```html
 <hfoptions id="some id">
 <hfoption id="id for option 1">
 {YOUR MARKDOWN}
