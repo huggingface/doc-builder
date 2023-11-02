@@ -17,6 +17,7 @@ This is the package we use to build the documentation of our Hugging Face repos.
     + [External link to object](#external-link-to-object)
     + [Tip](#tip)
     + [Framework Content](#framework-content)
+    + [Options](#options)
     + [Anchor link](#anchor-link)
     + [LaTeX](#latex)
     + [Code Blocks](#code-blocks)
@@ -277,7 +278,29 @@ Flax content goes here
 
 Example: [here](https://github.com/huggingface/transformers/blob/eb849f6604c7dcc0e96d68f4851e52e253b9f0e5/docs/source/de/autoclass_tutorial.md#L84-L131)
 
-Note that all frameworks are optional (you can write a PyTorch-only block for instance) and the order does not matter.
+Note: all frameworks are optional (you can write a PyTorch-only block for instance) and the order does not matter.
+
+### Options
+
+Show alternatives (let's say code blocks for different version of a library etc.) in a way where a user can select an option and see the selected option content:
+
+Syntax:
+
+```
+<hfoptions id="some id">
+<hfoption id="id for option 1">
+{YOUR MARKDOWN}
+</hfoption>
+<hfoption id="id for option 2">
+{YOUR MARKDOWN}
+</hfoption>
+... however many <hfoption> tags
+</hfoptions>
+```
+
+Example: [here](https://github.com/huggingface/diffusers/blob/75ea54a1512ac443d517ab35cb9bf45f8d6f326e/docs/source/en/using-diffusers/kandinsky.md?plain=1#L30-L81)
+
+Note: for multiple `<hfoptions id="some id">` in a same page, you may consider using same id so that when a user selects one option it affects all other hfoptions blocks. If you don't want this behaviour, use different ids.
 
 ### Anchor link
 
