@@ -1,53 +1,11 @@
 
 <script lang="ts">
 	import { base } from "$app/paths";
-	import { beforeNavigate, goto, onNavigate } from '$app/navigation';
 	import type { RawChapter } from "./endpoints/toc/+server";
 	import "../app.css";
 
 	export let data;
 	export let toc: RawChapter[] = data.toc ?? [];
-
-	const library = import.meta.env.DOCS_LIBRARY || 'transformers';
-	const version = import.meta.env.DOCS_VERSION || 'main';
-	const lang = import.meta.env.DOCS_LANGUAGE || 'en';
-
-	const redirectedPaths: Record<string, string> = {}
-
-	beforeNavigate(async ({ to, cancel }) => {
-		const pathname = to?.url.pathname ?? "";
-		const search = to?.url.search ?? "";
-		const hash = to?.url.hash ?? "";
-		const path = pathname + search + hash;
-		if(/^\/(docs|learn)/.test(path)){
-			const params = path.slice(1).split("/");
-			const _docType = params.shift();
-			const _library = params.shift();
-			const isCourse = _docType === "learn";
-			const versionRegex = isCourse ? /^(?:pr_\d+)$/ : /^(?:(master|main)|v[\d.]+(rc\d+)?|pr_\d+)$/;
-			const _version = versionRegex.test(params[0]) ? params.shift() : undefined;
-			const _lang = /^[a-z]{2}(-[A-Z]{2})?$/.test(params[0]) ? params.shift() : undefined;
-			const newChapterId = params.join("/");
-
-			if (library === _library && (!_version || !_lang)){
-				cancel();
-				const redirectedPath = `/docs/${library}/${version}/${lang}/${newChapterId}`;
-				redirectedPaths[redirectedPath] = path;
-				await goto(redirectedPath);
-				return false;
-			}
-		}
-	});
-
-	onNavigate(({ to }) => {
-		const pathname = to?.url.pathname ?? "";
-		const search = to?.url.search ?? "";
-		const hash = to?.url.hash ?? "";
-		const path = pathname + search + hash;
-		if(redirectedPaths[path]){
-			history.replaceState({}, "", redirectedPaths[path])
-		}
-	});
 </script>
 
 {#if !import.meta.env.DEV}
