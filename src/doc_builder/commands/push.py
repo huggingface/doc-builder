@@ -16,6 +16,7 @@
 import argparse
 import logging
 import shutil
+import subprocess
 from pathlib import Path
 from time import sleep, time
 
@@ -63,8 +64,9 @@ def push_command_add(args):
     doc_version_folder = str(doc_version_folder)
 
     zip_file_path_without_ext = create_zip_name(library_name, doc_version_folder, with_ext=False)
-    # zips current dir. In this case, doc-build dir
-    shutil.make_archive(zip_file_path_without_ext, "zip")
+    # eg create ./transformers/v4.0.zip with '/transformers/v4.0/*' file architecture inside
+    # Use subprocess.run instead of shutil.make_archive to avoid corrupted files, see https://github.com/huggingface/doc-builder/issues/348
+    subprocess.run(["zip", "-r", zip_file_path_without_ext, path_docs_built], capture_output=True, check=True)
     zip_file_path = create_zip_name(library_name, doc_version_folder)
 
     api = HfApi()
