@@ -33,7 +33,6 @@ class ConvertMdToMdxTester(unittest.TestCase):
         md_text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit"
         expected_conversion = """<script lang="ts">
 import {onMount} from "svelte";
-import { goto } from '$app/navigation';
 import Tip from "$lib/Tip.svelte";
 import Youtube from "$lib/Youtube.svelte";
 import Docstring from "$lib/Docstring.svelte";
@@ -61,7 +60,6 @@ let fw: "pt" | "tf" = "pt";
 onMount(() => {
     const urlParams = new URLSearchParams(window.location.search);
     fw = urlParams.get("fw") || "pt";
-    window.hfDocGoto = goto;
 });
 </script>
 <svelte:head>
