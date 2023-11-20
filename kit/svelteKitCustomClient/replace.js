@@ -12,4 +12,4 @@ const sourceFilePathConsts = path.join(runtime_directory, "client/hfDocConsts.js
 const constsString = `export const DOCS_LIBRARY = "${process.env.DOCS_LIBRARY}";
 export const DOCS_VERSION = "${process.env.DOCS_VERSION}";
 export const DOCS_LANGUAGE = "${process.env.DOCS_LANGUAGE}";`;
-fs.writeFileSync(sourceFilePathConsts, constsString, 'utf8');
+fs.writeFileSync(sourceFilePathConsts, constsString, "utf8");

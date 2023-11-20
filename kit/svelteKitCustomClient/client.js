@@ -1,39 +1,39 @@
-import { DEV } from 'esm-env';
-import { onMount, tick } from 'svelte';
+import { DEV } from "esm-env";
+import { onMount, tick } from "svelte";
 import {
 	add_data_suffix,
 	decode_params,
 	decode_pathname,
 	make_trackable,
-	normalize_path
-} from '../../utils/url.js';
+	normalize_path,
+} from "../../utils/url.js";
 import {
 	initial_fetch,
 	lock_fetch,
 	native_fetch,
 	subsequent_fetch,
-	unlock_fetch
-} from './fetcher.js';
-import { parse } from './parse.js';
-import * as storage from './session-storage.js';
+	unlock_fetch,
+} from "./fetcher.js";
+import { parse } from "./parse.js";
+import * as storage from "./session-storage.js";
 import {
 	find_anchor,
 	get_base_uri,
 	get_link_info,
 	get_router_options,
 	is_external_url,
-	scroll_state
-} from './utils.js';
+	scroll_state,
+} from "./utils.js";
 
-import { base } from '__sveltekit/paths';
-import * as devalue from 'devalue';
-import { compact } from '../../utils/array.js';
-import { validate_page_exports } from '../../utils/exports.js';
-import { unwrap_promises } from '../../utils/promises.js';
-import { HttpError, Redirect } from '../control.js';
-import { INVALIDATED_PARAM, TRAILING_SLASH_PARAM, validate_depends } from '../shared.js';
-import { INDEX_KEY, PRELOAD_PRIORITIES, SCROLL_KEY, SNAPSHOT_KEY } from './constants.js';
-import { stores } from './singletons.js';
+import { base } from "__sveltekit/paths";
+import * as devalue from "devalue";
+import { compact } from "../../utils/array.js";
+import { validate_page_exports } from "../../utils/exports.js";
+import { unwrap_promises } from "../../utils/promises.js";
+import { HttpError, Redirect } from "../control.js";
+import { INVALIDATED_PARAM, TRAILING_SLASH_PARAM, validate_depends } from "../shared.js";
+import { INDEX_KEY, PRELOAD_PRIORITIES, SCROLL_KEY, SNAPSHOT_KEY } from "./constants.js";
+import { stores } from "./singletons.js";
 
 import { DOCS_LIBRARY, DOCS_VERSION, DOCS_LANGUAGE } from "./hfDocConsts.js";
 /**
@@ -41,20 +41,20 @@ import { DOCS_LIBRARY, DOCS_VERSION, DOCS_LANGUAGE } from "./hfDocConsts.js";
  * @returns {string|undefined}
  */
 function getHfDocFullPath(pathname) {
-    if(/^\/(docs|learn)/.test(pathname)){
-        const params = pathname.slice(1).split("/");
-        const _docType = params.shift();
-        const _library = params.shift();
-        const isCourse = _docType === "learn";
-        const versionRegex = isCourse ? /^(?:pr_\d+)$/ : /^(?:(master|main)|v[\d.]+(rc\d+)?|pr_\d+)$/;
-        const _version = versionRegex.test(params[0]) ? params.shift() : undefined;
-        const _lang = /^[a-z]{2}(-[A-Z]{2})?$/.test(params[0]) ? params.shift() : undefined;
-        const newChapterId = params.join("/");
-        if (DOCS_LIBRARY === _library && (!_version || !_lang)){
-            return `/docs/${DOCS_LIBRARY}/${DOCS_VERSION}/${DOCS_LANGUAGE}/${newChapterId}`;
-        }
-    }
-    return;
+	if (/^\/(docs|learn)/.test(pathname)) {
+		const params = pathname.slice(1).split("/");
+		const _docType = params.shift();
+		const _library = params.shift();
+		const isCourse = _docType === "learn";
+		const versionRegex = isCourse ? /^(?:pr_\d+)$/ : /^(?:(master|main)|v[\d.]+(rc\d+)?|pr_\d+)$/;
+		const _version = versionRegex.test(params[0]) ? params.shift() : undefined;
+		const _lang = /^[a-z]{2}(-[A-Z]{2})?$/.test(params[0]) ? params.shift() : undefined;
+		const newChapterId = params.join("/");
+		if (DOCS_LIBRARY === _library && (!_version || !_lang)) {
+			return `/docs/${DOCS_LIBRARY}/${DOCS_VERSION}/${DOCS_LANGUAGE}/${newChapterId}`;
+		}
+	}
+	return;
 }
 
 let errored = false;
@@ -115,7 +115,7 @@ export function create_client(app, target) {
 		on_navigate: [],
 
 		/** @type {Array<(navigation: import('@sveltejs/kit').AfterNavigate) => void>} */
-		after_navigate: []
+		after_navigate: [],
 	};
 
 	/** @type {import('./types').NavigationState} */
@@ -123,7 +123,7 @@ export function create_client(app, target) {
 		branch: [],
 		error: null,
 		// @ts-ignore - we need the initial value to be null
-		url: null
+		url: null,
 	};
 
 	/** this being true means we SSR'd */
@@ -150,7 +150,7 @@ export function create_client(app, target) {
 		// create initial history entry, so we can return here
 		history.replaceState(
 			{ ...history.state, [INDEX_KEY]: current_history_index },
-			'',
+			"",
 			location.href
 		);
 	}
@@ -159,7 +159,7 @@ export function create_client(app, target) {
 	// recover scroll position
 	const scroll = scroll_positions[current_history_index];
 	if (scroll) {
-		history.scrollRestoration = 'manual';
+		history.scrollRestoration = "manual";
 		scrollTo(scroll.x, scroll.y);
 	}
 
@@ -194,7 +194,7 @@ export function create_client(app, target) {
 		if (nav_token !== token) return;
 
 		if (navigation_result) {
-			if (navigation_result.type === 'redirect') {
+			if (navigation_result.type === "redirect") {
 				return goto(new URL(navigation_result.location, url).href, {}, [url.pathname], nav_token);
 			} else {
 				if (navigation_result.props.page !== undefined) {
@@ -240,12 +240,12 @@ export function create_client(app, target) {
 			replaceState = false,
 			keepFocus = false,
 			state = {},
-			invalidateAll = false
+			invalidateAll = false,
 		},
 		redirect_chain,
 		nav_token
 	) {
-		if (typeof url === 'string') {
+		if (typeof url === "string") {
 			url = new URL(url, get_base_uri(document));
 		}
 
@@ -256,7 +256,7 @@ export function create_client(app, target) {
 			redirect_chain,
 			details: {
 				state,
-				replaceState
+				replaceState,
 			},
 			nav_token,
 			accepted: () => {
@@ -265,7 +265,7 @@ export function create_client(app, target) {
 				}
 			},
 			blocked: () => {},
-			type: 'goto'
+			type: "goto",
 		});
 	}
 
@@ -274,12 +274,12 @@ export function create_client(app, target) {
 		load_cache = {
 			id: intent.id,
 			promise: load_route(intent).then((result) => {
-				if (result.type === 'loaded' && result.state.error) {
+				if (result.type === "loaded" && result.state.error) {
 					// Don't cache errors, because they might be transient
 					load_cache = null;
 				}
 				return result;
-			})
+			}),
 		};
 
 		return load_cache.promise;
@@ -298,11 +298,11 @@ export function create_client(app, target) {
 
 	/** @param {import('./types').NavigationFinished} result */
 	function initialize(result) {
-		if (DEV && result.state.error && document.querySelector('vite-error-overlay')) return;
+		if (DEV && result.state.error && document.querySelector("vite-error-overlay")) return;
 
 		current = result.state;
 
-		const style = document.querySelector('style[data-sveltekit]');
+		const style = document.querySelector("style[data-sveltekit]");
 		if (style) style.remove();
 
 		page = /** @type {import('@sveltejs/kit').Page} */ (result.props.page);
@@ -310,7 +310,7 @@ export function create_client(app, target) {
 		root = new app.root({
 			target,
 			props: { ...result.props, stores, components },
-			hydrate: true
+			hydrate: true,
 		});
 
 		restore_snapshot(current_history_index);
@@ -321,11 +321,11 @@ export function create_client(app, target) {
 			to: {
 				params: current.params,
 				route: { id: current.route?.id ?? null },
-				url: new URL(location.href)
+				url: new URL(location.href),
 			},
 			willUnload: false,
-			type: 'enter',
-			complete: Promise.resolve()
+			type: "enter",
+			complete: Promise.resolve(),
 		};
 		callbacks.after_navigate.forEach((fn) => fn(navigation));
 
@@ -351,10 +351,10 @@ export function create_client(app, target) {
 		status,
 		error,
 		route,
-		form
+		form,
 	}) {
 		/** @type {import('types').TrailingSlash} */
-		let slash = 'never';
+		let slash = "never";
 		for (const node of branch) {
 			if (node?.slash !== undefined) slash = node.slash;
 		}
@@ -364,18 +364,18 @@ export function create_client(app, target) {
 
 		/** @type {import('./types').NavigationFinished} */
 		const result = {
-			type: 'loaded',
+			type: "loaded",
 			state: {
 				url,
 				params,
 				branch,
 				error,
-				route
+				route,
 			},
 			props: {
 				// @ts-ignore Somehow it's getting SvelteComponent and SvelteComponentDev mixed up
-				constructors: compact(branch).map((branch_node) => branch_node.node.component)
-			}
+				constructors: compact(branch).map((branch_node) => branch_node.node.component),
+			},
 		};
 
 		if (form !== undefined) {
@@ -416,13 +416,13 @@ export function create_client(app, target) {
 				error,
 				params,
 				route: {
-					id: route?.id ?? null
+					id: route?.id ?? null,
 				},
 				status,
 				url: new URL(url),
 				form: form ?? null,
 				// The whole page store is updated, but this way the object reference stays the same
-				data: data_changed ? data : page.data
+				data: data_changed ? data : page.data,
 			};
 		}
 
@@ -453,7 +453,7 @@ export function create_client(app, target) {
 			params: new Set(),
 			parent: false,
 			route: false,
-			url: false
+			url: false,
 		};
 
 		const node = await loader();
@@ -479,13 +479,13 @@ export function create_client(app, target) {
 					get: (target, key) => {
 						uses.route = true;
 						return target[/** @type {'id'} */ (key)];
-					}
+					},
 				}),
 				params: new Proxy(params, {
 					get: (target, key) => {
 						uses.params.add(/** @type {string} */ (key));
 						return target[/** @type {string} */ (key)];
-					}
+					},
 				}),
 				data: server_data_node?.data ?? null,
 				url: make_trackable(url, () => {
@@ -504,7 +504,7 @@ export function create_client(app, target) {
 							// the request body must be consumed in memory until browsers
 							// implement streaming request bodies and/or the body getter
 							body:
-								resource.method === 'GET' || resource.method === 'HEAD'
+								resource.method === "GET" || resource.method === "HEAD"
 									? undefined
 									: await resource.blob(),
 							cache: resource.cache,
@@ -518,7 +518,7 @@ export function create_client(app, target) {
 							referrer: resource.referrer,
 							referrerPolicy: resource.referrerPolicy,
 							signal: resource.signal,
-							...init
+							...init,
 						};
 					} else {
 						requested = resource;
@@ -543,7 +543,7 @@ export function create_client(app, target) {
 				parent() {
 					uses.parent = true;
 					return parent();
-				}
+				},
 			};
 
 			if (DEV) {
@@ -553,13 +553,13 @@ export function create_client(app, target) {
 					if (data != null && Object.getPrototypeOf(data) !== Object.prototype) {
 						throw new Error(
 							`a load function related to route '${route.id}' returned ${
-								typeof data !== 'object'
+								typeof data !== "object"
 									? `a ${typeof data}`
 									: data instanceof Response
-									? 'a Response object'
+									? "a Response object"
 									: Array.isArray(data)
-									? 'an array'
-									: 'a non-plain object'
+									? "an array"
+									: "a non-plain object"
 							}, but must return a plain object at the top level (i.e. \`return {...}\`)`
 						);
 					}
@@ -576,9 +576,9 @@ export function create_client(app, target) {
 			node,
 			loader,
 			server: server_data_node,
-			universal: node.universal?.load ? { type: 'data', data, uses } : null,
+			universal: node.universal?.load ? { type: "data", data, uses } : null,
 			data: data ?? server_data_node?.data ?? null,
-			slash: node.universal?.trailingSlash ?? server_data_node?.slash
+			slash: node.universal?.trailingSlash ?? server_data_node?.slash,
 		};
 	}
 
@@ -615,8 +615,8 @@ export function create_client(app, target) {
 	 * @returns {import('./types').DataNode | null}
 	 */
 	function create_data_node(node, previous) {
-		if (node?.type === 'data') return node;
-		if (node?.type === 'skip') return previous ?? null;
+		if (node?.type === "data") return node;
+		if (node?.type === "skip") return previous ?? null;
 		return null;
 	}
 
@@ -670,11 +670,11 @@ export function create_client(app, target) {
 					status: error instanceof HttpError ? error.status : 500,
 					error: await handle_error(error, { url, params, route: { id: route.id } }),
 					url,
-					route
+					route,
 				});
 			}
 
-			if (server_data.type === 'redirect') {
+			if (server_data.type === "redirect") {
 				return server_data;
 			}
 		}
@@ -693,14 +693,14 @@ export function create_client(app, target) {
 
 			// re-use data from previous load if it's still valid
 			const valid =
-				(!server_data_node || server_data_node.type === 'skip') &&
+				(!server_data_node || server_data_node.type === "skip") &&
 				loader[1] === previous?.loader &&
 				!has_changed(parent_changed, route_changed, url_changed, previous.universal?.uses, params);
 			if (valid) return previous;
 
 			parent_changed = true;
 
-			if (server_data_node?.type === 'error') {
+			if (server_data_node?.type === "error") {
 				// rethrow and catch below
 				throw server_data_node;
 			}
@@ -720,9 +720,9 @@ export function create_client(app, target) {
 				server_data_node: create_data_node(
 					// server_data_node is undefined if it wasn't reloaded from the server;
 					// and if current loader uses server data, we want to reuse previous data.
-					server_data_node === undefined && loader[0] ? { type: 'skip' } : server_data_node ?? null,
+					server_data_node === undefined && loader[0] ? { type: "skip" } : server_data_node ?? null,
 					loader[0] ? previous?.server : undefined
-				)
+				),
 			});
 		});
 
@@ -739,8 +739,8 @@ export function create_client(app, target) {
 				} catch (err) {
 					if (err instanceof Redirect) {
 						return {
-							type: 'redirect',
-							location: err.location
+							type: "redirect",
+							location: err.location,
 						};
 					}
 
@@ -774,7 +774,7 @@ export function create_client(app, target) {
 							branch: branch.slice(0, error_load.idx).concat(error_load.node),
 							status,
 							error,
-							route
+							route,
 						});
 					} else {
 						// if we get here, it's because the root `load` function failed,
@@ -797,7 +797,7 @@ export function create_client(app, target) {
 			error: null,
 			route,
 			// Reset `form` on navigation, but not invalidation
-			form: invalidating ? undefined : null
+			form: invalidating ? undefined : null,
 		});
 	}
 
@@ -820,8 +820,8 @@ export function create_client(app, target) {
 							loader: /** @type {import('types').CSRPageNodeLoader } */ (errors[i]),
 							data: {},
 							server: null,
-							universal: null
-						}
+							universal: null,
+						},
 					};
 				} catch (e) {
 					continue;
@@ -855,8 +855,8 @@ export function create_client(app, target) {
 				const server_data = await load_data(url, [true]);
 
 				if (
-					server_data.type !== 'data' ||
-					(server_data.nodes[0] && server_data.nodes[0].type !== 'data')
+					server_data.type !== "data" ||
+					(server_data.nodes[0] && server_data.nodes[0].type !== "data")
 				) {
 					throw 0;
 				}
@@ -877,7 +877,7 @@ export function create_client(app, target) {
 			params,
 			route,
 			parent: () => Promise.resolve({}),
-			server_data_node: create_data_node(server_data_node)
+			server_data_node: create_data_node(server_data_node),
 		});
 
 		/** @type {import('./types').BranchNode} */
@@ -886,7 +886,7 @@ export function create_client(app, target) {
 			loader: default_error_loader,
 			universal: null,
 			server: null,
-			data: null
+			data: null,
 		};
 
 		return await get_navigation_result_from_branch({
@@ -895,7 +895,7 @@ export function create_client(app, target) {
 			branch: [root_layout, root_error],
 			status,
 			error,
-			route: null
+			route: null,
 		});
 	}
 
@@ -922,7 +922,7 @@ export function create_client(app, target) {
 
 	/** @param {URL} url */
 	function get_url_path(url) {
-		return decode_pathname(url.pathname.slice(base.length) || '/');
+		return decode_pathname(url.pathname.slice(base.length) || "/");
 	}
 
 	/**
@@ -946,8 +946,8 @@ export function create_client(app, target) {
 			...nav.navigation,
 			cancel: () => {
 				should_block = true;
-				nav.reject(new Error('navigation was cancelled'));
-			}
+				nav.reject(new Error("navigation was cancelled"));
+			},
 		};
 
 		if (!navigating) {
@@ -985,11 +985,11 @@ export function create_client(app, target) {
 		delta,
 		nav_token = {},
 		accepted,
-		blocked
+		blocked,
 	}) {
 		const originalUrl = new URL(url.href);
 		const renamedPathname = getHfDocFullPath(url.pathname);
-		if(renamedPathname){
+		if (renamedPathname) {
 			url.pathname = renamedPathname;
 		}
 		const intent = get_navigation_intent(url, false);
@@ -1024,7 +1024,7 @@ export function create_client(app, target) {
 				await handle_error(new Error(`Not found: ${url.pathname}`), {
 					url,
 					params: {},
-					route: { id: null }
+					route: { id: null },
 				}),
 				404
 			);
@@ -1036,21 +1036,21 @@ export function create_client(app, target) {
 
 		// abort if user navigated during update
 		if (token !== nav_token) {
-			nav.reject(new Error('navigation was aborted'));
+			nav.reject(new Error("navigation was aborted"));
 			return false;
 		}
 
-		if (navigation_result.type === 'redirect') {
+		if (navigation_result.type === "redirect") {
 			if (redirect_chain.length > 10 || redirect_chain.includes(url.pathname)) {
 				navigation_result = await load_root_error_page({
 					status: 500,
-					error: await handle_error(new Error('Redirect loop'), {
+					error: await handle_error(new Error("Redirect loop"), {
 						url,
 						params: {},
-						route: { id: null }
+						route: { id: null },
 					}),
 					url,
-					route: { id: null }
+					route: { id: null },
 				});
 			} else {
 				goto(
@@ -1089,7 +1089,7 @@ export function create_client(app, target) {
 		if (details) {
 			const change = details.replaceState ? 0 : 1;
 			details.state[INDEX_KEY] = current_history_index += change;
-			history[details.replaceState ? 'replaceState' : 'pushState'](details.state, '', originalUrl);
+			history[details.replaceState ? "replaceState" : "pushState"](details.state, "", originalUrl);
 
 			if (!details.replaceState) {
 				// if we navigated back, then pushed a new state, we can
@@ -1120,7 +1120,7 @@ export function create_client(app, target) {
 						fn(/** @type {import('@sveltejs/kit').OnNavigate} */ (nav.navigation))
 					)
 				)
-			).filter((value) => typeof value === 'function');
+			).filter((value) => typeof value === "function");
 
 			if (after_navigate.length > 0) {
 				function cleanup() {
@@ -1181,7 +1181,7 @@ export function create_client(app, target) {
 
 		navigating = false;
 
-		if (type === 'popstate') {
+		if (type === "popstate") {
 			restore_snapshot(current_history_index);
 		}
 
@@ -1211,13 +1211,13 @@ export function create_client(app, target) {
 				status,
 				error,
 				url,
-				route
+				route,
 			});
 		}
 
 		if (DEV && status !== 404) {
 			console.error(
-				'An error occurred while loading the page. This will cause a full page reload. (This message will only appear during development.)'
+				"An error occurred while loading the page. This will cause a full page reload. (This message will only appear during development.)"
 			);
 
 			debugger; // eslint-disable-line
@@ -1238,7 +1238,7 @@ export function create_client(app, target) {
 	}
 
 	if (import.meta.hot) {
-		import.meta.hot.on('vite:beforeUpdate', () => {
+		import.meta.hot.on("vite:beforeUpdate", () => {
 			if (current.error) location.reload();
 		});
 	}
@@ -1247,7 +1247,7 @@ export function create_client(app, target) {
 		/** @type {NodeJS.Timeout} */
 		let mousemove_timeout;
 
-		container.addEventListener('mousemove', (event) => {
+		container.addEventListener("mousemove", (event) => {
 			const target = /** @type {Element} */ (event.target);
 
 			clearTimeout(mousemove_timeout);
@@ -1261,8 +1261,8 @@ export function create_client(app, target) {
 			preload(/** @type {Element} */ (event.composedPath()[0]), 1);
 		}
 
-		container.addEventListener('mousedown', tap);
-		container.addEventListener('touchstart', tap, { passive: true });
+		container.addEventListener("mousedown", tap);
+		container.addEventListener("touchstart", tap, { passive: true });
 
 		const observer = new IntersectionObserver(
 			(entries) => {
@@ -1297,12 +1297,12 @@ export function create_client(app, target) {
 					if (intent) {
 						if (DEV) {
 							preload_data(intent).then((result) => {
-								if (result.type === 'loaded' && result.state.error) {
+								if (result.type === "loaded" && result.state.error) {
 									console.warn(
 										`Preloading data for ${intent.url.pathname} failed with the following error: ${result.state.error.message}\n` +
-											'If this error is transient, you can ignore it. Otherwise, consider disabling preloading for this route. ' +
-											'This route was preloaded due to a data-sveltekit-preload-data attribute. ' +
-											'See https://kit.svelte.dev/docs/link-options for more info'
+											"If this error is transient, you can ignore it. Otherwise, consider disabling preloading for this route. " +
+											"This route was preloaded due to a data-sveltekit-preload-data attribute. " +
+											"See https://kit.svelte.dev/docs/link-options for more info"
 									);
 								}
 							});
@@ -1319,7 +1319,7 @@ export function create_client(app, target) {
 		function after_navigate() {
 			observer.disconnect();
 
-			for (const a of container.querySelectorAll('a')) {
+			for (const a of container.querySelectorAll("a")) {
 				const { url, external, download } = get_link_info(a, base);
 				if (external || download) continue;
 
@@ -1352,12 +1352,12 @@ export function create_client(app, target) {
 
 		if (DEV) {
 			errored = true;
-			console.warn('The next HMR update will cause the page to reload');
+			console.warn("The next HMR update will cause the page to reload");
 		}
 
 		return (
 			app.hooks.handleError({ error, event }) ??
-			/** @type {any} */ ({ message: event.route.id != null ? 'Internal Error' : 'Not Found' })
+			/** @type {any} */ ({ message: event.route.id != null ? "Internal Error" : "Not Found" })
 		);
 	}
 
@@ -1397,7 +1397,7 @@ export function create_client(app, target) {
 
 		disable_scroll_handling: () => {
 			if (DEV && started && !updating) {
-				throw new Error('Can only disable scroll handling during navigation');
+				throw new Error("Can only disable scroll handling during navigation");
 			}
 
 			if (updating || !started) {
@@ -1410,7 +1410,7 @@ export function create_client(app, target) {
 		},
 
 		invalidate: (resource) => {
-			if (typeof resource === 'function') {
+			if (typeof resource === "function") {
 				invalidated.push(resource);
 			} else {
 				const { href } = new URL(resource, location.href);
@@ -1439,7 +1439,7 @@ export function create_client(app, target) {
 		preload_code,
 
 		apply_action: async (result) => {
-			if (result.type === 'error') {
+			if (result.type === "error") {
 				const url = new URL(location.href);
 
 				const { branch, route } = current;
@@ -1457,7 +1457,7 @@ export function create_client(app, target) {
 						branch: branch.slice(0, error_load.idx).concat(error_load.node),
 						status: result.status ?? 500,
 						error: result.error,
-						route
+						route,
 					});
 
 					current = navigation_result.state;
@@ -1466,7 +1466,7 @@ export function create_client(app, target) {
 
 					tick().then(reset_focus);
 				}
-			} else if (result.type === 'redirect') {
+			} else if (result.type === "redirect") {
 				goto(result.location, { invalidateAll: true }, []);
 			} else {
 				/** @type {Record<string, any>} */
@@ -1474,33 +1474,33 @@ export function create_client(app, target) {
 					// this brings Svelte's view of the world in line with SvelteKit's
 					// after use:enhance reset the form....
 					form: null,
-					page: { ...page, form: result.data, status: result.status }
+					page: { ...page, form: result.data, status: result.status },
 				});
 
 				// ...so that setting the `form` prop takes effect and isn't ignored
 				await tick();
 				root.$set({ form: result.data });
 
-				if (result.type === 'success') {
+				if (result.type === "success") {
 					reset_focus();
 				}
 			}
 		},
 
 		_start_router: () => {
-			history.scrollRestoration = 'manual';
+			history.scrollRestoration = "manual";
 
 			// Adopted from Nuxt.js
 			// Reset scrollRestoration to auto when leaving page, allowing page reload
 			// and back-navigation from other pages to use the browser to restore the
 			// scrolling position.
-			addEventListener('beforeunload', (e) => {
+			addEventListener("beforeunload", (e) => {
 				let should_block = false;
 
 				persist_state();
 
 				if (!navigating) {
-					const nav = create_navigation(current, undefined, null, 'leave');
+					const nav = create_navigation(current, undefined, null, "leave");
 
 					// If we're navigating, beforeNavigate was already called. If we end up in here during navigation,
 					// it's due to an external or full-page-reload link, for which we don't want to call the hook again.
@@ -1509,8 +1509,8 @@ export function create_client(app, target) {
 						...nav.navigation,
 						cancel: () => {
 							should_block = true;
-							nav.reject(new Error('navigation was cancelled'));
-						}
+							nav.reject(new Error("navigation was cancelled"));
+						},
 					};
 
 					callbacks.before_navigate.forEach((fn) => fn(navigation));
@@ -1518,14 +1518,14 @@ export function create_client(app, target) {
 
 				if (should_block) {
 					e.preventDefault();
-					e.returnValue = '';
+					e.returnValue = "";
 				} else {
-					history.scrollRestoration = 'auto';
+					history.scrollRestoration = "auto";
 				}
 			});
 
-			addEventListener('visibilitychange', () => {
-				if (document.visibilityState === 'hidden') {
+			addEventListener("visibilitychange", () => {
+				if (document.visibilityState === "hidden") {
 					persist_state();
 				}
 			});
@@ -1536,7 +1536,7 @@ export function create_client(app, target) {
 			}
 
 			/** @param {MouseEvent} event */
-			container.addEventListener('click', (event) => {
+			container.addEventListener("click", (event) => {
 				// Adapted from https://github.com/visionmedia/page.js
 				// MIT license https://github.com/visionmedia/page.js#license
 				if (event.button || event.which !== 1) return;
@@ -1552,9 +1552,9 @@ export function create_client(app, target) {
 				if (!url) return;
 
 				// bail out before `beforeNavigate` if link opens in a different tab
-				if (target === '_parent' || target === '_top') {
+				if (target === "_parent" || target === "_top") {
 					if (window.parent !== window) return;
-				} else if (target && target !== '_self') {
+				} else if (target && target !== "_self") {
 					return;
 				}
 
@@ -1572,7 +1572,7 @@ export function create_client(app, target) {
 				if (
 					!is_svg_a_element &&
 					url.protocol !== location.protocol &&
-					!(url.protocol === 'https:' || url.protocol === 'http:')
+					!(url.protocol === "https:" || url.protocol === "http:")
 				)
 					return;
 
@@ -1580,7 +1580,7 @@ export function create_client(app, target) {
 
 				// Ignore the following but fire beforeNavigate
 				if (external || options.reload) {
-					if (before_navigate({ url, type: 'link' })) {
+					if (before_navigate({ url, type: "link" })) {
 						// set `navigating` to `true` to prevent `beforeNavigate` callbacks
 						// being called when the page unloads
 						navigating = true;
@@ -1594,8 +1594,8 @@ export function create_client(app, target) {
 				// Check if new url only differs by hash and use the browser default behavior in that case
 				// This will ensure the `hashchange` event is fired
 				// Removing the hash does a full page navigation in the browser, so make sure a hash is present
-				const [nonhash, hash] = url.href.split('#');
-				if (hash !== undefined && nonhash === location.href.split('#')[0]) {
+				const [nonhash, hash] = url.href.split("#");
+				if (hash !== undefined && nonhash === location.href.split("#")[0]) {
 					// If we are trying to navigate to the same hash, we should only
 					// attempt to scroll to that element and avoid any history changes.
 					// Otherwise, this can cause Firefox to incorrectly assign a null
@@ -1627,15 +1627,15 @@ export function create_client(app, target) {
 					redirect_chain: [],
 					details: {
 						state: {},
-						replaceState: options.replace_state ?? url.href === location.href
+						replaceState: options.replace_state ?? url.href === location.href,
 					},
 					accepted: () => event.preventDefault(),
 					blocked: () => event.preventDefault(),
-					type: 'link'
+					type: "link",
 				});
 			});
 
-			container.addEventListener('submit', (event) => {
+			container.addEventListener("submit", (event) => {
 				if (event.defaultPrevented) return;
 
 				const form = /** @type {HTMLFormElement} */ (
@@ -1648,10 +1648,10 @@ export function create_client(app, target) {
 
 				const method = submitter?.formMethod || form.method;
 
-				if (method !== 'get') return;
+				if (method !== "get") return;
 
 				const url = new URL(
-					(submitter?.hasAttribute('formaction') && submitter?.formAction) || form.action
+					(submitter?.hasAttribute("formaction") && submitter?.formAction) || form.action
 				);
 
 				if (is_external_url(url, base)) return;
@@ -1666,9 +1666,9 @@ export function create_client(app, target) {
 
 				const data = new FormData(event_form);
 
-				const submitter_name = submitter?.getAttribute('name');
+				const submitter_name = submitter?.getAttribute("name");
 				if (submitter_name) {
-					data.append(submitter_name, submitter?.getAttribute('value') ?? '');
+					data.append(submitter_name, submitter?.getAttribute("value") ?? "");
 				}
 
 				// @ts-expect-error `URLSearchParams(fd)` is kosher, but typescript doesn't know that
@@ -1681,16 +1681,16 @@ export function create_client(app, target) {
 					redirect_chain: [],
 					details: {
 						state: {},
-						replaceState: replace_state ?? url.href === location.href
+						replaceState: replace_state ?? url.href === location.href,
 					},
 					nav_token: {},
 					accepted: () => {},
 					blocked: () => {},
-					type: 'form'
+					type: "form",
 				});
 			});
 
-			addEventListener('popstate', async (event) => {
+			addEventListener("popstate", async (event) => {
 				if (event.state?.[INDEX_KEY]) {
 					// if a popstate-driven navigation is cancelled, we need to counteract it
 					// with history.go, which means we end up back here, hence this check
@@ -1699,7 +1699,7 @@ export function create_client(app, target) {
 					const scroll = scroll_positions[event.state[INDEX_KEY]];
 
 					// if the only change is the hash, we don't need to do anything...
-					if (current.url.href.split('#')[0] === location.href.split('#')[0]) {
+					if (current.url.href.split("#")[0] === location.href.split("#")[0]) {
 						// ...except handle scroll
 						scroll_positions[current_history_index] = scroll_state();
 						current_history_index = event.state[INDEX_KEY];
@@ -1721,8 +1721,8 @@ export function create_client(app, target) {
 						blocked: () => {
 							history.go(-delta);
 						},
-						type: 'popstate',
-						delta
+						type: "popstate",
+						delta,
 					});
 				} else {
 					// since popstate event is also emitted when an anchor referencing the same
@@ -1735,14 +1735,14 @@ export function create_client(app, target) {
 				}
 			});
 
-			addEventListener('hashchange', () => {
+			addEventListener("hashchange", () => {
 				// if the hashchange happened as a result of clicking on a link,
 				// we need to update history, otherwise we have to leave it alone
 				if (hash_navigating) {
 					hash_navigating = false;
 					history.replaceState(
 						{ ...history.state, [INDEX_KEY]: ++current_history_index },
-						'',
+						"",
 						location.href
 					);
 				}
@@ -1751,11 +1751,11 @@ export function create_client(app, target) {
 			// fix link[rel=icon], because browsers will occasionally try to load relative
 			// URLs after a pushState/replaceState, resulting in a 404 — see
 			// https://github.com/sveltejs/kit/issues/3748#issuecomment-1125980897
-			for (const link of document.querySelectorAll('link')) {
-				if (link.rel === 'icon') link.href = link.href; // eslint-disable-line
+			for (const link of document.querySelectorAll("link")) {
+				if (link.rel === "icon") link.href = link.href; // eslint-disable-line
 			}
 
-			addEventListener('pageshow', (event) => {
+			addEventListener("pageshow", (event) => {
 				// If the user navigates to another site and then uses the back button and
 				// bfcache hits, we need to set navigating to null, the site doesn't know
 				// the navigation away from it was successful.
@@ -1782,7 +1782,7 @@ export function create_client(app, target) {
 			params,
 			route,
 			data: server_data_nodes,
-			form
+			form,
 		}) => {
 			hydrated = true;
 
@@ -1817,7 +1817,7 @@ export function create_client(app, target) {
 							}
 							return data;
 						},
-						server_data_node: create_data_node(server_data_node)
+						server_data_node: create_data_node(server_data_node),
 					});
 				});
 
@@ -1844,7 +1844,7 @@ export function create_client(app, target) {
 					status,
 					error,
 					form,
-					route: parsed_route ?? null
+					route: parsed_route ?? null,
 				});
 			} catch (error) {
 				if (error instanceof Redirect) {
@@ -1858,12 +1858,12 @@ export function create_client(app, target) {
 					status: error instanceof HttpError ? error.status : 500,
 					error: await handle_error(error, { url, params, route }),
 					url,
-					route
+					route,
 				});
 			}
 
 			initialize(result);
-		}
+		},
 	};
 }
 
@@ -1875,13 +1875,13 @@ export function create_client(app, target) {
 async function load_data(url, invalid) {
 	const data_url = new URL(url);
 	data_url.pathname = add_data_suffix(url.pathname);
-	if (url.pathname.endsWith('/')) {
-		data_url.searchParams.append(TRAILING_SLASH_PARAM, '1');
+	if (url.pathname.endsWith("/")) {
+		data_url.searchParams.append(TRAILING_SLASH_PARAM, "1");
 	}
 	if (DEV && url.searchParams.has(INVALIDATED_PARAM)) {
 		throw new Error(`Cannot used reserved query parameter "${INVALIDATED_PARAM}"`);
 	}
-	data_url.searchParams.append(INVALIDATED_PARAM, invalid.map((i) => (i ? '1' : '0')).join(''));
+	data_url.searchParams.append(INVALIDATED_PARAM, invalid.map((i) => (i ? "1" : "0")).join(""));
 
 	const res = await native_fetch(data_url.href);
 
@@ -1911,21 +1911,21 @@ async function load_data(url, invalid) {
 					return new Promise((fulfil, reject) => {
 						deferreds.set(id, { fulfil, reject });
 					});
-				}
+				},
 			});
 		}
 
-		let text = '';
+		let text = "";
 
 		while (true) {
 			// Format follows ndjson (each line is a JSON object) or regular JSON spec
 			const { done, value } = await reader.read();
 			if (done && !text) break;
 
-			text += !value && text ? '\n' : decoder.decode(value); // no value -> final chunk -> add a new line to trigger the last parse
+			text += !value && text ? "\n" : decoder.decode(value); // no value -> final chunk -> add a new line to trigger the last parse
 
 			while (true) {
-				const split = text.indexOf('\n');
+				const split = text.indexOf("\n");
 				if (split === -1) {
 					break;
 				}
@@ -1933,21 +1933,21 @@ async function load_data(url, invalid) {
 				const node = JSON.parse(text.slice(0, split));
 				text = text.slice(split + 1);
 
-				if (node.type === 'redirect') {
+				if (node.type === "redirect") {
 					return resolve(node);
 				}
 
-				if (node.type === 'data') {
+				if (node.type === "data") {
 					// This is the first (and possibly only, if no pending promises) chunk
 					node.nodes?.forEach((/** @type {any} */ node) => {
-						if (node?.type === 'data') {
+						if (node?.type === "data") {
 							node.uses = deserialize_uses(node.uses);
 							node.data = deserialize(node.data);
 						}
 					});
 
 					resolve(node);
-				} else if (node.type === 'chunk') {
+				} else if (node.type === "chunk") {
 					// This is a subsequent chunk containing deferred data
 					const { id, data, error } = node;
 					const deferred = /** @type {import('types').Deferred} */ (deferreds.get(id));
@@ -1976,12 +1976,12 @@ function deserialize_uses(uses) {
 		params: new Set(uses?.params ?? []),
 		parent: !!uses?.parent,
 		route: !!uses?.route,
-		url: !!uses?.url
+		url: !!uses?.url,
 	};
 }
 
 function reset_focus() {
-	const autofocus = document.querySelector('[autofocus]');
+	const autofocus = document.querySelector("[autofocus]");
 	if (autofocus) {
 		// @ts-ignore
 		autofocus.focus();
@@ -1992,7 +1992,7 @@ function reset_focus() {
 		// shift-tabbing won't immediately cycle up from the end of the page on Chromium
 		// See https://html.spec.whatwg.org/multipage/interaction.html#get-the-focusable-area
 		const root = document.body;
-		const tabindex = root.getAttribute('tabindex');
+		const tabindex = root.getAttribute("tabindex");
 
 		root.tabIndex = -1;
 		// @ts-expect-error
@@ -2000,16 +2000,16 @@ function reset_focus() {
 
 		// restore `tabindex` as to prevent `root` from stealing input from elements
 		if (tabindex !== null) {
-			root.setAttribute('tabindex', tabindex);
+			root.setAttribute("tabindex", tabindex);
 		} else {
-			root.removeAttribute('tabindex');
+			root.removeAttribute("tabindex");
 		}
 
 		// capture current selection, so we can compare the state after
 		// snapshot restoration and afterNavigate callbacks have run
 		const selection = getSelection();
 
-		if (selection && selection.type !== 'None') {
+		if (selection && selection.type !== "None") {
 			/** @type {Range[]} */
 			const ranges = [];
 
@@ -2072,16 +2072,16 @@ function create_navigation(current, intent, url, type) {
 		from: {
 			params: current.params,
 			route: { id: current.route?.id ?? null },
-			url: current.url
+			url: current.url,
 		},
 		to: url && {
 			params: intent?.params ?? null,
 			route: { id: intent?.route?.id ?? null },
-			url
+			url,
 		},
 		willUnload: !intent,
 		type,
-		complete
+		complete,
 	};
 
 	return {
@@ -2089,7 +2089,7 @@ function create_navigation(current, intent, url, type) {
 		// @ts-expect-error
 		fulfil,
 		// @ts-expect-error
-		reject
+		reject,
 	};
 }
 
@@ -2109,7 +2109,7 @@ if (DEV) {
 	};
 
 	if (import.meta.hot) {
-		import.meta.hot.on('vite:beforeUpdate', () => {
+		import.meta.hot.on("vite:beforeUpdate", () => {
 			if (errored) {
 				location.reload();
 			}
