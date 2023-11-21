@@ -47,10 +47,10 @@ function getHfDocFullPath(pathname) {
 		const _library = params.shift();
 		const isCourse = _docType === "learn";
 		const versionRegex = isCourse ? /^(?:pr_\d+)$/ : /^(?:(master|main)|v[\d.]+(rc\d+)?|pr_\d+)$/;
-		const _version = versionRegex.test(params[0]) ? params.shift() : undefined;
-		const _lang = /^[a-z]{2}(-[A-Z]{2})?$/.test(params[0]) ? params.shift() : undefined;
+		const _version = versionRegex.test(params[0]) ? params.shift() : DOCS_VERSION;
+		const _lang = /^[a-z]{2}(-[A-Z]{2})?$/.test(params[0]) ? params.shift() : DOCS_LANGUAGE;
 		const newChapterId = params.join("/");
-		if (DOCS_LIBRARY === _library && (!_version || !_lang)) {
+		if (DOCS_LIBRARY === _library && DOCS_VERSION === _version && DOCS_LANGUAGE === _lang) {
 			return `/docs/${DOCS_LIBRARY}/${DOCS_VERSION}/${DOCS_LANGUAGE}/${newChapterId}`;
 		}
 	}
