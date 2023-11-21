@@ -25,6 +25,7 @@ from huggingface_hub import HfApi, CommitOperationAdd
 
 REPO_TYPE = "dataset"
 
+
 def push_command(args):
     """
     Commit file doc builds changes using: 1. zip doc build artifacts 2. hf_hub client to upload/delete zip file
@@ -69,7 +70,9 @@ def push_command_add(args):
             if args.upload_version_yml:
                 operations = [
                     CommitOperationAdd(path_in_repo=zip_file_path, path_or_fileobj=zip_file_path),
-                    CommitOperationAdd(path_in_repo=f"{library_name}/_versions.yml",path_or_fileobj=f"{library_name}/_versions.yml"),
+                    CommitOperationAdd(
+                        path_in_repo=f"{library_name}/_versions.yml", path_or_fileobj=f"{library_name}/_versions.yml"
+                    ),
                 ]
                 api.create_commit(
                     repo_id=args.doc_build_repo_id,
