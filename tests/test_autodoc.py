@@ -324,6 +324,12 @@ before.
             ],
         )
 
+        _, anchors, _ = autodoc("BertTokenizer", transformers, methods=["none"], return_anchors=True)
+        self.assertListEqual(anchors, ["transformers.BertTokenizer"])
+
+        _, anchors, _ = autodoc("BertTokenizer", transformers, methods=["none", "__call__"], return_anchors=True)
+        self.assertListEqual(anchors, ["transformers.BertTokenizer"])
+
         _, anchors, _ = autodoc("BertTokenizer", transformers, methods=["__call__"], return_anchors=True)
         self.assertListEqual(
             anchors,

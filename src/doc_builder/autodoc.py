@@ -492,6 +492,8 @@ def autodoc(object_name, package, methods=None, return_anchors=False, page_info=
             methods.remove("all")
             methods_to_add = find_documented_methods(obj)
             methods.extend([m for m in methods_to_add if m not in methods])
+        elif "none" in methods:
+            methods = []
         for method in methods:
             anchor_name = f"{anchors[0]}.{method}"
             method_doc, check = document_object(
