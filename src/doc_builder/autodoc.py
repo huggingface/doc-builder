@@ -78,7 +78,7 @@ def get_shortest_path(obj, package):
     path_splits = long_path.split(".")
     module = package
     idx = module.__name__.count(".")
-    while idx < len(path_splits) and not hasattr(module, short_name):
+    while idx + 1 < len(path_splits) and not hasattr(module, short_name):
         idx += 1
         module = getattr(module, path_splits[idx])
     return ".".join(path_splits[: idx + 1]) + "." + long_name
