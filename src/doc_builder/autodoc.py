@@ -394,15 +394,18 @@ def document_object(object_name, package, page_info, full_name=True, anchor_name
     signature_name = prefix + name
     signature = format_signature(obj)
     check = None
-    if getattr(obj, "__doc__", None) is not None and len(obj.__doc__) > 0:
-        object_doc = obj.__doc__
+    if hasattr(obj, "__overridden_doc__"):
+        object_doc = obj.__overridden_doc__ or ""
+    elif hasattr(obj, "__doc__"):
+        object_doc = obj.__doc__ or ""
+    if object_doc:
         if is_dataclass_autodoc(obj):
             object_doc = ""
         elif is_rst_docstring(object_doc):
-            object_doc = convert_rst_docstring_to_mdx(obj.__doc__, page_info)
+            object_doc = convert_rst_docstring_to_mdx(object_doc, page_info)
         else:
             check = quality_check_docstring(object_doc, object_name=object_name)
-            object_doc = convert_md_docstring_to_mdx(obj.__doc__, page_info)
+            object_doc = convert_md_docstring_to_mdx(object_doc, page_info)
 
     try:
         source_link = get_source_link(obj, page_info, version_tag_suffix)
