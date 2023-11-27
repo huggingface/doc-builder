@@ -36,7 +36,7 @@ from doc_builder.autodoc import (
     remove_example_tags,
     resolve_links_in_text,
 )
-from transformers import BertModel, BertTokenizer, BertTokenizerFast
+from transformers import BertModel, BertTokenizer, BertTokenizerFast, TrainingArguments
 from transformers.utils import PushToHubMixin
 
 
@@ -170,6 +170,10 @@ class AutodocTester(unittest.TestCase):
         self.assertEqual(get_shortest_path(BertModel, transformers), "transformers.BertModel")
         self.assertEqual(get_shortest_path(BertModel.forward, transformers), "transformers.BertModel.forward")
         self.assertEqual(get_shortest_path(PushToHubMixin, transformers), "transformers.utils.PushToHubMixin")
+        self.assertEqual(
+            get_shortest_path(TrainingArguments.__init__, transformers),
+            "transformers.training_args.__create_fn__.<locals>.__init__",
+        )
 
     def test_get_type_name(self):
         self.assertEqual(get_type_name(str), "str")
