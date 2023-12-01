@@ -75,10 +75,23 @@ jobs:
       - name: Get commit_sha & pr_number
         id: github-context
         run: |
-          echo "commit_sha=$(cat ./build_dir/commit_sha)" >> $GITHUB_OUTPUT
-          rm -rf ./build_dir/commit_sha
-          echo "pr_number=$(cat ./build_dir/pr_number)" >> $GITHUB_OUTPUT
-          rm -rf ./build_dir/pr_number
+          content_commit_sha=$(cat ./build_dir/commit_sha)
+          if [[ $content_commit_sha =~ ^[0-9a-zA-Z]{40}$ ]]; then
+            echo "commit_sha=$content_commit_sha" >> $GITHUB_OUTPUT
+            rm -rf ./build_dir/commit_sha
+          else
+            echo "Encountered an invalid commit_sha"
+            exit 1
+          fi
+          
+          content_pr_number=$(cat ./build_dir/pr_number)
+          if [[ $content_pr_number =~ ^[0-9]+$ ]]; then
+            echo "pr_number=$content_pr_number" >> $GITHUB_OUTPUT
+            rm -rf ./build_dir/pr_number
+          else
+            echo "Encountered an invalid pr_number"
+            exit 1
+          fi
 
       - name: Set hub_docs_url
         id: hfhub-context
