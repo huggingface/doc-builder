@@ -23,7 +23,8 @@ jobs:
     runs-on: ubuntu-latest
     if: >
       (github.event.workflow_run.event == 'pull_request' ||
-      github.event.workflow_run.event == 'pull_request_target') &&
+      github.event.workflow_run.event == 'pull_request_target' ||
+      github.event.workflow_run.event == 'workflow_dispatch') &&
       github.event.workflow_run.conclusion == 'success'
 
     steps:
@@ -83,7 +84,7 @@ jobs:
             echo "Encountered an invalid commit_sha"
             exit 1
           fi
-          
+
           content_pr_number=$(cat ./build_dir/pr_number)
           if [[ $content_pr_number =~ ^[0-9]+$ ]]; then
             echo "pr_number=$content_pr_number" >> $GITHUB_OUTPUT
