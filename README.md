@@ -236,6 +236,15 @@ markers.
 
 Syntax:
 
+```md
+> [!TIP]
+> Here is a tip. Go to this url [website](www.tip.com)
+> 
+> Second line
+```
+
+or
+
 ```html
 <Tip>
 
@@ -249,6 +258,13 @@ Example: [here](https://github.com/huggingface/transformers/blob/0f0e1a2c2bff685
 For warnings, change the introduction to:
 
 Syntax:
+
+```md
+> [!WARNING]
+```
+
+or
+
 ```html
 `<Tip warning={true}>`
 ```
