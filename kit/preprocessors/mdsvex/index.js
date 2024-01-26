@@ -174,6 +174,7 @@ function treeVisitor() {
 		});
 		visit(tree, "text", onText);
 		visit(tree, "html", onHtml);
+		visit(tree, "blockquote", onBlockquote);
 
 		let jsonString = JSON.stringify(headings[0]);
 		if (jsonString) {
@@ -238,6 +239,42 @@ function treeVisitor() {
 				node.value = $("body").html();
 			}
 		}
+	}
+
+	function onBlockquote(node, index, parent) {
+		// use github-like Tip & Warning syntax
+		// see https://github.com/orgs/community/discussions/16925
+		const { children: childrenLevel1 } = node;
+		if (!childrenLevel1.length || childrenLevel1[0].type !== "paragraph") {
+			return;
+		}
+
+		const { children: childrenLevel2 } = childrenLevel1[0];
+		if (!childrenLevel2.length || childrenLevel2[0].type !== "linkReference") {
+			return;
+		}
+
+		const TIP_MARKERS = ["!tip", "!warning"];
+		const { identifier } = childrenLevel2[0];
+		if (!TIP_MARKERS.includes(identifier)) {
+			return;
+		}
+
+		if (!parent) {
+			return;
+		}
+
+		childrenLevel1[0].children = childrenLevel1[0].children.slice(1);
+		const nodeTagOpen = {
+			type: "html",
+			value: `<Tip warning={${identifier === "!warning"}}>\n\n`,
+		};
+		const nodeTagClose = {
+			type: "html",
+			value: "\n\n</Tip>",
+		};
+		const nodes = [nodeTagOpen, ...childrenLevel1, nodeTagClose];
+		parent.children.splice(index, 1, ...nodes);
 	}
 }
 
