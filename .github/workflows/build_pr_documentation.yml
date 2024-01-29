@@ -43,6 +43,9 @@ on:
         type: string
         default: "src/"
         description: "Suffix to add after the version tag (e.g. 1.3.0 or main) in the documentation links."
+      convert_notebooks:
+        type: boolean
+        description: "Convert notebooks to markdown files before building docs."
       # Debug purposes only!
       doc_builder_revision:
         type: string
@@ -134,6 +137,13 @@ jobs:
           then
             bash -c "${{ inputs.pre_command }}"
           fi
+
+      - name: Convert notebooks to markdown files
+        if: inputs.convert_notebooks
+        run: |
+          cd doc-builder
+          doc-builder notebook-to-mdx ${{ env.doc_folder }}"
+          cd ..
 
       - name: Make documentation
         env:

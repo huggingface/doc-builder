@@ -14,60 +14,44 @@
 # limitations under the License.
 
 import argparse
+import subprocess
+from pathlib import Path
 
-import nbformat
-
-from ..style_doc import format_code_example
+from tqdm import tqdm
 
 
 def notebook_to_mdx_command(args):
-    notebook = nbformat.read(args.notebook_file, as_version=4)
-    content = []
-    for cell in notebook["cells"]:
-        if cell["cell_type"] == "code":
-            code = cell["source"]
-            outputs = [
-                o for o in cell["outputs"] if ("text" in o and o.get("name", None) == "stdout") or "text/plain" in o
-            ]
-            if len(outputs) > 0:
-                code_lines = code.split("\n")
-                # We can add >>> everywhere without worrying as format_code_examples will replace them by ...
-                # when needed.
-                code_lines = [f">>> {l}" if not len(l) == 0 or l.isspace() else l for l in code_lines]
-                code = "\n".join(code_lines)
-                code = format_code_example(code, max_len=args.max_len)[0]
-                content.append(f"```python\n{code}\n```")
+    src_path = Path(args.notebook_src).resolve()
+    src_dir = src_path.parent if src_path.is_file() else src_path
+    notebook_paths = [str(src_path)] if src_path.is_file() else [*src_dir.glob("*.ipynb")]
+    output_dir = src_dir if args.output_dir is None else Path(args.output_dir).resolve()
 
-                output = outputs[0]["text"] if "text" in outputs[0] else outputs[0]["text/plain"]
-                output = output.strip()
-                content.append(f"```python out\n{output}\n```")
-            else:
-                code = format_code_example(code, max_len=args.max_len)[0]
-                content.append(f"```python\n{code}\n```")
-        elif cell["cell_type"] == "markdown":
-            content.append(cell["source"])
-        else:
-            content.append(f"```\n{cell['source']}\n```")
-
-    dest_file = args.dest_file if args.dest_file is not None else args.notebook_file.replace(".ipynb", ".mdx")
-    with open(dest_file, "w", encoding="utf-8") as f:
-        f.write("\n\n".join(content))
+    try:
+        for notebook_path in tqdm(notebook_paths, desc="Converting .ipynb files to .md files"):
+            subprocess.run(
+                ["jupyter", "nbconvert", notebook_path, "--to", "markdown", "--output-dir", output_dir],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                check=True,
+                encoding="utf-8",
+            )
+    except subprocess.CalledProcessError as e:
+        print("Encoutnered error while using nbconvert:\n", e.stderr)
 
 
 def notebook_to_mdx_command_parser(subparsers=None):
     if subparsers is not None:
         parser = subparsers.add_parser("notebook-to-mdx")
     else:
-        parser = argparse.ArgumentParser("Doc Builder convert notebook to MDX command")
+        parser = argparse.ArgumentParser("Doc Builder convert notebook to MD command")
 
-    parser.add_argument("notebook_file", type=str, help="The notebook to convert.")
+    parser.add_argument("notebook_src", type=str, help="The notebook or directory containing notebook(s) to convert.")
     parser.add_argument(
-        "--max_len",
-        type=int,
-        default=119,
-        help="The number of maximum characters per line.",
+        "--output_dir",
+        type=str,
+        help="Where the markdown files will be. Defaults to notebook source dir.",
+        default=None,
     )
-    parser.add_argument("--dest_file", type=str, default=None, help="Where to save the result.")
 
     if subparsers is not None:
         parser.set_defaults(func=notebook_to_mdx_command)
