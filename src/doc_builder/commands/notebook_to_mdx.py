@@ -57,7 +57,7 @@ def notebook_to_mdx(notebook, max_len):
 def notebook_to_mdx_command(args):
     src_path = Path(args.notebook_src).resolve()
     src_dir = src_path.parent if src_path.is_file() else src_path
-    notebook_paths = [src_path] if src_path.is_file() else [*src_dir.glob("*.ipynb")]
+    notebook_paths = [src_path] if src_path.is_file() else [*src_dir.glob("**/*.ipynb")]
     output_dir = src_dir if args.output_dir is None else Path(args.output_dir).resolve()
 
     for notebook_path in tqdm(notebook_paths, desc="Converting .ipynb files to .md files"):
