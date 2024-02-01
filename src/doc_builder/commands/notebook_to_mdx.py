@@ -65,6 +65,13 @@ def notebook_to_mdx_command(args):
         mdx_file_name = notebook_path.name[: -len(".ipynb")] + ".md"
         output_dir = notebook_path.parent if args.output_dir is None else Path(args.output_dir).resolve()
         dest_file_path = output_dir / mdx_file_name
+
+        if src_path.is_dir() and args.open_notebook_prefix is not None:
+            relative_path = notebook_path.relative_to(src_path)
+            colab_link = f"{args.open_notebook_prefix}/{str(relative_path)}"
+            colab_link_component = f'<DocNotebookDropdown classNames="absolute z-10 right-0 top-0" options={{[{{label: "Google Colab", value: "{colab_link}"}}]}} />/>'
+            mdx_content = f"{colab_link_component}\n\n" + mdx_content
+
         with open(dest_file_path, "w", encoding="utf-8") as f:
             f.write(mdx_content)
 
@@ -87,6 +94,12 @@ def notebook_to_mdx_command_parser(subparsers=None):
         type=int,
         default=119,
         help="The number of maximum characters per line.",
+    )
+    parser.add_argument(
+        "--open_notebook_prefix",
+        type=str,
+        default=None,
+        help="Example: https://colab.research.google.com/github/{user}/{repo}/blob/{branch}",
     )
 
     if subparsers is not None:
