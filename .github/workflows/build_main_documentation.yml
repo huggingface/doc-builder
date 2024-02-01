@@ -154,7 +154,16 @@ jobs:
       
       - name: Convert notebooks to markdown files
         if: inputs.convert_notebooks
-        run: doc-builder notebook-to-mdx ${{ env.doc_folder }}
+        run: |
+          cd ${{ env.doc_folder }}
+          remote_url=$(git remote get-url origin)
+          trimmed_url=${remote_url#https://}
+          trimmed_url=${trimmed_url#github.com/}
+          trimmed_url=${trimmed_url%.git}
+          current_branch=$(git branch --show-current)
+          cd ..
+
+          doc-builder notebook-to-mdx ${{ env.doc_folder }} --open_notebook_prefix https://colab.research.google.com/github/$trimmed_url/blob/$current_branch
 
       - name: Make documentation
         shell: bash
