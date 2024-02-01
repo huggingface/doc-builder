@@ -41,7 +41,7 @@ def notebook_to_mdx(notebook, max_len):
 
                 output = outputs[0]["text"] if "text" in outputs[0] else outputs[0]["text/plain"]
                 output = output.strip()
-                content.append(f"```python out\n{output}\n```")
+                content.append(f"<pre>\n{output}\n</pre>")
             else:
                 code = format_code_example(code, max_len=max_len)[0]
                 content.append(f"```python\n{code}\n```")
