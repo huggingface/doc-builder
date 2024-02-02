@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { onMount } from "svelte";
+	import { onMount, tick } from "svelte";
 
 	import Dropdown from "./Dropdown.svelte";
 	import DropdownEntry from "./DropdownEntry.svelte";
@@ -40,7 +40,10 @@
 	}
 
 	onMount(() => {
-		onResize();
+		(async () => {
+			await tick()
+			onResize();
+		})();
 	});
 </script>
 
