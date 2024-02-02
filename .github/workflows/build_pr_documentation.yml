@@ -98,18 +98,7 @@ jobs:
       - name: Convert notebooks to markdown files
         if: inputs.convert_notebooks
         run: |
-          directory_string="${{ env.doc_folder }}"
-          if [[ "$directory_string" == *"/"* ]]; then
-              # directory_string contains "/"
-              remaining_part=${directory_string#*/}
-              if [[ -n $remaining_part ]]; then
-                  remaining_part="/$remaining_part"
-              fi
-          else
-              # directory_string does not contain "/"
-              remaining_part=""
-          fi
-
           branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}
+          remaining_part=$(echo "${{ env.doc_folder }}" | perl -pe 's|^[^/]+||')
           echo $remaining_part
           echo https://colab.research.google.com/github/${{ inputs.repo_owner }}/${{ inputs.package }}/blob/$branch$remaining_part
