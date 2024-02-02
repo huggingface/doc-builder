@@ -97,12 +97,11 @@ jobs:
         if: inputs.convert_notebooks
         run: |
           initial_work_dir=$(pwd)
-          cd ${{ env.doc_folder }}
-          remote_url=$(git remote get-url origin)
-          trimmed_url=${remote_url#https://}
-          trimmed_url=${trimmed_url#github.com/}
-          trimmed_url=${trimmed_url%.git}
+          cd ${{ inputs.package}}
           current_branch=$(git branch --show-current)
+          echo "current branch"
+          echo $current_branch
+          echo $(git branch --show-current)
           cd $initial_work_dir
 
           directory_string="${{ env.doc_folder }}"
@@ -119,4 +118,4 @@ jobs:
 
           echo $current_branch
           echo $remaining_part
-          echo https://colab.research.google.com/github/$trimmed_url/blob/$current_branch$remaining_part
+          echo https://colab.research.google.com/github/${{ inputs.repo_owner }}/${{ inputs.package }}/blob/$current_branch$remaining_part
