@@ -8,6 +8,7 @@ This is the package we use to build the documentation of our Hugging Face repos.
   * [Installation](#installation)
   * [Previewing](#previewing)
   * [Doc building](#doc-building)
+  * [Writing in notebooks](#writing-in-notebooks)
   * [Templates for GitHub Actions](#templates-for-github-actions)
     + [Enabling multilingual documentation](#enabling-multilingual-documentation)
     + [Redirects](#redirects)
@@ -91,6 +92,21 @@ which will build HTML files in `~/tmp/test-build`. You can then inspect those fi
 `doc-builder` can also automatically convert some of the documentation guides or tutorials into notebooks. This requires two steps:
 - add `[[open-in-colab]]` in the tutorial for which you want to build a notebook
 - add `--notebook_dir {path_to_notebook_folder}` to the build command.
+
+## Writing in notebooks
+
+You can write your docs in jupyter notebooks & use doc-builder to: turn jupyter notebooks into mdx files.
+
+In some situations, such as course & tutorials, it makes more sense to write in jupyter notebooks (& use doc-builder converter) rather than writing in mdx files directly.
+
+The process is:
+1. In your `build_main_documentation.yml` & `build_pr_documentation.yml` enable the flag [convert_notebooks: true](https://github.com/huggingface/doc-builder/blob/main/.github/workflows/build_main_documentation.yml#L46-L48). 
+2. After this flag is enabled, doc-builder will convert all .ipynb files in [path_to_docs](https://github.com/huggingface/doc-builder/blob/main/.github/workflows/build_main_documentation.yml#L19-L20) to mdx files.
+
+Moreover, you can locally convert .ipynb files into mdx files.
+```bash
+doc-builder notebook-to-mdx {path to notebook file or folder containing notebook files}
+```
 
 ## Templates for GitHub Actions
 
