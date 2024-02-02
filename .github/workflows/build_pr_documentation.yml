@@ -141,28 +141,12 @@ jobs:
       - name: Convert notebooks to markdown files
         if: inputs.convert_notebooks
         run: |
-          initial_work_dir=$(pwd)
-          cd ${{ env.doc_folder }}
-          remote_url=$(git remote get-url origin)
-          trimmed_url=${remote_url#https://}
-          trimmed_url=${trimmed_url#github.com/}
-          trimmed_url=${trimmed_url%.git}
-          current_branch=$(git branch --show-current)
-          cd $initial_work_dir
+          branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}
+          remaining_part=$(echo "${{ env.doc_folder }}" | perl -pe 's|^[^/]+||')
+          remaining_part=${remaining_part%/}
+          echo https://colab.research.google.com/github/${{ inputs.repo_owner }}/${{ inputs.package }}/blob/$branch$remaining_part
 
-          directory_string="${{ env.doc_folder }}"
-          if [[ "$directory_string" == *"/"* ]]; then
-              # directory_string contains "/"
-              remaining_part=${directory_string#*/}
-              if [[ -n $remaining_part ]]; then
-                  remaining_part="/$remaining_part"
-              fi
-          else
-              # directory_string does not contain "/"
-              remaining_part=""
-          fi
-
-          doc-builder notebook-to-mdx ${{ env.doc_folder }} --open_notebook_prefix https://colab.research.google.com/github/$trimmed_url/blob/$current_branch$remaining_part
+          doc-builder notebook-to-mdx ${{ env.doc_folder }} --open_notebook_prefix https://colab.research.google.com/github/${{ inputs.repo_owner }}/${{ inputs.package }}/blob/$branch$remaining_part
 
       - name: Make documentation
         env:
