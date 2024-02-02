@@ -69,7 +69,7 @@ def notebook_to_mdx_command(args):
         if src_path.is_dir() and args.open_notebook_prefix is not None:
             relative_path = notebook_path.relative_to(src_path)
             colab_link = f"{args.open_notebook_prefix}/{str(relative_path)}"
-            colab_link_component = f'<DocNotebookDropdown classNames="absolute z-10 right-0 top-0" options={{[{{label: "Google Colab", value: "{colab_link}"}}]}} />/>'
+            colab_link_component = f'<DocNotebookDropdown classNames="absolute z-10 right-0 top-0" options={{[{{label: "Google Colab", value: "{colab_link}"}}]}} />'
             mdx_content = f"{colab_link_component}\n\n" + mdx_content
 
         with open(dest_file_path, "w", encoding="utf-8") as f:
