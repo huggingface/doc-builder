@@ -41,7 +41,7 @@
 
 	onMount(() => {
 		(async () => {
-			await tick()
+			await tick();
 			onResize();
 		})();
 	});
