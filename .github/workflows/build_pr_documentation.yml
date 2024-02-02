@@ -56,8 +56,6 @@ on:
 jobs:
   build_pr_documentation:
     runs-on: ubuntu-latest
-    container:
-      huggingface/transformers-doc-builder
 
     steps:
       - uses: actions/checkout@v2
@@ -70,11 +68,6 @@ jobs:
         with:
           repository: '${{ inputs.repo_owner }}/${{ inputs.package }}'
           path: ${{ inputs.package }}
-
-      - uses: actions/setup-node@v3
-        with:
-          node-version: '20'
-          cache-dependency-path: "kit/package-lock.json"
 
       - name: Set env variables
         run: |
@@ -98,44 +91,6 @@ jobs:
             echo "package_name=${{ inputs.package }}" >> $GITHUB_ENV
           else
             echo "package_name=${{ inputs.package_name }}" >> $GITHUB_ENV
-          fi
-
-      - name: Install libgl1
-        if: inputs.install_libgl1
-        run: apt-get install -y libgl1
-
-      - name: Install Rust
-        uses: actions-rs/toolchain@v1
-        if: inputs.install_rust
-        with:
-          toolchain: stable
-
-      - name: Setup environment
-        shell: bash
-        run: |
-          pip uninstall -y doc-builder
-          cd doc-builder
-          git pull origin ${{ inputs.doc_builder_revision }}
-          pip install .
-          cd ..
-
-          if [[ -n "${{ inputs.package_path }}" ]]
-          then
-            cd ${{ inputs.package_path }}
-            pip install .[dev]
-          elif [[ "${{ inputs.additional_args }}" != *"--not_python_module"* ]];
-          then
-            cd ${{ inputs.package }}
-            pip install .[dev]
-          fi
-          cd ..
-
-      - name: Run pre-command
-        shell: bash
-        run: |
-          if [ ! -z "${{ inputs.pre_command }}" ]
-          then
-            bash -c "${{ inputs.pre_command }}"
           fi
 
       - name: Convert notebooks to markdown files
@@ -165,38 +120,3 @@ jobs:
           echo $current_branch
           echo $remaining_part
           echo https://colab.research.google.com/github/$trimmed_url/blob/$current_branch$remaining_part
-
-          doc-builder notebook-to-mdx ${{ env.doc_folder }} --open_notebook_prefix https://colab.research.google.com/github/$trimmed_url/blob/$current_branch$remaining_part
-
-      - name: Make documentation
-        env:
-          NODE_OPTIONS: --max-old-space-size=6656
-        shell: bash
-        run: |
-          echo "doc_folder has been set to ${{ env.doc_folder }}"
-          cd doc-builder
-          args="--build_dir ../build_dir --clean --version pr_${{ inputs.pr_number }} --html ${{ inputs.additional_args }} --repo_owner ${{ inputs.repo_owner }} --repo_name ${{ inputs.package }} --version_tag_suffix=${{ inputs.version_tag_suffix }}"
-
-          if [ -z "${{ inputs.languages }}" ];
-          then
-            echo "languages not provided, defaulting to English"
-            doc-builder build ${{ env.package_name }} ../${{ env.doc_folder }} $args
-          else
-            IFS=', ' read -r -a langs <<< "${{ inputs.languages }}"
-            for lang in "${langs[@]}"
-            do
-                echo "Generating docs for language $lang"
-                doc-builder build ${{ env.package_name }} ../${{ env.doc_folder }}/$lang $args --language $lang
-            done
-          fi
-          cd ..
-
-      - name: Save commit_sha & pr_number
-        run: |
-          echo ${{ inputs.commit_sha }} > ./build_dir/commit_sha
-          echo ${{ inputs.pr_number }} > ./build_dir/pr_number
-
-      - uses: actions/upload-artifact@v3
-        with:
-          name: doc-build-artifact
-          path: build_dir/
