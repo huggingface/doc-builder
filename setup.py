@@ -19,6 +19,7 @@ setup(
     name="hf-doc-builder",
     version="0.5.0.dev0",
     author="Hugging Face, Inc.",
+    license="Apache",
     author_email="sylvain@huggingface.co",
     description="Doc building utility",
     long_description=open("README.md", "r", encoding="utf-8").read(),
