@@ -14,13 +14,16 @@ extras["quality"] = ["black~=22.0", "isort>=5.5.4", "flake8>=3.8.3"]
 extras["all"] = extras["testing"] + extras["quality"]
 extras["dev"] = extras["all"]
 
+# Should only be utilized by core-devs for release
+extras["release"] = ["twine"]
+
 
 setup(
     name="hf-doc-builder",
     version="0.5.0.dev0",
     author="Hugging Face, Inc.",
     license="Apache",
-    author_email="sylvain@huggingface.co",
+    author_email="docs@huggingface.co",
     description="Doc building utility",
     long_description=open("README.md", "r", encoding="utf-8").read(),
     long_description_content_type="text/markdown",
