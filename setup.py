@@ -20,7 +20,7 @@ extras["release"] = ["twine"]
 
 setup(
     name="hf-doc-builder",
-    version="0.5.0.dev0",
+    version="0.6.0.dev0",
     author="Hugging Face, Inc.",
     license="Apache",
     author_email="docs@huggingface.co",
