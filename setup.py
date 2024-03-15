@@ -3,13 +3,13 @@
 
 from setuptools import find_packages, setup
 
-install_requires = ["black", "GitPython", "tqdm", "pyyaml", "packaging", "nbformat", "huggingface_hub"]
+install_requires = ["ruff", "GitPython", "tqdm", "pyyaml", "packaging", "nbformat", "huggingface_hub"]
 
 extras = {}
 
 extras["transformers"] = ["transformers[dev]"]
 extras["testing"] = ["pytest", "pytest-xdist", "torch", "transformers", "tokenizers", "timm", "google-api-python-client", "requests"]
-extras["quality"] = ["black~=22.0", "isort>=5.5.4", "flake8>=3.8.3"]
+extras["quality"] = ["ruff", "flake8>=3.8.3"]
 
 extras["all"] = extras["testing"] + extras["quality"]
 extras["dev"] = extras["all"]

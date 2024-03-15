@@ -91,6 +91,7 @@ def parse_code_example(code_lines):
     return code_samples, outputs
 
 
+# Code relies on black API.
 def format_code_example(code: str, max_len: int, in_docstring: bool = False):
     """
     Format a code example using black. Will take into account the doctest syntax as well as any initial indentation in

@@ -11,10 +11,10 @@ doc:
 	doc-builder build transformers ../transformers/docs/source/
 
 quality:
-	black --check $(check_dirs)
-	isort --check-only $(check_dirs)
+	ruff check $(check_dirs) setup.py
+	ruff format --check $(check_dirs) setup.py
 	flake8 $(check_dirs)
 
 style:
-	black $(check_dirs)
-	isort $(check_dirs)
+	ruff check $(check_dirs) setup.py --fix
+	ruff format $(check_dirs) setup.py
