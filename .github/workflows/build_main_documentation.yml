@@ -46,7 +46,10 @@ on:
       convert_notebooks:
         type: boolean
         description: "Convert notebooks to markdown files before building docs."
-      container_image:
+      # Docker image to use for the build. Set custom_container="" if you don't need any.
+      # Default containers is "huggingface/transformers-doc-builder" which has all the necessary dependencies (torch,
+      # transformers, tensorflow, etc.) but is quite heavy to download.
+      custom_container:
         type: string
         default: "huggingface/transformers-doc-builder"
         description: "Docker image to use for the build."
@@ -60,7 +63,7 @@ jobs:
   build_main_documentation:
     runs-on: ubuntu-latest
     container:
-      ${{ inputs.container_image }}
+      ${{ inputs.custom_container }}
 
     steps:
       - uses: actions/checkout@v2
