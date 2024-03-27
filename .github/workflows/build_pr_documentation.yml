@@ -63,8 +63,6 @@ on:
 jobs:
   build_pr_documentation:
     runs-on: ubuntu-latest
-    container:
-      ${{ inputs.custom_container }}
 
     steps:
       - uses: actions/checkout@v2
@@ -120,20 +118,20 @@ jobs:
       - name: Setup environment
         shell: bash
         run: |
-          pip uninstall -y doc-builder
+          uv pip uninstall -y doc-builder --system
           cd doc-builder
           git pull origin ${{ inputs.doc_builder_revision }}
-          pip install .
+          uv pip install . --system
           cd ..
 
           if [[ -n "${{ inputs.package_path }}" ]]
           then
             cd ${{ inputs.package_path }}
-            pip install .[dev]
+            uv pip install .[dev] --system
           elif [[ "${{ inputs.additional_args }}" != *"--not_python_module"* ]];
           then
             cd ${{ inputs.package }}
-            pip install .[dev]
+            uv pip install .[dev] --system
           fi
           cd ..
 
