@@ -119,23 +119,29 @@ jobs:
         with:
           toolchain: stable
 
+      - name: Install uv
+        run: |
+          pip install -U uv
+          uv venv
+
       - name: Setup environment
         shell: bash
         run: |
-          pip uninstall -y doc-builder
+          source .venv/bin/activate
+          uv pip uninstall doc-builder
           cd doc-builder
           git pull origin main
-          pip install .
+          uv pip install .
           cd ..
 
           if [[ -n "${{ inputs.package_path }}" ]]
           then
             cd ${{ inputs.package_path }}
-            pip install .[dev]
+            uv pip install .[dev]
           elif [[ "${{ inputs.additional_args }}" != *"--not_python_module"* ]];
           then
             cd ${{ inputs.package }}
-            pip install .[dev]
+            uv pip install .[dev]
           fi
           cd ..
 
@@ -162,6 +168,7 @@ jobs:
       - name: Convert notebooks to markdown files
         if: inputs.convert_notebooks
         run: |
+          source .venv/bin/activate
           branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}
           remaining_part=$(echo "${{ env.doc_folder }}" | perl -pe 's|^[^/]+||')
           remaining_part=${remaining_part%/}
@@ -174,6 +181,7 @@ jobs:
         env:
           NODE_OPTIONS: --max-old-space-size=6656
         run: |
+          source .venv/bin/activate
           echo "doc_folder has been set to ${{ env.doc_folder }}"
           cd doc-builder
           args="--build_dir ../build_dir --clean --html ${{ inputs.additional_args }} --repo_owner ${{ inputs.repo_owner }} --repo_name ${{ inputs.package }} --version_tag_suffix=${{ inputs.version_tag_suffix }}"
