@@ -22,7 +22,7 @@ from pathlib import Path
 
 import yaml
 from packaging import version as package_version
-
+from . import __version__
 
 hf_cache_home = os.path.expanduser(
     os.getenv("HF_HOME", os.path.join(os.getenv("XDG_CACHE_HOME", "~/.cache"), "huggingface"))
@@ -157,13 +157,14 @@ def get_cached_repo():
     """
     os.makedirs(DOC_BUILDER_CACHE, exist_ok=True)
     cache_repo_path = Path(DOC_BUILDER_CACHE) / "doc-builder-repo"
+    repTag = "v"+__version__;
     if not cache_repo_path.is_dir():
         print(
             "To build the HTML doc, we need the kit subfolder of the `doc-builder` repo. Cloning it and caching at "
             f"{cache_repo_path}."
         )
         _ = subprocess.run(
-            "git clone https://github.com/huggingface/doc-builder.git".split(),
+            f"git clone --branch {repTag} https://github.com/huggingface/doc-builder.git".split(),
             stderr=subprocess.PIPE,
             check=True,
             encoding="utf-8",
