@@ -419,7 +419,7 @@ def check_toc_integrity(doc_folder, output_dir):
 
     # normalize paths to current OS
     toc_sections = [str(Path(path)) for path in toc_sections]
-    files_not_in_toc = [f for f in doc_files if f not in toc_sections]
+    files_not_in_toc = [f for f in doc_files if f not in toc_sections and not f.endswith("README")]
     doc_config = get_doc_config()
     disable_toc_check = getattr(doc_config, "disable_toc_check", False)
     if len(files_not_in_toc) > 0 and not disable_toc_check:
