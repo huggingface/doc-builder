@@ -28,8 +28,13 @@ def notebook_to_mdx(notebook, max_len):
         if cell["cell_type"] == "code":
             code = cell["source"]
             outputs = [
-                o for o in cell["outputs"] if ("text" in o and o.get("name", None) == "stdout") or "text/plain" in o
+                o
+                for o in cell["outputs"]
+                if ("text" in o and o.get("name", None) == "stdout")
+                or "text/plain" in o
+                or ("data" in o and ("image/png" in o["data"] or "image/jpeg" in o["data"]))
             ]
+
             if len(outputs) > 0:
                 code_lines = code.split("\n")
                 # We can add >>> everywhere without worrying as format_code_example will replace them by ...
@@ -39,9 +44,19 @@ def notebook_to_mdx(notebook, max_len):
                 code = format_code_example(code, max_len=max_len)[0]
                 content.append(f"```python\n{code}\n```")
 
-                output = outputs[0]["text"] if "text" in outputs[0] else outputs[0]["text/plain"]
-                output = output.strip()
-                content.append(f"<pre>\n{output}\n</pre>")
+                first_output = outputs[0]
+                if "text" in first_output:
+                    output = first_output["text"]
+                    output = f"<pre>\n{output.strip()}\n</pre>"
+                elif "text/plain" in first_output:
+                    output = first_output["text/plain"]
+                    output = f"<pre>\n{output.strip()}\n</pre>"
+                elif "data" in first_output and "image/png" in first_output["data"]:
+                    output = f'<img src="data:image/png;base64,{first_output["data"]["image/png"]}">\n'
+                elif "data" in first_output and "image/jpeg" in first_output["data"]:
+                    output = f'<img src="data:image/jpeg;base64,{first_output["data"]["image/jpeg"]}">\n'
+
+                content.append(output)
             else:
                 code = format_code_example(code, max_len=max_len)[0]
                 content.append(f"```python\n{code}\n```")
