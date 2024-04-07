@@ -368,6 +368,7 @@ def build_doc(
     if not watch_mode:
         sphinx_refs = check_toc_integrity(doc_folder, output_dir)
         sphinx_refs.extend(convert_anchors_mapping_to_sphinx_format(anchors_mapping, package))
+
     if is_python_module:
         if not watch_mode:
             build_sphinx_objects_ref(sphinx_refs, output_dir, page_info)
@@ -379,7 +380,54 @@ def build_doc(
                 os.remove(nb_file)
         build_notebooks(doc_folder, notebook_dir, package=package, mapping=anchors_mapping, page_info=page_info)
 
+    toctree_renamings(output_dir)
+
     return source_files_mapping
+
+
+def toctree_renamings(output_dir):
+    """
+    If an entry of toctree has field "newlocal", then use "newlocal" rather than field "local" for creating svelte pages paths.
+
+    Args:
+        output_dir (`str` or `os.PathLike`): The folder where the doc is built.
+    """
+    output_dir = Path(output_dir)
+
+    toc_file = output_dir / "_toctree.yml"
+    with open(toc_file, "r", encoding="utf-8") as f:
+        toc = yaml.safe_load(f.read())
+
+    rename_map = {}
+
+    stack = [toc]  # Initialize the stack with the input data
+    while stack:  # While there are items in the stack
+        current = stack.pop()  # Pop the last item for processing
+        if isinstance(current, dict):
+            # If 'newlocal' exists, update 'local' with 'newlocal'
+            if "newlocal" in current:
+                rename_map[current["local"]] = current["newlocal"]
+                current["local"] = current["newlocal"]
+                del current["newlocal"]
+            # Add dictionary values to the stack for further processing
+            for value in current.values():
+                stack.append(value)
+        elif isinstance(current, list):
+            # Add list items to the stack for further processing
+            for item in current:
+                stack.append(item)
+
+    if len(rename_map):
+        with open(toc_file, "w", encoding="utf-8") as f:
+            f.write(yaml.safe_dump(toc))
+
+        doc_files = output_dir.glob("**/*.mdx")
+        for doc_file in doc_files:
+            relative_doc_file = doc_file.relative_to(output_dir)
+            local = str(relative_doc_file.with_suffix(""))
+            if local in rename_map:
+                newlocal = str(doc_file).replace(local, rename_map[local])
+                doc_file.rename(newlocal)
 
 
 def check_toc_integrity(doc_folder, output_dir):
