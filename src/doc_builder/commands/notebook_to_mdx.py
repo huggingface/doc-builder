@@ -14,12 +14,25 @@
 # limitations under the License.
 
 import argparse
+import base64
+import io
 from pathlib import Path
 
 import nbformat
+from PIL import Image
 from tqdm import tqdm
 
 from ..style_doc import format_code_example
+
+
+def png_to_jpeg(png_base64):
+    png_bytes = base64.b64decode(png_base64)
+    png_image = Image.open(io.BytesIO(png_bytes))
+    png_image = png_image.convert("RGB")
+    jpeg_bytes = io.BytesIO()
+    png_image.save(jpeg_bytes, format="JPEG")
+    jpeg_base64 = base64.b64encode(jpeg_bytes.getvalue()).decode("utf-8")
+    return jpeg_base64
 
 
 def notebook_to_mdx(notebook, max_len):
@@ -52,7 +65,8 @@ def notebook_to_mdx(notebook, max_len):
                     output = first_output["text/plain"]
                     output = f"<pre>\n{output.strip()}\n</pre>"
                 elif "data" in first_output and "image/png" in first_output["data"]:
-                    output = f'<img src="data:image/png;base64,{first_output["data"]["image/png"]}">\n'
+                    jpeg_base64 = png_to_jpeg(first_output["data"]["image/png"])
+                    output = f'<img src="data:image/jpeg;base64,{jpeg_base64}">\n'
                 elif "data" in first_output and "image/jpeg" in first_output["data"]:
                     output = f'<img src="data:image/jpeg;base64,{first_output["data"]["image/jpeg"]}">\n'
 
