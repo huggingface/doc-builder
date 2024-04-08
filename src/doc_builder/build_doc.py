@@ -233,7 +233,9 @@ def build_mdx_files(package, doc_folder, output_dir, page_info, version_tag_suff
             page_name = str(file.with_suffix("").relative_to(doc_folder))
             for anchor in new_anchors:
                 if isinstance(anchor, tuple):
-                    anchor_mapping.update({a: f"{page_name}#{anchor[0]}" for a in anchor[1:]})
+                    anchor_mapping.update(
+                        {a: f"{page_name}#{anchor[0]}" for a in anchor[1:] if a not in anchor_mapping}
+                    )
                     anchor = anchor[0]
                 anchor_mapping[anchor] = page_name
 
