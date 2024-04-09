@@ -84,6 +84,29 @@ jobs:
           node-version: '20'
           cache-dependency-path: "kit/package-lock.json"
 
+      - name: Export ROOT_APT_GET
+        # Use `sudo` only if running on the base runner.
+        # When using a container, `sudo` is not needed (and not installed)
+        run: |
+          if [ -z "${{ inputs.custom_container }}" ]
+          then
+            echo "ROOT_APT_GET=sudo apt-get" >> $GITHUB_ENV
+          else
+            echo "ROOT_APT_GET=apt-get" >> $GITHUB_ENV
+          fi
+
+      - name: Export PIP_OR_UV (pip or uv)
+        # Use `uv` only if running on the base runner.
+        # When using a container, `pip` has already been used to installed existing deps
+        # and is therefore quicker to resolve (already have some cached stuff).
+        run: |
+          if [ -z "${{ inputs.custom_container }}" ]
+          then
+            echo "PIP_OR_UV=uv pip" >> $GITHUB_ENV
+          else
+            echo "PIP_OR_UV=pip" >> $GITHUB_ENV
+          fi
+
       - name: Set env variables
         run: |
           if [ -z "${{ inputs.path_to_docs }}" ]
@@ -110,9 +133,7 @@ jobs:
 
       - name: Install libgl1
         if: inputs.install_libgl1
-        # Use sudo only if running on the base runner.
-        # When using a container, `sudo` is not needed (and not installed).
-        run: ${{ !inputs.custom_container && 'sudo' || '' }} apt-get install -y libgl1
+        run: $ROOT_APT_GET install -y libgl1
 
       - name: Install Rust
         uses: actions-rs/toolchain@v1
@@ -122,44 +143,36 @@ jobs:
 
       - run: df -h /
       
-      - run: ${{ !inputs.custom_container && 'sudo' || '' }} apt-get clean
+      - run: $ROOT_APT_GET clean
       
       - run: df -h /
 
       - name: Install uv
         run: |
-          pip install -U uv
+          $PIP_OR_UV install -U uv
           uv venv
 
-      - name: Check available disk space
-        run: df -h
-      - run: df -h /
-      - run: du -h -d 1
-      - run: python -m pip cache dir
-      - run: python -m pip cache info
-      - run: python -m pip cache purge
-      - run: df -h /
-      - run: du -h -d 1
+      - run: df -h
 
       - name: Setup environment
         shell: bash
         run: |
           source .venv/bin/activate
-          pip uninstall doc-builder
+          $PIP_OR_UV uninstall doc-builder
           cd doc-builder
           git pull origin ${{ inputs.doc_builder_revision }}
-          pip install .
+          $PIP_OR_UV install .
           cd ..
 
           if [[ -n "${{ inputs.package_path }}" ]]
           then
             cd ${{ inputs.package_path }}
-            pip install .[dev]
+            $PIP_OR_UV install .[dev]
           elif [[ "${{ inputs.additional_args }}" != *"--not_python_module"* ]];
           then
             cd ${{ inputs.package }}
             df -h /
-            pip install .[dev]
+            $PIP_OR_UV install .[dev]
             df -h /
           fi
           cd ..
