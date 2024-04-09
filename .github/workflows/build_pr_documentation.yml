@@ -145,25 +145,21 @@ jobs:
         shell: bash
         run: |
           source .venv/bin/activate
-          uv pip uninstall doc-builder
+          pip uninstall doc-builder
           cd doc-builder
           git pull origin ${{ inputs.doc_builder_revision }}
-          uv pip install .
+          pip install .
           cd ..
 
           if [[ -n "${{ inputs.package_path }}" ]]
           then
             cd ${{ inputs.package_path }}
-            uv pip install .[dev]
+            pip install .[dev]
           elif [[ "${{ inputs.additional_args }}" != *"--not_python_module"* ]];
           then
             cd ${{ inputs.package }}
             df -h /
-            uv cache clean
-            df -h /
-            uv pip install .[dev]
-            df -h /
-            uv cache clean
+            pip install .[dev]
             df -h /
           fi
           cd ..
