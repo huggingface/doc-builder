@@ -108,7 +108,9 @@ jobs:
 
       - name: Install libgl1
         if: inputs.install_libgl1
-        run: sudo apt-get install -y libgl1
+        # Use sudo only if running on the base runner.
+        # When using a container, `sudo` is not needed (and not installed).
+        run: ${{ !inputs.custom_container && 'sudo' || '' }} apt-get install -y libgl1
 
       - name: Install Rust
         uses: actions-rs/toolchain@v1
