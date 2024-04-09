@@ -127,7 +127,6 @@ jobs:
         run: df -h
       - run: df -h /
       - run: du -h -d 1
-      - run: du -h -d 1 /
 
       - name: Setup environment
         shell: bash
@@ -146,7 +145,13 @@ jobs:
           elif [[ "${{ inputs.additional_args }}" != *"--not_python_module"* ]];
           then
             cd ${{ inputs.package }}
+            df -h /
+            uv cache clean
+            df -h /
             uv pip install .[dev]
+            df -h /
+            uv cache clean
+            df -h /
           fi
           cd ..
 
