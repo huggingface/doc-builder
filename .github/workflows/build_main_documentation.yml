@@ -63,6 +63,8 @@ jobs:
     runs-on: ubuntu-latest
     container:
       ${{ inputs.custom_container }}
+    env:
+      UV_HTTP_TIMEOUT: 900 # max 15min to install deps (shouldn't take more than 5min)
 
     steps:
       - uses: actions/checkout@v2
@@ -87,6 +89,29 @@ jobs:
           node-version: '20'
           cache-dependency-path: "kit/package-lock.json" 
 
+      - name: Export ROOT_APT_GET ('apt-get' or 'sudo apt-get')
+        # Use `sudo` only if running on the base runner.
+        # When using a container, `sudo` is not needed (and not installed)
+        run: |
+          if [ -z "${{ inputs.custom_container }}" ]
+          then
+            echo "ROOT_APT_GET=sudo apt-get" >> $GITHUB_ENV
+          else
+            echo "ROOT_APT_GET=apt-get" >> $GITHUB_ENV
+          fi
+
+      - name: Export PIP_OR_UV ('pip' or 'uv pip')
+        # Use `uv` only if running on the base runner.
+        # When using a container, `pip` has already been used to installed existing deps
+        # and is therefore quicker to resolve (already have some cached stuff).
+        run: |
+          if [ -z "${{ inputs.custom_container }}" ]
+          then
+            echo "PIP_OR_UV=uv pip" >> $GITHUB_ENV
+          else
+            echo "PIP_OR_UV=pip" >> $GITHUB_ENV
+          fi
+
       - name: Set env variables
         run: |
           if [ -z "${{ inputs.path_to_docs }}" ]
@@ -108,11 +133,11 @@ jobs:
       - name: Install zip
         # Use sudo only if running on the base runner.
         # When using a container, `sudo` is not needed (and not installed).
-        run: ${{ !inputs.custom_container && 'sudo' || '' }} apt-get install -y zip
+        run: $ROOT_APT_GET install -y zip
 
       - name: Install libgl1
         if: inputs.install_libgl1
-        run: ${{ !inputs.custom_container && 'sudo' || '' }} apt-get install -y libgl1
+        run: $ROOT_APT_GET install -y libgl1
 
       - name: Install Rust
         uses: actions-rs/toolchain@v1
@@ -121,6 +146,7 @@ jobs:
           toolchain: stable
 
       - name: Install uv
+        if: !inputs.custom_container
         run: |
           pip install -U uv
           uv venv
@@ -129,20 +155,20 @@ jobs:
         shell: bash
         run: |
           source .venv/bin/activate
-          uv pip uninstall doc-builder
+          $PIP_OR_UV uninstall doc-builder
           cd doc-builder
           git pull origin main
-          uv pip install .
+          $PIP_OR_UV install .
           cd ..
 
           if [[ -n "${{ inputs.package_path }}" ]]
           then
             cd ${{ inputs.package_path }}
-            uv pip install .[dev]
+            $PIP_OR_UV install .[dev]
           elif [[ "${{ inputs.additional_args }}" != *"--not_python_module"* ]];
           then
             cd ${{ inputs.package }}
-            uv pip install .[dev]
+            $PIP_OR_UV install .[dev]
           fi
           cd ..
 

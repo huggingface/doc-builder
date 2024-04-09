@@ -84,7 +84,7 @@ jobs:
           node-version: '20'
           cache-dependency-path: "kit/package-lock.json"
 
-      - name: Export ROOT_APT_GET
+      - name: Export ROOT_APT_GET ('apt-get' or 'sudo apt-get')
         # Use `sudo` only if running on the base runner.
         # When using a container, `sudo` is not needed (and not installed)
         run: |
@@ -95,7 +95,7 @@ jobs:
             echo "ROOT_APT_GET=apt-get" >> $GITHUB_ENV
           fi
 
-      - name: Export PIP_OR_UV (pip or uv)
+      - name: Export PIP_OR_UV ('pip' or 'uv pip')
         # Use `uv` only if running on the base runner.
         # When using a container, `pip` has already been used to installed existing deps
         # and is therefore quicker to resolve (already have some cached stuff).
@@ -141,18 +141,12 @@ jobs:
         with:
           toolchain: stable
 
-      - run: df -h /
-      
-      - run: $ROOT_APT_GET clean
-      
-      - run: df -h /
-
+      # Only install uv if not using a custom container
       - name: Install uv
+        if: !inputs.custom_container
         run: |
           pip install -U uv
           uv venv
-
-      - run: df -h
 
       - name: Setup environment
         shell: bash
@@ -171,9 +165,7 @@ jobs:
           elif [[ "${{ inputs.additional_args }}" != *"--not_python_module"* ]];
           then
             cd ${{ inputs.package }}
-            df -h /
             $PIP_OR_UV install .[dev]
-            df -h /
           fi
           cd ..
 
