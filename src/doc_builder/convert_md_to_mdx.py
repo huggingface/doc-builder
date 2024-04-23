@@ -54,6 +54,7 @@ import PipelineTag from "$lib/PipelineTag.svelte";
 import Heading from "$lib/Heading.svelte";
 import HfOptions from "$lib/HfOptions.svelte";
 import HfOption from "$lib/HfOption.svelte";
+import EditOnGithub from "$lib/EditOnGithub.svelte";
 let fw: "pt" | "tf" = "pt";
 onMount(() => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -70,6 +71,7 @@ HF_DOC_BODY_START
 
 """
         + process_md(md_text, page_info)
+        + edit_on_github(page_info)
         + """
 
 <!--HF DOCBUILD BODY END-->
@@ -78,6 +80,24 @@ HF_DOC_BODY_END
 
 """
     )
+
+
+def edit_on_github(page_info):
+    """
+    Svelte component string that adds "Update on Github" btn.
+    """
+    if "path" not in page_info or "repo_name" not in page_info:
+        return ""
+    path = str(page_info["path"])
+    package_name = page_info["repo_name"]
+    idx = path.find(package_name)
+    if idx == -1:
+        return ""
+    relative_path = path[idx + len(package_name) :]
+    if relative_path.startswith("/"):
+        relative_path = relative_path[1:]
+    source = f'https://github.com/{page_info["repo_owner"]}/{page_info["repo_name"]}/blob/main/{relative_path}'
+    return f'\n\n<EditOnGithub source="{source}" />\n\n'
 
 
 def convert_img_links(text, page_info):

@@ -56,6 +56,7 @@ import PipelineTag from "$lib/PipelineTag.svelte";
 import Heading from "$lib/Heading.svelte";
 import HfOptions from "$lib/HfOptions.svelte";
 import HfOption from "$lib/HfOption.svelte";
+import EditOnGithub from "$lib/EditOnGithub.svelte";
 let fw: "pt" | "tf" = "pt";
 onMount(() => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -77,7 +78,6 @@ Lorem ipsum dolor sit amet, consectetur adipiscing elit
 HF_DOC_BODY_END
 
 """
-        print(convert_md_to_mdx(md_text, page_info))
         self.assertEqual(convert_md_to_mdx(md_text, page_info), expected_conversion)
 
     def test_convert_img_links(self):
