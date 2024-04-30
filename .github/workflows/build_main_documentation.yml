@@ -187,6 +187,7 @@ jobs:
       - name: Run pre-command
         shell: bash
         run: |
+          source .venv/bin/activate
           if [ ! -z "${{ inputs.pre_command }}" ]
           then
             bash -c "${{ inputs.pre_command }}"
@@ -235,6 +236,7 @@ jobs:
 
       - name: Push to repositories
         run: |
+          source .venv/bin/activate
           cd build_dir
           doc-builder push ${{ env.package_name }} --doc_build_repo_id "hf-doc-build/doc-build" --token "${{ secrets.hf_token }}" --commit_msg "Updated with commit ${{ inputs.commit_sha }} See: https://github.com/${{ inputs.repo_owner }}/${{ inputs.package }}/commit/${{ inputs.commit_sha }}" --n_retries 5 --upload_version_yml
           cd ..
