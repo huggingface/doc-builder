@@ -46,12 +46,11 @@ on:
       convert_notebooks:
         type: boolean
         description: "Convert notebooks to markdown files before building docs."
-      # Docker image to use for the build. Set custom_container="" if you don't need any.
-      # Default containers is "huggingface/transformers-doc-builder" which has all the necessary dependencies (torch,
-      # transformers, tensorflow, etc.) but is quite heavy to download.
+      # Docker image to use for the build. Set custom_container="huggingface/transformers-doc-builder" if you need
+      # a complete install. Default to `""` which means CI will run on the runner directly.
       custom_container:
         type: string
-        default: "huggingface/transformers-doc-builder"
+        default: ""
         description: "Docker image to use for the build."
     secrets:
       hf_token:
@@ -64,6 +63,8 @@ jobs:
     runs-on: ubuntu-latest
     container:
       ${{ inputs.custom_container }}
+    env:
+      UV_HTTP_TIMEOUT: 900 # max 15min to install deps (shouldn't take more than 5min)
 
     steps:
       - uses: actions/checkout@v2
@@ -88,6 +89,29 @@ jobs:
           node-version: '20'
           cache-dependency-path: "kit/package-lock.json" 
 
+      - name: Export ROOT_APT_GET ('apt-get' or 'sudo apt-get')
+        # Use `sudo` only if running on the base runner.
+        # When using a container, `sudo` is not needed (and not installed)
+        run: |
+          if [ -z "${{ inputs.custom_container }}" ]
+          then
+            echo "ROOT_APT_GET=sudo apt-get" >> $GITHUB_ENV
+          else
+            echo "ROOT_APT_GET=apt-get" >> $GITHUB_ENV
+          fi
+
+      - name: Export PIP_OR_UV ('pip' or 'uv pip')
+        # Use `uv` only if running on the base runner.
+        # When using a container, `pip` has already been used to installed existing deps
+        # and is therefore quicker to resolve (already have some cached stuff).
+        run: |
+          if [ -z "${{ inputs.custom_container }}" ]
+          then
+            echo "PIP_OR_UV=uv pip" >> $GITHUB_ENV
+          else
+            echo "PIP_OR_UV=pip" >> $GITHUB_ENV
+          fi
+
       - name: Set env variables
         run: |
           if [ -z "${{ inputs.path_to_docs }}" ]
@@ -107,11 +131,13 @@ jobs:
 
       # Needed to upload zips to hf.co
       - name: Install zip
-        run: apt-get install -y zip
+        # Use sudo only if running on the base runner.
+        # When using a container, `sudo` is not needed (and not installed).
+        run: $ROOT_APT_GET install -y zip
 
       - name: Install libgl1
         if: inputs.install_libgl1
-        run: apt-get install -y libgl1
+        run: $ROOT_APT_GET install -y libgl1
 
       - name: Install Rust
         uses: actions-rs/toolchain@v1
@@ -119,23 +145,30 @@ jobs:
         with:
           toolchain: stable
 
+      # Use venv in both cases
+      - name: Install uv
+        run: |
+          pip install -U uv
+          uv venv
+
       - name: Setup environment
         shell: bash
         run: |
-          pip uninstall -y doc-builder
+          source .venv/bin/activate
+          $PIP_OR_UV uninstall doc-builder
           cd doc-builder
           git pull origin main
-          pip install .
+          $PIP_OR_UV install .
           cd ..
 
           if [[ -n "${{ inputs.package_path }}" ]]
           then
             cd ${{ inputs.package_path }}
-            pip install .[dev]
+            $PIP_OR_UV install .[dev]
           elif [[ "${{ inputs.additional_args }}" != *"--not_python_module"* ]];
           then
             cd ${{ inputs.package }}
-            pip install .[dev]
+            $PIP_OR_UV install .[dev]
           fi
           cd ..
 
@@ -162,6 +195,7 @@ jobs:
       - name: Convert notebooks to markdown files
         if: inputs.convert_notebooks
         run: |
+          source .venv/bin/activate
           branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}
           remaining_part=$(echo "${{ env.doc_folder }}" | perl -pe 's|^[^/]+||')
           remaining_part=${remaining_part%/}
@@ -174,6 +208,7 @@ jobs:
         env:
           NODE_OPTIONS: --max-old-space-size=6656
         run: |
+          source .venv/bin/activate
           echo "doc_folder has been set to ${{ env.doc_folder }}"
           cd doc-builder
           args="--build_dir ../build_dir --clean --html ${{ inputs.additional_args }} --repo_owner ${{ inputs.repo_owner }} --repo_name ${{ inputs.package }} --version_tag_suffix=${{ inputs.version_tag_suffix }}"
