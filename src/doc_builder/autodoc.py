@@ -39,9 +39,9 @@ def find_object_in_package(object_name, package):
         submodule = getattr(module, split, None)
         # `split` could be the name of a package if `package` is a namespace package, in which case it doesn't appear
         # as an attribute if the submodule was not imported before
-        if submodule is None and idx == 0:
+        if submodule is None:
             try:
-                importlib.import_module(f"{package.__name__}.{split}")
+                importlib.import_module(".".join([package.__name__] + path_splits[:idx+1]))
                 submodule = getattr(module, split, None)
             except ImportError:
                 pass
