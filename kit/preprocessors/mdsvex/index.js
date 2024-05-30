@@ -6,6 +6,7 @@ import htmlTags from "html-tags";
 import { readdir } from "fs/promises";
 import path from "path";
 import cheerio from "cheerio";
+import { renderSvelteChars } from "../utils.js";
 
 /**
  * inside `<code>` html elements, we need to replace `&amp;` with `&`
@@ -42,15 +43,6 @@ export const mdsvexPreprocess = {
 		return { code: content };
 	},
 };
-
-/**
- * Render escaped characters like `<`, `{`.
- * used for Doc
- * @param {string} code
- */
-function renderSvelteChars(code) {
-	return code.replace(/&amp;lcub;/g, "{").replace(/&amp;lt;/g, "<");
-}
 
 /**
  * Latex support in mdsvex
