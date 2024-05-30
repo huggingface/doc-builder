@@ -24,12 +24,15 @@ export async function replaceAsync(string, searchValue, replacer) {
 }
 
 /**
- * Render escaped characters like `<`, `{`.
+ * Render escaped characters like `<`, `{`, '#'.
  * used for Doc
  * @param {string} code
  */
 export function renderSvelteChars(code) {
-	return code.replace(/&amp;lcub;/g, "{").replace(/&amp;lt;/g, "<");
+	return code
+		.replace(/&amp;lcub;/g, "{")
+		.replace(/&amp;lt;/g, "<")
+		.replace(/&amp;num;/g, "#");
 }
 
 /**
