@@ -4,8 +4,8 @@ import { replaceAsync } from "./utils.js";
 // otherwise, an extra new space was being rendered
 export const hashInCodePreprocess = {
 	markup: async ({ content }) => {
-		const REGEX_CODE_BLOCK = /```.*?```/sg;
-		const REGEX_INLINE_CODE = /`.*?`/sg;
+		const REGEX_CODE_BLOCK = /```.*?```/gs;
+		const REGEX_INLINE_CODE = /`.*?`/gs;
 		content = await replaceAsync(content, REGEX_CODE_BLOCK, async (codeContent) => {
 			return codeContent.replaceAll("#", "&amp;num;");
 		});

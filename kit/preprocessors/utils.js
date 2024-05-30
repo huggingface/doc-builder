@@ -29,7 +29,10 @@ export async function replaceAsync(string, searchValue, replacer) {
  * @param {string} code
  */
 export function renderSvelteChars(code) {
-	return code.replace(/&amp;lcub;/g, "{").replace(/&amp;lt;/g, "<").replace(/&amp;num;/g, "#");
+	return code
+		.replace(/&amp;lcub;/g, "{")
+		.replace(/&amp;lt;/g, "<")
+		.replace(/&amp;num;/g, "#");
 }
 
 /**
