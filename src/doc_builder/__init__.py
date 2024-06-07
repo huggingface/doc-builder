@@ -19,8 +19,9 @@
 
 __version__ = "0.6.0.dev0"
 
-from .autodoc import autodoc
+from .autodoc import autodoc_svelte
 from .build_doc import build_doc
+from .build_embeddings import build_embeddings
 from .convert_rst_to_mdx import convert_rst_docstring_to_mdx, convert_rst_to_mdx
 from .style_doc import style_doc_files
 from .utils import update_versions_file
