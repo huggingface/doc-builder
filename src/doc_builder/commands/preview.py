@@ -27,7 +27,7 @@ from threading import Thread
 from doc_builder import build_doc
 from doc_builder.commands.build import check_node_is_available, locate_kit_folder
 from doc_builder.commands.convert_doc_file import find_root_git
-from doc_builder.utils import is_watchdog_available, read_doc_config
+from doc_builder.utils import is_watchdog_available, read_doc_config, sveltify_file_route
 
 
 if is_watchdog_available():
@@ -201,6 +201,14 @@ def preview_command(args):
                 shutil.copytree(f, dest)
             else:
                 shutil.copy(f, dest)
+
+        # make mdx file paths comply with the sveltekit 1.0 routing mechanism
+        # see more: https://learn.svelte.dev/tutorial/pages
+        for mdx_file_path in kit_routes_folder.rglob("*.mdx"):
+            new_path = sveltify_file_route(mdx_file_path)
+            parent_path = os.path.dirname(new_path)
+            os.makedirs(parent_path, exist_ok=True)
+            shutil.move(mdx_file_path, new_path)
 
         # Node
         env = os.environ.copy()
