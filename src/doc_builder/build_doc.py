@@ -382,7 +382,8 @@ def build_doc(
                 os.remove(nb_file)
         build_notebooks(doc_folder, notebook_dir, package=package, mapping=anchors_mapping, page_info=page_info)
 
-    toctree_renamings(output_dir)
+    if not watch_mode:
+        toctree_renamings(output_dir)
 
     return source_files_mapping
 

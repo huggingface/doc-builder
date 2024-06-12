@@ -98,11 +98,12 @@ if is_watchdog_available():
                             is_python_module=not self.args.not_python_module,
                             watch_mode=True,
                         )
+
                         if str(src_path).endswith(".md"):
                             src_path += "x"
                             relative_path += "x"
                         src = Path(tmp_out_dir) / Path(src_path).name
-                        dest = self.kit_routes_folder / relative_path
+                        dest = sveltify_file_route(self.kit_routes_folder / relative_path)
                         shutil.move(src, dest)
             except Exception as e:
                 print(f"Error building: {src_path}\n{e}")
