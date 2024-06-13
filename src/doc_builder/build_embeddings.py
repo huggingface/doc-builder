@@ -42,10 +42,10 @@ class MarkdownChunkNode:
         self.content = ""
 
     def create_local(self, heading):
-        serach_local = re.search(r"\[\[(.*)]]", heading)
-        if serach_local:
+        search_anchor = re.search(r"\[\[(.*)]]", heading)
+        if search_anchor:
             # id/local already exists
-            local = serach_local.group(1)
+            local = search_anchor.group(1)
             heading = re.sub(r"\[\[(.*)]]", "", heading)
             return heading, local
         else:
