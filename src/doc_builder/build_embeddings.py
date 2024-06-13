@@ -343,6 +343,13 @@ def call_embed_api(chunks: List[Chunk]) -> List[Embedding]:
     chunks_len = len(chunks)
     embeddings = []
 
+    API_URL = os.environ["HF_EMBED_URL"]
+    headers = {
+        "Accept": "application/json",
+        "Authorization": f"Bearer {os.environ['HF_EMBED_API_KEY']}",
+        "Content-Type": "application/json",
+    }
+
     def query(payload):
         response = requests.post(API_URL, headers=headers, json=payload)
         return response.json()
@@ -359,13 +366,6 @@ def call_embed_api(chunks: List[Chunk]) -> List[Embedding]:
     for i in tqdm(range(0, chunks_len, batch_size), desc="Calling Embedding Inference Endpoints"):
         batch_chunk = chunks[i : i + batch_size]
         batch_chunk_texts = [chunk.text for chunk in batch_chunk]
-
-        API_URL = os.environ["HF_EMBED_URL"]
-        headers = {
-            "Accept": "application/json",
-            "Authorization": f"Bearer {os.environ['HF_EMBED_API_KEY']}",
-            "Content-Type": "application/json",
-        }
 
         batch_embeddings = query({"inputs": batch_chunk_texts})
 
