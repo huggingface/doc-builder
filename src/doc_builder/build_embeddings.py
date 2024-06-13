@@ -37,7 +37,7 @@ Embedding = namedtuple("Chunk", "text source package_name embedding")
 
 class MarkdownChunkNode:
     def __init__(self, heading):
-        self.heading, self.local = self.create_local(heading)
+        self.heading, self.anchor = self.create_local(heading)
         self.children = []
         self.content = ""
 
@@ -78,7 +78,7 @@ class MarkdownChunkNode:
                 chunks.append(
                     Chunk(
                         text=chunk.strip(),
-                        source=f"{page_info['page']}#{self.local}",
+                        source=f"{page_info['page']}#{self.anchor}",
                         package_name=page_info["package_name"],
                     )
                 )
@@ -88,7 +88,7 @@ class MarkdownChunkNode:
             chunks.append(
                 Chunk(
                     text=chunk.strip(),
-                    source=f"{page_info['page']}#{self.local}",
+                    source=f"{page_info['page']}#{self.anchor}",
                     package_name=page_info["package_name"],
                 )
             )
