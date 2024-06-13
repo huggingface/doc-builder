@@ -60,6 +60,10 @@ class MarkdownChunkNode:
             return heading, local
 
     def add_child(self, child, header_level):
+        if header_level < 2:
+            raise ValueError(
+                "MarkdownChunkNode.add_child method should only be called on root node with heading level of 1"
+            )
         parent = self
         nested_level = header_level - 2
         while nested_level:
