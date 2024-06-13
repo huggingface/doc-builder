@@ -35,6 +35,11 @@ Chunk = namedtuple("Chunk", "text source package_name")
 Embedding = namedtuple("Chunk", "text source package_name embedding")
 
 
+_re_md_anchor = re.compile(r"\[\[(.*)]]")
+_re_non_alphaneumeric = re.compile(r"[^a-z0-9\s]+", re.IGNORECASE)
+_re_congruent_whitespaces = re.compile(r"\s{2,}")
+
+
 class MarkdownChunkNode:
     def __init__(self, heading):
         self.heading, self.anchor = self.create_local(heading)
@@ -42,16 +47,16 @@ class MarkdownChunkNode:
         self.content = ""
 
     def create_local(self, heading):
-        search_anchor = re.search(r"\[\[(.*)]]", heading)
+        search_anchor = _re_md_anchor.search(heading)
         if search_anchor:
             # id/local already exists
             local = search_anchor.group(1)
-            heading = re.sub(r"\[\[(.*)]]", "", heading)
+            heading = _re_md_anchor.sub("", heading)
             return heading, local
         else:
             # create id/local
-            local = re.sub(r"[^a-z0-9\s]+", "", heading.lower())
-            local = re.sub(r"\s{2,}", " ", local.strip()).replace(" ", "-")
+            local = _re_non_alphaneumeric.sub("", heading)
+            local = _re_congruent_whitespaces.sub(" ", local.strip()).replace(" ", "-")
             return heading, local
 
     def add_child(self, child, header_level):
