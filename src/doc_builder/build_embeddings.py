@@ -260,6 +260,10 @@ def clean_md(text):
 _re_autodoc_all = re.compile(r"(\[\[autodoc\]\]\s+[\w\.]+(?:\n\s+-\s+\w+)*\b)", re.DOTALL)
 
 
+class ChunkingError(Exception):
+    pass
+
+
 def create_chunks(package, doc_folder, page_info, version_tag_suffix, is_python_module) -> List[Chunk]:
     """
     Build the MDX files for a given package.
@@ -321,7 +325,7 @@ def create_chunks(package, doc_folder, page_info, version_tag_suffix, is_python_
                 chunks.extend(page_chunks)
 
         except Exception as e:
-            raise type(e)(f"There was an error when converting {file} to chunks to embed.\n" + e.args[0]) from e
+            raise ChunkingError(f"There was an error when converting {file} to chunks to embed.\n" + e.args[0])
 
         if new_anchors is not None:
             page_name = str(file.with_suffix("").relative_to(doc_folder))
