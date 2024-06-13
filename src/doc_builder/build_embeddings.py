@@ -14,15 +14,16 @@
 # limitations under the License.
 
 
+import concurrent
 import importlib
 import os
 import re
-import time
 from collections import namedtuple
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from typing import List
 
-import requests
+from huggingface_hub import get_inference_endpoint
 from tqdm import tqdm
 
 from .autodoc import autodoc_markdown, resolve_links_in_text
@@ -348,45 +349,46 @@ def create_chunks(package, doc_folder, page_info, version_tag_suffix, is_python_
     return chunks
 
 
-def call_embed_api(chunks: List[Chunk]) -> List[Embedding]:
+def chunks_to_embeddings(client, chunks) -> List[Embedding]:
+    texts = [c.text for c in chunks]
+    inference_output = client.feature_extraction(texts, truncate=True)
+    embeddings = [
+        Embedding(text=c.text, source=c.source, package_name=c.package_name, embedding=embed)
+        for c, embed in zip(chunks, inference_output)
+    ]
+    return embeddings
+
+
+def call_embedding_inference(chunks: List[Chunk]) -> List[Embedding]:
     """
     Using https://huggingface.co/inference-endpoints with a text embedding model
     """
-    batch_size = 32
-    chunks_len = len(chunks)
+    batch_size = 20
     embeddings = []
 
-    API_URL = os.environ["HF_EMBED_URL"]
-    headers = {
-        "Accept": "application/json",
-        "Authorization": f"Bearer {os.environ['HF_EMBED_API_KEY']}",
-        "Content-Type": "application/json",
-    }
+    endpoint = get_inference_endpoint(
+        name=os.environ["HF_IE_NAME"], namespace=os.environ["HF_IE_NAMESPACE"], token=os.environ["HF_IE_TOKEN"]
+    )
+    if endpoint.status != "running":
+        print("[inference endpoint] restarting...")
+        endpoint.resume().wait()
+        print("[inference endpoint] restarted")
 
-    def query(payload):
-        response = requests.post(API_URL, headers=headers, json=payload)
-        return response.json()
+    client = endpoint.client
 
-    # warm up API call
-    output_warmup = query({"inputs": "Hello World!"})
-    if isinstance(output_warmup, dict) and "error" in output_warmup:
-        if output_warmup["error"] == "503 Service Unavailable":
-            print("Waking up Embedding Inference Endpoints. Retrying in 5 minutes")
-            time.sleep(300)  # 5 minutes
-        else:
-            raise Exception("Embedding Inference Endpoints error", output_warmup["error"])
+    with ThreadPoolExecutor(max_workers=16) as executor:
+        future_to_chunk = {
+            executor.submit(chunks_to_embeddings, client, chunks[i : i + batch_size]): i
+            for i in range(0, len(chunks), batch_size)
+        }
 
-    for i in tqdm(range(0, chunks_len, batch_size), desc="Calling Embedding Inference Endpoints"):
-        batch_chunk = chunks[i : i + batch_size]
-        batch_chunk_texts = [chunk.text for chunk in batch_chunk]
-
-        batch_embeddings = query({"inputs": batch_chunk_texts})
-
-        for chunk, _embedding in zip(batch_chunk, batch_embeddings):
-            embeddings = Embedding(
-                text=chunk.text, source=chunk.source, package_name=chunk.package_name, embedding=_embedding
-            )
-            embeddings.append(embeddings)
+        for future in tqdm(
+            concurrent.futures.as_completed(future_to_chunk),
+            total=len(future_to_chunk),
+            desc="Calling Embedding Inference Endpoints",
+        ):
+            batch_embeddings = future.result()
+            embeddings.extend(batch_embeddings)
 
     return embeddings
 
@@ -445,7 +447,7 @@ def build_embeddings(
     )
 
     # Step 2: create embeddings
-    embeddings = call_embed_api(chunks)
+    embeddings = call_embedding_inference(chunks)
     print(len(embeddings))
 
     # Step 3: push embeddings to vector database
