@@ -73,7 +73,7 @@ class MarkdownChunkNode:
             nested_level -= 1
         parent.children.append(child)
 
-    def get_chunks(self, page_info, chunk_len_chars=50, prefix=[]):
+    def get_chunks(self, page_info, chunk_len_chars, prefix=[]):
         chunks = []
         prefix = prefix + [self.heading]
         prefix_str = "\n".join(prefix) + "\n"
