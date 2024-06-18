@@ -33,7 +33,7 @@ from .utils import read_doc_config
 
 
 Chunk = namedtuple("Chunk", "text source package_name")
-Embedding = namedtuple("Chunk", "text source package_name embedding")
+Embedding = namedtuple("Embedding", "text source package_name embedding")
 
 
 _re_md_anchor = re.compile(r"\[\[(.*)]]")
@@ -352,6 +352,7 @@ def create_chunks(package, doc_folder, page_info, version_tag_suffix, is_python_
 def chunks_to_embeddings(client, chunks) -> List[Embedding]:
     texts = [c.text for c in chunks]
     inference_output = client.feature_extraction(texts, truncate=True)
+    inference_output = inference_output.tolist()
     embeddings = [
         Embedding(text=c.text, source=c.source, package_name=c.package_name, embedding=embed)
         for c, embed in zip(chunks, inference_output)
