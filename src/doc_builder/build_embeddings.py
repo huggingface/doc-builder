@@ -23,12 +23,14 @@ from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from typing import List
 
+import meilisearch
 from huggingface_hub import get_inference_endpoint
 from tqdm import tqdm
 
 from .autodoc import autodoc_markdown, resolve_links_in_text
 from .convert_md_to_mdx import process_md
 from .convert_rst_to_mdx import find_indent, is_empty_line
+from .meilisearch_helper import add_embeddings_to_db
 from .utils import read_doc_config
 
 
@@ -449,7 +451,13 @@ def build_embeddings(
 
     # Step 2: create embeddings
     embeddings = call_embedding_inference(chunks)
-    print(len(embeddings))
 
-    # Step 3: push embeddings to vector database
-    # TODO
+    # Step 3: push embeddings to vector database (meilisearch)
+    client = meilisearch.Client("https://edge.meilisearch.com", os.environ["MEILISEARCH_KEY"])
+    index_name = "docs-embed"
+
+    payload_docs_size = 50
+
+    for i in tqdm(range(0, len(embeddings), payload_docs_size)):
+        chunk_embeddings = embeddings[i : i + payload_docs_size]
+        add_embeddings_to_db(client, index_name, chunk_embeddings)
