@@ -55,6 +55,10 @@ def embeddings_command(args):
     build_embeddings(
         args.library_name,
         args.path_to_docs,
+        args.hf_ie_name,
+        args.hf_ie_namespace,
+        args.hf_ie_token,
+        args.meilisearch_key,
         version=version,
         version_tag=version_tag,
         language=args.language,
@@ -78,6 +82,10 @@ def embeddings_command_parser(subparsers=None):
         help="Local path to library documentation. The library should be cloned, and the folder containing the "
         "documentation files should be indicated here.",
     )
+    parser.add_argument("--hf_ie_name", type=str, help="Inference Endpoints name.")
+    parser.add_argument("--hf_ie_namespace", type=str, help="Inference Endpoints namespace.")
+    parser.add_argument("--hf_ie_token", type=str, help="Hugging Face token.")
+    parser.add_argument("--meilisearch_key", type=str, help="Meilisearch key.")
     parser.add_argument("--language", type=str, help="Language of the documentation to generate", default="en")
     parser.add_argument(
         "--version",
