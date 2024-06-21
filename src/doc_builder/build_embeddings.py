@@ -16,7 +16,6 @@
 
 import concurrent
 import importlib
-import os
 import re
 from collections import namedtuple
 from concurrent.futures import ThreadPoolExecutor
@@ -364,16 +363,14 @@ def chunks_to_embeddings(client, chunks) -> List[Embedding]:
     return embeddings
 
 
-def call_embedding_inference(chunks: List[Chunk]) -> List[Embedding]:
+def call_embedding_inference(chunks: List[Chunk], hf_ie_name, hf_ie_namespace, hf_ie_token) -> List[Embedding]:
     """
     Using https://huggingface.co/inference-endpoints with a text embedding model
     """
     batch_size = 20
     embeddings = []
 
-    endpoint = get_inference_endpoint(
-        name=os.environ["HF_IE_NAME"], namespace=os.environ["HF_IE_NAMESPACE"], token=os.environ["HF_IE_TOKEN"]
-    )
+    endpoint = get_inference_endpoint(name=hf_ie_name, namespace=hf_ie_namespace, token=hf_ie_token)
     if endpoint.status != "running":
         print("[inference endpoint] restarting...")
         endpoint.resume().wait()
@@ -401,6 +398,10 @@ def call_embedding_inference(chunks: List[Chunk]) -> List[Embedding]:
 def build_embeddings(
     package_name,
     doc_folder,
+    hf_ie_name,
+    hf_ie_namespace,
+    hf_ie_token,
+    meilisearch_key,
     version="main",
     version_tag="main",
     language="en",
@@ -454,10 +455,10 @@ def build_embeddings(
     return
 
     # Step 2: create embeddings
-    embeddings = call_embedding_inference(chunks)
+    embeddings = call_embedding_inference(chunks, hf_ie_name, hf_ie_namespace, hf_ie_token)
 
     # Step 3: push embeddings to vector database (meilisearch)
-    client = meilisearch.Client("https://edge.meilisearch.com", os.environ["MEILISEARCH_KEY"])
+    client = meilisearch.Client("https://edge.meilisearch.com", meilisearch_key)
     index_name = "docs-embed"
 
     payload_docs_size = 50
