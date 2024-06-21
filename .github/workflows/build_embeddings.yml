@@ -1,0 +1,76 @@
+name: Daily Build Embeddings
+
+env:
+  DIFFUSERS_SLOW_IMPORT: yes
+
+on:
+  push:
+  schedule:
+    - cron: "5 7 * * *" # every day at 07:05
+  # to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+jobs:
+  matrix-job:
+    runs-on: ubuntu-latest
+    container: huggingface/transformers-doc-builder
+    strategy:
+      max-parallel: 1 # run the matrix jobs sequentially
+      matrix:
+        include:
+          - repo_id: huggingface/diffusers
+            doc_folder: docs/source/en
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.ref }}
+      cancel-in-progress: true
+    timeout-minutes: 360  # Set timeout to 6 hours
+    steps:
+      - name: Setup REPO_NAME
+        shell: bash
+        run: |
+          current_path=$(pwd)
+          repo_id="${{ matrix.repo_id }}"
+          repo_name="${repo_id#*/}"
+          echo "REPO_NAME=${repo_name}" >> $GITHUB_ENV
+
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        with:
+          repository: ${{ matrix.repo_id }}
+          path: ${{ github.workspace }}/${{ env.REPO_NAME }}
+
+      - name: Install libgl1
+        run: apt-get install -y libgl1
+
+      - name: Setup environment
+        shell: bash
+        run: |
+          current_path=$(pwd)
+
+          cd ${{ env.REPO_NAME }}
+          pip install .[dev]
+
+          cd $current_path
+
+          rm -rf doc-builder
+          rm -rf .git
+          git clone https://github.com/huggingface/doc-builder.git
+          cd doc-builder
+          git fetch
+          git checkout build_embeddings
+          pip install .
+
+      - name: Build embeddings
+        shell: bash
+        run: |
+          doc-builder embeddings ${{ env.REPO_NAME }} ${{ env.REPO_NAME }}/${{ matrix.doc_folder }}
+
+
+  cleanup-job:
+    needs: matrix-job
+    runs-on: ubuntu-latest
+    steps:      
+      - name: Run cleanup steps
+        run: |
+          echo "Performing cleanup tasks"
+          # Add your cleanup commands here

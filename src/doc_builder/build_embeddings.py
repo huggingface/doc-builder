@@ -69,11 +69,13 @@ class MarkdownChunkNode:
             )
         parent = self
         nested_level = header_level - 2
+        current_level = 1
         while nested_level:
             if not parent.children:
-                parent.children.append(MarkdownChunkNode(None, None))
+                parent.children.append(MarkdownChunkNode("#" * current_level))
             parent = parent.children[-1]
             nested_level -= 1
+            current_level += 1
         parent.children.append(child)
 
     def get_chunks(self, page_info, chunk_len_chars, prefix=[]):
@@ -448,6 +450,8 @@ def build_embeddings(
         version_tag_suffix=version_tag_suffix,
         is_python_module=is_python_module,
     )
+
+    return
 
     # Step 2: create embeddings
     embeddings = call_embedding_inference(chunks)
