@@ -1,4 +1,5 @@
 import hashlib
+import sys
 from functools import wraps
 from time import sleep
 from typing import Callable, Tuple
@@ -47,7 +48,7 @@ def wait_for_task_completion(func: MeilisearchFunc) -> MeilisearchFunc:
             if task.status == "succeeded":
                 return task
             # task processing
-            sleep(1)
+            sleep(20)
 
     return wrapped_meilisearch_function
 
@@ -90,3 +91,35 @@ def add_embeddings_to_db(client: Client, index_name: str, embeddings):
     ]
     task_info = index.add_documents(payload_data)
     return client, task_info
+
+
+# see https://www.meilisearch.com/docs/learn/core_concepts/documents#upload
+MEILISEARCH_PAYLOAD_MAX_MB = 95
+
+
+def get_meili_chunks(obj_list):
+    # Convert max_chunk_size_mb to bytes
+    max_chunk_size_bytes = MEILISEARCH_PAYLOAD_MAX_MB * 1024 * 1024
+
+    chunks = []
+    current_chunk = []
+    current_chunk_size = 0
+
+    for obj in obj_list:
+        obj_size = sys.getsizeof(obj)
+
+        if current_chunk_size + obj_size > max_chunk_size_bytes:
+            # If adding this object exceeds the chunk size, start a new chunk
+            chunks.append(current_chunk)
+            current_chunk = [obj]
+            current_chunk_size = obj_size
+        else:
+            # Add the object to the current chunk
+            current_chunk.append(obj)
+            current_chunk_size += obj_size
+
+    # Don't forget to add the last chunk if it contains any objects
+    if current_chunk:
+        chunks.append(current_chunk)
+
+    return chunks
