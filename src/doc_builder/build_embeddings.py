@@ -29,7 +29,7 @@ from tqdm import tqdm
 from .autodoc import autodoc_markdown, resolve_links_in_text
 from .convert_md_to_mdx import process_md
 from .convert_rst_to_mdx import find_indent, is_empty_line
-from .meilisearch_helper import add_embeddings_to_db
+from .meilisearch_helper import add_embeddings_to_db, get_meili_chunks
 from .utils import read_doc_config
 
 
@@ -452,7 +452,7 @@ def build_embeddings(
         is_python_module=is_python_module,
     )
 
-    return
+    # return
 
     # Step 2: create embeddings
     embeddings = call_embedding_inference(chunks, hf_ie_name, hf_ie_namespace, hf_ie_token)
@@ -461,8 +461,7 @@ def build_embeddings(
     client = meilisearch.Client("https://edge.meilisearch.com", meilisearch_key)
     index_name = "docs-embed"
 
-    payload_docs_size = 50
+    payloads_embeddings = get_meili_chunks(embeddings)
 
-    for i in tqdm(range(0, len(embeddings), payload_docs_size)):
-        chunk_embeddings = embeddings[i : i + payload_docs_size]
-        add_embeddings_to_db(client, index_name, chunk_embeddings)
+    for payload_embeddings in tqdm(payloads_embeddings):
+        add_embeddings_to_db(client, index_name, payload_embeddings)
