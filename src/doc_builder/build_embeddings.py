@@ -29,14 +29,8 @@ from tqdm import tqdm
 from .autodoc import autodoc_markdown, resolve_links_in_text
 from .convert_md_to_mdx import process_md
 from .convert_rst_to_mdx import find_indent, is_empty_line
-from .meilisearch_helper import (
-    add_embeddings_to_db,
-    create_embedding_db,
-    delete_embedding_db,
-    get_meili_chunks,
-    swap_indexes,
-)
-from .utils import read_doc_config
+from .meilisearch_helper import add_embeddings_to_db, create_embedding_db, delete_embedding_db, swap_indexes
+from .utils import chunk_list, read_doc_config
 
 
 Chunk = namedtuple("Chunk", "text source package_name")
@@ -467,11 +461,9 @@ def build_embeddings(
 
     # Step 3: push embeddings to vector database (meilisearch)
     client = meilisearch.Client("https://edge.meilisearch.com", meilisearch_key)
-
-    payloads_embeddings = get_meili_chunks(embeddings)
-
-    for payload_embeddings in tqdm(payloads_embeddings):
-        add_embeddings_to_db(client, MEILI_INDEX_TEMP, payload_embeddings)
+    ITEMS_PER_CHUNK = 5000  # a value that was found experimentally
+    for chunk_embeddings in tqdm(chunk_list(embeddings, ITEMS_PER_CHUNK), desc="Uploading data to meilisearch"):
+        add_embeddings_to_db(client, MEILI_INDEX_TEMP, chunk_embeddings)
 
 
 def clean_meilisearch(meilisearch_key: str):
