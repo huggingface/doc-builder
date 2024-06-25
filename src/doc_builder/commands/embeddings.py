@@ -17,7 +17,7 @@
 import argparse
 import importlib
 
-from doc_builder import build_embeddings
+from doc_builder import build_embeddings, clean_meilisearch
 from doc_builder.utils import get_default_branch_name, get_doc_config, read_doc_config
 
 
@@ -73,7 +73,7 @@ def embeddings_command_parser(subparsers=None):
     if subparsers is not None:
         parser = subparsers.add_parser("embeddings")
     else:
-        parser = argparse.ArgumentParser("Doc Builder build command")
+        parser = argparse.ArgumentParser("Doc Builder embeddings command")
 
     parser.add_argument("library_name", type=str, help="Library name")
     parser.add_argument(
@@ -82,10 +82,10 @@ def embeddings_command_parser(subparsers=None):
         help="Local path to library documentation. The library should be cloned, and the folder containing the "
         "documentation files should be indicated here.",
     )
-    parser.add_argument("--hf_ie_name", type=str, help="Inference Endpoints name.")
-    parser.add_argument("--hf_ie_namespace", type=str, help="Inference Endpoints namespace.")
-    parser.add_argument("--hf_ie_token", type=str, help="Hugging Face token.")
-    parser.add_argument("--meilisearch_key", type=str, help="Meilisearch key.")
+    parser.add_argument("--hf_ie_name", type=str, help="Inference Endpoints name.", required=True)
+    parser.add_argument("--hf_ie_namespace", type=str, help="Inference Endpoints namespace.", required=True)
+    parser.add_argument("--hf_ie_token", type=str, help="Hugging Face token.", required=True)
+    parser.add_argument("--meilisearch_key", type=str, help="Meilisearch key.", required=True)
     parser.add_argument("--language", type=str, help="Language of the documentation to generate", default="en")
     parser.add_argument(
         "--version",
@@ -118,4 +118,16 @@ def embeddings_command_parser(subparsers=None):
     )
     if subparsers is not None:
         parser.set_defaults(func=embeddings_command)
+
+    # meilsiearch clean: swap & delete the temp index
+    if subparsers is not None:
+        parser_meilisearch_clean = subparsers.add_parser("meilisearch-clean")
+    else:
+        parser_meilisearch_clean = argparse.ArgumentParser(
+            "Doc Builder meilisearch clean command. Swap & delete the temp index."
+        )
+    parser_meilisearch_clean.add_argument("--meilisearch_key", type=str, help="Meilisearch key.", required=True)
+    if subparsers is not None:
+        parser_meilisearch_clean.set_defaults(func=lambda args: clean_meilisearch(args.meilisearch_key))
+
     return parser
