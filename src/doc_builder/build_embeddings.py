@@ -29,13 +29,21 @@ from tqdm import tqdm
 from .autodoc import autodoc_markdown, resolve_links_in_text
 from .convert_md_to_mdx import process_md
 from .convert_rst_to_mdx import find_indent, is_empty_line
-from .meilisearch_helper import add_embeddings_to_db, get_meili_chunks
+from .meilisearch_helper import (
+    add_embeddings_to_db,
+    create_embedding_db,
+    delete_embedding_db,
+    get_meili_chunks,
+    swap_indexes,
+)
 from .utils import read_doc_config
 
 
 Chunk = namedtuple("Chunk", "text source package_name")
 Embedding = namedtuple("Embedding", "text source package_name embedding")
 
+MEILI_INDEX = "docs-embed"
+MEILI_INDEX_TEMP = "docs-embed-temp"
 
 _re_md_anchor = re.compile(r"\[\[(.*)]]")
 _re_non_alphaneumeric = re.compile(r"[^a-z0-9\s]+", re.IGNORECASE)
@@ -459,9 +467,19 @@ def build_embeddings(
 
     # Step 3: push embeddings to vector database (meilisearch)
     client = meilisearch.Client("https://edge.meilisearch.com", meilisearch_key)
-    index_name = "docs-embed"
 
     payloads_embeddings = get_meili_chunks(embeddings)
 
     for payload_embeddings in tqdm(payloads_embeddings):
-        add_embeddings_to_db(client, index_name, payload_embeddings)
+        add_embeddings_to_db(client, MEILI_INDEX_TEMP, payload_embeddings)
+
+
+def clean_meilisearch(meilisearch_key: str):
+    """
+    Swap & delete temp index.
+    """
+    client = meilisearch.Client("https://edge.meilisearch.com", meilisearch_key)
+    swap_indexes(client, MEILI_INDEX, MEILI_INDEX_TEMP)
+    delete_embedding_db(client, MEILI_INDEX_TEMP)
+    create_embedding_db(client, MEILI_INDEX_TEMP)
+    print("[meilisearch] successfully swapped & deleted temp index.")

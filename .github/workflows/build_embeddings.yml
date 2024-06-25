@@ -69,8 +69,12 @@ jobs:
   cleanup-job:
     needs: matrix-job
     runs-on: ubuntu-latest
-    steps:      
-      - name: Run cleanup steps
-        run: |
-          echo "Performing cleanup tasks"
-          # Add your cleanup commands here
+    steps:
+      - name: Checkout doc-builder
+        uses: actions/checkout@v2
+        
+      - name: Install doc-builder
+        run: pip install .[dev]
+        
+      - name: Clean meilisearch
+        run: doc-builder meilisearch-clean --meilisearch_key ${{ secrets.MEILISEARCH_KEY }}
