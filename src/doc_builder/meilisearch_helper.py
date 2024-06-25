@@ -93,6 +93,12 @@ def add_embeddings_to_db(client: Client, index_name: str, embeddings):
     return client, task_info
 
 
+@wait_for_task_completion
+def swap_indexes(client: Client, index1_name: str, index2_name: str):
+    task_info = client.swap_indexes([{"indexes": [index1_name, index2_name]}])
+    return client, task_info
+
+
 # see https://www.meilisearch.com/docs/learn/core_concepts/documents#upload
 MEILISEARCH_PAYLOAD_MAX_MB = 95
 
