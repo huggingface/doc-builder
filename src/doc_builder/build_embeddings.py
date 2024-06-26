@@ -86,23 +86,23 @@ class MarkdownChunkNode:
         split_content = self.split_markdown(self.content)
         if not len(split_content):
             return []
-        chunk = prefix_str
+        chunk_str = ""
         for content in split_content:
-            if len(chunk) > chunk_len_chars:
-                # todo: add source dawg
+            if len(chunk_str) > chunk_len_chars and len(chunk_str) > len(prefix_str):
                 chunks.append(
                     Chunk(
-                        text=chunk.strip(),
+                        text=prefix_str.strip() + "\n\n" + chunk_str.strip(),
                         source=f"{page_info['page']}#{self.anchor}",
                         package_name=page_info["package_name"],
                     )
                 )
-                chunk = prefix_str
-            chunk += content + " "
-        if len(chunk) > len(prefix_str):
+                chunk_str = ""
+            chunk_str += content + " "
+
+        if len(chunk_str) > len(prefix_str):
             chunks.append(
                 Chunk(
-                    text=chunk.strip(),
+                    text=prefix_str.strip() + "\n\n" + chunk_str.strip(),
                     source=f"{page_info['page']}#{self.anchor}",
                     package_name=page_info["package_name"],
                 )
