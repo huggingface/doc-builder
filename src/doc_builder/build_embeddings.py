@@ -29,7 +29,13 @@ from tqdm import tqdm
 from .autodoc import autodoc_markdown, resolve_links_in_text
 from .convert_md_to_mdx import process_md
 from .convert_rst_to_mdx import find_indent, is_empty_line
-from .meilisearch_helper import add_embeddings_to_db, create_embedding_db, delete_embedding_db, swap_indexes
+from .meilisearch_helper import (
+    add_embeddings_to_db,
+    create_embedding_db,
+    delete_embedding_db,
+    swap_indexes,
+    update_db_settings,
+)
 from .utils import chunk_list, read_doc_config
 
 
@@ -474,4 +480,5 @@ def clean_meilisearch(meilisearch_key: str):
     swap_indexes(client, MEILI_INDEX, MEILI_INDEX_TEMP)
     delete_embedding_db(client, MEILI_INDEX_TEMP)
     create_embedding_db(client, MEILI_INDEX_TEMP)
+    update_db_settings(client, MEILI_INDEX_TEMP)
     print("[meilisearch] successfully swapped & deleted temp index.")
