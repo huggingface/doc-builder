@@ -12,8 +12,8 @@ from meilisearch.client import Client, TaskInfo
 # https://github.com/meilisearch/meilisearch-python/blob/d5a0babe50b4ce5789892845db98b30d4db72203/tests/index/test_index_search_meilisearch.py#L491-L493
 # https://github.com/meilisearch/meilisearch-python/blob/d5a0babe50b4ce5789892845db98b30d4db72203/tests/conftest.py#L132-L146
 
-VECOR_NAME = "docs-embed"
-VECOR_DIM = 768
+VECTOR_NAME = "docs-embed"
+VECTOR_DIM = 768  # dim of https://huggingface.co/BAAI/bge-base-en-v1.5
 
 MeilisearchFunc = Callable[..., Tuple[Client, TaskInfo]]
 
@@ -56,7 +56,7 @@ def wait_for_task_completion(func: MeilisearchFunc) -> MeilisearchFunc:
 @wait_for_task_completion
 def create_embedding_db(client: Client, index_name: str):
     index = client.index(index_name)
-    task_info = index.update_embedders({VECOR_NAME: {"source": "userProvided", "dimensions": VECOR_DIM}})
+    task_info = index.update_embedders({VECTOR_NAME: {"source": "userProvided", "dimensions": VECTOR_DIM}})
     return client, task_info
 
 
@@ -93,7 +93,7 @@ def add_embeddings_to_db(client: Client, index_name: str, embeddings):
             "source_page_url": e.source_page_url,
             "source_page_title": e.source_page_title,
             "library": e.package_name,
-            "_vectors": {VECOR_NAME: e.embedding},
+            "_vectors": {VECTOR_NAME: e.embedding},
         }
         for e in embeddings
     ]
