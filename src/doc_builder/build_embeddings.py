@@ -39,8 +39,8 @@ from .meilisearch_helper import (
 from .utils import chunk_list, read_doc_config
 
 
-Chunk = namedtuple("Chunk", "text source package_name")
-Embedding = namedtuple("Embedding", "text source package_name embedding")
+Chunk = namedtuple("Chunk", "text source_page_url source_page_title package_name")
+Embedding = namedtuple("Embedding", "text source_page_url source_page_title package_name embedding")
 
 MEILI_INDEX = "docs-embed"
 MEILI_INDEX_TEMP = "docs-embed-temp"
@@ -98,7 +98,8 @@ class MarkdownChunkNode:
                 chunks.append(
                     Chunk(
                         text=prefix_str.strip() + "\n\n" + chunk_str.strip(),
-                        source=f"{page_info['page']}#{self.anchor}",
+                        source_page_url=f"https://huggingface.co/docs/{page_info['package_name']}/{page_info['page']}#{self.anchor}",
+                        source_page_title=get_page_title(page_info["page"]),
                         package_name=page_info["package_name"],
                     )
                 )
@@ -109,7 +110,8 @@ class MarkdownChunkNode:
             chunks.append(
                 Chunk(
                     text=prefix_str.strip() + "\n\n" + chunk_str.strip(),
-                    source=f"{page_info['page']}#{self.anchor}",
+                    source_page_url=f"https://huggingface.co/docs/{page_info['package_name']}/{page_info['page']}#{self.anchor}",
+                    source_page_title=get_page_title(page_info["page"]),
                     package_name=page_info["package_name"],
                 )
             )
@@ -198,7 +200,8 @@ def create_autodoc_chunks(content, package, return_anchors=False, page_info=None
             object_doc_chunks = [
                 Chunk(
                     text=od["doc"],
-                    source=f"{page_info['page']}#{od['anchor_name']}",
+                    source_page_url=f"https://huggingface.co/docs/{page_info['package_name']}/{page_info['page']}#{od['anchor_name']}",
+                    source_page_title=get_page_title(page_info["page"]),
                     package_name=page_info["package_name"],
                 )
                 for od in object_docs
@@ -268,6 +271,19 @@ def clean_md(text):
     text = _re_html_comment.sub("", text)
     text = _re_framework_pytorch.sub(lambda m: m.group(1).strip(), text)
     return text.strip()
+
+
+def get_page_title(path: str):
+    """
+    Given a path to doc page, generate doc page title.
+    Example: "api/schedulers/lms_discrete" -> "Lms discrete"
+    """
+    # Split the string by '/' and take the last part
+    last_part = path.split("/")[-1]
+    # Replace underscores with spaces
+    formatted_string = last_part.replace("_", " ")
+    # Capitalize the first letter of the entire string
+    return formatted_string.capitalize()
 
 
 _re_autodoc_all = re.compile(r"(\[\[autodoc\]\]\s+[\w\.]+(?:\n\s+-\s+\w+)*\b)", re.DOTALL)
@@ -366,7 +382,13 @@ def chunks_to_embeddings(client, chunks) -> List[Embedding]:
     inference_output = client.feature_extraction(texts, truncate=True)
     inference_output = inference_output.tolist()
     embeddings = [
-        Embedding(text=c.text, source=c.source, package_name=c.package_name, embedding=embed)
+        Embedding(
+            text=c.text,
+            source_page_url=c.source_page_url,
+            source_page_title=c.source_page_title,
+            package_name=c.package_name,
+            embedding=embed,
+        )
         for c, embed in zip(chunks, inference_output)
     ]
     return embeddings
@@ -460,8 +482,6 @@ def build_embeddings(
         version_tag_suffix=version_tag_suffix,
         is_python_module=is_python_module,
     )
-
-    # return
 
     # Step 2: create embeddings
     embeddings = call_embedding_inference(chunks, hf_ie_name, hf_ie_namespace, hf_ie_token)

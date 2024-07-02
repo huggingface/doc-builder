@@ -90,7 +90,8 @@ def add_embeddings_to_db(client: Client, index_name: str, embeddings):
         {
             "id": hash_text_sha1(e.text),
             "text": e.text,
-            "source": e.source,
+            "source_page_url": e.source_page_url,
+            "source_page_title": e.source_page_title,
             "library": e.package_name,
             "_vectors": {VECOR_NAME: e.embedding},
         }
