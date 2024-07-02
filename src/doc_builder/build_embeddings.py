@@ -473,12 +473,13 @@ def build_embeddings(
         add_embeddings_to_db(client, MEILI_INDEX_TEMP, chunk_embeddings)
 
 
-def clean_meilisearch(meilisearch_key: str):
+def clean_meilisearch(meilisearch_key: str, swap: bool):
     """
     Swap & delete temp index.
     """
     client = meilisearch.Client("https://edge.meilisearch.com", meilisearch_key)
-    swap_indexes(client, MEILI_INDEX, MEILI_INDEX_TEMP)
+    if swap:
+        swap_indexes(client, MEILI_INDEX, MEILI_INDEX_TEMP)
     delete_embedding_db(client, MEILI_INDEX_TEMP)
     create_embedding_db(client, MEILI_INDEX_TEMP)
     update_db_settings(client, MEILI_INDEX_TEMP)

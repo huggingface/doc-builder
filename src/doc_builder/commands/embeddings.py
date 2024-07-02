@@ -127,7 +127,10 @@ def embeddings_command_parser(subparsers=None):
             "Doc Builder meilisearch clean command. Swap & delete the temp index."
         )
     parser_meilisearch_clean.add_argument("--meilisearch_key", type=str, help="Meilisearch key.", required=True)
+    parser_meilisearch_clean.add_argument(
+        "--swap", action="store_true", help="Whether to swap temp index with prod index."
+    )
     if subparsers is not None:
-        parser_meilisearch_clean.set_defaults(func=lambda args: clean_meilisearch(args.meilisearch_key))
+        parser_meilisearch_clean.set_defaults(func=lambda args: clean_meilisearch(args.meilisearch_key, args.swap))
 
     return parser
