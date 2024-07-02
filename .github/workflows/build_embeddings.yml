@@ -75,12 +75,18 @@ jobs:
   cleanup-job:
     needs: matrix-job
     runs-on: ubuntu-latest
+    if: always() # This ensures that the cleanup job runs regardless of the result of matrix-job
     steps:
       - name: Checkout doc-builder
         uses: actions/checkout@v2
-        
+      
       - name: Install doc-builder
         run: pip install .[dev]
         
-      - name: Clean meilisearch
+      - name: Success Cleanup
+        if: success() # Runs if all matrix jobs succeeded
+        run: doc-builder meilisearch-clean --meilisearch_key ${{ secrets.MEILISEARCH_KEY }} --swap
+
+      - name: Failure Cleanup
+        if: failure() # Runs if any matrix job failed
         run: doc-builder meilisearch-clean --meilisearch_key ${{ secrets.MEILISEARCH_KEY }}
