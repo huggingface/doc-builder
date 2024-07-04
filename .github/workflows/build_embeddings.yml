@@ -26,6 +26,10 @@ jobs:
             doc_folder: docs/source/en
           - repo_id: huggingface/transformers
             doc_folder: docs/source/en
+          - repo_id: huggingface/hub-docs
+            doc_folder: docs/hub
+            package_name: hub
+            is_not_python_module: true
     concurrency:
       group: ${{ github.workflow }}-${{ github.ref }}
       cancel-in-progress: true
@@ -51,12 +55,12 @@ jobs:
       - name: Setup environment
         shell: bash
         run: |
-          current_path=$(pwd)
-
-          cd ${{ env.REPO_NAME }}
-          pip install .[dev]
-
-          cd $current_path
+          if [[ "${{ matrix.is_not_python_module }}" != "true" ]]; then
+            current_path=$(pwd)
+            cd ${{ env.REPO_NAME }}
+            pip install .[dev]
+            cd $current_path
+          fi
 
           rm -rf doc-builder
           rm -rf .git
@@ -69,7 +73,12 @@ jobs:
       - name: Build embeddings
         shell: bash
         run: |
-          doc-builder embeddings ${{ env.REPO_NAME }} ${{ env.REPO_NAME }}/${{ matrix.doc_folder }} --hf_ie_name docs-embed-bge-base-en-v1-5 --hf_ie_namespace huggingface --hf_ie_token ${{ secrets.HF_IE_TOKEN }} --meilisearch_key ${{ secrets.MEILISEARCH_KEY }}
+          echo Building docs for ${{ matrix.package_name || env.REPO_NAME }}
+          FLAGS=""
+          if [[ "${{ matrix.is_not_python_module }}" == "true" ]]; then
+            FLAGS="--not_python_module"
+          fi
+          doc-builder embeddings ${{ matrix.package_name || env.REPO_NAME }} ${{ env.REPO_NAME }}/${{ matrix.doc_folder }} --hf_ie_name docs-embed-bge-base-en-v1-5 --hf_ie_namespace huggingface --hf_ie_token ${{ secrets.HF_IE_TOKEN }} --meilisearch_key ${{ secrets.MEILISEARCH_KEY }} $FLAGS
 
 
   cleanup-job:
