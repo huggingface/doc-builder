@@ -11,7 +11,12 @@ const allFiles = listFiles({
 
 const filesToDelete: string[] = [];
 
+let fileCount = 0;
+let filesWithoutDates = 0;
+
 for await (const file of allFiles) {
+	fileCount++;
+	
 	if (file.type !== "file" || !file.path.endsWith(".zip")) {
 		continue;
 	}
@@ -19,6 +24,7 @@ for await (const file of allFiles) {
 	const date = file.lastCommit?.date;
 
 	if (!date) {
+		filesWithoutDate++;
 		continue;
 	}
 
@@ -28,6 +34,8 @@ for await (const file of allFiles) {
 
 	filesToDelete.push(file.path);
 }
+
+console.log({fileCount, filesWithoutDates});
 
 if (filesToDelete.length) {
 	console.log("deleting", filesToDelete.length, "files");
