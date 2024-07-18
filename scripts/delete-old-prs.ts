@@ -24,7 +24,7 @@ for await (const file of allFiles) {
 	const date = file.lastCommit?.date;
 
 	if (!date) {
-		filesWithoutDate++;
+		filesWithoutDates++;
 		continue;
 	}
 
