@@ -1,17 +1,23 @@
 #!/usr/bin/env -S deno run --allow-env --allow-net --allow-run --allow-read
 // To format: npx prettier --write .
-import { commit, listFiles } from "npm:@huggingface/hub@0.1.3";
+import { commit, listFiles } from "npm:@huggingface/hub@0.15.1";
 
 const oneMonthAgo = new Date(Date.now() - 30 * 24 * 3600 * 1000);
 
 const allFiles = listFiles({
 	repo: { type: "dataset", name: "hf-doc-build/doc-build-dev" },
 	recursive: true,
+	expand: true,
 });
 
 const filesToDelete: string[] = [];
 
+let fileCount = 0;
+let filesWithoutDates = 0;
+
 for await (const file of allFiles) {
+	fileCount++;
+	
 	if (file.type !== "file" || !file.path.endsWith(".zip")) {
 		continue;
 	}
@@ -19,6 +25,7 @@ for await (const file of allFiles) {
 	const date = file.lastCommit?.date;
 
 	if (!date) {
+		filesWithoutDates++;
 		continue;
 	}
 
@@ -28,6 +35,8 @@ for await (const file of allFiles) {
 
 	filesToDelete.push(file.path);
 }
+
+console.log({fileCount, filesWithoutDates});
 
 if (filesToDelete.length) {
 	console.log("deleting", filesToDelete.length, "files");
