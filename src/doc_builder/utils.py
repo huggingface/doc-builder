@@ -193,3 +193,10 @@ def sveltify_file_route(filename):
         # Replace the '{name}.mdx' with '{name}/+page.svelte'
         return filename.rsplit(".", 1)[0] + "/+page.svelte"
     return filename
+
+
+def chunk_list(lst, n):
+    """
+    Create a list of chunks
+    """
+    return [lst[i : i + n] for i in range(0, len(lst), n)]
