@@ -39,6 +39,10 @@ on:
         type: string
         default: 'huggingface'
         description: "Owner of the repo to build documentation for. Defaults to 'huggingface'."
+      version:
+        type: string
+        default: "main"
+        description: "Version of the library whose docs are being built."
       version_tag_suffix:
         type: string
         default: "src/"
@@ -196,7 +200,7 @@ jobs:
           source .venv/bin/activate
           echo "doc_folder has been set to ${{ env.doc_folder }}"
           cd doc-builder
-          args="--build_dir ../build_dir --clean --version pr_${{ inputs.pr_number }} --html ${{ inputs.additional_args }} --repo_owner ${{ inputs.repo_owner }} --repo_name ${{ inputs.package }} --version_tag_suffix=${{ inputs.version_tag_suffix }}"
+          args="--build_dir ../build_dir --clean --version pr_${{ inputs.pr_number }} --html ${{ inputs.additional_args }} --repo_owner ${{ inputs.repo_owner }} --repo_name ${{ inputs.package }} --version_tag_suffix=${{ inputs.version_tag_suffix }} --version ${{ inputs.version }}"
 
           if [ -z "${{ inputs.languages }}" ];
           then
