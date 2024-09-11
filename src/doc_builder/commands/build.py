@@ -71,7 +71,7 @@ def build_command(args):
     default_version = get_default_branch_name(args.path_to_docs)
     if args.not_python_module and args.version is None:
         version = default_version
-    elif args.version is None:
+    elif not args.not_python_module:
         module = importlib.import_module(args.library_name)
         version = module.__version__
 
