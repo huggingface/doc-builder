@@ -34,7 +34,7 @@ def find_object_in_package(object_name, package):
     path_splits = object_name.split(".")
     if path_splits[0] == package.__name__:
         path_splits = path_splits[1:]
-    
+
     module = package
     for idx, split in enumerate(path_splits):
         submodule = getattr(module, split, None)
