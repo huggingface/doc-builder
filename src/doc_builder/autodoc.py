@@ -29,25 +29,27 @@ def find_object_in_package(object_name, package):
 
     Args:
     - **object_name** (`str`) -- The name of the object to retrieve.
-    -- **package** (`types.ModuleType`) -- The package to look into.
+    - **package** (`types.ModuleType`) -- The package to look into.
     """
     path_splits = object_name.split(".")
     if path_splits[0] == package.__name__:
         path_splits = path_splits[1:]
+    
     module = package
     for idx, split in enumerate(path_splits):
         submodule = getattr(module, split, None)
-        # `split` could be the name of a package if `package` is a namespace package, in which case it doesn't appear
-        # as an attribute if the submodule was not imported before
-        if submodule is None and idx == 0:
+        if submodule is None:
             try:
-                importlib.import_module(f"{package.__name__}.{split}")
+                # Try importing at this level
+                full_module_path = f"{module.__name__}.{split}"
+                importlib.import_module(full_module_path)
                 submodule = getattr(module, split, None)
             except ImportError:
-                pass
+                return None  # Return None if the module cannot be found or imported
         module = submodule
         if module is None:
-            return
+            return None
+
     return module
 
 
