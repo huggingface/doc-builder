@@ -61,7 +61,7 @@ on:
 
 jobs:
   build_pr_documentation:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     container:
       ${{ inputs.custom_container }}
     env:
@@ -83,11 +83,6 @@ jobs:
         with:
           node-version: '20'
           cache-dependency-path: "kit/package-lock.json"
-
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.10'
 
       - name: Export ROOT_APT_GET ('apt-get' or 'sudo apt-get')
         # Use `sudo` only if running on the base runner.
@@ -146,15 +141,10 @@ jobs:
         with:
           toolchain: stable
 
-      - name: Create and activate virtual environment
-        run: |
-          python -m venv venv
-          source venv/bin/activate
-
       # Use venv in both cases
       - name: Install uv
         run: |
-          pip install -U uv --break-system-packages
+          pip install -U uv
           uv venv
 
       - name: Setup environment
