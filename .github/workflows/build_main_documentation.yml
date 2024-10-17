@@ -60,7 +60,7 @@ on:
 
 jobs:
   build_main_documentation:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     container:
       ${{ inputs.custom_container }}
     env:
@@ -71,7 +71,7 @@ jobs:
         with:
           repository: 'huggingface/doc-builder'
           path: doc-builder
-        
+
       - uses: actions/checkout@v4
         with:
           repository: '${{ inputs.repo_owner }}/${{ inputs.package }}'
@@ -87,7 +87,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache-dependency-path: "kit/package-lock.json" 
+          cache-dependency-path: "kit/package-lock.json"
 
       - name: Export ROOT_APT_GET ('apt-get' or 'sudo apt-get')
         # Use `sudo` only if running on the base runner.
@@ -148,7 +148,7 @@ jobs:
       # Use venv in both cases
       - name: Install uv
         run: |
-          pip install -U uv --break-system-packages
+          pip install -U uv
           uv venv
 
       - name: Setup environment
@@ -192,7 +192,7 @@ jobs:
           then
             bash -c "${{ inputs.pre_command }}"
           fi
-      
+
       - name: Convert notebooks to markdown files
         if: inputs.convert_notebooks
         run: |
