@@ -432,6 +432,8 @@ def build_embeddings(
         is_python_module=is_python_module,
     )
 
+    llms_text = llms_text.strip()
+
     # Step 2: save the files
     api = HfApi()
 
