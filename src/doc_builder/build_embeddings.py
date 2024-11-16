@@ -304,7 +304,7 @@ def create_chunks(package, doc_folder, page_info, version_tag_suffix, is_python_
     if "package_name" not in page_info:
         page_info["package_name"] = package.__name__
 
-    chunks = []
+    chunks = ""
     all_files = list(doc_folder.glob("**/*"))
     all_errors = []
     for file in tqdm(all_files, desc="Building the chunks to embed"):
@@ -336,7 +336,7 @@ def create_chunks(package, doc_folder, page_info, version_tag_suffix, is_python_
                 if is_python_module:
                     lib_content = resolve_links_in_text(lib_content, package, anchor_mapping, page_info)
 
-                chunks.extend(lib_content)
+                chunks += "\n\n" + lib_content
 
         except Exception as e:
             pass
@@ -359,7 +359,7 @@ def create_chunks(package, doc_folder, page_info, version_tag_suffix, is_python_
             "The deployment of the documentation will fail because of the following errors:\n" + "\n".join(all_errors)
         )
 
-    return "\n\n".join(chunks)
+    return chunks
 
 
 def chunks_to_embeddings(client, chunks) -> List[Embedding]:
