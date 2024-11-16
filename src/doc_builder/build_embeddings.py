@@ -14,7 +14,6 @@
 # limitations under the License.
 
 
-import concurrent
 import importlib
 import re
 from collections import namedtuple
@@ -22,21 +21,14 @@ from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from typing import List
 
-import meilisearch
-from huggingface_hub import get_inference_endpoint
 from tqdm import tqdm
 
 from .autodoc import autodoc_markdown, resolve_links_in_text
 from .convert_md_to_mdx import process_md
 from .convert_rst_to_mdx import find_indent, is_empty_line
-from .meilisearch_helper import (
-    add_embeddings_to_db,
-    create_embedding_db,
-    delete_embedding_db,
-    swap_indexes,
-    update_db_settings,
-)
 from .utils import chunk_list, read_doc_config
+from huggingface_hub import HfApi
+from pathlib import Path
 
 
 Chunk = namedtuple("Chunk", "text source_page_url source_page_title package_name")
@@ -328,30 +320,23 @@ def create_chunks(package, doc_folder, page_info, version_tag_suffix, is_python_
                 content = process_md(content, page_info)
                 autodoc_content = "\n\n".join(_re_autodoc_all.findall(content))
                 content = _re_autodoc_all.sub("", content)
-                autodoc_chunks, new_anchors, errors = create_autodoc_chunks(
+                _autodoc_chunks, new_anchors, errors = create_autodoc_chunks(
                     autodoc_content,
                     package,
                     return_anchors=True,
                     page_info=page_info,
                     version_tag_suffix=version_tag_suffix,
                 )
-                markdown_chunks = create_markdown_chunks(
-                    content,
-                    page_info=page_info,
-                )
-
+                
                 # Make sure we clean up for next page.
                 del page_info["page"]
 
-                page_chunks = markdown_chunks + autodoc_chunks
+                lib_content = content + "\n\n" + autodoc_content
 
                 if is_python_module:
-                    page_chunks = [
-                        chunk._replace(text=resolve_links_in_text(chunk.text, package, anchor_mapping, page_info))
-                        for chunk in page_chunks
-                    ]
+                    lib_content = lib_content._replace(text=resolve_links_in_text(lib_content, package, anchor_mapping, page_info))
 
-                chunks.extend(page_chunks)
+                chunks.extend(lib_content)
 
         except Exception as e:
             raise ChunkingError(f"There was an error when converting {file} to chunks to embed.\n" + e.args[0])
@@ -374,7 +359,7 @@ def create_chunks(package, doc_folder, page_info, version_tag_suffix, is_python_
             "The deployment of the documentation will fail because of the following errors:\n" + "\n".join(all_errors)
         )
 
-    return chunks
+    return "\n\n".join(chunks)
 
 
 def chunks_to_embeddings(client, chunks) -> List[Embedding]:
@@ -394,45 +379,9 @@ def chunks_to_embeddings(client, chunks) -> List[Embedding]:
     return embeddings
 
 
-def call_embedding_inference(chunks: List[Chunk], hf_ie_name, hf_ie_namespace, hf_ie_token) -> List[Embedding]:
-    """
-    Using https://huggingface.co/inference-endpoints with a text embedding model
-    """
-    batch_size = 20
-    embeddings = []
-
-    endpoint = get_inference_endpoint(name=hf_ie_name, namespace=hf_ie_namespace, token=hf_ie_token)
-    if endpoint.status != "running":
-        print("[inference endpoint] restarting...")
-        endpoint.resume().wait()
-        print("[inference endpoint] restarted")
-
-    client = endpoint.client
-
-    with ThreadPoolExecutor(max_workers=16) as executor:
-        future_to_chunk = {
-            executor.submit(chunks_to_embeddings, client, chunks[i : i + batch_size]): i
-            for i in range(0, len(chunks), batch_size)
-        }
-
-        for future in tqdm(
-            concurrent.futures.as_completed(future_to_chunk),
-            total=len(future_to_chunk),
-            desc="Calling Embedding Inference Endpoints",
-        ):
-            batch_embeddings = future.result()
-            embeddings.extend(batch_embeddings)
-
-    return embeddings
-
-
 def build_embeddings(
     package_name,
     doc_folder,
-    hf_ie_name,
-    hf_ie_namespace,
-    hf_ie_token,
-    meilisearch_key,
     version="main",
     version_tag="main",
     language="en",
@@ -475,7 +424,7 @@ def build_embeddings(
     package = importlib.import_module(package_name) if is_python_module else None
 
     # Step 1: create chunks
-    chunks = create_chunks(
+    llms_text = create_chunks(
         package,
         doc_folder,
         page_info,
@@ -483,24 +432,19 @@ def build_embeddings(
         is_python_module=is_python_module,
     )
 
-    # Step 2: create embeddings
-    embeddings = call_embedding_inference(chunks, hf_ie_name, hf_ie_namespace, hf_ie_token)
+    # Step 2: save the files
+    api = HfApi()
 
-    # Step 3: push embeddings to vector database (meilisearch)
-    client = meilisearch.Client("https://edge.meilisearch.com", meilisearch_key)
-    ITEMS_PER_CHUNK = 5000  # a value that was found experimentally
-    for chunk_embeddings in tqdm(chunk_list(embeddings, ITEMS_PER_CHUNK), desc="Uploading data to meilisearch"):
-        add_embeddings_to_db(client, MEILI_INDEX_TEMP, chunk_embeddings)
+    # Create temporary file
+    temp_path = Path("temp.txt")
+    temp_path.write_text(llms_text)
 
+    # Upload the file
+    url = api.upload_file(
+        path_or_fileobj=str(temp_path),
+        path_in_repo=f"{package_name}.txt",
+        repo_id="mishig/llms-txt",
+        token="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",
+    )
 
-def clean_meilisearch(meilisearch_key: str, swap: bool):
-    """
-    Swap & delete temp index.
-    """
-    client = meilisearch.Client("https://edge.meilisearch.com", meilisearch_key)
-    if swap:
-        swap_indexes(client, MEILI_INDEX, MEILI_INDEX_TEMP)
-    delete_embedding_db(client, MEILI_INDEX_TEMP)
-    create_embedding_db(client, MEILI_INDEX_TEMP)
-    update_db_settings(client, MEILI_INDEX_TEMP)
-    print("[meilisearch] successfully swapped & deleted temp index.")
+    print("Success", url)
