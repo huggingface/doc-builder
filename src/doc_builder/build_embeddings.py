@@ -334,7 +334,7 @@ def create_chunks(package, doc_folder, page_info, version_tag_suffix, is_python_
                 lib_content = content + "\n\n" + autodoc_content
 
                 if is_python_module:
-                    lib_content = lib_content._replace(text=resolve_links_in_text(lib_content, package, anchor_mapping, page_info))
+                    lib_content = resolve_links_in_text(lib_content, package, anchor_mapping, page_info)
 
                 chunks.extend(lib_content)
 
