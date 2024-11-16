@@ -17,7 +17,7 @@
 import argparse
 import importlib
 
-from doc_builder import build_embeddings, clean_meilisearch
+from doc_builder import build_embeddings
 from doc_builder.utils import get_default_branch_name, get_doc_config, read_doc_config
 
 
