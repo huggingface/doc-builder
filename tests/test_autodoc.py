@@ -183,6 +183,7 @@ class AutodocTester(unittest.TestCase):
         self.assertEqual(get_type_name(Optional[str]), "Optional[str]")
         self.assertEqual(get_type_name(Union[bool, int]), "Union[bool, int]")
         self.assertEqual(get_type_name(List[Optional[str]]), "List[Optional[str]]")
+        self.assertEqual(get_type_name(List[Optional[Union[str, int, None]]]), "List[Union[str, int]]")
 
     def test_format_signature(self):
         self.assertEqual(

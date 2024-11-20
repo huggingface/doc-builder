@@ -88,14 +88,9 @@ def get_shortest_path(obj, package):
 
 def get_type_name(typ):
     """
-    Returns the name of the type passed, properly dealing with type annotions.
+    Returns the name of the type passed, properly dealing with type annotations.
     """
-    if hasattr(typ, "__qualname__"):
-        return typ.__qualname__
-    elif hasattr(typ, "__name__"):
-        return typ.__name__
-    name = str(typ)
-    return re.sub(r"typing.Union\[(\S+), NoneType\]", r"typing.Optional[\1]", name)
+    return re.sub(r"typing\.", "", str(typ))
 
 
 def format_signature(obj):
