@@ -179,10 +179,10 @@ class AutodocTester(unittest.TestCase):
         self.assertEqual(get_type_name(str), "str")
         self.assertEqual(get_type_name(BertModel), "BertModel")
         # Objects from typing which are the most annoying
-        self.assertEqual(get_type_name(List[str]), "typing.List[str]")
-        self.assertEqual(get_type_name(Optional[str]), "typing.Optional[str]")
-        self.assertEqual(get_type_name(Union[bool, int]), "typing.Union[bool, int]")
-        self.assertEqual(get_type_name(List[Optional[str]]), "typing.List[typing.Optional[str]]")
+        self.assertEqual(get_type_name(List[str]), "List[str]")
+        self.assertEqual(get_type_name(Optional[str]), "Optional[str]")
+        self.assertEqual(get_type_name(Union[bool, int]), "Union[bool, int]")
+        self.assertEqual(get_type_name(List[Optional[str]]), "List[Optional[str]]")
 
     def test_format_signature(self):
         self.assertEqual(
