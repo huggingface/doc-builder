@@ -90,7 +90,10 @@ def get_type_name(typ):
     """
     Returns the name of the type passed, properly dealing with type annotations.
     """
-    return str(typ)  # previous implementation was more complex, but this is enough for python 3.9+
+    if isinstance(typ, type):
+        # If it's a class, use its name.
+        return getattr(typ, '__qualname__', None) or getattr(typ, '__name__', None)
+    return str(typ) # otherwise, trust its string representation
 
 
 def format_signature(obj):
