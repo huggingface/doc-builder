@@ -90,7 +90,7 @@ def get_type_name(typ):
     """
     Returns the name of the type passed, properly dealing with type annotations.
     """
-    return re.sub(r"typing\.", "", str(typ))
+    return str(typ)  # previous implementation was more complex, but this is enough for python 3.9+
 
 
 def format_signature(obj):
