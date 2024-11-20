@@ -39,6 +39,7 @@ from doc_builder.autodoc import (
 from transformers import BertModel, BertTokenizer, BertTokenizerFast, TrainingArguments
 from transformers.utils import PushToHubMixin
 
+
 # This is dynamic since the Transformers/timm libraries are not frozen.
 TEST_LINE_NUMBER = inspect.getsourcelines(transformers.utils.ModelOutput)[1]
 TEST_LINE_NUMBER2 = inspect.getsourcelines(transformers.pipeline)[1]
@@ -182,7 +183,9 @@ class AutodocTester(unittest.TestCase):
         self.assertEqual(get_type_name(Optional[str]), "typing.Optional[str]")
         self.assertEqual(get_type_name(Union[bool, int]), "typing.Union[bool, int]")
         self.assertEqual(get_type_name(List[Optional[str]]), "typing.List[typing.Optional[str]]")
-        self.assertEqual(get_type_name(List[Optional[Union[str, int, None]]]), "typing.List[typing.Union[str, int, NoneType]]")
+        self.assertEqual(
+            get_type_name(List[Optional[Union[str, int, None]]]), "typing.List[typing.Union[str, int, NoneType]]"
+        )
 
     def test_format_signature(self):
         self.assertEqual(

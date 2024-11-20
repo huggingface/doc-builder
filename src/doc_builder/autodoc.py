@@ -92,8 +92,8 @@ def get_type_name(typ):
     """
     if isinstance(typ, type):
         # If it's a class, use its name.
-        return getattr(typ, '__qualname__', None) or getattr(typ, '__name__', None) or str(typ)
-    return str(typ) # otherwise, trust its string representation
+        return getattr(typ, "__qualname__", None) or getattr(typ, "__name__", None) or str(typ)
+    return str(typ)  # otherwise, trust its string representation
 
 
 def format_signature(obj):
