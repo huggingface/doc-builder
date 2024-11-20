@@ -66,7 +66,7 @@ def get_shortest_path(obj, package):
     package.
     """
     if isinstance(obj, property):
-        # Propreties have no __module__ or __name__ attributes, but their getter function does.
+        # Properties have no __module__ or __name__ attributes, but their getter function does.
         obj = obj.fget
 
     if not hasattr(obj, "__module__") or obj.__module__ is None:
@@ -88,14 +88,12 @@ def get_shortest_path(obj, package):
 
 def get_type_name(typ):
     """
-    Returns the name of the type passed, properly dealing with type annotions.
+    Returns the name of the type passed, properly dealing with type annotations.
     """
-    if hasattr(typ, "__qualname__"):
-        return typ.__qualname__
-    elif hasattr(typ, "__name__"):
-        return typ.__name__
-    name = str(typ)
-    return re.sub(r"typing.Union\[(\S+), NoneType\]", r"typing.Optional[\1]", name)
+    if isinstance(typ, type):
+        # If it's a class, use its name.
+        return getattr(typ, "__qualname__", None) or getattr(typ, "__name__", None) or str(typ)
+    return str(typ)  # otherwise, trust its string representation
 
 
 def format_signature(obj):

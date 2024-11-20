@@ -172,7 +172,7 @@ class AutodocTester(unittest.TestCase):
         self.assertEqual(get_shortest_path(PushToHubMixin, transformers), "transformers.utils.PushToHubMixin")
         self.assertEqual(
             get_shortest_path(TrainingArguments.__init__, transformers),
-            "transformers.training_args.__create_fn__.<locals>.__init__",
+            "transformers.TrainingArguments.__init__",
         )
 
     def test_get_type_name(self):
@@ -183,6 +183,9 @@ class AutodocTester(unittest.TestCase):
         self.assertEqual(get_type_name(Optional[str]), "typing.Optional[str]")
         self.assertEqual(get_type_name(Union[bool, int]), "typing.Union[bool, int]")
         self.assertEqual(get_type_name(List[Optional[str]]), "typing.List[typing.Optional[str]]")
+        self.assertEqual(
+            get_type_name(List[Optional[Union[str, int, None]]]), "typing.List[typing.Union[str, int, NoneType]]"
+        )
 
     def test_format_signature(self):
         self.assertEqual(
