@@ -39,7 +39,6 @@ from doc_builder.autodoc import (
 from transformers import BertModel, BertTokenizer, BertTokenizerFast, TrainingArguments
 from transformers.utils import PushToHubMixin
 
-
 # This is dynamic since the Transformers/timm libraries are not frozen.
 TEST_LINE_NUMBER = inspect.getsourcelines(transformers.utils.ModelOutput)[1]
 TEST_LINE_NUMBER2 = inspect.getsourcelines(transformers.pipeline)[1]
@@ -172,7 +171,7 @@ class AutodocTester(unittest.TestCase):
         self.assertEqual(get_shortest_path(PushToHubMixin, transformers), "transformers.utils.PushToHubMixin")
         self.assertEqual(
             get_shortest_path(TrainingArguments.__init__, transformers),
-            "transformers.training_args.__create_fn__.<locals>.__init__",
+            "transformers.TrainingArguments.__init__",
         )
 
     def test_get_type_name(self):

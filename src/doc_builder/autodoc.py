@@ -66,7 +66,7 @@ def get_shortest_path(obj, package):
     package.
     """
     if isinstance(obj, property):
-        # Propreties have no __module__ or __name__ attributes, but their getter function does.
+        # Properties have no __module__ or __name__ attributes, but their getter function does.
         obj = obj.fget
 
     if not hasattr(obj, "__module__") or obj.__module__ is None:
