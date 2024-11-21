@@ -60,34 +60,34 @@ on:
 
 jobs:
   build_main_documentation:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     container:
       ${{ inputs.custom_container }}
     env:
       UV_HTTP_TIMEOUT: 900 # max 15min to install deps (shouldn't take more than 5min)
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
         with:
           repository: 'huggingface/doc-builder'
           path: doc-builder
-        
-      - uses: actions/checkout@v2
+
+      - uses: actions/checkout@v4
         with:
           repository: '${{ inputs.repo_owner }}/${{ inputs.package }}'
           path: ${{ inputs.package }}
 
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
         if: inputs.notebook_folder != ''
         with:
           repository: 'huggingface/notebooks'
           path: notebooks
           token: ${{ secrets.token }}
 
-      - uses: actions/setup-node@v3
+      - uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache-dependency-path: "kit/package-lock.json" 
+          cache-dependency-path: "kit/package-lock.json"
 
       - name: Export ROOT_APT_GET ('apt-get' or 'sudo apt-get')
         # Use `sudo` only if running on the base runner.
@@ -192,7 +192,7 @@ jobs:
           then
             bash -c "${{ inputs.pre_command }}"
           fi
-      
+
       - name: Convert notebooks to markdown files
         if: inputs.convert_notebooks
         run: |
