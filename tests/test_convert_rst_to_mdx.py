@@ -504,6 +504,9 @@ Args:
     a (:obj:`str` or :obj:`bool`): some parameter
     b (:obj:`str` or :obj:`bool`):
         Another parameter with the description below
+    c: another parameter with no type annotation
+    d:
+        Another parameter with no type annotation and a description below
 
 Raises:
     `pa.ArrowInvalidError`: if the arrow data casting fails
@@ -530,6 +533,9 @@ docstring
 - **a** (:obj:`str` or :obj:`bool`) -- some parameter
 - **b** (:obj:`str` or :obj:`bool`) --
         Another parameter with the description below
+- **c** -- another parameter with no type annotation
+- **d** --
+        Another parameter with no type annotation and a description below
 
 </parameters>
 

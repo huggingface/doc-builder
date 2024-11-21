@@ -401,7 +401,7 @@ def parse_rst_docstring(docstring):
                 if intro.lstrip().startswith(">"):
                     lines[idx] = intro.lstrip()
                 else:
-                    lines[idx] = re.sub(r"^\s*(\S+)(\s)", r"- **\1**\2", intro) + " --" + doc
+                    lines[idx] = re.sub(r"^\s*(\S+)(\s)?", r"- **\1**\2", intro) + " --" + doc
                 idx += 1
                 while idx < len(lines) and (is_empty_line(lines[idx]) or find_indent(lines[idx]) > param_indent):
                     idx += 1
