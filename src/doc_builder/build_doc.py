@@ -24,7 +24,7 @@ from pathlib import Path
 import yaml
 from tqdm import tqdm
 
-from .autodoc import autodoc, find_object_in_package, get_source_path, resolve_links_in_text
+from .autodoc import autodoc_svelte, find_object_in_package, get_source_path, resolve_links_in_text
 from .convert_md_to_mdx import convert_md_to_mdx
 from .convert_rst_to_mdx import convert_rst_to_mdx, find_indent, is_empty_line
 from .convert_to_notebook import generate_notebooks_from_file
@@ -120,7 +120,7 @@ def resolve_autodoc(content, package, return_anchors=False, page_info=None, vers
                         break
             else:
                 methods = None
-            doc = autodoc(
+            doc = autodoc_svelte(
                 object_name,
                 package,
                 methods=methods,
