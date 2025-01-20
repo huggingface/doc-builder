@@ -62,7 +62,7 @@ function markKatex(content, markedKatex) {
 		})
 		.replace(REGEX_LATEX_INLINE, (_, tex) => {
 			const displayMode = false;
-			const marker = `KATEXPARSE${counter++}MARKER`;
+			const marker = ` KATEXPARSE${counter++}MARKER`;
 			markedKatex[marker] = { tex, displayMode };
 			return marker;
 		});
