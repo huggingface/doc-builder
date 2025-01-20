@@ -51,7 +51,7 @@ export const mdsvexPreprocess = {
  */
 function markKatex(content, markedKatex) {
 	const REGEX_LATEX_DISPLAY = /\n\$\$([\s\S]+?)\$\$/g;
-	const REGEX_LATEX_INLINE = /\s\\\\\(([\s\S]+?)\\\\\)/g;
+	const REGEX_LATEX_INLINE = /\\\\\(([\s\S]+?)\\\\\)/g;
 	let counter = 0;
 	return content
 		.replace(REGEX_LATEX_DISPLAY, (_, tex) => {
@@ -62,7 +62,7 @@ function markKatex(content, markedKatex) {
 		})
 		.replace(REGEX_LATEX_INLINE, (_, tex) => {
 			const displayMode = false;
-			const marker = ` KATEXPARSE${counter++}MARKER`;
+			const marker = `KATEXPARSE${counter++}MARKER`;
 			markedKatex[marker] = { tex, displayMode };
 			return marker;
 		});
@@ -80,7 +80,7 @@ function renderKatex(code, markedKatex) {
 		if (html.includes(`katex-error`)) {
 			throw new Error(`[KaTeX] Error while parsing markdown\n ${html}`);
 		}
-		return `{@html ${JSON.stringify(html)}}`;
+		return displayMode ? `{@html ${JSON.stringify(html)}}` : ` {@html ${JSON.stringify(html)}} `;
 	});
 }
 
