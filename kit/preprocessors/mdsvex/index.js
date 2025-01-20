@@ -80,7 +80,7 @@ function renderKatex(code, markedKatex) {
 		if (html.includes(`katex-error`)) {
 			throw new Error(`[KaTeX] Error while parsing markdown\n ${html}`);
 		}
-		return displayMode ? `{@html ${JSON.stringify(html)}}` : ` {@html ${JSON.stringify(html)}} `;
+		return displayMode ? `{@html ${JSON.stringify(html)}}` : `abc{@html ${JSON.stringify(html)}} `;
 	});
 }
 
