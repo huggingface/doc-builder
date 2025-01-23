@@ -219,8 +219,8 @@ the results stay consistent with the library.
 
 Syntax:
 ```html
-[`XXXClass`] or [~`XXXClass`] // for class
-[`XXXClass.method`] or [~`XXXClass.method`] // for method
+[`XXXClass`] or [`~XXXClass`] // for class
+[`XXXClass.method`] or [`~XXXClass.method`] // for method
 ```
 
 Example: [here](https://github.com/huggingface/transformers/blob/eb849f6604c7dcc0e96d68f4851e52e253b9f0e5/docs/source/en/model_doc/sew-d.md?plain=1#L39) & [here](https://github.com/huggingface/transformers/blob/6f79d264422245d88c7a34032c1a8254a0c65752/examples/research_projects/performer/modeling_flax_performer.py#L48) (as used inside docstring).
@@ -233,14 +233,14 @@ If you want to create a link to some internal class or function, you need to
 provide its path. For instance, in the Transformers documentation \[\`file_utils.ModelOutput\`\] will create a link to the documentation of `ModelOutput`. This link will have `file_utils.ModelOutput` in the description. To get rid of the path and only keep the name of the object you are
 linking to in the description, add a ~: \[\`~file_utils.ModelOutput\`\] will generate a link with `ModelOutput` in the description.
 
-The same works for methods, so you can either use \[\`XXXClass.method\`\] or \[~\`XXXClass.method\`\].
+The same works for methods, so you can either use \[\`XXXClass.method\`\] or \[\`~XXXClass.method\`\].
 
 ### External link to object
 
 Syntax:
 ```html
-[`XXXLibrary.XXXClass`] or [~`XXXLibrary.XXXClass`] // for class
-[`XXXLibrary.XXXClass.method`] or [~`XXXLibrary.XXXClass.method`] // for method
+[`XXXLibrary.XXXClass`] or [`~XXXLibrary.XXXClass`] // for class
+[`XXXLibrary.XXXClass.method`] or [`~XXXLibrary.XXXClass.method`] // for method
 ```
 
 Example: [here](https://github.com/huggingface/transformers/blob/0f0e1a2c2bff68541a5b9770d78e0fb6feb7de72/docs/source/en/accelerate.md?plain=1#L29) linking object from `accelerate` inside `transformers`.
