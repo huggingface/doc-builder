@@ -52,6 +52,10 @@ on:
         type: string
         default: ""
         description: "Docker image to use for the build."
+      runner:
+        type: string
+        default: "ubuntu-22.04"
+        description: "runner to use for the build. See https://docs.github.com/en/actions/about-github-actions/understanding-github-actions#runners"
       # Debug purposes only!
       doc_builder_revision:
         type: string
@@ -62,7 +66,7 @@ on:
 jobs:
   build_pr_documentation:
     runs-on:
-      group: aws-general-8-plus
+      ${{ inputs.runner }}
     container:
       ${{ inputs.custom_container }}
     env:
