@@ -52,10 +52,10 @@ on:
         type: string
         default: ""
         description: "Docker image to use for the build."
-      runner:
+      custom_runner:
         type: string
-        default: "ubuntu-22.04"
-        description: "runner to use for the build. See https://docs.github.com/en/actions/about-github-actions/understanding-github-actions#runners"
+        default: ""
+        description: "runner to use for the build. See https://docs.github.com/en/actions/about-github-actions/understanding-github-actions#runners for syntax"
     secrets:
       hf_token:
         required: true
@@ -65,7 +65,7 @@ on:
 jobs:
   build_main_documentation:
     runs-on:
-      ${{ inputs.runner }}
+      ${{ inputs.custom_runner != '' && fromJSON(inputs.custom_runner) || 'ubuntu-22.04' }}
     container:
       ${{ inputs.custom_container }}
     env:
