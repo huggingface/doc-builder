@@ -61,7 +61,8 @@ on:
 
 jobs:
   build_pr_documentation:
-    runs-on: ubuntu-22.04
+    runs-on:
+      group: aws-general-8-plus
     container:
       ${{ inputs.custom_container }}
     env:
@@ -83,6 +84,10 @@ jobs:
         with:
           node-version: '20'
           cache-dependency-path: "kit/package-lock.json"
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
 
       - name: Export ROOT_APT_GET ('apt-get' or 'sudo apt-get')
         # Use `sudo` only if running on the base runner.
