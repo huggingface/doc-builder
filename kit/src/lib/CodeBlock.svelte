@@ -4,6 +4,7 @@
 	export let code = "";
 	export let highlighted = "";
 	export let wrap = false;
+	export let classNames = "";
 
 	function handleMouseOver() {
 		hideCopyButton = false;
@@ -14,7 +15,7 @@
 </script>
 
 <div
-	class="code-block relative"
+	class="code-block relative {classNames}"
 	on:mouseover={handleMouseOver}
 	on:focus={handleMouseOver}
 	on:mouseout={handleMouseOut}
