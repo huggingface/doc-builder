@@ -14,15 +14,13 @@
 	export let selectedValue: string | undefined = undefined;
 	export let useDeprecatedJS = true;
 	export let withBtnCaret = false;
-	export let dontCloseIds: string[] = [];
 
 	let element: HTMLElement | undefined = undefined;
 	let isOpen = false;
 
 	function onClose(e: Event) {
 		if (e.target) {
-			const id = (e.target as HTMLElement).id;
-			if (dontCloseIds.includes(id)) {
+			if ((e.target as HTMLElement).className.includes("do-not-close-dropdown")) {
 				return;
 			}
 		}

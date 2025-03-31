@@ -247,7 +247,6 @@
 			noBtnClass
 			useDeprecatedJS={false}
 			forceMenuAlignement="right"
-			dontCloseIds={["stream-checkbox"]}
 		>
 			<slot slot="button">
 				<button class="btn h-7 gap-1 px-1.5 py-0.5 md:px-2" title="Settings dropdown">
@@ -258,17 +257,19 @@
 			<slot slot="menu">
 				<div class="flex flex-col p-2 gap-y-2">
 					{#if model.tags.includes("conversational")}
-						<div
-							class="text-md group relative flex items-center self-start leading-tight gap-x-2 border-b w-full pb-2"
+						<button
+							class="text-md group relative flex items-center self-start leading-tight gap-x-2 border-b w-full pb-2 cursor-default do-not-close-dropdown"
+							on:click={() => (streaming = !streaming)}
+							type="button"
 						>
 							<input
-								class="form-input not-prose"
+								class="form-input not-prose do-not-close-dropdown"
 								type="checkbox"
 								bind:checked={streaming}
 								id="stream-checkbox"
 							/>
-							<span class="">Stream</span>
-						</div>
+							<span class="do-not-close-dropdown">Stream</span>
+						</button>
 					{/if}
 					<a
 						href="/settings/tokens"
@@ -306,17 +307,18 @@
 			<slot slot="menu">
 				<div class="flex flex-col p-2 gap-y-2">
 					{#if model.tags.includes("conversational")}
-						<div
-							class="text-md group relative flex items-center self-start leading-tight gap-x-2 border-b w-full pb-2"
+						<button
+							class="text-md group relative flex items-center self-start leading-tight gap-x-2 border-b w-full pb-2 cursor-default do-not-close-dropdown"
+							on:click={() => (streaming = !streaming)}
+							type="button"
 						>
 							<input
-								class="form-input not-prose"
+								class="form-input not-prose do-not-close-dropdown"
 								type="checkbox"
 								bind:checked={streaming}
-								id="stream-checkbox"
 							/>
-							<span class="">Stream</span>
-						</div>
+							<span class="do-not-close-dropdown">Stream</span>
+						</button>
 					{/if}
 					<a
 						href="/settings/tokens"
