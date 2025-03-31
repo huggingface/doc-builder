@@ -6,7 +6,7 @@
 	export let classNames = "";
 	export let dropdownElement: HTMLElement | undefined = undefined;
 	export let forceAlignement: Alignement | undefined = undefined;
-	export let onClose: () => void;
+	export let onClose: (e: MouseEvent) => void;
 
 	// MUST be set to left if forceAlignement is undefined or else
 	// the browser won't be able to properly compute x and width
@@ -34,7 +34,7 @@
 		// (prevent race condition  with other click handlers)
 		const targetElement = e.target as HTMLElement;
 		if (targetElement !== dropdownElement && !dropdownElement?.contains(targetElement)) {
-			onClose();
+			onClose(e);
 		}
 	}
 </script>
