@@ -32,10 +32,10 @@
 	export let conversational = false;
 	export let providersMapping: Record<
 		Exclude<InferenceProvider, "openai">,
-			{
-				modelId: string,
-				providerModelId: string,
-			}
+		{
+			modelId: string;
+			providerModelId: string;
+		}
 	> = {};
 
 	let providers = Object.keys(providersMapping) as InferenceProvider[];
@@ -53,7 +53,7 @@
 		model as ModelDataMinimal,
 		accessToken,
 		selectedProvider,
-		providersMapping[selectedProvider].providerModelId,
+		providersMapping[selectedProvider].providerModelId
 	);
 	const languages = [...new Set(availableSnippets.map((s) => s.language))];
 	let selectedLanguage = languages[0];
@@ -67,9 +67,15 @@
 	$: selectedClient = clients?.[0];
 
 	$: code = snippets
-		.getInferenceSnippets(model as ModelDataMinimal, accessToken, selectedProvider, providersMapping[selectedProvider].providerModelId, {
-			streaming,
-		})
+		.getInferenceSnippets(
+			model as ModelDataMinimal,
+			accessToken,
+			selectedProvider,
+			providersMapping[selectedProvider].providerModelId,
+			{
+				streaming,
+			}
+		)
 		.find((s) => s.language === selectedLanguage && s.client === selectedClient)?.content;
 
 	const PRETTY_NAMES: Record<

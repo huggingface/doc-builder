@@ -23,9 +23,15 @@ Below is a description of the props that can be passed to this component:
 	pipeline="text-generation"
 	conversational
 	providersMapping={{
-    "fireworks-ai": {modelId: "deepseek-ai/DeepSeek-R1", providerModelId: "accounts/fireworks/models/deepseek-r1"},
-    novita: {modelId: "deepseek-ai/DeepSeek-V3-0324", providerModelId: "deepseek/deepseek-v3-0324"}
-  }}
+		"fireworks-ai": {
+			modelId: "deepseek-ai/DeepSeek-R1",
+			providerModelId: "accounts/fireworks/models/deepseek-r1",
+		},
+		novita: {
+			modelId: "deepseek-ai/DeepSeek-V3-0324",
+			providerModelId: "deepseek/deepseek-v3-0324",
+		},
+	}}
 />
 ```
 
@@ -34,8 +40,11 @@ Below is a description of the props that can be passed to this component:
 	pipeline="text-generation"
 	conversational
 	providers={{
-    "fireworks-ai": {modelId: "deepseek-ai/DeepSeek-R1", providerModelId: "accounts/fireworks/models/deepseek-r1"}
-  }}
+		"fireworks-ai": {
+			modelId: "deepseek-ai/DeepSeek-R1",
+			providerModelId: "accounts/fireworks/models/deepseek-r1",
+		},
+	}}
 />
 ```
 
@@ -43,10 +52,13 @@ Below is a description of the props that can be passed to this component:
 <InferenceSnippet
 	pipeline="text-to-image"
 	providers={{
-    "black-forest-labs": {modelId: "black-forest-labs/FLUX.1-dev", providerModelId: "flux-dev"},
-    "replicate": {modelId: "black-forest-labs/FLUX.1-dev", providerModelId: "black-forest-labs/flux-dev"},
-    "fal-ai": {modelId: "black-forest-labs/FLUX.1-dev", providerModelId: "fal-ai/flux/dev"},
-  }}
+		"black-forest-labs": { modelId: "black-forest-labs/FLUX.1-dev", providerModelId: "flux-dev" },
+		replicate: {
+			modelId: "black-forest-labs/FLUX.1-dev",
+			providerModelId: "black-forest-labs/flux-dev",
+		},
+		"fal-ai": { modelId: "black-forest-labs/FLUX.1-dev", providerModelId: "fal-ai/flux/dev" },
+	}}
 />
 ```
 
