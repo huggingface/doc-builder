@@ -55,4 +55,4 @@ cd kit
 npm run update-inference-providers
 ```
 
-Step 2: add an icon for the new provider in ``
+Step 2: add an icon for the new provider in `kit/src/lib/InferenceSnippet/InferenceSnippet.svelte`.
