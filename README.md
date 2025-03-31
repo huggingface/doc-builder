@@ -425,7 +425,7 @@ Below is a description of the props that can be passed to this component:
 <InferenceSnippet
 	pipeline="text-generation"
 	conversational
-	providers={{
+	providersMapping={{
     "fireworks-ai": {modelId: "deepseek-ai/DeepSeek-R1", providerModelId: "accounts/fireworks/models/deepseek-r1"}
   }}
 />
@@ -434,7 +434,7 @@ Below is a description of the props that can be passed to this component:
 ```svelte
 <InferenceSnippet
 	pipeline="text-to-image"
-	providers={{
+	providersMapping={{
     "black-forest-labs": {modelId: "black-forest-labs/FLUX.1-dev", providerModelId: "flux-dev"},
     "replicate": {modelId: "black-forest-labs/FLUX.1-dev", providerModelId: "black-forest-labs/flux-dev"},
     "fal-ai": {modelId: "black-forest-labs/FLUX.1-dev", providerModelId: "fal-ai/flux/dev"},
