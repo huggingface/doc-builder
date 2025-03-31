@@ -240,7 +240,7 @@
 		</div>
 	{/if}
 
-	<div class="flex not-prose my-1.5">
+	<div class="flex not-prose mb-1.5 mt-auto">
 		<Dropdown
 			btnLabel=""
 			classNames="hidden md:block"
@@ -249,8 +249,12 @@
 			forceMenuAlignement="right"
 		>
 			<slot slot="button">
-				<button class="btn h-7 gap-1 px-1.5 py-0.5 md:px-2" title="Settings dropdown">
-					<IconSettings />
+				<button
+					class="text-md flex select-none items-center rounded-lg border px-1.5 py-1 leading-none hover:shadow-xs cursor-pointer text-gray-500 opacity-90 hover:text-gray-700 dark:hover:text-gray-200"
+					type="button"
+					title="Settings dropdown"
+				>
+					<IconSettings classNames="mr-1" />
 					Settings
 				</button>
 			</slot>
@@ -291,15 +295,14 @@
 				</div>
 			</slot>
 		</Dropdown>
-		<Dropdown
-			classNames="md:hidden"
-			noBtnClass
-			useDeprecatedJS={false}
-			forceMenuAlignement="left"
-		>
+		<Dropdown classNames="md:hidden" noBtnClass useDeprecatedJS={false} forceMenuAlignement="left">
 			<slot slot="button">
-				<button class="btn h-7 gap-1 px-1.5 py-0.5 md:px-2" title="Settings dropdown">
-					<IconSettings />
+				<button
+					class="text-md flex select-none items-center rounded-lg border px-1.5 py-1 leading-none hover:shadow-xs cursor-pointer text-gray-500 opacity-90 hover:text-gray-700 dark:hover:text-gray-200"
+					type="button"
+					title="Settings dropdown"
+				>
+					<IconSettings classNames="mr-1" />
 					Settings
 				</button>
 			</slot>
@@ -339,7 +342,7 @@
 				</div>
 			</slot>
 		</Dropdown>
-		<div class="flex-grow" />
+		<div class="flex-grow md:hidden" />
 	</div>
 </div>
 
