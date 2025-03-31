@@ -139,7 +139,7 @@
 </script>
 
 <div
-	class="flex gap-x-2 justify-between md:items-center w-full text-sm not-prose flex-col md:flex-row"
+	class="flex gap-x-2 justify-between md:items-top w-full text-sm not-prose flex-col md:flex-row"
 >
 	<!-- Language selection -->
 	{#if languages.length > 1}
@@ -240,109 +240,117 @@
 		</div>
 	{/if}
 
-	<div class="flex not-prose mb-1.5 mt-auto">
-		<Dropdown
-			btnLabel=""
-			classNames="hidden md:block"
-			noBtnClass
-			useDeprecatedJS={false}
-			forceMenuAlignement="right"
-		>
-			<slot slot="button">
-				<button
-					class="text-md flex select-none items-center rounded-lg border px-1.5 py-1 leading-none hover:shadow-xs cursor-pointer text-gray-500 opacity-90 hover:text-gray-700 dark:hover:text-gray-200"
-					type="button"
-					title="Settings dropdown"
-				>
-					<IconSettings classNames="mr-1" />
-					Settings
-				</button>
-			</slot>
-			<slot slot="menu">
-				<div class="flex flex-col p-2 gap-y-2">
-					{#if model.tags.includes("conversational")}
-						<button
-							class="text-md group relative flex items-center self-start leading-tight gap-x-2 border-b w-full pb-2 cursor-default do-not-close-dropdown"
-							on:click={() => (streaming = !streaming)}
-							type="button"
+	<div>
+		<p class="font-mono text-xs invisible hidden md:block">Settings</p>
+		<div class="flex not-prose my-1.5">
+			<Dropdown
+				btnLabel=""
+				classNames="hidden md:block"
+				noBtnClass
+				useDeprecatedJS={false}
+				forceMenuAlignement="right"
+			>
+				<slot slot="button">
+					<button
+						class="text-md flex select-none items-center rounded-lg border px-1.5 py-1 leading-none hover:shadow-xs cursor-pointer text-gray-500 opacity-90 hover:text-gray-700 dark:hover:text-gray-200"
+						type="button"
+						title="Settings dropdown"
+					>
+						<IconSettings classNames="mr-1" />
+						Settings
+					</button>
+				</slot>
+				<slot slot="menu">
+					<div class="flex flex-col p-2 gap-y-2">
+						{#if model.tags.includes("conversational")}
+							<button
+								class="text-md group relative flex items-center self-start leading-tight gap-x-2 border-b w-full pb-2 cursor-default do-not-close-dropdown"
+								on:click={() => (streaming = !streaming)}
+								type="button"
+							>
+								<input
+									class="form-input not-prose do-not-close-dropdown"
+									type="checkbox"
+									bind:checked={streaming}
+									id="stream-checkbox"
+								/>
+								<span class="do-not-close-dropdown">Stream</span>
+							</button>
+						{/if}
+						<a
+							href="/settings/tokens"
+							class="whitespace-nowrap flex gap-x-1 items-center"
+							target="_blank"
+							title="Tokens settings"
 						>
-							<input
-								class="form-input not-prose do-not-close-dropdown"
-								type="checkbox"
-								bind:checked={streaming}
-								id="stream-checkbox"
-							/>
-							<span class="do-not-close-dropdown">Stream</span>
-						</button>
-					{/if}
-					<a
-						href="/settings/tokens"
-						class="whitespace-nowrap flex gap-x-1 items-center"
-						target="_blank"
-						title="Tokens settings"
-					>
-						<IconLinkExternal /> Manage tokens
-					</a>
+							<IconLinkExternal /> Manage tokens
+						</a>
 
-					<a
-						href="/settings/inference-providers"
-						class="whitespace-nowrap flex gap-x-1 items-center"
-						title="Inference providers settings"
-						target="_blank"
-					>
-						<IconLinkExternal /> Manage providers
-					</a>
-				</div>
-			</slot>
-		</Dropdown>
-		<Dropdown classNames="md:hidden" noBtnClass useDeprecatedJS={false} forceMenuAlignement="left">
-			<slot slot="button">
-				<button
-					class="text-md flex select-none items-center rounded-lg border px-1.5 py-1 leading-none hover:shadow-xs cursor-pointer text-gray-500 opacity-90 hover:text-gray-700 dark:hover:text-gray-200"
-					type="button"
-					title="Settings dropdown"
-				>
-					<IconSettings classNames="mr-1" />
-					Settings
-				</button>
-			</slot>
-			<slot slot="menu">
-				<div class="flex flex-col p-2 gap-y-2">
-					{#if model.tags.includes("conversational")}
-						<button
-							class="text-md group relative flex items-center self-start leading-tight gap-x-2 border-b w-full pb-2 cursor-default do-not-close-dropdown"
-							on:click={() => (streaming = !streaming)}
-							type="button"
+						<a
+							href="/settings/inference-providers"
+							class="whitespace-nowrap flex gap-x-1 items-center"
+							title="Inference providers settings"
+							target="_blank"
 						>
-							<input
-								class="form-input not-prose do-not-close-dropdown"
-								type="checkbox"
-								bind:checked={streaming}
-							/>
-							<span class="do-not-close-dropdown">Stream</span>
-						</button>
-					{/if}
-					<a
-						href="/settings/tokens"
-						class="whitespace-nowrap flex gap-x-1 items-center"
-						target="_blank"
-						title="Tokens settings"
+							<IconLinkExternal /> Manage providers
+						</a>
+					</div>
+				</slot>
+			</Dropdown>
+			<Dropdown
+				classNames="md:hidden"
+				noBtnClass
+				useDeprecatedJS={false}
+				forceMenuAlignement="left"
+			>
+				<slot slot="button">
+					<button
+						class="text-md flex select-none items-center rounded-lg border px-1.5 py-1 leading-none hover:shadow-xs cursor-pointer text-gray-500 opacity-90 hover:text-gray-700 dark:hover:text-gray-200"
+						type="button"
+						title="Settings dropdown"
 					>
-						<IconLinkExternal /> Manage tokens
-					</a>
+						<IconSettings classNames="mr-1" />
+						Settings
+					</button>
+				</slot>
+				<slot slot="menu">
+					<div class="flex flex-col p-2 gap-y-2">
+						{#if model.tags.includes("conversational")}
+							<button
+								class="text-md group relative flex items-center self-start leading-tight gap-x-2 border-b w-full pb-2 cursor-default do-not-close-dropdown"
+								on:click={() => (streaming = !streaming)}
+								type="button"
+							>
+								<input
+									class="form-input not-prose do-not-close-dropdown"
+									type="checkbox"
+									bind:checked={streaming}
+								/>
+								<span class="do-not-close-dropdown">Stream</span>
+							</button>
+						{/if}
+						<a
+							href="/settings/tokens"
+							class="whitespace-nowrap flex gap-x-1 items-center"
+							target="_blank"
+							title="Tokens settings"
+						>
+							<IconLinkExternal /> Manage tokens
+						</a>
 
-					<a
-						href="/settings/inference-providers"
-						class="whitespace-nowrap flex gap-x-1 items-center"
-						title="Inference providers settings"
-						target="_blank"
-					>
-						<IconLinkExternal /> Manage providers
-					</a>
-				</div>
-			</slot>
-		</Dropdown>
-		<div class="flex-grow md:hidden" />
+						<a
+							href="/settings/inference-providers"
+							class="whitespace-nowrap flex gap-x-1 items-center"
+							title="Inference providers settings"
+							target="_blank"
+						>
+							<IconLinkExternal /> Manage providers
+						</a>
+					</div>
+				</slot>
+			</Dropdown>
+			<div class="flex-grow md:hidden" />
+		</div>
 	</div>
 </div>
 
