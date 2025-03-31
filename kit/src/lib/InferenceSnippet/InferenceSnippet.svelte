@@ -133,7 +133,7 @@
 						class="text-md flex select-none items-center rounded-lg border px-1.5 py-1 leading-none
                                 {selectedLanguage === language
 							? 'border-gray-800 bg-black text-white dark:bg-gray-700'
-							: 'hover:shadow-xs cursor-pointer text-gray-500 opacity-90 hover:text-gray-700'}"
+							: 'hover:shadow-xs cursor-pointer text-gray-500 opacity-90 hover:text-gray-700 dark:hover:text-gray-200'}"
 						type="button"
 						on:click={() => (selectedLanguage = language)}
 					>
@@ -157,7 +157,7 @@
 						class="text-md flex select-none items-center rounded-lg border px-1.5 py-1 leading-none
                                 {selectedClient === client
 							? 'border-gray-800 bg-black text-white dark:bg-gray-700'
-							: 'hover:shadow-xs cursor-pointer text-gray-500 opacity-90 hover:text-gray-700'}"
+							: 'hover:shadow-xs cursor-pointer text-gray-500 opacity-90 hover:text-gray-700 dark:hover:text-gray-200'}"
 						type="button"
 						on:click={() => (selectedClient = client)}
 					>
@@ -172,9 +172,9 @@
 	{#if model.tags.includes("conversational")}
 		<div>
 			<p class="font-mono text-sm opacity-50 hidden md:block">Stream</p>
-			<div class="text-md group relative flex items-center self-start leading-tight">
+			<div class="text-md group relative flex items-center self-start leading-tight my-1.5">
 				<span class="mr-1 sm:block md:hidden">stream:</span>
-				<input class="md:my-2.5 form-input not-prose" type="checkbox" bind:checked={streaming} />
+				<input class="md:my-1 form-input not-prose" type="checkbox" bind:checked={streaming} />
 			</div>
 		</div>
 	{/if}
@@ -182,7 +182,7 @@
 	<!-- Provider selection -->
 	{#if providers.length > 0}
 		{@const nVisibleProviders = 2}
-		<div class="md:ml-auto pl-4">
+		<div class="md:ml-auto md:pl-4">
 			<p class="font-mono text-sm opacity-50 hidden md:block">Provider</p>
 			<div class="my-1.5 flex items-center gap-x-1 gap-y-0.5 flex-wrap">
 				{#each providers.slice(0, nVisibleProviders) as provider}
@@ -190,7 +190,7 @@
 						class="text-md flex select-none items-center rounded-lg border px-1.5 py-1 leading-none
                             {selectedProvider === provider
 							? 'border-gray-800 bg-black text-white dark:bg-gray-700'
-							: 'hover:shadow-xs cursor-pointer text-gray-500 opacity-90 hover:text-gray-700'}"
+							: 'hover:shadow-xs cursor-pointer text-gray-500 opacity-90 hover:text-gray-700 dark:hover:text-gray-200'}"
 						type="button"
 						on:click={() => (selectedProvider = provider)}
 					>
@@ -204,7 +204,7 @@
 					<Dropdown btnLabel="" classNames="colab-dropdown" noBtnClass useDeprecatedJS={false}>
 						<slot slot="button">
 							<p
-								class="text-md flex select-none items-center rounded-lg border px-1.5 py-1 leading-none hover:shadow-xs cursor-pointer text-gray-500 opacity-90 hover:text-gray-700"
+								class="text-md flex select-none items-center rounded-lg border px-1.5 py-1 leading-none hover:shadow-xs cursor-pointer text-gray-500 opacity-90 hover:text-gray-700 dark:hover:text-gray-200"
 							>
 								+{providers.length - nVisibleProviders}
 							</p>
