@@ -28,17 +28,19 @@
 	import Dropdown from "$lib/Dropdown.svelte";
 	import DropdownEntry from "$lib/DropdownEntry.svelte";
 
+	type InferenceProviderNotOpenAI = Exclude<InferenceProvider, "openai">;
+
 	export let pipeline: PipelineType;
 	export let conversational = false;
 	export let providersMapping: Record<
-		Exclude<InferenceProvider, "openai">,
+		InferenceProviderNotOpenAI,
 		{
 			modelId: string;
 			providerModelId: string;
 		}
 	> = {};
 
-	let providers = Object.keys(providersMapping) as InferenceProvider[];
+	let providers = Object.keys(providersMapping) as InferenceProviderNotOpenAI[];
 	let selectedProvider = providers[0];
 	let streaming = false;
 
@@ -78,10 +80,7 @@
 		)
 		.find((s) => s.language === selectedLanguage && s.client === selectedClient)?.content;
 
-	const PRETTY_NAMES: Record<
-		Exclude<InferenceProvider, "openai"> | InferenceSnippetLanguage,
-		string
-	> = {
+	const PRETTY_NAMES: Record<InferenceProviderNotOpenAI | InferenceSnippetLanguage, string> = {
 		// inference providers
 		"black-forest-labs": "Black Forest Labs",
 		cerebras: "Cerebras",
@@ -103,7 +102,7 @@
 	};
 
 	const ICONS: Record<
-		Exclude<InferenceProvider, "openai"> | InferenceSnippetLanguage,
+		InferenceProviderNotOpenAI | InferenceSnippetLanguage,
 		new (...args: any) => SvelteComponent
 	> = {
 		// inference providers
