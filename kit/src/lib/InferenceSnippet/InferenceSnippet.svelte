@@ -57,7 +57,7 @@
 		model as ModelDataMinimal,
 		accessToken,
 		selectedProvider,
-		providersMapping[selectedProvider].providerModelId
+		providersMapping[selectedProvider]!.providerModelId
 	);
 	const languages = [...new Set(availableSnippets.map((s) => s.language))];
 	let selectedLanguage = languages[0];
@@ -75,7 +75,7 @@
 			model as ModelDataMinimal,
 			accessToken,
 			selectedProvider,
-			providersMapping[selectedProvider].providerModelId,
+			providersMapping[selectedProvider]!.providerModelId,
 			{
 				streaming,
 			}
