@@ -296,7 +296,6 @@
 			noBtnClass
 			useDeprecatedJS={false}
 			forceMenuAlignement="left"
-			dontCloseIds={["stream-checkbox"]}
 		>
 			<slot slot="button">
 				<button class="btn h-7 gap-1 px-1.5 py-0.5 md:px-2" title="Settings dropdown">
