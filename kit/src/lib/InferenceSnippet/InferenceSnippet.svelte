@@ -47,7 +47,7 @@
 	let streaming = false;
 
 	const model = {
-		id: providersMapping[selectedProvider].modelId,
+		id: providersMapping[selectedProvider]!.modelId,
 		pipeline_tag: pipeline,
 		tags: conversational ? ["conversational"] : [],
 	};
