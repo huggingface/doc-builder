@@ -28,16 +28,22 @@
 	import Dropdown from "$lib/Dropdown.svelte";
 	import DropdownEntry from "$lib/DropdownEntry.svelte";
 
-	export let modelId: string;
 	export let pipeline: PipelineType;
 	export let conversational = false;
-	export let providers: Exclude<InferenceProvider, "openai">[] = [];
+	export let providersMapping: Record<
+		Exclude<InferenceProvider, "openai">,
+			{
+				modelId: string,
+				providerModelId: string,
+			}
+	> = {};
 
+	let providers = Object.keys(providersMapping) as InferenceProvider[];
 	let selectedProvider = providers[0];
 	let streaming = false;
 
 	const model = {
-		id: modelId,
+		id: providersMapping[selectedProvider].modelId,
 		pipeline_tag: pipeline,
 		tags: conversational ? ["conversational"] : [],
 	};
@@ -46,7 +52,8 @@
 	const availableSnippets = snippets.getInferenceSnippets(
 		model as ModelDataMinimal,
 		accessToken,
-		selectedProvider
+		selectedProvider,
+		providersMapping[selectedProvider].providerModelId,
 	);
 	const languages = [...new Set(availableSnippets.map((s) => s.language))];
 	let selectedLanguage = languages[0];
@@ -60,7 +67,7 @@
 	$: selectedClient = clients?.[0];
 
 	$: code = snippets
-		.getInferenceSnippets(model as ModelDataMinimal, accessToken, selectedProvider, undefined, {
+		.getInferenceSnippets(model as ModelDataMinimal, accessToken, selectedProvider, providersMapping[selectedProvider].providerModelId, {
 			streaming,
 		})
 		.find((s) => s.language === selectedLanguage && s.client === selectedClient)?.content;

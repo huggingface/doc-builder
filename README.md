@@ -398,43 +398,47 @@ The `InferenceSnippet` component is used to render an interactive interface for 
 
 Below is a description of the props that can be passed to this component:
 
-- **modelId** (string, required):  
-  The identifier of the AI model to be used for inference. This should be a valid model ID, such as `"deepseek-ai/DeepSeek-R1"`.
-
 - **pipeline** (string, required):  
   Specifies the type of pipeline to be used for inference. Common values include `"text-generation"`, `"text-classification"`, etc.
 
+- **providersMapping** (mapping of {modelId: string, providerModelId: string}, required):  
+  A mapping which keys are provider names and values are an object with `modelId` and `providerModelId`.
+  Example: `{"fireworks-ai": {modelId: "deepseek-ai/DeepSeek-R1", providerModelId: "accounts/fireworks/models/deepseek-r1", novita: {modelId: "deepseek-ai/DeepSeek-V3-0324", providerModelId: "deepseek/deepseek-v3-0324"}}`
+
 - **conversational** (boolean, optional):  
   If set to `true`, the component will enable conversational mode, allowing for multi-turn interactions for `text-generation` models.
-
-- **providers** (array of strings, required):  
-  A list of provider names that support the specified model and pipeline. Example: `["fireworks-ai", "cerebras", "cohere", "hyperbolic"]`.
 
 #### Example Usage
 
 ```svelte
 <InferenceSnippet
-	modelId="deepseek-ai/DeepSeek-R1"
 	pipeline="text-generation"
 	conversational
-	providers={["fireworks-ai", "cerebras", "cohere", "hyperbolic"]}
+	providersMapping={{
+    "fireworks-ai": {modelId: "deepseek-ai/DeepSeek-R1", providerModelId: "accounts/fireworks/models/deepseek-r1"},
+    novita: {modelId: "deepseek-ai/DeepSeek-V3-0324", providerModelId: "deepseek/deepseek-v3-0324"}
+  }}
 />
 ```
 
 ```svelte
 <InferenceSnippet
-	modelId="deepseek-ai/DeepSeek-R1"
 	pipeline="text-generation"
 	conversational
-	providers={["fireworks-ai"]}
+	providers={{
+    "fireworks-ai": {modelId: "deepseek-ai/DeepSeek-R1", providerModelId: "accounts/fireworks/models/deepseek-r1"}
+  }}
 />
 ```
 
 ```svelte
 <InferenceSnippet
-	modelId="black-forest-labs/FLUX.1-dev"
 	pipeline="text-to-image"
-	providers={["black-forest-labs", "replicate", "fal-ai"]}
+	providers={{
+    "black-forest-labs": {modelId: "black-forest-labs/FLUX.1-dev", providerModelId: "flux-dev"},
+    "replicate": {modelId: "black-forest-labs/FLUX.1-dev", providerModelId: "black-forest-labs/flux-dev"},
+    "fal-ai": {modelId: "black-forest-labs/FLUX.1-dev", providerModelId: "fal-ai/flux/dev"},
+  }}
 />
 ```
 
