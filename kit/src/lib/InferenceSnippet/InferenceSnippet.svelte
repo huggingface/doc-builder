@@ -28,16 +28,26 @@
 	import Dropdown from "$lib/Dropdown.svelte";
 	import DropdownEntry from "$lib/DropdownEntry.svelte";
 
-	export let modelId: string;
+	type InferenceProviderNotOpenAI = Exclude<InferenceProvider, "openai">;
+
 	export let pipeline: PipelineType;
 	export let conversational = false;
-	export let providers: Exclude<InferenceProvider, "openai">[] = [];
+	export let providersMapping: Partial<
+		Record<
+			InferenceProviderNotOpenAI,
+			{
+				modelId: string;
+				providerModelId: string;
+			}
+		>
+	> = {};
 
+	let providers = Object.keys(providersMapping) as InferenceProviderNotOpenAI[];
 	let selectedProvider = providers[0];
 	let streaming = false;
 
 	const model = {
-		id: modelId,
+		id: providersMapping[selectedProvider]!.modelId,
 		pipeline_tag: pipeline,
 		tags: conversational ? ["conversational"] : [],
 	};
@@ -46,7 +56,8 @@
 	const availableSnippets = snippets.getInferenceSnippets(
 		model as ModelDataMinimal,
 		accessToken,
-		selectedProvider
+		selectedProvider,
+		providersMapping[selectedProvider]!.providerModelId
 	);
 	const languages = [...new Set(availableSnippets.map((s) => s.language))];
 	let selectedLanguage = languages[0];
@@ -60,15 +71,18 @@
 	$: selectedClient = clients?.[0];
 
 	$: code = snippets
-		.getInferenceSnippets(model as ModelDataMinimal, accessToken, selectedProvider, undefined, {
-			streaming,
-		})
+		.getInferenceSnippets(
+			model as ModelDataMinimal,
+			accessToken,
+			selectedProvider,
+			providersMapping[selectedProvider]!.providerModelId,
+			{
+				streaming,
+			}
+		)
 		.find((s) => s.language === selectedLanguage && s.client === selectedClient)?.content;
 
-	const PRETTY_NAMES: Record<
-		Exclude<InferenceProvider, "openai"> | InferenceSnippetLanguage,
-		string
-	> = {
+	const PRETTY_NAMES: Record<InferenceProviderNotOpenAI | InferenceSnippetLanguage, string> = {
 		// inference providers
 		"black-forest-labs": "Black Forest Labs",
 		cerebras: "Cerebras",
@@ -90,7 +104,7 @@
 	};
 
 	const ICONS: Record<
-		Exclude<InferenceProvider, "openai"> | InferenceSnippetLanguage,
+		InferenceProviderNotOpenAI | InferenceSnippetLanguage,
 		new (...args: any) => SvelteComponent
 	> = {
 		// inference providers
