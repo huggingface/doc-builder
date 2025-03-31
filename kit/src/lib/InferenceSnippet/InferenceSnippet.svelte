@@ -240,35 +240,40 @@
 		</div>
 	{/if}
 
-	<div class="flex not-prose my-1.5">
+	<div class="flex not-prose mb-1.5 mt-auto">
 		<Dropdown
 			btnLabel=""
 			classNames="hidden md:block"
 			noBtnClass
 			useDeprecatedJS={false}
 			forceMenuAlignement="right"
-			dontCloseIds={["stream-checkbox"]}
 		>
 			<slot slot="button">
-				<button class="btn h-7 gap-1 px-1.5 py-0.5 md:px-2" title="Settings dropdown">
-					<IconSettings />
+				<button
+					class="text-md flex select-none items-center rounded-lg border px-1.5 py-1 leading-none hover:shadow-xs cursor-pointer text-gray-500 opacity-90 hover:text-gray-700 dark:hover:text-gray-200"
+					type="button"
+					title="Settings dropdown"
+				>
+					<IconSettings classNames="mr-1" />
 					Settings
 				</button>
 			</slot>
 			<slot slot="menu">
 				<div class="flex flex-col p-2 gap-y-2">
 					{#if model.tags.includes("conversational")}
-						<div
-							class="text-md group relative flex items-center self-start leading-tight gap-x-2 border-b w-full pb-2"
+						<button
+							class="text-md group relative flex items-center self-start leading-tight gap-x-2 border-b w-full pb-2 cursor-default do-not-close-dropdown"
+							on:click={() => (streaming = !streaming)}
+							type="button"
 						>
 							<input
-								class="form-input not-prose"
+								class="form-input not-prose do-not-close-dropdown"
 								type="checkbox"
 								bind:checked={streaming}
 								id="stream-checkbox"
 							/>
-							<span class="">Stream</span>
-						</div>
+							<span class="do-not-close-dropdown">Stream</span>
+						</button>
 					{/if}
 					<a
 						href="/settings/tokens"
@@ -290,33 +295,32 @@
 				</div>
 			</slot>
 		</Dropdown>
-		<Dropdown
-			classNames="md:hidden"
-			noBtnClass
-			useDeprecatedJS={false}
-			forceMenuAlignement="left"
-			dontCloseIds={["stream-checkbox"]}
-		>
+		<Dropdown classNames="md:hidden" noBtnClass useDeprecatedJS={false} forceMenuAlignement="left">
 			<slot slot="button">
-				<button class="btn h-7 gap-1 px-1.5 py-0.5 md:px-2" title="Settings dropdown">
-					<IconSettings />
+				<button
+					class="text-md flex select-none items-center rounded-lg border px-1.5 py-1 leading-none hover:shadow-xs cursor-pointer text-gray-500 opacity-90 hover:text-gray-700 dark:hover:text-gray-200"
+					type="button"
+					title="Settings dropdown"
+				>
+					<IconSettings classNames="mr-1" />
 					Settings
 				</button>
 			</slot>
 			<slot slot="menu">
 				<div class="flex flex-col p-2 gap-y-2">
 					{#if model.tags.includes("conversational")}
-						<div
-							class="text-md group relative flex items-center self-start leading-tight gap-x-2 border-b w-full pb-2"
+						<button
+							class="text-md group relative flex items-center self-start leading-tight gap-x-2 border-b w-full pb-2 cursor-default do-not-close-dropdown"
+							on:click={() => (streaming = !streaming)}
+							type="button"
 						>
 							<input
-								class="form-input not-prose"
+								class="form-input not-prose do-not-close-dropdown"
 								type="checkbox"
 								bind:checked={streaming}
-								id="stream-checkbox"
 							/>
-							<span class="">Stream</span>
-						</div>
+							<span class="do-not-close-dropdown">Stream</span>
+						</button>
 					{/if}
 					<a
 						href="/settings/tokens"
@@ -338,7 +342,7 @@
 				</div>
 			</slot>
 		</Dropdown>
-		<div class="flex-grow" />
+		<div class="flex-grow md:hidden" />
 	</div>
 </div>
 
