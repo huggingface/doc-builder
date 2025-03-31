@@ -32,12 +32,14 @@
 
 	export let pipeline: PipelineType;
 	export let conversational = false;
-	export let providersMapping: Record<
-		InferenceProviderNotOpenAI,
-		{
-			modelId: string;
-			providerModelId: string;
-		}
+	export let providersMapping: Partial<
+		Record<
+			InferenceProviderNotOpenAI,
+			{
+				modelId: string;
+				providerModelId: string;
+			}
+		>
 	> = {};
 
 	let providers = Object.keys(providersMapping) as InferenceProviderNotOpenAI[];
