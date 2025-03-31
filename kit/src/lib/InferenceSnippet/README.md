@@ -10,7 +10,7 @@ Below is a description of the props that can be passed to this component:
   Specifies the type of pipeline to be used for inference. Common values include `"text-generation"`, `"text-classification"`, etc.
 
 - **providersMapping** (mapping of {modelId: string, providerModelId: string}, required):  
-  A mapping which keys are provider names and values are an object with `modelId` and `providerModelId`.
+  A mapping which keys are provider names and values are objects with `modelId` and `providerModelId`.
   Example: `{"fireworks-ai": {modelId: "deepseek-ai/DeepSeek-R1", providerModelId: "accounts/fireworks/models/deepseek-r1", novita: {modelId: "deepseek-ai/DeepSeek-V3-0324", providerModelId: "deepseek/deepseek-v3-0324"}}`
 
 - **conversational** (boolean, optional):  
