@@ -20,7 +20,7 @@
 
 	function onClose(e: Event) {
 		if (e.target) {
-			if ((e.target as HTMLElement).className.includes("do-not-close-dropdown")) {
+			if ((e.target as HTMLElement | undefined)?.className.includes("do-not-close-dropdown")) {
 				return;
 			}
 		}
