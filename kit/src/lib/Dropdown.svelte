@@ -14,9 +14,20 @@
 	export let selectedValue: string | undefined = undefined;
 	export let useDeprecatedJS = true;
 	export let withBtnCaret = false;
+	export let dontCloseIds: string[] = [];
 
 	let element: HTMLElement | undefined = undefined;
 	let isOpen = false;
+
+	function onClose(e: Event) {
+		if (e.target) {
+			const id = (e.target as HTMLElement).id;
+			if (dontCloseIds.includes(id)) {
+				return;
+			}
+		}
+		isOpen = false;
+	}
 </script>
 
 <div class="relative {classNames} {useDeprecatedJS ? 'v2-dropdown' : ''}" bind:this={element}>
@@ -49,7 +60,7 @@
 			classNames="{menuClassNames} {useDeprecatedJS ? 'v2-dropdown-menu hidden' : ''}"
 			dropdownElement={element}
 			forceAlignement={forceMenuAlignement}
-			onClose={() => (isOpen = false)}
+			{onClose}
 		>
 			<slot name="menu" />
 		</DropdownMenu>

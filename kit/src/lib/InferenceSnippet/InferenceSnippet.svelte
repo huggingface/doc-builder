@@ -27,6 +27,8 @@
 	import IconInferenceTogetherAI from "./IconInferenceTogetherAI.svelte";
 	import Dropdown from "$lib/Dropdown.svelte";
 	import DropdownEntry from "$lib/DropdownEntry.svelte";
+	import IconSettings from "./IconSettings.svelte";
+	import IconLinkExternal from "./IconLinkExternal.svelte";
 
 	type InferenceProviderNotOpenAI = Exclude<InferenceProvider, "openai">;
 
@@ -136,11 +138,13 @@
 	});
 </script>
 
-<div class="flex gap-x-2 text-sm not-prose flex-col md:flex-row">
+<div
+	class="flex gap-x-2 justify-between md:items-center w-full text-sm not-prose flex-col md:flex-row"
+>
 	<!-- Language selection -->
 	{#if languages.length > 1}
 		<div>
-			<p class="font-mono text-sm opacity-50 hidden md:block">Language</p>
+			<p class="font-mono text-xs opacity-50 hidden md:block">Language</p>
 			<div class="my-1.5 flex items-center gap-x-1 gap-y-0.5 flex-wrap">
 				{#each languages as language}
 					<button
@@ -164,7 +168,7 @@
 	<!-- Client selection -->
 	{#if clients.length > 1}
 		<div>
-			<p class="font-mono text-sm opacity-50 hidden md:block">Client</p>
+			<p class="font-mono text-xs opacity-50 hidden md:block">Client</p>
 			<div class="my-1.5 flex items-center gap-x-1 gap-y-0.5 flex-wrap">
 				{#each clients as client}
 					<button
@@ -182,22 +186,11 @@
 		</div>
 	{/if}
 
-	<!-- Stream checkbox (unchanged) -->
-	{#if model.tags.includes("conversational")}
-		<div>
-			<p class="font-mono text-sm opacity-50 hidden md:block">Stream</p>
-			<div class="text-md group relative flex items-center self-start leading-tight my-1.5">
-				<span class="mr-1 sm:block md:hidden">stream:</span>
-				<input class="md:my-1 form-input not-prose" type="checkbox" bind:checked={streaming} />
-			</div>
-		</div>
-	{/if}
-
 	<!-- Provider selection -->
 	{#if providers.length > 0}
 		{@const nVisibleProviders = 2}
-		<div class="md:ml-auto md:pl-4">
-			<p class="font-mono text-sm opacity-50 hidden md:block">Provider</p>
+		<div>
+			<p class="font-mono text-xs opacity-50 hidden md:block">Provider</p>
 			<div class="my-1.5 flex items-center gap-x-1 gap-y-0.5 flex-wrap">
 				{#each providers.slice(0, nVisibleProviders) as provider}
 					<button
@@ -246,19 +239,107 @@
 			</div>
 		</div>
 	{/if}
-</div>
 
-<div class="not-prose text-sm gap-x-2 hidden md:flex">
-	<a href="/settings/tokens" class="btn h-7 gap-1 px-1.5 py-0.5 md:px-2" title="Tokens settings">
-		Manage tokens
-	</a>
-	<a
-		href="/settings/inference-providers"
-		class="btn h-7 gap-1 px-1.5 py-0.5 md:px-2"
-		title="Inference providers settings"
-	>
-		Manage providers
-	</a>
+	<div class="flex not-prose my-1.5">
+		<Dropdown
+			btnLabel=""
+			classNames="hidden md:block"
+			noBtnClass
+			useDeprecatedJS={false}
+			forceMenuAlignement="right"
+			dontCloseIds={["stream-checkbox"]}
+		>
+			<slot slot="button">
+				<button class="btn h-7 gap-1 px-1.5 py-0.5 md:px-2" title="Settings dropdown">
+					<IconSettings />
+					Settings
+				</button>
+			</slot>
+			<slot slot="menu">
+				<div class="flex flex-col p-2 gap-y-2">
+					{#if model.tags.includes("conversational")}
+						<div
+							class="text-md group relative flex items-center self-start leading-tight gap-x-2 border-b w-full pb-2"
+						>
+							<input
+								class="form-input not-prose"
+								type="checkbox"
+								bind:checked={streaming}
+								id="stream-checkbox"
+							/>
+							<span class="">Stream</span>
+						</div>
+					{/if}
+					<a
+						href="/settings/tokens"
+						class="whitespace-nowrap flex gap-x-1 items-center"
+						target="_blank"
+						title="Tokens settings"
+					>
+						<IconLinkExternal /> Manage tokens
+					</a>
+
+					<a
+						href="/settings/inference-providers"
+						class="whitespace-nowrap flex gap-x-1 items-center"
+						title="Inference providers settings"
+						target="_blank"
+					>
+						<IconLinkExternal /> Manage providers
+					</a>
+				</div>
+			</slot>
+		</Dropdown>
+		<Dropdown
+			classNames="md:hidden"
+			noBtnClass
+			useDeprecatedJS={false}
+			forceMenuAlignement="left"
+			dontCloseIds={["stream-checkbox"]}
+		>
+			<slot slot="button">
+				<button class="btn h-7 gap-1 px-1.5 py-0.5 md:px-2" title="Settings dropdown">
+					<IconSettings />
+					Settings
+				</button>
+			</slot>
+			<slot slot="menu">
+				<div class="flex flex-col p-2 gap-y-2">
+					{#if model.tags.includes("conversational")}
+						<div
+							class="text-md group relative flex items-center self-start leading-tight gap-x-2 border-b w-full pb-2"
+						>
+							<input
+								class="form-input not-prose"
+								type="checkbox"
+								bind:checked={streaming}
+								id="stream-checkbox"
+							/>
+							<span class="">Stream</span>
+						</div>
+					{/if}
+					<a
+						href="/settings/tokens"
+						class="whitespace-nowrap flex gap-x-1 items-center"
+						target="_blank"
+						title="Tokens settings"
+					>
+						<IconLinkExternal /> Manage tokens
+					</a>
+
+					<a
+						href="/settings/inference-providers"
+						class="whitespace-nowrap flex gap-x-1 items-center"
+						title="Inference providers settings"
+						target="_blank"
+					>
+						<IconLinkExternal /> Manage providers
+					</a>
+				</div>
+			</slot>
+		</Dropdown>
+		<div class="flex-grow" />
+	</div>
 </div>
 
 {#if code}
