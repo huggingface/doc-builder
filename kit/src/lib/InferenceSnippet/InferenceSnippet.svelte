@@ -278,7 +278,7 @@
 							</button>
 						{/if}
 						<a
-							href="/settings/tokens"
+							href="https://huggingface.co/settings/tokens"
 							class="whitespace-nowrap flex gap-x-1 items-center"
 							target="_blank"
 							title="Tokens settings"
@@ -287,7 +287,7 @@
 						</a>
 
 						<a
-							href="/settings/inference-providers"
+							href="https://huggingface.co/settings/inference-providers"
 							class="whitespace-nowrap flex gap-x-1 items-center"
 							title="Inference providers settings"
 							target="_blank"
