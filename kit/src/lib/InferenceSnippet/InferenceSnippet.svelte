@@ -64,7 +64,7 @@
 			providerId: providersMapping[selectedProvider]!.providerModelId,
 			status: "live",
 			task: pipeline,
-		},
+		}
 	);
 	const languages = [...new Set(availableSnippets.map((s) => s.language))];
 	let selectedLanguage = languages[0];
