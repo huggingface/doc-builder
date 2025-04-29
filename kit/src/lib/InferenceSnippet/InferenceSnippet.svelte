@@ -17,14 +17,14 @@
 	import IconInferenceCerebras from "./IconInferenceCerebras.svelte";
 	import IconInferenceCohere from "./IconInferenceCohere.svelte";
 	import IconInferenceFal from "./IconInferenceFal.svelte";
-	import IconInferenceFeatherless from "../Icons/IconInferenceFeatherless.svelte";
+	import IconInferenceFeatherless from "./IconInferenceFeatherless.svelte";
 	import IconInferenceFireworks from "./IconInferenceFireworks.svelte";
-	import IconInferenceGroq from "../Icons/IconInferenceGroq.svelte";
+	import IconInferenceGroq from "./IconInferenceGroq.svelte";
 	import IconInferenceHf from "./IconInferenceHf.svelte";
 	import IconInferenceHyperbolic from "./IconInferenceHyperbolic.svelte";
 	import IconInferenceNebius from "./IconInferenceNebius.svelte";
 	import IconInferenceNovita from "./IconInferenceNovita.svelte";
-	import IconInferenceNscale from "../Icons/IconInferenceNscale.svelte";
+	import IconInferenceNscale from "./IconInferenceNscale.svelte";
 	import IconInferenceReplicate from "./IconInferenceReplicate.svelte";
 	import IconInferenceSambaNova from "./IconInferenceSambaNova.svelte";
 	import IconInferenceTogetherAI from "./IconInferenceTogetherAI.svelte";
