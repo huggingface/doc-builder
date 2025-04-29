@@ -1,0 +1,61 @@
+name: Bump huggingface.js packages
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 3 * * *" # Every day at 3am
+
+concurrency:
+  group: bump-huggingface-js-packages
+  cancel-in-progress: true
+
+jobs:
+  pull_request:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "20"
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
+
+      - name: Install dependencies
+        run: pnpm install
+        working-directory: ./kit
+
+      - name: Update dependencies
+        run: |
+          pnpm update @huggingface/tasks@latest @huggingface/inference@latest
+        working-directory: ./kit
+
+      - run: git status
+
+      - name: Create Pull Request
+        if: steps.git-check.outputs.changed == 'true'
+        uses: peter-evans/create-pull-request@v7
+        with:
+          path: .
+          token: ${{ secrets.TOKEN_DEPENDENCIES_SYNC_BOT }}
+          commit-message: "chore: bump @huggingface/tasks and @huggingface/inference"
+          branch: bump-huggingface-js-packages
+          delete-branch: true
+          title: "[Bot] Bump huggingface.js packages"
+          body: |
+            This PR updates:
+            - `@huggingface/tasks`
+            - `@huggingface/inference`
+
+            It was generated automatically by the [Bump huggingface.js packages workflow](https://github.com/huggingface/huggingface_hub/blob/main/.github/workflows/bump-huggingface-js-packages.yml).
+
+            Please verify and merge if all looks good.
+
+            Ping: @Wauplin @mishig25
+          reviewers: |
+            Wauplin
+            mishig25
