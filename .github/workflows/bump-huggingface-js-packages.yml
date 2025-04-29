@@ -22,19 +22,25 @@ jobs:
         with:
           node-version: "20"
 
-      - name: Install pnpm
-        uses: pnpm/action-setup@v2
-
       - name: Install dependencies
-        run: pnpm install
+        run: npm install
         working-directory: ./kit
 
       - name: Update dependencies
         run: |
-          pnpm update @huggingface/tasks@latest @huggingface/inference@latest
+          npm install @huggingface/tasks@latest @huggingface/inference@latest
         working-directory: ./kit
 
-      - run: git status
+      - name: Check for changes
+        id: git-check
+        run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          git add .
+          if git diff --cached --quiet; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Create Pull Request
         if: steps.git-check.outputs.changed == 'true'
