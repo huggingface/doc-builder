@@ -17,11 +17,14 @@
 	import IconInferenceCerebras from "./IconInferenceCerebras.svelte";
 	import IconInferenceCohere from "./IconInferenceCohere.svelte";
 	import IconInferenceFal from "./IconInferenceFal.svelte";
+	import IconInferenceFeatherless from "../Icons/IconInferenceFeatherless.svelte";
 	import IconInferenceFireworks from "./IconInferenceFireworks.svelte";
+	import IconInferenceGroq from "../Icons/IconInferenceGroq.svelte";
 	import IconInferenceHf from "./IconInferenceHf.svelte";
 	import IconInferenceHyperbolic from "./IconInferenceHyperbolic.svelte";
 	import IconInferenceNebius from "./IconInferenceNebius.svelte";
 	import IconInferenceNovita from "./IconInferenceNovita.svelte";
+	import IconInferenceNscale from "../Icons/IconInferenceNscale.svelte";
 	import IconInferenceReplicate from "./IconInferenceReplicate.svelte";
 	import IconInferenceSambaNova from "./IconInferenceSambaNova.svelte";
 	import IconInferenceTogetherAI from "./IconInferenceTogetherAI.svelte";
@@ -100,10 +103,13 @@
 		cerebras: "Cerebras",
 		cohere: "Cohere",
 		"fal-ai": "fal",
+		"featherless-ai": "Featherless",
 		"fireworks-ai": "Fireworks",
+		groq: "Groq",
 		hyperbolic: "Hyperbolic",
 		nebius: "Nebius AI Studio",
 		novita: "Novita",
+		nscale: "Nscale",
 		replicate: "Replicate",
 		sambanova: "SambaNova",
 		together: "Together AI",
@@ -124,10 +130,13 @@
 		cerebras: IconInferenceCerebras,
 		cohere: IconInferenceCohere,
 		"fal-ai": IconInferenceFal,
+		"featherless-ai": IconInferenceFeatherless,
 		"fireworks-ai": IconInferenceFireworks,
+		groq: IconInferenceGroq,
 		hyperbolic: IconInferenceHyperbolic,
 		nebius: IconInferenceNebius,
 		novita: IconInferenceNovita,
+		nscale: IconInferenceNscale,
 		replicate: IconInferenceReplicate,
 		sambanova: IconInferenceSambaNova,
 		together: IconInferenceTogetherAI,
