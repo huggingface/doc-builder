@@ -97,7 +97,9 @@
 		)
 		.find((s) => s.language === selectedLanguage && s.client === selectedClient)?.content;
 
-	const PRETTY_NAMES: Record<InferenceProviderNotOpenAI | InferenceSnippetLanguage, string> = {
+	const PRETTY_NAMES: Partial<
+		Record<InferenceProviderNotOpenAI | InferenceSnippetLanguage, string>
+	> = {
 		// inference providers
 		"black-forest-labs": "Black Forest Labs",
 		cerebras: "Cerebras",
@@ -121,9 +123,11 @@
 		// clients
 	};
 
-	const ICONS: Record<
-		InferenceProviderNotOpenAI | InferenceSnippetLanguage,
-		new (...args: any) => SvelteComponent
+	const ICONS: Partial<
+		Record<
+			InferenceProviderNotOpenAI | InferenceSnippetLanguage,
+			new (...args: any) => SvelteComponent
+		>
 	> = {
 		// inference providers
 		"black-forest-labs": IconInferenceBlackForest,
