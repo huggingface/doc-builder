@@ -148,21 +148,21 @@ jobs:
           doc-builder embeddings ${{ matrix.package_name || env.REPO_NAME }} ${{ env.REPO_NAME }}/${{ matrix.doc_folder }} --hf_ie_name docs-embed-bge-base-en-v1-5 --hf_ie_namespace huggingface --hf_ie_token ${{ secrets.HF_IE_TOKEN }} --meilisearch_key ${{ secrets.MEILISEARCH_KEY }} $FLAGS
 
 
-  cleanup-job:
-    needs: matrix-job
-    runs-on: ubuntu-latest
-    if: always() # This ensures that the cleanup job runs regardless of the result of matrix-job
-    steps:
-      - name: Checkout doc-builder
-        uses: actions/checkout@v2
+  # cleanup-job:
+  #   needs: matrix-job
+  #   runs-on: ubuntu-latest
+  #   if: always() # This ensures that the cleanup job runs regardless of the result of matrix-job
+  #   steps:
+  #     - name: Checkout doc-builder
+  #       uses: actions/checkout@v2
 
-      - name: Install doc-builder
-        run: pip install .[dev]
+  #     - name: Install doc-builder
+  #       run: pip install .[dev]
 
-      - name: Success Cleanup
-        if: success() # Runs if all matrix jobs succeeded
-        run: doc-builder meilisearch-clean --meilisearch_key ${{ secrets.MEILISEARCH_KEY }} --swap
+  #     - name: Success Cleanup
+  #       if: success() # Runs if all matrix jobs succeeded
+  #       run: doc-builder meilisearch-clean --meilisearch_key ${{ secrets.MEILISEARCH_KEY }} --swap
 
-      - name: Failure Cleanup
-        if: failure() # Runs if any matrix job failed
-        run: doc-builder meilisearch-clean --meilisearch_key ${{ secrets.MEILISEARCH_KEY }}
+  #     - name: Failure Cleanup
+  #       if: failure() # Runs if any matrix job failed
+  #       run: doc-builder meilisearch-clean --meilisearch_key ${{ secrets.MEILISEARCH_KEY }}
