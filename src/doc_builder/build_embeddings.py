@@ -483,14 +483,14 @@ def build_embeddings(
         is_python_module=is_python_module,
     )
 
-    # Step 2: create embeddings
-    embeddings = call_embedding_inference(chunks, hf_ie_name, hf_ie_namespace, hf_ie_token)
+    # # Step 2: create embeddings
+    # embeddings = call_embedding_inference(chunks, hf_ie_name, hf_ie_namespace, hf_ie_token)
 
-    # Step 3: push embeddings to vector database (meilisearch)
-    client = meilisearch.Client("https://edge.meilisearch.com", meilisearch_key)
-    ITEMS_PER_CHUNK = 5000  # a value that was found experimentally
-    for chunk_embeddings in tqdm(chunk_list(embeddings, ITEMS_PER_CHUNK), desc="Uploading data to meilisearch"):
-        add_embeddings_to_db(client, MEILI_INDEX_TEMP, chunk_embeddings)
+    # # Step 3: push embeddings to vector database (meilisearch)
+    # client = meilisearch.Client("https://edge.meilisearch.com", meilisearch_key)
+    # ITEMS_PER_CHUNK = 5000  # a value that was found experimentally
+    # for chunk_embeddings in tqdm(chunk_list(embeddings, ITEMS_PER_CHUNK), desc="Uploading data to meilisearch"):
+    #     add_embeddings_to_db(client, MEILI_INDEX_TEMP, chunk_embeddings)
 
 
 def clean_meilisearch(meilisearch_key: str, swap: bool):
