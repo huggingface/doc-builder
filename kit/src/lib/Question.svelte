@@ -51,6 +51,12 @@
 		// after the decimal.
 		return `${prefix}${Math.random().toString(36).substr(2, 9)}`;
 	}
+
+	function isSingleOption() {
+		// return whether there's single answer to the question or not
+ 		return choices.filter(c => c.correct).length === 1;
+	}
+
 </script>
 
 <div>
@@ -91,6 +97,8 @@
 						<span class="text-red-900 dark:text-red-200">
 							You didn't select all the correct answers, there's more!
 						</span>
+					{:else if isSingleOption()}
+  						<span class="text-green-900 dark:text-green-200"> You got it right! </span>
 					{:else}
 						<span class="text-green-900 dark:text-green-200"> You got all the answers! </span>
 					{/if}
