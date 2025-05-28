@@ -17,11 +17,15 @@
 	import IconInferenceCerebras from "./IconInferenceCerebras.svelte";
 	import IconInferenceCohere from "./IconInferenceCohere.svelte";
 	import IconInferenceFal from "./IconInferenceFal.svelte";
+	import IconInferenceFeatherless from "./IconInferenceFeatherless.svelte";
 	import IconInferenceFireworks from "./IconInferenceFireworks.svelte";
+	import IconInferenceGroq from "./IconInferenceGroq.svelte";
 	import IconInferenceHf from "./IconInferenceHf.svelte";
 	import IconInferenceHyperbolic from "./IconInferenceHyperbolic.svelte";
 	import IconInferenceNebius from "./IconInferenceNebius.svelte";
 	import IconInferenceNovita from "./IconInferenceNovita.svelte";
+	import IconInferenceNscale from "./IconInferenceNscale.svelte";
+	import IconInferenceOvh from "./IconInferenceOvh.svelte";
 	import IconInferenceReplicate from "./IconInferenceReplicate.svelte";
 	import IconInferenceSambaNova from "./IconInferenceSambaNova.svelte";
 	import IconInferenceTogetherAI from "./IconInferenceTogetherAI.svelte";
@@ -100,14 +104,18 @@
 		cerebras: "Cerebras",
 		cohere: "Cohere",
 		"fal-ai": "fal",
+		"featherless-ai": "Featherless AI",
 		"fireworks-ai": "Fireworks",
+		groq: "Groq",
 		hyperbolic: "Hyperbolic",
+		"hf-inference": "HF Inference API",
 		nebius: "Nebius AI Studio",
 		novita: "Novita",
+		nscale: "nScale",
+		ovhcloud: "OVHcloud AI Endpoints",
 		replicate: "Replicate",
 		sambanova: "SambaNova",
 		together: "Together AI",
-		"hf-inference": "HF Inference API",
 		// languages
 		sh: "cURL",
 		python: "Python",
@@ -124,10 +132,14 @@
 		cerebras: IconInferenceCerebras,
 		cohere: IconInferenceCohere,
 		"fal-ai": IconInferenceFal,
+		"featherless-ai": IconInferenceFeatherless,
 		"fireworks-ai": IconInferenceFireworks,
+		groq: IconInferenceGroq,
 		hyperbolic: IconInferenceHyperbolic,
 		nebius: IconInferenceNebius,
 		novita: IconInferenceNovita,
+		nscale: IconInferenceNscale,
+		ovhcloud: IconInferenceOvh,
 		replicate: IconInferenceReplicate,
 		sambanova: IconInferenceSambaNova,
 		together: IconInferenceTogetherAI,
