@@ -267,8 +267,20 @@ def resolve_links(doc_folder, package, mapping, page_info):
         with open(file, "r", encoding="utf-8") as reader:
             content = reader.read()
         content = resolve_links_in_text(content, package, mapping, page_info)
+        # Fix notebook links to use .ipynb extension
+        content = fix_notebook_links(content)
         with open(file, "w", encoding="utf-8") as writer:
             writer.write(content)
+
+
+def fix_notebook_links(content):
+    """
+    Fix navigation links at the bottom of notebooks to use .ipynb extension instead of .md.
+    """
+    # Replace .md with .ipynb in Previous/Next navigation links
+    content = content.replace('Previous](.md)', 'Previous](.ipynb)')
+    content = content.replace('Next](.md)', 'Next](.ipynb)')
+    return content
 
 
 def build_notebooks(doc_folder, notebook_dir, package=None, mapping=None, page_info=None):
