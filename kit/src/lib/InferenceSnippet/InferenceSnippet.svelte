@@ -56,11 +56,9 @@
 		pipeline_tag: pipeline,
 		tags: conversational ? ["conversational"] : [],
 	};
-	const accessToken = "hf_xxxxxxxxxxxxxxxxxxxxxxxx";
 
 	const availableSnippets = snippets.getInferenceSnippets(
 		model as ModelDataMinimal,
-		accessToken,
 		selectedProvider,
 		{
 			hfModelId: providersMapping[selectedProvider]!.modelId,
@@ -83,7 +81,6 @@
 	$: code = snippets
 		.getInferenceSnippets(
 			model as ModelDataMinimal,
-			accessToken,
 			selectedProvider,
 			{
 				hfModelId: providersMapping[selectedProvider]!.modelId,
