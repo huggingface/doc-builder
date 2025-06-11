@@ -249,7 +249,10 @@ def create_markdown_chunks(text, page_info=None):
             if heading_level == 1:
                 root = node
             else:
-                root.add_child(node, heading_level)
+                if root is None:
+                    root = node
+                else:
+                    root.add_child(node, heading_level)
         elif node:
             section.replace(CODE_COMMENT_ESCAPE, "#")
             node.content += section.strip()
