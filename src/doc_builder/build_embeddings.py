@@ -49,6 +49,15 @@ _re_md_anchor = re.compile(r"\[\[(.*)]]")
 _re_non_alphaneumeric = re.compile(r"[^a-z0-9\s]+", re.IGNORECASE)
 _re_congruent_whitespaces = re.compile(r"\s{2,}")
 
+# todo
+import huggingface_hub
+import os
+version_file = os.path.join(os.path.dirname(huggingface_hub.__file__), '_version.py')
+with open(version_file, 'r') as f:
+    content = f.read()
+content = content.replace('0.30.0.dev0', '0.30.0')
+with open(version_file, 'w') as f:
+    f.write(content)
 
 class MarkdownChunkNode:
     def __init__(self, heading):
