@@ -474,14 +474,17 @@ def create_chunks(package, doc_folder, page_info, version_tag_suffix, is_python_
                         new_anchors.extend(_new_anchors)
                         errors.extend(_errors)
 
-                        print(section['headings'])
-
                 content = _re_autodoc_all.sub("", content)
 
                 markdown_chunks = create_markdown_chunks(
                     content,
-                    page_info=page_info,
+                    page_info=page_info,    
                 )
+
+                for i, markdown_chunk in enumerate(markdown_chunks):
+                    prefix = f"Documentation of library \"{markdown_chunk.package_name}\" under section: {' > '.join(markdown_chunk.headings)}"
+                    new_text = prefix + "\n\n" + markdown_chunk.text.strip()
+                    markdown_chunks[i] = markdown_chunk._replace(text=new_text)
 
                 # Make sure we clean up for next page.
                 del page_info["page"]
@@ -538,13 +541,14 @@ def chunks_to_embeddings(client, chunks) -> List[Embedding]:
                 last_heading = heading_text
         
         # If the page does not have any heading, add the last heading to the page URL
+        source_page_url = c.source_page_url
         if "#" not in c.source_page_url and last_heading is not None:
-            c.source_page_url += "#" + last_heading
+            source_page_url += "#" + last_heading
         
         embeddings.append(
             Embedding(
                 text=c.text,
-                source_page_url=c.source_page_url,
+                source_page_url=source_page_url,
                 source_page_title=c.source_page_title,
                 package_name=c.package_name,
                 embedding=embed,
@@ -647,8 +651,6 @@ def build_embeddings(
         version_tag_suffix=version_tag_suffix,
         is_python_module=is_python_module,
     )
-
-    return
 
     # Step 2: create embeddings
     embeddings = call_embedding_inference(chunks, hf_ie_name, hf_ie_namespace, hf_ie_token)
