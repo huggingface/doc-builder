@@ -68,8 +68,7 @@ class MarkdownChunkNode:
             return heading, local
         else:
             # create id/local
-            local = _re_non_alphaneumeric.sub("", heading)
-            local = _re_congruent_whitespaces.sub(" ", local.strip()).replace(" ", "-")
+            local = slugify(heading)
             return heading, local
 
     def add_child(self, child, header_level):
@@ -421,6 +420,12 @@ def get_page_title(path: str):
     return formatted_string.capitalize()
 
 
+def slugify(string: str):
+    local = _re_non_alphaneumeric.sub("", string)
+    local = _re_congruent_whitespaces.sub(" ", local.strip()).replace(" ", "-")
+    return local
+
+
 _re_autodoc_all = re.compile(r"(\[\[autodoc\]\]\s+[\w\.]+(?:\n\s+-\s+\w+)*\b)", re.DOTALL)
 
 
@@ -549,7 +554,7 @@ def chunks_to_embeddings(client, chunks, is_python_module) -> List[Embedding]:
         # If the page does not have any heading, add the last heading to the page URL
         source_page_url = c.source_page_url
         if "#" not in c.source_page_url and last_heading is not None:
-            source_page_url += "#" + last_heading
+            source_page_url += "#" + slugify(last_heading)
 
         embeddings.append(
             Embedding(
