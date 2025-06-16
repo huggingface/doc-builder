@@ -482,7 +482,7 @@ def create_chunks(package, doc_folder, page_info, version_tag_suffix, is_python_
                 )
 
                 for i, markdown_chunk in enumerate(markdown_chunks):
-                    prefix = f"Documentation of library \"{markdown_chunk.package_name}\" under section: {' > '.join(markdown_chunk.headings)}"
+                    prefix = f"Documentation of {'library' if is_python_module else 'service'} \"{markdown_chunk.package_name}\" under section: {' > '.join(markdown_chunk.headings)}"
                     new_text = prefix + "\n\n" + markdown_chunk.text.strip()
                     markdown_chunks[i] = markdown_chunk._replace(text=new_text)
 
