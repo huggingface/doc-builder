@@ -528,12 +528,18 @@ def chunks_to_embeddings(client, chunks) -> List[Embedding]:
     embeddings = []
     for c, embed in zip(chunks, inference_output):
         headings = [None] * 5
+        last_heading = None
         
         for heading_str in c.headings:
             level = heading_str.count("#")
             heading_text = heading_str.lstrip('# ').strip()
             if 1 <= level <= 5:
                 headings[level - 1] = heading_text
+                last_heading = heading_text
+        
+        # If the page does not have any heading, add the last heading to the page URL
+        if "#" not in c.source_page_url and last_heading is not None:
+            c.source_page_url += "#" + last_heading
         
         embeddings.append(
             Embedding(
