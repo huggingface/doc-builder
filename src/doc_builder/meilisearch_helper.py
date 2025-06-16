@@ -12,7 +12,7 @@ from meilisearch.client import Client, TaskInfo
 # https://github.com/meilisearch/meilisearch-python/blob/d5a0babe50b4ce5789892845db98b30d4db72203/tests/index/test_index_search_meilisearch.py#L491-L493
 # https://github.com/meilisearch/meilisearch-python/blob/d5a0babe50b4ce5789892845db98b30d4db72203/tests/conftest.py#L132-L146
 
-VECTOR_NAME = "docs-embed"
+VECTOR_NAME = "embeddings"
 VECTOR_DIM = 768  # dim of https://huggingface.co/BAAI/bge-base-en-v1.5
 
 MeilisearchFunc = Callable[..., Tuple[Client, TaskInfo]]
@@ -97,7 +97,12 @@ def add_embeddings_to_db(client: Client, index_name: str, embeddings):
             "text": e.text,
             "source_page_url": e.source_page_url,
             "source_page_title": e.source_page_title,
-            "library": e.package_name,
+            "library": e.library,
+            "heading1": e.heading1,
+            "heading2": e.heading2,
+            "heading3": e.heading3,
+            "heading4": e.heading4,
+            "heading5": e.heading5,
             "_vectors": {VECTOR_NAME: e.embedding},
         }
         for e in embeddings

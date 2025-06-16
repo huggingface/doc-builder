@@ -45,8 +45,8 @@ Embedding = namedtuple(
     "text source_page_url source_page_title library embedding heading1 heading2 heading3 heading4 heading5",
 )
 
-MEILI_INDEX = "docs-embed"
-MEILI_INDEX_TEMP = "docs-embed-temp"
+MEILI_INDEX = "docs-semantic-search"
+MEILI_INDEX_TEMP = "docs-semantic-search-temp"
 
 _re_md_anchor = re.compile(r"\[\[(.*)]]")
 _re_non_alphaneumeric = re.compile(r"[^a-z0-9\s]+", re.IGNORECASE)
