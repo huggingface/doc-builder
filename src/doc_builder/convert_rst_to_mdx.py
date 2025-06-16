@@ -27,6 +27,7 @@ _re_single_backquotes = re.compile(r"(^|[^`])`([^`]+)`([^`]|$)")
 _re_double_backquotes = re.compile(r"(^|[^`])``([^`]+)``([^`]|$)")
 # Re pattern to catch things inside ` ` in :func/class/meth:`thing`.
 _re_func_class = re.compile(r":(?:func|class|meth):`([^`]+)`")
+print("echo")
 
 
 def convert_rst_formatting(text):
