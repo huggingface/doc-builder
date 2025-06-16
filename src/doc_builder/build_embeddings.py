@@ -526,10 +526,10 @@ def chunks_to_embeddings(client, chunks) -> List[Embedding]:
     inference_output = inference_output.tolist()
 
     embeddings = []
-    for chunk, embed in zip(chunks, inference_output):
+    for c, embed in zip(chunks, inference_output):
         headings = [None] * 5
         
-        for heading_str in chunk.headings:
+        for heading_str in c.headings:
             level = heading_str.count("#")
             heading_text = heading_str.lstrip('# ').strip()
             if 1 <= level <= 5:
@@ -641,6 +641,8 @@ def build_embeddings(
         version_tag_suffix=version_tag_suffix,
         is_python_module=is_python_module,
     )
+
+    return
 
     # Step 2: create embeddings
     embeddings = call_embedding_inference(chunks, hf_ie_name, hf_ie_namespace, hf_ie_token)
