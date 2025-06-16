@@ -40,7 +40,7 @@ from .utils import chunk_list, read_doc_config
 
 
 Chunk = namedtuple("Chunk", "text source_page_url source_page_title package_name headings")
-Embedding = namedtuple("Embedding", "text source_page_url source_page_title package_name headings embedding")
+Embedding = namedtuple("Embedding", "text source_page_url source_page_title package_name embedding heading1 heading2 heading3 heading4 heading5")
 
 MEILI_INDEX = "docs-embed"
 MEILI_INDEX_TEMP = "docs-embed-temp"
@@ -474,6 +474,8 @@ def create_chunks(package, doc_folder, page_info, version_tag_suffix, is_python_
                         new_anchors.extend(_new_anchors)
                         errors.extend(_errors)
 
+                        print(section['headings'])
+
                 content = _re_autodoc_all.sub("", content)
 
                 markdown_chunks = create_markdown_chunks(
@@ -522,16 +524,32 @@ def chunks_to_embeddings(client, chunks) -> List[Embedding]:
     texts = [c.text for c in chunks]
     inference_output = client.feature_extraction(texts, truncate=True)
     inference_output = inference_output.tolist()
-    embeddings = [
-        Embedding(
-            text=c.text,
-            source_page_url=c.source_page_url,
-            source_page_title=c.source_page_title,
-            package_name=c.package_name,
-            embedding=embed,
+
+    embeddings = []
+    for chunk, embed in zip(chunks, inference_output):
+        headings = [None] * 5
+        
+        for heading_str in chunk.headings:
+            level = heading_str.count("#")
+            heading_text = heading_str.lstrip('# ').strip()
+            if 1 <= level <= 5:
+                headings[level - 1] = heading_text
+        
+        embeddings.append(
+            Embedding(
+                text=c.text,
+                source_page_url=c.source_page_url,
+                source_page_title=c.source_page_title,
+                package_name=c.package_name,
+                embedding=embed,
+                heading1=headings[0],
+                heading2=headings[1],
+                heading3=headings[2],
+                heading4=headings[3],
+                heading5=headings[4],
+            )
         )
-        for c, embed in zip(chunks, inference_output)
-    ]
+
     return embeddings
 
 
@@ -623,8 +641,6 @@ def build_embeddings(
         version_tag_suffix=version_tag_suffix,
         is_python_module=is_python_module,
     )
-
-    return
 
     # Step 2: create embeddings
     embeddings = call_embedding_inference(chunks, hf_ie_name, hf_ie_namespace, hf_ie_token)
