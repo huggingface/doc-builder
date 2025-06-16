@@ -42,7 +42,7 @@ from .utils import chunk_list, read_doc_config
 Chunk = namedtuple("Chunk", "text source_page_url source_page_title package_name headings")
 Embedding = namedtuple(
     "Embedding",
-    "text source_page_url source_page_title package_name embedding heading1 heading2 heading3 heading4 heading5",
+    "text source_page_url source_page_title library embedding heading1 heading2 heading3 heading4 heading5",
 )
 
 MEILI_INDEX = "docs-embed"
@@ -561,7 +561,7 @@ def chunks_to_embeddings(client, chunks, is_python_module) -> List[Embedding]:
                 text=c.text,
                 source_page_url=source_page_url,
                 source_page_title=c.source_page_title,
-                package_name=c.package_name,
+                library=c.package_name,
                 embedding=embed,
                 heading1=headings[0],
                 heading2=headings[1],
