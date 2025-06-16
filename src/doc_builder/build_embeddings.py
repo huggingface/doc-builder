@@ -40,7 +40,10 @@ from .utils import chunk_list, read_doc_config
 
 
 Chunk = namedtuple("Chunk", "text source_page_url source_page_title package_name headings")
-Embedding = namedtuple("Embedding", "text source_page_url source_page_title package_name embedding heading1 heading2 heading3 heading4 heading5")
+Embedding = namedtuple(
+    "Embedding",
+    "text source_page_url source_page_title package_name embedding heading1 heading2 heading3 heading4 heading5",
+)
 
 MEILI_INDEX = "docs-embed"
 MEILI_INDEX_TEMP = "docs-embed-temp"
@@ -145,7 +148,9 @@ _re_autodoc = re.compile(r"^\s*\[\[autodoc\]\]\s+(\S+)\s*$")
 _re_list_item = re.compile(r"^\s*-\s+(\S+)\s*$")
 
 
-def create_autodoc_chunks(content, package, return_anchors=False, page_info=None, version_tag_suffix="src/", headings=[]):
+def create_autodoc_chunks(
+    content, package, return_anchors=False, page_info=None, version_tag_suffix="src/", headings=[]
+):
     """
     Replaces [[autodoc]] special syntax by the corresponding generated documentation in some content.
 
@@ -207,7 +212,7 @@ def create_autodoc_chunks(content, package, return_anchors=False, page_info=None
                     source_page_url=f"https://huggingface.co/docs/{page_info['package_name']}/{page_info['page']}#{od['anchor_name']}",
                     source_page_title=get_page_title(page_info["page"]),
                     package_name=page_info["package_name"],
-                    headings=headings
+                    headings=headings,
                 )
                 for od in object_docs
             ]
@@ -231,36 +236,33 @@ def create_autodoc_chunks(content, package, return_anchors=False, page_info=None
 def get_autodoc_sections(markdown_text: str) -> List[dict[str, any]]:
     """
     Extract text chunks and their corresponding heading paths.
-    
+
     Returns:
         List of dictionaries, each containing 'text' and 'headings' keys
     """
     sections = get_autodoc_sections_helper(markdown_text)
-    
+
     result = []
-    
+
     for section in sections:
-        if section['content'].strip():  # Only include sections with content
+        if section["content"].strip():  # Only include sections with content
             # Create headings array including current heading
-            headings_array = section['parent_headings'][:]  # Copy parent headings
-            if section['heading']:
-                headings_array.append(section['heading'])
-            
-            result.append({
-                'text': section['content'],
-                'headings': headings_array if headings_array else []
-            })
-    
+            headings_array = section["parent_headings"][:]  # Copy parent headings
+            if section["heading"]:
+                headings_array.append(section["heading"])
+
+            result.append({"text": section["content"], "headings": headings_array if headings_array else []})
+
     return result
 
 
 def get_autodoc_sections_helper(markdown_text: str) -> List[dict[str, any]]:
     """
     Split markdown text by headings and include parent headings for each section.
-    
+
     Args:
         markdown_text (str): The input markdown text
-        
+
     Returns:
         List of dictionaries, each containing:
         - 'heading': the current section heading
@@ -269,82 +271,87 @@ def get_autodoc_sections_helper(markdown_text: str) -> List[dict[str, any]]:
         - 'content': the text content of the section
         - 'level': heading level (1 for #, 2 for ##, etc.)
     """
-    lines = markdown_text.split('\n')
+    lines = markdown_text.split("\n")
     sections = []
-    
+
     # Pattern to match headings (# ## ### etc.)
-    heading_pattern = r'^(#+)\s+(.+)$'
-    
+    heading_pattern = r"^(#+)\s+(.+)$"
+
     # Keep track of heading hierarchy
     heading_stack = []  # Stack to maintain parent headings
     current_content = []
-    
+
     for line in lines:
         heading_match = re.match(heading_pattern, line)
-        
+
         if heading_match:
             # Save previous section if it exists
             if heading_stack or current_content:
                 if heading_stack:
-                    sections.append({
-                        'heading': heading_stack[-1]['text'],
-                        'parent_headings': [h['text'] for h in heading_stack[:-1]],
-                        'full_heading_path': ' > '.join([h['text'] for h in heading_stack]),
-                        'content': '\n'.join(current_content).strip(),
-                        'level': heading_stack[-1]['level']
-                    })
+                    sections.append(
+                        {
+                            "heading": heading_stack[-1]["text"],
+                            "parent_headings": [h["text"] for h in heading_stack[:-1]],
+                            "full_heading_path": " > ".join([h["text"] for h in heading_stack]),
+                            "content": "\n".join(current_content).strip(),
+                            "level": heading_stack[-1]["level"],
+                        }
+                    )
                 else:
                     # Content before any heading
-                    sections.append({
-                        'heading': '',
-                        'parent_headings': [],
-                        'full_heading_path': '',
-                        'content': '\n'.join(current_content).strip(),
-                        'level': 0
-                    })
-            
+                    sections.append(
+                        {
+                            "heading": "",
+                            "parent_headings": [],
+                            "full_heading_path": "",
+                            "content": "\n".join(current_content).strip(),
+                            "level": 0,
+                        }
+                    )
+
             # Process new heading
             level = len(heading_match.group(1))
             heading_text = heading_match.group(2).strip()
-            full_heading = heading_match.group(1) + ' ' + heading_text
-            
+            full_heading = heading_match.group(1) + " " + heading_text
+
             # Update heading stack based on level
             # Remove headings at same or lower level
-            while heading_stack and heading_stack[-1]['level'] >= level:
+            while heading_stack and heading_stack[-1]["level"] >= level:
                 heading_stack.pop()
-            
+
             # Add current heading to stack
-            heading_stack.append({
-                'text': full_heading,
-                'level': level
-            })
-            
+            heading_stack.append({"text": full_heading, "level": level})
+
             # Reset content for new section
             current_content = []
         else:
             # Add line to current section content
             current_content.append(line)
-    
+
     # Don't forget the last section
     if heading_stack or current_content:
         if heading_stack:
-            sections.append({
-                'heading': heading_stack[-1]['text'],
-                'parent_headings': [h['text'] for h in heading_stack[:-1]],
-                'full_heading_path': ' > '.join([h['text'] for h in heading_stack]),
-                'content': '\n'.join(current_content).strip(),
-                'level': heading_stack[-1]['level']
-            })
+            sections.append(
+                {
+                    "heading": heading_stack[-1]["text"],
+                    "parent_headings": [h["text"] for h in heading_stack[:-1]],
+                    "full_heading_path": " > ".join([h["text"] for h in heading_stack]),
+                    "content": "\n".join(current_content).strip(),
+                    "level": heading_stack[-1]["level"],
+                }
+            )
         else:
             # Content at the end without heading
-            sections.append({
-                'heading': '',
-                'parent_headings': [],
-                'full_heading_path': '',
-                'content': '\n'.join(current_content).strip(),
-                'level': 0
-            })
-    
+            sections.append(
+                {
+                    "heading": "",
+                    "parent_headings": [],
+                    "full_heading_path": "",
+                    "content": "\n".join(current_content).strip(),
+                    "level": 0,
+                }
+            )
+
     return sections
 
 
@@ -459,7 +466,7 @@ def create_chunks(package, doc_folder, page_info, version_tag_suffix, is_python_
                 if "[[autodoc]]" in content:
                     autodoc_sections = get_autodoc_sections(content)
                     for section in autodoc_sections:
-                        autodoc_content = "\n\n".join(_re_autodoc_all.findall(section['text']))
+                        autodoc_content = "\n\n".join(_re_autodoc_all.findall(section["text"]))
                         if not autodoc_content.strip():
                             continue
                         _autodoc_chunks, _new_anchors, _errors = create_autodoc_chunks(
@@ -468,7 +475,7 @@ def create_chunks(package, doc_folder, page_info, version_tag_suffix, is_python_
                             return_anchors=True,
                             page_info=page_info,
                             version_tag_suffix=version_tag_suffix,
-                            headings=section['headings'],
+                            headings=section["headings"],
                         )
                         autodoc_chunks.extend(_autodoc_chunks)
                         new_anchors.extend(_new_anchors)
@@ -478,7 +485,7 @@ def create_chunks(package, doc_folder, page_info, version_tag_suffix, is_python_
 
                 markdown_chunks = create_markdown_chunks(
                     content,
-                    page_info=page_info,    
+                    page_info=page_info,
                 )
 
                 # Make sure we clean up for next page.
@@ -531,19 +538,19 @@ def chunks_to_embeddings(client, chunks, is_python_module) -> List[Embedding]:
     for c, embed in zip(chunks, inference_output):
         headings = [None] * 5
         last_heading = None
-        
+
         for heading_str in c.headings:
             level = heading_str.count("#")
-            heading_text = heading_str.lstrip('# ').strip()
+            heading_text = heading_str.lstrip("# ").strip()
             if 1 <= level <= 5:
                 headings[level - 1] = heading_text
                 last_heading = heading_text
-        
+
         # If the page does not have any heading, add the last heading to the page URL
         source_page_url = c.source_page_url
         if "#" not in c.source_page_url and last_heading is not None:
             source_page_url += "#" + last_heading
-        
+
         embeddings.append(
             Embedding(
                 text=c.text,
@@ -562,7 +569,9 @@ def chunks_to_embeddings(client, chunks, is_python_module) -> List[Embedding]:
     return embeddings
 
 
-def call_embedding_inference(chunks: List[Chunk], hf_ie_name, hf_ie_namespace, hf_ie_token, is_python_module) -> List[Embedding]:
+def call_embedding_inference(
+    chunks: List[Chunk], hf_ie_name, hf_ie_namespace, hf_ie_token, is_python_module
+) -> List[Embedding]:
     """
     Using https://huggingface.co/inference-endpoints with a text embedding model
     """
