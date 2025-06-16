@@ -481,11 +481,6 @@ def create_chunks(package, doc_folder, page_info, version_tag_suffix, is_python_
                     page_info=page_info,    
                 )
 
-                for i, markdown_chunk in enumerate(markdown_chunks):
-                    prefix = f"Documentation of {'library' if is_python_module else 'service'} \"{markdown_chunk.package_name}\" under section: {' > '.join(markdown_chunk.headings)}"
-                    new_text = prefix + "\n\n" + markdown_chunk.text.strip()
-                    markdown_chunks[i] = markdown_chunk._replace(text=new_text)
-
                 # Make sure we clean up for next page.
                 del page_info["page"]
 
@@ -523,8 +518,12 @@ def create_chunks(package, doc_folder, page_info, version_tag_suffix, is_python_
     return chunks
 
 
-def chunks_to_embeddings(client, chunks) -> List[Embedding]:
-    texts = [c.text for c in chunks]
+def chunks_to_embeddings(client, chunks, is_python_module) -> List[Embedding]:
+    texts = []
+    for c in chunks:
+        prefix = f"Documentation of {'library' if is_python_module else 'service'} \"{c.package_name}\" under section: {' > '.join(c.headings)}"
+        texts.append(prefix + "\n\n" + c.text)
+
     inference_output = client.feature_extraction(texts, truncate=True)
     inference_output = inference_output.tolist()
 
@@ -563,7 +562,7 @@ def chunks_to_embeddings(client, chunks) -> List[Embedding]:
     return embeddings
 
 
-def call_embedding_inference(chunks: List[Chunk], hf_ie_name, hf_ie_namespace, hf_ie_token) -> List[Embedding]:
+def call_embedding_inference(chunks: List[Chunk], hf_ie_name, hf_ie_namespace, hf_ie_token, is_python_module) -> List[Embedding]:
     """
     Using https://huggingface.co/inference-endpoints with a text embedding model
     """
@@ -580,7 +579,7 @@ def call_embedding_inference(chunks: List[Chunk], hf_ie_name, hf_ie_namespace, h
 
     with ThreadPoolExecutor(max_workers=16) as executor:
         future_to_chunk = {
-            executor.submit(chunks_to_embeddings, client, chunks[i : i + batch_size]): i
+            executor.submit(chunks_to_embeddings, client, chunks[i : i + batch_size], is_python_module): i
             for i in range(0, len(chunks), batch_size)
         }
 
@@ -653,7 +652,7 @@ def build_embeddings(
     )
 
     # Step 2: create embeddings
-    embeddings = call_embedding_inference(chunks, hf_ie_name, hf_ie_namespace, hf_ie_token)
+    embeddings = call_embedding_inference(chunks, hf_ie_name, hf_ie_namespace, hf_ie_token, is_python_module)
 
     # Step 3: push embeddings to vector database (meilisearch)
     client = meilisearch.Client("https://edge.meilisearch.com", meilisearch_key)
