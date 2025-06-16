@@ -63,7 +63,12 @@ def create_embedding_db(client: Client, index_name: str):
 @wait_for_task_completion
 def update_db_settings(client: Client, index_name: str):
     index = client.index(index_name)
-    task_info = index.update_settings({"searchableAttributes": []})
+    task_info = index.update_settings(
+        {
+            "searchableAttributes": ["text", "heading1", "heading2", "heading3", "heading4", "heading5"],
+            "filterableAttributes": ["library"],
+        }
+    )
     return client, task_info
 
 
