@@ -52,13 +52,22 @@ jobs:
       - name: Install libgl1
         run: apt-get install -y libgl1
 
+      - name: Export PIP_OR_UV ('pip' or 'uv pip')
+        run: |
+          if [ -z "${{ job.container }}" ]
+          then
+            echo "PIP_OR_UV=uv pip" >> $GITHUB_ENV
+          else
+            echo "PIP_OR_UV=pip" >> $GITHUB_ENV
+          fi
+
       - name: Setup environment
         shell: bash
         run: |
           if [[ "${{ matrix.is_not_python_module }}" != "true" ]]; then
             current_path=$(pwd)
             cd ${{ env.REPO_NAME }}
-            pip install .[dev]
+            $PIP_OR_UV install .[dev]
             cd $current_path
           fi
 
@@ -68,7 +77,7 @@ jobs:
           cd doc-builder
           git fetch
           git checkout build_embeddings
-          pip install .
+          $PIP_OR_UV install .
 
       - name: Build embeddings
         shell: bash
@@ -90,7 +99,7 @@ jobs:
         uses: actions/checkout@v2
       
       - name: Install doc-builder
-        run: pip install .[dev]
+        run: $PIP_OR_UV install .[dev]
         
       - name: Success Cleanup
         if: success() # Runs if all matrix jobs succeeded
