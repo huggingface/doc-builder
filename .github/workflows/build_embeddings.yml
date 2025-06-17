@@ -98,6 +98,15 @@ jobs:
       - name: Checkout doc-builder
         uses: actions/checkout@v2
       
+      - name: Export PIP_OR_UV ('pip' or 'uv pip')
+        run: |
+          if [ -z "${{ job.container }}" ]
+          then
+            echo "PIP_OR_UV=uv pip" >> $GITHUB_ENV
+          else
+            echo "PIP_OR_UV=pip" >> $GITHUB_ENV
+          fi
+
       - name: Install doc-builder
         run: $PIP_OR_UV install .[dev]
         
