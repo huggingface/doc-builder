@@ -33,9 +33,10 @@ jobs:
           #   doc_folder: docs/hub
           #   package_name: hub
           #   is_not_python_module: true
-          # - repo_id: huggingface/huggingface.js
-          #   doc_folder: docs
-          #   is_not_python_module: true
+          - repo_id: huggingface/huggingface.js
+            doc_folder: docs
+            is_not_python_module: true
+            pre_command: npm install -g corepack@latest && corepack enable && cd huggingface.js && pnpm install && pnpm -r build && pnpm --filter doc-internal start
           # - repo_id: huggingface/transformers.js
           #   doc_folder: docs/source
           #   is_not_python_module: true
@@ -51,24 +52,24 @@ jobs:
           #   doc_folder: docs/source
           # - repo_id: huggingface/lighteval
           #   doc_folder: docs/source
-          - repo_id: huggingface/pytorch-image-models
-            doc_folder: hfdocs/source
-            package_name: timm
-          - repo_id: huggingface/hub-docs
-            doc_folder: docs/inference-providers
-            package_name: inference-providers
-            is_not_python_module: true
-          - repo_id: huggingface/safetensors
-            doc_folder: docs/source
-            package_path: bindings/python
-          - repo_id: huggingface/hf-endpoints-documentation
-            doc_folder: docs/source
-            package_name: inference-endpoints
-            is_not_python_module: true
-          - repo_id: huggingface/dataset-viewer
-            doc_folder: docs/source
-            package_name: dataset-viewer
-            is_not_python_module: true
+          # - repo_id: huggingface/pytorch-image-models
+          #   doc_folder: hfdocs/source
+          #   package_name: timm
+          # - repo_id: huggingface/hub-docs
+          #   doc_folder: docs/inference-providers
+          #   package_name: inference-providers
+          #   is_not_python_module: true
+          # - repo_id: huggingface/safetensors
+          #   doc_folder: docs/source
+          #   package_path: bindings/python
+          # - repo_id: huggingface/hf-endpoints-documentation
+          #   doc_folder: docs/source
+          #   package_name: inference-endpoints
+          #   is_not_python_module: true
+          # - repo_id: huggingface/dataset-viewer
+          #   doc_folder: docs/source
+          #   package_name: dataset-viewer
+          #   is_not_python_module: true
     concurrency:
       group: ${{ github.workflow }}-${{ github.ref }}
       cancel-in-progress: true
@@ -87,6 +88,10 @@ jobs:
         with:
           repository: ${{ matrix.repo_id }}
           path: ${{ github.workspace }}/${{ env.REPO_NAME }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
 
       - name: Install libgl1
         run: apt-get install -y libgl1
@@ -123,6 +128,14 @@ jobs:
           git fetch
           git checkout build_embeddings
           $PIP_OR_UV install .
+
+      - name: Run pre-command
+        shell: bash
+        run: |
+          if [ ! -z "${{ matrix.pre_command }}" ]
+          then
+            bash -c "${{ matrix.pre_command }}"
+          fi
 
       - name: Build embeddings
         shell: bash
