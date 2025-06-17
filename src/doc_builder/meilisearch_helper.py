@@ -58,7 +58,7 @@ def create_embedding_db(client: Client, index_name: str):
     index = client.index(index_name)
     task_info = index.update_embedders({VECTOR_NAME: {"source": "userProvided", "dimensions": VECTOR_DIM}})
     return client, task_info
-    
+
 
 @wait_for_task_completion
 def update_db_settings(client: Client, index_name: str):
