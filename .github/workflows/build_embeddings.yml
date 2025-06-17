@@ -67,8 +67,14 @@ jobs:
           if [[ "${{ matrix.is_not_python_module }}" != "true" ]]; then
             current_path=$(pwd)
             cd ${{ env.REPO_NAME }}
-            $PIP_OR_UV install .[dev]
-            cd $current_path
+            if [[ -n "${{ matrix.package_path }}" ]]; then
+              cd ${{ matrix.package_path }}
+              $PIP_OR_UV install .[dev]
+              cd $current_path
+            else
+              $PIP_OR_UV install .[dev]
+              cd $current_path
+            fi
           fi
 
           rm -rf doc-builder
