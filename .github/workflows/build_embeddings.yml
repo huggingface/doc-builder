@@ -116,6 +116,12 @@ jobs:
             echo "PIP_OR_UV=pip" >> $GITHUB_ENV
           fi
 
+      - name: Install uv (if needed)
+        if: ${{ !env.job_container }}
+        run: |
+          python3 -m pip install --upgrade pip
+          pip install uv
+
       - name: Install doc-builder
         run: $PIP_OR_UV install .[dev]
         
