@@ -15,61 +15,61 @@ jobs:
     runs-on: ubuntu-latest
     container: huggingface/transformers-doc-builder
     strategy:
-      max-parallel: 1 # run the matrix jobs sequentially
+      max-parallel: 4
       matrix:
         include:
-          # - repo_id: huggingface/tokenizers
-          #   doc_folder: docs/source-doc-builder
-          #   package_path: bindings/python
-          # - repo_id: huggingface/diffusers
-          #   doc_folder: docs/source/en
-          # - repo_id: huggingface/accelerate
-          #   doc_folder: docs/source
-          # - repo_id: huggingface/huggingface_hub
-          #   doc_folder: docs/source/en
-          # - repo_id: huggingface/transformers
-          #   doc_folder: docs/source/en
-          # - repo_id: huggingface/hub-docs
-          #   doc_folder: docs/hub
-          #   package_name: hub
-          #   is_not_python_module: true
+          - repo_id: huggingface/tokenizers
+            doc_folder: docs/source-doc-builder
+            package_path: bindings/python
+          - repo_id: huggingface/diffusers
+            doc_folder: docs/source/en
+          - repo_id: huggingface/accelerate
+            doc_folder: docs/source
+          - repo_id: huggingface/huggingface_hub
+            doc_folder: docs/source/en
+          - repo_id: huggingface/transformers
+            doc_folder: docs/source/en
+          - repo_id: huggingface/hub-docs
+            doc_folder: docs/hub
+            package_name: hub
+            is_not_python_module: true
           - repo_id: huggingface/huggingface.js
             doc_folder: docs
             is_not_python_module: true
             pre_command: npm install -g corepack@latest && corepack enable && cd huggingface.js && pnpm install && pnpm -r build && pnpm --filter doc-internal start
-          # - repo_id: huggingface/transformers.js
-          #   doc_folder: docs/source
-          #   is_not_python_module: true
-          # - repo_id: huggingface/smolagents
-          #   doc_folder: docs/source/en
-          # - repo_id: huggingface/peft
-          #   doc_folder: docs/source
-          # - repo_id: huggingface/trl
-          #   doc_folder: docs/source
-          # - repo_id: bitsandbytes-foundation/bitsandbytes
-          #   doc_folder: docs/source
-          # - repo_id: huggingface/lerobot
-          #   doc_folder: docs/source
-          # - repo_id: huggingface/lighteval
-          #   doc_folder: docs/source
-          # - repo_id: huggingface/pytorch-image-models
-          #   doc_folder: hfdocs/source
-          #   package_name: timm
-          # - repo_id: huggingface/hub-docs
-          #   doc_folder: docs/inference-providers
-          #   package_name: inference-providers
-          #   is_not_python_module: true
-          # - repo_id: huggingface/safetensors
-          #   doc_folder: docs/source
-          #   package_path: bindings/python
-          # - repo_id: huggingface/hf-endpoints-documentation
-          #   doc_folder: docs/source
-          #   package_name: inference-endpoints
-          #   is_not_python_module: true
-          # - repo_id: huggingface/dataset-viewer
-          #   doc_folder: docs/source
-          #   package_name: dataset-viewer
-          #   is_not_python_module: true
+          - repo_id: huggingface/transformers.js
+            doc_folder: docs/source
+            is_not_python_module: true
+          - repo_id: huggingface/smolagents
+            doc_folder: docs/source/en
+          - repo_id: huggingface/peft
+            doc_folder: docs/source
+          - repo_id: huggingface/trl
+            doc_folder: docs/source
+          - repo_id: bitsandbytes-foundation/bitsandbytes
+            doc_folder: docs/source
+          - repo_id: huggingface/lerobot
+            doc_folder: docs/source
+          - repo_id: huggingface/lighteval
+            doc_folder: docs/source
+          - repo_id: huggingface/pytorch-image-models
+            doc_folder: hfdocs/source
+            package_name: timm
+          - repo_id: huggingface/hub-docs
+            doc_folder: docs/inference-providers
+            package_name: inference-providers
+            is_not_python_module: true
+          - repo_id: huggingface/safetensors
+            doc_folder: docs/source
+            package_path: bindings/python
+          - repo_id: huggingface/hf-endpoints-documentation
+            doc_folder: docs/source
+            package_name: inference-endpoints
+            is_not_python_module: true
+          - repo_id: huggingface/dataset-viewer
+            doc_folder: docs/source
+            package_name: dataset-viewer
+            is_not_python_module: true
     concurrency:
       group: ${{ github.workflow }}-${{ github.ref }}
       cancel-in-progress: true
