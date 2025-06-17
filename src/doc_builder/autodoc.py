@@ -107,8 +107,8 @@ def format_signature(obj):
         return params
     try:
         signature = inspect.signature(obj)
-    except ValueError:
-        # TODO: This fails for ModelOutput. Check if this is normal.
+    except (TypeError, ValueError):
+        # This fails for some objects (e.g., aenum enums) with invalid __signature__ attributes.
         return ""
 
     for idx, param in enumerate(signature.parameters.values()):
