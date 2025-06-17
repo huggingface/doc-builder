@@ -423,6 +423,7 @@ def get_page_title(path: str):
 def slugify(string: str):
     local = _re_non_alphaneumeric.sub("", string)
     local = _re_congruent_whitespaces.sub(" ", local.strip()).replace(" ", "-")
+    local = local.lower()
     return local
 
 
