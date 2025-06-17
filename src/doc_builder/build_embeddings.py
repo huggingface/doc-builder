@@ -665,6 +665,8 @@ def build_embeddings(
         is_python_module=is_python_module,
     )
 
+    return
+
     # Step 2: create embeddings
     embeddings = call_embedding_inference(chunks, hf_ie_name, hf_ie_namespace, hf_ie_token, is_python_module)
 
