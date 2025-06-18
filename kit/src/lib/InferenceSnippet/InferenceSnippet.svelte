@@ -66,6 +66,7 @@
 			providerId: providersMapping[selectedProvider]!.providerModelId,
 			status: "live",
 			task: pipeline,
+			provider: selectedProvider,
 		}
 	);
 	const languages = [...new Set(availableSnippets.map((s) => s.language))];
@@ -88,6 +89,7 @@
 				providerId: providersMapping[selectedProvider]!.providerModelId,
 				status: "live",
 				task: pipeline,
+				provider: selectedProvider,
 			},
 			{
 				streaming,
