@@ -109,26 +109,20 @@
 	$: clients = clientsByLanguage[selectedLanguage];
 	$: selectedClient = clients?.[0];
 
-	let code: string | undefined = undefined;
-	$: {
-		const snippetsForCode = getInferenceSnippetsOrEmpty(
-			model as ModelDataMinimal,
-			selectedProvider,
-			{
-				hfModelId: providersMapping[selectedProvider]!.modelId,
-				providerId: providersMapping[selectedProvider]!.providerModelId,
-				status: "live",
-				task: pipeline,
-				provider: selectedProvider,
-			},
-			{
-				streaming,
-			}
-		);
-		code = snippetsForCode.find(
-			(s) => s.language === selectedLanguage && s.client === selectedClient
-		)?.content;
-	}
+	$: code = getInferenceSnippetsOrEmpty(
+		model as ModelDataMinimal,
+		selectedProvider,
+		{
+			hfModelId: providersMapping[selectedProvider]!.modelId,
+			providerId: providersMapping[selectedProvider]!.providerModelId,
+			status: "live",
+			task: pipeline,
+			provider: selectedProvider,
+		},
+		{
+			streaming,
+		}
+	).find((s) => s.language === selectedLanguage && s.client === selectedClient)?.content;
 
 	const PRETTY_NAMES: Partial<
 		Record<InferenceProviderNotOpenAI | InferenceSnippetLanguage, string>
