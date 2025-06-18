@@ -5,7 +5,11 @@
 		ModelDataMinimal,
 		PipelineType,
 	} from "@huggingface/tasks";
-	import { type InferenceProvider, snippets } from "@huggingface/inference";
+	import {
+		type InferenceProvider,
+		type InferenceProviderOrPolicy,
+		snippets,
+	} from "@huggingface/inference";
 	import { onMount, SvelteComponent } from "svelte";
 
 	import CodeBlock from "$lib/CodeBlock.svelte";
@@ -58,7 +62,32 @@
 		tags: conversational ? ["conversational"] : [],
 	};
 
-	const availableSnippets = snippets.getInferenceSnippets(
+	interface InferenceProviderMappingEntry {
+		adapter?: string;
+		adapterWeightsPath?: string;
+		hfModelId: string;
+		provider: string;
+		providerId: string;
+		status: "live" | "staging";
+		task: PipelineType;
+		type?: "single-model" | "tag-filter";
+	}
+
+	function getInferenceSnippetsOrEmpty(
+		model: ModelDataMinimal,
+		provider: InferenceProviderOrPolicy,
+		inferenceProviderMapping?: InferenceProviderMappingEntry,
+		opts?: Record<string, unknown>
+	) {
+		try {
+			return snippets.getInferenceSnippets(model, provider, inferenceProviderMapping, opts);
+		} catch (error) {
+			console.warn("Failed to get inference snippets:", error);
+			return [];
+		}
+	}
+
+	const availableSnippets = getInferenceSnippetsOrEmpty(
 		model as ModelDataMinimal,
 		selectedProvider,
 		{
@@ -80,8 +109,9 @@
 	$: clients = clientsByLanguage[selectedLanguage];
 	$: selectedClient = clients?.[0];
 
-	$: code = snippets
-		.getInferenceSnippets(
+	let code: string | undefined = undefined;
+	$: {
+		const snippetsForCode = getInferenceSnippetsOrEmpty(
 			model as ModelDataMinimal,
 			selectedProvider,
 			{
@@ -94,8 +124,11 @@
 			{
 				streaming,
 			}
-		)
-		.find((s) => s.language === selectedLanguage && s.client === selectedClient)?.content;
+		);
+		code = snippetsForCode.find(
+			(s) => s.language === selectedLanguage && s.client === selectedClient
+		)?.content;
+	}
 
 	const PRETTY_NAMES: Partial<
 		Record<InferenceProviderNotOpenAI | InferenceSnippetLanguage, string>
