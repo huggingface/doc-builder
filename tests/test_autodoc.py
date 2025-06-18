@@ -296,13 +296,12 @@ before.
             [
                 "build_inputs_with_special_tokens",
                 "convert_tokens_to_string",
-                "create_token_type_ids_from_sequences",
                 "get_special_tokens_mask",
             ],
         )
         self.assertListEqual(
             find_documented_methods(BertTokenizerFast),
-            ["build_inputs_with_special_tokens", "create_token_type_ids_from_sequences"],
+            ["build_inputs_with_special_tokens"],
         )
 
     def test_autodoc_return_anchors(self):
@@ -313,7 +312,6 @@ before.
                 "transformers.BertTokenizer",
                 "transformers.BertTokenizer.build_inputs_with_special_tokens",
                 "transformers.BertTokenizer.convert_tokens_to_string",
-                "transformers.BertTokenizer.create_token_type_ids_from_sequences",
                 "transformers.BertTokenizer.get_special_tokens_mask",
             ],
         )
@@ -326,7 +324,6 @@ before.
                 ("transformers.BertTokenizer.__call__", "transformers.PreTrainedTokenizerBase.__call__"),
                 "transformers.BertTokenizer.build_inputs_with_special_tokens",
                 "transformers.BertTokenizer.convert_tokens_to_string",
-                "transformers.BertTokenizer.create_token_type_ids_from_sequences",
                 "transformers.BertTokenizer.get_special_tokens_mask",
             ],
         )
