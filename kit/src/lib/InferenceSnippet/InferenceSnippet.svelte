@@ -82,7 +82,10 @@
 		try {
 			return snippets.getInferenceSnippets(model, provider, inferenceProviderMapping, opts);
 		} catch (error) {
-			console.warn("Failed to get inference snippets:", error);
+			console.warn(
+				`Failed to get inference snippets for model "${model.id}" and provider "${provider}":`,
+				error
+			);
 			return [];
 		}
 	}
