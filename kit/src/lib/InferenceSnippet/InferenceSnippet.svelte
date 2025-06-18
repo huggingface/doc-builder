@@ -25,6 +25,7 @@
 	import IconInferenceNebius from "./IconInferenceNebius.svelte";
 	import IconInferenceNovita from "./IconInferenceNovita.svelte";
 	import IconInferenceNscale from "./IconInferenceNscale.svelte";
+	import IconInferenceOvh from "./IconInferenceOvh.svelte";
 	import IconInferenceReplicate from "./IconInferenceReplicate.svelte";
 	import IconInferenceSambaNova from "./IconInferenceSambaNova.svelte";
 	import IconInferenceTogetherAI from "./IconInferenceTogetherAI.svelte";
@@ -65,6 +66,7 @@
 			providerId: providersMapping[selectedProvider]!.providerModelId,
 			status: "live",
 			task: pipeline,
+			provider: selectedProvider,
 		}
 	);
 	const languages = [...new Set(availableSnippets.map((s) => s.language))];
@@ -87,6 +89,7 @@
 				providerId: providersMapping[selectedProvider]!.providerModelId,
 				status: "live",
 				task: pipeline,
+				provider: selectedProvider,
 			},
 			{
 				streaming,
@@ -106,13 +109,14 @@
 		"fireworks-ai": "Fireworks",
 		groq: "Groq",
 		hyperbolic: "Hyperbolic",
+		"hf-inference": "HF Inference API",
 		nebius: "Nebius AI Studio",
 		novita: "Novita",
 		nscale: "Nscale",
+		ovhcloud: "OVHcloud AI Endpoints",
 		replicate: "Replicate",
 		sambanova: "SambaNova",
 		together: "Together AI",
-		"hf-inference": "HF Inference API",
 		// languages
 		sh: "cURL",
 		python: "Python",
@@ -138,6 +142,7 @@
 		nebius: IconInferenceNebius,
 		novita: IconInferenceNovita,
 		nscale: IconInferenceNscale,
+		ovhcloud: IconInferenceOvh,
 		replicate: IconInferenceReplicate,
 		sambanova: IconInferenceSambaNova,
 		together: IconInferenceTogetherAI,
@@ -159,13 +164,13 @@
 </script>
 
 <div
-	class="flex gap-x-2 justify-between md:items-top w-full text-sm not-prose flex-col md:flex-row"
+	class="md:items-top not-prose flex w-full flex-col justify-between gap-x-2 text-sm md:flex-row"
 >
 	<!-- Language selection -->
 	{#if languages.length > 1}
 		<div>
-			<p class="font-mono text-xs opacity-50 hidden md:block">Language</p>
-			<div class="my-1.5 flex items-center gap-x-1 gap-y-0.5 flex-wrap">
+			<p class="hidden font-mono text-xs opacity-50 md:block">Language</p>
+			<div class="my-1.5 flex flex-wrap items-center gap-x-1 gap-y-0.5">
 				{#each languages as language}
 					<button
 						class="text-md flex select-none items-center rounded-lg border px-1.5 py-1 leading-none
@@ -188,8 +193,8 @@
 	<!-- Client selection -->
 	{#if clients.length > 1}
 		<div>
-			<p class="font-mono text-xs opacity-50 hidden md:block">Client</p>
-			<div class="my-1.5 flex items-center gap-x-1 gap-y-0.5 flex-wrap">
+			<p class="hidden font-mono text-xs opacity-50 md:block">Client</p>
+			<div class="my-1.5 flex flex-wrap items-center gap-x-1 gap-y-0.5">
 				{#each clients as client}
 					<button
 						class="text-md flex select-none items-center rounded-lg border px-1.5 py-1 leading-none
@@ -210,8 +215,8 @@
 	{#if providers.length > 0}
 		{@const nVisibleProviders = 2}
 		<div>
-			<p class="font-mono text-xs opacity-50 hidden md:block">Provider</p>
-			<div class="my-1.5 flex items-center gap-x-1 gap-y-0.5 flex-wrap">
+			<p class="hidden font-mono text-xs opacity-50 md:block">Provider</p>
+			<div class="my-1.5 flex flex-wrap items-center gap-x-1 gap-y-0.5">
 				{#each providers.slice(0, nVisibleProviders) as provider}
 					<button
 						class="text-md flex select-none items-center rounded-lg border px-1.5 py-1 leading-none
@@ -231,7 +236,7 @@
 					<Dropdown btnLabel="" classNames="colab-dropdown" noBtnClass useDeprecatedJS={false}>
 						<slot slot="button">
 							<p
-								class="text-md flex select-none items-center rounded-lg border px-1.5 py-1 leading-none hover:shadow-xs cursor-pointer text-gray-500 opacity-90 hover:text-gray-700 dark:hover:text-gray-200"
+								class="text-md hover:shadow-xs flex cursor-pointer select-none items-center rounded-lg border px-1.5 py-1 leading-none text-gray-500 opacity-90 hover:text-gray-700 dark:hover:text-gray-200"
 							>
 								+{providers.length - nVisibleProviders}
 							</p>
@@ -261,8 +266,8 @@
 	{/if}
 
 	<div>
-		<p class="font-mono text-xs invisible hidden md:block">Settings</p>
-		<div class="flex not-prose my-1.5">
+		<p class="invisible hidden font-mono text-xs md:block">Settings</p>
+		<div class="not-prose my-1.5 flex">
 			<Dropdown
 				btnLabel=""
 				classNames="hidden md:block"
@@ -272,7 +277,7 @@
 			>
 				<slot slot="button">
 					<button
-						class="text-md flex select-none items-center rounded-lg border px-1.5 py-1 leading-none hover:shadow-xs cursor-pointer text-gray-500 opacity-90 hover:text-gray-700 dark:hover:text-gray-200"
+						class="text-md hover:shadow-xs flex cursor-pointer select-none items-center rounded-lg border px-1.5 py-1 leading-none text-gray-500 opacity-90 hover:text-gray-700 dark:hover:text-gray-200"
 						type="button"
 						title="Settings dropdown"
 					>
@@ -281,10 +286,10 @@
 					</button>
 				</slot>
 				<slot slot="menu">
-					<div class="flex flex-col p-2 gap-y-2">
+					<div class="flex flex-col gap-y-2 p-2">
 						{#if model.tags.includes("conversational")}
 							<button
-								class="text-md group relative flex items-center self-start leading-tight gap-x-2 border-b w-full pb-2 cursor-default do-not-close-dropdown"
+								class="text-md do-not-close-dropdown group relative flex w-full cursor-default items-center gap-x-2 self-start border-b pb-2 leading-tight"
 								on:click={() => (streaming = !streaming)}
 								type="button"
 							>
@@ -299,7 +304,7 @@
 						{/if}
 						<a
 							href="https://huggingface.co/settings/tokens"
-							class="whitespace-nowrap flex gap-x-1 items-center"
+							class="flex items-center gap-x-1 whitespace-nowrap"
 							target="_blank"
 							title="Tokens settings"
 						>
@@ -308,7 +313,7 @@
 
 						<a
 							href="https://huggingface.co/settings/inference-providers"
-							class="whitespace-nowrap flex gap-x-1 items-center"
+							class="flex items-center gap-x-1 whitespace-nowrap"
 							title="Inference providers settings"
 							target="_blank"
 						>
@@ -325,7 +330,7 @@
 			>
 				<slot slot="button">
 					<button
-						class="text-md flex select-none items-center rounded-lg border px-1.5 py-1 leading-none hover:shadow-xs cursor-pointer text-gray-500 opacity-90 hover:text-gray-700 dark:hover:text-gray-200"
+						class="text-md hover:shadow-xs flex cursor-pointer select-none items-center rounded-lg border px-1.5 py-1 leading-none text-gray-500 opacity-90 hover:text-gray-700 dark:hover:text-gray-200"
 						type="button"
 						title="Settings dropdown"
 					>
@@ -334,10 +339,10 @@
 					</button>
 				</slot>
 				<slot slot="menu">
-					<div class="flex flex-col p-2 gap-y-2">
+					<div class="flex flex-col gap-y-2 p-2">
 						{#if model.tags.includes("conversational")}
 							<button
-								class="text-md group relative flex items-center self-start leading-tight gap-x-2 border-b w-full pb-2 cursor-default do-not-close-dropdown"
+								class="text-md do-not-close-dropdown group relative flex w-full cursor-default items-center gap-x-2 self-start border-b pb-2 leading-tight"
 								on:click={() => (streaming = !streaming)}
 								type="button"
 							>
@@ -351,7 +356,7 @@
 						{/if}
 						<a
 							href="/settings/tokens"
-							class="whitespace-nowrap flex gap-x-1 items-center"
+							class="flex items-center gap-x-1 whitespace-nowrap"
 							target="_blank"
 							title="Tokens settings"
 						>
@@ -360,7 +365,7 @@
 
 						<a
 							href="/settings/inference-providers"
-							class="whitespace-nowrap flex gap-x-1 items-center"
+							class="flex items-center gap-x-1 whitespace-nowrap"
 							title="Inference providers settings"
 							target="_blank"
 						>
