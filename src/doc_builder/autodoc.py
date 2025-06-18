@@ -142,7 +142,35 @@ _re_raises = re.compile(r"<raises>(.*)</raises>", re.DOTALL)
 _re_raisederrors = re.compile(r"<raisederrors>(.*)</raisederrors>", re.DOTALL)
 
 
-def get_signature_component(name, anchor, signature, object_doc, source_link=None, is_getset_desc=False):
+def inside_example_finder_closure(match, tag):
+    """
+    This closure find whether parameters and/or returns sections has example code block inside it
+    """
+    match_str = match.group(1)
+    examples_inside = _re_example_tags.search(match_str)
+    if examples_inside:
+        example_tag = examples_inside.group(1)
+        match_str = match_str.replace(example_tag, f"</{tag}>{example_tag}", 1)
+        return f"<{tag}>{match_str}"
+    return f"<{tag}>{match_str}</{tag}>"
+
+
+def regex_closure(object_doc, regex):
+    """
+    This closure matches given regex & removes the matched group from object_doc
+    """
+    re_match = regex.search(object_doc)
+    object_doc = regex.sub("", object_doc)
+    match = None
+    if re_match:
+        _match = re_match.group(1).strip()
+        if len(_match):
+            match = _match
+    return object_doc, match
+
+
+def get_signature_component_svelte(name, anchor, signature, object_doc, source_link=None, is_getset_desc=False):
+    print("some things svelte")
     """
     Returns the svelte `Docstring` component string.
 
@@ -154,32 +182,6 @@ def get_signature_component(name, anchor, signature, object_doc, source_link=Non
     - **source_link** (Union[`str`, `None`], *optional*, defaults to `None`) -- The github source link of the the object.
     - **is_getset_desc** (`bool`, *optional*, defaults to `False`) -- Whether the type of obj is `getset_descriptor`.
     """
-
-    def inside_example_finder_closure(match, tag):
-        """
-        This closure find whether parameters and/or returns sections has example code block inside it
-        """
-        match_str = match.group(1)
-        examples_inside = _re_example_tags.search(match_str)
-        if examples_inside:
-            example_tag = examples_inside.group(1)
-            match_str = match_str.replace(example_tag, f"</{tag}>{example_tag}", 1)
-            return f"<{tag}>{match_str}"
-        return f"<{tag}>{match_str}</{tag}>"
-
-    def regex_closure(object_doc, regex):
-        """
-        This closure matches given regex & removes the matched group from object_doc
-        """
-        re_match = regex.search(object_doc)
-        object_doc = regex.sub("", object_doc)
-        match = None
-        if re_match:
-            _match = re_match.group(1).strip()
-            if len(_match):
-                match = _match
-        return object_doc, match
-
     object_doc = _re_returns.sub(lambda m: inside_example_finder_closure(m, "returns"), object_doc)
     object_doc = _re_parameters.sub(lambda m: inside_example_finder_closure(m, "parameters"), object_doc)
 
@@ -237,6 +239,82 @@ def get_signature_component(name, anchor, signature, object_doc, source_link=Non
     return svelte_str + f"\n{object_doc}\n"
 
 
+def get_signature_component_markdown(name, anchor, signature, object_doc, source_link=None, is_getset_desc=False):
+    """
+    Returns the svelte `Docstring` component string.
+
+    Args:
+    - **name** (`str`) -- The name of the function or class to document.
+    - **anchor** (`str`) -- The anchor name of the function or class that will be used for hash links.
+    - **signature** (`List(Dict(str,str))`) -- The signature of the object.
+    - **object_doc** (`str`) -- The docstring of the the object.
+    - **source_link** (Union[`str`, `None`], *optional*, defaults to `None`) -- The github source link of the the object.
+    - **is_getset_desc** (`bool`, *optional*, defaults to `False`) -- Whether the type of obj is `getset_descriptor`.
+    """
+    object_doc = _re_returns.sub(lambda m: inside_example_finder_closure(m, "returns"), object_doc)
+    object_doc = _re_parameters.sub(lambda m: inside_example_finder_closure(m, "parameters"), object_doc)
+
+    object_doc, parameters = regex_closure(object_doc, _re_parameters)
+    object_doc, return_description = regex_closure(object_doc, _re_returns)
+    object_doc, returntype = regex_closure(object_doc, _re_returntype)
+    object_doc, yield_description = regex_closure(object_doc, _re_yields)
+    object_doc, yieldtype = regex_closure(object_doc, _re_yieldtype)
+    object_doc, raise_description = regex_closure(object_doc, _re_raises)
+    object_doc, raisederrors = regex_closure(object_doc, _re_raisederrors)
+    object_doc = remove_example_tags(object_doc)
+    object_doc = hashlink_example_codeblock(object_doc, anchor, False)
+
+    # TODO: maybe something like method defintion ?
+    # markdown_str = "<docstring>"
+    markdown_str = ""
+    # markdown_str += f"<name>{name}</name>"
+    markdown_str += f"Docstring for: {anchor}\n"
+    markdown_str += f"{object_doc.strip()}\n"
+    # TODO: useful info to have
+    # if source_link:
+    #     markdown_str += f"<source>{source_link}</source>"
+
+    if len(signature):
+        signature = json.dumps(signature)
+        markdown_str += f"Arguments: {signature}\n"
+
+    # TODO: write a string that says it is a get method
+    # if is_getset_desc:
+    #     markdown_str += "<isgetsetdescriptor>"
+
+    if parameters is not None:
+        parameters_str = ""
+        groups = _re_parameter_group.split(parameters)
+        group_default = groups.pop(0)
+        parameters_str += f"Arguments description:\n{group_default}\n"
+        n_groups = len(groups) // 2
+        for idx in range(n_groups):
+            group = groups[2 * idx + 1]
+            parameters_str += f"\n{group}\n"
+
+        markdown_str += parameters_str
+
+    if returntype is not None:
+        markdown_str += (
+            f"Returns: {returntype}{f' that is {return_description}' if return_description is not None else ''}\n"
+        )
+
+    if yieldtype is not None:
+        markdown_str += (
+            f"Yields: {yieldtype}{f' that is {yield_description}' if yield_description is not None else ''}\n"
+        )
+
+    if raisederrors is not None:
+        markdown_str += (
+            f"Raises: {raisederrors}{f' that is {raise_description}' if raise_description is not None else ''}\n"
+        )
+
+    markdown_str = re.sub(r"\n+", "\n", markdown_str)
+
+    # print(markdown_str)
+    return markdown_str
+
+
 # Re pattern to catch :obj:`xx`, :class:`xx`, :func:`xx` or :meth:`xx`.
 _re_rst_special_words = re.compile(r":(?:obj|func|class|meth):`([^`]+)`")
 # Re pattern to catch things between double backquotes.
@@ -262,7 +340,7 @@ def is_rst_docstring(docstring):
 _re_example_codeblock = re.compile(r"((.*:\s+)?^```((?!```)(.|\n))*```)", re.MULTILINE)
 
 
-def hashlink_example_codeblock(object_doc, object_anchor):
+def hashlink_example_codeblock(object_doc, object_anchor, is_svelte=True):
     """
     Returns the svelte `ExampleCodeBlock` component string.
 
@@ -282,7 +360,11 @@ def hashlink_example_codeblock(object_doc, object_anchor):
         example_id += 1
         id_str = "" if example_id == 1 else f"-{example_id}"
         example_anchor = f"{object_anchor}.example{id_str}"
-        return f'<ExampleCodeBlock anchor="{example_anchor}">\n\n{match.group(1)}\n\n</ExampleCodeBlock>'
+        return (
+            f'<ExampleCodeBlock anchor="{example_anchor}">\n\n{match.group(1)}\n\n</ExampleCodeBlock>'
+            if is_svelte
+            else match.group(1)
+        )
 
     object_doc = _re_example_codeblock.sub(add_example_svelte_blocks, object_doc)
     return object_doc
@@ -355,7 +437,9 @@ def get_source_path(object_name, package):
     return obj_path
 
 
-def document_object(object_name, package, page_info, full_name=True, anchor_name=None, version_tag_suffix="src/"):
+def document_object(
+    object_name, package, page_info, full_name=True, anchor_name=None, version_tag_suffix="src/", is_svelte=True
+):
     """
     Writes the document of a function, class or method.
 
@@ -410,11 +494,18 @@ def document_object(object_name, package, page_info, full_name=True, anchor_name
         # tokenizers obj do NOT have `__module__` attribute & can NOT be used with inspect.getsourcelines
         source_link = None
     is_getset_desc = is_getset_descriptor(obj)
-    component = get_signature_component(
-        signature_name, anchor_name, signature, object_doc, source_link, is_getset_desc
-    )
-    documentation = "\n" + component + "\n"
-    return documentation, check
+    if is_svelte:
+        documentation = get_signature_component_svelte(
+            signature_name, anchor_name, signature, object_doc, source_link, is_getset_desc
+        )
+        documentation = "\n" + documentation + "\n"
+        return documentation, check
+    else:
+        # markdown
+        documentation = get_signature_component_markdown(
+            signature_name, anchor_name, signature, object_doc, source_link, is_getset_desc
+        )
+        return documentation, anchor_name, check
 
 
 def find_documented_methods(clas):
@@ -446,7 +537,9 @@ def find_documented_methods(clas):
 docstring_css_classes = "docstring border-l-2 border-t-2 pl-4 pt-3.5 border-gray-100 rounded-tl-xl mb-6 mt-8"
 
 
-def autodoc(object_name, package, methods=None, return_anchors=False, page_info=None, version_tag_suffix="src/"):
+def autodoc_svelte(
+    object_name, package, methods=None, return_anchors=False, page_info=None, version_tag_suffix="src/"
+):
     """
     Generates the documentation of an object, with a potential filtering on the methods for a class.
 
@@ -518,6 +611,95 @@ def autodoc(object_name, package, methods=None, return_anchors=False, page_info=
     documentation = f'<div class="{docstring_css_classes}">\n\n' + documentation + "</div>\n"
 
     return (documentation, anchors, errors) if return_anchors else documentation
+
+
+def autodoc_markdown(
+    object_name, package, methods=None, return_anchors=False, page_info=None, version_tag_suffix="src/"
+):
+    """
+    Generates the documentation of an object, with a potential filtering on the methods for a class.
+
+    Args:
+        object_name (`str`): The name of the function or class to document.
+        package (`types.ModuleType`): The package of the object.
+        methods (`List[str]`, *optional*):
+            A list of methods to document if `obj` is a class. If nothing is passed, all public methods with a new
+            docstring compared to the superclasses are documented. If a list of methods is passed and ou want to add
+            all those methods, the key "all" will add them.
+        return_anchors (`bool`, *optional*, defaults to `False`):
+            Whether or not to return the list of anchors generated.
+        page_info (`Dict[str, str]`, *optional*): Some information about the page.
+        version_tag_suffix (`str`, *optional*, defaults to `"src/"`):
+            Suffix to add after the version tag (e.g. 1.3.0 or main) in the documentation links.
+            For example, the default `"src/"` suffix will result in a base link as `https://github.com/{repo_owner}/{package_name}/blob/{version_tag}/src/`.
+            For example, `version_tag_suffix=""` will result in a base link as `https://github.com/{repo_owner}/{package_name}/blob/{version_tag}/`.
+    """
+    if page_info is None:
+        page_info = {}
+    if "package_name" not in page_info:
+        page_info["package_name"] = package.__name__
+
+    object_docs = []
+    errors = []
+    obj = find_object_in_package(object_name=object_name, package=package)
+    documentation, anchor_name, check = document_object(
+        object_name=object_name,
+        package=package,
+        page_info=page_info,
+        version_tag_suffix=version_tag_suffix,
+        is_svelte=False,
+    )
+    object_docs.append({"doc": documentation, "anchor_name": anchor_name})
+
+    if check is not None:
+        errors.append(check)
+
+    if return_anchors:
+        anchors = [get_shortest_path(obj, package)]
+    if isinstance(obj, type):
+        documentation, anchor_name, check = document_object(
+            object_name=object_name,
+            package=package,
+            page_info=page_info,
+            version_tag_suffix=version_tag_suffix,
+            is_svelte=False,
+        )
+        object_docs.pop()
+        object_docs.append({"doc": documentation, "anchor_name": anchor_name})
+        if check is not None:
+            errors.append(check)
+        if methods is None:
+            methods = find_documented_methods(obj)
+        elif "all" in methods:
+            methods.remove("all")
+            methods_to_add = find_documented_methods(obj)
+            methods.extend([m for m in methods_to_add if m not in methods])
+        elif "none" in methods:
+            methods = []
+        for method in methods:
+            anchor_name = f"{anchors[0]}.{method}"
+            method_doc, anchor_name, check = document_object(
+                object_name=f"{object_name}.{method}",
+                package=package,
+                page_info=page_info,
+                full_name=False,
+                anchor_name=anchor_name,
+                version_tag_suffix=version_tag_suffix,
+                is_svelte=False,
+            )
+            if check is not None:
+                errors.append(check)
+            object_docs.append({"doc": method_doc, "anchor_name": anchor_name})
+            if return_anchors:
+                # The anchor name of the method might be different from its
+                method = find_object_in_package(f"{anchors[0]}.{method}", package=package)
+                method_name = get_shortest_path(method, package=package)
+                if anchor_name == method_name or method_name is None:
+                    anchors.append(anchor_name)
+                else:
+                    anchors.append((anchor_name, method_name))
+
+    return (object_docs, anchors, errors) if return_anchors else object_docs
 
 
 def resolve_links_in_text(text, package, mapping, page_info):
