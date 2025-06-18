@@ -7,6 +7,7 @@
 	} from "@huggingface/tasks";
 	import {
 		type InferenceProvider,
+		type InferenceProviderMappingEntry,
 		type InferenceProviderOrPolicy,
 		snippets,
 	} from "@huggingface/inference";
@@ -61,17 +62,6 @@
 		pipeline_tag: pipeline,
 		tags: conversational ? ["conversational"] : [],
 	};
-
-	interface InferenceProviderMappingEntry {
-		adapter?: string;
-		adapterWeightsPath?: string;
-		hfModelId: string;
-		provider: string;
-		providerId: string;
-		status: "live" | "staging";
-		task: PipelineType;
-		type?: "single-model" | "tag-filter";
-	}
 
 	function getInferenceSnippetsOrEmpty(
 		model: ModelDataMinimal,
