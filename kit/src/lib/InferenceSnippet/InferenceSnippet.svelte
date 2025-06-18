@@ -5,7 +5,12 @@
 		ModelDataMinimal,
 		PipelineType,
 	} from "@huggingface/tasks";
-	import { type InferenceProvider, snippets } from "@huggingface/inference";
+	import {
+		type InferenceProvider,
+		type InferenceProviderMappingEntry,
+		type InferenceProviderOrPolicy,
+		snippets,
+	} from "@huggingface/inference";
 	import { onMount, SvelteComponent } from "svelte";
 
 	import CodeBlock from "$lib/CodeBlock.svelte";
@@ -58,7 +63,24 @@
 		tags: conversational ? ["conversational"] : [],
 	};
 
-	const availableSnippets = snippets.getInferenceSnippets(
+	function getInferenceSnippetsOrEmpty(
+		model: ModelDataMinimal,
+		provider: InferenceProviderOrPolicy,
+		inferenceProviderMapping?: InferenceProviderMappingEntry,
+		opts?: Record<string, unknown>
+	) {
+		try {
+			return snippets.getInferenceSnippets(model, provider, inferenceProviderMapping, opts);
+		} catch (error) {
+			console.warn(
+				`Failed to get inference snippets for model "${model.id}" and provider "${provider}":`,
+				error
+			);
+			return [];
+		}
+	}
+
+	const availableSnippets = getInferenceSnippetsOrEmpty(
 		model as ModelDataMinimal,
 		selectedProvider,
 		{
@@ -80,22 +102,20 @@
 	$: clients = clientsByLanguage[selectedLanguage];
 	$: selectedClient = clients?.[0];
 
-	$: code = snippets
-		.getInferenceSnippets(
-			model as ModelDataMinimal,
-			selectedProvider,
-			{
-				hfModelId: providersMapping[selectedProvider]!.modelId,
-				providerId: providersMapping[selectedProvider]!.providerModelId,
-				status: "live",
-				task: pipeline,
-				provider: selectedProvider,
-			},
-			{
-				streaming,
-			}
-		)
-		.find((s) => s.language === selectedLanguage && s.client === selectedClient)?.content;
+	$: code = getInferenceSnippetsOrEmpty(
+		model as ModelDataMinimal,
+		selectedProvider,
+		{
+			hfModelId: providersMapping[selectedProvider]!.modelId,
+			providerId: providersMapping[selectedProvider]!.providerModelId,
+			status: "live",
+			task: pipeline,
+			provider: selectedProvider,
+		},
+		{
+			streaming,
+		}
+	).find((s) => s.language === selectedLanguage && s.client === selectedClient)?.content;
 
 	const PRETTY_NAMES: Partial<
 		Record<InferenceProviderNotOpenAI | InferenceSnippetLanguage, string>
