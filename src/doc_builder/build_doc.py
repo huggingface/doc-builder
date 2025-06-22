@@ -291,8 +291,8 @@ def build_notebooks(doc_folder, notebook_dir, package=None, mapping=None, page_i
     if "package_name" not in page_info:
         page_info["package_name"] = package.__name__
 
-    mdx_files = list(doc_folder.glob("**/*.mdx"))
-    for file in tqdm(mdx_files, desc="Building the notebooks"):
+    md_mdx_files = list(doc_folder.glob("**/*.md")) + list(doc_folder.glob("**/*.mdx"))
+    for file in tqdm(md_mdx_files, desc="Building the notebooks"):
         with open(file, "r", encoding="utf-8") as f:
             if "[[open-in-colab]]" not in f.read():
                 continue
