@@ -90,16 +90,15 @@ class MarkdownChunkNode:
     def get_chunks(self, page_info, chunk_len_chars, headings=[]):
         chunks = []
         headings = headings + [self.heading]
-        headings_str = "\n".join(headings) + "\n"
         split_content = self.split_markdown(self.content)
         if not len(split_content):
             return []
         chunk_str = ""
         for content in split_content:
-            if len(chunk_str) > chunk_len_chars and len(chunk_str) > len(headings_str):
+            if len(chunk_str) > chunk_len_chars:
                 chunks.append(
                     Chunk(
-                        text=headings_str.strip() + "\n\n" + chunk_str.strip(),
+                        text=chunk_str.strip(),
                         source_page_url=f"https://huggingface.co/docs/{page_info['package_name']}/{page_info['page']}#{self.anchor}",
                         source_page_title=get_page_title(page_info["page"]),
                         package_name=page_info["package_name"],
@@ -109,10 +108,10 @@ class MarkdownChunkNode:
                 chunk_str = ""
             chunk_str += content + " "
 
-        if len(chunk_str) > len(headings_str):
+        if len(chunk_str):
             chunks.append(
                 Chunk(
-                    text=headings_str.strip() + "\n\n" + chunk_str.strip(),
+                    text=chunk_str.strip(),
                     source_page_url=f"https://huggingface.co/docs/{page_info['package_name']}/{page_info['page']}#{self.anchor}",
                     source_page_title=get_page_title(page_info["page"]),
                     package_name=page_info["package_name"],
