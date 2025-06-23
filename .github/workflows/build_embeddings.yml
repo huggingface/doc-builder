@@ -9,6 +9,10 @@ on:
   # to run this workflow manually from the Actions tab
   workflow_dispatch:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
   matrix-job:
     runs-on: ubuntu-latest
@@ -67,9 +71,6 @@ jobs:
             doc_folder: docs/source
             package_name: dataset-viewer
             is_not_python_module: true
-    concurrency:
-      group: ${{ github.workflow }}-${{ github.ref }}
-      cancel-in-progress: true
     timeout-minutes: 360  # Set timeout to 6 hours
     steps:
       - name: Setup REPO_NAME
