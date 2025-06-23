@@ -54,16 +54,11 @@ def wait_for_task_completion(func: MeilisearchFunc) -> MeilisearchFunc:
     return wrapped_meilisearch_function
 
 
-def wait_for_all_addition_tasks(client: Client, index_name: str, after_started_at: Optional[datetime] = None):
+def wait_for_all_addition_tasks(client: Client, index_name: str):
     """
     Wait for all document addition/update tasks to finish for a specific index
     """
     print(f"Waiting for all addition tasks on index '{index_name}' to finish...")
-
-    # Convert datetime to the format expected by MeiliSearch if provided
-    after_started_at_str = None
-    if after_started_at:
-        after_started_at_str = after_started_at.isoformat()
 
     # Keep checking until there are no more tasks to process
     while True:
@@ -73,8 +68,6 @@ def wait_for_all_addition_tasks(client: Client, index_name: str, after_started_a
             "types": ["documentAdditionOrUpdate"],
             "statuses": ["enqueued", "processing"],
         }
-        if after_started_at_str:
-            task_params["afterStartedAt"] = after_started_at_str
 
         processing_tasks = client.get_tasks(task_params)
 
@@ -91,25 +84,36 @@ def wait_for_all_addition_tasks(client: Client, index_name: str, after_started_a
 
     while True:
         failed_params = {"indexUids": [index_name], "types": ["documentAdditionOrUpdate"], "statuses": ["failed"]}
-        if after_started_at_str:
-            failed_params["afterStartedAt"] = after_started_at_str
-        if from_task is not None:
+
+        # Only add 'from' parameter if from_task is not None and is a valid integer
+        if from_task is not None and isinstance(from_task, int):
             failed_params["from"] = from_task
 
-        failed_tasks = client.get_tasks(failed_params)
+        try:
+            failed_tasks = client.get_tasks(failed_params)
+        except Exception as e:
+            print(f"Error getting failed tasks: {e}")
+            break
 
         if len(failed_tasks.results) > 0:
             failed_task_ids.extend([task.task_uid for task in failed_tasks.results])
 
         # Check if there are more results to fetch
-        if not hasattr(failed_tasks, "next") or failed_tasks.next is None:
+        # Handle the 'next' attribute more carefully
+        if hasattr(failed_tasks, "next") and failed_tasks.next is not None:
+            # Ensure next is an integer before using it
+            if isinstance(failed_tasks.next, int):
+                from_task = failed_tasks.next
+            else:
+                print(f"Warning: 'next' field is not an integer: {failed_tasks.next}")
+                break
+        else:
             break
-        from_task = failed_tasks.next
 
     if failed_task_ids:
         print(f"Failed addition task IDs on index '{index_name}': {failed_task_ids}")
 
-    print("Finished waiting for addition tasks on index '{index_name}' to finish.")
+    print(f"Finished waiting for addition tasks on index '{index_name}' to finish.")
 
 
 @wait_for_task_completion
