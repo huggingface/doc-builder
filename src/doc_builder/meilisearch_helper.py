@@ -66,6 +66,7 @@ def wait_for_all_addition_tasks(client: Client, index_name: str):
             "indexUids": [index_name],
             "types": ["documentAdditionOrUpdate"],
             "statuses": ["enqueued", "processing"],
+            "limit": 20,
         }
 
         processing_tasks = client.get_tasks(task_params)
@@ -82,7 +83,12 @@ def wait_for_all_addition_tasks(client: Client, index_name: str):
     from_task = None
 
     while True:
-        failed_params = {"indexUids": [index_name], "types": ["documentAdditionOrUpdate"], "statuses": ["failed"]}
+        failed_params = {
+            "indexUids": [index_name],
+            "types": ["documentAdditionOrUpdate"],
+            "statuses": ["failed"],
+            "limit": 20,
+        }
 
         # Only add 'from' parameter if from_task is not None and is a valid integer
         if from_task is not None and isinstance(from_task, int):
