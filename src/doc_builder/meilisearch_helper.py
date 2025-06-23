@@ -125,7 +125,7 @@ def update_db_settings(client: Client, index_name: str):
     task_info = index.update_settings(
         {
             "searchableAttributes": ["heading1", "heading2", "heading3", "heading4", "heading5", "text"],
-            "filterableAttributes": ["library"],
+            "filterableAttributes": ["product"],
         }
     )
     return client, task_info
@@ -156,7 +156,7 @@ def add_embeddings_to_db(client: Client, index_name: str, embeddings):
             "text": e.text,
             "source_page_url": e.source_page_url,
             "source_page_title": e.source_page_title,
-            "library": e.library,
+            "product": e.library,
             "heading1": e.heading1,
             "heading2": e.heading2,
             "heading3": e.heading3,
