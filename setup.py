@@ -3,7 +3,7 @@
 
 from setuptools import find_packages, setup
 
-install_requires = ["black", "GitPython", "tqdm", "pyyaml", "packaging", "nbformat", "huggingface_hub @ git+https://github.com/huggingface/huggingface_hub.git@feature_extraction_working", "pillow", "meilisearch"]
+install_requires = ["black", "GitPython", "tqdm", "pyyaml", "packaging", "nbformat", "huggingface_hub @ git+https://github.com/huggingface/huggingface_hub.git@feature_extraction_working", "pillow", "meilisearch==0.34.1"]
 
 extras = {}
 
