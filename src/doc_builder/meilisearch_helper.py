@@ -1,4 +1,5 @@
 import hashlib
+import json
 import sys
 from datetime import datetime
 from functools import wraps
@@ -6,6 +7,7 @@ from time import sleep
 from typing import Callable, Optional, Tuple
 
 from meilisearch.client import Client, TaskInfo
+from meilisearch.errors import MeilisearchApiError
 
 
 # References:
@@ -33,12 +35,29 @@ def wait_for_task_completion(func: MeilisearchFunc) -> MeilisearchFunc:
             index_id = args[1]  # Adjust this index based on where it actually appears in your arguments
             task_id = task.task_uid
 
+            max_retries = 3
+            retry_count = 0
+
             while True:
                 try:
                     # Get the latest task status from the API
                     task = client.index(index_id).get_task(task_id)
+                    # Reset retry count on successful API call
+                    retry_count = 0
+                except (json.JSONDecodeError, MeilisearchApiError) as e:
+                    retry_count += 1
+                    if retry_count <= max_retries:
+                        print(
+                            f"Warning: API error getting task status (attempt {retry_count}/{max_retries}): {str(e)}"
+                        )
+                        sleep(30)  # Wait longer before retrying
+                        continue
+                    else:
+                        raise Exception(
+                            f"Failed to get task status for task {task_id} after {max_retries} retries: {str(e)}"
+                        ) from e
                 except Exception as e:
-                    # If we can't get the task status, raise an error
+                    # Other unexpected errors should still fail immediately
                     raise Exception(f"Failed to get task status for task {task_id}: {str(e)}") from e
 
                 # task failed
