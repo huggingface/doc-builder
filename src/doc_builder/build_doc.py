@@ -263,7 +263,7 @@ def build_mdx_files(package, doc_folder, output_dir, page_info, version_tag_suff
     source_files_mapping = {}
 
     if "package_name" not in page_info:
-        page_info["package_name"] = package.__name__ if package else None
+        page_info["package_name"] = package.__name__
 
     all_files = list(doc_folder.glob("**/*"))
     all_errors = []
