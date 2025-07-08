@@ -163,13 +163,13 @@ def _process_single_mdx_file(file_info: tuple) -> dict:
 
     Args:
         file_info (tuple):
-            Tuple containing file information (file_path, doc_folder, output_dir, page_info, version_tag_suffix,
-            package_name).
+            Tuple containing file information (file_path, doc_folder, output_dir, page_info, version_tag_suffix).
 
     Returns:
         dict: Dictionary containing the processed results for this file (file, new_anchors, errors, source_files).
     """
-    file_path, doc_folder, output_dir, page_info, version_tag_suffix, package_name = file_info
+    file_path, doc_folder, output_dir, page_info, version_tag_suffix = file_info
+    package_name = page_info["package_name"]
 
     file_path = Path(file_path)
     doc_folder = Path(doc_folder)
@@ -244,7 +244,7 @@ def _process_single_mdx_file(file_info: tuple) -> dict:
 
 def build_mdx_files(package, doc_folder, output_dir, page_info, version_tag_suffix):
     """
-    Build the MDX files for a given package.
+    Build the MDX files for a given package. Uses multiprocessing to process files in parallel.
 
     Args:
         package (`types.ModuleType`): The package where to look for objects to document.
@@ -269,11 +269,7 @@ def build_mdx_files(package, doc_folder, output_dir, page_info, version_tag_suff
     all_errors = []
 
     # Prepare arguments for multiprocessing
-    package_name = package.__name__ if package else None
-    file_args = [
-        (str(file), str(doc_folder), str(output_dir), page_info, version_tag_suffix, package_name)
-        for file in all_files
-    ]
+    file_args = [(str(file), str(doc_folder), str(output_dir), page_info, version_tag_suffix) for file in all_files]
 
     # Use multiprocessing to process files in parallel
     with Pool() as pool:
