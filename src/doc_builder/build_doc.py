@@ -157,15 +157,17 @@ def resolve_autodoc(content, package, return_anchors=False, page_info=None, vers
     return (new_content, anchors, source_files, errors) if return_anchors else new_content
 
 
-def _process_single_mdx_file(file_info):
+def _process_single_mdx_file(file_info: tuple) -> dict:
     """
-    Worker function to process a single MDX file for multiprocessing.
+    Worker function to process a single MDX file with multiprocessing.
 
     Args:
-        file_info (tuple): Tuple containing (file_path, doc_folder, output_dir, page_info, version_tag_suffix, package_name)
+        file_info (tuple):
+            Tuple containing file information (file_path, doc_folder, output_dir, page_info, version_tag_suffix,
+            package_name).
 
     Returns:
-        dict: Dictionary containing the results for this file
+        dict: Dictionary containing the processed results for this file (file, new_anchors, errors, source_files).
     """
     file_path, doc_folder, output_dir, page_info, version_tag_suffix, package_name = file_info
 
@@ -178,7 +180,6 @@ def _process_single_mdx_file(file_info):
         "new_anchors": None,
         "errors": None,
         "source_files": None,
-        "success": False
     }
 
     try:
@@ -208,7 +209,6 @@ def _process_single_mdx_file(file_info):
             result["new_anchors"] = new_anchors
             result["errors"] = errors
             result["source_files"] = source_files
-            result["success"] = True
 
         elif file_path.suffix in [".rst"]:
             dest_file = output_dir / (file_path.with_suffix(".mdx").relative_to(doc_folder))
@@ -229,18 +229,15 @@ def _process_single_mdx_file(file_info):
             result["new_anchors"] = new_anchors
             result["errors"] = errors
             result["source_files"] = source_files
-            result["success"] = True
 
         elif file_path.is_file() and "__" not in str(file_path):
             # __ is a reserved svelte file/folder prefix
             dest_file = output_dir / (file_path.relative_to(doc_folder))
             os.makedirs(dest_file.parent, exist_ok=True)
             shutil.copy(file_path, dest_file)
-            result["success"] = True
 
     except Exception as e:
         result["errors"] = [f"There was an error when converting {file_path} to the MDX format.\n{str(e)}"]
-        result["success"] = False
 
     return result
 
@@ -288,11 +285,6 @@ def build_mdx_files(package, doc_folder, output_dir, page_info, version_tag_suff
 
     # Process results and collect mappings
     for result in results:
-        if not result["success"]:
-            if result["errors"]:
-                all_errors.extend(result["errors"])
-            continue
-
         file_path = Path(result["file"])
 
         if result["new_anchors"] is not None:
@@ -305,7 +297,7 @@ def build_mdx_files(package, doc_folder, output_dir, page_info, version_tag_suff
                     anchor = anchor[0]
                 anchor_mapping[anchor] = page_name
 
-        if result["errors"] is not None:
+        if result["errors"]:
             all_errors.extend(result["errors"])
 
         if result["source_files"] is not None:
