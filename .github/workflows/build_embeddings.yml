@@ -158,9 +158,9 @@ jobs:
         run: pip install .[dev]
 
       - name: Success Cleanup
-        if: success() # Runs if all matrix jobs succeeded
+        if: needs.matrix-job.result == 'success' # Runs if all matrix jobs succeeded
         run: doc-builder meilisearch-clean --meilisearch_key ${{ secrets.MEILISEARCH_KEY }} --swap
 
       - name: Failure Cleanup
-        if: failure() # Runs if any matrix job failed
+        if: needs.matrix-job.result == 'failure' # Runs if any matrix job failed
         run: doc-builder meilisearch-clean --meilisearch_key ${{ secrets.MEILISEARCH_KEY }}
