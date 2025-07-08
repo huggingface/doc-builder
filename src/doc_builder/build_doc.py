@@ -277,11 +277,9 @@ def build_mdx_files(package, doc_folder, output_dir, page_info, version_tag_suff
 
     # Use multiprocessing to process files in parallel
     with Pool() as pool:
-        results = list(tqdm(
-            pool.imap(_process_single_mdx_file, file_args),
-            total=len(file_args),
-            desc="Building the MDX files"
-        ))
+        results = list(
+            tqdm(pool.imap(_process_single_mdx_file, file_args), total=len(file_args), desc="Building the MDX files")
+        )
 
     # Process results and collect mappings
     for result in results:
