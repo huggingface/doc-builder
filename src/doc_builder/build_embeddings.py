@@ -23,6 +23,7 @@ from pathlib import Path
 from typing import List
 
 import meilisearch
+import requests
 from huggingface_hub import get_inference_endpoint
 from tqdm import tqdm
 
@@ -686,3 +687,57 @@ def clean_meilisearch(meilisearch_key: str, swap: bool):
     create_embedding_db(client, MEILI_INDEX_TEMP)
     update_db_settings(client, MEILI_INDEX_TEMP)
     print("[meilisearch] successfully swapped & deleted temp index.")
+
+
+def add_gradio_docs(hf_ie_name: str, hf_ie_namespace: str, hf_ie_token: str, meilisearch_key: str):
+    """Add Gradio documentation to embeddings."""
+    # Step 1: download the documentation
+    url = "https://huggingface.co/datasets/gradio/docs/resolve/main/docs.json"
+
+    response = requests.get(url)
+    response.raise_for_status()  # Raises an HTTPError for bad responses
+
+    data = response.json()
+
+    chunks = [
+        Chunk(
+            doc["text"],
+            doc["source_page_url"],
+            doc["source_page_title"],
+            "gradio",
+            [doc["source_page_title"]] + ([doc["heading1"]] if doc.get("heading1") else []),
+        )
+        for doc in data
+    ]
+
+    # Step 2: create embeddings
+    batch_size = 20
+    embeddings = []
+
+    endpoint = get_inference_endpoint(name=hf_ie_name, namespace=hf_ie_namespace, token=hf_ie_token)
+    if endpoint.status != "running":
+        print("[inference endpoint] restarting...")
+        endpoint.resume().wait()
+        print("[inference endpoint] restarted")
+
+    client = endpoint.client
+
+    with ThreadPoolExecutor(max_workers=16) as executor:
+        future_to_chunk = {
+            executor.submit(chunks_to_embeddings, client, chunks[i : i + batch_size], True): i
+            for i in range(0, len(chunks), batch_size)
+        }
+
+        for future in tqdm(
+            concurrent.futures.as_completed(future_to_chunk),
+            total=len(future_to_chunk),
+            desc="Calling Embedding Inference Endpoints",
+        ):
+            batch_embeddings = future.result()
+            embeddings.extend(batch_embeddings)
+
+    # Step 3: push embeddings to vector database (meilisearch)
+    client = meilisearch.Client("https://edge.meilisearch.com", meilisearch_key)
+    ITEMS_PER_CHUNK = 5000  # a value that was found experimentally
+    for chunk_embeddings in tqdm(chunk_list(embeddings, ITEMS_PER_CHUNK), desc="Uploading gradio docs to meilisearch"):
+        add_embeddings_to_db(client, MEILI_INDEX_TEMP, chunk_embeddings)
