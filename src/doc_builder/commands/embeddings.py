@@ -18,6 +18,7 @@ import argparse
 import importlib
 
 from doc_builder import build_embeddings, clean_meilisearch
+from doc_builder.build_embeddings import add_gradio_docs
 from doc_builder.utils import get_default_branch_name, get_doc_config, read_doc_config
 
 
@@ -132,5 +133,26 @@ def embeddings_command_parser(subparsers=None):
     )
     if subparsers is not None:
         parser_meilisearch_clean.set_defaults(func=lambda args: clean_meilisearch(args.meilisearch_key, args.swap))
+
+    # add-gradio-docs: add Gradio documentation
+    if subparsers is not None:
+        parser_add_gradio_docs = subparsers.add_parser("add-gradio-docs")
+    else:
+        parser_add_gradio_docs = argparse.ArgumentParser(
+            "Doc Builder add-gradio-docs command. Add Gradio documentation to embeddings."
+        )
+
+    parser_add_gradio_docs.add_argument("--hf_ie_name", type=str, help="Inference Endpoints name.", required=True)
+    parser_add_gradio_docs.add_argument(
+        "--hf_ie_namespace", type=str, help="Inference Endpoints namespace.", required=True
+    )
+    parser_add_gradio_docs.add_argument("--hf_ie_token", type=str, help="Hugging Face token.", required=True)
+    parser_add_gradio_docs.add_argument("--meilisearch_key", type=str, help="Meilisearch key.", required=True)
+    if subparsers is not None:
+        parser_add_gradio_docs.set_defaults(
+            func=lambda args: add_gradio_docs(
+                args.hf_ie_name, args.hf_ie_namespace, args.hf_ie_token, args.meilisearch_key
+            )
+        )
 
     return parser
