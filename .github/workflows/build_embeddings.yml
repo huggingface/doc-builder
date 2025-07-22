@@ -148,9 +148,7 @@ jobs:
           doc-builder embeddings ${{ matrix.package_name || env.REPO_NAME }} ${{ env.REPO_NAME }}/${{ matrix.doc_folder }} --hf_ie_name docs-embed-bge-base-en-v1-5 --hf_ie_namespace huggingface --hf_ie_token ${{ secrets.HF_IE_TOKEN }} --meilisearch_key ${{ secrets.MEILISEARCH_KEY }} $FLAGS
 
   gradio-job:
-    needs: matrix-job
     runs-on: ubuntu-latest
-    if: needs.matrix-job.result == 'success'
     steps:
       - name: Checkout doc-builder
         uses: actions/checkout@v2
