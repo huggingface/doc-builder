@@ -154,6 +154,9 @@ module.exports = {
 				1: "1",
 				"-1": "-1",
 			},
+			direction: {
+				rtl: "rtl",
+ 			},
 		},
 	},
 	plugins: [

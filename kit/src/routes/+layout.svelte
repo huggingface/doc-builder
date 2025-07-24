@@ -3,13 +3,16 @@
 	import { base } from "$app/paths";
 	import type { RawChapter } from "./endpoints/toc/+server";
 	import "../app.css";
-
+	export const DOCS_LANGUAGE = "${process.env.DOCS_LANGUAGE}";
 	export let data;
 	export let toc: RawChapter[] = data.toc ?? [];
+	export const DOCS_DIRECTION =  (DOCS_LANGUAGE == "ar") ? "rtl" : "ltr" ;
 </script>
 
 {#if !import.meta.env.DEV}
-	<slot />
+	<div class="direction-{DOCS_DIRECTION}">
+ 		<slot />
+    </div>
 {:else}
 	<style>
 		body,
@@ -19,7 +22,7 @@
 		}
 	</style>
 	<div
-		class="flex"
+		class="flex direction-{DOCS_DIRECTION}"
 	>
 		<div class="w-[270px] 2xl:w-[300px] hidden md:block border-r-2 shrink-0">
 			<ul class="pt-2 flex flex-col pl-3 w-full">
