@@ -2,7 +2,7 @@
 	interface IconData {
 		paths: string[];
 	}
-	
+
 	export let warning = false;
 </script>
 
