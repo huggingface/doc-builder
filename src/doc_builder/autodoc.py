@@ -170,7 +170,6 @@ def regex_closure(object_doc, regex):
 
 
 def get_signature_component_svelte(name, anchor, signature, object_doc, source_link=None, is_getset_desc=False):
-    print("some things svelte")
     """
     Returns the svelte `Docstring` component string.
 
