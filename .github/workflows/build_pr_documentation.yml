@@ -79,6 +79,12 @@ jobs:
           repository: '${{ inputs.repo_owner }}/${{ inputs.package }}'
           path: ${{ inputs.package }}
 
+      - name: Checkout to the correct commit
+        working-directory: ${{ inputs.package }}
+        run: |
+         git fetch https://github.com/${{ inputs.repo_owner }}/${{ inputs.package }}.git refs/pull/${{ inputs.pr_number }}/merge:refs/remotes/pull/${{ inputs.pr_number }}/merge
+         git checkout refs/remotes/pull/${{ inputs.pr_number }}/merge
+
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
