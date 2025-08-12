@@ -80,6 +80,7 @@ jobs:
           path: ${{ inputs.package }}
 
       - name: Checkout to the correct commit
+        if: github.event_name == 'issue_comment'
         working-directory: ${{ inputs.package }}
         run: |
          git fetch https://github.com/${{ inputs.repo_owner }}/${{ inputs.package }}.git refs/pull/${{ inputs.pr_number }}/merge:refs/remotes/pull/${{ inputs.pr_number }}/merge
