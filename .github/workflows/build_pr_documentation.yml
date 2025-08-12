@@ -78,16 +78,12 @@ jobs:
         with:
           repository: '${{ inputs.repo_owner }}/${{ inputs.package }}'
           path: ${{ inputs.package }}
-          # Need to use `2` if the job is called by a jb that is triggered by `pull_request`.
-          # Otherwise, the next step would fail (`fatal: unable to read tree`).
-          fetch-depth: 2
 
       - name: Checkout to the correct commit
         working-directory: ${{ inputs.package }}
         run: |
          git fetch https://github.com/${{ inputs.repo_owner }}/${{ inputs.package }}.git refs/pull/${{ inputs.pr_number }}/merge:refs/remotes/pull/${{ inputs.pr_number }}/merge
          git checkout refs/remotes/pull/${{ inputs.pr_number }}/merge
-         git checkout ${{ inputs.commit_sha }}
 
       - uses: actions/setup-node@v4
         with:
