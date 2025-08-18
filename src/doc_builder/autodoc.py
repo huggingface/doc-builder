@@ -17,6 +17,7 @@ import importlib
 import inspect
 import json
 import re
+from functools import lru_cache
 
 from .convert_md_to_mdx import convert_md_docstring_to_mdx
 from .convert_rst_to_mdx import convert_rst_docstring_to_mdx, find_indent, is_empty_line
@@ -170,7 +171,6 @@ def regex_closure(object_doc, regex):
 
 
 def get_signature_component_svelte(name, anchor, signature, object_doc, source_link=None, is_getset_desc=False):
-    print("some things svelte")
     """
     Returns the svelte `Docstring` component string.
 
@@ -407,6 +407,45 @@ def is_getset_descriptor(obj):
     return "getset_descriptor" in obj_repr
 
 
+@lru_cache(maxsize=10)
+def get_class_to_line_map(file_path: str) -> dict[str, int]:
+    """
+    Returns a map from class name to line number.
+    """
+    with open(file_path, "r") as f:
+        code = f.read()
+    class_to_line_map = {}
+    for line_number, line in enumerate(code.split("\n")):
+        if line.startswith("class"):
+            line = line[5:].strip()  # remove `class`
+            class_name = line.split(":")[0].split("(")[0].strip()
+            class_to_line_map[class_name] = line_number
+    return class_to_line_map
+
+
+def get_source_line_class(obj) -> int | None:
+    obj = inspect.unwrap(obj)
+
+    if not inspect.isclass(obj):
+        return None
+
+    file_path = inspect.getsourcefile(obj)
+    if file_path is None:
+        return None
+
+    class_to_line_map = get_class_to_line_map(file_path)
+    line_number = class_to_line_map.get(obj.__name__)
+    return line_number + 1 if line_number is not None else None
+
+
+def get_source_lines(obj) -> int:
+    """Truncated and faster version of inspect.getsourcelines
+    (without looking for the last line of the block)"""
+    obj = inspect.unwrap(obj)
+    _, line_number = inspect.findsource(obj)
+    return line_number + 1
+
+
 def get_source_link(obj, page_info, version_tag_suffix="src/"):
     """
     Returns the link to the source code of an object on GitHub.
@@ -417,7 +456,9 @@ def get_source_link(obj, page_info, version_tag_suffix="src/"):
     repo_owner = page_info.get("repo_owner", "huggingface")
     base_link = f"https://github.com/{repo_owner}/{repo_name}/blob/{version_tag}/{version_tag_suffix}"
     module = obj.__module__.replace(".", "/")
-    line_number = inspect.getsourcelines(obj)[1]
+    line_number = get_source_line_class(obj)
+    if line_number is None:
+        line_number = get_source_lines(obj)
     source_file = inspect.getsourcefile(obj)
     if source_file.endswith("__init__.py"):
         return f"{base_link}{module}/__init__.py#L{line_number}"
