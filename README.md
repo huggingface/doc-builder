@@ -369,12 +369,12 @@ $$Y = X * \textbf{dequantize}(W); \text{quantize}(W)$$
 
 Example: [here](https://github.com/huggingface/transformers/blob/main/docs/source/en/model_doc/rwkv.md?plain=1#L107)
 
-Latex inline mode. `\\( ... )\\`
+Latex inline mode. `some prose \\( ... \\) more prose`
 
 Syntax:
 
 ```
-\\( Y = X * \textbf{dequantize}(W); \text{quantize}(W) )\\
+A paragraph about \\( Y = X * \textbf{dequantize}(W); \text{quantize}(W) \\) the equation.
 ```
 
 Example: [here](https://github.com/huggingface/transformers/blob/main/docs/source/en/model_doc/rwkv.md?plain=1#L93)
