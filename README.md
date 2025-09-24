@@ -248,8 +248,8 @@ Example: [here](https://github.com/huggingface/transformers/blob/0f0e1a2c2bff685
 
 ### Tip
 
-To write a block that you'd like to see highlighted as a note or warning, place your content between the following
-markers.
+To write a block that you'd like to see highlighted as a note or warning, use the blockquote syntax. This is the
+preferred approach for new content.
 
 Syntax:
 
@@ -260,17 +260,9 @@ Syntax:
 > Second line
 ```
 
-or
-
-```html
-<Tip>
-
-Write your note here
-
-</Tip>
-```
-
 Example: [here](https://github.com/huggingface/transformers/blob/0f0e1a2c2bff68541a5b9770d78e0fb6feb7de72/docs/source/en/create_a_model.md#L282-L286)
+
+Legacy docs may still use the `<Tip>` component, but we recommend migrating to blockquotes when updating files.
 
 For warnings, change the introduction to:
 
@@ -278,12 +270,6 @@ Syntax:
 
 ```md
 > [!WARNING]
-```
-
-or
-
-```html
-`<Tip warning={true}>`
 ```
 
 Example: [here](https://github.com/huggingface/transformers/blob/eb849f6604c7dcc0e96d68f4851e52e253b9f0e5/docs/source/de/autoclass_tutorial.md#L102-L108)
