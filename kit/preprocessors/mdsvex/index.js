@@ -299,9 +299,7 @@ const _mdsvexPreprocess = mdsvex({
 			// Handle mermaid diagrams
 			if (lang === "mermaid") {
 				return `
-	<MermaidChart 
-		code={\`${base64(code)}\`}
-	/>`;
+	<MermaidChart code=${code} />`;
 			}
 
 			code = renderSvelteChars(code);
