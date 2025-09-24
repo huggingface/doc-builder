@@ -296,6 +296,14 @@ const _mdsvexPreprocess = mdsvex({
 				code.replace(/\\/g, "\\\\").replace(/`/g, "\\`").replace(/}/g, "\\}").replace(/\$/g, "\\$");
 			const REGEX_FRAMEWORKS_SPLIT = /\s*===(PT-TF|STRINGAPI-READINSTRUCTION)-SPLIT===\s*/gm;
 
+			// Handle mermaid diagrams
+			if (lang === "mermaid") {
+				return `
+	<MermaidChart 
+		code={\`${base64(code)}\`}
+	/>`;
+			}
+
 			code = renderSvelteChars(code);
 			if (code.match(REGEX_FRAMEWORKS_SPLIT)) {
 				const isPtTf = code.match(REGEX_FRAMEWORKS_SPLIT)[0].includes("PT-TF");
