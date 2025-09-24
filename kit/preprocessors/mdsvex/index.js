@@ -233,8 +233,8 @@ function treeVisitor() {
 		}
 	}
 
-	function onBlockquote(node, index, parent) {
-		// use github-like Tip & Warning syntax
+	function onBlockquote(node) {
+		// use github-like admonition syntax
 		// see https://github.com/orgs/community/discussions/16925
 		const { children: childrenLevel1 } = node;
 		if (!childrenLevel1.length || childrenLevel1[0].type !== "paragraph") {
@@ -246,27 +246,38 @@ function treeVisitor() {
 			return;
 		}
 
-		const TIP_MARKERS = ["!tip", "!warning"];
+		const TIP_MARKERS = ["note", "tip", "important", "warning", "caution"];
 		const { identifier } = childrenLevel2[0];
-		if (!TIP_MARKERS.includes(identifier)) {
+		if (typeof identifier !== "string") {
 			return;
 		}
-
-		if (!parent) {
+		const markerWithBang = identifier.startsWith("!") ? identifier.slice(1) : identifier;
+		const marker = markerWithBang.toLowerCase();
+		if (!TIP_MARKERS.includes(marker)) {
 			return;
 		}
 
 		childrenLevel1[0].children = childrenLevel1[0].children.slice(1);
-		const nodeTagOpen = {
-			type: "html",
-			value: `<Tip warning={${identifier === "!warning"}}>\n\n`,
-		};
-		const nodeTagClose = {
-			type: "html",
-			value: "\n\n</Tip>",
-		};
-		const nodes = [nodeTagOpen, ...childrenLevel1, nodeTagClose];
-		parent.children.splice(index, 1, ...nodes);
+		const [firstChild] = childrenLevel1[0].children;
+		if (firstChild && firstChild.type === "text") {
+			firstChild.value = firstChild.value.replace(/^\s+/u, "");
+			if (!firstChild.value.length) {
+				childrenLevel1[0].children.shift();
+			}
+		}
+		if (!childrenLevel1[0].children.length) {
+			node.children = node.children.slice(1);
+		}
+
+		node.data = node.data || {};
+		node.data.hProperties = node.data.hProperties || {};
+		const existingClasses = node.data.hProperties.className || [];
+		const normalizedClasses = Array.isArray(existingClasses)
+			? existingClasses
+			: typeof existingClasses === "string"
+			? existingClasses.split(/\s+/u).filter(Boolean)
+			: [];
+		node.data.hProperties.className = Array.from(new Set([...normalizedClasses, marker]));
 	}
 }
 
