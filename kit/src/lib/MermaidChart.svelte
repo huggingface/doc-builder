@@ -16,13 +16,13 @@
 		mermaid.initialize({
 			startOnLoad: false,
 			theme: "default",
-			securityLevel: "loose",
+			securityLevel: "sandbox",
 			fontFamily: "inherit",
 		});
 
 		try {
 			// Render the mermaid diagram
-			const { svg } = await mermaid.render(chartId, code);
+			const { svg } = await mermaid.render(chartId, decodeURIComponent(atob(code)));
 			if (container) {
 				container.innerHTML = svg;
 			}
