@@ -4,17 +4,29 @@ import re
 from pathlib import Path
 
 TIP_PATTERN = re.compile(
-    r"<Tip(?P<warning>\s+warning(?:={true})?)?>\s*(?P<body>.*?)\s*</Tip>",
+    r"(?m)^(?P<indent>[ \t]*)<Tip(?P<warning>\s+warning(?:={true})?)?>\s*(?P<body>.*?)\s*</Tip>",
     re.DOTALL,
 )
 
 def tip_to_admonition(match: re.Match) -> str:
+    indent = match.group("indent") or ""
     body = match.group("body").strip("\n")
     label = "[!WARNING]" if match.group("warning") else "[!TIP]"
-    quoted_lines = "\n".join(f"> {line}" if line.strip() else ">" for line in body.splitlines())
-    if not quoted_lines:
-        quoted_lines = ">"
-    return f"> {label}\n{quoted_lines}"
+
+    lines = [f"{indent}> {label}"]
+
+    if body:
+        for line in body.splitlines():
+            if indent and line.startswith(indent):
+                line = line[len(indent) :]
+            if line.strip():
+                lines.append(f"{indent}> {line}")
+            else:
+                lines.append(f"{indent}>")
+    else:
+        lines.append(f"{indent}>")
+
+    return "\n".join(lines)
 
 def convert_file(path: Path) -> bool:
     text = path.read_text(encoding="utf-8")
