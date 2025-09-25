@@ -8,6 +8,8 @@ TIP_PATTERN = re.compile(
     re.DOTALL,
 )
 
+SUPPORTED_EXTENSIONS = {".md", ".mdx", ".py"}
+
 def tip_to_admonition(match: re.Match) -> str:
     indent = match.group("indent") or ""
     body = match.group("body").strip("\n")
@@ -37,12 +39,20 @@ def convert_file(path: Path) -> bool:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Convert <Tip> blocks to [!TIP]/[!WARNING] blockquotes.")
-    parser.add_argument("root", type=Path, help="File or directory containing markdown files.")
-    parser.add_argument("--glob", default="**/*.md", help="Glob to select files (default: **/*.md).")
+    parser.add_argument("root", type=Path, help="Docs directory to process.")
     args = parser.parse_args()
 
-    targets = [args.root] if args.root.is_file() else sorted(args.root.glob(args.glob))
-    changed = sum(convert_file(path) for path in targets if path.is_file())
+    if args.root.is_file():
+        targets = [args.root] if args.root.suffix.lower() in SUPPORTED_EXTENSIONS else []
+    else:
+        targets = sorted(
+            path
+            for ext in SUPPORTED_EXTENSIONS
+            for path in args.root.rglob(f"*{ext}")
+            if path.is_file()
+        )
+
+    changed = sum(convert_file(path) for path in targets)
 
     print(f"Updated {changed} file(s).")
 
