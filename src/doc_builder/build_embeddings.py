@@ -19,7 +19,6 @@ import re
 from collections import namedtuple
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
-from typing import List
 
 import meilisearch
 import requests
@@ -86,7 +85,9 @@ class MarkdownChunkNode:
             current_level += 1
         parent.children.append(child)
 
-    def get_chunks(self, page_info, chunk_len_chars, headings=[]):
+    def get_chunks(self, page_info, chunk_len_chars, headings=None):
+        if headings is None:
+            headings = []
         chunks = []
         headings = headings + [self.heading]
         split_content = self.split_markdown(self.content)
@@ -146,7 +147,7 @@ _re_list_item = re.compile(r"^\s*-\s+(\S+)\s*$")
 
 
 def create_autodoc_chunks(
-    content, package, return_anchors=False, page_info=None, version_tag_suffix="src/", headings=[]
+    content, package, return_anchors=False, page_info=None, version_tag_suffix="src/", headings=None
 ):
     """
     Replaces [[autodoc]] special syntax by the corresponding generated documentation in some content.
@@ -164,6 +165,8 @@ def create_autodoc_chunks(
         headings (`List[str]`, *optional*, defaults to `[]`):
             List of headings to add to the chunks.
     """
+    if headings is None:
+        headings = []
     lines = content.split("\n")
     autodoc_chunks = []
     if return_anchors:
@@ -230,7 +233,7 @@ def create_autodoc_chunks(
     return (autodoc_chunks, anchors, errors) if return_anchors else autodoc_chunks
 
 
-def get_autodoc_sections(markdown_text: str) -> List[dict[str, any]]:
+def get_autodoc_sections(markdown_text: str) -> list[dict[str, any]]:
     """
     Extract text chunks and their corresponding heading paths.
 
@@ -253,7 +256,7 @@ def get_autodoc_sections(markdown_text: str) -> List[dict[str, any]]:
     return result
 
 
-def get_autodoc_sections_helper(markdown_text: str) -> List[dict[str, any]]:
+def get_autodoc_sections_helper(markdown_text: str) -> list[dict[str, any]]:
     """
     Split markdown text by headings and include parent headings for each section.
 
@@ -432,7 +435,7 @@ class ChunkingError(Exception):
     pass
 
 
-def create_chunks(package, doc_folder, page_info, version_tag_suffix, is_python_module) -> List[Chunk]:
+def create_chunks(package, doc_folder, page_info, version_tag_suffix, is_python_module) -> list[Chunk]:
     """
     Build the MDX files for a given package.
 
@@ -529,7 +532,7 @@ def create_chunks(package, doc_folder, page_info, version_tag_suffix, is_python_
     return chunks
 
 
-def chunks_to_embeddings(client, chunks, is_python_module) -> List[Embedding]:
+def chunks_to_embeddings(client, chunks, is_python_module) -> list[Embedding]:
     texts = []
     for c in chunks:
         prefix = f"Documentation of {'library' if is_python_module else 'service'} \"{c.package_name}\" under section: {' > '.join(c.headings)}"
@@ -574,8 +577,8 @@ def chunks_to_embeddings(client, chunks, is_python_module) -> List[Embedding]:
 
 
 def call_embedding_inference(
-    chunks: List[Chunk], hf_ie_name, hf_ie_namespace, hf_ie_token, is_python_module
-) -> List[Embedding]:
+    chunks: list[Chunk], hf_ie_name, hf_ie_namespace, hf_ie_token, is_python_module
+) -> list[Embedding]:
     """
     Using https://huggingface.co/inference-endpoints with a text embedding model
     """

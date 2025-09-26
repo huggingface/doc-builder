@@ -128,7 +128,7 @@ def parse_input_output(code_lines):
     in_input = True
     cells = []
 
-    for idx, line in enumerate(code_lines):
+    for _idx, line in enumerate(code_lines):
         if is_empty_line(line):
             current_lines.append(line)
         elif not in_input and line.startswith(">>> "):

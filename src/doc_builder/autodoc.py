@@ -36,7 +36,7 @@ def find_object_in_package(object_name, package):
         path_splits = path_splits[1:]
 
     module = package
-    for idx, split in enumerate(path_splits):
+    for _idx, split in enumerate(path_splits):
         submodule = getattr(module, split, None)
         if submodule is None:
             try:

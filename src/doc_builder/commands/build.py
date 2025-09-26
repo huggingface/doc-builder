@@ -35,8 +35,7 @@ def check_node_is_available():
     try:
         p = subprocess.run(
             ["node", "-v"],
-            stderr=subprocess.PIPE,
-            stdout=subprocess.PIPE,
+            capture_output=True,
             check=True,
             encoding="utf-8",
         )

@@ -37,8 +37,7 @@ def get_default_branch_name(repo_folder):
     try:
         p = subprocess.run(
             "git symbolic-ref refs/remotes/origin/HEAD".split(),
-            stderr=subprocess.PIPE,
-            stdout=subprocess.PIPE,
+            capture_output=True,
             check=True,
             encoding="utf-8",
             cwd=repo_folder,
@@ -171,8 +170,7 @@ def get_cached_repo():
     else:
         _ = subprocess.run(
             ["git", "pull"],
-            stderr=subprocess.PIPE,
-            stdout=subprocess.PIPE,
+            capture_output=True,
             check=True,
             encoding="utf-8",
             cwd=cache_repo_path,
