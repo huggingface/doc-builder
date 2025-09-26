@@ -1,3 +1,131 @@
-[tool.black]
+[project]
+name = "hf-doc-builder"
+version = "0.6.0.dev0"
+description = "Doc building utility"
+readme = "README.md"
+requires-python = ">=3.9"
+license = {text = "Apache"}
+authors = [
+    {name = "Hugging Face, Inc.", email = "docs@huggingface.co"}
+]
+keywords = ["doc", "documentation", "doc-builder", "huggingface", "hugging face"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+]
+dependencies = [
+    "GitPython",
+    "tqdm",
+    "pyyaml",
+    "packaging",
+    "nbformat",
+    "huggingface_hub",
+    "pillow",
+    "meilisearch==0.34.1",
+    "watchdog>=6.0.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/huggingface/doc-builder"
+Repository = "https://github.com/huggingface/doc-builder"
+
+[project.optional-dependencies]
+transformers = ["transformers[dev]"]
+testing = [
+    "pytest",
+    "pytest-xdist",
+    "torch",
+    "transformers",
+    "tokenizers",
+    "timm",
+    "google-api-python-client",
+    "requests"
+]
+quality = [
+    "ruff>=0.1.0"
+]
+all = [
+    # testing dependencies
+    "pytest",
+    "pytest-xdist",
+    "torch",
+    "transformers",
+    "tokenizers",
+    "timm",
+    "google-api-python-client",
+    "requests",
+    # quality dependencies
+    "ruff>=0.1.0"
+]
+dev = [
+    # testing dependencies
+    "pytest",
+    "pytest-xdist",
+    "torch",
+    "transformers",
+    "tokenizers",
+    "timm",
+    "google-api-python-client",
+    "requests",
+    # quality dependencies
+    "ruff>=0.1.0"
+]
+release = ["twine"]
+
+[project.scripts]
+doc-builder = "doc_builder.commands.doc_builder_cli:main"
+
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+[tool.ruff]
 line-length = 119
-target-version = ['py39']
+target-version = "py39"
+extend-exclude = [
+    "__pycache__",
+    ".git",
+    ".venv",
+    "build",
+    "dist",
+]
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings  
+    "F",   # pyflakes
+    "I",   # isort
+    "B",   # flake8-bugbear
+    "C4",  # flake8-comprehensions
+    "UP",  # pyupgrade
+]
+ignore = [
+    "E501",  # line too long, handled by black
+    "B008",  # do not perform function calls in argument defaults
+    "C901",  # too complex
+]
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["F401"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["doc_builder"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"

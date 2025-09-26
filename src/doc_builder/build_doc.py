@@ -1,4 +1,3 @@
-# coding=utf-8
 # Copyright 2021 The HuggingFace Team. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -29,7 +28,6 @@ from .convert_md_to_mdx import convert_md_to_mdx
 from .convert_rst_to_mdx import convert_rst_to_mdx, find_indent, is_empty_line
 from .convert_to_notebook import generate_notebooks_from_file
 from .utils import get_doc_config, read_doc_config
-
 
 _re_autodoc = re.compile(r"^\s*\[\[autodoc\]\]\s+(\S+)\s*$")
 _re_list_item = re.compile(r"^\s*-\s+(\S+)\s*$")
@@ -190,7 +188,7 @@ def build_mdx_files(package, doc_folder, output_dir, page_info, version_tag_suff
                 dest_file = output_dir / (file.with_suffix(".mdx").relative_to(doc_folder))
                 page_info["page"] = file.with_suffix(".html").relative_to(doc_folder).as_posix()
                 os.makedirs(dest_file.parent, exist_ok=True)
-                with open(file, "r", encoding="utf-8-sig") as reader:
+                with open(file, encoding="utf-8-sig") as reader:
                     content = reader.read()
                 content = convert_md_to_mdx(content, page_info)
                 content = resolve_open_in_colab(content, page_info)
@@ -207,7 +205,7 @@ def build_mdx_files(package, doc_folder, output_dir, page_info, version_tag_suff
                 dest_file = output_dir / (file.with_suffix(".mdx").relative_to(doc_folder))
                 page_info["page"] = file.with_suffix(".html").relative_to(doc_folder)
                 os.makedirs(dest_file.parent, exist_ok=True)
-                with open(file, "r", encoding="utf-8") as reader:
+                with open(file, encoding="utf-8") as reader:
                     content = reader.read()
                 content = convert_rst_to_mdx(content, page_info)
                 content = resolve_open_in_colab(content, page_info)
@@ -264,7 +262,7 @@ def resolve_links(doc_folder, package, mapping, page_info):
     doc_folder = Path(doc_folder)
     all_files = list(doc_folder.glob("**/*.mdx"))
     for file in tqdm(all_files, desc="Resolving internal links"):
-        with open(file, "r", encoding="utf-8") as reader:
+        with open(file, encoding="utf-8") as reader:
             content = reader.read()
         content = resolve_links_in_text(content, package, mapping, page_info)
         with open(file, "w", encoding="utf-8") as writer:
@@ -293,7 +291,7 @@ def build_notebooks(doc_folder, notebook_dir, package=None, mapping=None, page_i
 
     md_mdx_files = list(doc_folder.glob("**/*.md")) + list(doc_folder.glob("**/*.mdx"))
     for file in tqdm(md_mdx_files, desc="Building the notebooks"):
-        with open(file, "r", encoding="utf-8") as f:
+        with open(file, encoding="utf-8") as f:
             if "[[open-in-colab]]" not in f.read():
                 continue
         try:
@@ -398,7 +396,7 @@ def toctree_renamings(output_dir):
     output_dir = Path(output_dir)
 
     toc_file = output_dir / "_toctree.yml"
-    with open(toc_file, "r", encoding="utf-8") as f:
+    with open(toc_file, encoding="utf-8") as f:
         toc = yaml.safe_load(f.read())
 
     rename_map = {}
@@ -445,7 +443,7 @@ def check_toc_integrity(doc_folder, output_dir):
     doc_files = [str(f.relative_to(output_dir).with_suffix("")) for f in output_dir.glob("**/*.mdx")]
 
     toc_file = Path(doc_folder) / "_toctree.yml"
-    with open(toc_file, "r", encoding="utf-8") as f:
+    with open(toc_file, encoding="utf-8") as f:
         toc = yaml.safe_load(f.read())
 
     toc_sections = []

@@ -26,40 +26,24 @@ jobs:
           path: accelerate
           ref: 16eb6d76bf987c7d8d877ce5152f2e29878eab37
 
-      - name: Set up Python
-        uses: actions/setup-python@v4
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
         with:
-          python-version: '3.10'
+          version: 'latest'
 
-      - name: Loading cache
-        uses: actions/cache@v4
-        id: cache
-        with:
-          path: ~/.cache/pip
-          key: v1-test_build_doc
-          restore-keys: |
-            v1-test_build_doc-${{ hashFiles('setup.py') }}
-            v1-test_build_doc
+      - name: Ensure Python 3.10
+        run: uv python install 3.10
 
-      - name: Create and activate virtual environment
-        run: |
-          python -m venv venv
-          source venv/bin/activate
+      - name: Create virtual environment
+        run: uv venv --python 3.10 .venv
 
-      - name: Setup environment
-        run: |
-          cd doc-builder
-          pip install .
-          cd ..
+      - name: Install Python dependencies
+        run: uv pip install --python .venv/bin/python ./doc-builder './accelerate[dev]'
 
-          cd accelerate
-          pip install .[dev]
-          cd ..
-          
       - name: Make documentation
         run: |
           cd doc-builder &&
-          doc-builder build accelerate ../accelerate/docs/source --build_dir ../build_dir --clean --html &&
+          ../.venv/bin/doc-builder build accelerate ../accelerate/docs/source --build_dir ../build_dir --clean --html &&
           cd ..
         env:
           NODE_OPTIONS: --max-old-space-size=6656

@@ -1,4 +1,3 @@
-# coding=utf-8
 # Copyright 2021 The HuggingFace Team. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,10 +16,13 @@
 import inspect
 import unittest
 from dataclasses import dataclass
-from typing import List, Optional, Union
+from typing import Optional, Union
 
 import timm
 import transformers
+from transformers import BertModel, BertTokenizer, BertTokenizerFast, TrainingArguments
+from transformers.utils import PushToHubMixin
+
 from doc_builder.autodoc import (
     autodoc_svelte,
     document_object,
@@ -36,9 +38,6 @@ from doc_builder.autodoc import (
     remove_example_tags,
     resolve_links_in_text,
 )
-from transformers import BertModel, BertTokenizer, BertTokenizerFast, TrainingArguments
-from transformers.utils import PushToHubMixin
-
 
 # This is dynamic since the Transformers/timm libraries are not frozen.
 TEST_LINE_NUMBER = inspect.getsourcelines(transformers.utils.ModelOutput)[1]
@@ -179,13 +178,16 @@ class AutodocTester(unittest.TestCase):
         self.assertEqual(get_type_name(str), "str")
         self.assertEqual(get_type_name(BertModel), "BertModel")
         # Objects from typing which are the most annoying
-        self.assertEqual(get_type_name(List[str]), "typing.List[str]")
         self.assertEqual(get_type_name(Optional[str]), "typing.Optional[str]")
         self.assertEqual(get_type_name(Union[bool, int]), "typing.Union[bool, int]")
-        self.assertEqual(get_type_name(List[Optional[str]]), "typing.List[typing.Optional[str]]")
-        self.assertEqual(
-            get_type_name(List[Optional[Union[str, int, None]]]), "typing.List[typing.Union[str, int, NoneType]]"
-        )
+        # Test modern syntax (behavior may vary by Python version)
+        # Python 3.10 returns "list" while 3.11+ returns "list[str]"
+        modern_list_result = get_type_name(list[str])
+        self.assertIn(modern_list_result, ["list[str]", "list"])  # Python 3.10 vs 3.11+
+        modern_list_optional_result = get_type_name(list[Optional[str]])
+        self.assertIn(modern_list_optional_result, ["list[typing.Optional[str]]", "list"])
+        modern_list_union_result = get_type_name(list[Optional[Union[str, int, None]]])
+        self.assertIn(modern_list_union_result, ["list[typing.Union[str, int, NoneType]]", "list"])
 
     def test_format_signature(self):
         self.assertEqual(

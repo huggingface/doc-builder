@@ -4,11 +4,10 @@ import sys
 from datetime import datetime
 from functools import wraps
 from time import sleep
-from typing import Callable, Optional, Tuple
+from typing import Callable, Optional
 
 from meilisearch.client import Client, TaskInfo
 from meilisearch.errors import MeilisearchApiError
-
 
 # References:
 # https://www.meilisearch.com/docs/learn/experimental/vector_search
@@ -18,7 +17,7 @@ from meilisearch.errors import MeilisearchApiError
 VECTOR_NAME = "embeddings"
 VECTOR_DIM = 768  # dim of https://huggingface.co/BAAI/bge-base-en-v1.5
 
-MeilisearchFunc = Callable[..., Tuple[Client, TaskInfo]]
+MeilisearchFunc = Callable[..., tuple[Client, TaskInfo]]
 
 
 def wait_for_task_completion(func: MeilisearchFunc) -> MeilisearchFunc:

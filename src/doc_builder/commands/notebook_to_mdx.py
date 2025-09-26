@@ -1,4 +1,3 @@
-# coding=utf-8
 # Copyright 2021 The HuggingFace Team. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -52,7 +51,7 @@ def notebook_to_mdx(notebook, max_len):
                 code_lines = code.split("\n")
                 # We can add >>> everywhere without worrying as format_code_example will replace them by ...
                 # when needed.
-                code_lines = [f">>> {l}" if not len(l) == 0 or l.isspace() else l for l in code_lines]
+                code_lines = [f">>> {line}" if not len(line) == 0 or line.isspace() else line for line in code_lines]
                 code = "\n".join(code_lines)
                 code = format_code_example(code, max_len=max_len)[0]
                 content.append(f"```python\n{code}\n```")
