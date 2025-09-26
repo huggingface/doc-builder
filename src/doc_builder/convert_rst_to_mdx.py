@@ -1,4 +1,3 @@
-# coding=utf-8
 # Copyright 2021 The HuggingFace Team. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,7 +14,6 @@
 
 
 import re
-
 
 # Re pattern to catch things inside ` ` in :obj:`thing`.
 _re_obj = re.compile(r":obj:`([^`]+)`")

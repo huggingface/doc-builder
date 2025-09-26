@@ -1,4 +1,3 @@
-# coding=utf-8
 # Copyright 2021 The HuggingFace Team. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,6 +18,7 @@ import unittest
 from pathlib import Path
 
 import yaml
+
 from doc_builder.utils import sveltify_file_route, update_versions_file
 
 
@@ -31,7 +31,7 @@ class UtilsTester(unittest.TestCase):
                 versions = [{"version": "main"}, {"version": "v4.2.3"}, {"version": "v4.2.1"}]
                 yaml.dump(versions, tmp_yml)
             update_versions_file(tmp_dir, "v4.2.2", repo_folder)
-            with open(f"{tmp_dir}/_versions.yml", "r") as tmp_yml:
+            with open(f"{tmp_dir}/_versions.yml") as tmp_yml:
                 yml_str = tmp_yml.read()
                 expected_yml = "- version: main\n- version: v4.2.3\n- version: v4.2.2\n- version: v4.2.1\n"
                 self.assertEqual(yml_str, expected_yml)
@@ -42,7 +42,7 @@ class UtilsTester(unittest.TestCase):
                 versions = [{"version": "main"}]
                 yaml.dump(versions, tmp_yml)
             update_versions_file(tmp_dir, "v4.2.2", repo_folder)
-            with open(f"{tmp_dir}/_versions.yml", "r") as tmp_yml:
+            with open(f"{tmp_dir}/_versions.yml") as tmp_yml:
                 yml_str = tmp_yml.read()
                 expected_yml = "- version: main\n- version: v4.2.2\n"
                 self.assertEqual(yml_str, expected_yml)
@@ -62,7 +62,7 @@ class UtilsTester(unittest.TestCase):
                 yaml.dump(versions, tmp_yml)
             update_versions_file(tmp_dir, "v4.2.2", repo_folder)
             update_versions_file(tmp_dir, "v4.2.2", repo_folder)  # inserting duplicate version
-            with open(f"{tmp_dir}/_versions.yml", "r") as tmp_yml:
+            with open(f"{tmp_dir}/_versions.yml") as tmp_yml:
                 yml_str = tmp_yml.read()
                 expected_yml = "- version: main\n- version: v4.2.2\n"
                 self.assertEqual(yml_str, expected_yml)

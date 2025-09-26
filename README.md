@@ -13,6 +13,10 @@ This is the package we use to build the documentation of our Hugging Face repos.
     + [Enabling multilingual documentation](#enabling-multilingual-documentation)
     + [Redirects](#redirects)
   * [Fixing and testing doc-builder](#fixing-and-testing-doc-builder)
+  * [Development Commands](#development-commands)
+    + [Code Quality & Formatting](#code-quality--formatting)
+    + [Testing](#testing)
+    + [Development Workflow](#development-workflow)
   * [Writing documentation for Hugging Face libraries](#writing-documentation-for-hugging-face-libraries)
     + [Internal link to object](#internal-link-to-object)
     + [External link to object](#external-link-to-object)
@@ -195,6 +199,87 @@ jobs:
 ```
 
 Once the docs build is complete in your project, you can drop that change.
+
+## Development Commands
+
+Since we've modernized the tooling to use `ruff` and `uv`, here are the commands for development:
+
+### Code Quality & Formatting
+
+#### Check code quality (linting)
+```bash
+uv run ruff check .
+```
+
+#### Fix auto-fixable linting issues
+```bash
+uv run ruff check --fix .
+```
+
+#### Check code formatting
+```bash
+uv run ruff format --check .
+```
+
+#### Apply code formatting
+```bash
+uv run ruff format .
+```
+
+#### Run both linting and formatting checks (equivalent to old `make quality`)
+```bash
+uv run ruff check . && uv run ruff format --check .
+```
+
+#### Apply both linting fixes and formatting (equivalent to old `make style`)
+```bash
+uv run ruff check --fix . && uv run ruff format .
+```
+
+### Testing
+
+#### Run all tests (equivalent to old `make test`)
+```bash
+uv run python -m pytest -n 1 --dist=loadfile -s -v ./tests/
+```
+
+#### Run specific test file
+```bash
+uv run python -m pytest tests/test_utils.py -v
+```
+
+#### Run tests with coverage
+```bash
+uv run python -m pytest --cov=src/doc_builder tests/
+```
+
+### Development Workflow
+
+#### Install dependencies for development
+```bash
+uv sync --extra dev
+```
+
+#### Install only testing dependencies
+```bash
+uv sync --extra testing
+```
+
+#### Install only quality/linting dependencies
+```bash
+uv sync --extra quality
+```
+
+#### Run the full quality check (for CI)
+```bash
+uv run ruff check .
+uv run ruff format --check .
+```
+
+#### Run the full test suite (for CI)
+```bash
+uv run python -m pytest -n 1 --dist=loadfile -s -v ./tests/
+```
 
 ## Writing documentation for Hugging Face libraries
 
