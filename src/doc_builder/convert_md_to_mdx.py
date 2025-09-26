@@ -54,6 +54,7 @@ import HfOptions from "$lib/HfOptions.svelte";
 import HfOption from "$lib/HfOption.svelte";
 import EditOnGithub from "$lib/EditOnGithub.svelte";
 import InferenceSnippet from "$lib/InferenceSnippet/InferenceSnippet.svelte";
+import MermaidChart from "$lib/MermaidChart.svelte";
 let fw: "pt" | "tf" = "pt";
 onMount(() => {
     const urlParams = new URLSearchParams(window.location.search);
