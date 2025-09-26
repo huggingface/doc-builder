@@ -509,7 +509,7 @@ def create_chunks(package, doc_folder, page_info, version_tag_suffix, is_python_
                 chunks.extend(page_chunks)
 
         except Exception as e:
-            raise ChunkingError(f"There was an error when converting {file} to chunks to embed.\n" + e.args[0])
+            raise ChunkingError(f"There was an error when converting {file} to chunks to embed.\n" + e.args[0]) from e
 
         if new_anchors:
             page_name = str(file.with_suffix("").relative_to(doc_folder))

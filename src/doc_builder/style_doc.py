@@ -114,7 +114,7 @@ def format_code_example(code: str, max_len: int, in_docstring: bool = False):
 
     # Remove the initial indent for now, we will had it back after styling.
     # Note that l[indent:] works for empty lines
-    code_lines = [l[indent:] for l in code_lines[idx:]]
+    code_lines = [line[indent:] for line in code_lines[idx:]]
     has_doctest = code_lines[0][:3] in DOCTEST_PROMPTS
 
     code_samples, outputs = parse_code_example(code_lines)
@@ -556,7 +556,7 @@ def style_doc_files(*files, max_len=119, check_only=False):
                 print(f"There is a problem in {file}.")
                 raise
         else:
-            warnings.warn(f"Ignoring {file} because it's not a py or an mdx file or a folder.")
+            warnings.warn(f"Ignoring {file} because it's not a py or an mdx file or a folder.", stacklevel=2)
     if len(ruff_errors) > 0:
         ruff_message = "\n\n".join(ruff_errors)
         raise ValueError(

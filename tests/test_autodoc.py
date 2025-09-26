@@ -16,7 +16,7 @@
 import inspect
 import unittest
 from dataclasses import dataclass
-from typing import List, Optional, Union
+from typing import Optional, Union
 
 import timm
 import transformers
@@ -178,17 +178,16 @@ class AutodocTester(unittest.TestCase):
         self.assertEqual(get_type_name(str), "str")
         self.assertEqual(get_type_name(BertModel), "BertModel")
         # Objects from typing which are the most annoying
-        self.assertEqual(get_type_name(List[str]), "typing.List[str]")
+        self.assertEqual(get_type_name(list[str]), "list[str]")
         self.assertEqual(get_type_name(Optional[str]), "typing.Optional[str]")
         self.assertEqual(get_type_name(Union[bool, int]), "typing.Union[bool, int]")
-        self.assertEqual(get_type_name(List[Optional[str]]), "typing.List[typing.Optional[str]]")
+        self.assertEqual(get_type_name(list[Optional[str]]), "list[typing.Optional[str]]")
         self.assertEqual(
-            get_type_name(List[Optional[Union[str, int, None]]]), "typing.List[typing.Union[str, int, NoneType]]"
+            get_type_name(list[Optional[Union[str, int, None]]]), "list[typing.Union[str, int, NoneType]]"
         )
         # Test modern syntax too (behavior may vary by Python version)
         modern_list_result = get_type_name(list[str])
         self.assertIn(modern_list_result, ["list[str]", "list"])  # Python 3.10 vs 3.11+
-        
         modern_list_optional_result = get_type_name(list[Optional[str]])
         self.assertIn(modern_list_optional_result, ["list[typing.Optional[str]]", "list"])
 

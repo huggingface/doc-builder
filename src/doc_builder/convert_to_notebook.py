@@ -110,7 +110,7 @@ def split_frameworks(content):
             for key in new_lines.keys():
                 new_lines[key].append(lines[idx])
             idx += 1
-    return ["\n".join(l) for l in new_lines.values()]
+    return ["\n".join(lines) for lines in new_lines.values()]
 
 
 def markdown_cell(content):
@@ -310,8 +310,8 @@ def generate_notebooks_from_file(file_name, output_dir, package=None, mapping=No
 
     content = clean_content(content, package=package, mapping=mapping, page_info=page_info)
 
-    for folder, content in zip(output_dirs, split_frameworks(content)):
-        cells = parse_doc_into_cells(content)
+    for folder, framework_content in zip(output_dirs, split_frameworks(content)):
+        cells = parse_doc_into_cells(framework_content)
         notebook = create_notebook(cells)
         os.makedirs(folder, exist_ok=True)
         nbformat.write(notebook, os.path.join(folder, output_name), version=4)
