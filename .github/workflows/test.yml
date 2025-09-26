@@ -11,13 +11,15 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
     - uses: actions/checkout@v4
-    - name: Set up Python 3.10
-      uses: actions/setup-python@v5
+    - name: Install uv
+      uses: astral-sh/setup-uv@v4
       with:
-        python-version: "3.10"
-    - name: Install Python dependencies
+        version: "latest"
+    - name: Set up Python 3.10
+      run: uv python install 3.10
+    - name: Install dependencies
       run: |
-        pip install -e ".[all]"
-        pip install git+https://github.com/huggingface/transformers
+        uv sync --extra all
+        uv add git+https://github.com/huggingface/transformers
     - name: Run Tests
-      run: python -m pytest -n 1 --dist=loadfile -s -v ./tests/
+      run: uv run python -m pytest -n 1 --dist=loadfile -s -v ./tests/

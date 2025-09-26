@@ -16,9 +16,9 @@
 
 import os
 import re
+import subprocess
+import tempfile
 import warnings
-
-import black
 
 from .convert_rst_to_mdx import _re_args, _re_returns, find_indent, is_empty_line
 from .utils import get_doc_config
@@ -37,7 +37,7 @@ _re_tip = re.compile(r"^\s*</?Tip(>|\s+warning={true}>)\s*$")
 DOCTEST_PROMPTS = [">>>", "..."]
 
 
-def get_black_avoid_patterns():
+def get_ruff_avoid_patterns():
     patterns = {"===PT-TF-SPLIT===": "### PT-TF-SPLIT"}
     doc_config = get_doc_config()
     if doc_config is not None and hasattr(doc_config, "black_avoid_patterns"):
@@ -93,7 +93,7 @@ def parse_code_example(code_lines):
 
 def format_code_example(code: str, max_len: int, in_docstring: bool = False):
     """
-    Format a code example using black. Will take into account the doctest syntax as well as any initial indentation in
+    Format a code example using ruff. Will take into account the doctest syntax as well as any initial indentation in
     the code provided.
 
     Args:
@@ -121,26 +121,46 @@ def format_code_example(code: str, max_len: int, in_docstring: bool = False):
 
     code_samples, outputs = parse_code_example(code_lines)
 
-    # Let's blackify the code! We put everything in one big text to go faster.
+    # Let's format the code using ruff! We put everything in one big text to go faster.
     delimiter = "\n\n### New code sample ###\n"
     full_code = delimiter.join(code_samples)
     line_length = max_len - indent
     if has_doctest:
         line_length -= 4
 
-    black_avoid_patterns = get_black_avoid_patterns()
-    for k, v in black_avoid_patterns.items():
+    ruff_avoid_patterns = get_ruff_avoid_patterns()
+    for k, v in ruff_avoid_patterns.items():
         full_code = full_code.replace(k, v)
     try:
-        mode = black.Mode(target_versions={black.TargetVersion.PY37}, line_length=line_length)
-        formatted_code = black.format_str(full_code, mode=mode)
-        error = ""
+        # Use ruff format via subprocess
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.py', delete=False) as temp_file:
+            temp_file.write(full_code)
+            temp_file.flush()
+            
+            # Run ruff format with specific line length
+            result = subprocess.run(
+                ['ruff', 'format', '--line-length', str(line_length), '--stdin-filename', temp_file.name, '-'],
+                input=full_code,
+                text=True,
+                capture_output=True,
+                check=False
+            )
+            
+            if result.returncode == 0:
+                formatted_code = result.stdout
+                error = ""
+            else:
+                formatted_code = full_code
+                error = f"Code sample:\n{full_code}\n\nError message:\n{result.stderr}"
+        
+        # Clean up temp file
+        os.unlink(temp_file.name)
     except Exception as e:
         formatted_code = full_code
         error = f"Code sample:\n{full_code}\n\nError message:\n{e}"
 
     # Let's get back the formatted code samples
-    for k, v in black_avoid_patterns.items():
+    for k, v in ruff_avoid_patterns.items():
         formatted_code = formatted_code.replace(v, k)
     # Triple quotes will mess docstrings.
     if in_docstring:
@@ -153,7 +173,7 @@ def format_code_example(code: str, max_len: int, in_docstring: bool = False):
 
     formatted_lines = []
     for code_sample, output in zip(code_samples, outputs):
-        # black may have added some new lines, we remove them
+        # ruff may have added some new lines, we remove them
         code_sample = code_sample.strip()
         in_triple_quotes = False
         in_decorator = False
@@ -247,7 +267,7 @@ def style_docstring(docstring, max_len):
     in_code = False
     param_indent = -1
     prefix = ""
-    black_errors = []
+    ruff_errors = []
 
     # Special case for docstrings that begin with continuation of Args with no Args block.
     idx = 0
@@ -305,7 +325,7 @@ def style_docstring(docstring, max_len):
                     formatted_code, error = format_code_example(code, max_len, in_docstring=True)
                     new_lines.append(formatted_code)
                     if len(error) > 0:
-                        black_errors.append(error)
+                        ruff_errors.append(error)
                 else:
                     new_lines.append(code)
                 current_paragraph = None
@@ -377,7 +397,7 @@ def style_docstring(docstring, max_len):
         paragraph = " ".join(current_paragraph)
         new_lines.append(format_text(paragraph, max_len, prefix=prefix, min_indent=current_indent))
 
-    return "\n".join(new_lines), "\n\n".join(black_errors)
+    return "\n".join(new_lines), "\n\n".join(ruff_errors)
 
 
 def style_docstrings_in_code(code, max_len=119):
@@ -389,7 +409,7 @@ def style_docstrings_in_code(code, max_len=119):
         max_len (`int`): The maximum number of characters per line.
 
     Returns:
-        `Tuple[str, str]`: A tuple with the clean code and the black errors (if any)
+        `Tuple[str, str]`: A tuple with the clean code and the ruff errors (if any)
     """
     # fmt: off
     splits = code.split('\"\"\"')
@@ -397,12 +417,12 @@ def style_docstrings_in_code(code, max_len=119):
         (s if i % 2 == 0 or _re_docstyle_ignore.search(splits[i - 1]) is not None else style_docstring(s, max_len=max_len))
         for i, s in enumerate(splits)
     ]
-    black_errors = "\n\n".join([s[1] for s in splits if isinstance(s, tuple) and len(s[1]) > 0])
+    ruff_errors = "\n\n".join([s[1] for s in splits if isinstance(s, tuple) and len(s[1]) > 0])
     splits = [s[0] if isinstance(s, tuple) else s for s in splits]
     clean_code = '\"\"\"'.join(splits)
     # fmt: on
 
-    return clean_code, black_errors
+    return clean_code, ruff_errors
 
 
 def style_file_docstrings(code_file, max_len=119, check_only=False):
@@ -421,7 +441,7 @@ def style_file_docstrings(code_file, max_len=119, check_only=False):
     with open(code_file, "r", encoding="utf-8", newline="\n") as f:
         code = f.read()
 
-    clean_code, black_errors = style_docstrings_in_code(code, max_len=max_len)
+    clean_code, ruff_errors = style_docstrings_in_code(code, max_len=max_len)
 
     diff = clean_code != code
     if not check_only and diff:
@@ -429,7 +449,7 @@ def style_file_docstrings(code_file, max_len=119, check_only=False):
         with open(code_file, "w", encoding="utf-8", newline="\n") as f:
             f.write(clean_code)
 
-    return diff, black_errors
+    return diff, ruff_errors
 
 
 def style_mdx_file(mdx_file, max_len=119, check_only=False):
@@ -453,7 +473,7 @@ def style_mdx_file(mdx_file, max_len=119, check_only=False):
     current_language = ""
     in_code = False
     new_lines = []
-    black_errors = []
+    ruff_errors = []
 
     for line in lines:
         if _re_code.search(line) is not None:
@@ -466,7 +486,7 @@ def style_mdx_file(mdx_file, max_len=119, check_only=False):
                 if current_language in ["py", "python"]:
                     code, error = format_code_example(code, max_len)
                     if len(error) > 0:
-                        black_errors.append(error)
+                        ruff_errors.append(error)
                 new_lines.append(code)
 
             new_lines.append(line)
@@ -485,7 +505,7 @@ def style_mdx_file(mdx_file, max_len=119, check_only=False):
         with open(mdx_file, "w", encoding="utf-8", newline="\n") as f:
             f.write(clean_content)
 
-    return diff, "\n\n".join(black_errors)
+    return diff, "\n\n".join(ruff_errors)
 
 
 def style_doc_files(*files, max_len=119, check_only=False):
@@ -502,7 +522,7 @@ def style_doc_files(*files, max_len=119, check_only=False):
         List[`str`]: The list of files changed or that should be restyled.
     """
     changed = []
-    black_errors = []
+    ruff_errors = []
     for file in files:
         # Treat folders
         if os.path.isdir(file):
@@ -512,12 +532,12 @@ def style_doc_files(*files, max_len=119, check_only=False):
         # Treat mdx
         elif file.endswith(".mdx"):
             try:
-                diff, black_error = style_mdx_file(file, max_len=max_len, check_only=check_only)
+                diff, ruff_error = style_mdx_file(file, max_len=max_len, check_only=check_only)
                 if diff:
                     changed.append(file)
-                if len(black_error) > 0:
-                    black_errors.append(
-                        f"There was a problem while formatting an example in {file} with black:\n{black_error}"
+                if len(ruff_error) > 0:
+                    ruff_errors.append(
+                        f"There was a problem while formatting an example in {file} with ruff:\n{ruff_error}"
                     )
             except Exception:
                 print(f"There is a problem in {file}.")
@@ -525,23 +545,23 @@ def style_doc_files(*files, max_len=119, check_only=False):
         # Treat python files
         elif file.endswith(".py"):
             try:
-                diff, black_error = style_file_docstrings(file, max_len=max_len, check_only=check_only)
+                diff, ruff_error = style_file_docstrings(file, max_len=max_len, check_only=check_only)
                 if diff:
                     changed.append(file)
-                if len(black_error) > 0:
-                    black_errors.append(
-                        f"There was a problem while formatting an example in {file} with black:\n{black_error}"
+                if len(ruff_error) > 0:
+                    ruff_errors.append(
+                        f"There was a problem while formatting an example in {file} with ruff:\n{ruff_error}"
                     )
             except Exception:
                 print(f"There is a problem in {file}.")
                 raise
         else:
             warnings.warn(f"Ignoring {file} because it's not a py or an mdx file or a folder.")
-    if len(black_errors) > 0:
-        black_message = "\n\n".join(black_errors)
+    if len(ruff_errors) > 0:
+        ruff_message = "\n\n".join(ruff_errors)
         raise ValueError(
-            "Some code examples can't be interpreted by black, which means they aren't regular python:\n\n"
-            + black_message
+            "Some code examples can't be interpreted by ruff, which means they aren't regular python:\n\n"
+            + ruff_message
             + "\n\nMake sure to fix the corresponding docstring or doc file, or remove the py/python after ``` if it "
             + "was not supposed to be a Python code sample."
         )
