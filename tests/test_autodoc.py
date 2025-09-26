@@ -180,7 +180,6 @@ class AutodocTester(unittest.TestCase):
         # Objects from typing which are the most annoying
         self.assertEqual(get_type_name(Optional[str]), "typing.Optional[str]")
         self.assertEqual(get_type_name(Union[bool, int]), "typing.Union[bool, int]")
-        
         # Test modern syntax (behavior may vary by Python version)
         # Python 3.10 returns "list" while 3.11+ returns "list[str]"
         modern_list_result = get_type_name(list[str])
