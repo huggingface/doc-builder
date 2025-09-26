@@ -3,12 +3,31 @@
 
 from setuptools import find_packages, setup
 
-install_requires = ["black", "GitPython", "tqdm", "pyyaml", "packaging", "nbformat", "huggingface_hub", "pillow", "meilisearch==0.34.1"]
+install_requires = [
+    "black",
+    "GitPython",
+    "tqdm",
+    "pyyaml",
+    "packaging",
+    "nbformat",
+    "huggingface_hub",
+    "pillow",
+    "meilisearch==0.34.1",
+]
 
 extras = {}
 
 extras["transformers"] = ["transformers[dev]"]
-extras["testing"] = ["pytest", "pytest-xdist", "torch", "transformers", "tokenizers", "timm", "google-api-python-client", "requests"]
+extras["testing"] = [
+    "pytest",
+    "pytest-xdist",
+    "torch",
+    "transformers",
+    "tokenizers",
+    "timm",
+    "google-api-python-client",
+    "requests",
+]
 extras["quality"] = ["black~=22.0", "isort>=5.5.4", "flake8>=3.8.3"]
 
 extras["all"] = extras["testing"] + extras["quality"]
@@ -25,7 +44,7 @@ setup(
     license="Apache",
     author_email="docs@huggingface.co",
     description="Doc building utility",
-    long_description=open("README.md", "r", encoding="utf-8").read(),
+    long_description=open("README.md", encoding="utf-8").read(),
     long_description_content_type="text/markdown",
     keywords="doc documentation doc-builder huggingface hugging face",
     url="https://github.com/huggingface/doc-builder",
@@ -56,7 +75,7 @@ setup(
 #      pip install hf-doc-builder
 #      pip uninstall hf-doc-builder
 #      pip install -i https://testpypi.python.org/pypi hf-doc-builder
-#      It's recommended to check that there are no issues building the docs, 
+#      It's recommended to check that there are no issues building the docs,
 #      so try running a command like `doc-builder`
 # 8. Upload the final version to actual pypi:
 #      twine upload dist/* -r pypi

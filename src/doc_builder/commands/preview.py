@@ -1,4 +1,3 @@
-# coding=utf-8
 # Copyright 2021 The HuggingFace Team. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -28,7 +27,6 @@ from doc_builder import build_doc
 from doc_builder.commands.build import check_node_is_available, locate_kit_folder
 from doc_builder.commands.convert_doc_file import find_root_git
 from doc_builder.utils import is_watchdog_available, read_doc_config, sveltify_file_route
-
 
 if is_watchdog_available():
     from watchdog.events import FileSystemEventHandler
@@ -163,7 +161,7 @@ def preview_command(args):
     # Error at the beginning if we can't locate the kit folder
     kit_folder = locate_kit_folder()
     if kit_folder is None:
-        raise EnvironmentError(
+        raise OSError(
             "Requires the kit subfolder of the doc-builder repo. We couldn't find it with "
             "the doc-builder package installed, so you need to run the command from inside the doc-builder repo."
         )

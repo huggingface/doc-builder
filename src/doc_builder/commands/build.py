@@ -1,4 +1,3 @@
-# coding=utf-8
 # Copyright 2021 The HuggingFace Team. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -36,20 +35,19 @@ def check_node_is_available():
     try:
         p = subprocess.run(
             ["node", "-v"],
-            stderr=subprocess.PIPE,
-            stdout=subprocess.PIPE,
+            capture_output=True,
             check=True,
             encoding="utf-8",
         )
         version = p.stdout.strip()
-    except Exception:
-        raise EnvironmentError(
+    except Exception as e:
+        raise OSError(
             "Using the --html flag requires node v14 to be installed, but it was not found in your system."
-        )
+        ) from e
 
     major = int(version[1:].split(".")[0])
     if major < 14:
-        raise EnvironmentError(
+        raise OSError(
             "Using the --html flag requires node v14 to be installed, but the version in your system is lower "
             f"({version[1:]})"
         )
@@ -63,7 +61,7 @@ def build_command(args):
         # Error at the beginning if we can't locate the kit folder
         kit_folder = locate_kit_folder()
         if kit_folder is None:
-            raise EnvironmentError(
+            raise OSError(
                 "Using the --html flag requires the kit subfolder of the doc-builder repo. We couldn't find it with "
                 "the doc-builder package installed, so you need to run the command from inside the doc-builder repo."
             )

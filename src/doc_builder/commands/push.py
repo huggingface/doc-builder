@@ -1,4 +1,3 @@
-# coding=utf-8
 # Copyright 2022 The HuggingFace Team. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -21,7 +20,6 @@ from pathlib import Path
 from time import sleep, time
 
 from huggingface_hub import HfApi
-
 
 REPO_TYPE = "dataset"
 SEPARATOR = "/"
@@ -109,7 +107,7 @@ def push_command_add(args):
 
     time_end = time()
     logging.debug(
-        f"push_command_add took {time_end - time_start:.4f} seconds or {(time_end - time_start) / 60.0    :.2f} mins"
+        f"push_command_add took {time_end - time_start:.4f} seconds or {(time_end - time_start) / 60.0:.2f} mins"
     )
 
 
