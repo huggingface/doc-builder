@@ -113,7 +113,7 @@ class BuildDocTester(unittest.TestCase):
         no_output_code_with_error = "from transformers import AutoModel\nmodel = AutoModel('bert-base-cased'"
         result, error = format_code_example(no_output_code_with_error, max_len=119)
         self.assertEqual(result, no_output_code_with_error)
-        self.assertIn("Error message:\nCannot parse", error)
+        self.assertIn("Error message:\nerror: Failed to parse", error)
 
         code_with_output = ">>> from transformers import AutoModel\n>>> model = AutoModel('bert-base-cased')\noutput"
         expected_result = '>>> from transformers import AutoModel\n\n>>> model = AutoModel("bert-base-cased")\noutput'
