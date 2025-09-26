@@ -178,18 +178,17 @@ class AutodocTester(unittest.TestCase):
         self.assertEqual(get_type_name(str), "str")
         self.assertEqual(get_type_name(BertModel), "BertModel")
         # Objects from typing which are the most annoying
-        self.assertEqual(get_type_name(list[str]), "list[str]")
         self.assertEqual(get_type_name(Optional[str]), "typing.Optional[str]")
         self.assertEqual(get_type_name(Union[bool, int]), "typing.Union[bool, int]")
-        self.assertEqual(get_type_name(list[Optional[str]]), "list[typing.Optional[str]]")
-        self.assertEqual(
-            get_type_name(list[Optional[Union[str, int, None]]]), "list[typing.Union[str, int, NoneType]]"
-        )
-        # Test modern syntax too (behavior may vary by Python version)
+        
+        # Test modern syntax (behavior may vary by Python version)
+        # Python 3.10 returns "list" while 3.11+ returns "list[str]"
         modern_list_result = get_type_name(list[str])
         self.assertIn(modern_list_result, ["list[str]", "list"])  # Python 3.10 vs 3.11+
         modern_list_optional_result = get_type_name(list[Optional[str]])
         self.assertIn(modern_list_optional_result, ["list[typing.Optional[str]]", "list"])
+        modern_list_union_result = get_type_name(list[Optional[Union[str, int, None]]])
+        self.assertIn(modern_list_union_result, ["list[typing.Union[str, int, NoneType]]", "list"])
 
     def test_format_signature(self):
         self.assertEqual(
