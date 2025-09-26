@@ -1,4 +1,3 @@
-# coding=utf-8
 # Copyright 2021 The HuggingFace Team. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -412,7 +411,7 @@ def get_class_to_line_map(file_path: str) -> dict[str, int]:
     """
     Returns a map from class name to line number.
     """
-    with open(file_path, "r") as f:
+    with open(file_path) as f:
         code = f.read()
     class_to_line_map = {}
     for line_number, line in enumerate(code.split("\n")):

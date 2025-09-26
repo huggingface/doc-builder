@@ -1,4 +1,3 @@
-# coding=utf-8
 # Copyright 2021 The HuggingFace Team. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -38,7 +37,6 @@ from .meilisearch_helper import (
     update_db_settings,
 )
 from .utils import chunk_list, read_doc_config
-
 
 Chunk = namedtuple("Chunk", "text source_page_url source_page_title package_name headings")
 Embedding = namedtuple(
@@ -463,7 +461,7 @@ def create_chunks(package, doc_folder, page_info, version_tag_suffix, is_python_
         try:
             if file.suffix in [".md", ".mdx"]:
                 page_info["page"] = file.with_suffix("").relative_to(doc_folder).as_posix()
-                with open(file, "r", encoding="utf-8-sig") as reader:
+                with open(file, encoding="utf-8-sig") as reader:
                     content = reader.read()
                 content = clean_md(content)
                 content = process_md(content, page_info)

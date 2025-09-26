@@ -1,4 +1,3 @@
-# coding=utf-8
 # Copyright 2021 The HuggingFace Team. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -21,6 +20,9 @@ from typing import List, Optional, Union
 
 import timm
 import transformers
+from transformers import BertModel, BertTokenizer, BertTokenizerFast, TrainingArguments
+from transformers.utils import PushToHubMixin
+
 from doc_builder.autodoc import (
     autodoc_svelte,
     document_object,
@@ -36,9 +38,6 @@ from doc_builder.autodoc import (
     remove_example_tags,
     resolve_links_in_text,
 )
-from transformers import BertModel, BertTokenizer, BertTokenizerFast, TrainingArguments
-from transformers.utils import PushToHubMixin
-
 
 # This is dynamic since the Transformers/timm libraries are not frozen.
 TEST_LINE_NUMBER = inspect.getsourcelines(transformers.utils.ModelOutput)[1]

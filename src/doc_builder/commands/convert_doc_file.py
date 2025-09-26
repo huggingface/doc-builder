@@ -1,4 +1,3 @@
-# coding=utf-8
 # Copyright 2021 The HuggingFace Team. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -65,7 +64,7 @@ def shorten_internal_refs(content):
 
 
 def convert_rst_file(source_file, output_file, page_info):
-    with open(source_file, "r", encoding="utf-8") as f:
+    with open(source_file, encoding="utf-8") as f:
         text = f.read()
 
     text = convert_rst_to_mdx(text, page_info, add_imports=False)
@@ -93,7 +92,7 @@ def convert_rst_docstring_to_markdown(docstring, page_info):
 
 
 def convert_rst_docstrings_in_file(source_file, output_file, page_info):
-    with open(source_file, "r", encoding="utf-8") as f:
+    with open(source_file, encoding="utf-8") as f:
         code = f.read()
     docstrings = code.split('"""')
 

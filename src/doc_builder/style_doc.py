@@ -1,4 +1,3 @@
-# coding=utf-8
 # Copyright 2022 The HuggingFace Inc. team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -22,7 +21,6 @@ import warnings
 
 from .convert_rst_to_mdx import _re_args, _re_returns, find_indent, is_empty_line
 from .utils import get_doc_config
-
 
 # Regexes
 # Re pattern that catches list introduction (with potential indent)
@@ -133,26 +131,26 @@ def format_code_example(code: str, max_len: int, in_docstring: bool = False):
         full_code = full_code.replace(k, v)
     try:
         # Use ruff format via subprocess
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.py', delete=False) as temp_file:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".py", delete=False) as temp_file:
             temp_file.write(full_code)
             temp_file.flush()
-            
+
             # Run ruff format with specific line length
             result = subprocess.run(
-                ['ruff', 'format', '--line-length', str(line_length), '--stdin-filename', temp_file.name, '-'],
+                ["ruff", "format", "--line-length", str(line_length), "--stdin-filename", temp_file.name, "-"],
                 input=full_code,
                 text=True,
                 capture_output=True,
-                check=False
+                check=False,
             )
-            
+
             if result.returncode == 0:
                 formatted_code = result.stdout
                 error = ""
             else:
                 formatted_code = full_code
                 error = f"Code sample:\n{full_code}\n\nError message:\n{result.stderr}"
-        
+
         # Clean up temp file
         os.unlink(temp_file.name)
     except Exception as e:
@@ -438,7 +436,7 @@ def style_file_docstrings(code_file, max_len=119, check_only=False):
     Returns:
         `bool`: Whether or not the file was or should be restyled.
     """
-    with open(code_file, "r", encoding="utf-8", newline="\n") as f:
+    with open(code_file, encoding="utf-8", newline="\n") as f:
         code = f.read()
 
     clean_code, ruff_errors = style_docstrings_in_code(code, max_len=max_len)
@@ -465,7 +463,7 @@ def style_mdx_file(mdx_file, max_len=119, check_only=False):
     Returns:
         `bool`: Whether or not the file was or should be restyled.
     """
-    with open(mdx_file, "r", encoding="utf-8", newline="\n") as f:
+    with open(mdx_file, encoding="utf-8", newline="\n") as f:
         content = f.read()
 
     lines = content.split("\n")

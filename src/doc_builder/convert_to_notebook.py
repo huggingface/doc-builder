@@ -1,4 +1,3 @@
-# coding=utf-8
 # Copyright 2021 The HuggingFace Team. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -23,7 +22,6 @@ from .autodoc import resolve_links_in_text
 from .convert_md_to_mdx import clean_doctest_syntax
 from .convert_rst_to_mdx import is_empty_line
 from .utils import get_doc_config
-
 
 # Re pattern that matches inline math in MDX: \\(formula\\)
 _re_math_delimiter = re.compile(r"\\\\\((.*?)\\\\\)")
@@ -307,7 +305,7 @@ def generate_notebooks_from_file(file_name, output_dir, package=None, mapping=No
     """
     output_dirs = [output_dir, os.path.join(output_dir, "pytorch"), os.path.join(output_dir, "tensorflow")]
     output_name = Path(file_name).with_suffix(".ipynb").name
-    with open(file_name, "r", encoding="utf-8") as f:
+    with open(file_name, encoding="utf-8") as f:
         content = f.read()
 
     content = clean_content(content, package=package, mapping=mapping, page_info=page_info)

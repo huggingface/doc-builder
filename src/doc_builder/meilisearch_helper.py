@@ -9,7 +9,6 @@ from typing import Callable, Optional, Tuple
 from meilisearch.client import Client, TaskInfo
 from meilisearch.errors import MeilisearchApiError
 
-
 # References:
 # https://www.meilisearch.com/docs/learn/experimental/vector_search
 # https://github.com/meilisearch/meilisearch-python/blob/d5a0babe50b4ce5789892845db98b30d4db72203/tests/index/test_index_search_meilisearch.py#L491-L493

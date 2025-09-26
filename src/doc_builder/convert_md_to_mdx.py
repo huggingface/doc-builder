@@ -1,4 +1,3 @@
-# coding=utf-8
 # Copyright 2021 The HuggingFace Team. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,7 +18,6 @@ import re
 import tempfile
 
 from .convert_rst_to_mdx import parse_rst_docstring, remove_indent
-
 
 _re_doctest_flags = re.compile(r"^(>>>.*\S)(\s+)# doctest:\s+\+[A-Z_]+\s*$", flags=re.MULTILINE)
 
@@ -181,7 +179,7 @@ def convert_file_include_helper(match, page_info, is_code=True):
     if tempfile.gettempdir() in str(page_info["path"]):
         return f"\n`Please restart doc-builder preview commands to see {include_name} rendered`\n"
     file = page_info["path"].parent / include_info["path"]
-    with open(file, "r", encoding="utf-8-sig") as reader:
+    with open(file, encoding="utf-8-sig") as reader:
         lines = reader.readlines()
     include = lines  # defaults to entire file
     if "start-after" in include_info or "end-before" in include_info:

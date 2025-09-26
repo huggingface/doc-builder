@@ -1,4 +1,3 @@
-# coding=utf-8
 # Copyright 2021 The HuggingFace Team. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -22,7 +21,6 @@ from pathlib import Path
 
 import yaml
 from packaging import version as package_version
-
 
 hf_cache_home = os.path.expanduser(
     os.getenv("HF_HOME", os.path.join(os.getenv("XDG_CACHE_HOME", "~/.cache"), "huggingface"))
@@ -60,7 +58,7 @@ def update_versions_file(build_path, version, doc_folder):
     main_branch = get_default_branch_name(doc_folder)
     if version == main_branch:
         return
-    with open(os.path.join(build_path, "_versions.yml"), "r") as versions_file:
+    with open(os.path.join(build_path, "_versions.yml")) as versions_file:
         versions = yaml.load(versions_file, yaml.FullLoader)
 
         if versions[0]["version"] != main_branch:
