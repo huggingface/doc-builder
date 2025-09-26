@@ -30,6 +30,7 @@ HUGGINFACE_LIBS = [
     "evaluate",
     "huggingface_hub",
     "optimum",
+    "peft",
     "tokenizers",
     "transformers",
     "trl",
