@@ -43,14 +43,14 @@ jobs:
       - name: Setup accelerate environment
         run: |
           cd accelerate
-          uv add --dev ../doc-builder
           uv sync --extra dev
           cd ..
           
       - name: Make documentation
         run: |
-          cd accelerate &&
-          uv run doc-builder build accelerate docs/source --build_dir ../build_dir --clean --html &&
+          cd doc-builder &&
+          uv pip install -e ../accelerate &&
+          uv run doc-builder build accelerate ../accelerate/docs/source --build_dir ../build_dir --clean --html &&
           cd ..
         env:
           NODE_OPTIONS: --max-old-space-size=6656
