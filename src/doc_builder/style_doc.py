@@ -150,7 +150,7 @@ def format_code_example(code: str, max_len: int, in_docstring: bool = False):
             else:
                 formatted_code = full_code
                 # Strip ANSI color codes from error message
-                clean_stderr = re.sub(r'\x1b\[[0-9;]*m', '', result.stderr)
+                clean_stderr = re.sub(r"\x1b\[[0-9;]*m", "", result.stderr)
                 error = f"Code sample:\n{full_code}\n\nError message:\n{clean_stderr}"
 
         # Clean up temp file

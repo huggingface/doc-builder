@@ -535,7 +535,7 @@ def create_chunks(package, doc_folder, page_info, version_tag_suffix, is_python_
 def chunks_to_embeddings(client, chunks, is_python_module) -> list[Embedding]:
     texts = []
     for c in chunks:
-        prefix = f"Documentation of {'library' if is_python_module else 'service'} \"{c.package_name}\" under section: {' > '.join(c.headings)}"
+        prefix = f'Documentation of {"library" if is_python_module else "service"} "{c.package_name}" under section: {" > ".join(c.headings)}'
         texts.append(prefix + "\n\n" + c.text)
 
     inference_output = client.feature_extraction(texts, truncate=True)

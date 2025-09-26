@@ -41,7 +41,9 @@ def check_node_is_available():
         )
         version = p.stdout.strip()
     except Exception as e:
-        raise OSError("Using the --html flag requires node v14 to be installed, but it was not found in your system.") from e
+        raise OSError(
+            "Using the --html flag requires node v14 to be installed, but it was not found in your system."
+        ) from e
 
     major = int(version[1:].split(".")[0])
     if major < 14:

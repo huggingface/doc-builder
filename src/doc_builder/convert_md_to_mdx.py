@@ -95,7 +95,7 @@ def edit_on_github(page_info):
     relative_path = path[idx + len(package_name) :]
     if relative_path.startswith("/"):
         relative_path = relative_path[1:]
-    source = f'https://github.com/{page_info["repo_owner"]}/{page_info["repo_name"]}/blob/main/{relative_path}'
+    source = f"https://github.com/{page_info['repo_owner']}/{page_info['repo_name']}/blob/main/{relative_path}"
     return f'\n\n<EditOnGithub source="{source}" />\n\n'
 
 
@@ -196,7 +196,7 @@ def convert_file_include_helper(match, page_info, is_code=True):
         include = lines[start_after:end_before]
     include = [indent + line[include_info.get("dedent", 0) :] for line in include]
     include = "".join(include).rstrip()
-    return f"""{indent}```{include_info.get('language', '')}\n{include}\n{indent}```""" if is_code else include
+    return f"""{indent}```{include_info.get("language", "")}\n{include}\n{indent}```""" if is_code else include
 
 
 def convert_include(text, page_info):
