@@ -139,10 +139,12 @@ def build_command(args):
                     shutil.copy(f, dest)
             # make mdx file paths comply with the sveltekit 1.0 routing mechanism
             # see more: https://learn.svelte.dev/tutorial/pages
+            markdown_exports = []
             for mdx_file_path in svelte_kit_routes_dir.rglob("*.mdx"):
                 new_page_svelte = sveltify_file_route(mdx_file_path)
                 new_markdown = markdownify_file_route(mdx_file_path)
                 write_markdown_route_file(mdx_file_path, new_markdown)
+                markdown_exports.append((new_markdown, os.path.relpath(new_markdown, svelte_kit_routes_dir)))
                 parent_path = os.path.dirname(new_page_svelte)
                 os.makedirs(parent_path, exist_ok=True)
                 shutil.move(mdx_file_path, new_page_svelte)
@@ -181,6 +183,12 @@ def build_command(args):
             # Copy result back in the build_dir.
             shutil.rmtree(output_path)
             shutil.copytree(tmp_dir / "kit" / "build", output_path)
+            # copy markdown routes alongside the generated html output
+            for markdown_file, relative_path in markdown_exports:
+                markdown_source = Path(markdown_file)
+                markdown_dest = output_path / relative_path
+                markdown_dest.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copy(markdown_source, markdown_dest)
             # Move the objects.inv file back
             if not args.not_python_module:
                 shutil.move(tmp_dir / "objects.inv", output_path / "objects.inv")
