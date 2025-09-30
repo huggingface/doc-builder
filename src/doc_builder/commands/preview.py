@@ -26,7 +26,14 @@ from threading import Thread
 from doc_builder import build_doc
 from doc_builder.commands.build import check_node_is_available, locate_kit_folder
 from doc_builder.commands.convert_doc_file import find_root_git
-from doc_builder.utils import is_watchdog_available, read_doc_config, sveltify_file_route
+from doc_builder.utils import (
+    is_watchdog_available,
+    markdownify_file_route,
+    read_doc_config,
+    sveltify_file_route,
+    write_llms_feeds,
+    write_markdown_route_file,
+)
 
 if is_watchdog_available():
     from watchdog.events import FileSystemEventHandler
@@ -101,8 +108,12 @@ if is_watchdog_available():
                             src_path += "x"
                             relative_path += "x"
                         src = Path(tmp_out_dir) / Path(src_path).name
-                        dest = sveltify_file_route(self.kit_routes_folder / relative_path)
-                        shutil.move(src, dest)
+                        svelte_dest = sveltify_file_route(self.kit_routes_folder / relative_path)
+                        markdown_dest = markdownify_file_route(self.kit_routes_folder / relative_path)
+                        write_markdown_route_file(src, markdown_dest)
+                        parent_path = Path(svelte_dest).parent
+                        parent_path.mkdir(parents=True, exist_ok=True)
+                        shutil.move(src, svelte_dest)
             except Exception as e:
                 print(f"Error building: {src_path}\n{e}")
 
@@ -203,11 +214,24 @@ def preview_command(args):
 
         # make mdx file paths comply with the sveltekit 1.0 routing mechanism
         # see more: https://learn.svelte.dev/tutorial/pages
+        markdown_exports = []
         for mdx_file_path in kit_routes_folder.rglob("*.mdx"):
-            new_path = sveltify_file_route(mdx_file_path)
-            parent_path = os.path.dirname(new_path)
+            new_page_svelte = sveltify_file_route(mdx_file_path)
+            new_markdown = markdownify_file_route(mdx_file_path)
+            content = write_markdown_route_file(mdx_file_path, new_markdown)
+            markdown_exports.append((Path(new_markdown).relative_to(kit_routes_folder).as_posix(), content))
+            parent_path = os.path.dirname(new_page_svelte)
             os.makedirs(parent_path, exist_ok=True)
-            shutil.move(mdx_file_path, new_path)
+            shutil.move(mdx_file_path, new_page_svelte)
+
+        write_llms_feeds(
+            kit_routes_folder,
+            markdown_exports,
+            package_name=args.library_name,
+            version=args.version,
+            language=args.language,
+            is_python_module=not args.not_python_module,
+        )
 
         # Node
         env = os.environ.copy()

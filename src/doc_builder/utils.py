@@ -15,9 +15,13 @@
 import importlib.machinery
 import importlib.util
 import os
+import re
 import shutil
 import subprocess
+from collections.abc import Sequence
 from pathlib import Path
+from typing import Optional
+from urllib.parse import quote
 
 import yaml
 from packaging import version as package_version
@@ -178,17 +182,158 @@ def get_cached_repo():
     return cache_repo_path
 
 
+_SCRIPT_BLOCK_RE = re.compile(r"^\s*<script\b[^>]*>.*?</script>\s*", re.DOTALL)
+_SCRIPT_MARKERS = ("HF_DOC_BODY_START", "HF_DOC_BODY_END")
+
+
 def sveltify_file_route(filename):
-    """
-    Given `filename` /path/abc/xyz.mdx, return /path/abc/xyz/+page.svelte
-    """
-    # filename can be PosixPath or str
+    """Convert an `.mdx` file path into the corresponding SvelteKit `+page.svelte` route."""
     filename = str(filename)
-    # Check if the filename ends with '.svelte'
     if filename.endswith(".mdx"):
-        # Replace the '{name}.mdx' with '{name}/+page.svelte'
         return filename.rsplit(".", 1)[0] + "/+page.svelte"
     return filename
+
+
+def markdownify_file_route(filename):
+    """Return the `.md` companion file path for a given `.mdx` route."""
+    filename = str(filename)
+    if filename.endswith(".mdx"):
+        return filename.rsplit(".", 1)[0] + ".md"
+    return filename
+
+
+def convert_mdx_to_markdown_text(content: str) -> str:
+    """Reduce MDX content to Markdown-only text suitable for distribution."""
+
+    content = _SCRIPT_BLOCK_RE.sub("", content, count=1)
+
+    heading_match = re.search(r"^#", content, flags=re.MULTILINE)
+    if heading_match:
+        cleaned = content[heading_match.start() :]
+    else:
+        index_candidates = [content.find(marker) for marker in _SCRIPT_MARKERS if marker in content]
+        index_candidates = [idx for idx in index_candidates if idx >= 0]
+        cleaned = content[min(index_candidates) :] if index_candidates else content
+
+    return cleaned.lstrip()
+
+
+def write_markdown_route_file(source_file, destination_file):
+    """
+    Convert a generated `.mdx` file into the Markdown format expected by SvelteKit routes.
+
+    The transformation removes a leading `<script>...</script>` block and ensures the
+    resulting file starts directly with Markdown content.
+    """
+
+    with open(source_file, encoding="utf-8") as f:
+        content = convert_mdx_to_markdown_text(f.read())
+
+    destination_path = Path(destination_file)
+    destination_path.parent.mkdir(parents=True, exist_ok=True)
+
+    with open(destination_path, "w", encoding="utf-8", newline="\n") as f:
+        f.write(content)
+
+    return content
+
+
+def _collect_markdown_from_output(output_dir: Path) -> list[tuple[str, str]]:
+    markdown_items: list[tuple[str, str]] = []
+    for mdx_file in sorted(output_dir.glob("**/*.mdx")):
+        relative_path = mdx_file.relative_to(output_dir).with_suffix(".md").as_posix()
+        with open(mdx_file, encoding="utf-8") as f:
+            markdown_text = convert_mdx_to_markdown_text(f.read())
+        markdown_items.append((relative_path, markdown_text))
+    return markdown_items
+
+
+def write_llms_feeds(
+    output_dir: Path,
+    markdown_items: Optional[Sequence[tuple[str, str]]] = None,
+    base_url: Optional[str] = None,
+    package_name: Optional[str] = None,
+    version: Optional[str] = None,
+    language: Optional[str] = None,
+    is_python_module: bool = True,
+):
+    """Generate llms.txt and llms-full.txt files alongside the documentation output."""
+
+    output_dir = Path(output_dir)
+    if markdown_items is None:
+        markdown_items = _collect_markdown_from_output(output_dir)
+    else:
+        markdown_items = [(str(path).replace(os.sep, "/"), text) for path, text in markdown_items]
+
+    markdown_items = [item for item in markdown_items if item[0]]
+    if not markdown_items:
+        return
+
+    parts = list(output_dir.parts)
+    if len(parts) >= 1 and language is None:
+        language = parts[-1]
+    if len(parts) >= 2 and version is None:
+        version = parts[-2]
+    if len(parts) >= 3 and package_name is None:
+        package_name = parts[-3]
+
+    base_host = "https://huggingface.co/docs"
+    normalized_package = package_name or ""
+    if normalized_package.endswith("course") or normalized_package == "cookbook":
+        base_host = "https://huggingface.co/learn"
+
+    def should_include_language(lang: Optional[str]) -> bool:
+        return bool(lang and lang.lower() != "en")
+
+    def should_include_version(is_module: bool, ver: Optional[str]) -> bool:
+        return is_module and ver is not None
+
+    if base_url is None and package_name:
+        url_parts = [base_host, quote(package_name, safe="")]
+        if should_include_version(is_python_module, version):
+            url_parts.append(quote(version, safe=""))
+        if should_include_language(language):
+            url_parts.append(quote(language, safe=""))
+        base_url = "/".join(url_parts)
+    elif base_url is not None and base_url.startswith("https://") and package_name:
+        normalized_base = base_url.rstrip("/")
+        # Ensure host respects learn/docs rules when caller passes a minimal base_url
+        if normalized_base.endswith(f"/docs/{package_name}") and (
+            normalized_package.endswith("course") or normalized_package == "cookbook"
+        ):
+            base_url = normalized_base.replace("/docs/", "/learn/", 1)
+
+    header_title = package_name or "Documentation"
+
+    def build_url(relative_path: str) -> str:
+        relative_path = relative_path.lstrip("/")
+        if base_url:
+            return f"{base_url.rstrip('/')}/{quote(relative_path, safe='/')}"
+        return f"/{relative_path}"
+
+    def extract_title(markdown_text: str, fallback: str) -> str:
+        for line in markdown_text.splitlines():
+            if line.startswith("#"):
+                return line.lstrip("#").strip() or fallback
+        return fallback
+
+    bullet_lines: list[str] = []
+    sections: list[str] = []
+
+    for relative_path, markdown_text in markdown_items:
+        url = build_url(relative_path)
+        fallback_title = Path(relative_path).name.replace(".md", "").replace("-", " ").replace("_", " ").title()
+        title = extract_title(markdown_text, fallback_title)
+        bullet_lines.append(f"- [{title}]({url})")
+        markdown_body = markdown_text.strip()
+        sections.extend([f"### {title}", url, "", markdown_body, ""] if markdown_body else [f"### {title}", url, ""])
+
+    header_lines = [f"# {header_title}", "", "## Docs", ""]
+    llms_lines = header_lines + bullet_lines + [""]
+    llms_full_lines = header_lines + bullet_lines + [""] + sections
+
+    output_dir.joinpath("llms.txt").write_text("\n".join(llms_lines).rstrip() + "\n", encoding="utf-8")
+    output_dir.joinpath("llms-full.txt").write_text("\n".join(llms_full_lines).rstrip() + "\n", encoding="utf-8")
 
 
 def chunk_list(lst, n):
