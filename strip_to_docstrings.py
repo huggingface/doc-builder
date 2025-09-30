@@ -34,8 +34,35 @@ import ast
 import os
 import sys
 import argparse
+import re
 from pathlib import Path
 from typing import Set, List, Optional
+
+
+def replace_cross_directory_imports(source: str, skip_dirs: Set[str]) -> str:
+    """Replace imports from skipped directories with harmless stubs."""
+    pattern = re.compile(r'^(?P<indent>\s*)from\s+(?P<module>[\.\w]+)\s+import\s+(?P<names>.+)$')
+    lines = source.split('\n')
+    new_lines = []
+    for line in lines:
+        match = pattern.match(line)
+        if match:
+            module_path = match.group('module')
+            names_part = match.group('names').split('#')[0].strip()
+            indent = match.group('indent')
+            should_stub = any(f'.{skip_dir}' in module_path or module_path.startswith(f'{skip_dir}.') or module_path.endswith(f'.{skip_dir}') for skip_dir in skip_dirs)
+            if should_stub:
+                names = [n.strip() for n in names_part.split(',') if n.strip()]
+                for name in names:
+                    base_name = name.split(' as ')[-1].strip()
+                    new_lines.append(f"{indent}{base_name} = None  # stripped re-export from {module_path}")
+                continue
+        new_lines.append(line)
+    return '\n'.join(new_lines)
+
+
+def patch_reexports(source: str, skip_dirs: Set[str]) -> str:
+    return replace_cross_directory_imports(source, skip_dirs)
 
 
 class DocstringPreserver(ast.NodeTransformer):
@@ -55,7 +82,11 @@ class DocstringPreserver(ast.NodeTransformer):
         self.to_remove: List[ast.AST] = []
         self.backend_check_functions = {
             'is_torch_available', 'is_tf_available', 'is_flax_available',
-            'is_vision_available', 'is_torchvision_available', 'requires_backends'
+            'is_vision_available', 'is_torchvision_available', 'is_scipy_available',
+            'is_cv2_available', 'is_sentencepiece_available', 'is_tokenizers_available',
+            'is_torch_fx_available', 'is_accelerate_available', 'is_safetensors_available',
+            'is_torchvision_v2_available', 'is_peft_available', 'is_deepspeed_available',
+            'is_fairscale_available', 'is_torch_xla_available'
         }
     
     def visit_Module(self, node):
@@ -140,16 +171,19 @@ class DocstringPreserver(ast.NodeTransformer):
                         self.used_names.add(node.id)
         return filtered
     
-    def _create_minimal_body(self, node):
-        """Create minimal body with just docstring (if exists) and pass."""
+    def _create_minimal_body(self, node, return_true: bool = False):
+        """Create minimal body with just docstring (if exists) and pass or return True."""
         new_body = []
         
         # Keep docstring if it exists
         if self.has_docstring(node):
             new_body.append(node.body[0])
         
-        # Add pass statement
-        new_body.append(ast.Pass())
+        # Add return True for backend checks, otherwise pass
+        if return_true:
+            new_body.append(ast.Return(value=ast.Constant(value=True)))
+        else:
+            new_body.append(ast.Pass())
         
         return new_body
     
@@ -218,7 +252,8 @@ class DocstringPreserver(ast.NodeTransformer):
         self._collect_names_from_node(node)
         
         # Replace body with minimal version
-        node.body = self._create_minimal_body(node)
+        force_return_true = node.name in self.backend_check_functions
+        node.body = self._create_minimal_body(node, return_true=force_return_true)
         
         return node
     
@@ -838,6 +873,9 @@ def process_file(file_path: Path, dry_run: bool = False) -> bool:
     try:
         with open(file_path, 'r', encoding='utf-8') as f:
             source = f.read()
+
+        # Replace re-exports from skipped directories with harmless stubs
+        source = replace_cross_directory_imports(source, skip_dirs)
         
         # Check if file needs torch mock injection (has module-level torch imports)
         needs_torch_mock = (
@@ -883,7 +921,10 @@ def process_file(file_path: Path, dry_run: bool = False) -> bool:
         # Inject torch mock at the top of files that need it
         if needs_torch_mock:
             new_source = inject_torch_mock_at_top(new_source)
-        
+
+        # Replace imports from skipped directories with stubs
+        new_source = patch_reexports(new_source, skip_dirs)
+
         if dry_run:
             print(f"Would process: {file_path}")
             return True
