@@ -202,8 +202,13 @@ class DocstringPreserver(ast.NodeTransformer):
         has_doc = self.has_docstring(node)
         has_doc_dec = self.has_doc_decorator(node)
         
-        if not has_doc and not has_doc_dec:
-            # Mark for removal
+        # Only remove truly private/internal functions
+        # Keep public API functions even without docstrings (they might be referenced in docs)
+        is_private = node.name.startswith('_')
+        is_test = node.name.startswith('test_')
+        
+        if not has_doc and not has_doc_dec and (is_private or is_test):
+            # Only remove private/test functions without docstrings
             return None
         
         # Filter decorators
@@ -227,7 +232,12 @@ class DocstringPreserver(ast.NodeTransformer):
         has_doc = self.has_docstring(node)
         has_doc_dec = self.has_doc_decorator(node)
         
-        if not has_doc and not has_doc_dec:
+        # Only remove truly private/internal classes
+        # Keep public API classes even without docstrings (they might be referenced in docs)
+        is_private = node.name.startswith('_')
+        
+        if not has_doc and not has_doc_dec and is_private:
+            # Only remove private classes without docstrings
             return None
         
         # Check if this is a dataclass or similar (has @dataclass decorator)
