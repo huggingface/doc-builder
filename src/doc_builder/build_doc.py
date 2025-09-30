@@ -383,7 +383,7 @@ def build_doc(
     if not watch_mode:
         toctree_renamings(output_dir)
 
-    return source_files_mapping
+    return source_files_mapping, output_dir
 
 
 def toctree_renamings(output_dir):
