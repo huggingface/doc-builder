@@ -19,6 +19,7 @@ import re
 import shutil
 import subprocess
 from pathlib import Path
+from typing import List, Optional, Sequence, Tuple
 
 import yaml
 from packaging import version as package_version
@@ -180,6 +181,7 @@ def get_cached_repo():
 
 
 _SCRIPT_BLOCK_RE = re.compile(r"^\s*<script\b[^>]*>.*?</script>\s*", re.DOTALL)
+_SCRIPT_MARKERS = ("HF_DOC_BODY_START", "HF_DOC_BODY_END")
 
 
 def sveltify_file_route(filename):
@@ -198,6 +200,22 @@ def markdownify_file_route(filename):
     return filename
 
 
+def convert_mdx_to_markdown_text(content: str) -> str:
+    """Reduce MDX content to Markdown-only text suitable for distribution."""
+
+    content = _SCRIPT_BLOCK_RE.sub("", content, count=1)
+
+    heading_match = re.search(r"^#", content, flags=re.MULTILINE)
+    if heading_match:
+        cleaned = content[heading_match.start() :]
+    else:
+        index_candidates = [content.find(marker) for marker in _SCRIPT_MARKERS if marker in content]
+        index_candidates = [idx for idx in index_candidates if idx >= 0]
+        cleaned = content[min(index_candidates) :] if index_candidates else content
+
+    return cleaned.lstrip()
+
+
 def write_markdown_route_file(source_file, destination_file):
     """
     Convert a generated `.mdx` file into the Markdown format expected by SvelteKit routes.
@@ -207,21 +225,64 @@ def write_markdown_route_file(source_file, destination_file):
     """
 
     with open(source_file, encoding="utf-8") as f:
-        content = f.read()
-
-    content = _SCRIPT_BLOCK_RE.sub("", content, count=1)
-
-    heading_match = re.search(r"^#", content, flags=re.MULTILINE)
-    if heading_match:
-        content = content[heading_match.start() :]
-    else:
-        content = content.lstrip()
+        content = convert_mdx_to_markdown_text(f.read())
 
     destination_path = Path(destination_file)
     destination_path.parent.mkdir(parents=True, exist_ok=True)
 
     with open(destination_path, "w", encoding="utf-8", newline="\n") as f:
         f.write(content)
+
+    return content
+
+
+def _collect_markdown_from_output(output_dir: Path) -> List[Tuple[str, str]]:
+    markdown_items: List[Tuple[str, str]] = []
+    for mdx_file in sorted(output_dir.glob("**/*.mdx")):
+        relative_path = mdx_file.relative_to(output_dir).with_suffix(".md").as_posix()
+        with open(mdx_file, encoding="utf-8") as f:
+            markdown_text = convert_mdx_to_markdown_text(f.read())
+        markdown_items.append((relative_path, markdown_text))
+    return markdown_items
+
+
+def write_llms_feeds(
+    output_dir: Path,
+    markdown_items: Optional[Sequence[Tuple[str, str]]] = None,
+    base_url: Optional[str] = None,
+):
+    """Generate llms.txt and llms-full.txt files alongside the documentation output."""
+
+    output_dir = Path(output_dir)
+    if markdown_items is None:
+        markdown_items = _collect_markdown_from_output(output_dir)
+    else:
+        markdown_items = [(str(path).replace(os.sep, "/"), text) for path, text in markdown_items]
+
+    markdown_items = [item for item in markdown_items if item[0]]
+    if not markdown_items:
+        return
+
+    def build_url(relative_path: str) -> str:
+        relative_path = relative_path.lstrip("/")
+        if base_url:
+            return f"{base_url.rstrip('/')}/{relative_path}"
+        return f"/{relative_path}"
+
+    index_lines: List[str] = []
+    full_lines: List[str] = []
+
+    for relative_path, markdown_text in markdown_items:
+        url = build_url(relative_path)
+        index_lines.append(url)
+        markdown_text = markdown_text.strip()
+        if markdown_text:
+            full_lines.append(f"## {url}\n\n{markdown_text}\n")
+        else:
+            full_lines.append(f"## {url}\n")
+
+    output_dir.joinpath("llms.txt").write_text("\n".join(index_lines) + "\n", encoding="utf-8")
+    output_dir.joinpath("llms-full.txt").write_text("\n".join(full_lines) + "\n", encoding="utf-8")
 
 
 def chunk_list(lst, n):

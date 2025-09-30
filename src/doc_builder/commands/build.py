@@ -29,6 +29,7 @@ from doc_builder.utils import (
     markdownify_file_route,
     read_doc_config,
     sveltify_file_route,
+    write_llms_feeds,
     write_markdown_route_file,
 )
 
@@ -184,11 +185,15 @@ def build_command(args):
             shutil.rmtree(output_path)
             shutil.copytree(tmp_dir / "kit" / "build", output_path)
             # copy markdown routes alongside the generated html output
+            markdown_data = []
             for markdown_file, relative_path in markdown_exports:
                 markdown_source = Path(markdown_file)
                 markdown_dest = output_path / relative_path
                 markdown_dest.parent.mkdir(parents=True, exist_ok=True)
                 shutil.copy(markdown_source, markdown_dest)
+                with open(markdown_source, encoding="utf-8") as f:
+                    markdown_data.append((relative_path, f.read()))
+            write_llms_feeds(output_path, markdown_data)
             # Move the objects.inv file back
             if not args.not_python_module:
                 shutil.move(tmp_dir / "objects.inv", output_path / "objects.inv")
