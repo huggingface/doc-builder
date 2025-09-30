@@ -275,11 +275,25 @@ class DocstringPreserver(ast.NodeTransformer):
                 # Stringify annotation and track annotation-only usage
                 if item.annotation:
                     item.annotation = self._collect_and_stringify_annotation(item.annotation)
-                # Collect names from the value if present (these are actual uses, not just annotations)
+                
+                # Handle default values
                 if item.value:
-                    for n in ast.walk(item.value):
-                        if isinstance(n, ast.Name):
-                            self.used_names.add(n.id)
+                    # Check if default value references attributes (e.g., Enum.VALUE)
+                    # These will fail at import time since we strip class bodies to 'pass'
+                    has_attribute_access = any(isinstance(n, ast.Attribute) for n in ast.walk(item.value))
+                    
+                    if has_attribute_access:
+                        # Replace problematic defaults with None
+                        # This prevents AttributeError when enum/class values don't exist
+                        # while maintaining valid dataclass field ordering (can't remove defaults)
+                        item.value = ast.Constant(value=None)
+                    else:
+                        # Keep simple defaults (numbers, strings, None, True/False, etc.)
+                        # Collect names from the value (these are actual uses)
+                        for n in ast.walk(item.value):
+                            if isinstance(n, ast.Name):
+                                self.used_names.add(n.id)
+                
                 new_body.append(item)
             # Process methods and nested classes
             elif isinstance(item, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
