@@ -839,8 +839,8 @@ def process_file(file_path: Path, dry_run: bool = False) -> bool:
     # Skip entire directories that don't contain documentation-relevant code
     # NOTE: utils/integrations/kernels are only skipped for transformers
     # Other packages (accelerate, diffusers, peft) have actual API in utils/
-    base_skip_dirs = {'commands', 'tests', 'benchmark', 'examples', 'templates', 'scripts', 'docker'}
-    transformers_only_skip = {'utils', 'integrations', 'kernels', 'auto'}
+    base_skip_dirs = {'tests', 'benchmark', 'examples', 'templates', 'scripts', 'docker'}
+    transformers_only_skip = {'utils', 'integrations', 'kernels', 'auto', 'commands'}
     
     skip_dirs = base_skip_dirs
     if is_transformers:
