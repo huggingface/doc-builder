@@ -210,7 +210,12 @@ def write_markdown_route_file(source_file, destination_file):
         content = f.read()
 
     content = _SCRIPT_BLOCK_RE.sub("", content, count=1)
-    content = content.lstrip()
+
+    heading_match = re.search(r"^#", content, flags=re.MULTILINE)
+    if heading_match:
+        content = content[heading_match.start() :]
+    else:
+        content = content.lstrip()
 
     destination_path = Path(destination_file)
     destination_path.parent.mkdir(parents=True, exist_ok=True)
