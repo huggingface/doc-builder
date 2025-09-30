@@ -283,7 +283,7 @@ def write_llms_feeds(
         package_name = parts[-3]
 
     base_host = "https://huggingface.co/docs"
-    normalized_package = package_name or ""
+    normalized_package = (package_name or "").strip()
     if normalized_package.endswith("course") or normalized_package == "cookbook":
         base_host = "https://huggingface.co/learn"
 
@@ -308,7 +308,7 @@ def write_llms_feeds(
         ):
             base_url = normalized_base.replace("/docs/", "/learn/", 1)
 
-    header_title = package_name or "Documentation"
+    header_title = normalized_package.title() if normalized_package else "Documentation"
 
     def build_url(relative_path: str) -> str:
         relative_path = relative_path.lstrip("/")
