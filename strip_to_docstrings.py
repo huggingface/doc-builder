@@ -777,6 +777,10 @@ def process_file(file_path: Path, dry_run: bool = False) -> bool:
     Process a single Python file.
     Returns True if successful, False otherwise.
     """
+    # Detect which package we're processing
+    path_str = str(file_path)
+    is_transformers = '/transformers/' in path_str
+    
     # Skip files that contain infrastructure/import logic and don't contribute to docs
     skip_files = {'__init__.py', 'dependency_versions_check.py', 'dependency_versions_table.py'}
     if file_path.name in skip_files:
@@ -784,35 +788,38 @@ def process_file(file_path: Path, dry_run: bool = False) -> bool:
         return True
     
     # Skip entire directories that don't contain documentation-relevant code
-    # But we need to patch import_utils.py first
-    skip_dirs = {'commands', 'tests', 'benchmark', 'examples', 'templates', 'scripts', 'docker',
-                 'utils', 'integrations', 'kernels'}
+    # NOTE: utils/integrations/kernels are only skipped for transformers
+    # Other packages (accelerate, diffusers, peft) have actual API in utils/
+    base_skip_dirs = {'commands', 'tests', 'benchmark', 'examples', 'templates', 'scripts', 'docker'}
+    transformers_only_skip = {'utils', 'integrations', 'kernels', 'auto'}
     
-    # Special handling for import_utils.py - patch backend checks before skipping utils
-    if file_path.name == 'import_utils.py' and '/utils/' in str(file_path):
+    skip_dirs = base_skip_dirs
+    if is_transformers:
+        skip_dirs = base_skip_dirs | transformers_only_skip
+    
+    # Special handling for import_utils.py - patch backend checks (transformers only)
+    if is_transformers and file_path.name == 'import_utils.py' and '/utils/' in path_str:
         return patch_import_utils_for_docbuild(file_path)
+    
     for skip_dir in skip_dirs:
-        if f'/{skip_dir}/' in str(file_path) or str(file_path).endswith(f'/{skip_dir}'):
+        if f'/{skip_dir}/' in path_str or path_str.endswith(f'/{skip_dir}'):
             print(f"Skipped: {file_path} (in {skip_dir} directory)")
             return True
     
-    # Skip auto files (they contain infrastructure)
-    if '/auto/' in str(file_path):
-        print(f"Skipped: {file_path} (auto infrastructure)")
-        return True
-    
-    # Only process files that match documentation-relevant patterns (or setup.py)
-    doc_relevant_patterns = ('modeling_', 'configuration_', 'tokenization_', 'processing_',
-                            'image_processing_', 'video_processing_', 'feature_extraction_',
-                            'audio_processing_')
-    is_doc_relevant = (
-        file_path.name == 'setup.py' or
-        file_path.name.startswith(doc_relevant_patterns)
-    )
-    
-    if not is_doc_relevant:
-        print(f"Skipped: {file_path} (not documentation-relevant)")
-        return True
+    # For transformers: only process files matching specific patterns or setup.py
+    # For other packages: process all remaining Python files (they're part of the API)
+    if is_transformers:
+        doc_relevant_patterns = ('modeling_', 'configuration_', 'tokenization_', 'processing_',
+                                'image_processing_', 'video_processing_', 'feature_extraction_',
+                                'audio_processing_')
+        is_doc_relevant = (
+            file_path.name == 'setup.py' or
+            file_path.name.startswith(doc_relevant_patterns)
+        )
+        
+        if not is_doc_relevant:
+            print(f"Skipped: {file_path} (not documentation-relevant)")
+            return True
     
     try:
         with open(file_path, 'r', encoding='utf-8') as f:
