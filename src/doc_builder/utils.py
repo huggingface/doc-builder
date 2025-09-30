@@ -184,6 +184,8 @@ def get_cached_repo():
 
 _SCRIPT_BLOCK_RE = re.compile(r"^\s*<script\b[^>]*>.*?</script>\s*", re.DOTALL)
 _SCRIPT_MARKERS = ("HF_DOC_BODY_START", "HF_DOC_BODY_END")
+_DOCBUILD_COMMENT_RE = re.compile(r"<!--\s*HF\s*DOCBUILD\s*BODY\s*(?:START|END)\s*-->", re.IGNORECASE)
+_DOCBODY_LINE_RE = re.compile(r"^\s*HF_DOC_BODY_(?:START|END)\s*$", re.MULTILINE)
 
 
 def sveltify_file_route(filename):
@@ -215,7 +217,10 @@ def convert_mdx_to_markdown_text(content: str) -> str:
         index_candidates = [idx for idx in index_candidates if idx >= 0]
         cleaned = content[min(index_candidates) :] if index_candidates else content
 
-    return cleaned.lstrip()
+    cleaned = _DOCBUILD_COMMENT_RE.sub("", cleaned)
+    cleaned = _DOCBODY_LINE_RE.sub("", cleaned)
+    cleaned = cleaned.replace("HF_DOC_BODY_START", "").replace("HF_DOC_BODY_END", "")
+    return cleaned.lstrip().rstrip()
 
 
 def write_markdown_route_file(source_file, destination_file):
@@ -278,7 +283,7 @@ def write_llms_feeds(
         package_name = parts[-3]
 
     base_host = "https://huggingface.co/docs"
-    normalized_package = package_name or ""
+    normalized_package = (package_name or "").strip()
     if normalized_package.endswith("course") or normalized_package == "cookbook":
         base_host = "https://huggingface.co/learn"
 
@@ -303,7 +308,7 @@ def write_llms_feeds(
         ):
             base_url = normalized_base.replace("/docs/", "/learn/", 1)
 
-    header_title = package_name or "Documentation"
+    header_title = normalized_package.title() if normalized_package else "Documentation"
 
     def build_url(relative_path: str) -> str:
         relative_path = relative_path.lstrip("/")
