@@ -110,7 +110,7 @@ if is_watchdog_available():
                         src = Path(tmp_out_dir) / Path(src_path).name
                         svelte_dest = sveltify_file_route(self.kit_routes_folder / relative_path)
                         markdown_dest = markdownify_file_route(self.kit_routes_folder / relative_path)
-                        content = write_markdown_route_file(src, markdown_dest)
+                        write_markdown_route_file(src, markdown_dest)
                         parent_path = Path(svelte_dest).parent
                         parent_path.mkdir(parents=True, exist_ok=True)
                         shutil.move(src, svelte_dest)

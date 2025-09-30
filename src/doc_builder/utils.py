@@ -18,8 +18,9 @@ import os
 import re
 import shutil
 import subprocess
+from collections.abc import Sequence
 from pathlib import Path
-from typing import List, Optional, Sequence, Tuple
+from typing import Optional
 from urllib.parse import quote
 
 import yaml
@@ -237,8 +238,8 @@ def write_markdown_route_file(source_file, destination_file):
     return content
 
 
-def _collect_markdown_from_output(output_dir: Path) -> List[Tuple[str, str]]:
-    markdown_items: List[Tuple[str, str]] = []
+def _collect_markdown_from_output(output_dir: Path) -> list[tuple[str, str]]:
+    markdown_items: list[tuple[str, str]] = []
     for mdx_file in sorted(output_dir.glob("**/*.mdx")):
         relative_path = mdx_file.relative_to(output_dir).with_suffix(".md").as_posix()
         with open(mdx_file, encoding="utf-8") as f:
@@ -249,7 +250,7 @@ def _collect_markdown_from_output(output_dir: Path) -> List[Tuple[str, str]]:
 
 def write_llms_feeds(
     output_dir: Path,
-    markdown_items: Optional[Sequence[Tuple[str, str]]] = None,
+    markdown_items: Optional[Sequence[tuple[str, str]]] = None,
     base_url: Optional[str] = None,
     package_name: Optional[str] = None,
     version: Optional[str] = None,
@@ -316,8 +317,8 @@ def write_llms_feeds(
                 return line.lstrip("#").strip() or fallback
         return fallback
 
-    bullet_lines: List[str] = []
-    sections: List[str] = []
+    bullet_lines: list[str] = []
+    sections: list[str] = []
 
     for relative_path, markdown_text in markdown_items:
         url = build_url(relative_path)
