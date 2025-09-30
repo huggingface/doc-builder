@@ -15,6 +15,7 @@
 import importlib.machinery
 import importlib.util
 import os
+import re
 import shutil
 import subprocess
 from pathlib import Path
@@ -178,17 +179,44 @@ def get_cached_repo():
     return cache_repo_path
 
 
+_SCRIPT_BLOCK_RE = re.compile(r"^\s*<script\b[^>]*>.*?</script>\s*", re.DOTALL)
+
+
 def sveltify_file_route(filename):
-    """
-    Given `filename` /path/abc/xyz.mdx, return /path/abc/xyz/+page.svelte
-    """
-    # filename can be PosixPath or str
+    """Convert an `.mdx` file path into the corresponding SvelteKit `+page.svelte` route."""
     filename = str(filename)
-    # Check if the filename ends with '.svelte'
     if filename.endswith(".mdx"):
-        # Replace the '{name}.mdx' with '{name}/+page.svelte'
         return filename.rsplit(".", 1)[0] + "/+page.svelte"
     return filename
+
+
+def markdownify_file_route(filename):
+    """Return the `.md` companion file path for a given `.mdx` route."""
+    filename = str(filename)
+    if filename.endswith(".mdx"):
+        return filename.rsplit(".", 1)[0] + ".md"
+    return filename
+
+
+def write_markdown_route_file(source_file, destination_file):
+    """
+    Convert a generated `.mdx` file into the Markdown format expected by SvelteKit routes.
+
+    The transformation removes a leading `<script>...</script>` block and ensures the
+    resulting file starts directly with Markdown content.
+    """
+
+    with open(source_file, encoding="utf-8") as f:
+        content = f.read()
+
+    content = _SCRIPT_BLOCK_RE.sub("", content, count=1)
+    content = content.lstrip()
+
+    destination_path = Path(destination_file)
+    destination_path.parent.mkdir(parents=True, exist_ok=True)
+
+    with open(destination_path, "w", encoding="utf-8", newline="\n") as f:
+        f.write(content)
 
 
 def chunk_list(lst, n):

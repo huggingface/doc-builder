@@ -26,8 +26,10 @@ from doc_builder.utils import (
     get_default_branch_name,
     get_doc_config,
     locate_kit_folder,
+    markdownify_file_route,
     read_doc_config,
     sveltify_file_route,
+    write_markdown_route_file,
 )
 
 
@@ -138,10 +140,12 @@ def build_command(args):
             # make mdx file paths comply with the sveltekit 1.0 routing mechanism
             # see more: https://learn.svelte.dev/tutorial/pages
             for mdx_file_path in svelte_kit_routes_dir.rglob("*.mdx"):
-                new_path = sveltify_file_route(mdx_file_path)
-                parent_path = os.path.dirname(new_path)
+                new_page_svelte = sveltify_file_route(mdx_file_path)
+                new_markdown = markdownify_file_route(mdx_file_path)
+                write_markdown_route_file(mdx_file_path, new_markdown)
+                parent_path = os.path.dirname(new_page_svelte)
                 os.makedirs(parent_path, exist_ok=True)
-                shutil.move(mdx_file_path, new_path)
+                shutil.move(mdx_file_path, new_page_svelte)
 
             # Move the objects.inv file at the root
             if not args.not_python_module:
