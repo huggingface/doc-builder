@@ -20,6 +20,7 @@ import shutil
 import subprocess
 from pathlib import Path
 from typing import List, Optional, Sequence, Tuple
+from urllib.parse import quote
 
 import yaml
 from packaging import version as package_version
@@ -250,6 +251,9 @@ def write_llms_feeds(
     output_dir: Path,
     markdown_items: Optional[Sequence[Tuple[str, str]]] = None,
     base_url: Optional[str] = None,
+    package_name: Optional[str] = None,
+    version: Optional[str] = None,
+    language: Optional[str] = None,
 ):
     """Generate llms.txt and llms-full.txt files alongside the documentation output."""
 
@@ -263,26 +267,49 @@ def write_llms_feeds(
     if not markdown_items:
         return
 
+    if language is None and len(output_dir.parts) >= 1:
+        language = output_dir.name
+    if version is None and len(output_dir.parts) >= 2:
+        version = output_dir.parent.name
+    if package_name is None and len(output_dir.parts) >= 3:
+        package_name = output_dir.parent.parent.name
+
+    if base_url is None and package_name and version and language:
+        base_url = (
+            f"https://huggingface.co/docs/{quote(package_name, safe='')}/{quote(version, safe='')}/{quote(language, safe='')}"
+        )
+
+    header_title = package_name or "Documentation"
+
     def build_url(relative_path: str) -> str:
         relative_path = relative_path.lstrip("/")
         if base_url:
-            return f"{base_url.rstrip('/')}/{relative_path}"
+            return f"{base_url.rstrip('/')}/{quote(relative_path, safe='/')}"
         return f"/{relative_path}"
 
-    index_lines: List[str] = []
-    full_lines: List[str] = []
+    def extract_title(markdown_text: str, fallback: str) -> str:
+        for line in markdown_text.splitlines():
+            if line.startswith("#"):
+                return line.lstrip("#").strip() or fallback
+        return fallback
+
+    bullet_lines: List[str] = []
+    sections: List[str] = []
 
     for relative_path, markdown_text in markdown_items:
         url = build_url(relative_path)
-        index_lines.append(url)
-        markdown_text = markdown_text.strip()
-        if markdown_text:
-            full_lines.append(f"## {url}\n\n{markdown_text}\n")
-        else:
-            full_lines.append(f"## {url}\n")
+        fallback_title = Path(relative_path).name.replace(".md", "").replace("-", " ").replace("_", " ").title()
+        title = extract_title(markdown_text, fallback_title)
+        bullet_lines.append(f"- [{title}]({url})")
+        markdown_body = markdown_text.strip()
+        sections.extend([f"### {title}", url, "", markdown_body, ""] if markdown_body else [f"### {title}", url, ""])
 
-    output_dir.joinpath("llms.txt").write_text("\n".join(index_lines) + "\n", encoding="utf-8")
-    output_dir.joinpath("llms-full.txt").write_text("\n".join(full_lines) + "\n", encoding="utf-8")
+    header_lines = [f"# {header_title}", "", "## Docs", ""]
+    llms_lines = header_lines + bullet_lines + [""]
+    llms_full_lines = header_lines + bullet_lines + [""] + sections
+
+    output_dir.joinpath("llms.txt").write_text("\n".join(llms_lines).rstrip() + "\n", encoding="utf-8")
+    output_dir.joinpath("llms-full.txt").write_text("\n".join(llms_full_lines).rstrip() + "\n", encoding="utf-8")
 
 
 def chunk_list(lst, n):

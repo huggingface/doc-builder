@@ -193,7 +193,13 @@ def build_command(args):
                 shutil.copy(markdown_source, markdown_dest)
                 with open(markdown_source, encoding="utf-8") as f:
                     markdown_data.append((relative_path, f.read()))
-            write_llms_feeds(output_path, markdown_data)
+            write_llms_feeds(
+                output_path,
+                markdown_data,
+                package_name=args.library_name,
+                version=version,
+                language=args.language,
+            )
             # Move the objects.inv file back
             if not args.not_python_module:
                 shutil.move(tmp_dir / "objects.inv", output_path / "objects.inv")
