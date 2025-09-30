@@ -224,7 +224,14 @@ def preview_command(args):
             os.makedirs(parent_path, exist_ok=True)
             shutil.move(mdx_file_path, new_page_svelte)
 
-        write_llms_feeds(kit_routes_folder, markdown_exports)
+        write_llms_feeds(
+            kit_routes_folder,
+            markdown_exports,
+            package_name=args.library_name,
+            version=args.version,
+            language=args.language,
+            is_python_module=not args.not_python_module,
+        )
 
         # Node
         env = os.environ.copy()

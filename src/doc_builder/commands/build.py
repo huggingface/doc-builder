@@ -199,6 +199,7 @@ def build_command(args):
                 package_name=args.library_name,
                 version=version,
                 language=args.language,
+                is_python_module=not args.not_python_module,
             )
             # Move the objects.inv file back
             if not args.not_python_module:

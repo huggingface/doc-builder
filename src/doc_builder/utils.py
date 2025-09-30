@@ -254,6 +254,7 @@ def write_llms_feeds(
     package_name: Optional[str] = None,
     version: Optional[str] = None,
     language: Optional[str] = None,
+    is_python_module: bool = True,
 ):
     """Generate llms.txt and llms-full.txt files alongside the documentation output."""
 
@@ -267,17 +268,39 @@ def write_llms_feeds(
     if not markdown_items:
         return
 
-    if language is None and len(output_dir.parts) >= 1:
-        language = output_dir.name
-    if version is None and len(output_dir.parts) >= 2:
-        version = output_dir.parent.name
-    if package_name is None and len(output_dir.parts) >= 3:
-        package_name = output_dir.parent.parent.name
+    parts = list(output_dir.parts)
+    if len(parts) >= 1 and language is None:
+        language = parts[-1]
+    if len(parts) >= 2 and version is None:
+        version = parts[-2]
+    if len(parts) >= 3 and package_name is None:
+        package_name = parts[-3]
 
-    if base_url is None and package_name and version and language:
-        base_url = (
-            f"https://huggingface.co/docs/{quote(package_name, safe='')}/{quote(version, safe='')}/{quote(language, safe='')}"
-        )
+    base_host = "https://huggingface.co/docs"
+    normalized_package = package_name or ""
+    if normalized_package.endswith("course") or normalized_package == "cookbook":
+        base_host = "https://huggingface.co/learn"
+
+    def should_include_language(lang: Optional[str]) -> bool:
+        return bool(lang and lang.lower() != "en")
+
+    def should_include_version(is_module: bool, ver: Optional[str]) -> bool:
+        return is_module and ver is not None
+
+    if base_url is None and package_name:
+        url_parts = [base_host, quote(package_name, safe="")]
+        if should_include_version(is_python_module, version):
+            url_parts.append(quote(version, safe=""))
+        if should_include_language(language):
+            url_parts.append(quote(language, safe=""))
+        base_url = "/".join(url_parts)
+    elif base_url is not None and base_url.startswith("https://") and package_name:
+        normalized_base = base_url.rstrip("/")
+        # Ensure host respects learn/docs rules when caller passes a minimal base_url
+        if normalized_base.endswith(f"/docs/{package_name}") and (
+            normalized_package.endswith("course") or normalized_package == "cookbook"
+        ):
+            base_url = normalized_base.replace("/docs/", "/learn/", 1)
 
     header_title = package_name or "Documentation"
 
