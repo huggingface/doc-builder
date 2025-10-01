@@ -30,6 +30,7 @@ def convert_md_to_mdx(md_text, page_info):
         """<script lang="ts">
 import {onMount} from "svelte";
 import Tip from "$lib/Tip.svelte";
+import CopyLLMTxtMenu from "$lib/CopyLLMTxtMenu.svelte";
 import Youtube from "$lib/Youtube.svelte";
 import Docstring from "$lib/Docstring.svelte";
 import CodeBlock from "$lib/CodeBlock.svelte";
