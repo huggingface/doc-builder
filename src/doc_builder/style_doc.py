@@ -31,6 +31,8 @@ _re_code = re.compile(r"^(\s*)```(.*)$")
 _re_docstyle_ignore = re.compile(r"#\s*docstyle-ignore")
 # Re pattern that matches <Tip>, </Tip> and <Tip warning={true}> blocks.
 _re_tip = re.compile(r"^\s*</?Tip(>|\s+warning={true}>)\s*$")
+# Re pattern that matches blockquote tip markers: > [!NOTE], > [!TIP], > [!IMPORTANT], > [!WARNING], > [!CAUTION]
+_re_blockquote_tip = re.compile(r"^\s*> \[!(?:NOTE|TIP|IMPORTANT|WARNING|CAUTION)\]\s*$")
 
 DOCTEST_PROMPTS = [">>>", "..."]
 
@@ -288,6 +290,7 @@ def style_docstring(docstring, max_len):
         code_search = _re_code.search(line)
         args_search = _re_args.search(line)
         tip_search = _re_tip.search(line)
+        blockquote_tip_search = _re_blockquote_tip.search(line)
 
         # Are we starting a new paragraph?
         # New indentation or new line:
@@ -298,6 +301,8 @@ def style_docstring(docstring, max_len):
         new_paragraph = new_paragraph or code_search is not None
         # Beginning/end of tip
         new_paragraph = new_paragraph or tip_search is not None
+        # Beginning blockquote tip
+        new_paragraph = new_paragraph or blockquote_tip_search is not None
         # Beginning of Args
         new_paragraph = new_paragraph or args_search is not None
 
@@ -360,6 +365,8 @@ def style_docstring(docstring, max_len):
             # Add a new line after if not present
             if idx < len(lines) - 1 and not is_empty_line(lines[idx + 1]):
                 new_lines.append("")
+        elif blockquote_tip_search:
+            new_lines.append(line)
         elif current_paragraph is None or find_indent(line) != current_indent:
             indent = find_indent(line)
             # Special behavior for parameters intros.
