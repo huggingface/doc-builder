@@ -1,4 +1,10 @@
 #!/usr/bin/env python3
+
+# to run: uv run https://raw.githubusercontent.com/huggingface/doc-builder/main
+# example: uv run https://raw.githubusercontent.com/huggingface/doc-builder/main/migrations/migrate_tips.py /Users/mishig/transformers/
+
+# Replace <Tip> blocks with [!TIP]/[!WARNING] blockquotes.
+
 import argparse
 import re
 from pathlib import Path
