@@ -82,6 +82,25 @@ HF_DOC_BODY_END
 """
         self.assertEqual(convert_md_to_mdx(md_text, page_info), expected_conversion)
 
+    def test_add_copy_menu_when_existing_float_right_block(self):
+        page_info = {"package_name": "transformers", "version": "main", "language": "en"}
+        md_text = """<div style="float: right;">\n existing block\n</div>\n\n# Heading"""
+        result = convert_md_to_mdx(md_text, page_info)
+        expected_body = """<CopyLLMTxtMenu containerStyle="float: right; margin-left: 10px; display: inline-flex; position: relative; z-index: 10;"></CopyLLMTxtMenu>
+
+<div style="float: right;">
+ existing block
+</div>
+
+# Heading"""
+        self.assertIn(expected_body, result)
+
+    def test_add_copy_menu_skips_when_already_present(self):
+        page_info = {"package_name": "transformers", "version": "main", "language": "en"}
+        md_text = """<CopyLLMTxtMenu containerStyle="float: right; margin-left: 10px; display: inline-flex; position: relative; z-index: 10;"></CopyLLMTxtMenu>\n\n# Heading"""
+        result = convert_md_to_mdx(md_text, page_info)
+        self.assertEqual(result.count("<CopyLLMTxtMenu"), 1)
+
     def test_convert_img_links(self):
         page_info = {"package_name": "transformers", "version": "v4.10.0", "language": "fr"}
 
