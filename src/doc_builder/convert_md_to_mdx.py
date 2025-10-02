@@ -21,15 +21,23 @@ from .convert_rst_to_mdx import parse_rst_docstring, remove_indent
 
 _re_doctest_flags = re.compile(r"^(>>>.*\S)(\s+)# doctest:\s+\+[A-Z_]+\s*$", flags=re.MULTILINE)
 
+COPY_MENU_SNIPPET = '<CopyLLMTxtMenu containerStyle="float: right; margin-left: 10px; display: inline-flex; position: relative; z-index: 10;"></CopyLLMTxtMenu>\n\n'
+
+_FLOAT_RIGHT_BLOCK_PATTERN = re.compile(
+    r"(<div\s+style=\"float:\s*right[^>]*>.*?</div>\s*)+$", flags=re.IGNORECASE | re.DOTALL
+)
+
 
 def convert_md_to_mdx(md_text, page_info):
     """
     Convert a document written in md to mdx.
     """
+    processed_md = add_copy_menu_before_first_h1(process_md(md_text, page_info))
     return (
         """<script lang="ts">
 import {onMount} from "svelte";
 import Tip from "$lib/Tip.svelte";
+import CopyLLMTxtMenu from "$lib/CopyLLMTxtMenu.svelte";
 import Youtube from "$lib/Youtube.svelte";
 import Docstring from "$lib/Docstring.svelte";
 import CodeBlock from "$lib/CodeBlock.svelte";
@@ -70,7 +78,7 @@ onMount(() => {
 HF_DOC_BODY_START
 
 """
-        + process_md(md_text, page_info)
+        + processed_md
         + edit_on_github(page_info)
         + """
 
@@ -238,3 +246,28 @@ def process_md(text, page_info):
     text = clean_doctest_syntax(text)
     text = fix_img_links(text, page_info)
     return text
+
+
+def add_copy_menu_before_first_h1(text):
+    if "float: right; margin-left: 10px;" in text and "<CopyLLMTxtMenu" in text:
+        return text
+
+    front_matter_match = re.match(r"^---\n.*?\n---\n", text, flags=re.DOTALL)
+    front_matter_end = front_matter_match.end() if front_matter_match else 0
+
+    heading_match = re.search(r"(?m)^[ \t]*#(?!#)\s+.+", text[front_matter_end:])
+    if heading_match is None:
+        return text
+
+    heading_start = front_matter_end + heading_match.start()
+    pre_heading = text[front_matter_end:heading_start]
+
+    float_block_match = _FLOAT_RIGHT_BLOCK_PATTERN.search(pre_heading)
+    insert_pos = front_matter_end + float_block_match.start() if float_block_match else heading_start
+
+    prefix = text[:insert_pos]
+    suffix = text[insert_pos:]
+
+    leading_newline = "" if not prefix or prefix.endswith("\n") else "\n"
+
+    return f"{prefix}{leading_newline}{COPY_MENU_SNIPPET}{suffix}"
