@@ -310,6 +310,7 @@ third line``.
 
         longer_test = """<script lang="ts">
 import Tip from "$lib/Tip.svelte";
+import CopyLLMTxtMenu from "$lib/CopyLLMTxtMenu.svelte";
 import Youtube from "$lib/Youtube.svelte";
 import Docstring from "$lib/Docstring.svelte";
 import CodeBlock from "$lib/CodeBlock.svelte";

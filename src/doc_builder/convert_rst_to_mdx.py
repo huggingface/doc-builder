@@ -662,6 +662,7 @@ def convert_rst_to_mdx(rst_text, page_info, add_imports=True):
         new_lines = [
             '<script lang="ts">',
             '	import Tip from "$lib/Tip.svelte";',
+            '	import CopyLLMTxtMenu from "$lib/CopyLLMTxtMenu.svelte";',
             '	import Youtube from "$lib/Youtube.svelte";',
             '	import Docstring from "$lib/Docstring.svelte";',
             '	import CodeBlock from "$lib/CodeBlock.svelte";',

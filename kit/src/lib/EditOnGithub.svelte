@@ -1,4 +1,5 @@
 <script lang="ts">
+	import IconCode from "./IconCode.svelte";
 	export let source: string = "";
 </script>
 
@@ -7,7 +8,6 @@
 	href={source}
 	target="_blank"
 >
-	<span>&lt;</span>
-	<span>&gt;</span>
-	<span><span class="underline ml-1.5">Update</span> on GitHub</span>
+	<IconCode classNames="mr-1" />
+	<span><span class="underline">Update</span> on GitHub</span>
 </a>
