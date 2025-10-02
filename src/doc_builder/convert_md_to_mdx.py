@@ -208,6 +208,16 @@ def convert_file_include_helper(match, page_info, is_code=True):
     return f"""{indent}```{include_info.get("language", "")}\n{include}\n{indent}```""" if is_code else include
 
 
+_re_md_inline_math = re.compile(r" \$([^$]+)\$")
+
+
+def convert_inline_math(text):
+    """
+    Convert an inline math block `$ ... $` into `\\( ... \\)`.
+    """
+    return _re_md_inline_math.sub(r" \\\\( \1 \\\\)", text)
+
+
 def convert_include(text, page_info):
     """
     Convert an `include` into markdown.
@@ -240,11 +250,13 @@ def process_md(text, page_info):
         2. Convert literalinclude
         3. Clean doctest syntax
         4. Fix image links
+        5. Fix inline math
     """
     text = convert_include(text, page_info)
     text = convert_literalinclude(text, page_info)
     text = clean_doctest_syntax(text)
     text = fix_img_links(text, page_info)
+    text = convert_inline_math(text)
     return text
 
 
