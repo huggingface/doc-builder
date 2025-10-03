@@ -19,6 +19,7 @@ from pathlib import Path
 from doc_builder.convert_md_to_mdx import (
     convert_img_links,
     convert_include,
+    convert_inline_math,
     convert_literalinclude,
     convert_md_to_mdx,
     escape_img_alt_description,
@@ -100,6 +101,12 @@ HF_DOC_BODY_END
         md_text = """<CopyLLMTxtMenu containerStyle="float: right; margin-left: 10px; display: inline-flex; position: relative; z-index: 10;"></CopyLLMTxtMenu>\n\n# Heading"""
         result = convert_md_to_mdx(md_text, page_info)
         self.assertEqual(result.count("<CopyLLMTxtMenu"), 1)
+
+    def test_convert_inline_math(self):
+        math_md = "text1$\\frac{a}{b}$text2"
+        self.assertEqual(convert_inline_math(math_md), math_md)
+        math_md = "text1 $\\frac{a}{b}$ text2"
+        self.assertEqual(convert_inline_math(math_md), "text1 \\\\( \\frac{a}{b} \\\\) text2")
 
     def test_convert_img_links(self):
         page_info = {"package_name": "transformers", "version": "v4.10.0", "language": "fr"}
