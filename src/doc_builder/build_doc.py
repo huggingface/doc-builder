@@ -36,6 +36,8 @@ _re_list_item = re.compile(r"^\s*-\s+(\S+)\s*$")
 def resolve_open_in_colab(content, page_info):
     """
     Replaces [[open-in-colab]] special markers by the proper svelte component.
+    Places it after the CopyLLMTxtMenu so both buttons float on the heading line,
+    with CopyLLMTxtMenu appearing rightmost.
 
     Args:
         content (`str`): The documentation to treat.
@@ -61,13 +63,32 @@ def resolve_open_in_colab(content, page_info):
     formatted_links = ['    {label: "' + key + '", value: "' + value + '"},' for key, value in links]
 
     svelte_component = """<DocNotebookDropdown
-  classNames="absolute z-10 right-0 top-0"
+  containerStyle="float: right; margin-left: 10px; display: inline-flex; position: relative; z-index: 10;"
   options={[
 """
     svelte_component += "\n".join(formatted_links)
-    svelte_component += "\n]} />"
+    svelte_component += "\n]} />\n\n"
 
-    return content.replace("[[open-in-colab]]", svelte_component)
+    # Remove the marker first
+    content = content.replace("[[open-in-colab]]\n", "").replace("[[open-in-colab]]", "")
+
+    # Find CopyLLMTxtMenu and place DocNotebookDropdown right after it
+    # With float:right, elements appear right-to-left, so placing after makes CopyLLMTxtMenu rightmost
+    copy_menu_match = re.search(r"<CopyLLMTxtMenu\s+containerStyle=[^>]+></CopyLLMTxtMenu>", content)
+
+    if copy_menu_match:
+        # Insert after CopyLLMTxtMenu (so Copy page appears rightmost when floated)
+        insert_pos = copy_menu_match.end()
+        content = content[:insert_pos] + "\n\n" + svelte_component + content[insert_pos:]
+    else:
+        # No CopyLLMTxtMenu found, look for first heading and place before it
+        heading_match = re.search(r"^#{1,2}\s+.+$", content, re.MULTILINE)
+        if heading_match:
+            insert_pos = heading_match.start()
+            content = content[:insert_pos] + svelte_component + content[insert_pos:]
+        # If no heading found either, the component just won't be added (marker already removed)
+
+    return content
 
 
 def resolve_autodoc(content, package, return_anchors=False, page_info=None, version_tag_suffix="src/"):
