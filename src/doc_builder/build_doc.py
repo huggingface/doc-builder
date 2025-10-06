@@ -79,13 +79,19 @@ def resolve_open_in_colab(content, page_info):
     if copy_menu_match:
         # Insert after CopyLLMTxtMenu (so Copy page appears rightmost when floated)
         insert_pos = copy_menu_match.end()
-        content = content[:insert_pos] + "\n\n" + svelte_component + content[insert_pos:]
+        # Remove any leading whitespace before CopyLLMTxtMenu and after it
+        prefix = content[: copy_menu_match.start()].lstrip()
+        suffix = content[insert_pos:].lstrip()
+        # Add spacing: CopyLLMTxtMenu + newlines + DocNotebookDropdown (which already ends with \n\n) + suffix
+        content = prefix + content[copy_menu_match.start() : insert_pos] + "\n\n" + svelte_component + suffix
     else:
         # No CopyLLMTxtMenu found, look for first heading and place before it
         heading_match = re.search(r"^#{1,2}\s+.+$", content, re.MULTILINE)
         if heading_match:
             insert_pos = heading_match.start()
-            content = content[:insert_pos] + svelte_component + content[insert_pos:]
+            # Remove any leading whitespace before the component
+            prefix = content[:insert_pos].lstrip()
+            content = prefix + svelte_component + content[insert_pos:]
         # If no heading found either, the component just won't be added (marker already removed)
 
     return content
