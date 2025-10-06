@@ -203,31 +203,31 @@
 />
 
 <div
-	class={`items-center shrink-0 min-w-[156px] justify-end ml-auto flex${
+	class={`items-center shrink-0 min-w-[100px] max-sm:min-w-[50px] justify-end ml-auto flex${
 		containerClass ? ` ${containerClass}` : ""
 	}`}
 	style={containerStyle}
 >
-	<div bind:this={triggerEl} class="inline-flex rounded-xl">
+	<div bind:this={triggerEl} class="inline-flex rounded-md max-sm:rounded-sm">
 		<button
 			on:click={copyMarkdown}
-			class="inline-flex items-center gap-1.5 h-9 px-3.5 text-sm font-medium text-gray-800 border border-r-0 rounded-l-xl border-gray-200 bg-white hover:shadow-inner dark:border-gray-850 dark:bg-gray-950 dark:text-gray-200 dark:hover:bg-gray-800"
+			class="inline-flex items-center gap-1 max-sm:gap-0.5 h-6 max-sm:h-5 px-2 max-sm:px-1.5 text-[11px] max-sm:text-[9px] font-medium text-gray-800 border border-r-0 rounded-l-md max-sm:rounded-l-sm border-gray-200 bg-white hover:shadow-inner dark:border-gray-850 dark:bg-gray-950 dark:text-gray-200 dark:hover:bg-gray-800"
 			aria-live="polite"
 		>
-			<span class="inline-flex items-center justify-center rounded-md p-1">
-				<IconCopy classNames="w-4 h-4" />
+			<span class="inline-flex items-center justify-center rounded-md p-0.5 max-sm:p-0">
+				<IconCopy classNames="w-3 h-3 max-sm:w-2.5 max-sm:h-2.5" />
 			</span>
 			<span>{copied ? "Copied" : label}</span>
 		</button>
 		<button
 			on:click={toggleMenu}
-			class="inline-flex items-center justify-center w-9 h-9 disabled:pointer-events-none text-sm text-gray-500 hover:text-gray-700 dark:hover:text-white rounded-r-xl border border-l transition border-gray-200 bg-white hover:shadow-inner dark:border-gray-850 dark:bg-gray-950 dark:text-gray-200 dark:hover:bg-gray-800"
+			class="inline-flex items-center justify-center w-6 max-sm:w-5 h-6 max-sm:h-5 disabled:pointer-events-none text-sm text-gray-500 hover:text-gray-700 dark:hover:text-white rounded-r-md max-sm:rounded-r-sm border border-l transition border-gray-200 bg-white hover:shadow-inner dark:border-gray-850 dark:bg-gray-950 dark:text-gray-200 dark:hover:bg-gray-800"
 			aria-haspopup="menu"
 			aria-expanded={open}
 			aria-label={open ? "Close copy menu" : "Open copy menu"}
 		>
 			<IconCaret
-				classNames={`transition-transform text-gray-400 overflow-visible ${
+				classNames={`transition-transform text-gray-400 overflow-visible w-3 h-3 max-sm:w-2.5 max-sm:h-2.5 ${
 					open ? "rotate-180" : "rotate-0"
 				}`}
 			/>
