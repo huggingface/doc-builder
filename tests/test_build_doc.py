@@ -28,9 +28,10 @@ class BuildDocTester(unittest.TestCase):
         self.assertEqual(_re_list_item.search("   - forward").groups(), ("forward",))
 
     def test_resolve_open_in_colab(self):
-        expected = """
-<DocNotebookDropdown
-  classNames="absolute z-10 right-0 top-0"
+        # Test with heading - should place component before the heading
+        input_with_heading = "[[open-in-colab]]\n\n# Quick tour\n\nSome content here."
+        expected_with_heading = """<DocNotebookDropdown
+  containerStyle="float: right; margin-left: 10px; display: inline-flex; position: relative; z-index: 10;"
   options={[
     {label: "Mixed", value: "https://colab.research.google.com/github/huggingface/notebooks/blob/main/transformers_doc/en/quicktour.ipynb"},
     {label: "PyTorch", value: "https://colab.research.google.com/github/huggingface/notebooks/blob/main/transformers_doc/en/pytorch/quicktour.ipynb"},
@@ -39,8 +40,35 @@ class BuildDocTester(unittest.TestCase):
     {label: "PyTorch", value: "https://studiolab.sagemaker.aws/import/github/huggingface/notebooks/blob/main/transformers_doc/en/pytorch/quicktour.ipynb"},
     {label: "TensorFlow", value: "https://studiolab.sagemaker.aws/import/github/huggingface/notebooks/blob/main/transformers_doc/en/tensorflow/quicktour.ipynb"},
 ]} />
-"""
+
+# Quick tour
+
+Some content here."""
         self.assertEqual(
-            resolve_open_in_colab("\n[[open-in-colab]]\n", {"package_name": "transformers", "page": "quicktour.html"}),
-            expected,
+            resolve_open_in_colab(input_with_heading, {"package_name": "transformers", "page": "quicktour.html"}),
+            expected_with_heading,
+        )
+
+        # Test with CopyLLMTxtMenu present - should place component after CopyLLMTxtMenu
+        # (so CopyLLMTxtMenu appears rightmost when floated)
+        input_with_copy_menu = '[[open-in-colab]]\n\n<CopyLLMTxtMenu containerStyle="float: right;"></CopyLLMTxtMenu>\n\n# Quick tour\n\nContent.'
+        expected_with_copy_menu = """<CopyLLMTxtMenu containerStyle="float: right;"></CopyLLMTxtMenu>
+
+<DocNotebookDropdown
+  containerStyle="float: right; margin-left: 10px; display: inline-flex; position: relative; z-index: 10;"
+  options={[
+    {label: "Mixed", value: "https://colab.research.google.com/github/huggingface/notebooks/blob/main/transformers_doc/en/quicktour.ipynb"},
+    {label: "PyTorch", value: "https://colab.research.google.com/github/huggingface/notebooks/blob/main/transformers_doc/en/pytorch/quicktour.ipynb"},
+    {label: "TensorFlow", value: "https://colab.research.google.com/github/huggingface/notebooks/blob/main/transformers_doc/en/tensorflow/quicktour.ipynb"},
+    {label: "Mixed", value: "https://studiolab.sagemaker.aws/import/github/huggingface/notebooks/blob/main/transformers_doc/en/quicktour.ipynb"},
+    {label: "PyTorch", value: "https://studiolab.sagemaker.aws/import/github/huggingface/notebooks/blob/main/transformers_doc/en/pytorch/quicktour.ipynb"},
+    {label: "TensorFlow", value: "https://studiolab.sagemaker.aws/import/github/huggingface/notebooks/blob/main/transformers_doc/en/tensorflow/quicktour.ipynb"},
+]} />
+
+# Quick tour
+
+Content."""
+        self.assertEqual(
+            resolve_open_in_colab(input_with_copy_menu, {"package_name": "transformers", "page": "quicktour.html"}),
+            expected_with_copy_menu,
         )
