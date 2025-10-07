@@ -7,6 +7,7 @@
 	import IconArrowUpRight from "./IconArrowUpRight.svelte";
 	import IconOpenAI from "./IconOpenAI.svelte";
 	import IconAnthropic from "./IconAnthropic.svelte";
+	import IconMCP from "./IconMCP.svelte";
 
 	export let label = "Copy page";
 	export let markdownDescription = "Copy page as Markdown for LLMs";
@@ -37,7 +38,7 @@
 	type ExternalOption = {
 		label: string;
 		description: string;
-		icon: "chatgpt" | "claude";
+		icon: "chatgpt" | "claude" | "mcp";
 		buildUrl: () => string;
 	};
 
@@ -57,6 +58,12 @@
 			icon: "claude",
 			buildUrl: () =>
 				encodedPrompt ? `https://claude.ai/new?q=${encodedPrompt}` : "https://claude.ai/new",
+		},
+		{
+			label: "Connect to MCP Client",
+			description: "Install MCP server on Cursor, VS Code, etc.",
+			icon: "mcp",
+			buildUrl: () => "https://huggingface.co/mcp",
 		},
 	];
 
@@ -293,8 +300,10 @@
 					<div class="border border-gray-200 dark:border-gray-850 rounded-lg p-1.5">
 						{#if option.icon === "chatgpt"}
 							<IconOpenAI classNames="w-4 h-4 shrink-0" />
-						{:else}
+						{:else if option.icon === "claude"}
 							<IconAnthropic classNames="w-4 h-4 shrink-0" />
+						{:else if option.icon === "mcp"}
+							<IconMCP classNames="w-4 h-4 shrink-0" />
 						{/if}
 					</div>
 					<div class="flex flex-col px-1">
