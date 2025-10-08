@@ -1,8 +1,4 @@
-<script lang="ts">
-	interface IconData {
-		paths: string[];
-	}
-
+<script>
 	export let warning = false;
 </script>
 
