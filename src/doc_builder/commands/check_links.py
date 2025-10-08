@@ -22,11 +22,7 @@ from doc_builder.check_links import check_links
 def check_links_command(args):
     """Run the link checker command."""
     print(f"Checking links in {args.path_to_docs}...")
-    result = check_links(
-        args.path_to_docs,
-        max_workers=args.max_workers,
-        show_progress=not args.no_progress
-    )
+    result = check_links(args.path_to_docs, max_workers=args.max_workers, show_progress=not args.no_progress)
 
     # Choose output format
     if args.format == "list":

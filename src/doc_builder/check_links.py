@@ -26,6 +26,7 @@ from pathlib import Path
 
 try:
     from tqdm import tqdm
+
     HAS_TQDM = True
 except ImportError:
     HAS_TQDM = False
@@ -255,17 +256,14 @@ def check_links(doc_folder: str | Path, max_workers: int | None = None, show_pro
     # Check files in parallel using ProcessPoolExecutor to bypass GIL
     with ProcessPoolExecutor(max_workers=max_workers) as executor:
         # Submit all tasks
-        future_to_file = {executor.submit(check_file_links, file_path, doc_folder): file_path for file_path in all_files}
+        future_to_file = {
+            executor.submit(check_file_links, file_path, doc_folder): file_path for file_path in all_files
+        }
 
         # Create progress bar iterator
         futures = as_completed(future_to_file)
         if show_progress and HAS_TQDM:
-            futures = tqdm(
-                futures,
-                total=len(all_files),
-                desc="Checking links",
-                unit="file"
-            )
+            futures = tqdm(futures, total=len(all_files), desc="Checking links", unit="file")
 
         # Process results as they complete
         for future in futures:
