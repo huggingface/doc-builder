@@ -236,6 +236,18 @@ uv run ruff check . && uv run ruff format --check .
 uv run ruff check --fix . && uv run ruff format .
 ```
 
+### Check links
+
+#### Check for broken links in the docs (includes line, link text and url)
+```bash
+uv run doc-builder check-links /path/to/docs
+```
+
+#### Check for broken links in the docs (more compact view)
+```bash
+uv run doc-builder check-links /path/to/docs --format link
+```
+
 ### Testing
 
 #### Run all tests (equivalent to old `make test`)
