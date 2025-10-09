@@ -542,7 +542,7 @@ def chunks_to_embeddings(client, chunks, is_python_module) -> list[Embedding]:
     inference_output = inference_output.tolist()
 
     embeddings = []
-    for c, embed in zip(chunks, inference_output):
+    for c, embed in zip(chunks, inference_output, strict=False):
         headings = [None] * 5
         last_heading = None
 
