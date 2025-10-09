@@ -1,10 +1,10 @@
 import hashlib
 import json
 import sys
+from collections.abc import Callable
 from datetime import datetime
 from functools import wraps
 from time import sleep
-from typing import Callable, Optional
 
 from meilisearch.client import Client, TaskInfo
 from meilisearch.errors import MeilisearchApiError
@@ -83,7 +83,7 @@ def wait_for_task_completion(func: MeilisearchFunc) -> MeilisearchFunc:
     return wrapped_meilisearch_function
 
 
-def wait_for_all_addition_tasks(client: Client, index_name: str, after_started_at: Optional[datetime] = None):
+def wait_for_all_addition_tasks(client: Client, index_name: str, after_started_at: datetime | None = None):
     """
     Wait for all document addition/update tasks to finish for a specific index
     """
@@ -203,7 +203,7 @@ def swap_indexes(
     client: Client,
     index1_name: str,
     index2_name: str,
-    temp_index_name: Optional[str] = None,
+    temp_index_name: str | None = None,
 ):
     """
     Swap indexes and wait for all addition tasks to complete on the temporary index first

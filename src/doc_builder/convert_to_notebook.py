@@ -310,7 +310,7 @@ def generate_notebooks_from_file(file_name, output_dir, package=None, mapping=No
 
     content = clean_content(content, package=package, mapping=mapping, page_info=page_info)
 
-    for folder, framework_content in zip(output_dirs, split_frameworks(content)):
+    for folder, framework_content in zip(output_dirs, split_frameworks(content), strict=False):
         cells = parse_doc_into_cells(framework_content)
         notebook = create_notebook(cells)
         os.makedirs(folder, exist_ok=True)

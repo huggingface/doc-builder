@@ -791,7 +791,7 @@ def resolve_links_in_text(text, package, mapping, page_info):
         link_name = object_name if param_name is None else param_name
 
         # If the link points to an object and the object is not a class, we add ()
-        if param_name is None and not isinstance(obj, (type, property)):
+        if param_name is None and not isinstance(obj, type | property):
             link_name = f"{link_name}()"
 
         # Link to the anchor
