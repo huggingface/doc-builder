@@ -169,7 +169,7 @@ jax_sample
 End
 """
         for expected, obtained in zip(
-            [mixed_content, pt_content, tf_content, jax_content], split_frameworks(test_content)
+            [mixed_content, pt_content, tf_content, jax_content], split_frameworks(test_content), strict=False
         ):
             self.assertEqual(expected, obtained)
 

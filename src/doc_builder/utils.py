@@ -20,7 +20,6 @@ import shutil
 import subprocess
 from collections.abc import Sequence
 from pathlib import Path
-from typing import Optional
 from urllib.parse import quote
 
 import yaml
@@ -255,11 +254,11 @@ def _collect_markdown_from_output(output_dir: Path) -> list[tuple[str, str]]:
 
 def write_llms_feeds(
     output_dir: Path,
-    markdown_items: Optional[Sequence[tuple[str, str]]] = None,
-    base_url: Optional[str] = None,
-    package_name: Optional[str] = None,
-    version: Optional[str] = None,
-    language: Optional[str] = None,
+    markdown_items: Sequence[tuple[str, str]] | None = None,
+    base_url: str | None = None,
+    package_name: str | None = None,
+    version: str | None = None,
+    language: str | None = None,
     is_python_module: bool = True,
 ):
     """Generate llms.txt and llms-full.txt files alongside the documentation output."""
@@ -287,10 +286,10 @@ def write_llms_feeds(
     if normalized_package.endswith("course") or normalized_package == "cookbook":
         base_host = "https://huggingface.co/learn"
 
-    def should_include_language(lang: Optional[str]) -> bool:
+    def should_include_language(lang: str | None) -> bool:
         return bool(lang and lang.lower() != "en")
 
-    def should_include_version(is_module: bool, ver: Optional[str]) -> bool:
+    def should_include_version(is_module: bool, ver: str | None) -> bool:
         return is_module and ver is not None
 
     if base_url is None and package_name:

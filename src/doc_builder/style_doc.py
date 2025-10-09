@@ -174,7 +174,7 @@ def format_code_example(code: str, max_len: int, in_docstring: bool = False):
         outputs.append("")
 
     formatted_lines = []
-    for code_sample, output in zip(code_samples, outputs):
+    for code_sample, output in zip(code_samples, outputs, strict=False):
         # ruff may have added some new lines, we remove them
         code_sample = code_sample.strip()
         in_triple_quotes = False
