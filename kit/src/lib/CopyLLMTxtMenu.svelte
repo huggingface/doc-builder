@@ -23,7 +23,8 @@
 		return current;
 	}
 
-	const SOURCE_URL = resolveSourceUrl();
+	const SOURCE_URL = resolveSourceUrl() ?? "";
+	const SOURCE_URL_MD = SOURCE_URL.endsWith(".md") ? SOURCE_URL : SOURCE_URL + ".md";
 	let encodedPrompt: string | null = null;
 
 	let open = false;
