@@ -52,6 +52,7 @@ export const mdsvexPreprocess = {
 function markKatex(content, markedKatex) {
 	const REGEX_LATEX_DISPLAY = /\n\$\$([\s\S]+?)\$\$/g;
 	const REGEX_LATEX_INLINE = /\s\\\\\(([\s\S]+?)\\\\\)/g;
+	const REGEX_LATEX_INLINE_DOLLAR = /\$([^$\n]+?)\$/g;
 	let counter = 0;
 	return content
 		.replace(REGEX_LATEX_DISPLAY, (_, tex) => {
@@ -61,6 +62,12 @@ function markKatex(content, markedKatex) {
 			return marker;
 		})
 		.replace(REGEX_LATEX_INLINE, (_, tex) => {
+			const displayMode = false;
+			const marker = `KATEXPARSE${counter++}MARKER`;
+			markedKatex[marker] = { tex, displayMode };
+			return marker;
+		})
+		.replace(REGEX_LATEX_INLINE_DOLLAR, (_, tex) => {
 			const displayMode = false;
 			const marker = `KATEXPARSE${counter++}MARKER`;
 			markedKatex[marker] = { tex, displayMode };
