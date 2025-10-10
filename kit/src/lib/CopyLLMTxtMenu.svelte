@@ -20,7 +20,7 @@
 	function resolveSourceUrl() {
 		if (!isClient || !window.location) return;
 		const current = window.location.href.replace(/#.*$/, "");
-		return current.endsWith(".md") ? current : `${current}.md`;
+		return current;
 	}
 
 	const SOURCE_URL = resolveSourceUrl();
