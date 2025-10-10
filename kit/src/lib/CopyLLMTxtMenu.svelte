@@ -163,7 +163,7 @@
 
 	function openMarkdownPreview() {
 		if (!isClient) return;
-		window.open(SOURCE_URL, "_blank", "noopener,noreferrer");
+		window.open(SOURCE_URL_MD, "_blank", "noopener,noreferrer");
 		closeMenu();
 	}
 
