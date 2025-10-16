@@ -285,7 +285,17 @@ function treeVisitor() {
 				type: "html",
 				value: `<span class="admonition-icon"><${iconComponent} classNames="w-5 h-5" /></span>`,
 			};
-			childrenLevel1[0].children.unshift(iconNode);
+			const spanOpen = {
+				type: "html",
+				value: `<span>`,
+			};
+			const spanClose = {
+				type: "html",
+				value: `</span>`,
+			};
+
+			childrenLevel1[0].children.unshift(iconNode, spanOpen);
+			childrenLevel1[0].children.push(spanClose);
 		}
 
 		node.data = node.data || {};
