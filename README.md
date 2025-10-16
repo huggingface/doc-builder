@@ -94,6 +94,26 @@ doc-builder build datasets ~/git/datasets/docs/source --build_dir ~/tmp/test-bui
 ```
 which will build HTML files in `~/tmp/test-build`. You can then inspect those files in your browser.
 
+### Specifying a version
+
+By default, `doc-builder` automatically determines the version:
+- For **Python modules**: uses the package's `__version__` attribute (or `main` for dev versions)
+- For **non-Python modules** (with `--not_python_module`): uses the default branch name (typically `main`)
+
+You can override this behavior with the `--version` flag:
+
+```bash
+# Build documentation for a specific semantic version (must start with "v")
+doc-builder build transformers ~/git/transformers/docs/source --build_dir ~/tmp/test-build --version v4.30.0
+
+# Build documentation for the default branch (non-Python modules)
+doc-builder build hub ~/git/hub-docs/docs/source --build_dir ~/tmp/test-build --not_python_module --version main
+```
+
+**Important**: When specifying a semantic version with `--version`, it **must start with the letter "v"** (e.g., `v1.0.0`, `v2.3.1`). For branch names like `main`, `master`, or other default branches, the "v" prefix is not required.
+
+### Notebook conversion
+
 `doc-builder` can also automatically convert some of the documentation guides or tutorials into notebooks. This requires two steps:
 - add `[[open-in-colab]]` in the tutorial for which you want to build a notebook
 - add `--notebook_dir {path_to_notebook_folder}` to the build command.
