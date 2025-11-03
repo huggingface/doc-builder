@@ -52,14 +52,12 @@
 	let selectedProvider = providers[0];
 	let streaming = false;
 
-	const model = {
-		id: providersMapping[selectedProvider]!.modelId,
-		pipeline_tag: pipeline,
-		tags: conversational ? ["conversational"] : [],
-	};
-
 	const availableSnippets = snippets.getInferenceSnippets(
-		model as ModelDataMinimal,
+		{
+			id: providersMapping[selectedProvider]!.modelId,
+			pipeline_tag: pipeline,
+			tags: conversational ? ["conversational"] : [],
+		} as ModelDataMinimal,
 		selectedProvider,
 		{
 			hfModelId: providersMapping[selectedProvider]!.modelId,
@@ -82,7 +80,11 @@
 
 	$: code = snippets
 		.getInferenceSnippets(
-			model as ModelDataMinimal,
+			{
+				id: providersMapping[selectedProvider]!.modelId,
+				pipeline_tag: pipeline,
+				tags: conversational ? ["conversational"] : [],
+			} as ModelDataMinimal,
 			selectedProvider,
 			{
 				hfModelId: providersMapping[selectedProvider]!.modelId,
@@ -287,7 +289,7 @@
 				</slot>
 				<slot slot="menu">
 					<div class="flex flex-col gap-y-2 p-2">
-						{#if model.tags.includes("conversational")}
+						{#if conversational}
 							<button
 								class="text-md do-not-close-dropdown group relative flex w-full cursor-default items-center gap-x-2 self-start border-b pb-2 leading-tight"
 								on:click={() => (streaming = !streaming)}
@@ -340,7 +342,7 @@
 				</slot>
 				<slot slot="menu">
 					<div class="flex flex-col gap-y-2 p-2">
-						{#if model.tags.includes("conversational")}
+						{#if conversational}
 							<button
 								class="text-md do-not-close-dropdown group relative flex w-full cursor-default items-center gap-x-2 self-start border-b pb-2 leading-tight"
 								on:click={() => (streaming = !streaming)}
