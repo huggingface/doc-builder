@@ -229,6 +229,8 @@ Run a preview with:
 doc-builder preview dummy dummy --not_python_module
 ```
 
+Documentation page should be available at `http://localhost:5173/index`.
+
 ## Development Commands
 
 Since we've modernized the tooling to use `ruff` and `uv`, here are the commands for development:
