@@ -220,6 +220,15 @@ jobs:
 
 Once the docs build is complete in your project, you can drop that change.
 
+## Development docs
+
+To test `doc-builder` changes locally, use the `dummy/` folder. It contains a minimal setup for manual testing. Don't commit your changes in `dummy/` since it's only for local development.
+
+Run a preview with:
+```bash
+doc-builder preview dummy dummy --not_python_module
+```
+
 ## Development Commands
 
 Since we've modernized the tooling to use `ruff` and `uv`, here are the commands for development:
