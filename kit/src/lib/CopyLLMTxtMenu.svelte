@@ -8,6 +8,7 @@
 	import IconOpenAI from "./IconOpenAI.svelte";
 	import IconAnthropic from "./IconAnthropic.svelte";
 	import IconMCP from "./IconMCP.svelte";
+	import IconHuggingChat from "./IconHuggingChat.svelte";
 
 	export let label = "Copy page";
 	export let markdownDescription = "Copy page as Markdown for LLMs";
@@ -39,11 +40,23 @@
 	type ExternalOption = {
 		label: string;
 		description: string;
-		icon: "chatgpt" | "claude" | "mcp";
+		icon: "chatgpt" | "claude" | "mcp" | "huggingchat";
 		buildUrl: () => string;
 	};
 
 	const externalOptions: ExternalOption[] = [
+		{
+			label: "Open in HuggingChat",
+			description: "Ask questions about this page",
+			icon: "huggingchat",
+			buildUrl: () => {
+				const encodedAttachment = encodeURIComponent(SOURCE_URL_MD);
+				const encodedPromptText = encodeURIComponent(
+					`Read from ${SOURCE_URL} so I can ask questions about it.`
+				);
+				return `https://huggingface.co/chat/?attachments=${encodedAttachment}&prompt=${encodedPromptText}`;
+			},
+		},
 		{
 			label: "Open in ChatGPT",
 			description: "Ask questions about this page",
@@ -299,7 +312,9 @@
 			{#each externalOptions as option}
 				<button role="menuitem" on:click={() => launchExternal(option)} class={baseMenuItemClass}>
 					<div class="border border-gray-200 dark:border-gray-850 rounded-lg p-1.5">
-						{#if option.icon === "chatgpt"}
+						{#if option.icon === "huggingchat"}
+							<IconHuggingChat classNames="w-4 h-4 shrink-0" />
+						{:else if option.icon === "chatgpt"}
 							<IconOpenAI classNames="w-4 h-4 shrink-0" />
 						{:else if option.icon === "claude"}
 							<IconAnthropic classNames="w-4 h-4 shrink-0" />
