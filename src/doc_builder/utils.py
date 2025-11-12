@@ -19,6 +19,7 @@ import re
 import shutil
 import subprocess
 from collections.abc import Sequence
+from html.parser import HTMLParser
 from pathlib import Path
 from urllib.parse import quote
 
@@ -233,6 +234,9 @@ def write_markdown_route_file(source_file, destination_file):
     with open(source_file, encoding="utf-8") as f:
         content = convert_mdx_to_markdown_text(f.read())
 
+    # Strip HTML from the markdown content before writing
+    content = strip_html_from_markdown(content)
+
     destination_path = Path(destination_file)
     destination_path.parent.mkdir(parents=True, exist_ok=True)
 
@@ -345,3 +349,260 @@ def chunk_list(lst, n):
     Create a list of chunks
     """
     return [lst[i : i + n] for i in range(0, len(lst), n)]
+
+
+class HTMLStripper(HTMLParser):
+    """Helper class to strip HTML tags while preserving text content."""
+
+    def __init__(self):
+        super().__init__()
+        self.reset()
+        self.strict = False
+        self.convert_charrefs = True
+        self.text = []
+
+    def handle_data(self, data):
+        self.text.append(data)
+
+    def get_data(self):
+        return "".join(self.text)
+
+
+def strip_html_tags(text: str) -> str:
+    """Strip HTML tags from text while preserving content."""
+    stripper = HTMLStripper()
+    stripper.feed(text)
+    return stripper.get_data()
+
+
+def extract_docstring_info(docstring_block: str) -> dict:
+    """Extract information from a docstring block."""
+    info = {
+        "name": None,
+        "anchor": None,
+        "source": None,
+        "parameters": None,
+        "paramsdesc": None,
+        "rettype": None,
+        "retdesc": None,
+        "description": None,
+    }
+
+    # Extract name
+    name_match = re.search(r"<name>(.*?)</name>", docstring_block, re.DOTALL)
+    if name_match:
+        raw_name = name_match.group(1).strip()
+        # Remove "class " or "def " prefix if present
+        cleaned_name = re.sub(r"^(class|def)\s+", "", raw_name)
+        info["name"] = cleaned_name
+
+    # Extract anchor
+    anchor_match = re.search(r"<anchor>(.*?)</anchor>", docstring_block, re.DOTALL)
+    if anchor_match:
+        info["anchor"] = anchor_match.group(1).strip()
+
+    # Extract source
+    source_match = re.search(r"<source>(.*?)</source>", docstring_block, re.DOTALL)
+    if source_match:
+        info["source"] = source_match.group(1).strip()
+
+    # Extract parameters description
+    paramsdesc_match = re.search(r"<paramsdesc>(.*?)</paramsdesc>", docstring_block, re.DOTALL)
+    if paramsdesc_match:
+        info["paramsdesc"] = paramsdesc_match.group(1).strip()
+
+    # Extract return type
+    rettype_match = re.search(r"<rettype>(.*?)</rettype>", docstring_block, re.DOTALL)
+    if rettype_match:
+        info["rettype"] = rettype_match.group(1).strip()
+
+    # Extract return description
+    retdesc_match = re.search(r"<retdesc>(.*?)</retdesc>", docstring_block, re.DOTALL)
+    if retdesc_match:
+        info["retdesc"] = retdesc_match.group(1).strip()
+
+    # Extract text outside docstring tags but inside the div
+    # This is the description text
+    description_match = re.search(r"</docstring>(.*?)(?:</div>|$)", docstring_block, re.DOTALL)
+    if description_match:
+        desc_text = description_match.group(1).strip()
+        # Remove any remaining HTML tags
+        desc_text = re.sub(r"<[^>]+>", "", desc_text)
+        if desc_text:
+            info["description"] = desc_text
+
+    return info
+
+
+def format_parameters(paramsdesc: str) -> str:
+    """
+    Format parameter descriptions by:
+    - Removing bullets (-)
+    - Removing bold formatting (**)
+    - Changing -- to :
+    - Adding blank lines between parameters
+    """
+    lines = paramsdesc.split("\n")
+    formatted_params = []
+    current_param = []
+
+    for line in lines:
+        # Check if this is a new parameter line (starts with "- **")
+        if re.match(r"^\s*-\s+\*\*", line):
+            # Save the previous parameter if exists
+            if current_param:
+                param_text = " ".join(current_param)
+                # Remove - and ** formatting
+                param_text = re.sub(r"^\s*-\s+\*\*([^*]+)\*\*", r"\1", param_text)
+                # Change -- to :
+                param_text = re.sub(r"\s+--\s+", " : ", param_text, count=1)
+                formatted_params.append(param_text)
+                formatted_params.append("")  # Add blank line between parameters
+                current_param = []
+
+            # Start new parameter
+            current_param.append(line)
+        elif current_param:
+            # Continuation of current parameter description
+            current_param.append(line.strip())
+
+    # Don't forget the last parameter
+    if current_param:
+        param_text = " ".join(current_param)
+        param_text = re.sub(r"^\s*-\s+\*\*([^*]+)\*\*", r"\1", param_text)
+        param_text = re.sub(r"\s+--\s+", " : ", param_text, count=1)
+        formatted_params.append(param_text)
+
+    return "\n".join(formatted_params)
+
+
+def process_docstring_block(docstring_block: str) -> str:
+    """
+    Process a docstring block by:
+    1. Extracting the class/function name and relevant info
+    2. Stripping all HTML tags
+    3. Converting to clean markdown with level 4 header
+    """
+    # Extract structured information from the docstring
+    info = extract_docstring_info(docstring_block)
+
+    # Build the cleaned markdown
+    parts = []
+
+    # Add the name as level 4 header with anchor
+    if info["name"]:
+        if info["anchor"]:
+            parts.append(f"#### {info['name']}[[{info['anchor']}]]")
+        else:
+            parts.append(f"#### {info['name']}")
+        parts.append("")
+
+    # Add source link if available
+    if info["source"]:
+        # Strip any HTML from source
+        source_clean = strip_html_tags(info["source"])
+        parts.append(f"[Source]({source_clean})")
+        parts.append("")
+
+    # Add description
+    if info["description"]:
+        parts.append(info["description"])
+        parts.append("")
+
+    # Add parameters description
+    if info["paramsdesc"]:
+        parts.append("**Parameters:**")
+        parts.append("")
+        # Format parameters: remove bullets and bold, change -- to :, add blank lines
+        formatted_params = format_parameters(info["paramsdesc"])
+        parts.append(formatted_params)
+        parts.append("")
+
+    # Add return type
+    if info["rettype"]:
+        parts.append("**Returns:**")
+        parts.append("")
+        # Strip HTML tags from return type
+        rettype_clean = strip_html_tags(info["rettype"])
+        parts.append(f"`{rettype_clean}`")
+        parts.append("")
+
+    # Add return description
+    if info["retdesc"]:
+        if not info["rettype"]:
+            parts.append("**Returns:**")
+            parts.append("")
+        parts.append(info["retdesc"])
+        parts.append("")
+
+    result = "\n".join(parts)
+
+    # Clean up excessive newlines
+    result = re.sub(r"\n{3,}", "\n\n", result)
+
+    return result.strip()
+
+
+def strip_remaining_html(content: str) -> str:
+    """
+    Strip remaining HTML tags while preserving markdown structure.
+    Handles tags like <Tip>, <ExampleCodeBlock>, etc.
+    """
+    # Remove HTML comments
+    content = re.sub(r"<!--.*?-->", "", content, flags=re.DOTALL)
+
+    # Remove common component tags while preserving their content
+    # (Tip, TipEnd, ExampleCodeBlock, hfoptions, hfoption, etc.)
+    tags_to_remove = [
+        "Tip",
+        "TipEnd",
+        "ExampleCodeBlock",
+        "hfoptions",
+        "hfoption",
+        "EditOnGithub",
+        "div",
+        "span",
+        "anchor",
+    ]
+
+    for tag in tags_to_remove:
+        # Remove opening tags with any attributes
+        content = re.sub(rf"<{tag}[^>]*>", "", content, flags=re.IGNORECASE)
+        # Remove closing tags
+        content = re.sub(rf"</{tag}>", "", content, flags=re.IGNORECASE)
+
+    # Remove any remaining HTML tags (generic cleanup)
+    # This is more aggressive but preserves text content
+    content = re.sub(r"<[^>]+>", "", content)
+
+    # Clean up multiple consecutive blank lines
+    content = re.sub(r"\n{3,}", "\n\n", content)
+
+    return content
+
+
+def strip_html_from_markdown(content: str) -> str:
+    """
+    Strip HTML from markdown content.
+
+    Handles:
+    - Docstring blocks wrapped in <div class="docstring...">...</div>
+    - Other HTML tags throughout the document
+    """
+    result = content
+
+    # Process docstring blocks with their wrapping divs
+    # Pattern to match: <div class="docstring...">...<docstring>...</docstring>...</div>
+    docstring_pattern = r'<div[^>]*class="docstring[^"]*"[^>]*>.*?<docstring>.*?</docstring>.*?</div>'
+
+    def replace_docstring(match):
+        block = match.group(0)
+        return process_docstring_block(block)
+
+    result = re.sub(docstring_pattern, replace_docstring, result, flags=re.DOTALL)
+
+    # Strip remaining HTML tags (like <Tip>, </Tip>, <ExampleCodeBlock>, etc.)
+    # But preserve markdown code blocks
+    result = strip_remaining_html(result)
+
+    return result
