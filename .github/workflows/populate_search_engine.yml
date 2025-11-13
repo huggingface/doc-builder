@@ -1,7 +1,6 @@
 name: Populate Search Engine
 
 on:
-  push:
   schedule:
     - cron: "5 7 * * *" # every day at 07:05
   # to run this workflow manually from the Actions tab
@@ -61,30 +60,50 @@ jobs:
           echo "Running: $CMD"
           $CMD
   
-  # cleanup-job:
-  #   needs: process-docs
-  #   runs-on: ubuntu-latest
-  #   if: always() # This ensures that the cleanup job runs regardless of the result
-  #   steps:
-  #     - name: Checkout doc-builder
-  #       uses: actions/checkout@v4
+  gradio-job:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout doc-builder
+        uses: actions/checkout@v4
 
-  #     - name: Install uv
-  #       uses: astral-sh/setup-uv@v4
-  #       with:
-  #         version: "latest"
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+        with:
+          version: "latest"
 
-  #     - name: Set up Python 3.10
-  #       run: uv python install 3.10
+      - name: Set up Python 3.10
+        run: uv python install 3.10
 
-  #     - name: Install doc-builder
-  #       run: uv sync --extra dev
+      - name: Install doc-builder
+        run: uv sync --extra dev
 
-  #     - name: Success Cleanup
-  #       if: needs.process-docs.result == 'success' # Runs if job succeeded
-  #       run: uv run doc-builder meilisearch-clean --meilisearch_key ${{ secrets.MEILISEARCH_KEY }} --swap
+      - name: Add gradio docs to meilisearch
+        run: uv run doc-builder add-gradio-docs --hf_ie_name docs-embed-bge-base-en-v1-5 --hf_ie_namespace huggingface --hf_ie_token ${{ secrets.HF_IE_TOKEN }} --meilisearch_key ${{ secrets.MEILISEARCH_KEY }}
+  
+  cleanup-job:
+    needs: [process-docs, gradio-job]
+    runs-on: ubuntu-latest
+    if: always() # This ensures that the cleanup job runs regardless of the result
+    steps:
+      - name: Checkout doc-builder
+        uses: actions/checkout@v4
 
-  #     - name: Failure Cleanup
-  #       if: needs.process-docs.result == 'failure' # Runs if job failed
-  #       run: uv run doc-builder meilisearch-clean --meilisearch_key ${{ secrets.MEILISEARCH_KEY }}
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+        with:
+          version: "latest"
+
+      - name: Set up Python 3.10
+        run: uv python install 3.10
+
+      - name: Install doc-builder
+        run: uv sync --extra dev
+
+      - name: Success Cleanup
+        if: needs.process-docs.result == 'success' # Runs if job succeeded
+        run: uv run doc-builder meilisearch-clean --meilisearch_key ${{ secrets.MEILISEARCH_KEY }} --swap
+
+      - name: Failure Cleanup
+        if: needs.process-docs.result == 'failure' # Runs if job failed
+        run: uv run doc-builder meilisearch-clean --meilisearch_key ${{ secrets.MEILISEARCH_KEY }}
 
