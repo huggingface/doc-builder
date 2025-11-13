@@ -77,11 +77,11 @@ def download_and_extract_zip(library_name: str, output_dir: Path) -> Path | None
         response.raise_for_status()
 
         # Get total size for progress bar
-        total_size = int(response.headers.get('content-length', 0))
+        total_size = int(response.headers.get("content-length", 0))
 
         # Download to memory
         zip_content = io.BytesIO()
-        with tqdm(total=total_size, unit='B', unit_scale=True, desc=f"  {library_name}") as pbar:
+        with tqdm(total=total_size, unit="B", unit_scale=True, desc=f"  {library_name}") as pbar:
             for chunk in response.iter_content(chunk_size=8192):
                 zip_content.write(chunk)
                 pbar.update(len(chunk))
@@ -170,10 +170,7 @@ def get_page_title(file_path: Path) -> str:
 
 
 def process_markdown_file(
-    file_path: Path,
-    library_name: str,
-    base_dir: Path,
-    excerpts_max_length: int = 1000
+    file_path: Path, library_name: str, base_dir: Path, excerpts_max_length: int = 1000
 ) -> list[Chunk]:
     """
     Process a single markdown file into chunks.
@@ -188,7 +185,7 @@ def process_markdown_file(
         List of Chunk objects
     """
     try:
-        with open(file_path, encoding='utf-8') as f:
+        with open(file_path, encoding="utf-8") as f:
             content = f.read()
 
         # Split markdown by headings
@@ -201,16 +198,16 @@ def process_markdown_file(
         # Convert sections to Chunks
         chunks = []
         for section in sections:
-            headings_dict = section['headings']
+            headings_dict = section["headings"]
 
             # Create heading list from the dictionary
             heading_list = []
             for i in range(1, 7):
-                heading_key = f'heading{i}'
+                heading_key = f"heading{i}"
                 if heading_key in headings_dict:
                     # Reconstruct the heading with # marks
                     heading_text = headings_dict[heading_key]
-                    heading_list.append('#' * i + ' ' + heading_text)
+                    heading_list.append("#" * i + " " + heading_text)
 
             # Generate URL with anchor (use first heading as anchor)
             url = base_url
@@ -218,25 +215,25 @@ def process_markdown_file(
                 # Use the deepest heading for anchor
                 last_heading = None
                 for i in range(6, 0, -1):
-                    if f'heading{i}' in headings_dict:
-                        last_heading = headings_dict[f'heading{i}']
+                    if f"heading{i}" in headings_dict:
+                        last_heading = headings_dict[f"heading{i}"]
                         break
 
                 if last_heading:
                     # Create anchor from heading (lowercase, replace spaces with hyphens)
-                    anchor = last_heading.lower().replace(' ', '-')
+                    anchor = last_heading.lower().replace(" ", "-")
                     # Remove special characters
-                    anchor = ''.join(c for c in anchor if c.isalnum() or c == '-')
+                    anchor = "".join(c for c in anchor if c.isalnum() or c == "-")
                     url = f"{base_url}#{anchor}"
 
             # Create a chunk for each excerpt
-            for excerpt in section['excerpts']:
+            for excerpt in section["excerpts"]:
                 chunk = Chunk(
                     text=excerpt,
                     source_page_url=url,
                     source_page_title=page_title,
                     package_name=library_name,
-                    headings=heading_list
+                    headings=heading_list,
                 )
                 chunks.append(chunk)
 
@@ -248,10 +245,7 @@ def process_markdown_file(
 
 
 def process_library(
-    library_name: str,
-    output_dir: Path,
-    excerpts_max_length: int = 1000,
-    skip_download: bool = False
+    library_name: str, output_dir: Path, excerpts_max_length: int = 1000, skip_download: bool = False
 ) -> list[Chunk]:
     """
     Process a single library: download, extract, and chunk all markdown files.
@@ -302,7 +296,7 @@ def process_all_libraries(
     output_dir: Path | None = None,
     excerpts_max_length: int = 1000,
     libraries: list[str] | None = None,
-    skip_download: bool = False
+    skip_download: bool = False,
 ) -> dict:
     """
     Process all libraries from the HF doc-build dataset.
@@ -328,13 +322,13 @@ def process_all_libraries(
 
     # Filter if specific libraries requested
     if libraries:
-        directories = [d for d in directories if d['path'] in libraries]
+        directories = [d for d in directories if d["path"] in libraries]
         print(f"Processing {len(directories)} requested libraries: {libraries}")
 
     # Process each library
     results = {}
     for directory in directories:
-        library_name = directory['path']
+        library_name = directory["path"]
         chunks = process_library(library_name, output_dir, excerpts_max_length, skip_download)
         results[library_name] = chunks
 
@@ -363,16 +357,16 @@ def save_chunks_to_json(chunks: list[Chunk], output_file: Path):
     # Convert chunks to dictionaries
     chunks_data = [
         {
-            'text': chunk.text,
-            'source_page_url': chunk.source_page_url,
-            'source_page_title': chunk.source_page_title,
-            'package_name': chunk.package_name,
-            'headings': chunk.headings
+            "text": chunk.text,
+            "source_page_url": chunk.source_page_url,
+            "source_page_title": chunk.source_page_title,
+            "package_name": chunk.package_name,
+            "headings": chunk.headings,
         }
         for chunk in chunks
     ]
 
-    with open(output_file, 'w', encoding='utf-8') as f:
+    with open(output_file, "w", encoding="utf-8") as f:
         json.dump(chunks_data, f, indent=2, ensure_ascii=False)
 
     print(f"Saved {len(chunks)} chunks to {output_file}")
@@ -387,32 +381,22 @@ if __name__ == "__main__":
         "--output-dir",
         type=str,
         default=None,
-        help="Directory for downloaded/extracted files (uses temp dir if not specified)"
+        help="Directory for downloaded/extracted files (uses temp dir if not specified)",
     )
     parser.add_argument(
         "--libraries",
         type=str,
         nargs="+",
         default=None,
-        help="Specific libraries to process (e.g., accelerate diffusers)"
+        help="Specific libraries to process (e.g., accelerate diffusers)",
     )
     parser.add_argument(
-        "--excerpt-length",
-        type=int,
-        default=1000,
-        help="Maximum length of each excerpt in characters (default: 1000)"
+        "--excerpt-length", type=int, default=1000, help="Maximum length of each excerpt in characters (default: 1000)"
     )
     parser.add_argument(
-        "--skip-download",
-        action="store_true",
-        help="Skip download if files already exist in output-dir"
+        "--skip-download", action="store_true", help="Skip download if files already exist in output-dir"
     )
-    parser.add_argument(
-        "--save-json",
-        type=str,
-        default=None,
-        help="Save all chunks to a JSON file"
-    )
+    parser.add_argument("--save-json", type=str, default=None, help="Save all chunks to a JSON file")
 
     args = parser.parse_args()
 
@@ -421,7 +405,7 @@ if __name__ == "__main__":
         output_dir=Path(args.output_dir) if args.output_dir else None,
         excerpts_max_length=args.excerpt_length,
         libraries=args.libraries,
-        skip_download=args.skip_download
+        skip_download=args.skip_download,
     )
 
     # Save to JSON if requested
@@ -430,4 +414,3 @@ if __name__ == "__main__":
         for chunks in results.values():
             all_chunks.extend(chunks)
         save_chunks_to_json(all_chunks, Path(args.save_json))
-

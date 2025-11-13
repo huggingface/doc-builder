@@ -435,7 +435,7 @@ def split_into_excerpts(text: str, max_length: int) -> list[str]:
 
         # Look for the next word boundary after "max_length" characters
         remaining_text = text[end_index:]
-        word_boundary_match = re.search(r'\b', remaining_text)
+        word_boundary_match = re.search(r"\b", remaining_text)
 
         margin = 50
 
@@ -448,7 +448,7 @@ def split_into_excerpts(text: str, max_length: int) -> list[str]:
             for i in range(end_index, max(current_index + max_length - margin, current_index), -1):
                 if i < len(text):
                     char = text[i]
-                    if char in [' ', '\n', '.', ',', ';', '!', '?']:
+                    if char in [" ", "\n", ".", ",", ";", "!", "?"]:
                         break_point = i + 1
                         break
             end_index = break_point
@@ -472,11 +472,11 @@ def build_headings_object(heading_stack: list[str]) -> dict:
     headings = {}
 
     for heading in heading_stack:
-        match = re.match(r'^(#{1,6})\s+(.+)$', heading)
+        match = re.match(r"^(#{1,6})\s+(.+)$", heading)
         if match:
             level = len(match.group(1))
             text = match.group(2).strip()
-            headings[f'heading{level}'] = text
+            headings[f"heading{level}"] = text
 
     return headings
 
@@ -502,15 +502,17 @@ def split_markdown_by_headings(markdown_content: str, excerpts_max_length: int =
 
     while line_index < len(lines):
         line = lines[line_index]
-        heading_match = re.match(r'^(#{1,6})\s+(.+)$', line)
+        heading_match = re.match(r"^(#{1,6})\s+(.+)$", line)
 
         if heading_match:
             # Save the previous section if it has content
             if current_section.strip():
-                sections.append({
-                    'excerpts': split_into_excerpts(current_section.strip(), excerpts_max_length),
-                    'headings': build_headings_object(heading_stack)
-                })
+                sections.append(
+                    {
+                        "excerpts": split_into_excerpts(current_section.strip(), excerpts_max_length),
+                        "headings": build_headings_object(heading_stack),
+                    }
+                )
 
             # Parse the heading
             heading_level = len(heading_match.group(1))
@@ -521,7 +523,7 @@ def split_markdown_by_headings(markdown_content: str, excerpts_max_length: int =
             # Keep only headings with lower level than current
             new_stack = []
             for h in heading_stack:
-                h_match = re.match(r'^(#{1,6})', h)
+                h_match = re.match(r"^(#{1,6})", h)
                 if h_match:
                     existing_level = len(h_match.group(1))
                     if existing_level < heading_level:
@@ -538,7 +540,7 @@ def split_markdown_by_headings(markdown_content: str, excerpts_max_length: int =
             line_index += 1
             while line_index < len(lines):
                 next_line = lines[line_index]
-                next_heading_match = re.match(r'^(#{1,6})\s+(.+)$', next_line)
+                next_heading_match = re.match(r"^(#{1,6})\s+(.+)$", next_line)
 
                 if next_heading_match:
                     # Found next heading, break to process it
@@ -557,10 +559,12 @@ def split_markdown_by_headings(markdown_content: str, excerpts_max_length: int =
 
     # Add the last section
     if current_section.strip():
-        sections.append({
-            'excerpts': split_into_excerpts(current_section.strip(), excerpts_max_length),
-            'headings': build_headings_object(heading_stack)
-        })
+        sections.append(
+            {
+                "excerpts": split_into_excerpts(current_section.strip(), excerpts_max_length),
+                "headings": build_headings_object(heading_stack),
+            }
+        )
 
     return sections
 
