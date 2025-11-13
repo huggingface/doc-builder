@@ -314,7 +314,7 @@
 						</a>
 
 						<a
-							href="https://huggingface.co/settings/inference-providers"
+							href="https://huggingface.co/settings/inference-providers/settings"
 							class="flex items-center gap-x-1 whitespace-nowrap"
 							title="Inference providers settings"
 							target="_blank"
