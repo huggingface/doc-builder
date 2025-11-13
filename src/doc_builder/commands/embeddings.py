@@ -38,7 +38,7 @@ def process_hf_docs_command(args):
         output_dir=Path(args.output_dir) if args.output_dir else None,
         excerpts_max_length=args.excerpt_length,
         libraries=args.libraries if args.libraries else None,
-        skip_download=args.skip_download
+        skip_download=args.skip_download,
     )
 
     # If embeddings are requested
@@ -62,7 +62,7 @@ def process_hf_docs_command(args):
             args.hf_ie_name,
             args.hf_ie_namespace,
             args.hf_ie_token,
-            is_python_module=False  # Pre-built docs are not Python modules
+            is_python_module=False,  # Pre-built docs are not Python modules
         )
 
         # Push to Meilisearch
@@ -73,10 +73,7 @@ def process_hf_docs_command(args):
         client = meilisearch.Client("https://edge.meilisearch.com", args.meilisearch_key)
         ITEMS_PER_CHUNK = 5000
 
-        for chunk_embeddings in tqdm(
-            chunk_list(embeddings, ITEMS_PER_CHUNK),
-            desc="Uploading to meilisearch"
-        ):
+        for chunk_embeddings in tqdm(chunk_list(embeddings, ITEMS_PER_CHUNK), desc="Uploading to meilisearch"):
             add_embeddings_to_db(client, MEILI_INDEX_TEMP, chunk_embeddings)
 
         print(f"\n✅ Successfully uploaded {len(embeddings)} embeddings to Meilisearch")
@@ -134,54 +131,46 @@ def embeddings_command_parser(subparsers=None):
         "--output-dir",
         type=str,
         default=None,
-        help="Directory for downloaded/extracted files (uses temp dir if not specified)"
+        help="Directory for downloaded/extracted files (uses temp dir if not specified)",
     )
     parser_process_hf_docs.add_argument(
         "--libraries",
         type=str,
         nargs="+",
         default=None,
-        help="Specific libraries to process (e.g., accelerate diffusers). If not specified, processes all libraries."
+        help="Specific libraries to process (e.g., accelerate diffusers). If not specified, processes all libraries.",
     )
     parser_process_hf_docs.add_argument(
-        "--excerpt-length",
-        type=int,
-        default=1000,
-        help="Maximum length of each excerpt in characters (default: 1000)"
+        "--excerpt-length", type=int, default=1000, help="Maximum length of each excerpt in characters (default: 1000)"
     )
     parser_process_hf_docs.add_argument(
-        "--skip-download",
-        action="store_true",
-        help="Skip download if files already exist in output-dir"
+        "--skip-download", action="store_true", help="Skip download if files already exist in output-dir"
     )
     parser_process_hf_docs.add_argument(
         "--skip-embeddings",
         action="store_true",
-        help="Skip embedding generation and meilisearch upload (useful for testing)"
+        help="Skip embedding generation and meilisearch upload (useful for testing)",
     )
     parser_process_hf_docs.add_argument(
         "--hf_ie_name",
         type=str,
         help="Inference Endpoints name (required unless --skip-embeddings is set)",
-        required=False
+        required=False,
     )
     parser_process_hf_docs.add_argument(
         "--hf_ie_namespace",
         type=str,
         help="Inference Endpoints namespace (required unless --skip-embeddings is set)",
-        required=False
+        required=False,
     )
     parser_process_hf_docs.add_argument(
-        "--hf_ie_token",
-        type=str,
-        help="Hugging Face token (required unless --skip-embeddings is set)",
-        required=False
+        "--hf_ie_token", type=str, help="Hugging Face token (required unless --skip-embeddings is set)", required=False
     )
     parser_process_hf_docs.add_argument(
         "--meilisearch_key",
         type=str,
         help="Meilisearch key (required unless --skip-embeddings is set)",
-        required=False
+        required=False,
     )
 
     if subparsers is not None:
