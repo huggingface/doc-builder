@@ -1,0 +1,89 @@
+name: Populate Search Engine
+
+on:
+  schedule:
+    - cron: "5 7 * * *" # every day at 07:05
+  # to run this workflow manually from the Actions tab
+  workflow_dispatch:
+    inputs:
+      libraries:
+        description: 'Specific libraries to process (space-separated, e.g., "accelerate diffusers"). Leave empty for all.'
+        required: false
+        default: ''
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  process-docs:
+    runs-on: ubuntu-latest
+    timeout-minutes: 360  # Set timeout to 6 hours
+    steps:
+      - name: Checkout doc-builder
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+        with:
+          version: "latest"
+
+      - name: Set up Python 3.10
+        run: uv python install 3.10
+
+      - name: Install doc-builder
+        run: uv sync --extra dev
+
+      - name: Populate search engine from HF doc-build dataset
+        shell: bash
+        run: |
+          echo "Processing documentation from hf-doc-build/doc-build dataset..."
+          
+          # Build command
+          CMD="uv run doc-builder populate-search-engine"
+          
+          # Add library filter if specified
+          if [ ! -z "${{ github.event.inputs.libraries }}" ]; then
+            CMD="$CMD --libraries ${{ github.event.inputs.libraries }}"
+          fi
+          
+          # Add skip embeddings flag
+          CMD="$CMD --skip-embeddings"
+          
+          # Add credentials
+          CMD="$CMD --hf_ie_name docs-embed-bge-base-en-v1-5"
+          CMD="$CMD --hf_ie_namespace huggingface"
+          CMD="$CMD --hf_ie_token ${{ secrets.HF_IE_TOKEN }}"
+          CMD="$CMD --meilisearch_key ${{ secrets.MEILISEARCH_KEY }}"
+          
+          # Execute
+          echo "Running: $CMD"
+          $CMD
+  
+  cleanup-job:
+    needs: process-docs
+    runs-on: ubuntu-latest
+    if: always() # This ensures that the cleanup job runs regardless of the result
+    steps:
+      - name: Checkout doc-builder
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+        with:
+          version: "latest"
+
+      - name: Set up Python 3.10
+        run: uv python install 3.10
+
+      - name: Install doc-builder
+        run: uv sync --extra dev
+
+      - name: Success Cleanup
+        if: needs.process-docs.result == 'success' # Runs if job succeeded
+        run: uv run doc-builder meilisearch-clean --meilisearch_key ${{ secrets.MEILISEARCH_KEY }} --swap
+
+      - name: Failure Cleanup
+        if: needs.process-docs.result == 'failure' # Runs if job failed
+        run: uv run doc-builder meilisearch-clean --meilisearch_key ${{ secrets.MEILISEARCH_KEY }}
+
