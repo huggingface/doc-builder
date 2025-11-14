@@ -14,7 +14,9 @@
 	import IconPython from "$lib/IconPython.svelte";
 
 	import IconInferenceBlackForest from "./IconInferenceBlackForest.svelte";
+	import IconInferenceBaseten from "./IconInferenceBaseten.svelte";
 	import IconInferenceCerebras from "./IconInferenceCerebras.svelte";
+	import IconInferenceClarifai from "./IconInferenceClarifai.svelte";
 	import IconInferenceCohere from "./IconInferenceCohere.svelte";
 	import IconInferenceFal from "./IconInferenceFal.svelte";
 	import IconInferenceFeatherless from "./IconInferenceFeatherless.svelte";
@@ -26,9 +28,13 @@
 	import IconInferenceNovita from "./IconInferenceNovita.svelte";
 	import IconInferenceNscale from "./IconInferenceNscale.svelte";
 	import IconInferenceOvh from "./IconInferenceOvh.svelte";
+	import IconInferencePublicAI from "./IconInferencePublicAI.svelte";
 	import IconInferenceReplicate from "./IconInferenceReplicate.svelte";
 	import IconInferenceSambaNova from "./IconInferenceSambaNova.svelte";
+	import IconInferenceScaleway from "./IconInferenceScaleway.svelte";
 	import IconInferenceTogetherAI from "./IconInferenceTogetherAI.svelte";
+	import IconInferenceWavespeed from "./IconInferenceWavespeed.svelte";
+	import IconInferenceZai from "./IconInferenceZai.svelte";
 	import Dropdown from "$lib/Dropdown.svelte";
 	import DropdownEntry from "$lib/DropdownEntry.svelte";
 	import IconSettings from "./IconSettings.svelte";
@@ -104,7 +110,9 @@
 	> = {
 		// inference providers
 		"black-forest-labs": "Black Forest Labs",
+		"baseten": "Baseten",
 		cerebras: "Cerebras",
+		clarifai: "Clarifai",
 		cohere: "Cohere",
 		"fal-ai": "fal",
 		"featherless-ai": "Featherless",
@@ -116,9 +124,13 @@
 		novita: "Novita",
 		nscale: "Nscale",
 		ovhcloud: "OVHcloud AI Endpoints",
+		publicai: "PublicAI",
 		replicate: "Replicate",
 		sambanova: "SambaNova",
+		scaleway: "Scaleway",
 		together: "Together AI",
+		wavespeed: "WaveSpeedAI",
+		"zai-org": "Z.ai",
 		// languages
 		sh: "cURL",
 		python: "Python",
@@ -134,7 +146,9 @@
 	> = {
 		// inference providers
 		"black-forest-labs": IconInferenceBlackForest,
+		"baseten": IconInferenceBaseten,
 		cerebras: IconInferenceCerebras,
+		clarifai: IconInferenceClarifai,
 		cohere: IconInferenceCohere,
 		"fal-ai": IconInferenceFal,
 		"featherless-ai": IconInferenceFeatherless,
@@ -145,9 +159,13 @@
 		novita: IconInferenceNovita,
 		nscale: IconInferenceNscale,
 		ovhcloud: IconInferenceOvh,
+		publicai: IconInferencePublicAI,
 		replicate: IconInferenceReplicate,
 		sambanova: IconInferenceSambaNova,
+		scaleway: IconInferenceScaleway,
 		together: IconInferenceTogetherAI,
+		wavespeed: IconInferenceWavespeed,
+		"zai-org": IconInferenceZai,
 		"hf-inference": IconInferenceHf,
 		// languages
 		sh: IconCurl,
