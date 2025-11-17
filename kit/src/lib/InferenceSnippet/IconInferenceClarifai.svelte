@@ -21,4 +21,3 @@
 		fill="white"
 	/>
 </svg>
-

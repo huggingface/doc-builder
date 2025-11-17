@@ -110,7 +110,7 @@
 	> = {
 		// inference providers
 		"black-forest-labs": "Black Forest Labs",
-		"baseten": "Baseten",
+		baseten: "Baseten",
 		cerebras: "Cerebras",
 		clarifai: "Clarifai",
 		cohere: "Cohere",
@@ -146,7 +146,7 @@
 	> = {
 		// inference providers
 		"black-forest-labs": IconInferenceBlackForest,
-		"baseten": IconInferenceBaseten,
+		baseten: IconInferenceBaseten,
 		cerebras: IconInferenceCerebras,
 		clarifai: IconInferenceClarifai,
 		cohere: IconInferenceCohere,

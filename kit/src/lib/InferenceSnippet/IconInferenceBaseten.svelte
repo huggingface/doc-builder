@@ -20,4 +20,3 @@
 		fill="black"
 	/>
 </svg>
-
