@@ -243,6 +243,7 @@ def strip_md_extension_from_internal_links(text):
     This allows both [Overview](./overview.md) and [Overview](./overview) to work.
     External links (http/https), anchor-only links (#), and absolute paths are preserved.
     """
+
     def _process_link(match):
         link_text, link_url = match.groups()
 
