@@ -23,6 +23,7 @@ from doc_builder.convert_md_to_mdx import (
     convert_md_to_mdx,
     escape_img_alt_description,
     process_md,
+    strip_md_extension_from_internal_links,
 )
 
 
@@ -292,3 +293,54 @@ import pandas as pd
 import fs
 ```"""
         self.assertEqual(convert_literalinclude(text, page_info), expected_conversion)
+
+    def test_strip_md_extension_from_internal_links(self):
+        # Test relative links with .md extension
+        text = "[Overview](./overview.md)"
+        expected = "[Overview](./overview)"
+        self.assertEqual(strip_md_extension_from_internal_links(text), expected)
+
+        # Test relative links with parent directory
+        text = "[Section](../other/section.md)"
+        expected = "[Section](../other/section)"
+        self.assertEqual(strip_md_extension_from_internal_links(text), expected)
+
+        # Test links without extension (should remain unchanged)
+        text = "[Overview](./overview)"
+        expected = "[Overview](./overview)"
+        self.assertEqual(strip_md_extension_from_internal_links(text), expected)
+
+        # Test external links (should remain unchanged)
+        text = "[HuggingFace](https://huggingface.co)"
+        expected = "[HuggingFace](https://huggingface.co)"
+        self.assertEqual(strip_md_extension_from_internal_links(text), expected)
+
+        # Test anchor-only links (should remain unchanged)
+        text = "[Section](#section)"
+        expected = "[Section](#section)"
+        self.assertEqual(strip_md_extension_from_internal_links(text), expected)
+
+        # Test links with anchors
+        text = "[Overview](./overview.md#section)"
+        expected = "[Overview](./overview#section)"
+        self.assertEqual(strip_md_extension_from_internal_links(text), expected)
+
+        # Test links with query parameters
+        text = "[Overview](./overview.md?param=value)"
+        expected = "[Overview](./overview?param=value)"
+        self.assertEqual(strip_md_extension_from_internal_links(text), expected)
+
+        # Test absolute paths (should remain unchanged)
+        text = "[Docs](/docs/transformers/main)"
+        expected = "[Docs](/docs/transformers/main)"
+        self.assertEqual(strip_md_extension_from_internal_links(text), expected)
+
+        # Test multiple links in same text
+        text = "Check [Overview](./overview.md) and [Guide](./guide.md#intro) for more info."
+        expected = "Check [Overview](./overview) and [Guide](./guide#intro) for more info."
+        self.assertEqual(strip_md_extension_from_internal_links(text), expected)
+
+        # Test mixed internal and external links
+        text = "See [Local](./local.md) and [External](https://example.com/page.md)"
+        expected = "See [Local](./local) and [External](https://example.com/page.md)"
+        self.assertEqual(strip_md_extension_from_internal_links(text), expected)
