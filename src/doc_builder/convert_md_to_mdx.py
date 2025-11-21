@@ -233,6 +233,39 @@ def convert_md_docstring_to_mdx(docstring, page_info):
     return process_md(text, page_info)
 
 
+_re_markdown_link = re.compile(r"\[([^\]]*)\]\(([^)]+)\)")
+
+
+def strip_md_extension_from_internal_links(text):
+    """
+    Strip .md extensions from internal/relative links in markdown text.
+
+    This allows both [Overview](./overview.md) and [Overview](./overview) to work.
+    External links (http/https), anchor-only links (#), and absolute paths are preserved.
+    """
+
+    def _process_link(match):
+        link_text, link_url = match.groups()
+
+        if link_url.startswith(("http://", "https://", "//")):
+            return match.group(0)
+
+        if link_url.startswith("#"):
+            return match.group(0)
+
+        if link_url.startswith("/"):
+            return match.group(0)
+
+        if ".md" in link_url:
+            link_url = link_url.replace(".md#", "#").replace(".md?", "?")
+            if link_url.endswith(".md"):
+                link_url = link_url[:-3]
+
+        return f"[{link_text}]({link_url})"
+
+    return _re_markdown_link.sub(_process_link, text)
+
+
 def process_md(text, page_info):
     """
     Processes markdown by:
@@ -240,11 +273,13 @@ def process_md(text, page_info):
         2. Convert literalinclude
         3. Clean doctest syntax
         4. Fix image links
+        5. Strip .md extensions from internal links
     """
     text = convert_include(text, page_info)
     text = convert_literalinclude(text, page_info)
     text = clean_doctest_syntax(text)
     text = fix_img_links(text, page_info)
+    text = strip_md_extension_from_internal_links(text)
     return text
 
 
