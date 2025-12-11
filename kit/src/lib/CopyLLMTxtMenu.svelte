@@ -154,6 +154,7 @@
 
 	function openMenu() {
 		open = true;
+		ensurePromptAndUrl();
 		if (isClient && triggerEl) {
 			void tick().then(() => {
 				if (!triggerEl) return;
@@ -172,20 +173,6 @@
 
 	function toggleMenu() {
 		open ? closeMenu() : openMenu();
-	}
-
-	function openMarkdownPreview() {
-		if (!isClient) return;
-		window.open(SOURCE_URL_MD, "_blank", "noopener,noreferrer");
-		closeMenu();
-	}
-
-	function launchExternal(option: ExternalOption) {
-		ensurePromptAndUrl();
-		if (isClient) {
-			window.open(option.buildUrl(), "_blank", "noopener,noreferrer");
-		}
-		closeMenu();
 	}
 
 	function handleWindowPointer(event: MouseEvent) {
@@ -290,12 +277,13 @@
 				</div>
 			</button>
 
-			<button
+			<a
 				role="menuitem"
-				on:click={() => {
-					openMarkdownPreview();
-				}}
-				class={baseMenuItemClass}
+				href={SOURCE_URL_MD}
+				target="_blank"
+				rel="noopener noreferrer"
+				on:click={closeMenu}
+				class="{baseMenuItemClass} no-underline!"
 			>
 				<div class="border border-gray-200 dark:border-gray-850 rounded-lg p-1.5">
 					<IconCode classNames="w-4 h-4 shrink-0" />
@@ -307,10 +295,17 @@
 					</div>
 					<div class="text-xs text-gray-600 dark:text-gray-400">View this page as plain text</div>
 				</div>
-			</button>
+			</a>
 
 			{#each externalOptions as option}
-				<button role="menuitem" on:click={() => launchExternal(option)} class={baseMenuItemClass}>
+				<a
+					role="menuitem"
+					href={option.buildUrl()}
+					target="_blank"
+					rel="noopener noreferrer"
+					on:click={closeMenu}
+					class="{baseMenuItemClass} no-underline!"
+				>
 					<div class="border border-gray-200 dark:border-gray-850 rounded-lg p-1.5">
 						{#if option.icon === "huggingchat"}
 							<IconHuggingChat classNames="w-4 h-4 shrink-0" />
@@ -333,7 +328,7 @@
 						</div>
 					</div>
 					<IconArrowUpRight classNames="w-4 h-4 text-gray-500 dark:text-gray-300" />
-				</button>
+				</a>
 			{/each}
 		</div>
 	{/if}
