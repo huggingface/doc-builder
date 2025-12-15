@@ -30,22 +30,10 @@ jobs:
         run: uv sync --extra dev
 
       - name: Populate search engine from HF doc-build dataset
-        shell: bash
-        run: |
-          echo "Processing documentation from hf-doc-build/doc-build dataset..."
-          
-          # Build command
-          CMD="uv run doc-builder populate-search-engine"
-          
-          # Add credentials
-          CMD="$CMD --hf_ie_name docs-embed-bge-base-en-v1-5"
-          CMD="$CMD --hf_ie_namespace huggingface"
-          CMD="$CMD --hf_ie_token ${{ secrets.HF_IE_TOKEN }}"
-          CMD="$CMD --meilisearch_key ${{ secrets.MEILISEARCH_KEY }}"
-          
-          # Execute
-          echo "Running populate-search-engine command..."
-          $CMD
+        env:
+          HF_IE_TOKEN: ${{ secrets.HF_IE_TOKEN }}
+          MEILISEARCH_KEY: ${{ secrets.MEILISEARCH_KEY }}
+        run: uv run doc-builder populate-search-engine --hf_ie_name docs-embed-bge-base-en-v1-5 --hf_ie_namespace huggingface
   
   gradio-job:
     runs-on: ubuntu-latest
@@ -65,7 +53,10 @@ jobs:
         run: uv sync --extra dev
 
       - name: Add gradio docs to meilisearch
-        run: uv run doc-builder add-gradio-docs --hf_ie_name docs-embed-bge-base-en-v1-5 --hf_ie_namespace huggingface --hf_ie_token ${{ secrets.HF_IE_TOKEN }} --meilisearch_key ${{ secrets.MEILISEARCH_KEY }}
+        env:
+          HF_IE_TOKEN: ${{ secrets.HF_IE_TOKEN }}
+          MEILISEARCH_KEY: ${{ secrets.MEILISEARCH_KEY }}
+        run: uv run doc-builder add-gradio-docs --hf_ie_name docs-embed-bge-base-en-v1-5 --hf_ie_namespace huggingface
   
   cleanup-job:
     needs: [process-docs, gradio-job]
@@ -88,9 +79,13 @@ jobs:
 
       - name: Success Cleanup
         if: needs.process-docs.result == 'success' # Runs if job succeeded
-        run: uv run doc-builder meilisearch-clean --meilisearch_key ${{ secrets.MEILISEARCH_KEY }} --swap
+        env:
+          MEILISEARCH_KEY: ${{ secrets.MEILISEARCH_KEY }}
+        run: uv run doc-builder meilisearch-clean --swap
 
       - name: Failure Cleanup
         if: needs.process-docs.result == 'failure' # Runs if job failed
-        run: uv run doc-builder meilisearch-clean --meilisearch_key ${{ secrets.MEILISEARCH_KEY }}
+        env:
+          MEILISEARCH_KEY: ${{ secrets.MEILISEARCH_KEY }}
+        run: uv run doc-builder meilisearch-clean
 
