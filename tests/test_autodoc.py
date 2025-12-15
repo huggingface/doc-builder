@@ -338,16 +338,19 @@ before.
             self.assertIn(anchor, valid_method_anchors)
 
         _, anchors, _ = autodoc_svelte("BertTokenizer", transformers, methods=["__call__", "all"], return_anchors=True)
-        self.assertListEqual(
-            anchors,
-            [
-                "transformers.BertTokenizer",
-                ("transformers.BertTokenizer.__call__", "transformers.PreTrainedTokenizerBase.__call__"),
-                "transformers.BertTokenizer.build_inputs_with_special_tokens",
-                "transformers.BertTokenizer.convert_tokens_to_string",
-                "transformers.BertTokenizer.get_special_tokens_mask",
-            ],
+        # Class anchor and __call__ should always be present
+        self.assertEqual(anchors[0], "transformers.BertTokenizer")
+        self.assertEqual(
+            anchors[1], ("transformers.BertTokenizer.__call__", "transformers.PreTrainedTokenizerBase.__call__")
         )
+        # Additional method anchors depend on transformers version
+        valid_additional_anchors = {
+            "transformers.BertTokenizer.build_inputs_with_special_tokens",
+            "transformers.BertTokenizer.convert_tokens_to_string",
+            "transformers.BertTokenizer.get_special_tokens_mask",
+        }
+        for anchor in anchors[2:]:
+            self.assertIn(anchor, valid_additional_anchors)
 
         _, anchors, _ = autodoc_svelte("BertTokenizer", transformers, methods=["none"], return_anchors=True)
         self.assertListEqual(anchors, ["transformers.BertTokenizer"])
