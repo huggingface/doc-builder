@@ -408,6 +408,167 @@ def clean_md(text):
     return text.strip()
 
 
+def split_into_excerpts(text: str, max_length: int) -> list[str]:
+    """
+    Split text into excerpts of approximately max_length characters.
+
+    Args:
+        text: The text to split
+        max_length: Maximum length of each excerpt in characters
+
+    Returns:
+        List of text excerpts
+    """
+    if not text:
+        return []
+
+    excerpts = []
+    current_index = 0
+
+    while current_index < len(text):
+        end_index = current_index + max_length
+
+        # If we're at the end of the text, just take the rest
+        if end_index >= len(text):
+            excerpts.append(text[current_index:].strip())
+            break
+
+        # Look for the next word boundary after "max_length" characters
+        remaining_text = text[end_index:]
+        word_boundary_match = re.search(r"\b", remaining_text)
+
+        margin = 50
+
+        if word_boundary_match and word_boundary_match.start() <= margin:
+            # Found a word boundary within 50 characters, use it
+            end_index = end_index + word_boundary_match.start()
+        else:
+            # No word boundary within 50 chars, fall back to finding good breaking points
+            break_point = end_index
+            for i in range(end_index, max(current_index + max_length - margin, current_index), -1):
+                if i < len(text):
+                    char = text[i]
+                    if char in [" ", "\n", ".", ",", ";", "!", "?"]:
+                        break_point = i + 1
+                        break
+            end_index = break_point
+
+        excerpts.append(text[current_index:end_index].strip())
+        current_index = end_index
+
+    return [excerpt for excerpt in excerpts if len(excerpt) > 0]
+
+
+def build_headings_object(heading_stack: list[str]) -> dict:
+    """
+    Build headings dictionary from heading stack.
+
+    Args:
+        heading_stack: List of heading strings in format "## Heading Text"
+
+    Returns:
+        Dictionary with heading1 through heading6 keys
+    """
+    headings = {}
+
+    for heading in heading_stack:
+        match = re.match(r"^(#{1,6})\s+(.+)$", heading)
+        if match:
+            level = len(match.group(1))
+            text = match.group(2).strip()
+            headings[f"heading{level}"] = text
+
+    return headings
+
+
+def split_markdown_by_headings(markdown_content: str, excerpts_max_length: int = 1000) -> list[dict]:
+    """
+    Split markdown content by headings and create sections with excerpts.
+    Similar to the TypeScript implementation for consistent chunking.
+
+    Args:
+        markdown_content: The markdown text to split
+        excerpts_max_length: Maximum length of each excerpt in characters (default: 1000)
+
+    Returns:
+        List of dictionaries with 'excerpts' (list of text chunks) and 'headings' (dict) keys
+    """
+    lines = markdown_content.split("\n")
+    sections = []
+
+    current_section = ""
+    heading_stack = []
+    line_index = 0
+
+    while line_index < len(lines):
+        line = lines[line_index]
+        heading_match = re.match(r"^(#{1,6})\s+(.+)$", line)
+
+        if heading_match:
+            # Save the previous section if it has content
+            if current_section.strip():
+                sections.append(
+                    {
+                        "excerpts": split_into_excerpts(current_section.strip(), excerpts_max_length),
+                        "headings": build_headings_object(heading_stack),
+                    }
+                )
+
+            # Parse the heading
+            heading_level = len(heading_match.group(1))
+            heading_text = heading_match.group(2).strip()
+            full_heading = f"{heading_match.group(1)} {heading_text}"
+
+            # Update heading stack based on level
+            # Keep only headings with lower level than current
+            new_stack = []
+            for h in heading_stack:
+                h_match = re.match(r"^(#{1,6})", h)
+                if h_match:
+                    existing_level = len(h_match.group(1))
+                    if existing_level < heading_level:
+                        new_stack.append(h)
+            heading_stack = new_stack
+
+            # Add current heading
+            heading_stack.append(full_heading)
+
+            # Start new section with the heading
+            current_section = line
+
+            # Look ahead to include content after heading
+            line_index += 1
+            while line_index < len(lines):
+                next_line = lines[line_index]
+                next_heading_match = re.match(r"^(#{1,6})\s+(.+)$", next_line)
+
+                if next_heading_match:
+                    # Found next heading, break to process it
+                    break
+                else:
+                    # Add line to current section
+                    current_section += "\n" + next_line
+                    line_index += 1
+
+            # Don't increment line_index here since we either reached end or found next heading
+            continue
+        else:
+            # Add line to current section
+            current_section += ("\n" if current_section else "") + line
+            line_index += 1
+
+    # Add the last section
+    if current_section.strip():
+        sections.append(
+            {
+                "excerpts": split_into_excerpts(current_section.strip(), excerpts_max_length),
+                "headings": build_headings_object(heading_stack),
+            }
+        )
+
+    return sections
+
+
 def get_page_title(path: str):
     """
     Given a path to doc page, generate doc page title.
