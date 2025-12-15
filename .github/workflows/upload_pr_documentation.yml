@@ -15,8 +15,12 @@ on:
     secrets:
       hf_token:
         required: true
-      comment_bot_token:
-        required: true
+      comment_bot_token: #legacy, will be removed in the future
+        required: false
+      comment_bot_app_id:
+        required: false
+      comment_bot_secret_pem:
+        required: false
 
 jobs:
   upload_pr_documentation:
@@ -101,21 +105,41 @@ jobs:
           issue-number: ${{ steps.github-context.outputs.pr_number }}
           body-includes: docs for this PR
 
+      - name: Determine authentication method
+        id: auth
+        run: |
+          if [[ -n "${{ secrets.comment_bot_token }}" ]]; then
+            echo "method=comment_bot_token" >> $GITHUB_OUTPUT
+          elif [[ -n "${{ secrets.comment_bot_app_id }}" ]]; then
+            echo "method=github_app" >> $GITHUB_OUTPUT
+          else
+            echo "No authentication method provided"
+            exit 1
+          fi
+      
+      - name: Create comment_bot token
+        id: comment_bot_token
+        if: steps.auth.outputs.method == 'github_app'
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ secrets.comment_bot_app_id }}
+          private-key: ${{ secrets.comment_bot_secret_pem }}
+          repositories: ${{ github.event.repository.name }}
+
       - name: Add doc comment if not present
         uses: thollander/actions-comment-pull-request@v2
         if: steps.find_comment.outputs.comment-id == ''
-
         with:
           message: 'The docs for this PR live [here](${{ steps.hfhub-context.outputs.hub_docs_url }}). All of your documentation changes will be reflected on that endpoint. The docs are available until 30 days after the last update.'
           pr_number: ${{ steps.github-context.outputs.pr_number }}
-          GITHUB_TOKEN: ${{ secrets.comment_bot_token }}
+          GITHUB_TOKEN: ${{ steps.auth.outputs.method == 'comment_bot_token' && secrets.comment_bot_token || steps.comment_bot_token.outputs.token }}
 
       - name: Update doc comment if necessary
         if: github.event.action == 'reopened' && steps.find_comment.outputs.comment-id != ''
         uses: peter-evans/create-or-update-comment@v1
         with:
           comment-id: ${{ steps.find_comment.outputs.comment-id }}
-          token: ${{ secrets.comment_bot_token }}
+          token: ${{ steps.auth.outputs.method == 'comment_bot_token' && secrets.comment_bot_token || steps.comment_bot_token.outputs.token }}
           edit-mode: replace
           body: |
             The docs for this PR live [here](${{ steps.hfhub-context.outputs.hub_docs_url }}). All of your documentation changes will be reflected on that endpoint. The docs are available until 30 days after the last update.
