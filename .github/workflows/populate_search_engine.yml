@@ -5,11 +5,6 @@ on:
     - cron: "5 7 * * *" # every day at 07:05
   # to run this workflow manually from the Actions tab
   workflow_dispatch:
-    inputs:
-      libraries:
-        description: 'Specific libraries to process (space-separated, e.g., "accelerate diffusers"). Leave empty for all.'
-        required: false
-        default: ''
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -41,11 +36,6 @@ jobs:
           
           # Build command
           CMD="uv run doc-builder populate-search-engine"
-          
-          # Add library filter if specified
-          if [ ! -z "${{ github.event.inputs.libraries }}" ]; then
-            CMD="$CMD --libraries ${{ github.event.inputs.libraries }}"
-          fi
           
           # Add skip embeddings flag
           CMD="$CMD --skip-embeddings"
