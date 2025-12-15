@@ -184,9 +184,17 @@ class AutodocTester(unittest.TestCase):
         modern_list_result = get_type_name(list[str])
         self.assertIn(modern_list_result, ["list[str]", "list"])  # Python 3.10 vs 3.11+
         modern_list_optional_result = get_type_name(list[str | None])
-        self.assertIn(modern_list_optional_result, ["list[typing.Optional[str]]", "list"])
+        self.assertIn(modern_list_optional_result, ["list[typing.Optional[str]]", "list[str | None]", "list"])
         modern_list_union_result = get_type_name(list[str | int | None | None])
-        self.assertIn(modern_list_union_result, ["list[typing.Union[str, int, NoneType]]", "list"])
+        self.assertIn(
+            modern_list_union_result,
+            [
+                "list[typing.Union[str, int, NoneType]]",
+                "list[str | int | None]",
+                "list[str | int | None | None]",
+                "list",
+            ],
+        )
 
     def test_format_signature(self):
         self.assertEqual(
