@@ -325,6 +325,22 @@ def process_all_libraries(
         directories = [d for d in directories if d["path"] in libraries]
         print(f"Processing {len(directories)} requested libraries: {libraries}")
 
+    # Skip libraries containing "course" or "cookbook" (case-insensitive)
+    skipped_libraries = []
+    filtered_directories = []
+    for directory in directories:
+        library_name = directory["path"]
+        library_name_lower = library_name.lower()
+        if "course" in library_name_lower or "cookbook" in library_name_lower:
+            skipped_libraries.append(library_name)
+        else:
+            filtered_directories.append(directory)
+
+    if skipped_libraries:
+        print(f"Skipping {len(skipped_libraries)} libraries: {skipped_libraries}")
+
+    directories = filtered_directories
+
     # Process each library
     results = {}
     for directory in directories:
