@@ -22,8 +22,22 @@ function renderCode(code) {
 	);
 }
 
+const STRETCH_TABLES_STYLES = `<style>
+	:global(.prose table) {
+		width: 100% !important;
+		max-width: 100% !important;
+		display: table !important;
+	}
+</style>`;
+
+function addStretchTablesStyles(code) {
+	return code + "\n" + STRETCH_TABLES_STYLES;
+}
+
 const WRAP_CODE_BLOCKS_FLAG = "<!-- WRAP CODE BLOCKS -->";
+const STRETCH_TABLES_FLAG = "<!-- STRETCH TABLES -->";
 let wrapCodeBlocks = false;
+let stretchTables = false;
 
 export const mdsvexPreprocess = {
 	markup: async ({ content, filename }) => {
@@ -33,11 +47,15 @@ export const mdsvexPreprocess = {
 			// 	content = addCourseImports(content);
 			// }
 			wrapCodeBlocks = content.includes(WRAP_CODE_BLOCKS_FLAG);
+			stretchTables = content.includes(STRETCH_TABLES_FLAG);
 			content = markKatex(content, markedKatex);
 			content = escapeSvelteConditionals(content);
 			const processed = await _mdsvexPreprocess.markup({ content, filename });
 			processed.code = renderKatex(processed.code, markedKatex);
 			processed.code = renderCode(processed.code, filename);
+			if (stretchTables) {
+				processed.code = addStretchTablesStyles(processed.code);
+			}
 			return processed;
 		}
 		return { code: content };
