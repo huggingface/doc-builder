@@ -26,6 +26,7 @@ This is the package we use to build the documentation of our Hugging Face repos.
     + [Anchor link](#anchor-link)
     + [LaTeX](#latex)
     + [Code Blocks](#code-blocks)
+    + [Stretch Tables](#stretch-tables)
     + [Inference Snippet](#inference-snippet)
   * [Writing API documentation (Python)](#writing-api-documentation-python)
     + [Autodoc](#autodoc)
@@ -503,6 +504,17 @@ Syntax:
 ```
 
 Example: [here](https://github.com/huggingface/text-generation-inference/blob/724199aaf172590c3658018c0e6bc6152cda4c2f/docs/source/basic_tutorials/launcher.md?plain=1#L3)
+
+### Stretch Tables
+
+By default, tables in the documentation are sized to fit their content. If you want tables to stretch to the full width of the content area, you can add a special flag at the top of your mdx file.
+
+Syntax:
+```
+<!-- STRETCH TABLES -->
+```
+
+This will make all tables in that page expand to 100% width of the content container.
 
 ### Inference Snippet
 
