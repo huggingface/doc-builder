@@ -548,8 +548,8 @@ def strip_remaining_html(content: str) -> str:
     Strip remaining HTML tags while preserving markdown structure.
     Handles tags like <Tip>, <ExampleCodeBlock>, etc.
     """
-    # Remove HTML comments
-    content = re.sub(r"<!--.*?-->", "", content, flags=re.DOTALL)
+    # Remove HTML comments, but preserve special flags like <!-- WRAP CODE BLOCKS --> and <!-- STRETCH TABLES -->
+    content = re.sub(r"<!--(?!\s*(WRAP CODE BLOCKS|STRETCH TABLES)\s*-->).*?-->", "", content, flags=re.DOTALL)
 
     # Remove common component tags while preserving their content
     # (Tip, TipEnd, ExampleCodeBlock, hfoptions, hfoption, etc.)
