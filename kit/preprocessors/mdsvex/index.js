@@ -22,16 +22,10 @@ function renderCode(code) {
 	);
 }
 
-const STRETCH_TABLES_STYLES = `<style>
-	:global(.prose table) {
-		width: 100% !important;
-		max-width: 100% !important;
-		display: table !important;
-	}
-</style>`;
-
-function addStretchTablesStyles(code) {
-	return code + "\n" + STRETCH_TABLES_STYLES;
+function addFullWidthClassToTables(code) {
+	const $ = cheerio.load(code, { decodeEntities: false }, false);
+	$("table").addClass("full-width");
+	return $.html();
 }
 
 const WRAP_CODE_BLOCKS_FLAG = "<!-- WRAP CODE BLOCKS -->";
@@ -54,7 +48,7 @@ export const mdsvexPreprocess = {
 			processed.code = renderKatex(processed.code, markedKatex);
 			processed.code = renderCode(processed.code, filename);
 			if (stretchTables) {
-				processed.code = addStretchTablesStyles(processed.code);
+				processed.code = addFullWidthClassToTables(processed.code);
 			}
 			return processed;
 		}
