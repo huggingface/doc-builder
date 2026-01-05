@@ -23,9 +23,18 @@ function renderCode(code) {
 }
 
 function addFullWidthClassToTables(code) {
-	const $ = cheerio.load(code, { decodeEntities: false }, false);
-	$("table").addClass("full-width");
-	return $.html();
+	return code.replace(/<table\b([^>]*)>/g, (match, attrs) => {
+		if (attrs.includes('class="')) {
+			// Add to existing class
+			return match.replace(/class="([^"]*)"/, 'class="$1 full-width"');
+		} else if (attrs.includes("class='")) {
+			// Add to existing class (single quotes)
+			return match.replace(/class='([^']*)'/, "class='$1 full-width'");
+		} else {
+			// Add new class attribute
+			return `<table${attrs} class="full-width">`;
+		}
+	});
 }
 
 const WRAP_CODE_BLOCKS_FLAG = "<!-- WRAP CODE BLOCKS -->";
