@@ -1,10 +1,11 @@
-import hashlib
 import json
+import re
 import sys
 from collections.abc import Callable
 from datetime import datetime
 from functools import wraps
 from time import sleep
+from urllib.parse import urlparse
 
 from meilisearch.client import Client, TaskInfo
 from meilisearch.errors import MeilisearchApiError
@@ -15,7 +16,7 @@ from meilisearch.errors import MeilisearchApiError
 # https://github.com/meilisearch/meilisearch-python/blob/d5a0babe50b4ce5789892845db98b30d4db72203/tests/conftest.py#L132-L146
 
 VECTOR_NAME = "embeddings"
-VECTOR_DIM = 768  # dim of https://huggingface.co/BAAI/bge-base-en-v1.5
+VECTOR_DIM = 256  # accepted dim of https://huggingface.co/google/embeddinggemma-300m
 
 MeilisearchFunc = Callable[..., tuple[Client, TaskInfo]]
 
@@ -167,13 +168,37 @@ def delete_embedding_db(client: Client, index_name: str):
     return client, task_info
 
 
-def hash_text_sha1(text):
-    hash_object = hashlib.sha1()
-    # Encode the text to bytes and update the hash object
-    hash_object.update(text.encode("utf-8"))
-    # Get the hexadecimal digest of the hash
-    hex_dig = hash_object.hexdigest()
-    return hex_dig
+def sanitize_for_id(text):
+    """
+    Sanitize text to only contain valid Meilisearch ID characters.
+    Valid: alphanumeric (a-z, A-Z, 0-9), hyphens (-), and underscores (_)
+    See: https://www.meilisearch.com/docs/learn/getting_started/primary_key
+    """
+    # Replace common separators with underscores
+    text = text.replace("/", "_").replace(".", "_").replace(" ", "_")
+    # Remove any remaining invalid characters
+    text = re.sub(r"[^a-zA-Z0-9_-]", "", text)
+    # Collapse multiple underscores
+    text = re.sub(r"_+", "_", text)
+    return text.strip("_")
+
+
+def generate_doc_id(library: str, source_page_url: str) -> str:
+    """
+    Generate a unique document ID based on library and page path.
+    Format: {library}_{page_path}
+
+    See: https://www.meilisearch.com/docs/learn/getting_started/primary_key
+    """
+    # Extract path from URL (includes fragment/anchor for section)
+    parsed = urlparse(source_page_url)
+    path = parsed.path + (f"_{parsed.fragment}" if parsed.fragment else "")
+
+    # Sanitize library and path
+    sanitized_library = sanitize_for_id(library)
+    sanitized_path = sanitize_for_id(path)
+
+    return f"{sanitized_library}_{sanitized_path}"
 
 
 @wait_for_task_completion
@@ -181,7 +206,7 @@ def add_embeddings_to_db(client: Client, index_name: str, embeddings):
     index = client.index(index_name)
     payload_data = [
         {
-            "id": hash_text_sha1(e.text),
+            "id": generate_doc_id(e.library, e.source_page_url),
             "text": e.text,
             "source_page_url": e.source_page_url,
             "source_page_title": e.source_page_title,
