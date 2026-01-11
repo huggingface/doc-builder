@@ -29,6 +29,7 @@ from .autodoc import autodoc_markdown, resolve_links_in_text
 from .convert_md_to_mdx import process_md
 from .convert_rst_to_mdx import find_indent, is_empty_line
 from .meilisearch_helper import (
+    VECTOR_DIM,
     add_embeddings_to_db,
     create_embedding_db,
     delete_embedding_db,
@@ -43,8 +44,8 @@ Embedding = namedtuple(
     "text source_page_url source_page_title library embedding heading1 heading2 heading3 heading4 heading5",
 )
 
-MEILI_INDEX = "docs-semantic-search"
-MEILI_INDEX_TEMP = "docs-semantic-search-temp"
+MEILI_INDEX = "docs-semantic-search-v2"
+MEILI_INDEX_TEMP = "docs-semantic-search-v2-temp"
 
 _re_md_anchor = re.compile(r"\[\[(.*)]]")
 _re_non_alphaneumeric = re.compile(r"[^a-z0-9\s]+", re.IGNORECASE)
@@ -699,7 +700,7 @@ def chunks_to_embeddings(client, chunks, is_python_module) -> list[Embedding]:
         prefix = f'Documentation of {"library" if is_python_module else "service"} "{c.package_name}" under section: {" > ".join(c.headings)}'
         texts.append(prefix + "\n\n" + c.text)
 
-    inference_output = client.feature_extraction(texts, truncate=True)
+    inference_output = client.feature_extraction(texts, truncate=True, dimensions=VECTOR_DIM)
     inference_output = inference_output.tolist()
 
     embeddings = []
