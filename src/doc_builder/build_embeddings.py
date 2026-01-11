@@ -738,9 +738,7 @@ def chunks_to_embeddings(client, chunks, is_python_module) -> list[Embedding]:
     return embeddings
 
 
-def call_embedding_inference(
-    chunks: list[Chunk], hf_ie_url, hf_ie_token, is_python_module
-) -> list[Embedding]:
+def call_embedding_inference(chunks: list[Chunk], hf_ie_url, hf_ie_token, is_python_module) -> list[Embedding]:
     """
     Using https://huggingface.co/inference-endpoints with a text embedding model
     """
