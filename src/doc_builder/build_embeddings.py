@@ -22,7 +22,7 @@ from pathlib import Path
 
 import meilisearch
 import requests
-from huggingface_hub import get_inference_endpoint
+from huggingface_hub import InferenceClient
 from tqdm import tqdm
 
 from .autodoc import autodoc_markdown, resolve_links_in_text
@@ -739,7 +739,7 @@ def chunks_to_embeddings(client, chunks, is_python_module) -> list[Embedding]:
 
 
 def call_embedding_inference(
-    chunks: list[Chunk], hf_ie_name, hf_ie_namespace, hf_ie_token, is_python_module
+    chunks: list[Chunk], hf_ie_url, hf_ie_token, is_python_module
 ) -> list[Embedding]:
     """
     Using https://huggingface.co/inference-endpoints with a text embedding model
@@ -747,13 +747,7 @@ def call_embedding_inference(
     batch_size = 20
     embeddings = []
 
-    endpoint = get_inference_endpoint(name=hf_ie_name, namespace=hf_ie_namespace, token=hf_ie_token)
-    if endpoint.status != "running":
-        print("[inference endpoint] restarting...")
-        endpoint.resume().wait()
-        print("[inference endpoint] restarted")
-
-    client = endpoint.client
+    client = InferenceClient(base_url=hf_ie_url, token=hf_ie_token)
 
     with ThreadPoolExecutor(max_workers=16) as executor:
         future_to_chunk = {
@@ -775,8 +769,7 @@ def call_embedding_inference(
 def build_embeddings(
     package_name,
     doc_folder,
-    hf_ie_name,
-    hf_ie_namespace,
+    hf_ie_url,
     hf_ie_token,
     meilisearch_key,
     version="main",
@@ -830,7 +823,7 @@ def build_embeddings(
     )
 
     # Step 2: create embeddings
-    embeddings = call_embedding_inference(chunks, hf_ie_name, hf_ie_namespace, hf_ie_token, is_python_module)
+    embeddings = call_embedding_inference(chunks, hf_ie_url, hf_ie_token, is_python_module)
 
     # Step 3: push embeddings to vector database (meilisearch)
     client = meilisearch.Client("https://edge.meilisearch.com", meilisearch_key)
@@ -852,7 +845,7 @@ def clean_meilisearch(meilisearch_key: str, swap: bool):
     print("[meilisearch] successfully swapped & deleted temp index.")
 
 
-def add_gradio_docs(hf_ie_name: str, hf_ie_namespace: str, hf_ie_token: str, meilisearch_key: str):
+def add_gradio_docs(hf_ie_url: str, hf_ie_token: str, meilisearch_key: str):
     """Add Gradio documentation to embeddings."""
     # Step 1: download the documentation
     url = "https://huggingface.co/datasets/gradio/docs/resolve/main/docs.json"
@@ -877,13 +870,7 @@ def add_gradio_docs(hf_ie_name: str, hf_ie_namespace: str, hf_ie_token: str, mei
     batch_size = 20
     embeddings = []
 
-    endpoint = get_inference_endpoint(name=hf_ie_name, namespace=hf_ie_namespace, token=hf_ie_token)
-    if endpoint.status != "running":
-        print("[inference endpoint] restarting...")
-        endpoint.resume().wait()
-        print("[inference endpoint] restarted")
-
-    client = endpoint.client
+    client = InferenceClient(base_url=hf_ie_url, token=hf_ie_token)
 
     with ThreadPoolExecutor(max_workers=16) as executor:
         future_to_chunk = {

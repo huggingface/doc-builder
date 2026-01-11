@@ -52,9 +52,12 @@ def process_hf_docs_command(args):
     # If embeddings are requested
     if not args.skip_embeddings:
         # Get credentials from args or environment variables
+        hf_ie_url = get_credential(args.hf_ie_url, "HF_IE_URL")
         hf_ie_token = get_credential(args.hf_ie_token, "HF_IE_TOKEN")
         meilisearch_key = get_credential(args.meilisearch_key, "MEILISEARCH_KEY")
 
+        if not hf_ie_url:
+            raise ValueError("HF_IE_URL is required. Set via --hf_ie_url or HF_IE_URL env var.")
         if not hf_ie_token:
             raise ValueError("HF_IE_TOKEN is required. Set via --hf_ie_token or HF_IE_TOKEN env var.")
         if not meilisearch_key:
@@ -76,8 +79,7 @@ def process_hf_docs_command(args):
 
         embeddings = call_embedding_inference(
             all_chunks,
-            args.hf_ie_name,
-            args.hf_ie_namespace,
+            hf_ie_url,
             hf_ie_token,
             is_python_module=False,  # Pre-built docs are not Python modules
         )
@@ -111,14 +113,17 @@ def meilisearch_clean_command(args):
 def add_gradio_docs_command(args):
     """Wrapper for add_gradio_docs that supports environment variables."""
     hf_ie_token = get_credential(args.hf_ie_token, "HF_IE_TOKEN")
+    hf_ie_url = get_credential(args.hf_ie_url, "HF_IE_URL")
     meilisearch_key = get_credential(args.meilisearch_key, "MEILISEARCH_KEY")
 
     if not hf_ie_token:
         raise ValueError("HF_IE_TOKEN is required. Set via --hf_ie_token or HF_IE_TOKEN env var.")
+    if not hf_ie_url:
+        raise ValueError("HF_IE_URL is required. Set via --hf_ie_url or HF_IE_URL env var.")
     if not meilisearch_key:
         raise ValueError("MEILISEARCH_KEY is required. Set via --meilisearch_key or MEILISEARCH_KEY env var.")
 
-    add_gradio_docs(args.hf_ie_name, args.hf_ie_namespace, hf_ie_token, meilisearch_key)
+    add_gradio_docs(hf_ie_url, hf_ie_token, meilisearch_key)
 
 
 def embeddings_command_parser(subparsers=None):
@@ -146,9 +151,8 @@ def embeddings_command_parser(subparsers=None):
             "Doc Builder add-gradio-docs command. Add Gradio documentation to embeddings."
         )
 
-    parser_add_gradio_docs.add_argument("--hf_ie_name", type=str, help="Inference Endpoints name.", required=True)
     parser_add_gradio_docs.add_argument(
-        "--hf_ie_namespace", type=str, help="Inference Endpoints namespace.", required=True
+        "--hf_ie_url", type=str, help="Inference Endpoints URL (or set HF_IE_URL env var).", required=False
     )
     parser_add_gradio_docs.add_argument(
         "--hf_ie_token", type=str, help="Hugging Face token (or set HF_IE_TOKEN env var).", required=False
@@ -192,15 +196,9 @@ def embeddings_command_parser(subparsers=None):
         help="Skip embedding generation and meilisearch upload (useful for testing)",
     )
     parser_process_hf_docs.add_argument(
-        "--hf_ie_name",
+        "--hf_ie_url",
         type=str,
-        help="Inference Endpoints name (required unless --skip-embeddings is set)",
-        required=False,
-    )
-    parser_process_hf_docs.add_argument(
-        "--hf_ie_namespace",
-        type=str,
-        help="Inference Endpoints namespace (required unless --skip-embeddings is set)",
+        help="Inference Endpoints URL (or set HF_IE_URL env var, required unless --skip-embeddings is set)",
         required=False,
     )
     parser_process_hf_docs.add_argument(
