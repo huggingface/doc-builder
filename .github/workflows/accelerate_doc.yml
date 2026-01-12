@@ -38,7 +38,9 @@ jobs:
         run: uv venv --python 3.10 .venv
 
       - name: Install Python dependencies
-        run: uv pip install --python .venv/bin/python --override 'huggingface-hub>=1.3.1' ./doc-builder './accelerate[dev]'
+        run: |
+          echo 'huggingface-hub>=1.3.1' > /tmp/override.txt
+          uv pip install --python .venv/bin/python --override /tmp/override.txt ./doc-builder './accelerate[dev]'
 
       - name: Make documentation
         run: |
