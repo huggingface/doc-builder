@@ -35,7 +35,7 @@ This is the package we use to build the documentation of our Hugging Face repos.
     + [Description](#description)
     + [Arguments](#arguments)
     + [Attributes](#attributes)
-    + [Parmeter typing and default value](#parmeter-typing-and-default-value)
+    + [Parameter typing and default value](#parameter-typing-and-default-value)
     + [Returns](#returns)
     + [Yields](#yields)
     + [Raises](#raises)
@@ -703,7 +703,7 @@ Syntax:
           ...
 ```
 
-### Parmeter typing and default value
+### Parameter typing and default value
 
 For optional arguments or arguments with defaults we follow the following syntax. Imagine we have a function with the
 following signature:
