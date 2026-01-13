@@ -168,6 +168,14 @@ def delete_embedding_db(client: Client, index_name: str):
     return client, task_info
 
 
+@wait_for_task_completion
+def clear_embedding_db(client: Client, index_name: str):
+    """Delete all documents from an index without deleting the index itself."""
+    index = client.index(index_name)
+    task_info = index.delete_all_documents()
+    return client, task_info
+
+
 def sanitize_for_id(text):
     """
     Sanitize text to only contain valid Meilisearch ID characters.
