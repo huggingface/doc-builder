@@ -216,6 +216,7 @@ def create_autodoc_chunks(
                     source_page_title=get_page_title(page_info["page"]),
                     package_name=page_info["package_name"],
                     headings=headings,
+                    page=page_info["page"],
                 )
                 for od in object_docs
             ]
@@ -868,6 +869,7 @@ def add_gradio_docs(hf_ie_url: str, hf_ie_token: str, meilisearch_key: str):
             doc["source_page_title"],
             "gradio",
             [doc["source_page_title"]] + ([doc["heading1"]] if doc.get("heading1") else []),
+            doc["source_page_url"],  # use URL as page identifier for gradio docs
         )
         for doc in data
     ]
