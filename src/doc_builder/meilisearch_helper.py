@@ -1,3 +1,4 @@
+import hashlib
 import json
 import re
 import sys
@@ -5,7 +6,6 @@ from collections.abc import Callable
 from datetime import datetime
 from functools import wraps
 from time import sleep
-from urllib.parse import urlparse
 
 from meilisearch.client import Client, TaskInfo
 from meilisearch.errors import MeilisearchApiError
@@ -191,22 +191,19 @@ def sanitize_for_id(text):
     return text.strip("_")
 
 
-def generate_doc_id(library: str, source_page_url: str) -> str:
+def generate_doc_id(library: str, page: str, text: str) -> str:
     """
-    Generate a unique document ID based on library and page path.
-    Format: {library}_{page_path}
+    Generate a unique document ID based on library, page, and a hash of content.
+    Format: {library}-{page}-{hash}
 
     See: https://www.meilisearch.com/docs/learn/getting_started/primary_key
     """
-    # Extract path from URL (includes fragment/anchor for section)
-    parsed = urlparse(source_page_url)
-    path = parsed.path + (f"_{parsed.fragment}" if parsed.fragment else "")
-
-    # Sanitize library and path
     sanitized_library = sanitize_for_id(library)
-    sanitized_path = sanitize_for_id(path)
+    sanitized_page = sanitize_for_id(page)
+    # Create hash from text content only
+    content_hash = hashlib.sha256(text.encode()).hexdigest()[:8]
 
-    return f"{sanitized_library}_{sanitized_path}"
+    return f"{sanitized_library}-{sanitized_page}-{content_hash}"
 
 
 @wait_for_task_completion
@@ -214,7 +211,7 @@ def add_embeddings_to_db(client: Client, index_name: str, embeddings):
     index = client.index(index_name)
     payload_data = [
         {
-            "id": generate_doc_id(e.library, e.source_page_url),
+            "id": generate_doc_id(e.library, e.page, e.text),
             "text": e.text,
             "source_page_url": e.source_page_url,
             "source_page_title": e.source_page_title,
