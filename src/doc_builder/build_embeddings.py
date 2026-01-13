@@ -743,9 +743,9 @@ def call_embedding_inference(chunks: list[Chunk], hf_ie_url, hf_ie_token, is_pyt
     Using https://huggingface.co/inference-endpoints with a text embedding model
     """
     if not hf_ie_url:
-        raise ValueError(f"hf_ie_url is required but got: {hf_ie_url!r}")
+        raise ValueError("hf_ie_url is required but got empty value")
     if not hf_ie_token:
-        raise ValueError(f"hf_ie_token is required but got empty value")
+        raise ValueError("hf_ie_token is required but got empty value")
 
     batch_size = 20
     embeddings = []
