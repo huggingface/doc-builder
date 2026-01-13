@@ -38,10 +38,10 @@ from .meilisearch_helper import (
 )
 from .utils import chunk_list, read_doc_config
 
-Chunk = namedtuple("Chunk", "text source_page_url source_page_title package_name headings")
+Chunk = namedtuple("Chunk", "text source_page_url source_page_title package_name headings page")
 Embedding = namedtuple(
     "Embedding",
-    "text source_page_url source_page_title library embedding heading1 heading2 heading3 heading4 heading5",
+    "text source_page_url source_page_title library embedding heading1 heading2 heading3 heading4 heading5 page",
 )
 
 MEILI_INDEX = "docs-semantic-search-v2"
@@ -104,6 +104,7 @@ class MarkdownChunkNode:
                         source_page_title=get_page_title(page_info["page"]),
                         package_name=page_info["package_name"],
                         headings=headings,
+                        page=page_info["page"],
                     )
                 )
                 chunk_str = ""
@@ -117,6 +118,7 @@ class MarkdownChunkNode:
                     source_page_title=get_page_title(page_info["page"]),
                     package_name=page_info["package_name"],
                     headings=headings,
+                    page=page_info["page"],
                 )
             )
 
@@ -732,6 +734,7 @@ def chunks_to_embeddings(client, chunks, is_python_module) -> list[Embedding]:
                 heading3=headings[2],
                 heading4=headings[3],
                 heading5=headings[4],
+                page=c.page,
             )
         )
 
