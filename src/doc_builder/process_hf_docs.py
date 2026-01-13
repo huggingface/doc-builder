@@ -23,15 +23,12 @@ import json
 import os
 import tempfile
 import zipfile
-from collections import namedtuple
 from pathlib import Path
 
 import requests
 from tqdm import tqdm
 
-from .build_embeddings import split_markdown_by_headings
-
-Chunk = namedtuple("Chunk", "text source_page_url source_page_title package_name headings")
+from .build_embeddings import Chunk, split_markdown_by_headings
 
 HF_DATASET_REPO = "hf-doc-build/doc-build"
 HF_DATASET_API_URL = f"https://huggingface.co/api/datasets/{HF_DATASET_REPO}/tree/main"
@@ -227,6 +224,8 @@ def process_markdown_file(
                     url = f"{base_url}#{anchor}"
 
             # Create a chunk for each excerpt
+            # Get the page path (relative path without extension)
+            page_path = str(file_path.relative_to(base_dir).with_suffix("")).replace(os.sep, "/")
             for excerpt in section["excerpts"]:
                 chunk = Chunk(
                     text=excerpt,
@@ -234,6 +233,7 @@ def process_markdown_file(
                     source_page_title=page_title,
                     package_name=library_name,
                     headings=heading_list,
+                    page=page_path,
                 )
                 chunks.append(chunk)
 
@@ -378,6 +378,7 @@ def save_chunks_to_json(chunks: list[Chunk], output_file: Path):
             "source_page_title": chunk.source_page_title,
             "package_name": chunk.package_name,
             "headings": chunk.headings,
+            "page": chunk.page,
         }
         for chunk in chunks
     ]
