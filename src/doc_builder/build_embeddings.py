@@ -746,7 +746,7 @@ def call_embedding_inference(chunks: list[Chunk], hf_ie_url, hf_ie_token, is_pyt
         raise ValueError(f"hf_ie_url is required but got: {hf_ie_url!r}")
     if not hf_ie_token:
         raise ValueError(f"hf_ie_token is required but got empty value")
-    
+
     batch_size = 20
     embeddings = []
 
