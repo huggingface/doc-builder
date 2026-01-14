@@ -37,8 +37,9 @@ def process_hf_docs_command(args):
     Downloads pre-built docs and generates embeddings.
     Processes one library per hour to avoid overloading the database.
     """
-    import meilisearch
     from time import sleep
+
+    import meilisearch
     from tqdm import tqdm
 
     print("Processing documentation from HF doc-build dataset...")
