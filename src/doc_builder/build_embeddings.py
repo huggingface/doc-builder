@@ -396,7 +396,7 @@ def create_markdown_chunks(text, page_info=None):
     if root is None:
         return []
 
-    CHUNK_LEN_CHARS = 2000
+    CHUNK_LEN_CHARS = 4000
     chunks = root.get_chunks(page_info, chunk_len_chars=CHUNK_LEN_CHARS)
     return chunks
 
