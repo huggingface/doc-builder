@@ -19,17 +19,9 @@ import subprocess
 from pathlib import Path
 from time import sleep, time
 
-from huggingface_hub import HfApi
+from huggingface_hub import HfApi, CommitOperationAdd
 
 REPO_TYPE = "dataset"
-SEPARATOR = "/"
-
-
-def create_zip_name(library_name, version, with_ext=True):
-    file_name = f"{library_name}{SEPARATOR}{version}"
-    if with_ext:
-        file_name += ".zip"
-    return file_name
 
 
 def push_command(args):
@@ -61,7 +53,7 @@ def push_command_add(args):
     )
     doc_version_folder = str(doc_version_folder)
 
-    zip_file_path = create_zip_name(library_name, doc_version_folder)
+    zip_file_path = f"{library_name}/{doc_version_folder}"
     # eg create ./transformers/v4.0.zip with '/transformers/v4.0/*' file architecture inside
     # Use subprocess.run instead of shutil.make_archive to avoid corrupted files, see https://github.com/huggingface/doc-builder/issues/348
     print(f"Running zip command: zip -r {zip_file_path} {path_docs_built}")
@@ -74,13 +66,16 @@ def push_command_add(args):
     while number_of_retries:
         try:
             if args.upload_version_yml:
-                # removing doc artifact folder to upload 2 files using `upload_folder`: _version.yml and zipped doc artifact file
-                shutil.rmtree(f"{library_name}/{doc_version_folder}")
-                api.upload_folder(
+                operations = [
+                    CommitOperationAdd(path_in_repo=zip_file_path, path_or_fileobj=zip_file_path),
+                    CommitOperationAdd(
+                        path_in_repo=f"{library_name}/_versions.yml", path_or_fileobj=f"{library_name}/_versions.yml"
+                    ),
+                ]
+                api.create_commit(
                     repo_id=args.doc_build_repo_id,
                     repo_type=REPO_TYPE,
-                    folder_path=library_name,
-                    path_in_repo=library_name,
+                    operations=operations,
                     commit_message=args.commit_msg,
                     token=args.token,
                 )
