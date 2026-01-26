@@ -206,6 +206,7 @@ def generate_doc_id(library: str, page: str, text: str) -> str:
     return f"{sanitized_library}-{sanitized_page}-{content_hash}"
 
 
+@wait_for_task_completion
 def add_embeddings_to_db(client: Client, index_name: str, embeddings):
     index = client.index(index_name)
     payload_data = [
@@ -225,8 +226,7 @@ def add_embeddings_to_db(client: Client, index_name: str, embeddings):
         for e in embeddings
     ]
     task_info = index.add_documents(payload_data)
-    print(f"  Submitted indexing task {task_info.task_uid} for {len(embeddings)} embeddings")
-    return task_info
+    return client, task_info
 
 
 def swap_indexes(
