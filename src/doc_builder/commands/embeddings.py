@@ -35,10 +35,7 @@ def process_hf_docs_command(args):
     """
     Process documentation from HF doc-build dataset.
     Downloads pre-built docs and generates embeddings.
-    Processes one library per hour to avoid overloading the database.
     """
-    from time import sleep
-
     import meilisearch
     from tqdm import tqdm
 
@@ -66,53 +63,39 @@ def process_hf_docs_command(args):
         if not meilisearch_key:
             raise ValueError("MEILISEARCH_KEY is required. Set via --meilisearch_key or MEILISEARCH_KEY env var.")
 
+        print("\n" + "=" * 80)
+        print("GENERATING EMBEDDINGS")
+        print("=" * 80)
+
+        # Collect all chunks
+        all_chunks = []
+        for _library_name, chunks in results.items():
+            all_chunks.extend(chunks)
+
+        print(f"\nTotal chunks to embed: {len(all_chunks)}")
+
+        # Generate embeddings
         from doc_builder.build_embeddings import MEILI_INDEX_TEMP
+
+        embeddings = call_embedding_inference(
+            all_chunks,
+            hf_ie_url,
+            hf_ie_token,
+            is_python_module=False,  # Pre-built docs are not Python modules
+        )
+
+        # Push to Meilisearch
+        print("\n" + "=" * 80)
+        print("UPLOADING TO MEILISEARCH")
+        print("=" * 80)
 
         client = meilisearch.Client("https://edge.meilisearch.com", meilisearch_key)
         ITEMS_PER_CHUNK = 5000
 
-        # Process one library at a time, waiting 1 hour between each
-        library_names = list(results.keys())
-        total_libraries = len(library_names)
-        total_embeddings = 0
+        for chunk_embeddings in tqdm(chunk_list(embeddings, ITEMS_PER_CHUNK), desc="Uploading to meilisearch"):
+            add_embeddings_to_db(client, MEILI_INDEX_TEMP, chunk_embeddings)
 
-        for idx, library_name in enumerate(library_names):
-            chunks = results[library_name]
-            if not chunks:
-                print(f"\n⏭️  Skipping {library_name} (no chunks)")
-                continue
-
-            print("\n" + "=" * 80)
-            print(f"📚 PROCESSING LIBRARY {idx + 1}/{total_libraries}: {library_name}")
-            print(f"   Chunks to process: {len(chunks)}")
-            print("=" * 80)
-
-            # Generate embeddings for this library
-            print(f"🔢 Generating embeddings for {library_name}...")
-            embeddings = call_embedding_inference(
-                chunks,
-                hf_ie_url,
-                hf_ie_token,
-                is_python_module=False,
-            )
-
-            # Push to Meilisearch
-            print(f"📤 Uploading {len(embeddings)} embeddings for {library_name} to Meilisearch...")
-            for chunk_embeddings in tqdm(chunk_list(embeddings, ITEMS_PER_CHUNK), desc=f"Uploading {library_name}"):
-                add_embeddings_to_db(client, MEILI_INDEX_TEMP, chunk_embeddings)
-
-            total_embeddings += len(embeddings)
-            print(f"✅ Finished uploading {library_name} ({len(embeddings)} embeddings)")
-
-            # Wait 1 hour before processing next library (except for the last one)
-            if idx < total_libraries - 1:
-                wait_hours = 1
-                wait_seconds = wait_hours * 60 * 60
-                print(f"\n⏳ Waiting {wait_hours} hour before processing next library...")
-                print(f"   Next library: {library_names[idx + 1]}")
-                sleep(wait_seconds)
-
-        print(f"\n✅ Successfully uploaded {total_embeddings} total embeddings to Meilisearch")
+        print(f"\nSuccessfully uploaded {len(embeddings)} embeddings to Meilisearch")
 
     print("\n" + "=" * 80)
     print("✅ PROCESSING COMPLETE")
