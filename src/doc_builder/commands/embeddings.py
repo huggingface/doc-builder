@@ -164,6 +164,8 @@ def add_gradio_docs_command(args):
     hf_ie_token = get_credential(args.hf_ie_token, "HF_IE_TOKEN")
     hf_ie_url = get_credential(args.hf_ie_url, "HF_IE_URL")
     meilisearch_key = get_credential(args.meilisearch_key, "MEILISEARCH_KEY")
+    hf_token = get_credential(getattr(args, "hf_token", None), "HF_TOKEN")
+    incremental = getattr(args, "incremental", False)
 
     if not hf_ie_token:
         raise ValueError("HF_IE_TOKEN is required. Set via --hf_ie_token or HF_IE_TOKEN env var.")
@@ -172,7 +174,13 @@ def add_gradio_docs_command(args):
     if not meilisearch_key:
         raise ValueError("MEILISEARCH_KEY is required. Set via --meilisearch_key or MEILISEARCH_KEY env var.")
 
-    add_gradio_docs(hf_ie_url, hf_ie_token, meilisearch_key)
+    add_gradio_docs(
+        hf_ie_url,
+        hf_ie_token,
+        meilisearch_key,
+        incremental=incremental,
+        hf_token=hf_token,
+    )
 
 
 def embeddings_command_parser(subparsers=None):
@@ -208,6 +216,18 @@ def embeddings_command_parser(subparsers=None):
     )
     parser_add_gradio_docs.add_argument(
         "--meilisearch_key", type=str, help="Meilisearch key (or set MEILISEARCH_KEY env var).", required=False
+    )
+    parser_add_gradio_docs.add_argument(
+        "--incremental",
+        action="store_true",
+        help="Enable incremental mode: only process new/changed Gradio documents. "
+        "Uploads directly to main index instead of temp index.",
+    )
+    parser_add_gradio_docs.add_argument(
+        "--hf_token",
+        type=str,
+        help="HuggingFace token for updating tracker dataset in incremental mode (or set HF_TOKEN env var)",
+        required=False,
     )
     if subparsers is not None:
         parser_add_gradio_docs.set_defaults(func=add_gradio_docs_command)

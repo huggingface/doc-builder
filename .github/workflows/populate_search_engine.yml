@@ -71,7 +71,19 @@ jobs:
       - name: Install doc-builder
         run: uv sync --extra dev
 
-      - name: Add gradio docs to meilisearch
+      # Incremental mode (default): only process new/changed Gradio documents
+      - name: Add gradio docs to meilisearch (incremental)
+        if: ${{ github.event.inputs.full_rebuild != 'true' }}
+        env:
+          HF_IE_URL: ${{ secrets.HF_IE_URL }}
+          HF_IE_TOKEN: ${{ secrets.HF_IE_TOKEN }}
+          MEILISEARCH_KEY: ${{ secrets.MEILISEARCH_KEY }}
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: uv run doc-builder add-gradio-docs --incremental
+
+      # Full rebuild mode: process all Gradio documents
+      - name: Add gradio docs to meilisearch (full rebuild)
+        if: ${{ github.event.inputs.full_rebuild == 'true' }}
         env:
           HF_IE_URL: ${{ secrets.HF_IE_URL }}
           HF_IE_TOKEN: ${{ secrets.HF_IE_TOKEN }}

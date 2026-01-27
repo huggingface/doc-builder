@@ -852,8 +852,28 @@ def clean_meilisearch(meilisearch_key: str, swap: bool):
     print("[meilisearch] successfully swapped & deleted temp index.")
 
 
-def add_gradio_docs(hf_ie_url: str, hf_ie_token: str, meilisearch_key: str):
-    """Add Gradio documentation to embeddings."""
+def add_gradio_docs(
+    hf_ie_url: str,
+    hf_ie_token: str,
+    meilisearch_key: str,
+    incremental: bool = False,
+    hf_token: str | None = None,
+):
+    """Add Gradio documentation to embeddings.
+
+    Args:
+        hf_ie_url: Inference Endpoints URL
+        hf_ie_token: HuggingFace token for inference
+        meilisearch_key: Meilisearch API key
+        incremental: If True, only process new/changed documents
+        hf_token: HuggingFace token for updating tracker dataset (required for incremental mode)
+    """
+    from .embeddings_tracker import (
+        fetch_existing_doc_ids,
+        filter_new_chunks,
+        update_tracker_dataset,
+    )
+
     # Step 1: download the documentation
     url = "https://huggingface.co/datasets/gradio/docs/resolve/main/docs.json"
 
@@ -874,7 +894,26 @@ def add_gradio_docs(hf_ie_url: str, hf_ie_token: str, meilisearch_key: str):
         for doc in data
     ]
 
+    print(f"Total Gradio chunks found: {len(chunks)}")
+
+    # In incremental mode, filter to only new chunks
+    existing_ids = set()
+    if incremental:
+        print("Running in INCREMENTAL mode - only processing new/changed documents")
+        existing_ids = fetch_existing_doc_ids()
+        chunks_to_process, existing_chunks = filter_new_chunks(chunks, existing_ids)
+
+        print(f"Chunks already embedded: {len(existing_chunks)}")
+        print(f"New chunks to embed: {len(chunks_to_process)}")
+
+        if len(chunks_to_process) == 0:
+            print("No new Gradio documents to process. All documents are up to date.")
+            return
+    else:
+        chunks_to_process = chunks
+
     # Step 2: create embeddings
+    print(f"Generating embeddings for {len(chunks_to_process)} chunks...")
     batch_size = 20
     embeddings = []
 
@@ -882,8 +921,8 @@ def add_gradio_docs(hf_ie_url: str, hf_ie_token: str, meilisearch_key: str):
 
     with ThreadPoolExecutor(max_workers=16) as executor:
         future_to_chunk = {
-            executor.submit(chunks_to_embeddings, client, chunks[i : i + batch_size], True): i
-            for i in range(0, len(chunks), batch_size)
+            executor.submit(chunks_to_embeddings, client, chunks_to_process[i : i + batch_size], True): i
+            for i in range(0, len(chunks_to_process), batch_size)
         }
 
         for future in tqdm(
@@ -895,7 +934,19 @@ def add_gradio_docs(hf_ie_url: str, hf_ie_token: str, meilisearch_key: str):
             embeddings.extend(batch_embeddings)
 
     # Step 3: push embeddings to vector database (meilisearch)
+    # In incremental mode, upload directly to main index
+    # In full rebuild mode, upload to temp index for later swap
+    target_index = MEILI_INDEX if incremental else MEILI_INDEX_TEMP
+    print(f"Uploading to Meilisearch index: {target_index}")
+
     client = meilisearch.Client("https://edge.meilisearch.com", meilisearch_key)
     ITEMS_PER_CHUNK = 5000  # a value that was found experimentally
     for chunk_embeddings in tqdm(chunk_list(embeddings, ITEMS_PER_CHUNK), desc="Uploading gradio docs to meilisearch"):
-        add_embeddings_to_db(client, MEILI_INDEX_TEMP, chunk_embeddings)
+        add_embeddings_to_db(client, target_index, chunk_embeddings)
+
+    print(f"Successfully uploaded {len(embeddings)} Gradio embeddings")
+
+    # In incremental mode, update the tracker dataset
+    if incremental and hf_token:
+        print("Updating tracker dataset...")
+        update_tracker_dataset(embeddings, existing_ids, hf_token)
