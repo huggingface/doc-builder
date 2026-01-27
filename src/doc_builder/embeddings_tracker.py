@@ -22,7 +22,7 @@ from datasets import Dataset, load_dataset
 from .meilisearch_helper import generate_doc_id
 
 # Dataset repository for tracking embeddings
-EMBEDDINGS_TRACKER_REPO = "huggingface/doc-builder-embeddings-tracker"
+EMBEDDINGS_TRACKER_REPO = "hf-doc-build/doc-builder-embeddings-tracker"
 
 
 def fetch_existing_doc_ids(repo_id: str = EMBEDDINGS_TRACKER_REPO) -> set[str]:
