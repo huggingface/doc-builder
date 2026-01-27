@@ -14,7 +14,6 @@ import os
 
 import meilisearch
 from datasets import Dataset
-from huggingface_hub import HfApi
 
 from doc_builder.build_embeddings import MEILI_INDEX
 
