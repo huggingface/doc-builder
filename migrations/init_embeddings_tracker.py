@@ -24,9 +24,7 @@ EMBEDDINGS_TRACKER_REPO = "hf-doc-build/doc-builder-embeddings-tracker"
 
 
 def main():
-    parser = argparse.ArgumentParser(
-        description="Initialize embeddings tracker dataset from hf-doc-build/doc-build"
-    )
+    parser = argparse.ArgumentParser(description="Initialize embeddings tracker dataset from hf-doc-build/doc-build")
     parser.add_argument(
         "--hf_token",
         type=str,
