@@ -28,10 +28,10 @@ EMBEDDINGS_TRACKER_REPO = "huggingface/doc-builder-embeddings-tracker"
 def fetch_existing_doc_ids(repo_id: str = EMBEDDINGS_TRACKER_REPO) -> set[str]:
     """
     Fetch all existing document IDs from the HuggingFace dataset.
-    
+
     Args:
         repo_id: The HuggingFace dataset repository ID
-        
+
     Returns:
         Set of document IDs that already have embeddings
     """
@@ -50,24 +50,24 @@ def fetch_existing_doc_ids(repo_id: str = EMBEDDINGS_TRACKER_REPO) -> set[str]:
 def filter_new_chunks(chunks: list, existing_ids: set[str]) -> tuple[list, list]:
     """
     Filter chunks to only include those that don't already have embeddings.
-    
+
     Args:
         chunks: List of Chunk objects
         existing_ids: Set of document IDs that already exist
-        
+
     Returns:
         Tuple of (new_chunks, existing_chunks)
     """
     new_chunks = []
     existing_chunks = []
-    
+
     for chunk in chunks:
         doc_id = generate_doc_id(chunk.package_name, chunk.page, chunk.text)
         if doc_id in existing_ids:
             existing_chunks.append(chunk)
         else:
             new_chunks.append(chunk)
-    
+
     return new_chunks, existing_chunks
 
 
@@ -79,7 +79,7 @@ def update_tracker_dataset(
 ):
     """
     Update the tracker dataset with new document IDs.
-    
+
     Args:
         new_embeddings: List of Embedding objects that were just added
         existing_ids: Set of existing document IDs
@@ -87,39 +87,43 @@ def update_tracker_dataset(
         repo_id: The HuggingFace dataset repository ID
     """
     from .meilisearch_helper import generate_doc_id
-    
+
     # Create entries for new documents
     new_entries = []
     for e in new_embeddings:
         doc_id = generate_doc_id(e.library, e.page, e.text)
-        new_entries.append({
-            "id": doc_id,
-            "library": e.library,
-            "source_page_url": e.source_page_url,
-        })
-    
+        new_entries.append(
+            {
+                "id": doc_id,
+                "library": e.library,
+                "source_page_url": e.source_page_url,
+            }
+        )
+
     if not new_entries:
         print("No new entries to add to tracker dataset")
         return
-    
+
     # Combine with existing entries
     all_entries = []
-    
+
     # Try to load existing dataset
     try:
         existing_dataset = load_dataset(repo_id, split="train")
         for i in range(len(existing_dataset)):
-            all_entries.append({
-                "id": existing_dataset[i]["id"],
-                "library": existing_dataset[i]["library"],
-                "source_page_url": existing_dataset[i].get("source_page_url", ""),
-            })
+            all_entries.append(
+                {
+                    "id": existing_dataset[i]["id"],
+                    "library": existing_dataset[i]["library"],
+                    "source_page_url": existing_dataset[i].get("source_page_url", ""),
+                }
+            )
     except Exception:
         print("Creating new tracker dataset")
-    
+
     # Add new entries
     all_entries.extend(new_entries)
-    
+
     # Deduplicate by ID
     seen_ids = set()
     unique_entries = []
@@ -127,7 +131,7 @@ def update_tracker_dataset(
         if entry["id"] not in seen_ids:
             seen_ids.add(entry["id"])
             unique_entries.append(entry)
-    
+
     # Create and push dataset
     dataset = Dataset.from_list(unique_entries)
     print(f"Pushing updated tracker dataset with {len(dataset)} entries...")
@@ -138,14 +142,11 @@ def update_tracker_dataset(
 def get_chunk_ids(chunks: list) -> list[str]:
     """
     Generate document IDs for a list of chunks without computing embeddings.
-    
+
     Args:
         chunks: List of Chunk objects
-        
+
     Returns:
         List of document IDs
     """
-    return [
-        generate_doc_id(chunk.package_name, chunk.page, chunk.text)
-        for chunk in chunks
-    ]
+    return [generate_doc_id(chunk.package_name, chunk.page, chunk.text) for chunk in chunks]

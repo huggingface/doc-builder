@@ -40,7 +40,7 @@ def process_hf_docs_command(args):
     """
     Process documentation from HF doc-build dataset.
     Downloads pre-built docs and generates embeddings.
-    
+
     Supports two modes:
     - Full rebuild (default): Process all docs and upload to temp index
     - Incremental (--incremental): Only process new/changed docs, upload to main index
@@ -49,8 +49,8 @@ def process_hf_docs_command(args):
     from tqdm import tqdm
 
     print("Processing documentation from HF doc-build dataset...")
-    
-    incremental_mode = getattr(args, 'incremental', False)
+
+    incremental_mode = getattr(args, "incremental", False)
     if incremental_mode:
         print("Running in INCREMENTAL mode - only processing new/changed documents")
 
@@ -68,7 +68,7 @@ def process_hf_docs_command(args):
         hf_ie_url = get_credential(args.hf_ie_url, "HF_IE_URL")
         hf_ie_token = get_credential(args.hf_ie_token, "HF_IE_TOKEN")
         meilisearch_key = get_credential(args.meilisearch_key, "MEILISEARCH_KEY")
-        hf_token = get_credential(getattr(args, 'hf_token', None), "HF_TOKEN")
+        hf_token = get_credential(getattr(args, "hf_token", None), "HF_TOKEN")
 
         if not hf_ie_url:
             raise ValueError("HF_IE_URL is required. Set via --hf_ie_url or HF_IE_URL env var.")
@@ -89,13 +89,13 @@ def process_hf_docs_command(args):
             print("\n" + "=" * 80)
             print("CHECKING EXISTING EMBEDDINGS")
             print("=" * 80)
-            
+
             existing_ids = fetch_existing_doc_ids()
             chunks_to_process, existing_chunks = filter_new_chunks(all_chunks, existing_ids)
-            
+
             print(f"Chunks already embedded: {len(existing_chunks)}")
             print(f"New chunks to embed: {len(chunks_to_process)}")
-            
+
             if len(chunks_to_process) == 0:
                 print("\nNo new documents to process. All documents are up to date.")
                 print("\n" + "=" * 80)
@@ -128,7 +128,7 @@ def process_hf_docs_command(args):
 
         client = meilisearch.Client("https://edge.meilisearch.com", meilisearch_key)
         ITEMS_PER_CHUNK = 5000
-        
+
         # In incremental mode, upload directly to main index (upsert behavior)
         # In full rebuild mode, upload to temp index for later swap
         target_index = MEILI_INDEX if incremental_mode else MEILI_INDEX_TEMP
@@ -263,8 +263,8 @@ def embeddings_command_parser(subparsers=None):
         "--incremental",
         action="store_true",
         help="Enable incremental mode: only process new/changed documents. "
-             "Checks existing document IDs from HuggingFace dataset and skips already embedded docs. "
-             "Uploads directly to main index instead of temp index.",
+        "Checks existing document IDs from HuggingFace dataset and skips already embedded docs. "
+        "Uploads directly to main index instead of temp index.",
     )
     parser_process_hf_docs.add_argument(
         "--hf_token",
