@@ -71,16 +71,18 @@ def filter_new_chunks(chunks: list, existing_ids: set[str]) -> tuple[list, list]
     return new_chunks, existing_chunks
 
 
-def find_stale_ids(chunks: list, existing_ids: set[str]) -> set[str]:
+def find_stale_ids(chunks: list, existing_ids: set[str], existing_dataset=None) -> set[str]:
     """
-    Find document IDs that are stale (page was updated, so old version should be removed).
+    Find document IDs that are stale (page was updated or deleted).
 
-    When a page is updated, the content hash changes, creating a new ID.
-    The old ID for the same (library, page) should be removed.
+    Handles two cases:
+    1. Page updated: content hash changes, old ID should be removed
+    2. Page deleted: all IDs for that page should be removed
 
     Args:
         chunks: List of current Chunk objects
         existing_ids: Set of document IDs that exist in the tracker
+        existing_dataset: Optional dataset with library info for detecting deleted pages
 
     Returns:
         Set of stale document IDs that should be removed
@@ -96,11 +98,25 @@ def find_stale_ids(chunks: list, existing_ids: set[str]) -> set[str]:
             current_ids_by_page[key] = set()
         current_ids_by_page[key].add(doc_id)
 
-    # Find stale IDs: existing IDs whose (library, page) prefix matches
-    # a current page but the full ID is not in the current set
+    # Build set of all current IDs
+    all_current_ids = set()
+    for ids in current_ids_by_page.values():
+        all_current_ids.update(ids)
+
+    # Build set of current prefixes (library-page combinations)
+    current_prefixes = set()
+    for library, page in current_ids_by_page.keys():
+        prefix = f"{sanitize_for_id(library)}-{sanitize_for_id(page)}"
+        current_prefixes.add(prefix)
+
+    # Find stale IDs
     stale_ids = set()
     for existing_id in existing_ids:
-        # Parse the existing ID to extract library and page
+        # Skip if this ID is still current
+        if existing_id in all_current_ids:
+            continue
+
+        # Parse the existing ID to extract prefix (library-page)
         # Format: {library}-{page}-{hash}
         # The hash is always 8 characters at the end
         parts = existing_id.rsplit("-", 1)
@@ -109,15 +125,24 @@ def find_stale_ids(chunks: list, existing_ids: set[str]) -> set[str]:
 
         prefix = parts[0]  # library-page part
 
-        # Check if this prefix matches any current (library, page)
-        for (library, page), current_ids in current_ids_by_page.items():
-            expected_prefix = f"{sanitize_for_id(library)}-{sanitize_for_id(page)}"
-            if prefix == expected_prefix:
-                # This existing ID is for a page we currently have
-                # If the full ID is not in current IDs, it's stale
-                if existing_id not in current_ids:
+        # Check if this prefix still exists in current pages
+        if prefix in current_prefixes:
+            # Page still exists but content changed (updated page)
+            stale_ids.add(existing_id)
+        else:
+            # Check if this is a page from a library we're currently processing
+            # We only want to delete pages from libraries that are in our current chunks
+            # to avoid deleting pages from libraries we didn't process
+            current_libraries = {sanitize_for_id(lib) for lib, _ in current_ids_by_page.keys()}
+
+            # Extract library from prefix (everything before the first underscore after library name)
+            # This is tricky because both library and page can have underscores
+            # We need to check if any current library is a prefix of this ID's prefix
+            for lib in current_libraries:
+                if prefix.startswith(f"{lib}-"):
+                    # This is a deleted page from a library we're processing
                     stale_ids.add(existing_id)
-                break
+                    break
 
     return stale_ids
 
