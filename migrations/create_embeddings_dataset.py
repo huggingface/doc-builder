@@ -6,7 +6,7 @@ This dataset is used to track which documents already have embeddings, enabling 
 Usage:
     uv run python migrations/create_embeddings_dataset.py --meilisearch_key <key> --hf_token <token>
 
-The dataset will be created at: huggingface/doc-builder-embeddings-tracker
+The dataset will be created at: hf-doc-build/doc-builder-embeddings-tracker
 """
 
 import argparse
@@ -18,7 +18,7 @@ from datasets import Dataset
 from doc_builder.build_embeddings import MEILI_INDEX
 
 # Dataset repository for tracking embeddings
-EMBEDDINGS_TRACKER_REPO = "huggingface/doc-builder-embeddings-tracker"
+EMBEDDINGS_TRACKER_REPO = "hf-doc-build/doc-builder-embeddings-tracker"
 
 
 def fetch_all_document_ids(client: meilisearch.Client, index_name: str) -> list[dict]:
