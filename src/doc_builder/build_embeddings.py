@@ -871,8 +871,10 @@ def add_gradio_docs(
     from .embeddings_tracker import (
         fetch_existing_doc_ids,
         filter_new_chunks,
+        find_stale_ids,
         update_tracker_dataset,
     )
+    from .meilisearch_helper import delete_documents_by_ids
 
     # Step 1: download the documentation
     url = "https://huggingface.co/datasets/gradio/docs/resolve/main/docs.json"
@@ -896,17 +898,22 @@ def add_gradio_docs(
 
     print(f"Total Gradio chunks found: {len(chunks)}")
 
-    # In incremental mode, filter to only new chunks
+    # In incremental mode, filter to only new chunks and find stale ones
     existing_ids = set()
+    stale_ids = set()
     if incremental:
         print("Running in INCREMENTAL mode - only processing new/changed documents")
         existing_ids = fetch_existing_doc_ids()
         chunks_to_process, existing_chunks = filter_new_chunks(chunks, existing_ids)
 
+        # Find stale IDs (old versions of updated pages)
+        stale_ids = find_stale_ids(chunks, existing_ids)
+
         print(f"Chunks already embedded: {len(existing_chunks)}")
         print(f"New chunks to embed: {len(chunks_to_process)}")
+        print(f"Stale entries to remove: {len(stale_ids)}")
 
-        if len(chunks_to_process) == 0:
+        if len(chunks_to_process) == 0 and len(stale_ids) == 0:
             print("No new Gradio documents to process. All documents are up to date.")
             return
     else:
@@ -946,7 +953,15 @@ def add_gradio_docs(
 
     print(f"Successfully uploaded {len(embeddings)} Gradio embeddings")
 
-    # In incremental mode, update the tracker dataset
-    if incremental and hf_token:
-        print("Updating tracker dataset...")
-        update_tracker_dataset(embeddings, existing_ids, hf_token)
+    # In incremental mode, delete stale entries and update the tracker dataset
+    if incremental:
+        # Delete stale entries from Meilisearch
+        if stale_ids:
+            print(f"Deleting {len(stale_ids)} stale entries from Meilisearch...")
+            delete_documents_by_ids(client, target_index, list(stale_ids))
+            print("Stale entries removed successfully")
+
+        # Update the tracker dataset
+        if hf_token:
+            print("Updating tracker dataset...")
+            update_tracker_dataset(embeddings, existing_ids, hf_token, stale_ids=stale_ids)

@@ -71,22 +71,78 @@ def filter_new_chunks(chunks: list, existing_ids: set[str]) -> tuple[list, list]
     return new_chunks, existing_chunks
 
 
+def find_stale_ids(chunks: list, existing_ids: set[str]) -> set[str]:
+    """
+    Find document IDs that are stale (page was updated, so old version should be removed).
+
+    When a page is updated, the content hash changes, creating a new ID.
+    The old ID for the same (library, page) should be removed.
+
+    Args:
+        chunks: List of current Chunk objects
+        existing_ids: Set of document IDs that exist in the tracker
+
+    Returns:
+        Set of stale document IDs that should be removed
+    """
+    from .meilisearch_helper import sanitize_for_id
+
+    # Build a mapping of (library, page) -> set of current IDs
+    current_ids_by_page: dict[tuple[str, str], set[str]] = {}
+    for chunk in chunks:
+        doc_id = generate_doc_id(chunk.package_name, chunk.page, chunk.text)
+        key = (chunk.package_name, chunk.page)
+        if key not in current_ids_by_page:
+            current_ids_by_page[key] = set()
+        current_ids_by_page[key].add(doc_id)
+
+    # Find stale IDs: existing IDs whose (library, page) prefix matches
+    # a current page but the full ID is not in the current set
+    stale_ids = set()
+    for existing_id in existing_ids:
+        # Parse the existing ID to extract library and page
+        # Format: {library}-{page}-{hash}
+        # The hash is always 8 characters at the end
+        parts = existing_id.rsplit("-", 1)
+        if len(parts) != 2 or len(parts[1]) != 8:
+            continue
+
+        prefix = parts[0]  # library-page part
+
+        # Check if this prefix matches any current (library, page)
+        for (library, page), current_ids in current_ids_by_page.items():
+            expected_prefix = f"{sanitize_for_id(library)}-{sanitize_for_id(page)}"
+            if prefix == expected_prefix:
+                # This existing ID is for a page we currently have
+                # If the full ID is not in current IDs, it's stale
+                if existing_id not in current_ids:
+                    stale_ids.add(existing_id)
+                break
+
+    return stale_ids
+
+
 def update_tracker_dataset(
     new_embeddings: list,
     existing_ids: set[str],
     hf_token: str,
+    stale_ids: set[str] | None = None,
     repo_id: str = EMBEDDINGS_TRACKER_REPO,
 ):
     """
-    Update the tracker dataset with new document IDs.
+    Update the tracker dataset: add new document IDs and remove stale ones.
 
     Args:
         new_embeddings: List of Embedding objects that were just added
         existing_ids: Set of existing document IDs
         hf_token: HuggingFace token for pushing
+        stale_ids: Set of document IDs to remove (updated pages)
         repo_id: The HuggingFace dataset repository ID
     """
     from .meilisearch_helper import generate_doc_id
+
+    if stale_ids is None:
+        stale_ids = set()
 
     # Create entries for new documents
     new_entries = []
@@ -100,20 +156,24 @@ def update_tracker_dataset(
             }
         )
 
-    if not new_entries:
-        print("No new entries to add to tracker dataset")
+    if not new_entries and not stale_ids:
+        print("No changes to tracker dataset")
         return
 
-    # Combine with existing entries
+    # Combine with existing entries (excluding stale ones)
     all_entries = []
 
     # Try to load existing dataset
     try:
         existing_dataset = load_dataset(repo_id, split="train")
         for i in range(len(existing_dataset)):
+            entry_id = existing_dataset[i]["id"]
+            # Skip stale IDs
+            if entry_id in stale_ids:
+                continue
             all_entries.append(
                 {
-                    "id": existing_dataset[i]["id"],
+                    "id": entry_id,
                     "library": existing_dataset[i]["library"],
                     "source_page_url": existing_dataset[i].get("source_page_url", ""),
                 }
@@ -135,6 +195,8 @@ def update_tracker_dataset(
     # Create and push dataset
     dataset = Dataset.from_list(unique_entries)
     print(f"Pushing updated tracker dataset with {len(dataset)} entries...")
+    if stale_ids:
+        print(f"  (removed {len(stale_ids)} stale entries)")
     dataset.push_to_hub(repo_id, token=hf_token, private=False)
     print(f"Successfully updated tracker dataset at {repo_id}")
 

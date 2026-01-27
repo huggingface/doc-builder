@@ -22,9 +22,10 @@ from doc_builder.build_embeddings import add_gradio_docs, call_embedding_inferen
 from doc_builder.embeddings_tracker import (
     fetch_existing_doc_ids,
     filter_new_chunks,
+    find_stale_ids,
     update_tracker_dataset,
 )
-from doc_builder.meilisearch_helper import add_embeddings_to_db
+from doc_builder.meilisearch_helper import add_embeddings_to_db, delete_documents_by_ids
 from doc_builder.process_hf_docs import process_all_libraries
 from doc_builder.utils import chunk_list
 
@@ -84,7 +85,8 @@ def process_hf_docs_command(args):
 
         print(f"\nTotal chunks found: {len(all_chunks)}")
 
-        # In incremental mode, filter to only new chunks
+        # In incremental mode, filter to only new chunks and find stale ones
+        stale_ids = set()
         if incremental_mode:
             print("\n" + "=" * 80)
             print("CHECKING EXISTING EMBEDDINGS")
@@ -93,10 +95,14 @@ def process_hf_docs_command(args):
             existing_ids = fetch_existing_doc_ids()
             chunks_to_process, existing_chunks = filter_new_chunks(all_chunks, existing_ids)
 
+            # Find stale IDs (old versions of updated pages)
+            stale_ids = find_stale_ids(all_chunks, existing_ids)
+
             print(f"Chunks already embedded: {len(existing_chunks)}")
             print(f"New chunks to embed: {len(chunks_to_process)}")
+            print(f"Stale entries to remove: {len(stale_ids)}")
 
-            if len(chunks_to_process) == 0:
+            if len(chunks_to_process) == 0 and len(stale_ids) == 0:
                 print("\nNo new documents to process. All documents are up to date.")
                 print("\n" + "=" * 80)
                 print("✅ PROCESSING COMPLETE (no updates needed)")
@@ -139,12 +145,23 @@ def process_hf_docs_command(args):
 
         print(f"\nSuccessfully uploaded {len(embeddings)} embeddings to Meilisearch")
 
-        # In incremental mode, update the tracker dataset
-        if incremental_mode and hf_token:
-            print("\n" + "=" * 80)
-            print("UPDATING TRACKER DATASET")
-            print("=" * 80)
-            update_tracker_dataset(embeddings, existing_ids, hf_token)
+        # In incremental mode, delete stale entries and update the tracker dataset
+        if incremental_mode:
+            # Delete stale entries from Meilisearch
+            if stale_ids:
+                print("\n" + "=" * 80)
+                print("REMOVING STALE ENTRIES")
+                print("=" * 80)
+                print(f"Deleting {len(stale_ids)} stale entries from Meilisearch...")
+                delete_documents_by_ids(client, target_index, list(stale_ids))
+                print("Stale entries removed successfully")
+
+            # Update the tracker dataset
+            if hf_token:
+                print("\n" + "=" * 80)
+                print("UPDATING TRACKER DATASET")
+                print("=" * 80)
+                update_tracker_dataset(embeddings, existing_ids, hf_token, stale_ids=stale_ids)
 
     print("\n" + "=" * 80)
     print("✅ PROCESSING COMPLETE")
