@@ -66,7 +66,7 @@ def main():
     print("=" * 80)
 
     entries = []
-    for library_name, chunks in tqdm(results.items(), desc="Processing libraries"):
+    for _library_name, chunks in tqdm(results.items(), desc="Processing libraries"):
         for chunk in chunks:
             doc_id = generate_doc_id(chunk.package_name, chunk.page, chunk.text)
             entries.append(
