@@ -5,6 +5,12 @@ on:
   #   - cron: "5 7 * * *" # every day at 07:05
   # to run this workflow manually from the Actions tab
   workflow_dispatch:
+    inputs:
+      full_rebuild:
+        description: 'Full rebuild (ignores existing embeddings)'
+        required: false
+        default: false
+        type: boolean
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -29,7 +35,19 @@ jobs:
       - name: Install doc-builder
         run: uv sync --extra dev
 
-      - name: Populate search engine from HF doc-build dataset
+      # Incremental mode (default): only process new/changed documents
+      - name: Populate search engine (incremental)
+        if: ${{ github.event.inputs.full_rebuild != 'true' }}
+        env:
+          HF_IE_URL: ${{ secrets.HF_IE_URL }}
+          HF_IE_TOKEN: ${{ secrets.HF_IE_TOKEN }}
+          MEILISEARCH_KEY: ${{ secrets.MEILISEARCH_KEY }}
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: uv run doc-builder populate-search-engine --incremental
+      
+      # Full rebuild mode: process all documents (for manual runs when needed)
+      - name: Populate search engine (full rebuild)
+        if: ${{ github.event.inputs.full_rebuild == 'true' }}
         env:
           HF_IE_URL: ${{ secrets.HF_IE_URL }}
           HF_IE_TOKEN: ${{ secrets.HF_IE_TOKEN }}
