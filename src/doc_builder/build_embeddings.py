@@ -913,6 +913,23 @@ def add_gradio_docs(
         print(f"New chunks to embed: {len(chunks_to_process)}")
         print(f"Stale entries to remove: {len(stale_ids)}")
 
+        # Log which pages are being updated
+        if chunks_to_process:
+            new_pages = {c.source_page_url for c in chunks_to_process}
+            print(f"\nNew/updated pages ({len(new_pages)}):")
+            for page in sorted(new_pages)[:20]:  # Show first 20
+                print(f"  + {page}")
+            if len(new_pages) > 20:
+                print(f"  ... and {len(new_pages) - 20} more")
+
+        # Log which IDs are being removed
+        if stale_ids:
+            print(f"\nStale IDs to remove ({len(stale_ids)}):")
+            for stale_id in sorted(stale_ids)[:20]:  # Show first 20
+                print(f"  - {stale_id}")
+            if len(stale_ids) > 20:
+                print(f"  ... and {len(stale_ids) - 20} more")
+
         if len(chunks_to_process) == 0 and len(stale_ids) == 0:
             print("No new Gradio documents to process. All documents are up to date.")
             return
