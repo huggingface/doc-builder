@@ -272,8 +272,24 @@ def process_library(
         if extract_path is None:
             return []
 
+    # The zip extracts to: extract_path/main/en/ (or extract_path/main/ for non-multilingual)
+    # We only process the 'en' (English) folder
+    main_path = extract_path / "main"
+    if not main_path.exists():
+        print(f"  ⚠️  No 'main' folder found for {library_name}")
+        return []
+
+    # Check for 'en' subfolder (multilingual docs)
+    en_path = main_path / "en"
+    if en_path.exists() and en_path.is_dir():
+        base_dir = en_path
+        print(f"  Using English docs at {en_path}")
+    else:
+        # Non-multilingual docs - use main directly
+        base_dir = main_path
+
     # Find all markdown files
-    markdown_files = find_markdown_files(extract_path)
+    markdown_files = find_markdown_files(base_dir)
     print(f"  Found {len(markdown_files)} markdown files")
 
     if not markdown_files:
@@ -284,7 +300,7 @@ def process_library(
     all_chunks = []
     print("  Processing markdown files...")
     for md_file in tqdm(markdown_files, desc=f"  {library_name}", unit="file"):
-        chunks = process_markdown_file(md_file, library_name, extract_path, excerpts_max_length)
+        chunks = process_markdown_file(md_file, library_name, base_dir, excerpts_max_length)
         all_chunks.extend(chunks)
 
     print(f"  ✅ Generated {len(all_chunks)} chunks from {len(markdown_files)} files")
