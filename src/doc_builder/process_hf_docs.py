@@ -272,14 +272,13 @@ def process_library(
         if extract_path is None:
             return []
 
-    # The zip file contains a top-level folder with the library name,
-    # so the actual content is at extract_path/library_name
-    # Use the inner directory as base_dir to avoid duplicating library name in URLs
-    inner_path = extract_path / library_name
-    if inner_path.exists() and inner_path.is_dir():
-        base_dir = inner_path
-    else:
-        base_dir = extract_path
+    # The zip extracts to: extract_path/library_name/main/en/
+    # We only process the 'en' (English) folder
+    base_dir = extract_path / library_name / "main" / "en"
+    if not base_dir.exists():
+        print(f"  ⚠️  No 'main/en' folder found for {library_name}")
+        return []
+    print(f"  Using English docs at {base_dir}")
 
     # Find all markdown files
     markdown_files = find_markdown_files(base_dir)
