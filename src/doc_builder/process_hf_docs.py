@@ -292,6 +292,12 @@ def process_library(
     all_chunks = []
     print("  Processing markdown files...")
     for md_file in tqdm(markdown_files, desc=f"  {library_name}", unit="file"):
+        # Skip model_doc pages for transformers library and api/models for diffusers
+        page_path = str(md_file.relative_to(base_dir)).replace(os.sep, "/")
+        if library_name == "transformers" and "model_doc" in page_path:
+            continue
+        if library_name == "diffusers" and ("api/models" in page_path or "api/pipelines" in page_path):
+            continue
         chunks = process_markdown_file(md_file, library_name, base_dir, excerpts_max_length)
         all_chunks.extend(chunks)
 
