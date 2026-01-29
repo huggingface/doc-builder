@@ -272,8 +272,17 @@ def process_library(
         if extract_path is None:
             return []
 
+    # The zip file contains a top-level folder with the library name,
+    # so the actual content is at extract_path/library_name
+    # Use the inner directory as base_dir to avoid duplicating library name in URLs
+    inner_path = extract_path / library_name
+    if inner_path.exists() and inner_path.is_dir():
+        base_dir = inner_path
+    else:
+        base_dir = extract_path
+
     # Find all markdown files
-    markdown_files = find_markdown_files(extract_path)
+    markdown_files = find_markdown_files(base_dir)
     print(f"  Found {len(markdown_files)} markdown files")
 
     if not markdown_files:
@@ -284,7 +293,7 @@ def process_library(
     all_chunks = []
     print("  Processing markdown files...")
     for md_file in tqdm(markdown_files, desc=f"  {library_name}", unit="file"):
-        chunks = process_markdown_file(md_file, library_name, extract_path, excerpts_max_length)
+        chunks = process_markdown_file(md_file, library_name, base_dir, excerpts_max_length)
         all_chunks.extend(chunks)
 
     print(f"  ✅ Generated {len(all_chunks)} chunks from {len(markdown_files)} files")
