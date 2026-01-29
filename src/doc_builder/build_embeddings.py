@@ -29,7 +29,6 @@ from .autodoc import autodoc_markdown, resolve_links_in_text
 from .convert_md_to_mdx import process_md
 from .convert_rst_to_mdx import find_indent, is_empty_line
 from .meilisearch_helper import (
-    VECTOR_DIM,
     add_embeddings_to_db,
     create_embedding_db,
     delete_embedding_db,
@@ -396,7 +395,7 @@ def create_markdown_chunks(text, page_info=None):
     if root is None:
         return []
 
-    CHUNK_LEN_CHARS = 4000
+    CHUNK_LEN_CHARS = 2000
     chunks = root.get_chunks(page_info, chunk_len_chars=CHUNK_LEN_CHARS)
     return chunks
 
@@ -703,7 +702,7 @@ def chunks_to_embeddings(client, chunks, is_python_module) -> list[Embedding]:
         prefix = f'Documentation of {"library" if is_python_module else "service"} "{c.package_name}" under section: {" > ".join(c.headings)}'
         texts.append(prefix + "\n\n" + c.text)
 
-    inference_output = client.feature_extraction(texts, truncate=True, dimensions=VECTOR_DIM)
+    inference_output = client.feature_extraction(texts, truncate=True)
     inference_output = inference_output.tolist()
 
     embeddings = []

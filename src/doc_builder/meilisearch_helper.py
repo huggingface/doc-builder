@@ -16,7 +16,7 @@ from meilisearch.errors import MeilisearchApiError
 # https://github.com/meilisearch/meilisearch-python/blob/d5a0babe50b4ce5789892845db98b30d4db72203/tests/conftest.py#L132-L146
 
 VECTOR_NAME = "embeddings"
-VECTOR_DIM = 256  # accepted dim of https://huggingface.co/google/embeddinggemma-300m
+VECTOR_DIM = 768  # dim of https://huggingface.co/BAAI/bge-base-en-v1.5
 
 MeilisearchFunc = Callable[..., tuple[Client, TaskInfo]]
 

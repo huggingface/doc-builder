@@ -185,7 +185,7 @@ def embeddings_command_parser(subparsers=None):
         help="Specific libraries to process (e.g., accelerate diffusers). If not specified, processes all libraries.",
     )
     parser_process_hf_docs.add_argument(
-        "--excerpt-length", type=int, default=2000, help="Maximum length of each excerpt in characters (default: 2000)"
+        "--excerpt-length", type=int, default=1000, help="Maximum length of each excerpt in characters (default: 1000)"
     )
     parser_process_hf_docs.add_argument(
         "--skip-download", action="store_true", help="Skip download if files already exist in output-dir"
