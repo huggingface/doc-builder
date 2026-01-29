@@ -422,7 +422,7 @@ if __name__ == "__main__":
         help="Specific libraries to process (e.g., accelerate diffusers)",
     )
     parser.add_argument(
-        "--excerpt-length", type=int, default=2000, help="Maximum length of each excerpt in characters (default: 2000)"
+        "--excerpt-length", type=int, default=1000, help="Maximum length of each excerpt in characters (default: 1000)"
     )
     parser.add_argument(
         "--skip-download", action="store_true", help="Skip download if files already exist in output-dir"
