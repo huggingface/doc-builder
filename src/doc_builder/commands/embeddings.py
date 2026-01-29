@@ -19,7 +19,13 @@ from pathlib import Path
 
 from doc_builder import clean_meilisearch
 from doc_builder.build_embeddings import add_gradio_docs, call_embedding_inference
-from doc_builder.meilisearch_helper import add_embeddings_to_db
+from doc_builder.embeddings_tracker import (
+    fetch_existing_doc_ids,
+    filter_new_chunks,
+    find_stale_ids,
+    update_tracker_dataset,
+)
+from doc_builder.meilisearch_helper import add_embeddings_to_db, delete_documents_by_ids
 from doc_builder.process_hf_docs import process_all_libraries
 from doc_builder.utils import chunk_list
 
@@ -35,11 +41,19 @@ def process_hf_docs_command(args):
     """
     Process documentation from HF doc-build dataset.
     Downloads pre-built docs and generates embeddings.
+
+    Supports two modes:
+    - Full rebuild (default): Process all docs and upload to temp index
+    - Incremental (--incremental): Only process new/changed docs, upload to main index
     """
     import meilisearch
     from tqdm import tqdm
 
     print("Processing documentation from HF doc-build dataset...")
+
+    incremental_mode = getattr(args, "incremental", False)
+    if incremental_mode:
+        print("Running in INCREMENTAL mode - only processing new/changed documents")
 
     # Process all or specific libraries
     results = process_all_libraries(
@@ -55,6 +69,7 @@ def process_hf_docs_command(args):
         hf_ie_url = get_credential(args.hf_ie_url, "HF_IE_URL")
         hf_ie_token = get_credential(args.hf_ie_token, "HF_IE_TOKEN")
         meilisearch_key = get_credential(args.meilisearch_key, "MEILISEARCH_KEY")
+        hf_token = get_credential(getattr(args, "hf_token", None), "HF_TOKEN")
 
         if not hf_ie_url:
             raise ValueError("HF_IE_URL is required. Set via --hf_ie_url or HF_IE_URL env var.")
@@ -63,22 +78,67 @@ def process_hf_docs_command(args):
         if not meilisearch_key:
             raise ValueError("MEILISEARCH_KEY is required. Set via --meilisearch_key or MEILISEARCH_KEY env var.")
 
-        print("\n" + "=" * 80)
-        print("GENERATING EMBEDDINGS")
-        print("=" * 80)
-
         # Collect all chunks
         all_chunks = []
         for _library_name, chunks in results.items():
             all_chunks.extend(chunks)
 
-        print(f"\nTotal chunks to embed: {len(all_chunks)}")
+        print(f"\nTotal chunks found: {len(all_chunks)}")
+
+        # In incremental mode, filter to only new chunks and find stale ones
+        stale_ids = set()
+        if incremental_mode:
+            print("\n" + "=" * 80)
+            print("CHECKING EXISTING EMBEDDINGS")
+            print("=" * 80)
+
+            existing_ids = fetch_existing_doc_ids()
+            chunks_to_process, existing_chunks = filter_new_chunks(all_chunks, existing_ids)
+
+            # Find stale IDs (old versions of updated pages)
+            stale_ids = find_stale_ids(all_chunks, existing_ids)
+
+            print(f"Chunks already embedded: {len(existing_chunks)}")
+            print(f"New chunks to embed: {len(chunks_to_process)}")
+            print(f"Stale entries to remove: {len(stale_ids)}")
+
+            # Log which pages are being updated
+            if chunks_to_process:
+                new_pages = {f"{c.package_name}/{c.page}" for c in chunks_to_process}
+                print(f"\nNew/updated pages ({len(new_pages)}):")
+                for page in sorted(new_pages)[:20]:  # Show first 20
+                    print(f"  + {page}")
+                if len(new_pages) > 20:
+                    print(f"  ... and {len(new_pages) - 20} more")
+
+            # Log which pages are being removed
+            if stale_ids:
+                print(f"\nStale IDs to remove ({len(stale_ids)}):")
+                for stale_id in sorted(stale_ids)[:20]:  # Show first 20
+                    print(f"  - {stale_id}")
+                if len(stale_ids) > 20:
+                    print(f"  ... and {len(stale_ids) - 20} more")
+
+            if len(chunks_to_process) == 0 and len(stale_ids) == 0:
+                print("\nNo new documents to process. All documents are up to date.")
+                print("\n" + "=" * 80)
+                print("✅ PROCESSING COMPLETE (no updates needed)")
+                print("=" * 80)
+                return
+        else:
+            chunks_to_process = all_chunks
+
+        print("\n" + "=" * 80)
+        print("GENERATING EMBEDDINGS")
+        print("=" * 80)
+
+        print(f"\nChunks to embed: {len(chunks_to_process)}")
 
         # Generate embeddings
-        from doc_builder.build_embeddings import MEILI_INDEX_TEMP
+        from doc_builder.build_embeddings import MEILI_INDEX, MEILI_INDEX_TEMP
 
         embeddings = call_embedding_inference(
-            all_chunks,
+            chunks_to_process,
             hf_ie_url,
             hf_ie_token,
             is_python_module=False,  # Pre-built docs are not Python modules
@@ -92,10 +152,33 @@ def process_hf_docs_command(args):
         client = meilisearch.Client("https://edge.meilisearch.com", meilisearch_key)
         ITEMS_PER_CHUNK = 5000
 
+        # In incremental mode, upload directly to main index (upsert behavior)
+        # In full rebuild mode, upload to temp index for later swap
+        target_index = MEILI_INDEX if incremental_mode else MEILI_INDEX_TEMP
+        print(f"Target index: {target_index}")
+
         for chunk_embeddings in tqdm(chunk_list(embeddings, ITEMS_PER_CHUNK), desc="Uploading to meilisearch"):
-            add_embeddings_to_db(client, MEILI_INDEX_TEMP, chunk_embeddings)
+            add_embeddings_to_db(client, target_index, chunk_embeddings)
 
         print(f"\nSuccessfully uploaded {len(embeddings)} embeddings to Meilisearch")
+
+        # In incremental mode, delete stale entries and update the tracker dataset
+        if incremental_mode:
+            # Delete stale entries from Meilisearch
+            if stale_ids:
+                print("\n" + "=" * 80)
+                print("REMOVING STALE ENTRIES")
+                print("=" * 80)
+                print(f"Deleting {len(stale_ids)} stale entries from Meilisearch...")
+                delete_documents_by_ids(client, target_index, list(stale_ids))
+                print("Stale entries removed successfully")
+
+            # Update the tracker dataset
+            if hf_token:
+                print("\n" + "=" * 80)
+                print("UPDATING TRACKER DATASET")
+                print("=" * 80)
+                update_tracker_dataset(embeddings, existing_ids, hf_token, stale_ids=stale_ids)
 
     print("\n" + "=" * 80)
     print("✅ PROCESSING COMPLETE")
@@ -115,6 +198,8 @@ def add_gradio_docs_command(args):
     hf_ie_token = get_credential(args.hf_ie_token, "HF_IE_TOKEN")
     hf_ie_url = get_credential(args.hf_ie_url, "HF_IE_URL")
     meilisearch_key = get_credential(args.meilisearch_key, "MEILISEARCH_KEY")
+    hf_token = get_credential(getattr(args, "hf_token", None), "HF_TOKEN")
+    incremental = getattr(args, "incremental", False)
 
     if not hf_ie_token:
         raise ValueError("HF_IE_TOKEN is required. Set via --hf_ie_token or HF_IE_TOKEN env var.")
@@ -123,7 +208,13 @@ def add_gradio_docs_command(args):
     if not meilisearch_key:
         raise ValueError("MEILISEARCH_KEY is required. Set via --meilisearch_key or MEILISEARCH_KEY env var.")
 
-    add_gradio_docs(hf_ie_url, hf_ie_token, meilisearch_key)
+    add_gradio_docs(
+        hf_ie_url,
+        hf_ie_token,
+        meilisearch_key,
+        incremental=incremental,
+        hf_token=hf_token,
+    )
 
 
 def embeddings_command_parser(subparsers=None):
@@ -159,6 +250,18 @@ def embeddings_command_parser(subparsers=None):
     )
     parser_add_gradio_docs.add_argument(
         "--meilisearch_key", type=str, help="Meilisearch key (or set MEILISEARCH_KEY env var).", required=False
+    )
+    parser_add_gradio_docs.add_argument(
+        "--incremental",
+        action="store_true",
+        help="Enable incremental mode: only process new/changed Gradio documents. "
+        "Uploads directly to main index instead of temp index.",
+    )
+    parser_add_gradio_docs.add_argument(
+        "--hf_token",
+        type=str,
+        help="HuggingFace token for updating tracker dataset in incremental mode (or set HF_TOKEN env var)",
+        required=False,
     )
     if subparsers is not None:
         parser_add_gradio_docs.set_defaults(func=add_gradio_docs_command)
@@ -208,6 +311,19 @@ def embeddings_command_parser(subparsers=None):
         "--meilisearch_key",
         type=str,
         help="Meilisearch key (required unless --skip-embeddings is set)",
+        required=False,
+    )
+    parser_process_hf_docs.add_argument(
+        "--incremental",
+        action="store_true",
+        help="Enable incremental mode: only process new/changed documents. "
+        "Checks existing document IDs from HuggingFace dataset and skips already embedded docs. "
+        "Uploads directly to main index instead of temp index.",
+    )
+    parser_process_hf_docs.add_argument(
+        "--hf_token",
+        type=str,
+        help="HuggingFace token for updating tracker dataset in incremental mode (or set HF_TOKEN env var)",
         required=False,
     )
 

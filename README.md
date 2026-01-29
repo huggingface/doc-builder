@@ -17,6 +17,12 @@ This is the package we use to build the documentation of our Hugging Face repos.
     + [Code Quality & Formatting](#code-quality--formatting)
     + [Testing](#testing)
     + [Development Workflow](#development-workflow)
+  * [Search Engine Population](#search-engine-population)
+    + [How it works](#how-it-works)
+    + [Incremental Updates](#incremental-updates)
+    + [Commands](#commands)
+    + [Migrations](#migrations)
+    + [Environment Variables](#environment-variables)
   * [Writing documentation for Hugging Face libraries](#writing-documentation-for-hugging-face-libraries)
     + [Internal link to object](#internal-link-to-object)
     + [External link to object](#external-link-to-object)
@@ -324,6 +330,65 @@ uv run ruff format --check .
 ```bash
 uv run python -m pytest -n 1 --dist=loadfile -s -v ./tests/
 ```
+
+## Search Engine Population
+
+The `doc-builder` includes tools for populating the HuggingFace documentation search engine with embeddings. This enables semantic search across all HuggingFace library documentation.
+
+### How it works
+
+1. Documentation is downloaded from the `hf-doc-build/doc-build` dataset
+2. Documents are chunked and assigned deterministic IDs: `{library}-{page}-{sha256_hash_of_text[:8]}`
+3. Embeddings are generated via an inference endpoint
+4. Embeddings are uploaded to Meilisearch
+
+### Incremental Updates
+
+To avoid reprocessing unchanged documents, the system tracks document IDs in a HuggingFace dataset (`hf-doc-build/doc-builder-embeddings-tracker`). In incremental mode:
+
+1. Existing document IDs are fetched from the tracker dataset
+2. New IDs are reconstructed from source docs (deterministic, no Meilisearch needed)
+3. Only new/changed documents are processed
+4. New embeddings are uploaded directly to the main index
+5. The tracker dataset is updated with new IDs
+
+### Commands
+
+**Populate search engine (incremental - recommended):**
+```bash
+uv run doc-builder populate-search-engine --incremental
+```
+
+**Populate search engine (full rebuild):**
+```bash
+uv run doc-builder populate-search-engine
+```
+
+**Add Gradio docs (incremental):**
+```bash
+uv run doc-builder add-gradio-docs --incremental
+```
+
+**Add Gradio docs (full rebuild):**
+```bash
+uv run doc-builder add-gradio-docs
+```
+
+### Migrations
+
+**Initialize the tracker dataset (one-time setup):**
+```bash
+uv run python migrations/init_embeddings_tracker.py --hf_token <token>
+```
+
+This reconstructs all document IDs from the source docs at `hf-doc-build/doc-build` and pushes them to the tracker dataset. No Meilisearch access required.
+
+### Environment Variables
+
+- `HF_IE_URL`: Inference endpoint URL for embedding generation
+- `HF_IE_TOKEN`: Token for the inference endpoint
+- `MEILISEARCH_KEY`: Meilisearch API key
+- `HF_TOKEN`: HuggingFace token for updating the tracker dataset (incremental mode)
 
 ## Writing documentation for Hugging Face libraries
 

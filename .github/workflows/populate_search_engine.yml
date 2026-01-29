@@ -5,6 +5,12 @@ on:
   #   - cron: "5 7 * * *" # every day at 07:05
   # to run this workflow manually from the Actions tab
   workflow_dispatch:
+    inputs:
+      full_rebuild:
+        description: 'Full rebuild (ignores existing embeddings)'
+        required: false
+        default: false
+        type: boolean
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -29,7 +35,19 @@ jobs:
       - name: Install doc-builder
         run: uv sync --extra dev
 
-      - name: Populate search engine from HF doc-build dataset
+      # Incremental mode (default): only process new/changed documents
+      - name: Populate search engine (incremental)
+        if: ${{ github.event.inputs.full_rebuild != 'true' }}
+        env:
+          HF_IE_URL: ${{ secrets.HF_IE_URL }}
+          HF_IE_TOKEN: ${{ secrets.HF_IE_TOKEN }}
+          MEILISEARCH_KEY: ${{ secrets.MEILISEARCH_KEY }}
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: uv run doc-builder populate-search-engine --incremental
+      
+      # Full rebuild mode: process all documents (for manual runs when needed)
+      - name: Populate search engine (full rebuild)
+        if: ${{ github.event.inputs.full_rebuild == 'true' }}
         env:
           HF_IE_URL: ${{ secrets.HF_IE_URL }}
           HF_IE_TOKEN: ${{ secrets.HF_IE_TOKEN }}
@@ -53,41 +71,23 @@ jobs:
       - name: Install doc-builder
         run: uv sync --extra dev
 
-      - name: Add gradio docs to meilisearch
+      # Incremental mode (default): only process new/changed Gradio documents
+      - name: Add gradio docs to meilisearch (incremental)
+        if: ${{ github.event.inputs.full_rebuild != 'true' }}
+        env:
+          HF_IE_URL: ${{ secrets.HF_IE_URL }}
+          HF_IE_TOKEN: ${{ secrets.HF_IE_TOKEN }}
+          MEILISEARCH_KEY: ${{ secrets.MEILISEARCH_KEY }}
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: uv run doc-builder add-gradio-docs --incremental
+
+      # Full rebuild mode: process all Gradio documents
+      - name: Add gradio docs to meilisearch (full rebuild)
+        if: ${{ github.event.inputs.full_rebuild == 'true' }}
         env:
           HF_IE_URL: ${{ secrets.HF_IE_URL }}
           HF_IE_TOKEN: ${{ secrets.HF_IE_TOKEN }}
           MEILISEARCH_KEY: ${{ secrets.MEILISEARCH_KEY }}
         run: uv run doc-builder add-gradio-docs
-  
-  # cleanup-job:
-  #   needs: [process-docs, gradio-job]
-  #   runs-on: ubuntu-latest
-  #   if: always() # This ensures that the cleanup job runs regardless of the result
-  #   steps:
-  #     - name: Checkout doc-builder
-  #       uses: actions/checkout@v4
 
-  #     - name: Install uv
-  #       uses: astral-sh/setup-uv@v4
-  #       with:
-  #         version: "latest"
-
-  #     - name: Set up Python 3.10
-  #       run: uv python install 3.10
-
-  #     - name: Install doc-builder
-  #       run: uv sync --extra dev
-
-  #     - name: Success Cleanup
-  #       if: needs.process-docs.result == 'success' # Runs if job succeeded
-  #       env:
-  #         MEILISEARCH_KEY: ${{ secrets.MEILISEARCH_KEY }}
-  #       run: uv run doc-builder meilisearch-clean --swap
-
-  #     - name: Failure Cleanup
-  #       if: needs.process-docs.result == 'failure' # Runs if job failed
-  #       env:
-  #         MEILISEARCH_KEY: ${{ secrets.MEILISEARCH_KEY }}
-  #       run: uv run doc-builder meilisearch-clean
 
