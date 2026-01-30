@@ -16,10 +16,12 @@ import argparse
 import logging
 import shutil
 import subprocess
+import tempfile
+import zipfile
 from pathlib import Path
 from time import sleep, time
 
-from huggingface_hub import HfApi
+from huggingface_hub import HfApi, hf_hub_download
 
 REPO_TYPE = "dataset"
 SEPARATOR = "/"
@@ -30,6 +32,73 @@ def create_zip_name(library_name, version, with_ext=True):
     if with_ext:
         file_name += ".zip"
     return file_name
+
+
+def merge_with_existing_docs(api, doc_build_repo_id, zip_file_path, path_docs_built, library_name, doc_version_folder):
+    """
+    Download existing zip (if any) and merge with new docs to preserve all languages.
+    This prevents race conditions when multiple language builds run in parallel.
+
+    Args:
+        api: HfApi instance
+        doc_build_repo_id: The HF dataset repo ID (e.g., "hf-doc-build/doc-build")
+        zip_file_path: Path to the zip file in the repo (e.g., "transformers/main.zip")
+        path_docs_built: Local path to newly built docs
+        library_name: Name of the library (e.g., "transformers")
+        doc_version_folder: Version folder name (e.g., "main" or "v4.57.0")
+
+    Returns:
+        Path to the merged docs folder, or original path if no existing docs
+    """
+    try:
+        # Try to download existing zip
+        print(f"Checking for existing docs at {zip_file_path}...")
+        with tempfile.TemporaryDirectory() as temp_dir:
+            temp_dir = Path(temp_dir)
+
+            # Download existing zip
+            existing_zip_path = hf_hub_download(
+                repo_id=doc_build_repo_id,
+                repo_type=REPO_TYPE,
+                filename=zip_file_path,
+                local_dir=temp_dir,
+            )
+
+            print("Found existing docs, merging with new docs...")
+
+            # Extract existing zip to a temporary location
+            existing_docs_dir = temp_dir / "existing_docs"
+            existing_docs_dir.mkdir(parents=True, exist_ok=True)
+
+            with zipfile.ZipFile(existing_zip_path, "r") as zf:
+                zf.extractall(existing_docs_dir)
+
+            # The zip structure is: library_name/version/language/...
+            # e.g., transformers/main/en/..., transformers/main/ja/...
+            existing_version_dir = existing_docs_dir / library_name / doc_version_folder
+            new_version_dir = path_docs_built / doc_version_folder
+
+            if existing_version_dir.exists() and new_version_dir.exists():
+                # Get existing languages
+                existing_langs = {d.name for d in existing_version_dir.iterdir() if d.is_dir()}
+                new_langs = {d.name for d in new_version_dir.iterdir() if d.is_dir()}
+
+                print(f"Existing languages: {sorted(existing_langs)}")
+                print(f"New languages: {sorted(new_langs)}")
+
+                # Copy missing languages from existing to new
+                langs_to_copy = existing_langs - new_langs
+                for lang in langs_to_copy:
+                    src = existing_version_dir / lang
+                    dst = new_version_dir / lang
+                    print(f"Preserving existing language: {lang}")
+                    shutil.copytree(src, dst)
+
+                print(f"Final languages: {sorted(existing_langs | new_langs)}")
+
+    except Exception as e:
+        # If download fails (e.g., zip doesn't exist yet), just continue with new docs
+        print(f"No existing docs found or error downloading ({e}), uploading new docs only")
 
 
 def push_command(args):
@@ -49,6 +118,9 @@ def push_command_add(args):
     """
     Commit file changes using: 1. zip doc build artifacts 2. hf_hub client to upload zip file
     Used in: build_main_documentation.yml & build_pr_documentation.yml
+
+    This function merges new docs with existing docs to preserve all languages when
+    multiple language builds run in parallel (e.g., English and other languages).
     """
     max_n_retries = args.n_retries + 1
     number_of_retries = args.n_retries
@@ -62,12 +134,23 @@ def push_command_add(args):
     doc_version_folder = str(doc_version_folder)
 
     zip_file_path = create_zip_name(library_name, doc_version_folder)
+
+    api = HfApi()
+
+    # Merge with existing docs to preserve all languages (handles parallel builds)
+    merge_with_existing_docs(
+        api=api,
+        doc_build_repo_id=args.doc_build_repo_id,
+        zip_file_path=zip_file_path,
+        path_docs_built=path_docs_built,
+        library_name=library_name,
+        doc_version_folder=doc_version_folder,
+    )
+
     # eg create ./transformers/v4.0.zip with '/transformers/v4.0/*' file architecture inside
     # Use subprocess.run instead of shutil.make_archive to avoid corrupted files, see https://github.com/huggingface/doc-builder/issues/348
     print(f"Running zip command: zip -r {zip_file_path} {path_docs_built}")
     subprocess.run(["zip", "-r", zip_file_path, path_docs_built], check=True)
-
-    api = HfApi()
 
     time_start = time()
 
