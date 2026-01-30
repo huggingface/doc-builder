@@ -92,11 +92,9 @@ def process_hf_docs_command(args):
         client = meilisearch.Client("https://edge.meilisearch.com", meilisearch_key)
         ITEMS_PER_CHUNK = 5000
 
-        for idx, chunk_embeddings in tqdm(
-            enumerate(chunk_list(embeddings, ITEMS_PER_CHUNK)), desc="Uploading to meilisearch"
+        for chunk_embeddings in tqdm(
+            chunk_list(embeddings, ITEMS_PER_CHUNK), desc="Uploading to meilisearch"
         ):
-            if idx < 4:
-                continue
             add_embeddings_to_db(client, MEILI_INDEX_TEMP, chunk_embeddings)
 
         print(f"\nSuccessfully uploaded {len(embeddings)} embeddings to Meilisearch")
