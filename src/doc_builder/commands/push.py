@@ -64,7 +64,7 @@ def merge_with_existing_docs(api, doc_build_repo_id, zip_file_path, path_docs_bu
                 local_dir=temp_dir,
             )
 
-            print(f"Found existing docs, merging with new docs...")
+            print("Found existing docs, merging with new docs...")
 
             # Extract existing zip to a temporary location
             existing_docs_dir = temp_dir / "existing_docs"
