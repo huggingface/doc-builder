@@ -26,6 +26,7 @@ import zipfile
 from pathlib import Path
 
 import requests
+from packaging import version as package_version
 from tqdm import tqdm
 
 from .build_embeddings import Chunk, split_markdown_by_headings
@@ -33,6 +34,55 @@ from .build_embeddings import Chunk, split_markdown_by_headings
 HF_DATASET_REPO = "hf-doc-build/doc-build"
 HF_DATASET_API_URL = f"https://huggingface.co/api/datasets/{HF_DATASET_REPO}/tree/main"
 HF_DATASET_BASE_URL = f"https://huggingface.co/datasets/{HF_DATASET_REPO}/resolve/main"
+
+
+def get_latest_version_zip(library_name: str) -> str | None:
+    """
+    Get the latest version zip filename for a library by querying the API.
+
+    Args:
+        library_name: Name of the library (e.g., 'reachy_mini')
+
+    Returns:
+        The filename of the latest version zip (e.g., 'v1.2.13.zip'), or None if not found
+    """
+    api_url = f"{HF_DATASET_API_URL}/{library_name}"
+    print(f"  Querying API for available versions: {api_url}")
+
+    try:
+        response = requests.get(api_url)
+        response.raise_for_status()
+        files = response.json()
+
+        # Filter for zip files (exclude _versions.yml and main.zip)
+        zip_files = [
+            f["path"].split("/")[-1]  # Get just the filename
+            for f in files
+            if f["type"] == "file" and f["path"].endswith(".zip") and "main.zip" not in f["path"]
+        ]
+
+        if not zip_files:
+            print(f"  No version zips found for {library_name}")
+            return None
+
+        # Sort by version (highest first) using packaging.version
+        # Filenames are like "v1.2.13.zip" -> extract "1.2.13" (strip 'v' prefix)
+        def version_key(filename):
+            version_str = filename.replace(".zip", "").lstrip("v")
+            try:
+                return package_version.parse(version_str)
+            except Exception:
+                return package_version.parse("0")
+
+        zip_files_sorted = sorted(zip_files, key=version_key, reverse=True)
+        latest = zip_files_sorted[0]
+
+        print(f"  Found {len(zip_files)} versions, latest: {latest}")
+        return latest
+
+    except Exception as e:
+        print(f"  Error querying API: {e}")
+        return None
 
 
 def fetch_library_directories() -> list[dict]:
@@ -55,18 +105,19 @@ def fetch_library_directories() -> list[dict]:
     return directories
 
 
-def download_and_extract_zip(library_name: str, output_dir: Path) -> Path | None:
+def download_and_extract_zip(library_name: str, output_dir: Path, zip_filename: str = "main.zip") -> Path | None:
     """
-    Download and extract the main.zip file for a library.
+    Download and extract a zip file for a library.
 
     Args:
         library_name: Name of the library (e.g., 'accelerate')
         output_dir: Directory to extract files to
+        zip_filename: Name of the zip file to download (default: 'main.zip')
 
     Returns:
         Path to extracted directory, or None if download failed
     """
-    zip_url = f"{HF_DATASET_BASE_URL}/{library_name}/main.zip"
+    zip_url = f"{HF_DATASET_BASE_URL}/{library_name}/{zip_filename}"
 
     try:
         print(f"  Downloading {zip_url}...")
@@ -96,8 +147,18 @@ def download_and_extract_zip(library_name: str, output_dir: Path) -> Path | None
 
     except requests.exceptions.HTTPError as e:
         if e.response.status_code == 404:
-            print(f"  ⚠️  No main.zip found for {library_name}, skipping...")
-            return None
+            if zip_filename == "main.zip":
+                # Try to find and download the latest version instead
+                print(f"  ⚠️  No main.zip found for {library_name}, looking for latest version...")
+                latest_zip = get_latest_version_zip(library_name)
+                if latest_zip:
+                    return download_and_extract_zip(library_name, output_dir, zip_filename=latest_zip)
+                else:
+                    print(f"  ⚠️  No versions found for {library_name}, skipping...")
+                    return None
+            else:
+                print(f"  ⚠️  {zip_filename} not found for {library_name}, skipping...")
+                return None
         raise
     except Exception as e:
         print(f"  ❌ Error processing {library_name}: {e}")
@@ -272,11 +333,24 @@ def process_library(
         if extract_path is None:
             return []
 
-    # The zip extracts to: extract_path/library_name/main/en/
+    # The zip extracts to: extract_path/library_name/{version}/en/
+    # where {version} can be "main" or a version like "v1.2.13"
     # We only process the 'en' (English) folder
-    base_dir = extract_path / library_name / "main" / "en"
+    library_dir = extract_path / library_name
+
+    # Find the version folder (main, v1.2.13, etc.)
+    version_folders = [d for d in library_dir.iterdir() if d.is_dir() and not d.name.startswith("_")]
+    if not version_folders:
+        print(f"  ⚠️  No version folder found for {library_name}")
+        return []
+
+    # Use the first (and typically only) version folder
+    version_folder = version_folders[0]
+    print(f"  Using version folder: {version_folder.name}")
+
+    base_dir = version_folder / "en"
     if not base_dir.exists():
-        print(f"  ⚠️  No 'main/en' folder found for {library_name}")
+        print(f"  ⚠️  No 'en' folder found in {version_folder.name} for {library_name}")
         return []
     print(f"  Using English docs at {base_dir}")
 
