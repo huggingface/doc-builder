@@ -30,8 +30,6 @@ on:
         type: string
       install_rust:
         type: boolean
-      install_libgl1:
-        type: boolean
       # Command to execute before building the documentation
       pre_command:
         type: string
@@ -46,12 +44,6 @@ on:
       convert_notebooks:
         type: boolean
         description: "Convert notebooks to markdown files before building docs."
-      # Docker image to use for the build. Set custom_container="huggingface/transformers-doc-builder" if you need
-      # a complete install. Default to `""` which means CI will run on the runner directly.
-      custom_container:
-        type: string
-        default: ""
-        description: "Docker image to use for the build."
       # Debug purposes only!
       doc_builder_revision:
         type: string
@@ -62,8 +54,6 @@ on:
 jobs:
   build_pr_documentation:
     runs-on: ubuntu-22.04
-    container:
-      ${{ inputs.custom_container }}
     env:
       UV_HTTP_TIMEOUT: 900 # max 15min to install deps (shouldn't take more than 5min)
 
@@ -91,29 +81,6 @@ jobs:
           node-version: '20'
           cache-dependency-path: "kit/package-lock.json"
 
-      - name: Export ROOT_APT_GET ('apt-get' or 'sudo apt-get')
-        # Use `sudo` only if running on the base runner.
-        # When using a container, `sudo` is not needed (and not installed)
-        run: |
-          if [ -z "${{ inputs.custom_container }}" ]
-          then
-            echo "ROOT_APT_GET=sudo apt-get" >> $GITHUB_ENV
-          else
-            echo "ROOT_APT_GET=apt-get" >> $GITHUB_ENV
-          fi
-
-      - name: Export PIP_OR_UV ('pip' or 'uv pip')
-        # Use `uv` only if running on the base runner.
-        # When using a container, `pip` has already been used to installed existing deps
-        # and is therefore quicker to resolve (already have some cached stuff).
-        run: |
-          if [ -z "${{ inputs.custom_container }}" ]
-          then
-            echo "PIP_OR_UV=uv pip" >> $GITHUB_ENV
-          else
-            echo "PIP_OR_UV=pip" >> $GITHUB_ENV
-          fi
-
       - name: Set env variables
         run: |
           if [ -z "${{ inputs.path_to_docs }}" ]
@@ -138,47 +105,120 @@ jobs:
             echo "package_name=${{ inputs.package_name }}" >> $GITHUB_ENV
           fi
 
-      - name: Install libgl1
-        if: inputs.install_libgl1
-        run: $ROOT_APT_GET install -y libgl1
-
       - name: Install Rust
         uses: actions-rs/toolchain@v1
         if: inputs.install_rust
         with:
           toolchain: stable
 
-      # Use venv in both cases
       - name: Install uv
-        run: |
-          pip install -U uv
-          uv venv
+        uses: astral-sh/setup-uv@v4
+        with:
+          version: "latest"
 
-      - name: Setup environment
+      - name: Setup doc-builder environment
+        working-directory: doc-builder
+        run: |
+          git pull origin ${{ inputs.doc_builder_revision }}
+          uv sync
+
+      - name: Strip package to docstrings only
         shell: bash
         run: |
-          source .venv/bin/activate
-          $PIP_OR_UV uninstall doc-builder
-          cd doc-builder
-          git pull origin ${{ inputs.doc_builder_revision }}
-          $PIP_OR_UV install .
-          cd ..
+          source doc-builder/.venv/bin/activate
+          
+          # Only strip if it's a Python module (skip for non-Python packages like HF Course)
+          if [[ "${{ inputs.additional_args }}" != *"--not_python_module"* ]]; then
+            echo "Running strip_to_docstrings.py on ${{ inputs.package }}"
+            python doc-builder/strip_to_docstrings.py ${{ inputs.package }}
+            echo "✅ Stripping complete"
+          else
+            echo "Skipping stripping for non-Python module"
+          fi
 
+      - name: Install package-specific dependencies
+        shell: bash
+        run: |
+          source doc-builder/.venv/bin/activate
+          
+          # Install package-specific dependencies based on package name
+          package_name="${{ inputs.package_name }}"
+          if [ -z "$package_name" ]; then
+            package_name="${{ inputs.package }}"
+          fi
+          
+          echo "Installing dependencies for package: $package_name"
+          
+          case "$package_name" in
+            "transformers")
+              echo "📦 Installing transformers dependencies (recommended: ~170 MB)"
+              uv pip install torch --index-url https://download.pytorch.org/whl/cpu
+              uv pip install numpy pillow safetensors
+              uv pip install sentencepiece tokenizers protobuf regex
+              uv pip install huggingface-hub packaging filelock requests tqdm pyyaml
+              ;;
+            
+            "diffusers")
+              echo "📦 Installing diffusers dependencies (~200 MB)"
+              uv pip install torch --index-url https://download.pytorch.org/whl/cpu
+              uv pip install numpy pillow safetensors
+              uv pip install huggingface-hub packaging filelock requests pyyaml
+              ;;
+            
+            "peft")
+              echo "📦 Installing peft dependencies (~120 MB)"
+              uv pip install torch --index-url https://download.pytorch.org/whl/cpu
+              uv pip install safetensors numpy
+              uv pip install huggingface-hub packaging filelock requests
+              ;;
+            
+            "accelerate")
+              echo "📦 Installing accelerate dependencies (~150 MB)"
+              uv pip install torch --index-url https://download.pytorch.org/whl/cpu
+              uv pip install numpy safetensors psutil
+              uv pip install huggingface-hub packaging filelock requests pyyaml
+              ;;
+            
+            "huggingface_hub"|"huggingface-hub")
+              echo "📦 Installing huggingface_hub dependencies (lightweight: ~6 MB, no PyTorch!)"
+              uv pip install requests pyyaml packaging filelock
+              ;;
+            
+            *)
+              echo "📦 Installing default dependencies (full set: ~170 MB)"
+              # Default to full dependency set for unknown packages
+              uv pip install torch --index-url https://download.pytorch.org/whl/cpu
+              uv pip install numpy pillow safetensors
+              uv pip install sentencepiece tokenizers protobuf regex
+              uv pip install huggingface-hub packaging filelock requests tqdm pyyaml psutil
+              ;;
+          esac
+          
+          echo "✅ Dependencies installed"
+
+      - name: Install package
+        shell: bash
+        run: |
+          source doc-builder/.venv/bin/activate
+          
+          # Install the stripped package
           if [[ -n "${{ inputs.package_path }}" ]]
           then
             cd ${{ inputs.package_path }}
-            $PIP_OR_UV install .[dev]
+            uv pip install -e .
           elif [[ "${{ inputs.additional_args }}" != *"--not_python_module"* ]];
           then
             cd ${{ inputs.package }}
-            $PIP_OR_UV install .[dev]
+            uv pip install -e .
           fi
           cd ..
+          
+          echo "✅ Package installed"
 
       - name: Run pre-command
         shell: bash
         run: |
-          source .venv/bin/activate
+          source doc-builder/.venv/bin/activate
           if [ ! -z "${{ inputs.pre_command }}" ]
           then
             bash -c "${{ inputs.pre_command }}"
@@ -187,7 +227,7 @@ jobs:
       - name: Convert notebooks to markdown files
         if: inputs.convert_notebooks
         run: |
-          source .venv/bin/activate
+          source doc-builder/.venv/bin/activate
           branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}
           remaining_part=$(echo "${{ env.doc_folder }}" | perl -pe 's|^[^/]+||')
           remaining_part=${remaining_part%/}
@@ -200,7 +240,7 @@ jobs:
           NODE_OPTIONS: --max-old-space-size=6656
         shell: bash
         run: |
-          source .venv/bin/activate
+          source doc-builder/.venv/bin/activate
           echo "doc_folder has been set to ${{ env.doc_folder }}"
           cd doc-builder
           args="--build_dir ../build_dir --clean --version pr_${{ inputs.pr_number }} --html ${{ inputs.additional_args }} --repo_owner ${{ inputs.repo_owner }} --repo_name ${{ inputs.package }} --version_tag_suffix=${{ inputs.version_tag_suffix }}"
