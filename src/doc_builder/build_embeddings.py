@@ -20,8 +20,8 @@ from collections import namedtuple
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
-import meilisearch
 import httpx
+import meilisearch
 from huggingface_hub import InferenceClient
 from tqdm import tqdm
 
