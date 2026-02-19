@@ -25,7 +25,7 @@ import tempfile
 import zipfile
 from pathlib import Path
 
-import requests
+import httpx
 from packaging import version as package_version
 from tqdm import tqdm
 
@@ -50,7 +50,7 @@ def get_latest_version_zip(library_name: str) -> str | None:
     print(f"  Querying API for available versions: {api_url}")
 
     try:
-        response = requests.get(api_url)
+        response = httpx.get(api_url)
         response.raise_for_status()
         files = response.json()
 
@@ -93,7 +93,7 @@ def fetch_library_directories() -> list[dict]:
         List of directory metadata dictionaries with 'path' and 'oid' keys
     """
     print(f"Fetching library directories from {HF_DATASET_API_URL}...")
-    response = requests.get(HF_DATASET_API_URL)
+    response = httpx.get(HF_DATASET_API_URL)
     response.raise_for_status()
 
     data = response.json()
@@ -121,18 +121,18 @@ def download_and_extract_zip(library_name: str, output_dir: Path, zip_filename: 
 
     try:
         print(f"  Downloading {zip_url}...")
-        response = requests.get(zip_url, stream=True)
-        response.raise_for_status()
+        with httpx.stream("GET", zip_url) as response:
+            response.raise_for_status()
 
-        # Get total size for progress bar
-        total_size = int(response.headers.get("content-length", 0))
+            # Get total size for progress bar
+            total_size = int(response.headers.get("content-length", 0))
 
-        # Download to memory
-        zip_content = io.BytesIO()
-        with tqdm(total=total_size, unit="B", unit_scale=True, desc=f"  {library_name}") as pbar:
-            for chunk in response.iter_content(chunk_size=8192):
-                zip_content.write(chunk)
-                pbar.update(len(chunk))
+            # Download to memory
+            zip_content = io.BytesIO()
+            with tqdm(total=total_size, unit="B", unit_scale=True, desc=f"  {library_name}") as pbar:
+                for chunk in response.iter_bytes(chunk_size=8192):
+                    zip_content.write(chunk)
+                    pbar.update(len(chunk))
 
         # Extract zip
         zip_content.seek(0)
@@ -145,7 +145,7 @@ def download_and_extract_zip(library_name: str, output_dir: Path, zip_filename: 
         print(f"  Extracted to {extract_path}")
         return extract_path
 
-    except requests.exceptions.HTTPError as e:
+    except httpx.HTTPStatusError as e:
         if e.response.status_code == 404:
             if zip_filename == "main.zip":
                 # Try to find and download the latest version instead

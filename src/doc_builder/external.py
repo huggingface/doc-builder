@@ -18,7 +18,7 @@ import tempfile
 import zlib
 
 import git
-import requests
+import httpx
 
 HF_DOC_PREFIX = "https://huggingface.co/docs/"
 EXTERNAL_DOC_OBJECTS_CACHE = {}
@@ -106,19 +106,19 @@ def get_objects_map(package_name, version="main", language="en", repo_owner="hug
     doc_url = f"{HF_DOC_PREFIX}{package_name}/{package_version}/{language}"
     url = f"{doc_url}/objects.inv"
     try:
-        request = requests.get(url, stream=True)
-        request.raise_for_status()
-        with tempfile.TemporaryDirectory() as tmp_dir:
-            tmp_file = os.path.join(tmp_dir, "objects.inv")
-            with open(tmp_file, "ab") as writer:
-                for chunk in request.iter_content(chunk_size=1024):
-                    if chunk:  # filter out keep-alive new chunks
-                        writer.write(chunk)
+        with httpx.stream("GET", url) as request:
+            request.raise_for_status()
+            with tempfile.TemporaryDirectory() as tmp_dir:
+                tmp_file = os.path.join(tmp_dir, "objects.inv")
+                with open(tmp_file, "ab") as writer:
+                    for chunk in request.iter_bytes(chunk_size=1024):
+                        if chunk:  # filter out keep-alive new chunks
+                            writer.write(chunk)
 
-            with open(tmp_file, "rb") as reader:
-                object_lines = reader.readlines()[4:]
-                object_data = zlib.decompress(b"".join(object_lines)).decode().split("\n")
-            return post_process_objects_inv(object_data, doc_url)
+                with open(tmp_file, "rb") as reader:
+                    object_lines = reader.readlines()[4:]
+                    object_data = zlib.decompress(b"".join(object_lines)).decode().split("\n")
+                return post_process_objects_inv(object_data, doc_url)
     except Exception:
         return {}
 
