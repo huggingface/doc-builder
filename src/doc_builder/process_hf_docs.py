@@ -50,7 +50,7 @@ def get_latest_version_zip(library_name: str) -> str | None:
     print(f"  Querying API for available versions: {api_url}")
 
     try:
-        response = httpx.get(api_url)
+        response = httpx.get(api_url, timeout=60, follow_redirects=True)
         response.raise_for_status()
         files = response.json()
 
@@ -93,7 +93,7 @@ def fetch_library_directories() -> list[dict]:
         List of directory metadata dictionaries with 'path' and 'oid' keys
     """
     print(f"Fetching library directories from {HF_DATASET_API_URL}...")
-    response = httpx.get(HF_DATASET_API_URL)
+    response = httpx.get(HF_DATASET_API_URL, timeout=60, follow_redirects=True)
     response.raise_for_status()
 
     data = response.json()

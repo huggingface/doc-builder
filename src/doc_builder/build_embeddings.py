@@ -856,7 +856,7 @@ def add_gradio_docs(hf_ie_url: str, hf_ie_token: str, meilisearch_key: str):
     # Step 1: download the documentation
     url = "https://huggingface.co/datasets/gradio/docs/resolve/main/docs.json"
 
-    response = httpx.get(url)
+    response = httpx.get(url, timeout=60, follow_redirects=True)
     response.raise_for_status()  # Raises an HTTPError for bad responses
 
     data = response.json()
