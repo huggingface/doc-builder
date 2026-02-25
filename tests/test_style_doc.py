@@ -191,6 +191,7 @@ Params:
 
 > [!NOTE]
 > This is a note.
+> This is still part of the note.
 """
         expected_result = """Function description
 
@@ -199,6 +200,7 @@ Params:
 
 > [!NOTE]
 > This is a note.
+> This is still part of the note.
 """
 
         self.assertEqual(style_docstring(test_docstring, 119)[0], expected_result)
