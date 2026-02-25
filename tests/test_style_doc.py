@@ -183,26 +183,6 @@ Params:
 
         self.assertEqual(style_docstring(test_docstring, 119)[0], expected_result)
 
-    def test_format_docstring_merges_markdown_callout_body_lines(self):
-        test_docstring = """Function description
-
-Params:
-    x (`int`): This is x.
-
-> [!NOTE]
-> This is a note.
-> This is still part of the note.
-"""
-        expected_result = """Function description
-
-Params:
-    x (`int`): This is x.
-
-> [!NOTE]
-> This is a note. This is still part of the note.
-"""
-
-
     def test_format_docstring_wraps_blockquote_and_keeps_prefix(self):
         test_docstring = """Function description
 
