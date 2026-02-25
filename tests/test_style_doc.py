@@ -223,4 +223,4 @@ Params:
 > wrapped and keep the prefix.
 """
 
-        self.assertEqual(style_docstring(test_docstring, 119)[0], expected_result)
+        self.assertEqual(style_docstring(test_docstring, 32)[0], expected_result)
