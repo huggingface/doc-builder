@@ -22,8 +22,25 @@ function renderCode(code) {
 	);
 }
 
+function addFullWidthClassToTables(code) {
+	return code.replace(/<table\b([^>]*)>/g, (match, attrs) => {
+		if (attrs.includes('class="')) {
+			// Add to existing class
+			return match.replace(/class="([^"]*)"/, 'class="$1 full-width"');
+		} else if (attrs.includes("class='")) {
+			// Add to existing class (single quotes)
+			return match.replace(/class='([^']*)'/, "class='$1 full-width'");
+		} else {
+			// Add new class attribute
+			return `<table${attrs} class="full-width">`;
+		}
+	});
+}
+
 const WRAP_CODE_BLOCKS_FLAG = "<!-- WRAP CODE BLOCKS -->";
+const STRETCH_TABLES_FLAG = "<!-- STRETCH TABLES -->";
 let wrapCodeBlocks = false;
+let stretchTables = false;
 
 export const mdsvexPreprocess = {
 	markup: async ({ content, filename }) => {
@@ -33,11 +50,15 @@ export const mdsvexPreprocess = {
 			// 	content = addCourseImports(content);
 			// }
 			wrapCodeBlocks = content.includes(WRAP_CODE_BLOCKS_FLAG);
+			stretchTables = content.includes(STRETCH_TABLES_FLAG);
 			content = markKatex(content, markedKatex);
 			content = escapeSvelteConditionals(content);
 			const processed = await _mdsvexPreprocess.markup({ content, filename });
 			processed.code = renderKatex(processed.code, markedKatex);
 			processed.code = renderCode(processed.code, filename);
+			if (stretchTables) {
+				processed.code = addFullWidthClassToTables(processed.code);
+			}
 			return processed;
 		}
 		return { code: content };
@@ -52,6 +73,8 @@ export const mdsvexPreprocess = {
 function markKatex(content, markedKatex) {
 	const REGEX_LATEX_DISPLAY = /\n\$\$([\s\S]+?)\$\$/g;
 	const REGEX_LATEX_INLINE = /\s\\\\\(([\s\S]+?)\\\\\)/g;
+	// Match $...$ with whitespace boundaries to avoid matching in HTML/code
+	const REGEX_LATEX_INLINE_DOLLAR = /(\s)(\$)([^$\n`<>]+?)(\$)(\s)/g;
 	let counter = 0;
 	return content
 		.replace(REGEX_LATEX_DISPLAY, (_, tex) => {
@@ -65,7 +88,16 @@ function markKatex(content, markedKatex) {
 			const marker = `KATEXPARSE${counter++}MARKER`;
 			markedKatex[marker] = { tex, displayMode };
 			return marker;
-		});
+		})
+		.replace(
+			REGEX_LATEX_INLINE_DOLLAR,
+			(match, spaceBefore, _openDollar, tex, _closeDollar, spaceAfter) => {
+				const displayMode = false;
+				const marker = `KATEXPARSE${counter++}MARKER`;
+				markedKatex[marker] = { tex, displayMode };
+				return spaceBefore + marker + spaceAfter;
+			}
+		);
 }
 
 function renderKatex(code, markedKatex) {
@@ -233,8 +265,8 @@ function treeVisitor() {
 		}
 	}
 
-	function onBlockquote(node, index, parent) {
-		// use github-like Tip & Warning syntax
+	function onBlockquote(node) {
+		// use github-like admonition syntax
 		// see https://github.com/orgs/community/discussions/16925
 		const { children: childrenLevel1 } = node;
 		if (!childrenLevel1.length || childrenLevel1[0].type !== "paragraph") {
@@ -246,27 +278,38 @@ function treeVisitor() {
 			return;
 		}
 
-		const TIP_MARKERS = ["!tip", "!warning"];
+		const TIP_MARKERS = ["note", "tip", "important", "warning", "caution"];
 		const { identifier } = childrenLevel2[0];
-		if (!TIP_MARKERS.includes(identifier)) {
+		if (typeof identifier !== "string") {
 			return;
 		}
-
-		if (!parent) {
+		const markerWithBang = identifier.startsWith("!") ? identifier.slice(1) : identifier;
+		const marker = markerWithBang.toLowerCase();
+		if (!TIP_MARKERS.includes(marker)) {
 			return;
 		}
 
 		childrenLevel1[0].children = childrenLevel1[0].children.slice(1);
-		const nodeTagOpen = {
-			type: "html",
-			value: `<Tip warning={${identifier === "!warning"}}>\n\n`,
-		};
-		const nodeTagClose = {
-			type: "html",
-			value: "\n\n</Tip>",
-		};
-		const nodes = [nodeTagOpen, ...childrenLevel1, nodeTagClose];
-		parent.children.splice(index, 1, ...nodes);
+		const [firstChild] = childrenLevel1[0].children;
+		if (firstChild && firstChild.type === "text") {
+			firstChild.value = firstChild.value.replace(/^\s+/u, "");
+			if (!firstChild.value.length) {
+				childrenLevel1[0].children.shift();
+			}
+		}
+		if (!childrenLevel1[0].children.length) {
+			node.children = node.children.slice(1);
+		}
+
+		node.data = node.data || {};
+		node.data.hProperties = node.data.hProperties || {};
+		const existingClasses = node.data.hProperties.className || [];
+		const normalizedClasses = Array.isArray(existingClasses)
+			? existingClasses
+			: typeof existingClasses === "string"
+			? existingClasses.split(/\s+/u).filter(Boolean)
+			: [];
+		node.data.hProperties.className = Array.from(new Set([...normalizedClasses, marker]));
 	}
 }
 
@@ -284,6 +327,12 @@ const _mdsvexPreprocess = mdsvex({
 			const escape = (code) =>
 				code.replace(/\\/g, "\\\\").replace(/`/g, "\\`").replace(/}/g, "\\}").replace(/\$/g, "\\$");
 			const REGEX_FRAMEWORKS_SPLIT = /\s*===(PT-TF|STRINGAPI-READINSTRUCTION)-SPLIT===\s*/gm;
+
+			// Handle mermaid diagrams
+			if (lang === "mermaid") {
+				return `
+	<MermaidChart code="${base64(code)}" />`;
+			}
 
 			code = renderSvelteChars(code);
 			if (code.match(REGEX_FRAMEWORKS_SPLIT)) {

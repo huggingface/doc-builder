@@ -1,4 +1,3 @@
-# coding=utf-8
 # Copyright 2021 The HuggingFace Team. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -24,6 +23,7 @@ from doc_builder.convert_md_to_mdx import (
     convert_md_to_mdx,
     escape_img_alt_description,
     process_md,
+    strip_md_extension_from_internal_links,
 )
 
 
@@ -34,6 +34,7 @@ class ConvertMdToMdxTester(unittest.TestCase):
         expected_conversion = """<script lang="ts">
 import {onMount} from "svelte";
 import Tip from "$lib/Tip.svelte";
+import CopyLLMTxtMenu from "$lib/CopyLLMTxtMenu.svelte";
 import Youtube from "$lib/Youtube.svelte";
 import Docstring from "$lib/Docstring.svelte";
 import CodeBlock from "$lib/CodeBlock.svelte";
@@ -58,6 +59,7 @@ import HfOptions from "$lib/HfOptions.svelte";
 import HfOption from "$lib/HfOption.svelte";
 import EditOnGithub from "$lib/EditOnGithub.svelte";
 import InferenceSnippet from "$lib/InferenceSnippet/InferenceSnippet.svelte";
+import MermaidChart from "$lib/MermaidChart.svelte";
 let fw: "pt" | "tf" = "pt";
 onMount(() => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -80,6 +82,25 @@ HF_DOC_BODY_END
 
 """
         self.assertEqual(convert_md_to_mdx(md_text, page_info), expected_conversion)
+
+    def test_add_copy_menu_when_existing_float_right_block(self):
+        page_info = {"package_name": "transformers", "version": "main", "language": "en"}
+        md_text = """<div style="float: right;">\n existing block\n</div>\n\n# Heading"""
+        result = convert_md_to_mdx(md_text, page_info)
+        expected_body = """<CopyLLMTxtMenu containerStyle="float: right; margin-left: 10px; display: inline-flex; position: relative; z-index: 10;"></CopyLLMTxtMenu>
+
+<div style="float: right;">
+ existing block
+</div>
+
+# Heading"""
+        self.assertIn(expected_body, result)
+
+    def test_add_copy_menu_skips_when_already_present(self):
+        page_info = {"package_name": "transformers", "version": "main", "language": "en"}
+        md_text = """<CopyLLMTxtMenu containerStyle="float: right; margin-left: 10px; display: inline-flex; position: relative; z-index: 10;"></CopyLLMTxtMenu>\n\n# Heading"""
+        result = convert_md_to_mdx(md_text, page_info)
+        self.assertEqual(result.count("<CopyLLMTxtMenu"), 1)
 
     def test_convert_img_links(self):
         page_info = {"package_name": "transformers", "version": "v4.10.0", "language": "fr"}
@@ -272,3 +293,54 @@ import pandas as pd
 import fs
 ```"""
         self.assertEqual(convert_literalinclude(text, page_info), expected_conversion)
+
+    def test_strip_md_extension_from_internal_links(self):
+        # Test relative links with .md extension
+        text = "[Overview](./overview.md)"
+        expected = "[Overview](./overview)"
+        self.assertEqual(strip_md_extension_from_internal_links(text), expected)
+
+        # Test relative links with parent directory
+        text = "[Section](../other/section.md)"
+        expected = "[Section](../other/section)"
+        self.assertEqual(strip_md_extension_from_internal_links(text), expected)
+
+        # Test links without extension (should remain unchanged)
+        text = "[Overview](./overview)"
+        expected = "[Overview](./overview)"
+        self.assertEqual(strip_md_extension_from_internal_links(text), expected)
+
+        # Test external links (should remain unchanged)
+        text = "[HuggingFace](https://huggingface.co)"
+        expected = "[HuggingFace](https://huggingface.co)"
+        self.assertEqual(strip_md_extension_from_internal_links(text), expected)
+
+        # Test anchor-only links (should remain unchanged)
+        text = "[Section](#section)"
+        expected = "[Section](#section)"
+        self.assertEqual(strip_md_extension_from_internal_links(text), expected)
+
+        # Test links with anchors
+        text = "[Overview](./overview.md#section)"
+        expected = "[Overview](./overview#section)"
+        self.assertEqual(strip_md_extension_from_internal_links(text), expected)
+
+        # Test links with query parameters
+        text = "[Overview](./overview.md?param=value)"
+        expected = "[Overview](./overview?param=value)"
+        self.assertEqual(strip_md_extension_from_internal_links(text), expected)
+
+        # Test absolute paths (should remain unchanged)
+        text = "[Docs](/docs/transformers/main)"
+        expected = "[Docs](/docs/transformers/main)"
+        self.assertEqual(strip_md_extension_from_internal_links(text), expected)
+
+        # Test multiple links in same text
+        text = "Check [Overview](./overview.md) and [Guide](./guide.md#intro) for more info."
+        expected = "Check [Overview](./overview) and [Guide](./guide#intro) for more info."
+        self.assertEqual(strip_md_extension_from_internal_links(text), expected)
+
+        # Test mixed internal and external links
+        text = "See [Local](./local.md) and [External](https://example.com/page.md)"
+        expected = "See [Local](./local) and [External](https://example.com/page.md)"
+        self.assertEqual(strip_md_extension_from_internal_links(text), expected)

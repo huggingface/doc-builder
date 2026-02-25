@@ -1,4 +1,3 @@
-# coding=utf-8
 # Copyright 2021 The HuggingFace Team. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -20,18 +19,25 @@ import tempfile
 
 from .convert_rst_to_mdx import parse_rst_docstring, remove_indent
 
-
 _re_doctest_flags = re.compile(r"^(>>>.*\S)(\s+)# doctest:\s+\+[A-Z_]+\s*$", flags=re.MULTILINE)
+
+COPY_MENU_SNIPPET = '<CopyLLMTxtMenu containerStyle="float: right; margin-left: 10px; display: inline-flex; position: relative; z-index: 10;"></CopyLLMTxtMenu>\n\n'
+
+_FLOAT_RIGHT_BLOCK_PATTERN = re.compile(
+    r"(<div\s+style=\"float:\s*right[^>]*>.*?</div>\s*)+$", flags=re.IGNORECASE | re.DOTALL
+)
 
 
 def convert_md_to_mdx(md_text, page_info):
     """
     Convert a document written in md to mdx.
     """
+    processed_md = add_copy_menu_before_first_h1(process_md(md_text, page_info))
     return (
         """<script lang="ts">
 import {onMount} from "svelte";
 import Tip from "$lib/Tip.svelte";
+import CopyLLMTxtMenu from "$lib/CopyLLMTxtMenu.svelte";
 import Youtube from "$lib/Youtube.svelte";
 import Docstring from "$lib/Docstring.svelte";
 import CodeBlock from "$lib/CodeBlock.svelte";
@@ -56,6 +62,7 @@ import HfOptions from "$lib/HfOptions.svelte";
 import HfOption from "$lib/HfOption.svelte";
 import EditOnGithub from "$lib/EditOnGithub.svelte";
 import InferenceSnippet from "$lib/InferenceSnippet/InferenceSnippet.svelte";
+import MermaidChart from "$lib/MermaidChart.svelte";
 let fw: "pt" | "tf" = "pt";
 onMount(() => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -71,7 +78,7 @@ onMount(() => {
 HF_DOC_BODY_START
 
 """
-        + process_md(md_text, page_info)
+        + processed_md
         + edit_on_github(page_info)
         + """
 
@@ -97,7 +104,7 @@ def edit_on_github(page_info):
     relative_path = path[idx + len(package_name) :]
     if relative_path.startswith("/"):
         relative_path = relative_path[1:]
-    source = f'https://github.com/{page_info["repo_owner"]}/{page_info["repo_name"]}/blob/main/{relative_path}'
+    source = f"https://github.com/{page_info['repo_owner']}/{page_info['repo_name']}/blob/main/{relative_path}"
     return f'\n\n<EditOnGithub source="{source}" />\n\n'
 
 
@@ -181,7 +188,7 @@ def convert_file_include_helper(match, page_info, is_code=True):
     if tempfile.gettempdir() in str(page_info["path"]):
         return f"\n`Please restart doc-builder preview commands to see {include_name} rendered`\n"
     file = page_info["path"].parent / include_info["path"]
-    with open(file, "r", encoding="utf-8-sig") as reader:
+    with open(file, encoding="utf-8-sig") as reader:
         lines = reader.readlines()
     include = lines  # defaults to entire file
     if "start-after" in include_info or "end-before" in include_info:
@@ -198,7 +205,7 @@ def convert_file_include_helper(match, page_info, is_code=True):
         include = lines[start_after:end_before]
     include = [indent + line[include_info.get("dedent", 0) :] for line in include]
     include = "".join(include).rstrip()
-    return f"""{indent}```{include_info.get('language', '')}\n{include}\n{indent}```""" if is_code else include
+    return f"""{indent}```{include_info.get("language", "")}\n{include}\n{indent}```""" if is_code else include
 
 
 def convert_include(text, page_info):
@@ -226,6 +233,39 @@ def convert_md_docstring_to_mdx(docstring, page_info):
     return process_md(text, page_info)
 
 
+_re_markdown_link = re.compile(r"\[([^\]]*)\]\(([^)]+)\)")
+
+
+def strip_md_extension_from_internal_links(text):
+    """
+    Strip .md extensions from internal/relative links in markdown text.
+
+    This allows both [Overview](./overview.md) and [Overview](./overview) to work.
+    External links (http/https), anchor-only links (#), and absolute paths are preserved.
+    """
+
+    def _process_link(match):
+        link_text, link_url = match.groups()
+
+        if link_url.startswith(("http://", "https://", "//")):
+            return match.group(0)
+
+        if link_url.startswith("#"):
+            return match.group(0)
+
+        if link_url.startswith("/"):
+            return match.group(0)
+
+        if ".md" in link_url:
+            link_url = link_url.replace(".md#", "#").replace(".md?", "?")
+            if link_url.endswith(".md"):
+                link_url = link_url[:-3]
+
+        return f"[{link_text}]({link_url})"
+
+    return _re_markdown_link.sub(_process_link, text)
+
+
 def process_md(text, page_info):
     """
     Processes markdown by:
@@ -233,9 +273,36 @@ def process_md(text, page_info):
         2. Convert literalinclude
         3. Clean doctest syntax
         4. Fix image links
+        5. Strip .md extensions from internal links
     """
     text = convert_include(text, page_info)
     text = convert_literalinclude(text, page_info)
     text = clean_doctest_syntax(text)
     text = fix_img_links(text, page_info)
+    text = strip_md_extension_from_internal_links(text)
     return text
+
+
+def add_copy_menu_before_first_h1(text):
+    if "float: right; margin-left: 10px;" in text and "<CopyLLMTxtMenu" in text:
+        return text
+
+    front_matter_match = re.match(r"^---\n.*?\n---\n", text, flags=re.DOTALL)
+    front_matter_end = front_matter_match.end() if front_matter_match else 0
+
+    heading_match = re.search(r"(?m)^[ \t]*#(?!#)\s+.+", text[front_matter_end:])
+    if heading_match is None:
+        return text
+
+    heading_start = front_matter_end + heading_match.start()
+    pre_heading = text[front_matter_end:heading_start]
+
+    float_block_match = _FLOAT_RIGHT_BLOCK_PATTERN.search(pre_heading)
+    insert_pos = front_matter_end + float_block_match.start() if float_block_match else heading_start
+
+    prefix = text[:insert_pos]
+    suffix = text[insert_pos:]
+
+    leading_newline = "" if not prefix or prefix.endswith("\n") else "\n"
+
+    return f"{prefix}{leading_newline}{COPY_MENU_SNIPPET}{suffix}"

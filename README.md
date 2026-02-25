@@ -13,6 +13,10 @@ This is the package we use to build the documentation of our Hugging Face repos.
     + [Enabling multilingual documentation](#enabling-multilingual-documentation)
     + [Redirects](#redirects)
   * [Fixing and testing doc-builder](#fixing-and-testing-doc-builder)
+  * [Development Commands](#development-commands)
+    + [Code Quality & Formatting](#code-quality--formatting)
+    + [Testing](#testing)
+    + [Development Workflow](#development-workflow)
   * [Writing documentation for Hugging Face libraries](#writing-documentation-for-hugging-face-libraries)
     + [Internal link to object](#internal-link-to-object)
     + [External link to object](#external-link-to-object)
@@ -22,6 +26,7 @@ This is the package we use to build the documentation of our Hugging Face repos.
     + [Anchor link](#anchor-link)
     + [LaTeX](#latex)
     + [Code Blocks](#code-blocks)
+    + [Stretch Tables](#stretch-tables)
     + [Inference Snippet](#inference-snippet)
   * [Writing API documentation (Python)](#writing-api-documentation-python)
     + [Autodoc](#autodoc)
@@ -30,7 +35,7 @@ This is the package we use to build the documentation of our Hugging Face repos.
     + [Description](#description)
     + [Arguments](#arguments)
     + [Attributes](#attributes)
-    + [Parmeter typing and default value](#parmeter-typing-and-default-value)
+    + [Parameter typing and default value](#parameter-typing-and-default-value)
     + [Returns](#returns)
     + [Yields](#yields)
     + [Raises](#raises)
@@ -89,6 +94,26 @@ This will generate MDX files that you can preview like any Markdown file in your
 doc-builder build datasets ~/git/datasets/docs/source --build_dir ~/tmp/test-build --html
 ```
 which will build HTML files in `~/tmp/test-build`. You can then inspect those files in your browser.
+
+### Specifying a version
+
+By default, `doc-builder` automatically determines the version:
+- For **Python modules**: uses the package's `__version__` attribute (or `main` for dev versions)
+- For **non-Python modules** (with `--not_python_module`): uses the default branch name (typically `main`)
+
+You can override this behavior with the `--version` flag:
+
+```bash
+# Build documentation for a specific semantic version (must start with "v")
+doc-builder build transformers ~/git/transformers/docs/source --build_dir ~/tmp/test-build --version v4.30.0
+
+# Build documentation for the default branch (non-Python modules)
+doc-builder build hub ~/git/hub-docs/docs/source --build_dir ~/tmp/test-build --not_python_module --version main
+```
+
+**Important**: When specifying a semantic version with `--version`, it **must start with the letter "v"** (e.g., `v1.0.0`, `v2.3.1`). For branch names like `main`, `master`, or other default branches, the "v" prefix is not required.
+
+### Notebook conversion
 
 `doc-builder` can also automatically convert some of the documentation guides or tutorials into notebooks. This requires two steps:
 - add `[[open-in-colab]]` in the tutorial for which you want to build a notebook
@@ -196,6 +221,110 @@ jobs:
 
 Once the docs build is complete in your project, you can drop that change.
 
+## Development docs
+
+To test `doc-builder` changes locally, use the `dummy/` folder. It contains a minimal setup for manual testing. Don't commit your changes in `dummy/` since it's only for local development.
+
+Run a preview with:
+```bash
+doc-builder preview dummy dummy --not_python_module
+```
+
+Documentation page should be available at `http://localhost:5173/index`.
+
+## Development Commands
+
+Since we've modernized the tooling to use `ruff` and `uv`, here are the commands for development:
+
+### Code Quality & Formatting
+
+#### Check code quality (linting)
+```bash
+uv run ruff check .
+```
+
+#### Fix auto-fixable linting issues
+```bash
+uv run ruff check --fix .
+```
+
+#### Check code formatting
+```bash
+uv run ruff format --check .
+```
+
+#### Apply code formatting
+```bash
+uv run ruff format .
+```
+
+#### Run both linting and formatting checks (equivalent to old `make quality`)
+```bash
+uv run ruff check . && uv run ruff format --check .
+```
+
+#### Apply both linting fixes and formatting (equivalent to old `make style`)
+```bash
+uv run ruff check --fix . && uv run ruff format .
+```
+
+### Check links
+
+#### Check for broken links in the docs (includes line, link text and url)
+```bash
+uv run doc-builder check-links /path/to/docs
+```
+
+#### Check for broken links in the docs (more compact view)
+```bash
+uv run doc-builder check-links /path/to/docs --format link
+```
+
+### Testing
+
+#### Run all tests (equivalent to old `make test`)
+```bash
+uv run python -m pytest -n 1 --dist=loadfile -s -v ./tests/
+```
+
+#### Run specific test file
+```bash
+uv run python -m pytest tests/test_utils.py -v
+```
+
+#### Run tests with coverage
+```bash
+uv run python -m pytest --cov=src/doc_builder tests/
+```
+
+### Development Workflow
+
+#### Install dependencies for development
+```bash
+uv sync --extra dev
+```
+
+#### Install only testing dependencies
+```bash
+uv sync --extra testing
+```
+
+#### Install only quality/linting dependencies
+```bash
+uv sync --extra quality
+```
+
+#### Run the full quality check (for CI)
+```bash
+uv run ruff check .
+uv run ruff format --check .
+```
+
+#### Run the full test suite (for CI)
+```bash
+uv run python -m pytest -n 1 --dist=loadfile -s -v ./tests/
+```
+
 ## Writing documentation for Hugging Face libraries
 
 `doc-builder` expects Markdown so you should write any new documentation in `".mdx"` files for tutorials, guides, API documentations. For docstrings, we follow the [Google format](https://sphinxcontrib-napoleon.readthedocs.io/en/latest/example_google.html) with the main difference that you should use Markdown instead of restructured text (hopefully, that will be easier!)
@@ -248,8 +377,8 @@ Example: [here](https://github.com/huggingface/transformers/blob/0f0e1a2c2bff685
 
 ### Tip
 
-To write a block that you'd like to see highlighted as a note or warning, place your content between the following
-markers.
+To write a block that you'd like to see highlighted as a note or warning, use the blockquote syntax. This is the
+preferred approach for new content.
 
 Syntax:
 
@@ -260,17 +389,9 @@ Syntax:
 > Second line
 ```
 
-or
-
-```html
-<Tip>
-
-Write your note here
-
-</Tip>
-```
-
 Example: [here](https://github.com/huggingface/transformers/blob/0f0e1a2c2bff68541a5b9770d78e0fb6feb7de72/docs/source/en/create_a_model.md#L282-L286)
+
+Legacy docs may still use the `<Tip>` component, but we recommend migrating to blockquotes when updating files.
 
 For warnings, change the introduction to:
 
@@ -278,12 +399,6 @@ Syntax:
 
 ```md
 > [!WARNING]
-```
-
-or
-
-```html
-`<Tip warning={true}>`
 ```
 
 Example: [here](https://github.com/huggingface/transformers/blob/eb849f6604c7dcc0e96d68f4851e52e253b9f0e5/docs/source/de/autoclass_tutorial.md#L102-L108)
@@ -369,12 +484,12 @@ $$Y = X * \textbf{dequantize}(W); \text{quantize}(W)$$
 
 Example: [here](https://github.com/huggingface/transformers/blob/main/docs/source/en/model_doc/rwkv.md?plain=1#L107)
 
-Latex inline mode. `\\( ... )\\`
+Latex inline mode. `some prose \\( ... \\) more prose`
 
 Syntax:
 
 ```
-\\( Y = X * \textbf{dequantize}(W); \text{quantize}(W) )\\
+A paragraph about \\( Y = X * \textbf{dequantize}(W); \text{quantize}(W) \\) the equation.
 ```
 
 Example: [here](https://github.com/huggingface/transformers/blob/main/docs/source/en/model_doc/rwkv.md?plain=1#L93)
@@ -389,6 +504,17 @@ Syntax:
 ```
 
 Example: [here](https://github.com/huggingface/text-generation-inference/blob/724199aaf172590c3658018c0e6bc6152cda4c2f/docs/source/basic_tutorials/launcher.md?plain=1#L3)
+
+### Stretch Tables
+
+By default, tables in the documentation are sized to fit their content. If you want tables to stretch to the full width of the content area, you can add a special flag at the top of your mdx file.
+
+Syntax:
+```
+<!-- STRETCH TABLES -->
+```
+
+This will make all tables in that page expand to 100% width of the content container.
 
 ### Inference Snippet
 
@@ -577,7 +703,7 @@ Syntax:
           ...
 ```
 
-### Parmeter typing and default value
+### Parameter typing and default value
 
 For optional arguments or arguments with defaults we follow the following syntax. Imagine we have a function with the
 following signature:

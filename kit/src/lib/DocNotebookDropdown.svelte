@@ -1,12 +1,10 @@
 <script lang="ts">
-	import { onMount, tick } from "svelte";
-
 	import Dropdown from "./Dropdown.svelte";
 	import DropdownEntry from "./DropdownEntry.svelte";
 
 	export let options: { label: string; value: string }[] = [];
 	export let classNames = "";
-	let dropdownEl: HTMLDivElement;
+	export let containerStyle = "";
 
 	const googleColabOptions = options.filter((o) => o.value.includes("colab.research.google.com"));
 	const awsStudioOptions = options.filter((o) => o.value.includes("studiolab.sagemaker.aws"));
@@ -14,42 +12,9 @@
 	function onClick(url: string) {
 		window.open(url);
 	}
-
-	function onResize() {
-		// avoid DocNotebookDropdown overlapping with doc titles (i.e. h1 elements) on smaller screens because of absolute positioning
-		const h1El = document.querySelector(".prose-doc h1");
-		const h1SpanEl = document.querySelector(".prose-doc h1 > span");
-		if (h1El && h1SpanEl) {
-			const { width: h1Widht } = h1El.getBoundingClientRect();
-			const { width: spanWidth } = h1SpanEl.getBoundingClientRect();
-			// correct calculation of dropdownEl's width; othwrwise, the width can count in negative (empty) spaces
-			let dropdownWidth = 0;
-			for (let i = 0; i < dropdownEl.children.length; i++) {
-				const child = dropdownEl.children.item(i);
-				if (child) {
-					dropdownWidth += child.clientWidth;
-				}
-			}
-			const bufferMargin = 20;
-			if (h1Widht - spanWidth < dropdownWidth + bufferMargin) {
-				dropdownEl.classList.remove("absolute");
-			} else {
-				dropdownEl.classList.add("absolute");
-			}
-		}
-	}
-
-	onMount(() => {
-		(async () => {
-			await tick();
-			onResize();
-		})();
-	});
 </script>
 
-<svelte:window on:resize={onResize} />
-
-<div class="flex space-x-1 {classNames}" bind:this={dropdownEl}>
+<div class="flex space-x-1 {classNames}" style={containerStyle}>
 	<slot name="alwaysVisible" />
 	{#if googleColabOptions.length === 1}
 		<a href={googleColabOptions[0].value} target="_blank">

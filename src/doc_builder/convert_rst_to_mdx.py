@@ -1,4 +1,3 @@
-# coding=utf-8
 # Copyright 2021 The HuggingFace Team. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,7 +14,6 @@
 
 
 import re
-
 
 # Re pattern to catch things inside ` ` in :obj:`thing`.
 _re_obj = re.compile(r":obj:`([^`]+)`")
@@ -664,6 +662,7 @@ def convert_rst_to_mdx(rst_text, page_info, add_imports=True):
         new_lines = [
             '<script lang="ts">',
             '	import Tip from "$lib/Tip.svelte";',
+            '	import CopyLLMTxtMenu from "$lib/CopyLLMTxtMenu.svelte";',
             '	import Youtube from "$lib/Youtube.svelte";',
             '	import Docstring from "$lib/Docstring.svelte";',
             '	import CodeBlock from "$lib/CodeBlock.svelte";',
