@@ -16,7 +16,7 @@ import re
 import unittest
 
 from doc_builder.style_doc import (
-    _re_blockquote,
+    _re_blockquote_tip,
     _re_code,
     _re_docstyle_ignore,
     _re_list,
@@ -54,10 +54,10 @@ class BuildDocTester(unittest.TestCase):
         self.assertIsNotNone(_re_tip.search("<Tip warning={true}>"))
         self.assertIsNotNone(_re_tip.search("    <Tip warning={true}>"))
 
-    def test_re_blockquote(self):
-        self.assertIsNotNone(_re_blockquote.search("> quoted line"))
-        self.assertIsNotNone(_re_blockquote.search("> [!NOTE]"))
-        self.assertIsNotNone(_re_blockquote.search("    > indented quoted line"))
+    def test_re_blockquote_tip(self):
+        self.assertIsNotNone(_re_blockquote_tip.search("> quoted line"))
+        self.assertIsNotNone(_re_blockquote_tip.search("> [!NOTE]"))
+        self.assertIsNotNone(_re_blockquote_tip.search("    > indented quoted line"))
 
     def test_parse_code_example(self):
         # One code sample, no output
