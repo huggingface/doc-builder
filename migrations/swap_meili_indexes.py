@@ -17,9 +17,10 @@ from doc_builder.meilisearch_helper import swap_indexes
 def main():
     parser = argparse.ArgumentParser(description="Swap main and temp Meilisearch indexes")
     parser.add_argument("--meilisearch_key", type=str, required=True, help="Meilisearch API key")
+    parser.add_argument("--meilisearch_url", type=str, required=True, help="Meilisearch URL")
     args = parser.parse_args()
 
-    client = meilisearch.Client("https://edge.meilisearch.com", args.meilisearch_key)
+    client = meilisearch.Client(args.meilisearch_url, args.meilisearch_key)
     swap_indexes(client, MEILI_INDEX, MEILI_INDEX_TEMP)
     print(f"[meilisearch] successfully swapped {MEILI_INDEX} and {MEILI_INDEX_TEMP}")
 
