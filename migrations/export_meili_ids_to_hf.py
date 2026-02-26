@@ -18,8 +18,8 @@ import argparse
 import meilisearch
 
 from doc_builder.build_embeddings import MEILI_INDEX
-from doc_builder.meilisearch_helper import get_all_document_ids
 from doc_builder.embeddings_tracker import save_tracker
+from doc_builder.meilisearch_helper import get_all_document_ids
 
 
 def main():

@@ -40,8 +40,6 @@ def process_hf_docs_command(args):
     using the HF Hub tracker (hf-doc-build/doc-builder-embeddings-tracker) to
     compare current IDs against what is already in Meilisearch.
     """
-    import meilisearch
-    from tqdm import tqdm
 
     print("Processing documentation from HF doc-build dataset...")
 
@@ -133,8 +131,8 @@ def _run_incremental(args, all_chunks, hf_ie_url, hf_ie_token, meilisearch_key, 
     from tqdm import tqdm
 
     from doc_builder.build_embeddings import MEILI_INDEX
-    from doc_builder.meilisearch_helper import delete_documents_from_db, generate_doc_id, sanitize_for_id
     from doc_builder.embeddings_tracker import load_tracker, save_tracker
+    from doc_builder.meilisearch_helper import delete_documents_from_db, generate_doc_id, sanitize_for_id
 
     hf_token = get_credential(args.hf_token, "HF_TOKEN")
 
