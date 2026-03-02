@@ -346,52 +346,7 @@ import fs
         expected = "See [Local](./local) and [External](https://example.com/page.md)"
         self.assertEqual(strip_md_extension_from_internal_links(text), expected)
 
-    def test_clean_runnable_blocks_basic(self):
-        text = """```py runnable:test_basic
-from transformers import AutoTokenizer
-
-tokenizer = AutoTokenizer.from_pretrained("bert-base-uncased")
-assert tokenizer is not None
-output = tokenizer("Hello world")
-assert "input_ids" in output
-print(output)
-```"""
-        expected = """```py
-from transformers import AutoTokenizer
-
-tokenizer = AutoTokenizer.from_pretrained("bert-base-uncased")
-output = tokenizer("Hello world")
-print(output)
-```"""
-        self.assertEqual(clean_runnable_blocks(text), expected)
-
-    def test_clean_runnable_blocks_python_fence(self):
-        text = """```python runnable:test_python
-x = 1
-assert x == 1
-print(x)
-```"""
-        expected = """```python
-x = 1
-print(x)
-```"""
-        self.assertEqual(clean_runnable_blocks(text), expected)
-
-    def test_clean_runnable_blocks_multiline_assert(self):
-        text = """```py runnable:test_multi
-result = do_something()
-assert (
-    result.shape == (1, 10)
-)
-print(result)
-```"""
-        expected = """```py
-result = do_something()
-print(result)
-```"""
-        self.assertEqual(clean_runnable_blocks(text), expected)
-
-    def test_clean_runnable_blocks_no_asserts(self):
+    def test_clean_runnable_blocks_strips_annotation(self):
         text = """```py runnable:test_clean
 from transformers import pipeline
 pipe = pipeline("sentiment-analysis")
@@ -404,60 +359,126 @@ print(pipe("I love this!"))
 ```"""
         self.assertEqual(clean_runnable_blocks(text), expected)
 
+    def test_clean_runnable_blocks_python_fence(self):
+        text = """```python runnable:test_python
+x = 1
+print(x)
+```"""
+        expected = """```python
+x = 1
+print(x)
+```"""
+        self.assertEqual(clean_runnable_blocks(text), expected)
+
     def test_clean_runnable_blocks_leaves_normal_blocks(self):
         text = """```py
-assert x == 1
+x = 1  # nodoc
 print(x)
 ```"""
         # Normal blocks without runnable: should be untouched
         self.assertEqual(clean_runnable_blocks(text), text)
 
-    def test_clean_runnable_blocks_collapses_blank_lines(self):
+    def test_clean_runnable_blocks_backticks_in_string(self):
+        """Triple backticks inside a string literal should not close the block early."""
+        text = '''```py runnable:test_backticks
+x = """```
+not a fence
+```"""
+print(x)
+```'''
+        expected = '''```py
+x = """```
+not a fence
+```"""
+print(x)
+```'''
+        self.assertEqual(clean_runnable_blocks(text), expected)
+
+    def test_clean_runnable_blocks_nodoc_single_line(self):
+        """A line marked with # nodoc is removed."""
+        text = """```py runnable:test_nodoc
+from transformers import pipeline
+pipe = pipeline("sentiment-analysis")
+result = pipe("test")  # nodoc
+print(pipe("I love this!"))
+```"""
+        expected = """```py
+from transformers import pipeline
+pipe = pipeline("sentiment-analysis")
+print(pipe("I love this!"))
+```"""
+        self.assertEqual(clean_runnable_blocks(text), expected)
+
+    def test_clean_runnable_blocks_nodoc_multiline_parens(self):
+        """A multi-line statement marked with # nodoc is fully removed."""
+        text = """```py runnable:test_nodoc_multi
+result = compute()
+
+EXPECTED_OUTPUT = (  # nodoc
+    "first value"
+    + "second value"
+)
+
+print(result)
+```"""
+        expected = """```py
+result = compute()
+
+print(result)
+```"""
+        self.assertEqual(clean_runnable_blocks(text), expected)
+
+    def test_clean_runnable_blocks_nodoc_multiline_brackets(self):
+        """Multi-line list with # nodoc tracked via bracket depth."""
+        text = """```py runnable:test_nodoc_brackets
+x = do_work()
+expected = [  # nodoc
+    1,
+    2,
+    3,
+]
+print(x)
+```"""
+        expected = """```py
+x = do_work()
+print(x)
+```"""
+        self.assertEqual(clean_runnable_blocks(text), expected)
+
+    def test_clean_runnable_blocks_nodoc_for_loop(self):
+        """A for-loop marked with # nodoc is removed with its body."""
+        text = """```py runnable:test_nodoc_for
+inputs = prepare()
+
+for key in inputs:  # nodoc
+    do_something(inputs[key])
+
+outputs = model.generate(**inputs)
+```"""
+        expected = """```py
+inputs = prepare()
+
+outputs = model.generate(**inputs)
+```"""
+        self.assertEqual(clean_runnable_blocks(text), expected)
+
+    def test_clean_runnable_blocks_nodoc_collapses_blank_lines(self):
         text = """```py runnable:test_blanks
 x = 1
 
-assert x == 1
+y = 2  # nodoc
 
-y = 2
+z = 3
 ```"""
         expected = """```py
 x = 1
 
-y = 2
-```"""
-        self.assertEqual(clean_runnable_blocks(text), expected)
-
-    def test_clean_runnable_blocks_assert_with_parens(self):
-        text = """```py runnable:test_parens
-x = compute()
-assert(x > 0)
-print(x)
-```"""
-        expected = """```py
-x = compute()
-print(x)
-```"""
-        self.assertEqual(clean_runnable_blocks(text), expected)
-
-    def test_clean_runnable_blocks_for_loop_with_assert_only(self):
-        """A for-loop whose body is only an assert should be removed entirely."""
-        text = """```py runnable:test_for_assert
-inputs = prepare()
-
-for key in inputs:
-    assert torch.equal(inputs[key], inputs_transcription[key])
-
-outputs = model.generate(**inputs)
-```"""
-        expected = """```py
-inputs = prepare()
-
-outputs = model.generate(**inputs)
+z = 3
 ```"""
         self.assertEqual(clean_runnable_blocks(text), expected)
 
     def test_clean_runnable_blocks_glmasr_batched(self):
-        """Real-world test from huggingface/transformers PR #44277 — test_batched block."""
+        """Real-world test from huggingface/transformers PR #44277 — test_batched block with # nodoc."""
         text = '''```py runnable:test_batched
 import torch
 from transformers import AutoProcessor, GlmAsrForConditionalGeneration
@@ -498,14 +519,14 @@ inputs = processor.apply_chat_template(
     conversation, tokenize=True, add_generation_prompt=True, return_dict=True
 ).to(model.device, dtype=model.dtype)
 
-inputs_transcription = processor.apply_transcription_request(
+inputs_transcription = processor.apply_transcription_request(  # nodoc
     [
         "https://huggingface.co/datasets/eustlb/audio-samples/resolve/main/bcn_weather.mp3",
         "https://huggingface.co/datasets/eustlb/audio-samples/resolve/main/obama2.mp3",
     ],
 ).to(model.device, dtype=model.dtype)
 
-for key in inputs:
+for key in inputs:  # nodoc
     assert torch.equal(inputs[key], inputs_transcription[key])
 
 outputs = model.generate(**inputs, do_sample=False, max_new_tokens=500)
@@ -514,11 +535,11 @@ decoded_outputs = processor.batch_decode(
     outputs[:, inputs.input_ids.shape[1] :], skip_special_tokens=True
 )
 
-EXPECTED_OUTPUT = [
+EXPECTED_OUTPUT = [  # nodoc
     "Yesterday it was thirty five degrees in Barcelona, but today the temperature will go down to minus twenty degrees.",
     "This week, I traveled to Chicago to deliver my final farewell address to the nation.",
 ]
-assert decoded_outputs == EXPECTED_OUTPUT
+assert decoded_outputs == EXPECTED_OUTPUT  # nodoc
 ```'''
         expected = '''```py
 import torch
@@ -560,110 +581,12 @@ inputs = processor.apply_chat_template(
     conversation, tokenize=True, add_generation_prompt=True, return_dict=True
 ).to(model.device, dtype=model.dtype)
 
-inputs_transcription = processor.apply_transcription_request(
-    [
-        "https://huggingface.co/datasets/eustlb/audio-samples/resolve/main/bcn_weather.mp3",
-        "https://huggingface.co/datasets/eustlb/audio-samples/resolve/main/obama2.mp3",
-    ],
-).to(model.device, dtype=model.dtype)
-
 outputs = model.generate(**inputs, do_sample=False, max_new_tokens=500)
 
 decoded_outputs = processor.batch_decode(
     outputs[:, inputs.input_ids.shape[1] :], skip_special_tokens=True
 )
-
-EXPECTED_OUTPUT = [
-    "Yesterday it was thirty five degrees in Barcelona, but today the temperature will go down to minus twenty degrees.",
-    "This week, I traveled to Chicago to deliver my final farewell address to the nation.",
-]
 ```'''
-        self.assertEqual(clean_runnable_blocks(text), expected)
-
-    def test_clean_runnable_blocks_backticks_in_string(self):
-        """Triple backticks inside a string literal should not close the block early."""
-        text = '''```py runnable:test_backticks
-x = """```
-not a fence
-```"""
-assert x is not None
-print(x)
-```'''
-        expected = '''```py
-x = """```
-not a fence
-```"""
-print(x)
-```'''
-        self.assertEqual(clean_runnable_blocks(text), expected)
-
-    def test_clean_runnable_blocks_nodoc_single_line(self):
-        """A line marked with # nodoc is removed."""
-        text = """```py runnable:test_nodoc
-from transformers import pipeline
-pipe = pipeline("sentiment-analysis")
-result = pipe("test")  # nodoc
-print(pipe("I love this!"))
-```"""
-        expected = """```py
-from transformers import pipeline
-pipe = pipeline("sentiment-analysis")
-print(pipe("I love this!"))
-```"""
-        self.assertEqual(clean_runnable_blocks(text), expected)
-
-    def test_clean_runnable_blocks_nodoc_multiline_parens(self):
-        """A multi-line statement marked with # nodoc is fully removed."""
-        text = """```py runnable:test_nodoc_multi
-result = compute()
-
-EXPECTED_OUTPUT = [  # nodoc
-    "first value",
-    "second value",
-]
-assert result == EXPECTED_OUTPUT
-
-print(result)
-```"""
-        expected = """```py
-result = compute()
-
-print(result)
-```"""
-        self.assertEqual(clean_runnable_blocks(text), expected)
-
-    def test_clean_runnable_blocks_nodoc_for_loop(self):
-        """A for-loop marked with # nodoc is removed with its body."""
-        text = """```py runnable:test_nodoc_for
-inputs = prepare()
-
-for key in inputs:  # nodoc
-    assert torch.equal(inputs[key], other[key])
-
-outputs = model.generate(**inputs)
-```"""
-        expected = """```py
-inputs = prepare()
-
-outputs = model.generate(**inputs)
-```"""
-        self.assertEqual(clean_runnable_blocks(text), expected)
-
-    def test_clean_runnable_blocks_nodoc_multiline_brackets(self):
-        """Multi-line list with # nodoc tracked via bracket depth."""
-        text = """```py runnable:test_nodoc_brackets
-x = do_work()
-expected = [  # nodoc
-    1,
-    2,
-    3,
-]
-print(x)
-```"""
-        expected = """```py
-x = do_work()
-print(x)
-```"""
         self.assertEqual(clean_runnable_blocks(text), expected)
 
     def test_clean_runnable_blocks_glmasr_basic(self):
