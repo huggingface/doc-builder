@@ -312,18 +312,14 @@ def _clean_code_for_doc(code):
 
         if skipping:
             # Track parentheses / brackets to find end of multi-line statement
-            paren_depth += (
-                stripped.count("(") - stripped.count(")") + stripped.count("[") - stripped.count("]")
-            )
+            paren_depth += stripped.count("(") - stripped.count(")") + stripped.count("[") - stripped.count("]")
             if paren_depth <= 0 and not stripped.rstrip().endswith("\\"):
                 skipping = False
             continue
 
         if _should_hide_line(stripped):
             if _is_multiline(stripped):
-                paren_depth = (
-                    stripped.count("(") - stripped.count(")") + stripped.count("[") - stripped.count("]")
-                )
+                paren_depth = stripped.count("(") - stripped.count(")") + stripped.count("[") - stripped.count("]")
                 skipping = True
             elif _re_block_opener.match(stripped):
                 # Block opener with # nodoc — skip the entire indented body

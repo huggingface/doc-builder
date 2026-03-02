@@ -479,7 +479,7 @@ z = 3
 
     def test_clean_runnable_blocks_glmasr_batched(self):
         """Real-world test from huggingface/transformers PR #44277 — test_batched block with # nodoc."""
-        text = '''```py runnable:test_batched
+        text = """```py runnable:test_batched
 import torch
 from transformers import AutoProcessor, GlmAsrForConditionalGeneration
 
@@ -540,8 +540,8 @@ EXPECTED_OUTPUT = [  # nodoc
     "This week, I traveled to Chicago to deliver my final farewell address to the nation.",
 ]
 assert decoded_outputs == EXPECTED_OUTPUT  # nodoc
-```'''
-        expected = '''```py
+```"""
+        expected = """```py
 import torch
 from transformers import AutoProcessor, GlmAsrForConditionalGeneration
 
@@ -586,12 +586,12 @@ outputs = model.generate(**inputs, do_sample=False, max_new_tokens=500)
 decoded_outputs = processor.batch_decode(
     outputs[:, inputs.input_ids.shape[1] :], skip_special_tokens=True
 )
-```'''
+```"""
         self.assertEqual(clean_runnable_blocks(text), expected)
 
     def test_clean_runnable_blocks_glmasr_basic(self):
         """Real-world test from huggingface/transformers PR #44277 — test_basic block (no asserts)."""
-        text = '''```py runnable:test_basic
+        text = """```py runnable:test_basic
 from transformers import AutoModelForSeq2SeqLM, AutoProcessor
 
 processor = AutoProcessor.from_pretrained("zai-org/GLM-ASR-Nano-2512")
@@ -606,8 +606,8 @@ outputs = model.generate(**inputs, do_sample=False, max_new_tokens=500)
 
 decoded_outputs = processor.batch_decode(outputs[:, inputs.input_ids.shape[1] :], skip_special_tokens=True)
 print(decoded_outputs)
-```'''
-        expected = '''```py
+```"""
+        expected = """```py
 from transformers import AutoModelForSeq2SeqLM, AutoProcessor
 
 processor = AutoProcessor.from_pretrained("zai-org/GLM-ASR-Nano-2512")
@@ -622,5 +622,5 @@ outputs = model.generate(**inputs, do_sample=False, max_new_tokens=500)
 
 decoded_outputs = processor.batch_decode(outputs[:, inputs.input_ids.shape[1] :], skip_special_tokens=True)
 print(decoded_outputs)
-```'''
+```"""
         self.assertEqual(clean_runnable_blocks(text), expected)
