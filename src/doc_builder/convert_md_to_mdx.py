@@ -266,6 +266,116 @@ def strip_md_extension_from_internal_links(text):
     return _re_markdown_link.sub(_process_link, text)
 
 
+_re_runnable_block = re.compile(
+    r"(?P<fence>```(?:py|python))\s+runnable:\S+\n(?P<code>.*?\n)```$",
+    re.DOTALL | re.MULTILINE,
+)
+
+
+def _should_hide_line(stripped):
+    """Check if a line is an assert or is marked with ``# nodoc``."""
+    if stripped.startswith(("assert ", "assert(")):
+        return True
+    if stripped.endswith("# nodoc") or "# nodoc " in stripped:
+        return True
+    return False
+
+
+def _is_multiline(stripped):
+    """Return True when a hidden line continues on the next line(s)."""
+    paren_depth = stripped.count("(") - stripped.count(")") + stripped.count("[") - stripped.count("]")
+    return paren_depth > 0 or stripped.rstrip().endswith("\\")
+
+
+def _clean_code_for_doc(code):
+    """
+    Remove lines that should not appear in rendered documentation:
+
+    * ``assert`` statements (including multi-line ones).
+    * Any line (or multi-line statement) annotated with a ``# nodoc`` comment.
+    * Block openers (``for``/``if``/``while``/``with``) whose body was
+      entirely removed by the rules above.
+    """
+    lines = code.split("\n")
+    result = []
+    paren_depth = 0
+    skipping = False
+    for line in lines:
+        stripped = line.lstrip()
+
+        if skipping:
+            # Track parentheses / brackets to find end of multi-line statement
+            paren_depth += (
+                stripped.count("(") - stripped.count(")") + stripped.count("[") - stripped.count("]")
+            )
+            if paren_depth <= 0 and not stripped.rstrip().endswith("\\"):
+                skipping = False
+            continue
+
+        if _should_hide_line(stripped):
+            indent = len(line) - len(stripped)
+            if _is_multiline(stripped):
+                paren_depth = (
+                    stripped.count("(") - stripped.count(")") + stripped.count("[") - stripped.count("]")
+                )
+                skipping = True
+            _remove_empty_block_opener(result, indent)
+            continue
+
+        result.append(line)
+
+    # Collapse runs of multiple blank lines into one
+    cleaned = []
+    for line in result:
+        if line.strip() == "" and cleaned and cleaned[-1].strip() == "":
+            continue
+        cleaned.append(line)
+
+    return "\n".join(cleaned)
+
+
+_re_block_opener = re.compile(r"^(for |if |while |with |elif |else\s*:)")
+
+
+def _remove_empty_block_opener(result, assert_indent):
+    """
+    Walk backwards through *result* and remove the nearest block opener
+    if the assert we're about to remove was its only body line.
+    """
+    # Find the last non-blank line
+    idx = len(result) - 1
+    while idx >= 0 and result[idx].strip() == "":
+        idx -= 1
+    if idx < 0:
+        return
+
+    prev = result[idx]
+    prev_stripped = prev.lstrip()
+    prev_indent = len(prev) - len(prev_stripped)
+
+    # The opener must be less indented than the assert and end with ':'
+    if prev_indent < assert_indent and prev_stripped.endswith(":") and _re_block_opener.match(prev_stripped):
+        # Remove the opener and any blank lines between it and here
+        del result[idx:]
+
+
+def clean_runnable_blocks(text):
+    """
+    Process ```py runnable:<label> code blocks:
+      1. Strip the runnable:<label> annotation from the fence.
+      2. Remove assert statements so the example stays clean.
+    """
+
+    def _replace(match):
+        fence = match.group("fence")
+        code = _clean_code_for_doc(match.group("code"))
+        # Strip trailing blank lines inside the block
+        code = code.rstrip("\n") + "\n"
+        return f"{fence}\n{code}```"
+
+    return _re_runnable_block.sub(_replace, text)
+
+
 def process_md(text, page_info):
     """
     Processes markdown by:
@@ -274,12 +384,14 @@ def process_md(text, page_info):
         3. Clean doctest syntax
         4. Fix image links
         5. Strip .md extensions from internal links
+        6. Clean runnable code blocks
     """
     text = convert_include(text, page_info)
     text = convert_literalinclude(text, page_info)
     text = clean_doctest_syntax(text)
     text = fix_img_links(text, page_info)
     text = strip_md_extension_from_internal_links(text)
+    text = clean_runnable_blocks(text)
     return text
 
 
