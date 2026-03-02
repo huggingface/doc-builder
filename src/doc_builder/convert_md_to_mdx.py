@@ -273,9 +273,7 @@ _re_runnable_block = re.compile(
 
 
 def _should_hide_line(stripped):
-    """Check if a line is an assert or is marked with ``# nodoc``."""
-    if stripped.startswith(("assert ", "assert(")):
-        return True
+    """Check if a line is marked with ``# nodoc``."""
     if stripped.endswith("# nodoc") or "# nodoc " in stripped:
         return True
     return False
@@ -291,17 +289,26 @@ def _clean_code_for_doc(code):
     """
     Remove lines that should not appear in rendered documentation:
 
-    * ``assert`` statements (including multi-line ones).
     * Any line (or multi-line statement) annotated with a ``# nodoc`` comment.
-    * Block openers (``for``/``if``/``while``/``with``) whose body was
-      entirely removed by the rules above.
+    * When ``# nodoc`` appears on a block opener (``for``/``if``/etc.),
+      the entire indented body is removed as well.
     """
     lines = code.split("\n")
     result = []
     paren_depth = 0
     skipping = False
+    # When a block opener is marked # nodoc, skip all lines indented deeper.
+    skip_block_indent = -1
     for line in lines:
         stripped = line.lstrip()
+        indent = len(line) - len(stripped)
+
+        # Skip body of a # nodoc block opener
+        if skip_block_indent >= 0:
+            if stripped == "" or indent > skip_block_indent:
+                continue
+            # Back to same or lesser indent — stop skipping
+            skip_block_indent = -1
 
         if skipping:
             # Track parentheses / brackets to find end of multi-line statement
@@ -313,12 +320,14 @@ def _clean_code_for_doc(code):
             continue
 
         if _should_hide_line(stripped):
-            indent = len(line) - len(stripped)
             if _is_multiline(stripped):
                 paren_depth = (
                     stripped.count("(") - stripped.count(")") + stripped.count("[") - stripped.count("]")
                 )
                 skipping = True
+            elif _re_block_opener.match(stripped):
+                # Block opener with # nodoc — skip the entire indented body
+                skip_block_indent = indent
             _remove_empty_block_opener(result, indent)
             continue
 
