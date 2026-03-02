@@ -289,6 +289,16 @@ function treeVisitor() {
 			return;
 		}
 
+		// Map marker to icon component
+		const iconMap = {
+			note: "IconInfo",
+			tip: "IconLightbulb",
+			important: "IconMessageSquareWarning",
+			warning: "IconTriangleAlert",
+			caution: "IconOctagonAlert",
+		};
+		const iconComponent = iconMap[marker];
+
 		childrenLevel1[0].children = childrenLevel1[0].children.slice(1);
 		const [firstChild] = childrenLevel1[0].children;
 		if (firstChild && firstChild.type === "text") {
@@ -299,6 +309,25 @@ function treeVisitor() {
 		}
 		if (!childrenLevel1[0].children.length) {
 			node.children = node.children.slice(1);
+		}
+
+		// Inject icon HTML node at the beginning of the first paragraph
+		if (childrenLevel1.length > 0 && childrenLevel1[0].type === "paragraph") {
+			const iconNode = {
+				type: "html",
+				value: `<span class="admonition-icon"><${iconComponent} classNames="w-5 h-5" /></span>`,
+			};
+			const spanOpen = {
+				type: "html",
+				value: `<span>`,
+			};
+			const spanClose = {
+				type: "html",
+				value: `</span>`,
+			};
+
+			childrenLevel1[0].children.unshift(iconNode, spanOpen);
+			childrenLevel1[0].children.push(spanClose);
 		}
 
 		node.data = node.data || {};
