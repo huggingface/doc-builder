@@ -274,6 +274,7 @@ _re_runnable_block = re.compile(
 )
 _re_bare_assert = re.compile(r"^assert(?:\s|\()")
 _re_silence_bare_assert_warning = re.compile(r"#\s*(?:doc-builder:\s*)?ignore-bare-assert\b")
+_re_silence_bare_assert_comment = re.compile(r"\s*#\s*(?:doc-builder:\s*)?ignore-bare-assert\b.*$")
 
 
 def _should_hide_line(stripped):
@@ -291,6 +292,11 @@ def _is_bare_assert(stripped):
 def _should_silence_bare_assert_warning(stripped):
     """Check if a bare assert warning should be silenced."""
     return _re_silence_bare_assert_warning.search(stripped) is not None
+
+
+def _strip_bare_assert_silence_comment(line):
+    """Remove bare assert silence marker comments from rendered code."""
+    return _re_silence_bare_assert_comment.sub("", line).rstrip()
 
 
 def _is_multiline(stripped):
@@ -345,7 +351,7 @@ def _clean_code_for_doc(code, track_bare_assert=False):
         if track_bare_assert and _is_bare_assert(stripped) and not _should_silence_bare_assert_warning(stripped):
             bare_assert_line_numbers.append(line_number)
 
-        result.append(line)
+        result.append(_strip_bare_assert_silence_comment(line))
 
     # Collapse runs of multiple blank lines into one
     cleaned = []
