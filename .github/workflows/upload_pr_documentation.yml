@@ -166,7 +166,7 @@ jobs:
           GITHUB_TOKEN: ${{ steps.auth.outputs.method == 'comment_bot_token' && secrets.comment_bot_token || steps.comment_bot_token.outputs.token }}
 
       - name: Update doc comment if necessary
-        if: github.event.action == 'reopened' && steps.find_comment.outputs.comment-id != ''
+        if: steps.find_comment.outputs.comment-id != '' && (github.event.action == 'reopened' || steps.find_comment.outputs.comment-body != steps.doc-comment.outputs.message)
         uses: peter-evans/create-or-update-comment@v1
         with:
           comment-id: ${{ steps.find_comment.outputs.comment-id }}
