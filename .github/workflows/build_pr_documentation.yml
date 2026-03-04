@@ -57,6 +57,10 @@ on:
         type: string
         default: "main"
         description: "Debug purposes only. Revision of `doc-builder` repo to use. Useful to test changes on `doc-builder`."
+      fail_on_warning:
+        type: boolean
+        default: false
+        description: "Fail doc build when runnable warnings are emitted. Requires `additional_args` to include `--emit-warning`."
 
 
 jobs:
@@ -222,10 +226,15 @@ jobs:
             done
           fi
 
+          warnings_emitted=false
           if [[ "${{ inputs.additional_args }}" == *"--emit-warning"* ]] && grep -q "Bare assert found in runnable:" "$log_file"; then
-            echo true > ../build_dir/warnings_emitted
-          else
-            echo false > ../build_dir/warnings_emitted
+            warnings_emitted=true
+          fi
+          echo "$warnings_emitted" > ../build_dir/warnings_emitted
+
+          if [[ "$warnings_emitted" == "true" && "${{ inputs.fail_on_warning }}" == "true" ]]; then
+            echo "::error::Doc build failed because warnings were emitted (fail_on_warning=true)."
+            exit 1
           fi
           cd ..
 
