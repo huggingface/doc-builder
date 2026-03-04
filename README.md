@@ -211,6 +211,18 @@ jobs:
       additional_args: --emit-warning
 ```
 
+To make warnings fail the PR doc build, also pass:
+
+```yaml
+jobs:
+  build:
+    uses: huggingface/doc-builder/.github/workflows/build_pr_documentation.yml@main
+    with:
+      # ...
+      additional_args: --emit-warning
+      fail_on_warning: true
+```
+
 ## Writing in notebooks
 
 You can write your docs in jupyter notebooks & use doc-builder to: turn jupyter notebooks into mdx files.
