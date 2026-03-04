@@ -8,6 +8,7 @@ This is the package we use to build the documentation of our Hugging Face repos.
   * [Installation](#installation)
   * [Previewing](#previewing)
   * [Doc building](#doc-building)
+    + [Opt-in runnable warnings](#opt-in-runnable-warnings)
   * [Writing in notebooks](#writing-in-notebooks)
   * [Templates for GitHub Actions](#templates-for-github-actions)
     + [Enabling multilingual documentation](#enabling-multilingual-documentation)
@@ -118,6 +119,33 @@ doc-builder build hub ~/git/hub-docs/docs/source --build_dir ~/tmp/test-build --
 `doc-builder` can also automatically convert some of the documentation guides or tutorials into notebooks. This requires two steps:
 - add `[[open-in-colab]]` in the tutorial for which you want to build a notebook
 - add `--notebook_dir {path_to_notebook_folder}` to the build command.
+
+### Opt-in runnable warnings
+
+`doc-builder build` can emit warnings for bare `assert` statements inside runnable Python markdown code blocks
+(fences tagged with `runnable:<label>`).
+
+This behavior is opt-in to preserve backward compatibility:
+
+```bash
+doc-builder build {package_name} {path_to_docs} --build_dir {build_dir} --emit-warning
+```
+
+When enabled:
+- bare `assert` lines in runnable blocks emit warnings (with file/line in CI logs)
+- `# nodoc` removes the line from rendered docs and does not warn
+- `# doc-builder: ignore-bare-assert` keeps the line and silences the warning
+
+To enable this in reusable GitHub Actions workflows, pass:
+
+```yaml
+jobs:
+  build:
+    uses: huggingface/doc-builder/.github/workflows/build_pr_documentation.yml@main
+    with:
+      # ...
+      additional_args: --emit-warning
+```
 
 ## Writing in notebooks
 
