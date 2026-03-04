@@ -13,6 +13,8 @@
 # limitations under the License.
 
 
+import contextlib
+import io
 import unittest
 from pathlib import Path
 
@@ -369,6 +371,67 @@ x = 1
 print(x)
 ```"""
         self.assertEqual(clean_runnable_blocks(text), expected)
+
+    def test_clean_runnable_blocks_warns_on_bare_assert(self):
+        text = """```py runnable:test_warn
+x = 1
+assert x == 1
+print(x)
+```"""
+        stderr = io.StringIO()
+        with contextlib.redirect_stderr(stderr):
+            result = clean_runnable_blocks(
+                text, page_info={"path": Path("docs/source/en/example.md"), "emit_warning": True}
+            )
+
+        self.assertIn("assert x == 1", result)
+        warning = stderr.getvalue()
+        self.assertIn("Bare assert found in runnable:test_warn", warning)
+        self.assertIn("ignore-bare-assert", warning)
+        self.assertIn("docs/source/en/example.md:3", warning)
+
+    def test_clean_runnable_blocks_does_not_warn_by_default(self):
+        text = """```py runnable:test_warn_default
+x = 1
+assert x == 1
+print(x)
+```"""
+        stderr = io.StringIO()
+        with contextlib.redirect_stderr(stderr):
+            result = clean_runnable_blocks(text, page_info={"path": Path("docs/source/en/example.md")})
+
+        self.assertIn("assert x == 1", result)
+        self.assertEqual(stderr.getvalue(), "")
+
+    def test_clean_runnable_blocks_can_silence_assert_warning(self):
+        text = """```py runnable:test_silence
+x = 1
+assert x == 1  # doc-builder: ignore-bare-assert
+print(x)
+```"""
+        stderr = io.StringIO()
+        with contextlib.redirect_stderr(stderr):
+            result = clean_runnable_blocks(
+                text, page_info={"path": Path("docs/source/en/example.md"), "emit_warning": True}
+            )
+
+        self.assertIn("assert x == 1", result)
+        self.assertEqual(stderr.getvalue(), "")
+
+    def test_clean_runnable_blocks_nodoc_assert_is_removed_without_warning(self):
+        text = """```py runnable:test_nodoc_assert
+x = 1
+assert x == 1  # nodoc
+print(x)
+```"""
+        stderr = io.StringIO()
+        with contextlib.redirect_stderr(stderr):
+            result = clean_runnable_blocks(
+                text, page_info={"path": Path("docs/source/en/example.md"), "emit_warning": True}
+            )
+
+        self.assertNotIn("assert x == 1", result)
+        self.assertEqual(stderr.getvalue(), "")
 
     def test_clean_runnable_blocks_leaves_normal_blocks(self):
         text = """```py

@@ -81,6 +81,23 @@ jobs:
             exit 1
           fi
 
+      - name: Get warning status
+        id: warning-context
+        run: |
+          if [ -f ./build_dir/warnings_emitted ]; then
+            content_warnings_emitted=$(cat ./build_dir/warnings_emitted)
+            rm -rf ./build_dir/warnings_emitted
+          else
+            content_warnings_emitted=false
+          fi
+
+          if [[ $content_warnings_emitted =~ ^(true|false)$ ]]; then
+            echo "warnings_emitted=$content_warnings_emitted" >> $GITHUB_OUTPUT
+          else
+            echo "Encountered an invalid warnings_emitted value"
+            exit 1
+          fi
+
       - name: Set hub_docs_url
         id: hfhub-context
         run: |
@@ -91,6 +108,20 @@ jobs:
           else
             echo "hub_docs_url=${{ inputs.hub_base_path }}/${{ inputs.package_name }}/pr_${{ steps.github-context.outputs.pr_number }}" >> $GITHUB_OUTPUT
           fi
+
+      - name: Compose doc comment message
+        id: doc-comment
+        run: |
+          warning_message=""
+          if [ "${{ steps.warning-context.outputs.warnings_emitted }}" = "true" ]; then
+            warning_message=" Some warnings were emitted during doc build; check the workflow logs for details."
+          fi
+
+          {
+            echo "message<<EOF"
+            echo "The docs for this PR live [here](${{ steps.hfhub-context.outputs.hub_docs_url }}). All of your documentation changes will be reflected on that endpoint. The docs are available until 30 days after the last update.${warning_message}"
+            echo "EOF"
+          } >> $GITHUB_OUTPUT
 
       - name: Push to repositories
         shell: bash
@@ -130,7 +161,7 @@ jobs:
         uses: thollander/actions-comment-pull-request@v2
         if: steps.find_comment.outputs.comment-id == ''
         with:
-          message: 'The docs for this PR live [here](${{ steps.hfhub-context.outputs.hub_docs_url }}). All of your documentation changes will be reflected on that endpoint. The docs are available until 30 days after the last update.'
+          message: ${{ steps.doc-comment.outputs.message }}
           pr_number: ${{ steps.github-context.outputs.pr_number }}
           GITHUB_TOKEN: ${{ steps.auth.outputs.method == 'comment_bot_token' && secrets.comment_bot_token || steps.comment_bot_token.outputs.token }}
 
@@ -141,5 +172,4 @@ jobs:
           comment-id: ${{ steps.find_comment.outputs.comment-id }}
           token: ${{ steps.auth.outputs.method == 'comment_bot_token' && secrets.comment_bot_token || steps.comment_bot_token.outputs.token }}
           edit-mode: replace
-          body: |
-            The docs for this PR live [here](${{ steps.hfhub-context.outputs.hub_docs_url }}). All of your documentation changes will be reflected on that endpoint. The docs are available until 30 days after the last update.
+          body: ${{ steps.doc-comment.outputs.message }}
