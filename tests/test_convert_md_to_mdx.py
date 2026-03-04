@@ -388,7 +388,7 @@ print(x)
         warning = stderr.getvalue()
         self.assertIn("Bare assert found in runnable:test_warn", warning)
         self.assertIn("ignore-bare-assert", warning)
-        self.assertRegex(warning, r"docs/source/en/example\.md(?::3|,line=3)")
+        self.assertRegex(warning, r"docs[\\/]source[\\/]en[\\/]example\.md(?::3|,line=3)")
 
     def test_clean_runnable_blocks_does_not_warn_by_default(self):
         text = """```py runnable:test_warn_default
@@ -416,6 +416,7 @@ print(x)
             )
 
         self.assertIn("assert x == 1", result)
+        self.assertNotIn("ignore-bare-assert", result)
         self.assertEqual(stderr.getvalue(), "")
 
     def test_clean_runnable_blocks_nodoc_assert_is_removed_without_warning(self):

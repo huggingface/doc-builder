@@ -194,7 +194,7 @@ doc-builder build {package_name} {path_to_docs} --build_dir {build_dir} --emit-w
 When enabled:
 - bare `assert` lines in runnable blocks emit warnings (with file/line in CI logs)
 - `# nodoc` removes the line from rendered docs and does not warn
-- `# doc-builder: ignore-bare-assert` keeps the line and silences the warning
+- `# doc-builder: ignore-bare-assert` keeps the line, silences the warning, and the marker comment is removed from rendered docs
 
 Warning formatting depends on where the build runs:
 - local runs: `Warning: docs/source/en/example.md:3: ...`
