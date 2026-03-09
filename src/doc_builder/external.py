@@ -106,7 +106,7 @@ def get_objects_map(package_name, version="main", language="en", repo_owner="hug
     doc_url = f"{HF_DOC_PREFIX}{package_name}/{package_version}/{language}"
     url = f"{doc_url}/objects.inv"
     try:
-        with httpx.stream("GET", url) as request:
+        with httpx.stream("GET", url, follow_redirects=True) as request:
             request.raise_for_status()
             with tempfile.TemporaryDirectory() as tmp_dir:
                 tmp_file = os.path.join(tmp_dir, "objects.inv")

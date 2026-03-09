@@ -121,7 +121,7 @@ def download_and_extract_zip(library_name: str, output_dir: Path, zip_filename: 
 
     try:
         print(f"  Downloading {zip_url}...")
-        with httpx.stream("GET", zip_url) as response:
+        with httpx.stream("GET", zip_url, follow_redirects=True) as response:
             response.raise_for_status()
 
             # Get total size for progress bar
