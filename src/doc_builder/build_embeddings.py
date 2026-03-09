@@ -43,8 +43,8 @@ Embedding = namedtuple(
     "text source_page_url source_page_title library embedding heading1 heading2 heading3 heading4 heading5 page",
 )
 
-MEILI_INDEX = "docs-semantic-search-v2"
-MEILI_INDEX_TEMP = "docs-semantic-search-v2-temp"
+MEILI_INDEX = "docs-semantic-search"
+MEILI_INDEX_TEMP = "docs-semantic-search-temp"
 
 _re_md_anchor = re.compile(r"\[\[(.*)]]")
 _re_non_alphaneumeric = re.compile(r"[^a-z0-9\s]+", re.IGNORECASE)
@@ -778,6 +778,7 @@ def build_embeddings(
     hf_ie_url,
     hf_ie_token,
     meilisearch_key,
+    meilisearch_url,
     version="main",
     version_tag="main",
     language="en",
@@ -832,17 +833,17 @@ def build_embeddings(
     embeddings = call_embedding_inference(chunks, hf_ie_url, hf_ie_token, is_python_module)
 
     # Step 3: push embeddings to vector database (meilisearch)
-    client = meilisearch.Client("https://edge.meilisearch.com", meilisearch_key)
+    client = meilisearch.Client(meilisearch_url, meilisearch_key)
     ITEMS_PER_CHUNK = 5000  # a value that was found experimentally
     for chunk_embeddings in tqdm(chunk_list(embeddings, ITEMS_PER_CHUNK), desc="Uploading data to meilisearch"):
         add_embeddings_to_db(client, MEILI_INDEX_TEMP, chunk_embeddings)
 
 
-def clean_meilisearch(meilisearch_key: str, swap: bool):
+def clean_meilisearch(meilisearch_key: str, swap: bool, meilisearch_url: str):
     """
     Swap & delete temp index.
     """
-    client = meilisearch.Client("https://edge.meilisearch.com", meilisearch_key)
+    client = meilisearch.Client(meilisearch_url, meilisearch_key)
     if swap:
         swap_indexes(client, MEILI_INDEX, MEILI_INDEX_TEMP)
     delete_embedding_db(client, MEILI_INDEX_TEMP)
@@ -851,7 +852,7 @@ def clean_meilisearch(meilisearch_key: str, swap: bool):
     print("[meilisearch] successfully swapped & deleted temp index.")
 
 
-def add_gradio_docs(hf_ie_url: str, hf_ie_token: str, meilisearch_key: str):
+def add_gradio_docs(hf_ie_url: str, hf_ie_token: str, meilisearch_key: str, meilisearch_url: str):
     """Add Gradio documentation to embeddings."""
     # Step 1: download the documentation
     url = "https://huggingface.co/datasets/gradio/docs/resolve/main/docs.json"
@@ -894,7 +895,7 @@ def add_gradio_docs(hf_ie_url: str, hf_ie_token: str, meilisearch_key: str):
             embeddings.extend(batch_embeddings)
 
     # Step 3: push embeddings to vector database (meilisearch)
-    client = meilisearch.Client("https://edge.meilisearch.com", meilisearch_key)
+    client = meilisearch.Client(meilisearch_url, meilisearch_key)
     ITEMS_PER_CHUNK = 5000  # a value that was found experimentally
     for chunk_embeddings in tqdm(chunk_list(embeddings, ITEMS_PER_CHUNK), desc="Uploading gradio docs to meilisearch"):
         add_embeddings_to_db(client, MEILI_INDEX_TEMP, chunk_embeddings)
