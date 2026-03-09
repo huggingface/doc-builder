@@ -176,6 +176,37 @@ def clear_embedding_db(client: Client, index_name: str):
     return client, task_info
 
 
+def get_all_document_ids(client: Client, index_name: str) -> set[str]:
+    """
+    Fetch all document IDs from a Meilisearch index via pagination.
+    Only retrieves the 'id' field to minimise payload size.
+    """
+    all_ids = set()
+    offset = 0
+    limit = 1000
+
+    while True:
+        result = client.index(index_name).get_documents({"fields": ["id"], "limit": limit, "offset": offset})
+        docs = result.results
+        if not docs:
+            break
+        for doc in docs:
+            all_ids.add(doc.id)
+        if len(docs) < limit:
+            break
+        offset += limit
+
+    return all_ids
+
+
+@wait_for_task_completion
+def delete_documents_from_db(client: Client, index_name: str, doc_ids: list[str]):
+    """Delete a batch of documents by ID from a Meilisearch index."""
+    index = client.index(index_name)
+    task_info = index.delete_documents(doc_ids)
+    return client, task_info
+
+
 def sanitize_for_id(text):
     """
     Sanitize text to only contain valid Meilisearch ID characters.
