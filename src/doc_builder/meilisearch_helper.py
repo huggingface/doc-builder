@@ -161,19 +161,15 @@ def update_db_settings(client: Client, index_name: str):
     return client, task_info
 
 
-@wait_for_task_completion
 def delete_embedding_db(client: Client, index_name: str):
     index = client.index(index_name)
-    task_info = index.delete()
-    return client, task_info
+    index.delete()
 
 
-@wait_for_task_completion
 def clear_embedding_db(client: Client, index_name: str):
     """Delete all documents from an index without deleting the index itself."""
     index = client.index(index_name)
-    task_info = index.delete_all_documents()
-    return client, task_info
+    index.delete_all_documents()
 
 
 def get_all_document_ids(client: Client, index_name: str) -> set[str]:
@@ -199,12 +195,10 @@ def get_all_document_ids(client: Client, index_name: str) -> set[str]:
     return all_ids
 
 
-@wait_for_task_completion
 def delete_documents_from_db(client: Client, index_name: str, doc_ids: list[str]):
     """Delete a batch of documents by ID from a Meilisearch index."""
     index = client.index(index_name)
-    task_info = index.delete_documents(doc_ids)
-    return client, task_info
+    index.delete_documents(doc_ids)
 
 
 def sanitize_for_id(text):
