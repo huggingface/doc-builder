@@ -53,11 +53,7 @@ class MarkdownCodeItem(pytest.Item):
             self._tmp_file.unlink(missing_ok=True)
 
     def repr_failure(self, excinfo):
-        return (
-            f"Runnable block '{self.name}' in {self.path} failed:\n\n"
-            f"{excinfo.getrepr()}\n\n"
-            f"Code:\n{self._code}"
-        )
+        return f"Runnable block '{self.name}' in {self.path} failed:\n\n{excinfo.getrepr()}\n\nCode:\n{self._code}"
 
     def reportinfo(self):
         return self.path, None, f"runnable:{self.name}"
