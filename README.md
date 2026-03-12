@@ -168,7 +168,21 @@ class MyPageDocIntegrationTest(DocIntegrationTest):
 What it does:
 - finds fenced `py`/`python` blocks marked with `runnable` (or `runnable:<label>`)
 - creates one test per block (`runnable:my_case` becomes `test_my_case`)
+- treats `runnable:my_case:2`, `runnable:my_case:3`, and so on as continuations of `runnable:my_case`
 - executes each block with contextual failure output (file path + code snippet)
+
+Continuation blocks run in the same namespace as the base block, so later snippets can build on earlier setup:
+
+````md
+```py runnable:test_basic
+processor = AutoProcessor.from_pretrained("suno/bark")
+inputs = processor("Hello, my dog is cute", voice_preset=voice_preset)
+```
+
+```py runnable:test_basic:2
+inputs = processor("惊人的！我会说中文")
+```
+````
 
 Run locally with:
 

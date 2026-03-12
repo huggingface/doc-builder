@@ -18,6 +18,8 @@ from collections.abc import Callable, Iterable
 from dataclasses import dataclass
 from pathlib import Path
 
+_CONTINUATION_LABEL_PATTERN = re.compile(r"^(?P<base>.+):(?P<suffix>[1-9]\d*)$")
+
 
 @dataclass
 class RunnableBlock:
@@ -81,10 +83,25 @@ class DocIntegrationTest(unittest.TestCase):
             return []
 
         doc_text = resolved_path.read_text(encoding="utf-8")
+        return cls._collect_runnable_blocks_from_text(doc_text)
+
+    @classmethod
+    def _collect_runnable_blocks_from_text(cls, text: str) -> list[RunnableBlock]:
         blocks = []
-        for idx, (code, name) in enumerate(cls._iter_runnable_code_blocks(doc_text)):
+        block_indices_by_name = {}
+        for idx, (code, name) in enumerate(cls._iter_runnable_code_blocks(text)):
             safe_name = name or f"doc_block_{idx}"
+            continuation_match = _CONTINUATION_LABEL_PATTERN.match(safe_name)
+            if continuation_match:
+                base_name = continuation_match.group("base")
+                base_block_idx = block_indices_by_name.get(base_name)
+                if base_block_idx is not None:
+                    blocks[base_block_idx].code = f"{blocks[base_block_idx].code}\n\n{code}"
+                    continue
+
+            block_indices_by_name[safe_name] = len(blocks)
             blocks.append(RunnableBlock(code=code, name=safe_name, idx=idx))
+
         return blocks
 
     @classmethod
@@ -92,6 +109,7 @@ class DocIntegrationTest(unittest.TestCase):
         """
         Yield (code, name) pairs for blocks marked with the runnable flag from markdown text.
         Supports optional naming via a suffix: ```py runnable:test_name
+        A later block named ```py runnable:test_name:2``` continues the earlier test.
         """
         pattern = re.compile(r"```(?P<lang>python|py)(?P<flags>[^\n]*)\n(?P<code>.+?)\n```", re.DOTALL)
         for match in pattern.finditer(text):
@@ -130,12 +148,10 @@ class DocIntegrationTest(unittest.TestCase):
             self.skipTest("doc_path not set on DocIntegrationTest subclass")
 
         resolved_path = Path(self.doc_path)
-        doc_text = resolved_path.read_text(encoding="utf-8")
-        runnable_blocks = list(self._iter_runnable_code_blocks(doc_text))
+        runnable_blocks = self._collect_runnable_blocks()
 
         self.assertTrue(runnable_blocks, f"No runnable code blocks were found in {resolved_path}")
 
-        for idx, (code, name) in enumerate(runnable_blocks):
-            block_name = name or f"doc_block_{idx}"
-            with self.subTest(block=block_name):
-                self._execute_block(code, block_name)
+        for block in runnable_blocks:
+            with self.subTest(block=block.name):
+                self._execute_block(block.code, block.name)

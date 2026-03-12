@@ -58,3 +58,49 @@ def test_custom_runnable_flag(tmp_path):
 
     assert hasattr(CustomFlagDocTest, "test_alpha")
     CustomFlagDocTest(methodName="test_alpha").test_alpha()
+
+
+def test_runnable_block_continuations_share_state_and_cleanup(tmp_path):
+    md_path = tmp_path / "doc.md"
+    md_path.write_text(
+        "\n".join(
+            [
+                "```py runnable:test_basic",
+                "state = ['first']",
+                "```",
+                "```py runnable:test_basic:2",
+                "state.append('second')",
+                "assert state == ['first', 'second']",
+                "```",
+                "```py runnable:test_isolated",
+                "assert 'state' not in globals()",
+                "```",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    cleanup_calls = []
+
+    def cleanup():
+        cleanup_calls.append("cleanup")
+
+    class ContinuedDocTest(DocIntegrationTest):
+        doc_path = md_path
+        cleanup_func = staticmethod(cleanup)
+
+    assert hasattr(ContinuedDocTest, "test_basic")
+    assert not hasattr(ContinuedDocTest, "test_basic:2")
+    assert hasattr(ContinuedDocTest, "test_isolated")
+
+    ContinuedDocTest(methodName="test_basic").test_basic()
+    ContinuedDocTest(methodName="test_isolated").test_isolated()
+
+    assert cleanup_calls == ["cleanup", "cleanup"]
+
+
+def test_numeric_suffix_stays_part_of_label_without_base_block():
+    blocks = DocIntegrationTest._collect_runnable_blocks_from_text("```py runnable:release:2026\nx = 1\n```")
+
+    assert [block.name for block in blocks] == ["release:2026"]
+    assert [block.code for block in blocks] == ["x = 1"]
