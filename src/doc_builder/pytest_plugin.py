@@ -30,10 +30,9 @@ def pytest_collect_file(parent, file_path):
 class MarkdownFile(pytest.File):
     def collect(self):
         text = self.path.read_text(encoding="utf-8")
-        blocks = list(DocIntegrationTest._iter_runnable_code_blocks(text))
-        for idx, (code, name) in enumerate(blocks):
-            block_name = name or f"doc_block_{idx}"
-            yield MarkdownCodeItem.from_parent(self, name=block_name, code=code)
+        blocks = DocIntegrationTest._collect_runnable_blocks_from_text(text)
+        for block in blocks:
+            yield MarkdownCodeItem.from_parent(self, name=block.name, code=block.code)
 
 
 class MarkdownCodeItem(pytest.Item):
