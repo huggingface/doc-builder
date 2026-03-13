@@ -277,9 +277,14 @@ _re_silence_bare_assert_warning = re.compile(r"#\s*(?:doc-builder:\s*)?ignore-ba
 _re_silence_bare_assert_comment = re.compile(r"\s*#\s*(?:doc-builder:\s*)?ignore-bare-assert\b.*$")
 
 
+_re_pytest_decorator = re.compile(r"^#\s*pytest-decorator:")
+
+
 def _should_hide_line(stripped):
-    """Check if a line is marked with ``# nodoc``."""
+    """Check if a line is marked with ``# nodoc`` or is a ``# pytest-decorator:`` directive."""
     if stripped.endswith("# nodoc") or "# nodoc " in stripped:
+        return True
+    if _re_pytest_decorator.match(stripped):
         return True
     return False
 
