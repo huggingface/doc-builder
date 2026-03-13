@@ -10,6 +10,7 @@ This is the package we use to build the documentation of our Hugging Face repos.
   * [Doc building](#doc-building)
     + [Runnable Python code blocks (`py runnable`)](#runnable-python-code-blocks-py-runnable)
     + [Running runnable blocks in tests](#running-runnable-blocks-in-tests)
+    + [Test decorators (`pytest-decorator`)](#test-decorators-pytest-decorator)
     + [Opt-in runnable warnings](#opt-in-runnable-warnings)
   * [Writing in notebooks](#writing-in-notebooks)
   * [Templates for GitHub Actions](#templates-for-github-actions)
@@ -193,6 +194,40 @@ pytest -q tests/docs/test_my_page_docs.py
 Notes:
 - this executes trusted documentation code with `exec`; keep it in CI/repo-controlled docs only
 - this runs raw markdown code blocks; if you want test behavior to match rendered docs, preprocess blocks first (for example, to remove `# nodoc` lines)
+
+### Test decorators (`pytest-decorator`)
+
+Runnable code blocks can declare test decorators via a special comment. The decorator is
+imported and applied to the test execution function at runtime, so it can skip, wrap, or
+otherwise modify the test — exactly as it would in a normal test file.
+
+````md
+```py runnable:test_basic
+# pytest-decorator: transformers.testing_utils.slow
+# pytest-decorator: transformers.testing_utils.require_torch
+from transformers import pipeline
+pipe = pipeline("sentiment-analysis")
+print(pipe("I love this!"))
+```
+````
+
+Multiple decorators on the same line (comma-separated) are also supported:
+
+````md
+```py runnable:test_basic
+# pytest-decorator: transformers.testing_utils.slow, transformers.testing_utils.require_torch
+from transformers import pipeline
+pipe = pipeline("sentiment-analysis")
+print(pipe("I love this!"))
+```
+````
+
+How it works:
+- Each `# pytest-decorator: <dotted.import.path>` line is parsed during collection
+- The decorator is imported and applied to the code block's execution function
+- If the decorator is a `unittest.skipUnless`-style skip (like `@slow` or `@require_torch`), it raises `unittest.SkipTest` at runtime, which pytest reports as a skip
+- Any decorator that wraps or modifies a callable works — the mechanism is not limited to skip decorators
+- `# pytest-decorator:` lines are automatically stripped from both executed code and rendered documentation
 
 ### Opt-in runnable warnings
 
