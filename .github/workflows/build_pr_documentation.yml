@@ -57,6 +57,10 @@ on:
         type: string
         default: "main"
         description: "Debug purposes only. Revision of `doc-builder` repo to use. Useful to test changes on `doc-builder`."
+      fail_on_warning:
+        type: boolean
+        default: false
+        description: "Fail doc build when runnable warnings are emitted. Requires `additional_args` to include `--emit-warning`."
 
 
 jobs:
@@ -203,19 +207,34 @@ jobs:
           source .venv/bin/activate
           echo "doc_folder has been set to ${{ env.doc_folder }}"
           cd doc-builder
+          mkdir -p ../build_dir
+          log_file="../build_dir/doc-build.log"
+          : > "$log_file"
+          set -o pipefail
           args="--build_dir ../build_dir --clean --version pr_${{ inputs.pr_number }} --html ${{ inputs.additional_args }} --repo_owner ${{ inputs.repo_owner }} --repo_name ${{ inputs.package }} --version_tag_suffix=${{ inputs.version_tag_suffix }}"
 
           if [ -z "${{ inputs.languages }}" ];
           then
             echo "languages not provided, defaulting to English"
-            doc-builder build ${{ env.package_name }} ../${{ env.doc_folder }} $args
+            doc-builder build ${{ env.package_name }} ../${{ env.doc_folder }} $args 2>&1 | tee -a "$log_file"
           else
             IFS=', ' read -r -a langs <<< "${{ inputs.languages }}"
             for lang in "${langs[@]}"
             do
                 echo "Generating docs for language $lang"
-                doc-builder build ${{ env.package_name }} ../${{ env.doc_folder }}/$lang $args --language $lang
+                doc-builder build ${{ env.package_name }} ../${{ env.doc_folder }}/$lang $args --language $lang 2>&1 | tee -a "$log_file"
             done
+          fi
+
+          warnings_emitted=false
+          if [[ "${{ inputs.additional_args }}" == *"--emit-warning"* ]] && grep -q "Bare assert found in runnable:" "$log_file"; then
+            warnings_emitted=true
+          fi
+          echo "$warnings_emitted" > ../build_dir/warnings_emitted
+
+          if [[ "$warnings_emitted" == "true" && "${{ inputs.fail_on_warning }}" == "true" ]]; then
+            echo "::error::Doc build failed because warnings were emitted (fail_on_warning=true)."
+            exit 1
           fi
           cd ..
 

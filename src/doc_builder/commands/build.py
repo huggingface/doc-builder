@@ -113,6 +113,7 @@ def build_command(args):
         version_tag_suffix=args.version_tag_suffix,
         repo_owner=args.repo_owner,
         repo_name=args.repo_name,
+        emit_warning=args.emit_warning,
     )
 
     # dev build should not update _versions.yml
@@ -252,6 +253,11 @@ def build_command_parser(subparsers=None):
         type=str,
         default=None,
         help="Name of the repo (e.g. transformers, pytorch-image-models, etc.). By default, this is the same as the library_name.",
+    )
+    parser.add_argument(
+        "--emit-warning",
+        action="store_true",
+        help="Emit conversion warnings, such as bare asserts in runnable markdown code blocks.",
     )
     if subparsers is not None:
         parser.set_defaults(func=build_command)

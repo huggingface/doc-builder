@@ -8,6 +8,10 @@ This is the package we use to build the documentation of our Hugging Face repos.
   * [Installation](#installation)
   * [Previewing](#previewing)
   * [Doc building](#doc-building)
+    + [Runnable Python code blocks (`py runnable`)](#runnable-python-code-blocks-py-runnable)
+    + [Running runnable blocks in tests](#running-runnable-blocks-in-tests)
+    + [Test decorators (`pytest-decorator`)](#test-decorators-pytest-decorator)
+    + [Opt-in runnable warnings](#opt-in-runnable-warnings)
   * [Writing in notebooks](#writing-in-notebooks)
   * [Templates for GitHub Actions](#templates-for-github-actions)
     + [Enabling multilingual documentation](#enabling-multilingual-documentation)
@@ -118,6 +122,155 @@ doc-builder build hub ~/git/hub-docs/docs/source --build_dir ~/tmp/test-build --
 `doc-builder` can also automatically convert some of the documentation guides or tutorials into notebooks. This requires two steps:
 - add `[[open-in-colab]]` in the tutorial for which you want to build a notebook
 - add `--notebook_dir {path_to_notebook_folder}` to the build command.
+
+### Runnable Python code blocks (`py runnable`)
+
+`doc-builder` recognizes runnable Python fences tagged with `runnable:<label>`:
+
+````md
+```py runnable:quickstart
+from transformers import pipeline
+pipe = pipeline("sentiment-analysis")
+print(pipe("I love this!"))
+```
+````
+
+You can use either `py` or `python` fences:
+
+````md
+```python runnable:my_example
+print("hello")
+```
+````
+
+During conversion:
+- the `runnable:<label>` annotation is removed from the fence in rendered docs
+- the code content is preserved unless lines are hidden with `# nodoc`
+- `# nodoc` can hide a single line or a full indented block from rendered docs
+
+The label is used in warning messages (for example, `runnable:quickstart`) to identify the block.
+
+### Running runnable blocks in tests
+
+`doc-builder` tags and transforms runnable blocks, but it does **not** execute them by itself.
+
+Use the reusable helper from `hf-doc-builder`:
+
+```python
+from pathlib import Path
+
+from doc_builder.testing import DocIntegrationTest
+
+
+class MyPageDocIntegrationTest(DocIntegrationTest):
+    doc_path = Path(__file__).resolve().parents[2] / "docs" / "source" / "en" / "my_page.md"
+```
+
+What it does:
+- finds fenced `py`/`python` blocks marked with `runnable` (or `runnable:<label>`)
+- creates one test per block (`runnable:my_case` becomes `test_my_case`)
+- treats `runnable:my_case:2`, `runnable:my_case:3`, and so on as continuations of `runnable:my_case`
+- executes each block with contextual failure output (file path + code snippet)
+
+Continuation blocks run in the same namespace as the base block, so later snippets can build on earlier setup:
+
+````md
+```py runnable:test_basic
+processor = AutoProcessor.from_pretrained("suno/bark")
+inputs = processor("Hello, my dog is cute", voice_preset=voice_preset)
+```
+
+```py runnable:test_basic:2
+inputs = processor("惊人的！我会说中文")
+```
+````
+
+Run locally with:
+
+```bash
+pytest -q tests/docs/test_my_page_docs.py
+```
+
+Notes:
+- this executes trusted documentation code with `exec`; keep it in CI/repo-controlled docs only
+- this runs raw markdown code blocks; if you want test behavior to match rendered docs, preprocess blocks first (for example, to remove `# nodoc` lines)
+
+### Test decorators (`pytest-decorator`)
+
+Runnable code blocks can declare test decorators via a special comment. The decorator is
+imported and applied to the test execution function at runtime, so it can skip, wrap, or
+otherwise modify the test — exactly as it would in a normal test file.
+
+````md
+```py runnable:test_basic
+# pytest-decorator: transformers.testing_utils.slow
+# pytest-decorator: transformers.testing_utils.require_torch
+from transformers import pipeline
+pipe = pipeline("sentiment-analysis")
+print(pipe("I love this!"))
+```
+````
+
+Multiple decorators on the same line (comma-separated) are also supported:
+
+````md
+```py runnable:test_basic
+# pytest-decorator: transformers.testing_utils.slow, transformers.testing_utils.require_torch
+from transformers import pipeline
+pipe = pipeline("sentiment-analysis")
+print(pipe("I love this!"))
+```
+````
+
+How it works:
+- Each `# pytest-decorator: <dotted.import.path>` line is parsed during collection
+- The decorator is imported and applied to the code block's execution function
+- If the decorator is a `unittest.skipUnless`-style skip (like `@slow` or `@require_torch`), it raises `unittest.SkipTest` at runtime, which pytest reports as a skip
+- Any decorator that wraps or modifies a callable works — the mechanism is not limited to skip decorators
+- `# pytest-decorator:` lines are automatically stripped from both executed code and rendered documentation
+
+### Opt-in runnable warnings
+
+`doc-builder build` can emit warnings for bare `assert` statements inside runnable Python markdown code blocks
+(fences tagged with `runnable:<label>`).
+
+This behavior is opt-in to preserve backward compatibility:
+
+```bash
+doc-builder build {package_name} {path_to_docs} --build_dir {build_dir} --emit-warning
+```
+
+When enabled:
+- bare `assert` lines in runnable blocks emit warnings (with file/line in CI logs)
+- `# nodoc` removes the line from rendered docs and does not warn
+- `# doc-builder: ignore-bare-assert` keeps the line, silences the warning, and the marker comment is removed from rendered docs
+
+Warning formatting depends on where the build runs:
+- local runs: `Warning: docs/source/en/example.md:3: ...`
+- GitHub Actions: `::warning file=docs/source/en/example.md,line=3::...`
+
+To enable this in reusable GitHub Actions workflows, pass:
+
+```yaml
+jobs:
+  build:
+    uses: huggingface/doc-builder/.github/workflows/build_pr_documentation.yml@main
+    with:
+      # ...
+      additional_args: --emit-warning
+```
+
+To make warnings fail the PR doc build, also pass:
+
+```yaml
+jobs:
+  build:
+    uses: huggingface/doc-builder/.github/workflows/build_pr_documentation.yml@main
+    with:
+      # ...
+      additional_args: --emit-warning
+      fail_on_warning: true
+```
 
 ## Writing in notebooks
 

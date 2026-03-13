@@ -14,7 +14,9 @@
 
 
 import json
+import os
 import re
+import sys
 import tempfile
 
 from .convert_rst_to_mdx import parse_rst_docstring, remove_indent
@@ -266,6 +268,197 @@ def strip_md_extension_from_internal_links(text):
     return _re_markdown_link.sub(_process_link, text)
 
 
+_re_runnable_block = re.compile(
+    r"(?P<fence>```(?:py|python))\s+runnable:(?P<label>\S+)\n(?P<code>.*?\n)```$",
+    re.DOTALL | re.MULTILINE,
+)
+_re_bare_assert = re.compile(r"^assert(?:\s|\()")
+_re_silence_bare_assert_warning = re.compile(r"#\s*(?:doc-builder:\s*)?ignore-bare-assert\b")
+_re_silence_bare_assert_comment = re.compile(r"\s*#\s*(?:doc-builder:\s*)?ignore-bare-assert\b.*$")
+
+
+_re_pytest_decorator = re.compile(r"^#\s*pytest-decorator:")
+
+
+def _should_hide_line(stripped):
+    """Check if a line is marked with ``# nodoc`` or is a ``# pytest-decorator:`` directive."""
+    if stripped.endswith("# nodoc") or "# nodoc " in stripped:
+        return True
+    if _re_pytest_decorator.match(stripped):
+        return True
+    return False
+
+
+def _is_bare_assert(stripped):
+    """Check if a line starts with a bare assert statement."""
+    return _re_bare_assert.match(stripped) is not None
+
+
+def _should_silence_bare_assert_warning(stripped):
+    """Check if a bare assert warning should be silenced."""
+    return _re_silence_bare_assert_warning.search(stripped) is not None
+
+
+def _strip_bare_assert_silence_comment(line):
+    """Remove bare assert silence marker comments from rendered code."""
+    return _re_silence_bare_assert_comment.sub("", line).rstrip()
+
+
+def _is_multiline(stripped):
+    """Return True when a hidden line continues on the next line(s)."""
+    paren_depth = stripped.count("(") - stripped.count(")") + stripped.count("[") - stripped.count("]")
+    return paren_depth > 0 or stripped.rstrip().endswith("\\")
+
+
+def _clean_code_for_doc(code, track_bare_assert=False):
+    """
+    Remove lines that should not appear in rendered documentation:
+
+    * Any line (or multi-line statement) annotated with a ``# nodoc`` comment.
+    * When ``# nodoc`` appears on a block opener (``for``/``if``/etc.),
+      the entire indented body is removed as well.
+    """
+    lines = code.split("\n")
+    result = []
+    bare_assert_line_numbers = []
+    paren_depth = 0
+    skipping = False
+    # When a block opener is marked # nodoc, skip all lines indented deeper.
+    skip_block_indent = -1
+    for line_number, line in enumerate(lines, start=1):
+        stripped = line.lstrip()
+        indent = len(line) - len(stripped)
+
+        # Skip body of a # nodoc block opener
+        if skip_block_indent >= 0:
+            if stripped == "" or indent > skip_block_indent:
+                continue
+            # Back to same or lesser indent — stop skipping
+            skip_block_indent = -1
+
+        if skipping:
+            # Track parentheses / brackets to find end of multi-line statement
+            paren_depth += stripped.count("(") - stripped.count(")") + stripped.count("[") - stripped.count("]")
+            if paren_depth <= 0 and not stripped.rstrip().endswith("\\"):
+                skipping = False
+            continue
+
+        if _should_hide_line(stripped):
+            if _is_multiline(stripped):
+                paren_depth = stripped.count("(") - stripped.count(")") + stripped.count("[") - stripped.count("]")
+                skipping = True
+            elif _re_block_opener.match(stripped):
+                # Block opener with # nodoc — skip the entire indented body
+                skip_block_indent = indent
+            _remove_empty_block_opener(result, indent)
+            continue
+
+        if track_bare_assert and _is_bare_assert(stripped) and not _should_silence_bare_assert_warning(stripped):
+            bare_assert_line_numbers.append(line_number)
+
+        result.append(_strip_bare_assert_silence_comment(line))
+
+    # Collapse runs of multiple blank lines into one
+    cleaned = []
+    for line in result:
+        if line.strip() == "" and cleaned and cleaned[-1].strip() == "":
+            continue
+        cleaned.append(line)
+
+    return "\n".join(cleaned), bare_assert_line_numbers
+
+
+_re_block_opener = re.compile(r"^(for |if |while |with |elif |else\s*:)")
+
+
+def _remove_empty_block_opener(result, assert_indent):
+    """
+    Walk backwards through *result* and remove the nearest block opener
+    if the assert we're about to remove was its only body line.
+    """
+    # Find the last non-blank line
+    idx = len(result) - 1
+    while idx >= 0 and result[idx].strip() == "":
+        idx -= 1
+    if idx < 0:
+        return
+
+    prev = result[idx]
+    prev_stripped = prev.lstrip()
+    prev_indent = len(prev) - len(prev_stripped)
+
+    # The opener must be less indented than the assert and end with ':'
+    if prev_indent < assert_indent and prev_stripped.endswith(":") and _re_block_opener.match(prev_stripped):
+        # Remove the opener and any blank lines between it and here
+        del result[idx:]
+
+
+def _to_github_annotation_value(value):
+    return str(value).replace("%", "%25").replace("\r", "%0D").replace("\n", "%0A")
+
+
+def _emit_bare_assert_warning(message, page_info=None, line_number=None):
+    file_path = str(page_info["path"]) if page_info is not None and "path" in page_info else None
+    if os.getenv("GITHUB_ACTIONS") == "true":
+        message = _to_github_annotation_value(message)
+        if file_path is None:
+            print(f"::warning::{message}", file=sys.stderr)
+            return
+
+        file_path = _to_github_annotation_value(file_path)
+        if line_number is not None:
+            print(f"::warning file={file_path},line={line_number}::{message}", file=sys.stderr)
+        else:
+            print(f"::warning file={file_path}::{message}", file=sys.stderr)
+        return
+
+    if file_path is None:
+        print(f"Warning: {message}", file=sys.stderr)
+        return
+
+    if line_number is not None:
+        print(f"Warning: {file_path}:{line_number}: {message}", file=sys.stderr)
+    else:
+        print(f"Warning: {file_path}: {message}", file=sys.stderr)
+
+
+def _should_emit_bare_assert_warnings(page_info=None):
+    return bool(page_info is not None and page_info.get("emit_warning", False))
+
+
+def clean_runnable_blocks(text, page_info=None):
+    """
+    Process ```py runnable:<label> code blocks:
+      1. Strip the runnable:<label> annotation from the fence.
+      2. Remove ``# nodoc`` lines and blocks from displayed code.
+      3. Optionally warn on bare ``assert`` statements when
+         ``page_info["emit_warning"]`` is enabled, unless explicitly silenced
+         with ``# doc-builder: ignore-bare-assert``.
+    """
+
+    def _replace(match):
+        fence = match.group("fence")
+        label = match.group("label")
+        emit_warning = _should_emit_bare_assert_warnings(page_info)
+        code, bare_assert_line_numbers = _clean_code_for_doc(match.group("code"), track_bare_assert=emit_warning)
+        if emit_warning and bare_assert_line_numbers:
+            first_code_line = text[: match.start("code")].count("\n") + 1
+            for relative_line in bare_assert_line_numbers:
+                _emit_bare_assert_warning(
+                    (
+                        f"Bare assert found in runnable:{label}. Add `# nodoc` to hide it from docs, "
+                        "or `# doc-builder: ignore-bare-assert` to silence this warning."
+                    ),
+                    page_info=page_info,
+                    line_number=first_code_line + relative_line - 1,
+                )
+        # Strip trailing blank lines inside the block
+        code = code.rstrip("\n") + "\n"
+        return f"{fence}\n{code}```"
+
+    return _re_runnable_block.sub(_replace, text)
+
+
 def process_md(text, page_info):
     """
     Processes markdown by:
@@ -274,12 +467,14 @@ def process_md(text, page_info):
         3. Clean doctest syntax
         4. Fix image links
         5. Strip .md extensions from internal links
+        6. Clean runnable code blocks
     """
     text = convert_include(text, page_info)
     text = convert_literalinclude(text, page_info)
     text = clean_doctest_syntax(text)
     text = fix_img_links(text, page_info)
     text = strip_md_extension_from_internal_links(text)
+    text = clean_runnable_blocks(text, page_info=page_info)
     return text
 
 

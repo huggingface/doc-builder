@@ -345,6 +345,7 @@ def build_doc(
     version_tag_suffix="src/",
     repo_owner="huggingface",
     repo_name=None,
+    emit_warning=False,
 ):
     """
     Build the documentation of a package.
@@ -374,6 +375,9 @@ def build_doc(
             The owner of the repository on GitHub. In most cases, this is `"huggingface"`. However, for the `timm` library, the owner is `"rwightman"`.
         repo_name (`str`, *optional*, defaults to `package_name`):
             The name of the repository on GitHub. In most cases, this is the same as `package_name`. However, for the `timm` library, the name is `"pytorch-image-models"` instead of `"timm"`.
+        emit_warning (`bool`, *optional*, defaults to `False`):
+            Whether to emit documentation conversion warnings such as bare
+            ``assert`` in runnable code blocks.
     """
     page_info = {
         "version": version,
@@ -382,6 +386,7 @@ def build_doc(
         "package_name": package_name,
         "repo_owner": repo_owner,
         "repo_name": repo_name if repo_name is not None else package_name,
+        "emit_warning": emit_warning,
     }
     if clean and Path(output_dir).exists():
         shutil.rmtree(output_dir)
