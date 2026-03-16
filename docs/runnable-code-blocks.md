@@ -8,14 +8,43 @@ This document describes runnable Python markdown fences handled by `doc-builder`
 
 ````md
 ```py runnable:quickstart
-values = [1, 2, 3]
-total = sum(values)
-assert total == 6  # doc-builder: ignore-bare-assert
+import torch
+from transformers import AutoProcessor, GlmAsrForConditionalGeneration
 
-mean = total / len(values)
-assert mean == 2  # nodoc
+checkpoint_name = "zai-org/GLM-ASR-Nano-2512"
+audio_url = "https://huggingface.co/datasets/eustlb/audio-samples/resolve/main/bcn_weather.mp3"
 
-print({"total": total, "mean": mean})
+processor = AutoProcessor.from_pretrained(checkpoint_name)
+model = GlmAsrForConditionalGeneration.from_pretrained(checkpoint_name, device_map="auto", dtype="auto")
+
+conversation = [
+    [
+        {
+            "role": "user",
+            "content": [
+                {"type": "audio", "url": audio_url},
+                {"type": "text", "text": "Please transcribe this audio into text"},
+            ],
+        }
+    ]
+]
+
+inputs = processor.apply_chat_template(
+    conversation, tokenize=True, add_generation_prompt=True, return_dict=True
+).to(model.device, dtype=model.dtype)
+
+inputs_transcription = processor.apply_transcription_request([audio_url]).to(model.device, dtype=model.dtype)
+
+for key in inputs:  # nodoc
+    assert torch.equal(inputs[key], inputs_transcription[key])
+
+outputs = model.generate(**inputs, do_sample=False, max_new_tokens=128)
+decoded_outputs = processor.batch_decode(outputs[:, inputs.input_ids.shape[1] :], skip_special_tokens=True)
+
+print(decoded_outputs)
+assert decoded_outputs == [
+    "Yesterday it was thirty five degrees in Barcelona, but today the temperature will go down to minus twenty degrees."
+]  # doc-builder: ignore-bare-assert
 ```
 ````
 
