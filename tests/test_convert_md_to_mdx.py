@@ -419,10 +419,10 @@ print(x)
         self.assertNotIn("ignore-bare-assert", result)
         self.assertEqual(stderr.getvalue(), "")
 
-    def test_clean_runnable_blocks_nodoc_assert_is_removed_without_warning(self):
-        text = """```py runnable:test_nodoc_assert
+    def test_clean_runnable_blocks_hide_assert_is_removed_without_warning(self):
+        text = """```py runnable:test_hide_assert
 x = 1
-assert x == 1  # nodoc
+assert x == 1  # doc-builder: hide
 print(x)
 ```"""
         stderr = io.StringIO()
@@ -436,7 +436,7 @@ print(x)
 
     def test_clean_runnable_blocks_leaves_normal_blocks(self):
         text = """```py
-x = 1  # nodoc
+x = 1  # doc-builder: hide
 print(x)
 ```"""
         # Normal blocks without runnable: should be untouched
@@ -458,12 +458,12 @@ print(x)
 ```'''
         self.assertEqual(clean_runnable_blocks(text), expected)
 
-    def test_clean_runnable_blocks_nodoc_single_line(self):
-        """A line marked with # nodoc is removed."""
-        text = """```py runnable:test_nodoc
+    def test_clean_runnable_blocks_hide_single_line(self):
+        """A line marked with # doc-builder: hide is removed."""
+        text = """```py runnable:test_hide
 from transformers import pipeline
 pipe = pipeline("sentiment-analysis")
-result = pipe("test")  # nodoc
+result = pipe("test")  # doc-builder: hide
 print(pipe("I love this!"))
 ```"""
         expected = """```py
@@ -473,12 +473,12 @@ print(pipe("I love this!"))
 ```"""
         self.assertEqual(clean_runnable_blocks(text), expected)
 
-    def test_clean_runnable_blocks_nodoc_multiline_parens(self):
-        """A multi-line statement marked with # nodoc is fully removed."""
-        text = """```py runnable:test_nodoc_multi
+    def test_clean_runnable_blocks_hide_multiline_parens(self):
+        """A multi-line statement marked with # doc-builder: hide is fully removed."""
+        text = """```py runnable:test_hide_multi
 result = compute()
 
-EXPECTED_OUTPUT = (  # nodoc
+EXPECTED_OUTPUT = (  # doc-builder: hide
     "first value"
     + "second value"
 )
@@ -492,11 +492,11 @@ print(result)
 ```"""
         self.assertEqual(clean_runnable_blocks(text), expected)
 
-    def test_clean_runnable_blocks_nodoc_multiline_brackets(self):
-        """Multi-line list with # nodoc tracked via bracket depth."""
-        text = """```py runnable:test_nodoc_brackets
+    def test_clean_runnable_blocks_hide_multiline_brackets(self):
+        """Multi-line list with # doc-builder: hide tracked via bracket depth."""
+        text = """```py runnable:test_hide_brackets
 x = do_work()
-expected = [  # nodoc
+expected = [  # doc-builder: hide
     1,
     2,
     3,
@@ -509,12 +509,12 @@ print(x)
 ```"""
         self.assertEqual(clean_runnable_blocks(text), expected)
 
-    def test_clean_runnable_blocks_nodoc_for_loop(self):
-        """A for-loop marked with # nodoc is removed with its body."""
-        text = """```py runnable:test_nodoc_for
+    def test_clean_runnable_blocks_hide_for_loop(self):
+        """A for-loop marked with # doc-builder: hide is removed with its body."""
+        text = """```py runnable:test_hide_for
 inputs = prepare()
 
-for key in inputs:  # nodoc
+for key in inputs:  # doc-builder: hide
     do_something(inputs[key])
 
 outputs = model.generate(**inputs)
@@ -526,11 +526,11 @@ outputs = model.generate(**inputs)
 ```"""
         self.assertEqual(clean_runnable_blocks(text), expected)
 
-    def test_clean_runnable_blocks_nodoc_collapses_blank_lines(self):
+    def test_clean_runnable_blocks_hide_collapses_blank_lines(self):
         text = """```py runnable:test_blanks
 x = 1
 
-y = 2  # nodoc
+y = 2  # doc-builder: hide
 
 z = 3
 ```"""
@@ -542,7 +542,7 @@ z = 3
         self.assertEqual(clean_runnable_blocks(text), expected)
 
     def test_clean_runnable_blocks_glmasr_batched(self):
-        """Real-world test from huggingface/transformers PR #44277 — test_batched block with # nodoc."""
+        """Real-world test from huggingface/transformers PR #44277 - test_batched block with # doc-builder: hide."""
         text = """```py runnable:test_batched
 import torch
 from transformers import AutoProcessor, GlmAsrForConditionalGeneration
@@ -583,14 +583,14 @@ inputs = processor.apply_chat_template(
     conversation, tokenize=True, add_generation_prompt=True, return_dict=True
 ).to(model.device, dtype=model.dtype)
 
-inputs_transcription = processor.apply_transcription_request(  # nodoc
+inputs_transcription = processor.apply_transcription_request(  # doc-builder: hide
     [
         "https://huggingface.co/datasets/eustlb/audio-samples/resolve/main/bcn_weather.mp3",
         "https://huggingface.co/datasets/eustlb/audio-samples/resolve/main/obama2.mp3",
     ],
 ).to(model.device, dtype=model.dtype)
 
-for key in inputs:  # nodoc
+for key in inputs:  # doc-builder: hide
     assert torch.equal(inputs[key], inputs_transcription[key])
 
 outputs = model.generate(**inputs, do_sample=False, max_new_tokens=500)
@@ -599,11 +599,11 @@ decoded_outputs = processor.batch_decode(
     outputs[:, inputs.input_ids.shape[1] :], skip_special_tokens=True
 )
 
-EXPECTED_OUTPUT = [  # nodoc
+EXPECTED_OUTPUT = [  # doc-builder: hide
     "Yesterday it was thirty five degrees in Barcelona, but today the temperature will go down to minus twenty degrees.",
     "This week, I traveled to Chicago to deliver my final farewell address to the nation.",
 ]
-assert decoded_outputs == EXPECTED_OUTPUT  # nodoc
+assert decoded_outputs == EXPECTED_OUTPUT  # doc-builder: hide
 ```"""
         expected = """```py
 import torch

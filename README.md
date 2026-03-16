@@ -141,8 +141,8 @@ print("hello")
 
 During conversion:
 - the runnable annotation is removed from the fence in rendered docs
-- the code content is preserved unless lines are hidden with `# nodoc`
-- `# nodoc` can hide a single line or a full indented block from rendered docs
+- the code content is preserved unless lines are hidden with `# doc-builder: hide`
+- `# doc-builder: hide` can hide a single line or a full indented block from rendered docs
 
 The label is used in warning messages (for example, `runnable:quickstart`) to identify the block.
 

@@ -275,14 +275,15 @@ _re_runnable_block = re.compile(
 _re_bare_assert = re.compile(r"^assert(?:\s|\()")
 _re_silence_bare_assert_warning = re.compile(r"#\s*(?:doc-builder:\s*)?ignore-bare-assert\b")
 _re_silence_bare_assert_comment = re.compile(r"\s*#\s*(?:doc-builder:\s*)?ignore-bare-assert\b.*$")
+_re_hide_directive = re.compile(r"#\s*doc-builder:\s*hide\b")
 
 
 _re_pytest_decorator = re.compile(r"^#\s*pytest-decorator:")
 
 
 def _should_hide_line(stripped):
-    """Check if a line is marked with ``# nodoc`` or is a ``# pytest-decorator:`` directive."""
-    if stripped.endswith("# nodoc") or "# nodoc " in stripped:
+    """Check if a line is marked with ``# doc-builder: hide`` or is a ``# pytest-decorator:`` directive."""
+    if _re_hide_directive.search(stripped):
         return True
     if _re_pytest_decorator.match(stripped):
         return True
@@ -314,8 +315,8 @@ def _clean_code_for_doc(code, track_bare_assert=False):
     """
     Remove lines that should not appear in rendered documentation:
 
-    * Any line (or multi-line statement) annotated with a ``# nodoc`` comment.
-    * When ``# nodoc`` appears on a block opener (``for``/``if``/etc.),
+    * Any line (or multi-line statement) annotated with a ``# doc-builder: hide`` comment.
+    * When ``# doc-builder: hide`` appears on a block opener (``for``/``if``/etc.),
       the entire indented body is removed as well.
     """
     lines = code.split("\n")
@@ -323,13 +324,13 @@ def _clean_code_for_doc(code, track_bare_assert=False):
     bare_assert_line_numbers = []
     paren_depth = 0
     skipping = False
-    # When a block opener is marked # nodoc, skip all lines indented deeper.
+    # When a block opener is marked # doc-builder: hide, skip all lines indented deeper.
     skip_block_indent = -1
     for line_number, line in enumerate(lines, start=1):
         stripped = line.lstrip()
         indent = len(line) - len(stripped)
 
-        # Skip body of a # nodoc block opener
+        # Skip body of a # doc-builder: hide block opener
         if skip_block_indent >= 0:
             if stripped == "" or indent > skip_block_indent:
                 continue
@@ -348,7 +349,7 @@ def _clean_code_for_doc(code, track_bare_assert=False):
                 paren_depth = stripped.count("(") - stripped.count(")") + stripped.count("[") - stripped.count("]")
                 skipping = True
             elif _re_block_opener.match(stripped):
-                # Block opener with # nodoc — skip the entire indented body
+                # Block opener with # doc-builder: hide - skip the entire indented body
                 skip_block_indent = indent
             _remove_empty_block_opener(result, indent)
             continue
@@ -430,7 +431,7 @@ def clean_runnable_blocks(text, page_info=None):
     """
     Process ```py runnable:<label> code blocks:
       1. Strip the runnable:<label> annotation from the fence.
-      2. Remove ``# nodoc`` lines and blocks from displayed code.
+      2. Remove ``# doc-builder: hide`` lines and blocks from displayed code.
       3. Optionally warn on bare ``assert`` statements when
          ``page_info["emit_warning"]`` is enabled, unless explicitly silenced
          with ``# doc-builder: ignore-bare-assert``.
@@ -446,7 +447,7 @@ def clean_runnable_blocks(text, page_info=None):
             for relative_line in bare_assert_line_numbers:
                 _emit_bare_assert_warning(
                     (
-                        f"Bare assert found in runnable:{label}. Add `# nodoc` to hide it from docs, "
+                        f"Bare assert found in runnable:{label}. Add `# doc-builder: hide` to hide it from docs, "
                         "or `# doc-builder: ignore-bare-assert` to silence this warning."
                     ),
                     page_info=page_info,

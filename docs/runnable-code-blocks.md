@@ -35,7 +35,7 @@ inputs = processor.apply_chat_template(
 
 inputs_transcription = processor.apply_transcription_request([audio_url]).to(model.device, dtype=model.dtype)
 
-for key in inputs:  # nodoc
+for key in inputs:  # doc-builder: hide
     assert torch.equal(inputs[key], inputs_transcription[key])
 
 outputs = model.generate(**inputs, do_sample=False, max_new_tokens=128)
@@ -51,8 +51,8 @@ assert decoded_outputs == [
 During conversion:
 
 - the runnable annotation is removed from the fence in rendered docs
-- the code content is preserved unless lines are hidden with `# nodoc`
-- `# nodoc` can hide a single line or a full indented block from rendered docs
+- the code content is preserved unless lines are hidden with `# doc-builder: hide`
+- `# doc-builder: hide` can hide a single line or a full indented block from rendered docs
 - `# doc-builder: ignore-bare-assert` keeps a bare `assert` in the block while suppressing the bare-assert warning for that line
 - the `# doc-builder: ignore-bare-assert` directive is removed from rendered docs
 
@@ -107,7 +107,7 @@ pytest -q tests/docs/test_my_page_docs.py
 
 Both approaches execute trusted documentation code with `exec`, so keep them limited to repo-controlled docs and CI.
 
-Both approaches run raw markdown code blocks. If you want test behavior to match rendered docs exactly, preprocess the blocks first so `# nodoc` lines are removed before execution.
+Both approaches run raw markdown code blocks. If you want test behavior to match rendered docs exactly, preprocess the blocks first so `# doc-builder: hide` lines are removed before execution.
 
 ## Continuation blocks
 
@@ -171,7 +171,7 @@ doc-builder build {package_name} {path_to_docs} --build_dir {build_dir} --emit-w
 When enabled:
 
 - bare `assert` lines in runnable blocks emit warnings with file and line information
-- `# nodoc` removes the line from rendered docs and does not warn
+- `# doc-builder: hide` removes the line from rendered docs and does not warn
 - `# doc-builder: ignore-bare-assert` keeps the line, silences the warning, and is removed from rendered docs
 
 Warning formatting depends on where the build runs:
