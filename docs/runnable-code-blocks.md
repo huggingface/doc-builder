@@ -8,9 +8,14 @@ This document describes runnable Python markdown fences handled by `doc-builder`
 
 ````md
 ```py runnable:quickstart
-from transformers import pipeline
-pipe = pipeline("sentiment-analysis")
-print(pipe("I love this!"))
+values = [1, 2, 3]
+total = sum(values)
+assert total == 6  # doc-builder: ignore-bare-assert
+
+mean = total / len(values)
+assert mean == 2  # nodoc
+
+print({"total": total, "mean": mean})
 ```
 ````
 
@@ -19,14 +24,39 @@ During conversion:
 - the runnable annotation is removed from the fence in rendered docs
 - the code content is preserved unless lines are hidden with `# nodoc`
 - `# nodoc` can hide a single line or a full indented block from rendered docs
+- `# doc-builder: ignore-bare-assert` keeps a bare `assert` in the block while suppressing the bare-assert warning for that line
+- the `# doc-builder: ignore-bare-assert` directive is removed from rendered docs
 
 The label is used in warning messages and generated test names.
 
 ## Running runnable blocks in tests
 
-`doc-builder` tags and transforms runnable blocks, but it does not execute them by itself.
+When `hf-doc-builder` is installed, pytest auto-loads the `doc-builder` plugin. This makes running runnable blocks against `.md` files a supported workflow, and it is the recommended way to execute them in most projects.
 
-Use the reusable helper from `hf-doc-builder`:
+You can point pytest directly at a markdown page:
+
+```bash
+pytest -q docs/source/en/my_page.md
+```
+
+Or at a directory of markdown docs:
+
+```bash
+pytest -q docs/source/en/
+```
+
+What the pytest plugin does:
+
+- collects runnable blocks from the `.md` files passed to pytest
+- finds fenced `py`/`python` blocks marked with `runnable` or `runnable:<label>`
+- groups continuation blocks such as `runnable:test_basic:2` with the earlier block
+- creates one pytest item per runnable block
+- applies `# pytest-decorator:` directives before execution
+- reports failures with the markdown file path and runnable code snippet
+
+`DocIntegrationTest` is a lower-level helper. It is not required for markdown-based doc tests. Use it only if you want to manage doc execution from regular Python test files in your project, or if you need tighter control over the Python-side test wrapper.
+
+Example:
 
 ```python
 from pathlib import Path
@@ -38,11 +68,7 @@ class MyPageDocIntegrationTest(DocIntegrationTest):
     doc_path = Path(__file__).resolve().parents[2] / "docs" / "source" / "en" / "my_page.md"
 ```
 
-What it does:
-
-- finds fenced `py`/`python` blocks marked with `runnable` or `runnable:<label>`
-- creates one test per block (`runnable:my_case` becomes `test_my_case`)
-- executes each block with contextual failure output, including the file path and code snippet
+`DocIntegrationTest` reads one markdown file, creates one Python test per runnable block (`runnable:my_case` becomes `test_my_case`), and executes those blocks from a standard pytest test module.
 
 Run locally with:
 
@@ -50,9 +76,9 @@ Run locally with:
 pytest -q tests/docs/test_my_page_docs.py
 ```
 
-This executes trusted documentation code with `exec`, so keep it limited to repo-controlled docs and CI.
+Both approaches execute trusted documentation code with `exec`, so keep them limited to repo-controlled docs and CI.
 
-These tests run raw markdown code blocks. If you want test behavior to match rendered docs exactly, preprocess the blocks first so `# nodoc` lines are removed before execution.
+Both approaches run raw markdown code blocks. If you want test behavior to match rendered docs exactly, preprocess the blocks first so `# nodoc` lines are removed before execution.
 
 ## Continuation blocks
 
@@ -124,7 +150,9 @@ Warning formatting depends on where the build runs:
 - local runs: `Warning: docs/source/en/example.md:3: ...`
 - GitHub Actions: `::warning file=docs/source/en/example.md,line=3::...`
 
-To enable this in the reusable PR workflow:
+## GitHub pipeline integration
+
+If you use the reusable PR documentation workflow, pass `--emit-warning` through `additional_args`:
 
 ```yaml
 jobs:
@@ -135,7 +163,7 @@ jobs:
       additional_args: --emit-warning
 ```
 
-To fail the PR doc build on warnings:
+To fail the PR documentation build on warnings, also set `fail_on_warning: true`:
 
 ```yaml
 jobs:
