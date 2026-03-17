@@ -6,6 +6,18 @@ This document describes runnable Python markdown fences handled by `doc-builder`
 
 `doc-builder` recognizes fenced `py` and `python` blocks tagged with `runnable` or `runnable:<label>`:
 
+During conversion:
+
+- the runnable annotation is removed from the fence in rendered docs
+- the code content is preserved unless lines are hidden with `# doc-builder: hide`
+- `# doc-builder: hide` can hide a single line or a full indented block from rendered docs
+- `# doc-builder: ignore-bare-assert` keeps a bare `assert` in the block while suppressing the bare-assert warning for that line
+- the `# doc-builder: ignore-bare-assert` directive is removed from rendered docs
+
+The label is used in warning messages and generated test names.
+
+Example:
+
 ````md
 ```py runnable:quickstart
 import torch
@@ -48,15 +60,54 @@ assert decoded_outputs == [
 ```
 ````
 
-During conversion:
+## Continuation blocks
 
-- the runnable annotation is removed from the fence in rendered docs
-- the code content is preserved unless lines are hidden with `# doc-builder: hide`
-- `# doc-builder: hide` can hide a single line or a full indented block from rendered docs
-- `# doc-builder: ignore-bare-assert` keeps a bare `assert` in the block while suppressing the bare-assert warning for that line
-- the `# doc-builder: ignore-bare-assert` directive is removed from rendered docs
+Use `:2`, `:3`, and so on to continue a runnable block in the same namespace:
 
-The label is used in warning messages and generated test names.
+````md
+```py runnable:test_basic
+processor = AutoProcessor.from_pretrained("suno/bark")
+inputs = processor("Hello, my dog is cute", voice_preset=voice_preset)
+```
+
+```py runnable:test_basic:2
+inputs = processor("Amazing! I can speak English too.")
+```
+````
+
+`runnable:test_basic:2` and later continuations are grouped with `runnable:test_basic`, so later snippets can build on earlier setup.
+
+## Test decorators
+
+Runnable code blocks can declare test decorators with `# pytest-decorator:` comments. The decorator is imported and applied to the generated execution function at runtime.
+
+````md
+```py runnable:test_basic
+# pytest-decorator: transformers.testing_utils.slow
+# pytest-decorator: transformers.testing_utils.require_torch
+from transformers import pipeline
+pipe = pipeline("sentiment-analysis")
+print(pipe("I love this!"))
+```
+````
+
+Multiple decorators on the same line are also supported:
+
+````md
+```py runnable:test_basic
+# pytest-decorator: transformers.testing_utils.slow, transformers.testing_utils.require_torch
+from transformers import pipeline
+pipe = pipeline("sentiment-analysis")
+print(pipe("I love this!"))
+```
+````
+
+How it works:
+
+- each `# pytest-decorator: <dotted.import.path>` line is parsed during collection
+- the decorator is imported and applied to the code block execution function
+- skip-style decorators such as `@slow` or `@require_torch` raise `unittest.SkipTest`, which pytest reports as a skip
+- `# pytest-decorator:` lines are stripped from executed code and rendered documentation
 
 ## Running runnable blocks in tests
 
@@ -108,55 +159,6 @@ pytest -q tests/docs/test_my_page_docs.py
 Both approaches execute trusted documentation code with `exec`, so keep them limited to repo-controlled docs and CI.
 
 Both approaches run raw markdown code blocks. If you want test behavior to match rendered docs exactly, preprocess the blocks first so `# doc-builder: hide` lines are removed before execution.
-
-## Continuation blocks
-
-Use `:2`, `:3`, and so on to continue a runnable block in the same namespace:
-
-````md
-```py runnable:test_basic
-processor = AutoProcessor.from_pretrained("suno/bark")
-inputs = processor("Hello, my dog is cute", voice_preset=voice_preset)
-```
-
-```py runnable:test_basic:2
-inputs = processor("Amazing! I can speak English too.")
-```
-````
-
-`runnable:test_basic:2` and later continuations are grouped with `runnable:test_basic`, so later snippets can build on earlier setup.
-
-## Test decorators
-
-Runnable code blocks can declare test decorators with `# pytest-decorator:` comments. The decorator is imported and applied to the generated execution function at runtime.
-
-````md
-```py runnable:test_basic
-# pytest-decorator: transformers.testing_utils.slow
-# pytest-decorator: transformers.testing_utils.require_torch
-from transformers import pipeline
-pipe = pipeline("sentiment-analysis")
-print(pipe("I love this!"))
-```
-````
-
-Multiple decorators on the same line are also supported:
-
-````md
-```py runnable:test_basic
-# pytest-decorator: transformers.testing_utils.slow, transformers.testing_utils.require_torch
-from transformers import pipeline
-pipe = pipeline("sentiment-analysis")
-print(pipe("I love this!"))
-```
-````
-
-How it works:
-
-- each `# pytest-decorator: <dotted.import.path>` line is parsed during collection
-- the decorator is imported and applied to the code block execution function
-- skip-style decorators such as `@slow` or `@require_torch` raise `unittest.SkipTest`, which pytest reports as a skip
-- `# pytest-decorator:` lines are stripped from executed code and rendered documentation
 
 ## Bare-assert warnings
 
