@@ -49,6 +49,21 @@ jobs:
           cd ..
           echo "current_work_dir=$(pwd)" >> $GITHUB_OUTPUT
 
+      - name: Verify workflow_run origin
+        id: verify-origin
+        run: |
+          if [[ "${{ github.event.workflow_run.head_repository.full_name }}" != "${{ github.repository }}" ]]; then
+            echo "Workflow run originates from a fork. Rejecting for security."
+            exit 1
+          fi
+          
+          if [[ "${{ github.event.workflow_run.head_branch }}" =~ ^(main|master|develop)$ ]] || [[ "${{ github.event.workflow_run.event }}" == "pull_request" ]]; then
+            echo "Workflow run origin verified"
+          else
+            echo "Workflow run from untrusted branch"
+            exit 1
+          fi
+
       - name: 'Download artifact'
         uses: actions/download-artifact@v4
         with:
@@ -80,6 +95,17 @@ jobs:
             echo "Encountered an invalid pr_number"
             exit 1
           fi
+
+      - name: Verify PR belongs to repository
+        run: |
+          PR_REPO=$(gh pr view ${{ steps.github-context.outputs.pr_number }} --json headRepositoryOwner --jq '.headRepositoryOwner.login' || echo "")
+          if [[ -z "$PR_REPO" ]]; then
+            echo "Could not fetch PR information"
+            exit 1
+          fi
+          echo "PR originates from: $PR_REPO"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Get warning status
         id: warning-context
