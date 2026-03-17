@@ -119,6 +119,59 @@ doc-builder build hub ~/git/hub-docs/docs/source --build_dir ~/tmp/test-build --
 - add `[[open-in-colab]]` in the tutorial for which you want to build a notebook
 - add `--notebook_dir {path_to_notebook_folder}` to the build command.
 
+### Runnable code blocks
+
+`doc-builder` recognizes runnable Python fences tagged with `runnable` or `runnable:<label>`:
+
+````md
+```py runnable:quickstart
+from transformers import pipeline
+pipe = pipeline("sentiment-analysis")
+print(pipe("I love this!"))
+```
+````
+
+You can use either `py` or `python` fences:
+
+````md
+```python runnable:my_example
+print("hello")
+```
+````
+
+During conversion:
+- the runnable annotation is removed from the fence in rendered docs
+- the code content is preserved unless lines are hidden with `# doc-builder: hide`
+- `# doc-builder: hide` can hide a single line or a full indented block from rendered docs
+
+The label is used in warning messages (for example, `runnable:quickstart`) to identify the block.
+
+`doc-builder` tags and transforms runnable blocks, but it does not execute them by itself.
+
+Use the reusable helper from `hf-doc-builder`:
+
+```python
+from pathlib import Path
+
+from doc_builder.testing import DocIntegrationTest
+
+
+class MyPageDocIntegrationTest(DocIntegrationTest):
+    doc_path = Path(__file__).resolve().parents[2] / "docs" / "source" / "en" / "my_page.md"
+```
+
+`DocIntegrationTest` finds runnable `py`/`python` fences in the target markdown file, creates one test per block, and executes each block with contextual failure output.
+
+Run locally with:
+
+```bash
+pytest -q tests/docs/test_my_page_docs.py
+```
+
+This executes trusted documentation code with `exec`, so keep it limited to repo-controlled docs and CI.
+
+For continuation blocks, `# pytest-decorator`, bare-assert warnings, and GitHub Actions wiring, see [docs/runnable-code-blocks.md](docs/runnable-code-blocks.md).
+
 ## Writing in notebooks
 
 You can write your docs in jupyter notebooks & use doc-builder to: turn jupyter notebooks into mdx files.
