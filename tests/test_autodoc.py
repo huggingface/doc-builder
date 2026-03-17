@@ -186,7 +186,9 @@ class AutodocTester(unittest.TestCase):
         modern_list_optional_result = get_type_name(list[str | None])
         self.assertIn(modern_list_optional_result, ["list[str | None]", "list[typing.Optional[str]]", "list"])
         modern_list_union_result = get_type_name(list[str | int | None | None])
-        self.assertIn(modern_list_union_result, ["list[str | int | None]", "list[typing.Union[str, int, NoneType]]", "list"])
+        self.assertIn(
+            modern_list_union_result, ["list[str | int | None]", "list[typing.Union[str, int, NoneType]]", "list"]
+        )
 
     def test_format_signature(self):
         self.assertEqual(
