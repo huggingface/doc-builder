@@ -104,3 +104,64 @@ def test_numeric_suffix_stays_part_of_label_without_base_block():
 
     assert [block.name for block in blocks] == ["release:2026"]
     assert [block.code for block in blocks] == ["x = 1"]
+
+
+def test_pytest_decorator_parsed_and_stripped_from_code():
+    text = "```py runnable:test_deco\n# pytest-decorator: unittest.skip\nx = 1\n```"
+    blocks = DocIntegrationTest._collect_runnable_blocks_from_text(text)
+
+    assert len(blocks) == 1
+    assert blocks[0].decorators == ["unittest.skip"]
+    assert "pytest-decorator" not in blocks[0].code
+    assert blocks[0].code == "x = 1"
+
+
+def test_pytest_decorator_multiple_comma_separated():
+    text = "```py runnable:test_multi\n# pytest-decorator: unittest.skip, unittest.expectedFailure\nx = 1\n```"
+    blocks = DocIntegrationTest._collect_runnable_blocks_from_text(text)
+
+    assert blocks[0].decorators == ["unittest.skip", "unittest.expectedFailure"]
+
+
+def test_pytest_decorator_applied_to_dynamic_test(tmp_path):
+    md_path = tmp_path / "doc.md"
+    md_path.write_text(
+        "```py runnable:test_skipped\n# pytest-decorator: unittest.skip\nassert False, 'should not run'\n```",
+        encoding="utf-8",
+    )
+
+    class SkippedDocTest(DocIntegrationTest):
+        doc_path = md_path
+
+    assert hasattr(SkippedDocTest, "test_skipped")
+
+    import unittest
+
+    result = unittest.TestResult()
+    SkippedDocTest(methodName="test_skipped").run(result)
+    assert result.skipped == [(result.skipped[0][0], "")]
+    assert result.failures == []
+    assert result.errors == []
+
+
+def test_pytest_decorator_no_decorators_by_default():
+    text = "```py runnable:test_plain\nx = 1\n```"
+    blocks = DocIntegrationTest._collect_runnable_blocks_from_text(text)
+
+    assert blocks[0].decorators == []
+
+
+def test_pytest_decorator_unresolvable_is_silently_ignored(tmp_path):
+    md_path = tmp_path / "doc.md"
+    md_path.write_text(
+        "```py runnable:test_bad_dec\n# pytest-decorator: nonexistent.module.decorator\nassert True\n```",
+        encoding="utf-8",
+    )
+
+    class BadDecDocTest(DocIntegrationTest):
+        doc_path = md_path
+
+    assert hasattr(BadDecDocTest, "test_bad_dec")
+
+    # Should run fine despite unresolvable decorator
+    BadDecDocTest(methodName="test_bad_dec").test_bad_dec()

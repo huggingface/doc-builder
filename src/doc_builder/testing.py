@@ -12,13 +12,24 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import importlib
 import re
 import unittest
 from collections.abc import Callable, Iterable
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 
 _CONTINUATION_LABEL_PATTERN = re.compile(r"^(?P<base>.+):(?P<suffix>[1-9]\d*)$")
+_PYTEST_DECORATOR_PATTERN = re.compile(r"^#\s*pytest-decorator:\s*(.+)$", re.MULTILINE)
+
+
+def _resolve_decorator(dotted_path: str):
+    """Import and return a decorator from a dotted path like 'transformers.testing_utils.slow'."""
+    module_path, _, attr_name = dotted_path.rpartition(".")
+    if not module_path:
+        raise ImportError(f"Cannot resolve decorator: {dotted_path!r} (no module path)")
+    module = importlib.import_module(module_path)
+    return getattr(module, attr_name)
 
 
 @dataclass
@@ -26,6 +37,7 @@ class RunnableBlock:
     code: str
     name: str
     idx: int
+    decorators: list[str] = field(default_factory=list)
 
 
 class DocIntegrationTest(unittest.TestCase):
@@ -60,14 +72,20 @@ class DocIntegrationTest(unittest.TestCase):
                 # Don't override existing explicit tests.
                 continue
 
-            def _make_test(code: str, name: str, block_method_name: str):
+            def _make_test(code: str, name: str, block_method_name: str, decorator_paths: list[str]):
                 def _test(self):
                     self._execute_block(code, name)
 
                 _test.__name__ = block_method_name
+                for path in decorator_paths:
+                    try:
+                        decorator = _resolve_decorator(path)
+                        _test = decorator(_test)
+                    except (ImportError, AttributeError):
+                        pass
                 return _test
 
-            setattr(cls, method_name, _make_test(block.code, block.name, method_name))
+            setattr(cls, method_name, _make_test(block.code, block.name, method_name, block.decorators))
 
         # Avoid double-reporting: neutralize the catch-all method when per-block tests exist.
         if hasattr(cls, "test_markdown_runnable_blocks"):
@@ -89,7 +107,7 @@ class DocIntegrationTest(unittest.TestCase):
     def _collect_runnable_blocks_from_text(cls, text: str) -> list[RunnableBlock]:
         blocks = []
         block_indices_by_name = {}
-        for idx, (code, name) in enumerate(cls._iter_runnable_code_blocks(text)):
+        for idx, (code, name, decorators) in enumerate(cls._iter_runnable_code_blocks(text)):
             safe_name = name or f"doc_block_{idx}"
             continuation_match = _CONTINUATION_LABEL_PATTERN.match(safe_name)
             if continuation_match:
@@ -100,16 +118,20 @@ class DocIntegrationTest(unittest.TestCase):
                     continue
 
             block_indices_by_name[safe_name] = len(blocks)
-            blocks.append(RunnableBlock(code=code, name=safe_name, idx=idx))
+            blocks.append(RunnableBlock(code=code, name=safe_name, idx=idx, decorators=decorators))
 
         return blocks
 
     @classmethod
-    def _iter_runnable_code_blocks(cls, text: str) -> Iterable[tuple[str, str | None]]:
+    def _iter_runnable_code_blocks(cls, text: str) -> Iterable[tuple[str, str | None, list[str]]]:
         """
-        Yield (code, name) pairs for blocks marked with the runnable flag from markdown text.
+        Yield (code, name, decorators) tuples for blocks marked with the runnable flag.
         Supports optional naming via a suffix: ```py runnable:test_name
         A later block named ```py runnable:test_name:2``` continues the earlier test.
+
+        Code blocks may contain ``# pytest-decorator: dotted.path.to.decorator`` comment lines.
+        These are extracted as decorator paths and stripped from the code before execution.
+        Multiple decorators can be comma-separated on a single line.
         """
         pattern = re.compile(r"```(?P<lang>python|py)(?P<flags>[^\n]*)\n(?P<code>.+?)\n```", re.DOTALL)
         for match in pattern.finditer(text):
@@ -123,7 +145,17 @@ class DocIntegrationTest(unittest.TestCase):
             for flag in runnable_flags:
                 if ":" in flag:
                     _, name = flag.split(":", 1)
-            yield match.group("code"), name
+
+            code = match.group("code")
+            decorators = []
+            for dec_match in _PYTEST_DECORATOR_PATTERN.finditer(code):
+                for path in dec_match.group(1).split(","):
+                    path = path.strip()
+                    if path:
+                        decorators.append(path)
+            code = _PYTEST_DECORATOR_PATTERN.sub("", code).strip()
+
+            yield code, name, decorators
 
     def _run_cleanup(self):
         if callable(self.cleanup_func):
