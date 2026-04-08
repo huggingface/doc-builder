@@ -32,7 +32,7 @@ jobs:
       github.event.workflow_run.conclusion == 'success'
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
         with:
           repository: 'huggingface/doc-builder'
           path: doc-builder
@@ -50,7 +50,7 @@ jobs:
           echo "current_work_dir=$(pwd)" >> $GITHUB_OUTPUT
 
       - name: 'Download artifact'
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093  # v4
         with:
           name: doc-build-artifact
           path: ${{ github.workspace }}/build_dir
@@ -130,7 +130,7 @@ jobs:
           doc-builder push ${{ inputs.package_name }} --doc_build_repo_id "hf-doc-build/doc-build-dev" --token "${{ secrets.hf_token }}" --commit_msg "Updated with commit ${{ steps.github-context.outputs.commit_sha }} See: https://github.com/${{ inputs.repo_owner }}/${{ inputs.package_name }}/commit/${{ steps.github-context.outputs.commit_sha }}"
 
       - name: Find doc comment
-        uses: peter-evans/find-comment@v2
+        uses: peter-evans/find-comment@a54c31d7fa095754bfef525c0c8e5e5674c4b4b1  # v2
         id: find_comment
         with:
           issue-number: ${{ steps.github-context.outputs.pr_number }}
@@ -151,14 +151,14 @@ jobs:
       - name: Create comment_bot token
         id: comment_bot_token
         if: steps.auth.outputs.method == 'github_app'
-        uses: actions/create-github-app-token@v2
+        uses: actions/create-github-app-token@fee1f7d63c2ff003460e3d139729b119787bc349  # v2
         with:
           app-id: ${{ secrets.comment_bot_app_id }}
           private-key: ${{ secrets.comment_bot_secret_pem }}
           repositories: ${{ github.event.repository.name }}
 
       - name: Add doc comment if not present
-        uses: thollander/actions-comment-pull-request@v2
+        uses: thollander/actions-comment-pull-request@fabd468d3a1a0b97feee5f6b9e499eab0dd903f6  # v2
         if: steps.find_comment.outputs.comment-id == ''
         with:
           message: ${{ steps.doc-comment.outputs.message }}
@@ -167,7 +167,7 @@ jobs:
 
       - name: Update doc comment if necessary
         if: steps.find_comment.outputs.comment-id != '' && (github.event.action == 'reopened' || steps.find_comment.outputs.comment-body != steps.doc-comment.outputs.message)
-        uses: peter-evans/create-or-update-comment@v1
+        uses: peter-evans/create-or-update-comment@a35cf36e5301d70b76f316e867e7788a55a31dae  # v1
         with:
           comment-id: ${{ steps.find_comment.outputs.comment-id }}
           token: ${{ steps.auth.outputs.method == 'comment_bot_token' && secrets.comment_bot_token || steps.comment_bot_token.outputs.token }}
