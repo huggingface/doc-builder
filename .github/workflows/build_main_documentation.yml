@@ -234,11 +234,13 @@ jobs:
 
           cd ..
 
-      - name: Push to repositories
+      - name: Sync to bucket
+        env:
+          HF_TOKEN: ${{ secrets.hf_token }}
         run: |
-          source .venv/bin/activate
+          pip install -U huggingface_hub
           cd build_dir
-          doc-builder push ${{ env.package_name }} --doc_build_repo_id "hf-doc-build/doc-build" --token "${{ secrets.hf_token }}" --commit_msg "Updated with commit ${{ inputs.commit_sha }} See: https://github.com/${{ inputs.repo_owner }}/${{ inputs.package }}/commit/${{ inputs.commit_sha }}" --n_retries 5 --upload_version_yml
+          hf sync "./${{ env.package_name }}" "hf://buckets/hf-doc-build/doc/${{ env.package_name }}"
           cd ..
 
           if [ -d "notebook_dir" ]
