@@ -1,52 +1,59 @@
 #!/usr/bin/env -S deno run --allow-env --allow-net --allow-run --allow-read
 // To format: npx prettier --write .
-import { commit, listFiles } from "npm:@huggingface/hub@0.15.1";
+//
+// Cleans up old PR documentation from the HF bucket.
+// Lists all pr_* directories across all packages and deletes those older than 30 days.
 
-const oneMonthAgo = new Date(Date.now() - 30 * 24 * 3600 * 1000);
+const BUCKET_ID = "hf-doc-build/doc-dev";
+const MAX_AGE_DAYS = 30;
 
-const allFiles = listFiles({
-	repo: { type: "dataset", name: "hf-doc-build/doc-build-dev" },
-	recursive: true,
-	expand: true,
-});
+const oneMonthAgo = new Date(Date.now() - MAX_AGE_DAYS * 24 * 3600 * 1000);
+const token = Deno.env.get("HF_ACCESS_TOKEN")!;
+const headers = { Authorization: `Bearer ${token}` };
 
-const filesToDelete: string[] = [];
+// Step 1: List all top-level packages in the bucket
+const packagesRes = await fetch(
+	`https://huggingface.co/api/repos/bucket/${BUCKET_ID}/tree?recursive=false`,
+	{ headers },
+);
+const packages: { path: string; type: string }[] = await packagesRes.json();
 
-let fileCount = 0;
-let filesWithoutDates = 0;
+let totalDeleted = 0;
+let totalKept = 0;
 
-for await (const file of allFiles) {
-	fileCount++;
-	
-	if (file.type !== "file" || !file.path.endsWith(".zip")) {
-		continue;
+for (const pkg of packages) {
+	if (pkg.type !== "directory") continue;
+
+	// Step 2: List pr_* directories inside each package
+	const entriesRes = await fetch(
+		`https://huggingface.co/api/repos/bucket/${BUCKET_ID}/tree?path_prefix=${pkg.path}/&recursive=false`,
+		{ headers },
+	);
+	const entries: { path: string; type: string; uploadedAt?: string }[] = await entriesRes.json();
+
+	for (const entry of entries) {
+		if (entry.type !== "directory" || !entry.path.includes("/pr_")) continue;
+
+		const uploadedAt = entry.uploadedAt ? new Date(entry.uploadedAt) : null;
+		if (!uploadedAt) continue;
+
+		if (uploadedAt < oneMonthAgo) {
+			console.log(`Deleting ${entry.path} (uploaded ${uploadedAt.toISOString()})`);
+			const proc = new Deno.Command("hf", {
+				args: ["buckets", "rm", `hf-doc-build/doc-dev/${entry.path}`, "--recursive", "-y"],
+				env: { HF_TOKEN: token },
+				stdout: "piped",
+				stderr: "piped",
+			});
+			const output = await proc.output();
+			if (!output.success) {
+				console.error(`Failed to delete ${entry.path}:`, new TextDecoder().decode(output.stderr));
+			}
+			totalDeleted++;
+		} else {
+			totalKept++;
+		}
 	}
-
-	const date = file.lastCommit?.date;
-
-	if (!date) {
-		filesWithoutDates++;
-		continue;
-	}
-
-	if (oneMonthAgo < new Date(date)) {
-		continue;
-	}
-
-	filesToDelete.push(file.path);
 }
 
-console.log({fileCount, filesWithoutDates});
-
-if (filesToDelete.length) {
-	console.log("deleting", filesToDelete.length, "files");
-	await commit({
-		repo: { type: "dataset", name: "hf-doc-build/doc-build-dev" },
-		credentials: { accessToken: Deno.env.get("HF_ACCESS_TOKEN") },
-		title: "Delete old docs",
-		operations: filesToDelete.map((file) => ({
-			operation: "delete",
-			path: file,
-		})),
-	});
-}
+console.log({ totalDeleted, totalKept });
