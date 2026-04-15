@@ -8,6 +8,18 @@ import path from "path";
 import cheerio from "cheerio";
 import { renderSvelteChars } from "../utils.js";
 
+// Wrap >>> and ... at the start of lines in hljs-meta spans so the CSS
+// `select-none` rule makes them unselectable when copying code.
+// highlight.js only does this natively for python-repl/pycon; for bash and
+// other languages the prompt appears as plain &gt;&gt;&gt; in the HTML.
+hljs.addPlugin({
+	"after:highlight": (result) => {
+		result.value = result.value
+			.replace(/^(&gt;&gt;&gt;[ \t])/gm, '<span class="hljs-meta">$1</span>')
+			.replace(/^(\.\.\.[ \t])/gm, '<span class="hljs-meta">$1</span>');
+	},
+});
+
 /**
  * inside `<code>` html elements, we need to replace `&amp;` with `&`
  * to correctly render escaped characters like `<`, `{`, etc.
@@ -382,7 +394,7 @@ const _mdsvexPreprocess = mdsvex({
 						.join("\n");
 				}
 				return `
-	<CodeBlock 
+	<CodeBlock
 		code={\`${base64(code)}\`}
 		highlighted={\`${escape(highlighted)}\`}
 		wrap={${wrapCodeBlocks}}
