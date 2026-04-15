@@ -394,7 +394,7 @@ const _mdsvexPreprocess = mdsvex({
 						.join("\n");
 				}
 				return `
-	<CodeBlock
+	<CodeBlock 
 		code={\`${base64(code)}\`}
 		highlighted={\`${escape(highlighted)}\`}
 		wrap={${wrapCodeBlocks}}
