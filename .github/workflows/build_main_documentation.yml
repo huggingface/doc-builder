@@ -244,10 +244,11 @@ jobs:
       - name: Sync to bucket
         env:
           HF_TOKEN: ${{ secrets.hf_token }}
+          PACKAGE_NAME: ${{ env.package_name }}
         run: |
           pip install -U huggingface_hub
           cd build_dir
-          hf sync "./${{ env.package_name }}" "hf://buckets/hf-doc-build/doc/${{ env.package_name }}"
+          hf sync "./$PACKAGE_NAME" "hf://buckets/hf-doc-build/doc/$PACKAGE_NAME"
           cd ..
 
           if [ -d "notebook_dir" ]
