@@ -234,13 +234,6 @@ jobs:
 
           cd ..
 
-      - name: Push to dataset (legacy, kept for rollback safety)
-        run: |
-          source .venv/bin/activate
-          cd build_dir
-          doc-builder push ${{ env.package_name }} --doc_build_repo_id "hf-doc-build/doc-build" --token "${{ secrets.hf_token }}" --commit_msg "Updated with commit ${{ inputs.commit_sha }} See: https://github.com/${{ inputs.repo_owner }}/${{ inputs.package }}/commit/${{ inputs.commit_sha }}" --n_retries 5 --upload_version_yml
-          cd ..
-
       - name: Sync to bucket
         env:
           HF_TOKEN: ${{ secrets.hf_token }}
@@ -251,6 +244,15 @@ jobs:
           hf sync "./$PACKAGE_NAME" "hf://buckets/hf-doc-build/doc/$PACKAGE_NAME"
           cd ..
 
+      - name: Push to dataset (legacy, kept for rollback safety)
+        run: |
+          source .venv/bin/activate
+          cd build_dir
+          doc-builder push ${{ env.package_name }} --doc_build_repo_id "hf-doc-build/doc-build" --token "${{ secrets.hf_token }}" --commit_msg "Updated with commit ${{ inputs.commit_sha }} See: https://github.com/${{ inputs.repo_owner }}/${{ inputs.package }}/commit/${{ inputs.commit_sha }}" --n_retries 5 --upload_version_yml
+          cd ..
+
+      - name: Commit notebooks
+        run: |
           if [ -d "notebook_dir" ]
           then
             cd notebooks
