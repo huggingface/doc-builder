@@ -72,13 +72,13 @@ jobs:
       UV_HTTP_TIMEOUT: 900 # max 15min to install deps (shouldn't take more than 5min)
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
         with:
           repository: 'huggingface/doc-builder'
           path: doc-builder
           ref: ${{ inputs.doc_builder_revision }}
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
         with:
           repository: '${{ inputs.repo_owner }}/${{ inputs.package }}'
           path: ${{ inputs.package }}
@@ -94,7 +94,7 @@ jobs:
          git fetch https://github.com/$REPO_OWNER/$PACKAGE.git refs/pull/$PR_NUMBER/merge:refs/remotes/pull/$PR_NUMBER/merge
          git checkout refs/remotes/pull/$PR_NUMBER/merge
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e  # v6.4.0
         with:
           node-version: '20'
           cache-dependency-path: "kit/package-lock.json"
@@ -151,7 +151,7 @@ jobs:
         run: $ROOT_APT_GET install -y libgl1
 
       - name: Install Rust
-        uses: actions-rs/toolchain@v1
+        uses: actions-rs/toolchain@16499b5e05bf2e26879000db0c1d13f7e13fa3af  # v1
         if: inputs.install_rust
         with:
           toolchain: stable
@@ -249,7 +249,7 @@ jobs:
           echo ${{ inputs.commit_sha }} > ./build_dir/commit_sha
           echo ${{ inputs.pr_number }} > ./build_dir/pr_number
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02  # v4.6.2
         with:
           name: doc-build-artifact
           path: build_dir/
