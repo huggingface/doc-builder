@@ -141,7 +141,7 @@ jobs:
           hf sync "./$PACKAGE_NAME" "hf://buckets/hf-doc-build/doc-dev/$PACKAGE_NAME"
 
       - name: Find doc comment
-        uses: peter-evans/find-comment@a54c31d7fa095754bfef525c0c8e5e5674c4b4b1  # v2
+        uses: peter-evans/find-comment@b30e6a3c0ed37e7c023ccd3f1db5c6c0b0c23aad  # v4.0.0
         id: find_comment
         with:
           issue-number: ${{ steps.github-context.outputs.pr_number }}
@@ -165,23 +165,23 @@ jobs:
       - name: Create comment_bot token
         id: comment_bot_token
         if: steps.auth.outputs.method == 'github_app'
-        uses: actions/create-github-app-token@fee1f7d63c2ff003460e3d139729b119787bc349  # v2
+        uses: actions/create-github-app-token@1b10c78c7865c340bc4f6099eb2f838309f1e8c3  # v3.1.1
         with:
           app-id: ${{ secrets.comment_bot_app_id }}
           private-key: ${{ secrets.comment_bot_secret_pem }}
           repositories: ${{ github.event.repository.name }}
 
       - name: Add doc comment if not present
-        uses: thollander/actions-comment-pull-request@fabd468d3a1a0b97feee5f6b9e499eab0dd903f6  # v2
+        uses: thollander/actions-comment-pull-request@24bffb9b452ba05a4f3f77933840a6a841d1b32b  # v3.0.1
         if: steps.find_comment.outputs.comment-id == ''
         with:
           message: ${{ steps.doc-comment.outputs.message }}
-          pr_number: ${{ steps.github-context.outputs.pr_number }}
-          GITHUB_TOKEN: ${{ steps.auth.outputs.method == 'comment_bot_token' && secrets.comment_bot_token || steps.comment_bot_token.outputs.token }}
+          pr-number: ${{ steps.github-context.outputs.pr_number }}
+          github-token: ${{ steps.auth.outputs.method == 'comment_bot_token' && secrets.comment_bot_token || steps.comment_bot_token.outputs.token }}
 
       - name: Update doc comment if necessary
         if: steps.find_comment.outputs.comment-id != '' && (github.event.action == 'reopened' || steps.find_comment.outputs.comment-body != steps.doc-comment.outputs.message)
-        uses: peter-evans/create-or-update-comment@a35cf36e5301d70b76f316e867e7788a55a31dae  # v1
+        uses: peter-evans/create-or-update-comment@e8674b075228eee787fea43ef493e45ece1004c9  # v5.0.0
         with:
           comment-id: ${{ steps.find_comment.outputs.comment-id }}
           token: ${{ steps.auth.outputs.method == 'comment_bot_token' && secrets.comment_bot_token || steps.comment_bot_token.outputs.token }}
