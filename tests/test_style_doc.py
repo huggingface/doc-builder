@@ -16,6 +16,7 @@ import re
 import unittest
 
 from doc_builder.style_doc import (
+    _re_blockquote_tip,
     _re_code,
     _re_docstyle_ignore,
     _re_list,
@@ -52,6 +53,11 @@ class BuildDocTester(unittest.TestCase):
 
         self.assertIsNotNone(_re_tip.search("<Tip warning={true}>"))
         self.assertIsNotNone(_re_tip.search("    <Tip warning={true}>"))
+
+    def test_re_blockquote_tip(self):
+        self.assertIsNotNone(_re_blockquote_tip.search("> quoted line"))
+        self.assertIsNotNone(_re_blockquote_tip.search("> [!NOTE]"))
+        self.assertIsNotNone(_re_blockquote_tip.search("    > indented quoted line"))
 
     def test_parse_code_example(self):
         # One code sample, no output
@@ -176,3 +182,46 @@ Params:
 """
 
         self.assertEqual(style_docstring(test_docstring, 119)[0], expected_result)
+
+    def test_format_docstring_wraps_blockquote(self):
+        test_docstring = """Function description
+
+Params:
+    x (`int`): This is x.
+
+> [!NOTE]
+> This is a note.
+> This is still part of the note.
+"""
+        expected_result = """Function description
+
+Params:
+    x (`int`): This is x.
+
+> [!NOTE]
+> This is a note. This is still part of the note.
+"""
+
+        self.assertEqual(style_docstring(test_docstring, 119)[0], expected_result)
+
+    def test_format_docstring_wraps_blockquote_and_keeps_prefix(self):
+        test_docstring = """Function description
+
+Params:
+    x (`int`): This is x.
+
+> [!NOTE]
+> This is a very very very very long note that should be wrapped and keep the prefix.
+"""
+        expected_result = """Function description
+
+Params:
+    x (`int`): This is x.
+
+> [!NOTE]
+> This is a very very very very
+> long note that should be
+> wrapped and keep the prefix.
+"""
+
+        self.assertEqual(style_docstring(test_docstring, 32)[0], expected_result)
