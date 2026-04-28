@@ -547,7 +547,23 @@ def strip_remaining_html(content: str) -> str:
     """
     Strip remaining HTML tags while preserving markdown structure.
     Handles tags like <Tip>, <ExampleCodeBlock>, etc.
+
+    Fenced code blocks and inline code are preserved verbatim so literal
+    angle-bracketed content (e.g. ``<YOUR_TOKEN>`` placeholders, or code
+    such as ``if idx < n:``) survives the cleanup.
     """
+    # Stash code blocks before any HTML stripping so brackets inside code are untouched.
+    code_segments: list[str] = []
+
+    def stash(match: re.Match) -> str:
+        code_segments.append(match.group(0))
+        return f"\x00DOCBUILDER_CODE_{len(code_segments) - 1}\x00"
+
+    # Fenced code blocks (```...```) — match across newlines.
+    content = re.sub(r"```.*?```", stash, content, flags=re.DOTALL)
+    # Inline code (`...`) — single line only.
+    content = re.sub(r"`[^`\n]+`", stash, content)
+
     # Remove HTML comments, but preserve special flags like <!-- WRAP CODE BLOCKS --> and <!-- STRETCH TABLES -->
     content = re.sub(r"<!--(?!\s*(WRAP CODE BLOCKS|STRETCH TABLES)\s*-->).*?-->", "", content, flags=re.DOTALL)
 
@@ -571,9 +587,18 @@ def strip_remaining_html(content: str) -> str:
         # Remove closing tags
         content = re.sub(rf"</{tag}>", "", content, flags=re.IGNORECASE)
 
-    # Remove any remaining HTML tags (generic cleanup)
-    # This is more aggressive but preserves text content
-    content = re.sub(r"<[^>]+>", "", content)
+    # Generic HTML-tag cleanup. Require the character after `<` to look like the start
+    # of a tag (letter, `/`, or `!`) and forbid newlines inside the match so a stray
+    # `<` in prose can't swallow content up to the next `>` further down the page.
+    content = re.sub(r"<[a-zA-Z/!][^>\n]*>", "", content)
+
+    # Restore protected code segments.
+    if code_segments:
+        content = re.sub(
+            r"\x00DOCBUILDER_CODE_(\d+)\x00",
+            lambda m: code_segments[int(m.group(1))],
+            content,
+        )
 
     # Clean up multiple consecutive blank lines
     content = re.sub(r"\n{3,}", "\n\n", content)
