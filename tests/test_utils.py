@@ -19,7 +19,7 @@ from pathlib import Path
 
 import yaml
 
-from doc_builder.utils import sveltify_file_route, update_versions_file
+from doc_builder.utils import strip_html_from_markdown, sveltify_file_route, update_versions_file
 
 
 class UtilsTester(unittest.TestCase):
@@ -82,3 +82,48 @@ class UtilsTester(unittest.TestCase):
         svelte_file_path = sveltify_file_route(mdx_file_path)
         expected_path = "/xyz/abc/guide/+page.svelte"
         self.assertEqual(svelte_file_path, expected_path)
+
+    def test_strip_html_preserves_angle_brackets_in_code(self):
+        # Placeholders inside fenced code must survive (regression: <YOUR_TOKEN> was being stripped).
+        content = (
+            "Some prose.\n\n"
+            "```python\n"
+            "%env LOCATION eastus\n"
+            "%env SUBSCRIPTION_ID <YOUR_SUBSCRIPTION_ID>\n"
+            "%env RESOURCE_GROUP <YOUR_RESOURCE_GROUP>\n"
+            "```\n"
+        )
+        result = strip_html_from_markdown(content)
+        self.assertIn("<YOUR_SUBSCRIPTION_ID>", result)
+        self.assertIn("<YOUR_RESOURCE_GROUP>", result)
+
+    def test_strip_html_does_not_swallow_code_between_lt_and_gt(self):
+        # A stray `<` in a code block (e.g. `if idx < n:`) must not eat content
+        # up to the next `>` further down (regression that nuked entire snippets).
+        content = (
+            "Intro paragraph.\n\n"
+            "```python\n"
+            "for idx, ax in enumerate(axes):\n"
+            "    if idx < n:\n"
+            "        ax.imshow(pil_masks[idx])\n"
+            "    else:\n"
+            "        ax.imshow(np.zeros(mask_size))\n"
+            "\n"
+            "return np.array(mask_img) > 0\n"
+            "```\n\n"
+            "Trailing paragraph.\n"
+        )
+        result = strip_html_from_markdown(content)
+        self.assertIn("if idx < n:", result)
+        self.assertIn("ax.imshow(pil_masks[idx])", result)
+        self.assertIn("return np.array(mask_img) > 0", result)
+        self.assertIn("Trailing paragraph.", result)
+
+    def test_strip_html_still_removes_real_tags(self):
+        content = 'Before <Tip>warning</Tip> after.\n\n<div class="x">inside</div>\n'
+        result = strip_html_from_markdown(content)
+        self.assertNotIn("<Tip>", result)
+        self.assertNotIn("</Tip>", result)
+        self.assertNotIn("<div", result)
+        self.assertIn("warning", result)
+        self.assertIn("inside", result)
