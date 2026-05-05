@@ -338,6 +338,7 @@ const _mdsvexPreprocess = mdsvex({
 			const base64 = (val) => btoa(encodeURIComponent(val));
 			const escape = (code) =>
 				code.replace(/\\/g, "\\\\").replace(/`/g, "\\`").replace(/}/g, "\\}").replace(/\$/g, "\\$");
+			const safeLang = lang && /^[\w-]+$/.test(lang) ? lang : "";
 			const REGEX_FRAMEWORKS_SPLIT = /\s*===(PT-TF|STRINGAPI-READINSTRUCTION)-SPLIT===\s*/gm;
 
 			// Handle mermaid diagrams
@@ -380,6 +381,7 @@ const _mdsvexPreprocess = mdsvex({
 			code: \`${base64(codeGroup2)}\`,
 			highlighted: \`${escape(highlightedTf)}\`
 		}}
+		lang="${safeLang}"
 		wrap={${wrapCodeBlocks}}
 	/>`;
 			} else {
@@ -394,9 +396,10 @@ const _mdsvexPreprocess = mdsvex({
 						.join("\n");
 				}
 				return `
-	<CodeBlock 
+	<CodeBlock
 		code={\`${base64(code)}\`}
 		highlighted={\`${escape(highlighted)}\`}
+		lang="${safeLang}"
 		wrap={${wrapCodeBlocks}}
 	/>`;
 			}

@@ -3,6 +3,7 @@
 	let hideCopyButton = true;
 	export let code = "";
 	export let highlighted = "";
+	export let lang = "";
 	export let wrap = false;
 	export let classNames = "";
 
@@ -28,5 +29,8 @@
 			value={code}
 		/>
 	</div>
-	<pre class={wrap ? "whitespace-pre-wrap" : ""}>{@html highlighted}</pre>
+	<pre
+		class="{lang ? `language-${lang}` : ''} {wrap
+			? 'whitespace-pre-wrap'
+			: ''}">{@html highlighted}</pre>
 </div>

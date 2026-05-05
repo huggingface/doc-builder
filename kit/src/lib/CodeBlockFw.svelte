@@ -5,6 +5,7 @@
 
 	export let group1: { id: string; code: string; highlighted: string };
 	export let group2: { id: string; code: string; highlighted: string };
+	export let lang = "";
 	export let wrap = false;
 
 	const ids = [group1.id, group2.id];
@@ -36,7 +37,8 @@
 				value={group1.code}
 			/>
 		</div>
-		<pre class={wrap ? "whitespace-pre-wrap" : ""}><FrameworkSwitch
+		<pre
+			class="{lang ? `language-${lang}` : ''} {wrap ? 'whitespace-pre-wrap' : ''}"><FrameworkSwitch
 				{ids}
 			/>{@html group1.highlighted}</pre>
 	{:else}
@@ -47,7 +49,8 @@
 				value={group2.code}
 			/>
 		</div>
-		<pre class={wrap ? "whitespace-pre-wrap" : ""}><FrameworkSwitch
+		<pre
+			class="{lang ? `language-${lang}` : ''} {wrap ? 'whitespace-pre-wrap' : ''}"><FrameworkSwitch
 				{ids}
 			/>{@html group2.highlighted}</pre>
 	{/if}
