@@ -37,7 +37,8 @@
 				value={group1.code}
 			/>
 		</div>
-		<pre class="{lang ? `language-${lang}` : ''} {wrap ? 'whitespace-pre-wrap' : ''}"><FrameworkSwitch
+		<pre
+			class="{lang ? `language-${lang}` : ''} {wrap ? 'whitespace-pre-wrap' : ''}"><FrameworkSwitch
 				{ids}
 			/>{@html group1.highlighted}</pre>
 	{:else}
@@ -48,7 +49,8 @@
 				value={group2.code}
 			/>
 		</div>
-		<pre class="{lang ? `language-${lang}` : ''} {wrap ? 'whitespace-pre-wrap' : ''}"><FrameworkSwitch
+		<pre
+			class="{lang ? `language-${lang}` : ''} {wrap ? 'whitespace-pre-wrap' : ''}"><FrameworkSwitch
 				{ids}
 			/>{@html group2.highlighted}</pre>
 	{/if}

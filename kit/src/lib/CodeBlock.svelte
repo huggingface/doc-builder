@@ -29,5 +29,8 @@
 			value={code}
 		/>
 	</div>
-	<pre class="{lang ? `language-${lang}` : ''} {wrap ? 'whitespace-pre-wrap' : ''}">{@html highlighted}</pre>
+	<pre
+		class="{lang ? `language-${lang}` : ''} {wrap
+			? 'whitespace-pre-wrap'
+			: ''}">{@html highlighted}</pre>
 </div>
