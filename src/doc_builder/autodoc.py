@@ -559,7 +559,7 @@ def find_documented_methods(clas):
         a: m for a, m in public_methods.items() if getattr(m, "__doc__", None) is not None and len(m.__doc__) > 0
     }
 
-    superclasses = clas.mro()[1:]
+    superclasses = clas.__mro__[1:]
     for superclass in superclasses:
         superclass_methods = {a: getattr(superclass, a) for a in documented_methods.keys() if hasattr(superclass, a)}
         documented_methods = {
