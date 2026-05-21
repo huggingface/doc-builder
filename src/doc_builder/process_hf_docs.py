@@ -29,6 +29,7 @@ import httpx
 from packaging import version as package_version
 from tqdm import tqdm
 
+from .archive_utils import safe_extract_zip
 from .build_embeddings import Chunk, split_markdown_by_headings
 
 HF_DATASET_REPO = "hf-doc-build/doc-build"
@@ -140,7 +141,7 @@ def download_and_extract_zip(library_name: str, output_dir: Path, zip_filename: 
         extract_path.mkdir(parents=True, exist_ok=True)
 
         with zipfile.ZipFile(zip_content) as zip_ref:
-            zip_ref.extractall(extract_path)
+            safe_extract_zip(zip_ref, extract_path)
 
         print(f"  Extracted to {extract_path}")
         return extract_path

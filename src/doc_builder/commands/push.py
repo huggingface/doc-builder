@@ -23,6 +23,8 @@ from time import sleep, time
 
 from huggingface_hub import HfApi, hf_hub_download
 
+from doc_builder.archive_utils import safe_extract_zip
+
 REPO_TYPE = "dataset"
 SEPARATOR = "/"
 
@@ -71,7 +73,7 @@ def merge_with_existing_docs(api, doc_build_repo_id, zip_file_path, path_docs_bu
             existing_docs_dir.mkdir(parents=True, exist_ok=True)
 
             with zipfile.ZipFile(existing_zip_path, "r") as zf:
-                zf.extractall(existing_docs_dir)
+                safe_extract_zip(zf, existing_docs_dir)
 
             # The zip structure is: library_name/version/language/...
             # e.g., transformers/main/en/..., transformers/main/ja/...
