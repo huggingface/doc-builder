@@ -81,7 +81,7 @@
 			[...new Set(availableSnippets.filter((s) => s.language === lang).map((s) => s.client))],
 		])
 	);
-	$: clients = clientsByLanguage[selectedLanguage];
+	$: clients = clientsByLanguage[selectedLanguage] ?? [];
 	$: selectedClient = clients?.[0];
 
 	$: code = snippets
