@@ -150,8 +150,12 @@ def start_sveltekit_dev(tmp_dir, env, args):
     )
 
     # start sveltekit in dev mode
+    run_cmd = ["npm", "run", "dev"]
+    if args.listen_all:
+        run_cmd += ["--", "--host"]
+
     subprocess.run(
-        ["npm", "run", "dev"],
+        run_cmd,
         check=True,
         encoding="utf-8",
         cwd=working_dir,
@@ -260,6 +264,7 @@ def preview_command_parser(subparsers=None):
     )
     parser.add_argument("--language", type=str, help="Language of the documentation to generate", default="en")
     parser.add_argument("--version", type=str, help="Version of the documentation to generate", default="main")
+    parser.add_argument("--listen-all", action="store_true", help="Listen to all interfaces (0.0.0.0)")
     parser.add_argument(
         "--not_python_module",
         action="store_true",
