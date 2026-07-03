@@ -4,7 +4,11 @@
 	import IconPytorch from "./IconPytorch.svelte";
 	import IconTensorflow from "./IconTensorflow.svelte";
 
-	export let fw: CourseFramework;
+	interface Props {
+		fw: CourseFramework;
+	}
+
+	let { fw }: Props = $props();
 
 	const FRAMEWORKS = [
 		{
@@ -30,7 +34,7 @@
                 {f.id === fw ? f.classNames : 'text-gray-500 filter grayscale'}"
 			href="?fw={f.id}"
 		>
-			<svelte:component this={f.icon} classNames="mr-1.5" />
+			<f.icon classNames="mr-1.5" />
 			{f.name}
 		</a>
 	{/each}

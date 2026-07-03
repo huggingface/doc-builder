@@ -5,13 +5,17 @@
 	import IconCopy from "./IconCopy.svelte";
 	import Tooltip from "./Tooltip.svelte";
 
-	export let classNames = "";
-	export let label = "";
-	export let style: "button" | "button-clear" | "text" = "text";
-	export let title = "";
-	export let value: string;
+	interface Props {
+		classNames?: string;
+		label?: string;
+		style?: "button" | "button-clear" | "text";
+		title?: string;
+		value: string;
+	}
 
-	let isSuccess = false;
+	let { classNames = "", label = "", style = "text", title = "", value }: Props = $props();
+
+	let isSuccess = $state(false);
 	let timeout: any;
 
 	onDestroy(() => {
@@ -41,7 +45,7 @@
 		{!isSuccess && ['button-clear', 'text'].includes(style) ? 'text-gray-600' : ''}
 		{isSuccess ? 'text-green-500' : ''}
 	"
-	on:click={handleClick}
+	onclick={handleClick}
 	title={title || label || "Copy to clipboard"}
 	type="button"
 >

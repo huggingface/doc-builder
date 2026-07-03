@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount, tick } from "svelte";
-	import { tooltip } from "./tooltip";
+	import { tooltip } from "./tooltipAction.svelte";
 	import IconCopyLink from "./IconCopyLink.svelte";
 
 	type Parameter = {
@@ -9,26 +9,44 @@
 		description: string;
 	};
 
-	export let anchor: string;
-	export let name: string;
-	export let parameters: { name: string; val: string }[] = [];
-	export let parametersDescription: Parameter[];
-	export let parameterGroups: {
-		title: string;
+	interface Props {
+		anchor: string;
+		name: string;
+		parameters?: { name: string; val: string }[];
 		parametersDescription: Parameter[];
-	}[];
-	export let returnDescription: string;
-	export let returnType: string;
-	export let isYield = false;
-	export let raiseDescription: string;
-	export let raiseType: string;
-	export let source: string | undefined = undefined;
-	export let hashlink: string | undefined;
-	export let isGetSetDescriptor = false;
+		parameterGroups: {
+			title: string;
+			parametersDescription: Parameter[];
+		}[];
+		returnDescription: string;
+		returnType: string;
+		isYield?: boolean;
+		raiseDescription: string;
+		raiseType: string;
+		source?: string | undefined;
+		hashlink: string | undefined;
+		isGetSetDescriptor?: boolean;
+	}
 
-	let parametersElement: HTMLElement;
+	let {
+		anchor,
+		name,
+		parameters = [],
+		parametersDescription,
+		parameterGroups,
+		returnDescription,
+		returnType,
+		isYield = false,
+		raiseDescription,
+		raiseType,
+		source = undefined,
+		hashlink = $bindable(),
+		isGetSetDescriptor = false,
+	}: Props = $props();
+
+	let parametersElement = $state<HTMLElement>()!;
 	let containerEl: HTMLElement;
-	let collapsed: boolean = false;
+	let collapsed: boolean = $state(false);
 
 	const tooltipMapper: Record<string, string> =
 		parametersDescription?.reduce((acc, element) => {
@@ -94,7 +112,7 @@
 	}
 </script>
 
-<svelte:window on:hashchange={onHashChange} />
+<svelte:window onhashchange={onHashChange} />
 
 <div>
 	<span
@@ -128,8 +146,11 @@
 				<span
 					use:tooltip={tooltipMapper[name] || ""}
 					class="comma {tooltipMapper[name] ? 'cursor-pointer' : 'cursor-default'}"
-					on:click|preventDefault|stopPropagation={() =>
-						onClick(`${anchor}.${name}`, !!tooltipMapper[name])}
+					onclick={(event: MouseEvent) => {
+						event.preventDefault();
+						event.stopPropagation();
+						onClick(`${anchor}.${name}`, !!tooltipMapper[name]);
+					}}
 				>
 					<span
 						class="rounded hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black"
@@ -145,9 +166,11 @@
 					class="rounded hover:bg-gray-400 {returnDescription
 						? 'cursor-pointer'
 						: 'cursor-default'}"
-					on:click|preventDefault|stopPropagation={() =>
-						onClick(`${anchor}.${returnsAnchor}`, !!returnDescription)}
-					>{@html replaceParagraphWithSpan(returnType)}</span
+					onclick={(event: MouseEvent) => {
+						event.preventDefault();
+						event.stopPropagation();
+						onClick(`${anchor}.${returnsAnchor}`, !!returnDescription);
+					}}>{@html replaceParagraphWithSpan(returnType)}</span
 				>
 			{/if}
 		</p>
@@ -163,7 +186,7 @@
 				class="absolute inset-0 bg-gradient-to-t from-white to-white/0 dark:from-gray-950 dark:to-gray-950/0 z-10 flex justify-center"
 			>
 				<button
-					on:click={() => (collapsed = false)}
+					onclick={() => (collapsed = false)}
 					class="absolute leading-tight px-3 py-1.5 dark:bg-gray-900 bg-black text-gray-200 hover:text-white rounded-xl bottom-12 ring-offset-2 hover:ring-black hover:ring-2"
 					>Expand {parametersDescription?.length} parameters</button
 				>
@@ -171,7 +194,8 @@
 		{/if}
 		{#if !!parametersDescription}
 			<p class="flex items-center font-semibold !mt-2 !mb-2 text-gray-800">
-				Parameters <span class="flex-auto border-t-2 border-gray-100 dark:border-gray-700 ml-3" />
+				Parameters <span class="flex-auto border-t-2 border-gray-100 dark:border-gray-700 ml-3"
+				></span>
 			</p>
 			<ul class="px-2">
 				{#each parametersDescription as { anchor, description }}
@@ -195,7 +219,7 @@
 		{#if parameterGroups}
 			{#each parameterGroups as { title, parametersDescription }}
 				<p class="flex items-center font-semibold">
-					{title} <span class="flex-auto border-t-2 ml-3" />
+					{title} <span class="flex-auto border-t-2 ml-3"></span>
 				</p>
 				<ul class="px-2">
 					{#each parametersDescription as { anchor, description }}
@@ -229,7 +253,7 @@
 				{#if !!returnType}
 					{@html returnType}
 				{/if}
-				<span class="flex-auto border-t-2 border-gray-100 dark:border-gray-700" />
+				<span class="flex-auto border-t-2 border-gray-100 dark:border-gray-700"></span>
 			</div>
 			<p class="text-base">{@html returnDescription || ""}</p>
 		{/if}
@@ -242,7 +266,7 @@
 				{#if !!raiseType}
 					{@html raiseType}
 				{/if}
-				<span class="flex-auto border-t-2 border-gray-100 dark:border-gray-700" />
+				<span class="flex-auto border-t-2 border-gray-100 dark:border-gray-700"></span>
 			</div>
 			<p class="text-base">{@html raiseDescription || ""}</p>
 		{/if}

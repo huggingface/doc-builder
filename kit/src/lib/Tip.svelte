@@ -1,7 +1,12 @@
-<script>
-	export let warning = false;
+<script lang="ts">
+	interface Props {
+		warning?: boolean;
+		children?: import("svelte").Snippet;
+	}
+
+	let { warning = false, children }: Props = $props();
 </script>
 
 <blockquote class={warning ? "warning" : "tip"}>
-	<slot />
+	{@render children?.()}
 </blockquote>

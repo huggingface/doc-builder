@@ -9,9 +9,14 @@
 	import IconEyeShow from "./IconEyeShow.svelte";
 	import IconEyeHide from "./IconEyeHide.svelte";
 
-	export let framework: Framework;
+	interface Props {
+		framework: Framework;
+		children?: import("svelte").Snippet;
+	}
 
-	let containerEl: HTMLDivElement;
+	let { framework, children }: Props = $props();
+
+	let containerEl = $state<HTMLDivElement>()!;
 	let hashLinks = new Set();
 
 	type SvelteComponent = typeof IconPytorch;
@@ -34,7 +39,7 @@
 	const localStorageKey = `hf_doc_framework_${framework}_is_hidden`;
 	const fwStore = getFrameworkStore(framework);
 
-	$: isClosed = $fwStore === AccordianState.CLOSED;
+	let isClosed = $derived($fwStore === AccordianState.CLOSED);
 
 	function toggleHidden() {
 		$fwStore = $fwStore !== AccordianState.CLOSED ? AccordianState.CLOSED : AccordianState.OPEN;
@@ -64,18 +69,18 @@
 	});
 </script>
 
-<svelte:window on:hashchange={onHashChange} />
+<svelte:window onhashchange={onHashChange} />
 
 <div class="border border-gray-200 rounded-xl px-4 relative" bind:this={containerEl}>
 	<div class="flex h-[22px] mt-[-12.5px] justify-between leading-none">
 		<div class="flex px-1 items-center space-x-1 bg-white dark:bg-gray-950">
-			<svelte:component this={Icon} />
+			<Icon />
 			<span>{label}</span>
 		</div>
 		{#if !isClosed}
 			<div
 				class="cursor-pointer flex items-center justify-center space-x-1 text-sm px-2 bg-white dark:bg-gray-950 hover:underline leading-none"
-				on:click={toggleHidden}
+				onclick={toggleHidden}
 			>
 				<IconEyeHide size={"0.9em"} />
 				<span>Hide {label} content</span>
@@ -85,14 +90,14 @@
 	{#if isClosed}
 		<div
 			class="cursor-pointer mt-[-12.5px] flex items-center justify-center space-x-1 py-4 text-sm hover:underline leading-none"
-			on:click={toggleHidden}
+			onclick={toggleHidden}
 		>
 			<IconEyeShow size={"0.9em"} />
 			<span>Show {label} content</span>
 		</div>
 	{:else}
 		<div class="framework-content">
-			<slot />
+			{@render children?.()}
 		</div>
 	{/if}
 </div>

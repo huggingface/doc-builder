@@ -7,8 +7,8 @@
 	import type { RawChapter } from "./endpoints/toc/+server";
 	import "../app.css";
 
-	export let data;
-	$: toc = (data.toc ?? []) as RawChapter[];
+	let { data, children } = $props();
+	let toc = $derived((data.toc ?? []) as RawChapter[]);
 
 	/**
 	 * Shorthand hf doc links (e.g. /docs/lib/page) should partial-load like
@@ -62,7 +62,7 @@
 </script>
 
 {#if !import.meta.env.DEV}
-	<slot />
+	{@render children?.()}
 {:else}
 	<style>
 		body,
@@ -94,7 +94,7 @@
 		</div>
 		<div class="px-4 pt-3 grow">
 			<div class="prose prose-doc dark:prose-light max-w-4xl mx-auto break-words relative">
-				<slot />
+				{@render children?.()}
 			</div>
 		</div>
 		<div class="w-[270px] 2xl:w-[305px] hidden lg:block border-l-2 shrink-0 opacity-50 p-4">

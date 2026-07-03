@@ -1,10 +1,15 @@
 <script lang="ts">
 	import { selectedHfOptions } from "./stores";
 
-	export let id: string;
-	export let option: string;
+	interface Props {
+		id: string;
+		option: string;
+		children?: import("svelte").Snippet;
+	}
+
+	let { id, option, children }: Props = $props();
 </script>
 
 {#if $selectedHfOptions[id] === option}
-	<slot />
+	{@render children?.()}
 {/if}

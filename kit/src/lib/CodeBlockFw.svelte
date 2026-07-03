@@ -3,16 +3,20 @@
 	import CopyButton from "./CopyButton.svelte";
 	import FrameworkSwitch from "./FrameworkSwitch.svelte";
 
-	export let group1: { id: string; code: string; highlighted: string };
-	export let group2: { id: string; code: string; highlighted: string };
-	export let lang = "";
-	export let wrap = false;
+	interface Props {
+		group1: { id: string; code: string; highlighted: string };
+		group2: { id: string; code: string; highlighted: string };
+		lang?: string;
+		wrap?: boolean;
+	}
+
+	let { group1, group2, lang = "", wrap = false }: Props = $props();
 
 	const ids = [group1.id, group2.id];
 	const storeKey = ids.join("-");
 	const group = getGroupStore(storeKey);
 
-	let hideCopyButton = true;
+	let hideCopyButton = $state(true);
 
 	function handleMouseOver() {
 		hideCopyButton = false;
@@ -24,10 +28,13 @@
 
 <div
 	class="code-block relative"
-	on:mouseover={handleMouseOver}
-	on:focus={handleMouseOver}
-	on:mouseout={handleMouseOut}
-	on:focus={handleMouseOut}
+	onmouseover={handleMouseOver}
+	onfocus={() => {
+		// preserved from the svelte 4 version, which bound focus to both handlers
+		handleMouseOver();
+		handleMouseOut();
+	}}
+	onmouseout={handleMouseOut}
 >
 	{#if $group === "group1"}
 		<div class="absolute top-2.5 right-4">

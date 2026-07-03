@@ -1,22 +1,42 @@
 <script lang="ts">
-	import type { SvelteComponent } from "svelte";
+	import type { Component } from "svelte";
 	import DropdownMenu from "./DropdownMenu.svelte";
 	import IconCaretDown from "./IconCaretDown.svelte";
 
-	export let classNames = "";
-	export let btnClassNames = "";
-	export let btnIcon: (new (...args: any) => SvelteComponent) | undefined = undefined;
-	export let btnIconClassNames = "";
-	export let btnLabel = "";
-	export let forceMenuAlignement: "left" | "right" | undefined = undefined;
-	export let menuClassNames = "";
-	export let noBtnClass: boolean | undefined = undefined;
-	export let selectedValue: string | undefined = undefined;
-	export let useDeprecatedJS = true;
-	export let withBtnCaret = false;
+	interface Props {
+		classNames?: string;
+		btnClassNames?: string;
+		btnIcon?: Component<{ classNames?: string }> | undefined;
+		btnIconClassNames?: string;
+		btnLabel?: string;
+		forceMenuAlignement?: "left" | "right" | undefined;
+		menuClassNames?: string;
+		noBtnClass?: boolean | undefined;
+		selectedValue?: string | undefined;
+		useDeprecatedJS?: boolean;
+		withBtnCaret?: boolean;
+		button?: import("svelte").Snippet;
+		menu?: import("svelte").Snippet;
+	}
 
-	let element: HTMLElement | undefined = undefined;
-	let isOpen = false;
+	let {
+		classNames = "",
+		btnClassNames = "",
+		btnIcon = undefined,
+		btnIconClassNames = "",
+		btnLabel = "",
+		forceMenuAlignement = undefined,
+		menuClassNames = "",
+		noBtnClass = undefined,
+		selectedValue = undefined,
+		useDeprecatedJS = true,
+		withBtnCaret = false,
+		button,
+		menu,
+	}: Props = $props();
+
+	let element: HTMLElement | undefined = $state(undefined);
+	let isOpen = $state(false);
 
 	function onClose(e: Event) {
 		if (e.target) {
@@ -35,15 +55,16 @@
 			{btnClassNames}
 			{!noBtnClass ? 'cursor-pointer w-full btn text-sm' : ''}
 			{useDeprecatedJS ? 'v2-dropdown-button' : ''}"
-		on:click={() => (isOpen = !isOpen)}
+		onclick={() => (isOpen = !isOpen)}
 		type="button"
 	>
 		<!-- The "button" slot can overwrite the defaut button content -->
-		{#if $$slots.button}
-			<slot name="button" />
+		{#if button}
+			{@render button?.()}
 		{:else}
 			{#if btnIcon}
-				<svelte:component this={btnIcon} classNames="mr-1.5 {btnIconClassNames}" />
+				{@const SvelteComponent_1 = btnIcon}
+				<SvelteComponent_1 classNames="mr-1.5 {btnIconClassNames}" />
 			{/if}
 			{btnLabel}
 			{#if withBtnCaret}
@@ -60,7 +81,7 @@
 			forceAlignement={forceMenuAlignement}
 			{onClose}
 		>
-			<slot name="menu" />
+			{@render menu?.()}
 		</DropdownMenu>
 	{/if}
 	<!-- Menu -->

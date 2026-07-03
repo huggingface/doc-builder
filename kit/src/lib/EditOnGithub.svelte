@@ -1,6 +1,10 @@
 <script lang="ts">
 	import IconCode from "./IconCode.svelte";
-	export let source: string = "";
+	interface Props {
+		source?: string;
+	}
+
+	let { source = "" }: Props = $props();
 </script>
 
 <a

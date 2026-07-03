@@ -3,8 +3,13 @@
 	import { selectedHfOptions } from "./stores";
 	import { getQueryParamValue, updateQueryParamAndReplaceHistory } from "./utils";
 
-	export let id: string;
-	export let options: string[];
+	interface Props {
+		id: string;
+		options: string[];
+		children?: import("svelte").Snippet;
+	}
+
+	let { id, options, children }: Props = $props();
 
 	$selectedHfOptions[id] = options[0];
 
@@ -28,7 +33,7 @@
 			{$selectedHfOptions[id] === option
 				? 'border-gray-800 bg-black dark:bg-gray-700 text-white'
 				: 'text-gray-500 cursor-pointer opacity-90 hover:text-gray-700 dark:hover:text-gray-200 hover:shadow-sm'}"
-			on:click={() => updateSelectedOption(option)}
+			onclick={() => updateSelectedOption(option)}
 		>
 			{option}
 		</div>
@@ -36,5 +41,5 @@
 </div>
 
 <div class="language-select">
-	<slot />
+	{@render children?.()}
 </div>

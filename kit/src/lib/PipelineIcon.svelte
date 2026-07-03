@@ -32,8 +32,12 @@
 	import IconUnconditionalImageGeneration from "./PipelineIcons/IconUnconditionalImageGeneration.svelte";
 	import IconDocumentQuestionAnswering from "./PipelineIcons/IconDocumentQuestionAnswering.svelte";
 
-	export let classNames = "";
-	export let pipeline = "";
+	interface Props {
+		classNames?: string;
+		pipeline?: string;
+	}
+
+	let { classNames = "", pipeline = "" }: Props = $props();
 
 	type SvelteComponent = typeof IconTextClassification;
 
@@ -75,9 +79,8 @@
 	const PIPELINE_TAG_ICO_CLASS = Object.fromEntries(
 		Object.entries(PIPELINE_DATA).map(([tagType, data]) => [tagType, `tag-ico-${data.color}`])
 	);
+
+	const SvelteComponent = $derived(ICON_COMPONENTS[pipeline] ?? IconFillMask);
 </script>
 
-<svelte:component
-	this={ICON_COMPONENTS[pipeline] ?? IconFillMask}
-	classNames="{classNames} tag-ico {PIPELINE_TAG_ICO_CLASS[pipeline]}"
-/>
+<SvelteComponent classNames="{classNames} tag-ico {PIPELINE_TAG_ICO_CLASS[pipeline]}" />
