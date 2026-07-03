@@ -1,18 +1,15 @@
-const tailwindcss = require("tailwindcss");
-const autoprefixer = require("autoprefixer");
-const postcss = require("postcss");
-
-const removeAllCss = postcss.plugin("postcss-empty", () => {
-	return (root) => {
+const removeAllCss = {
+	postcssPlugin: "postcss-empty",
+	OnceExit(root) {
 		root.removeAll(); // This will remove all the nodes, effectively emptying the content.
-	};
-});
+	},
+};
 
 const plugins = [
-	//Some plugins, like tailwindcss/nesting, need to run before Tailwind,
-	tailwindcss(),
+	//Tailwind needs to run before other plugins,
+	require("@tailwindcss/postcss"),
 	//But others, like autoprefixer, need to run after,
-	autoprefixer,
+	require("autoprefixer"),
 ];
 
 // make the resulting CSS files empty during "build" process

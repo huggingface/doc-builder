@@ -5,7 +5,7 @@ import { visit } from "unist-util-visit";
 import htmlTags from "html-tags";
 import { readdir } from "fs/promises";
 import path from "path";
-import cheerio from "cheerio";
+import * as cheerio from "cheerio";
 import { renderSvelteChars } from "../utils.js";
 
 // Wrap >>> and ... at the start of lines in hljs-meta spans so the CSS
@@ -319,8 +319,8 @@ function treeVisitor() {
 		const normalizedClasses = Array.isArray(existingClasses)
 			? existingClasses
 			: typeof existingClasses === "string"
-			? existingClasses.split(/\s+/u).filter(Boolean)
-			: [];
+				? existingClasses.split(/\s+/u).filter(Boolean)
+				: [];
 		node.data.hProperties.className = Array.from(new Set([...normalizedClasses, marker]));
 	}
 }

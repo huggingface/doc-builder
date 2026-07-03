@@ -1,11 +1,31 @@
 
 <script lang="ts">
+	import { onMount } from "svelte";
 	import { base } from "$app/paths";
+	import { getHfDocFullPath } from "$lib/hfDocPaths.js";
 	import type { RawChapter } from "./endpoints/toc/+server";
 	import "../app.css";
 
 	export let data;
-	export let toc: RawChapter[] = data.toc ?? [];
+	$: toc = (data.toc ?? []) as RawChapter[];
+
+	onMount(() => {
+		// Expand shorthand hf doc links (e.g. /docs/lib/page) to the full path
+		// before SvelteKit's own click handler reads the anchor, so they are
+		// treated as internal routes (partial loading instead of a full reload).
+		// Complements the `reroute` hook (src/hooks.js), which is not consulted
+		// for URLs that don't start with the app's base path.
+		const canonicalizeDocLinks = (event: MouseEvent) => {
+			const anchor = (event.target as Element | null)?.closest("a");
+			if (!anchor || anchor.origin !== location.origin) return;
+			const fullPath = getHfDocFullPath(anchor.pathname);
+			if (fullPath && fullPath !== anchor.pathname) {
+				anchor.pathname = fullPath;
+			}
+		};
+		document.addEventListener("click", canonicalizeDocLinks, { capture: true });
+		return () => document.removeEventListener("click", canonicalizeDocLinks, { capture: true });
+	});
 </script>
 
 {#if !import.meta.env.DEV}

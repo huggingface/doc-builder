@@ -1,4 +1,40 @@
+@import "tailwindcss";
+
+@config "../tailwind.config.cjs";
+
+/*
+  src/routes is in .gitignore (doc pages are pasted there at build time), which
+  makes tailwind v4's automatic source detection skip it — scan it explicitly.
+*/
+@source "./routes";
+
+@plugin "@tailwindcss/forms";
+@plugin "@tailwindcss/typography";
+@plugin "@tailwindcss/aspect-ratio";
+
+/* `darkMode: "class"` equivalent (tailwind v4) */
+@custom-variant dark (&:where(.dark, .dark *));
+
 @layer base {
+	/*
+	  Tailwind v3 compatibility (https://tailwindcss.com/docs/upgrade-guide):
+	  v4 changed the default border color to `currentColor` and the default
+	  button cursor to `default`. The hub CSS (moon-landing) is built on the
+	  v3 behavior, so preserve it here for dev mode fidelity.
+	*/
+	*,
+	::after,
+	::before,
+	::backdrop,
+	::file-selector-button {
+		border-color: var(--color-gray-200, currentColor);
+	}
+
+	button:not(:disabled),
+	[role="button"]:not(:disabled) {
+		cursor: pointer;
+	}
+
 	strong {
 		@apply font-semibold;
 	}
@@ -68,19 +104,19 @@
 @layer components {
 	.btn,
 	.btn-widget {
-		@apply inline-flex cursor-pointer select-none items-center justify-center whitespace-nowrap rounded-lg border bg-gradient-to-b  px-3 py-1 focus:outline-none focus:ring;
+		@apply inline-flex cursor-pointer items-center justify-center rounded-lg border bg-gradient-to-b px-3 py-1 whitespace-nowrap select-none focus:ring-3 focus:outline-hidden;
 	}
 	.btn {
-		@apply border-gray-200 from-white to-gray-100 text-gray-800 hover:shadow-inner dark:border-gray-850 dark:from-gray-800 dark:to-gray-950 dark:text-gray-200 dark:hover:from-gray-700;
+		@apply dark:border-gray-850 border-gray-200 from-white to-gray-100 text-gray-800 hover:shadow-inner dark:from-gray-800 dark:to-gray-950 dark:text-gray-200 dark:hover:from-gray-700;
 	}
 	.btn-widget {
-		@apply h-8 from-gray-50 to-gray-200 hover:from-gray-100 dark:border-gray-850 dark:from-gray-800 dark:to-gray-950 dark:hover:from-gray-700;
+		@apply dark:border-gray-850 h-8 from-gray-50 to-gray-200 hover:from-gray-100 dark:from-gray-800 dark:to-gray-950 dark:hover:from-gray-700;
 	}
 	.btn-green {
-		@apply inline-flex cursor-pointer select-none items-center justify-center whitespace-nowrap rounded-lg border border-green-500  bg-green-500 px-3 py-1 text-white hover:shadow-inner focus:outline-none focus:ring dark:border-gray-850 dark:from-gray-800 dark:to-gray-950 dark:text-gray-200 dark:hover:from-gray-700;
+		@apply dark:border-gray-850 inline-flex cursor-pointer items-center justify-center rounded-lg border border-green-500 bg-green-500 px-3 py-1 whitespace-nowrap text-white select-none hover:shadow-inner focus:ring-3 focus:outline-hidden dark:from-gray-800 dark:to-gray-950 dark:text-gray-200 dark:hover:from-gray-700;
 	}
 	.btn-pink {
-		@apply inline-flex cursor-pointer select-none items-center justify-center whitespace-nowrap rounded-lg border border-red-400  bg-red-400 px-3 py-1 text-white hover:shadow-inner focus:outline-none focus:ring dark:border-gray-850 dark:from-gray-800 dark:to-gray-950 dark:text-gray-200 dark:hover:from-gray-700;
+		@apply dark:border-gray-850 inline-flex cursor-pointer items-center justify-center rounded-lg border border-red-400 bg-red-400 px-3 py-1 whitespace-nowrap text-white select-none hover:shadow-inner focus:ring-3 focus:outline-hidden dark:from-gray-800 dark:to-gray-950 dark:text-gray-200 dark:hover:from-gray-700;
 	}
 	.btn:disabled,
 	.btn-widget:disabled {
@@ -93,13 +129,13 @@
 		@apply px-10 py-2;
 	}
 	.overview-card-wrapper {
-		@apply from-gray-50-to-white rounded-lg border border-gray-100 bg-gradient-to-r via-white text-base shadow-sm hover:via-gray-50 hover:to-gray-100 dark:border-gray-850 dark:via-gray-950 dark:hover:from-gray-950 dark:hover:via-gray-925 dark:hover:to-gray-925;
+		@apply from-gray-50-to-white dark:border-gray-850 dark:hover:via-gray-925 dark:hover:to-gray-925 rounded-lg border border-gray-100 bg-gradient-to-r via-white text-base shadow-sm hover:via-gray-50 hover:to-gray-100 dark:via-gray-950 dark:hover:from-gray-950;
 	}
 	.overview-card-wrapper.white {
-		@apply from-white dark:from-gray-925;
+		@apply dark:from-gray-925 from-white;
 	}
 	.tab {
-		@apply -mb-px flex cursor-pointer select-none items-center border-r border-gray-200 px-4 text-center;
+		@apply -mb-px flex cursor-pointer items-center border-r border-gray-200 px-4 text-center select-none;
 	}
 	.tab:not(.active) {
 		@apply hover:text-gray-700;
@@ -108,7 +144,7 @@
 		@apply flex items-center border-r border-gray-200 bg-white px-4 text-center font-semibold;
 	}
 	.tab-alternate {
-		@apply flex h-full items-center whitespace-nowrap border-b-2 border-transparent px-2.5 font-medium text-gray-600 dark:text-gray-400 sm:px-3.5;
+		@apply flex h-full items-center border-b-2 border-transparent px-2.5 font-medium whitespace-nowrap text-gray-600 sm:px-3.5 dark:text-gray-400;
 	}
 	.tab-alternate:not(.active) {
 		@apply hover:border-gray-200 dark:hover:border-gray-800;
@@ -117,7 +153,7 @@
 		@apply border-gray-700 font-semibold text-gray-800 dark:border-gray-400;
 	}
 	.tag {
-		@apply mb-1 mr-1 inline-flex h-7 max-w-full flex-none items-center overflow-hidden truncate rounded-lg border border-transparent bg-gradient-to-b text-sm dark:border-gray-850 md:mb-1.5 md:mr-1.5;
+		@apply dark:border-gray-850 mr-1 mb-1 inline-flex h-7 max-w-full flex-none items-center truncate overflow-hidden rounded-lg border border-transparent bg-gradient-to-b text-sm md:mr-1.5 md:mb-1.5;
 	}
 	.tag > span {
 		@apply px-2;
@@ -126,70 +162,70 @@
 		@apply filter-grayscale opacity-50;
 	}
 	.tag-blue {
-		@apply from-blue-50 to-blue-50 text-blue-800 hover:to-blue-100 dark:from-gray-925 dark:to-gray-925 dark:text-gray-300 dark:hover:to-gray-800;
+		@apply dark:from-gray-925 dark:to-gray-925 from-blue-50 to-blue-50 text-blue-800 hover:to-blue-100 dark:text-gray-300 dark:hover:to-gray-800;
 	}
 	.tag-ghost {
 		@apply from-transparent to-transparent text-gray-400 hover:from-gray-100 hover:to-gray-100 hover:text-gray-600;
 	}
 	.tag-green {
-		@apply from-green-50 to-green-50 text-green-800 hover:to-green-100 dark:from-gray-925 dark:to-gray-925 dark:text-gray-300 dark:hover:to-gray-800;
+		@apply dark:from-gray-925 dark:to-gray-925 from-green-50 to-green-50 text-green-800 hover:to-green-100 dark:text-gray-300 dark:hover:to-gray-800;
 	}
 	.tag-indigo {
-		@apply from-indigo-50 to-indigo-50 text-indigo-800 hover:to-indigo-100 dark:from-gray-925 dark:to-gray-925 dark:text-gray-300 dark:hover:to-gray-800;
+		@apply dark:from-gray-925 dark:to-gray-925 from-indigo-50 to-indigo-50 text-indigo-800 hover:to-indigo-100 dark:text-gray-300 dark:hover:to-gray-800;
 	}
 	.tag-orange {
-		@apply from-orange-50 to-orange-50 text-orange-800 hover:to-orange-100 dark:from-gray-925 dark:to-gray-925 dark:text-gray-300 dark:hover:to-gray-800;
+		@apply dark:from-gray-925 dark:to-gray-925 from-orange-50 to-orange-50 text-orange-800 hover:to-orange-100 dark:text-gray-300 dark:hover:to-gray-800;
 	}
 	.tag-purple {
-		@apply from-purple-50 to-purple-50 text-purple-800 hover:to-purple-100 dark:from-gray-925 dark:to-gray-925 dark:text-gray-300 dark:hover:to-gray-800;
+		@apply dark:from-gray-925 dark:to-gray-925 from-purple-50 to-purple-50 text-purple-800 hover:to-purple-100 dark:text-gray-300 dark:hover:to-gray-800;
 	}
 	.tag-red {
-		@apply from-red-50 to-red-50 text-red-800 hover:to-red-100 dark:from-gray-925 dark:to-gray-925 dark:text-gray-300 dark:hover:to-gray-800;
+		@apply dark:from-gray-925 dark:to-gray-925 from-red-50 to-red-50 text-red-800 hover:to-red-100 dark:text-gray-300 dark:hover:to-gray-800;
 	}
 	.tag-yellow {
-		@apply from-yellow-50 text-yellow-800 hover:to-yellow-100 dark:from-gray-925 dark:to-gray-925 dark:text-gray-300 dark:hover:to-gray-800;
+		@apply dark:from-gray-925 dark:to-gray-925 from-yellow-50 text-yellow-800 hover:to-yellow-100 dark:text-gray-300 dark:hover:to-gray-800;
 	}
 	.tag-white {
-		@apply border-gray-100 from-white to-white text-gray-700 hover:to-gray-100 dark:border-gray-850 dark:from-gray-925 dark:to-gray-925 dark:text-gray-300 dark:hover:to-gray-800;
+		@apply dark:border-gray-850 dark:from-gray-925 dark:to-gray-925 border-gray-100 from-white to-white text-gray-700 hover:to-gray-100 dark:text-gray-300 dark:hover:to-gray-800;
 	}
 	.tag-ico {
 		@apply flex h-7 w-8 flex-none items-center bg-gradient-to-t to-white pl-2 dark:to-gray-950;
 	}
 	.tag-close-ico {
-		@apply -ml-1.5 mr-1.5 mt-0.5;
+		@apply mt-0.5 mr-1.5 -ml-1.5;
 	}
 	.tag-ico-blue {
-		@apply from-blue-50 text-blue-500 dark:from-gray-925;
+		@apply dark:from-gray-925 from-blue-50 text-blue-500;
 	}
 	.tag-ico-green {
-		@apply from-green-50 text-green-500 dark:from-gray-925;
+		@apply dark:from-gray-925 from-green-50 text-green-500;
 	}
 	.tag-ico-indigo {
-		@apply from-indigo-50 text-indigo-500 dark:from-gray-925;
+		@apply dark:from-gray-925 from-indigo-50 text-indigo-500;
 	}
 	.tag-ico-orange {
-		@apply from-orange-50 text-orange-500 dark:from-gray-925;
+		@apply dark:from-gray-925 from-orange-50 text-orange-500;
 	}
 	.tag-ico-purple {
-		@apply from-purple-50 text-purple-500 dark:from-gray-925;
+		@apply dark:from-gray-925 from-purple-50 text-purple-500;
 	}
 	.tag-ico-red {
-		@apply from-red-50 text-red-500 dark:from-gray-925;
+		@apply dark:from-gray-925 from-red-50 text-red-500;
 	}
 	.tag-ico-yellow {
-		@apply from-yellow-50 text-yellow-500 dark:from-gray-925;
+		@apply dark:from-gray-925 from-yellow-50 text-yellow-500;
 	}
 	.form-input:not([type="checkbox"]) {
-		@apply border-2 border-gray-200 placeholder-gray-400 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50 dark:border-gray-700 dark:bg-gray-950;
+		@apply border-2 border-gray-200 placeholder-gray-400 shadow-sm focus:border-blue-300 focus:ring-3 focus:ring-blue-200/50 dark:border-gray-700 dark:bg-gray-950;
 	}
 	.form-input:not([type="radio"]):not([type="checkbox"]) {
 		@apply mt-1 block w-full rounded-md;
 	}
 	.form-input[type="radio"] {
-		@apply mr-1.5 mt-2 h-3.5 w-3.5;
+		@apply mt-2 mr-1.5 h-3.5 w-3.5;
 	}
 	.form-input[type="checkbox"] {
-		@apply rounded border-transparent bg-gray-200 text-blue-500 focus:border-transparent  focus:ring-1 focus:ring-gray-200 focus:ring-offset-2;
+		@apply rounded border-transparent bg-gray-200 text-blue-500 focus:border-transparent focus:ring-1 focus:ring-gray-200 focus:ring-offset-2;
 	}
 	.form-input[type="checkbox"]:checked {
 		@apply bg-blue-500;
@@ -198,55 +234,47 @@
 		@apply cursor-not-allowed opacity-50;
 	}
 	.form-input-alt {
-		@apply h-10 rounded-lg border border-gray-200 px-3 placeholder-gray-400 shadow-inner outline-none focus:shadow-inner focus:ring-1 focus:ring-inset focus:ring-indigo-200 dark:border-gray-850 dark:bg-gray-925 dark:focus:ring-indigo-50;
+		@apply dark:border-gray-850 dark:bg-gray-925 h-10 rounded-lg border border-gray-200 px-3 placeholder-gray-400 shadow-inner outline-hidden focus:shadow-inner focus:ring-1 focus:ring-indigo-200 focus:ring-inset dark:focus:ring-indigo-50;
 	}
 }
 
-@layer utilities {
-	@variants hover, focus {
-		.filter-none {
-			filter: none;
-		}
-		.filter-grayscale {
-			filter: grayscale(100%);
-		}
-		.shadow-alternate-sm {
-			box-shadow:
-				0px 5px 5px rgba(0, 0, 0, 0.03),
-				0px 2px 2px rgba(0, 0, 0, 0.03),
-				0px 0px 1px rgba(0, 0, 0, 0.03);
-		}
-		.shadow-alternate {
-			box-shadow:
-				0px 10px 20px rgba(0, 0, 0, 0.04),
-				0px 2px 6px rgba(0, 0, 0, 0.04),
-				0px 0px 1px rgba(0, 0, 0, 0.04);
-		}
-		.shadow-alternate-xl {
-			box-shadow:
-				0px 24px 32px rgba(0, 0, 0, 0.04),
-				0px 16px 24px rgba(0, 0, 0, 0.04),
-				0px 4px 8px rgba(0, 0, 0, 0.04),
-				0px 0px 1px rgba(0, 0, 0, 0.04);
-		}
-	}
-	@variants responsive {
-		.from-gray-50-to-white {
-			@apply from-gray-50 to-white dark:from-gray-925 dark:to-gray-950;
-		}
+@utility filter-none {
+	filter: none;
+}
+@utility filter-grayscale {
+	filter: grayscale(100%);
+}
+@utility shadow-alternate-sm {
+	box-shadow:
+		0px 5px 5px rgba(0, 0, 0, 0.03),
+		0px 2px 2px rgba(0, 0, 0, 0.03),
+		0px 0px 1px rgba(0, 0, 0, 0.03);
+}
+@utility shadow-alternate {
+	box-shadow:
+		0px 10px 20px rgba(0, 0, 0, 0.04),
+		0px 2px 6px rgba(0, 0, 0, 0.04),
+		0px 0px 1px rgba(0, 0, 0, 0.04);
+}
+@utility shadow-alternate-xl {
+	box-shadow:
+		0px 24px 32px rgba(0, 0, 0, 0.04),
+		0px 16px 24px rgba(0, 0, 0, 0.04),
+		0px 4px 8px rgba(0, 0, 0, 0.04),
+		0px 0px 1px rgba(0, 0, 0, 0.04);
+}
+@utility from-gray-50-to-white {
+	@apply dark:from-gray-925 from-gray-50 to-white dark:to-gray-950;
+}
+@utility from-gray-100-to-white {
+	@apply dark:from-gray-925 dark:to-gray-925 from-gray-100 to-white;
+}
 
-		.from-gray-100-to-white {
-			@apply from-gray-100 to-white dark:from-gray-925 dark:to-gray-925;
-		}
-	}
+@layer utilities {
 	.scroll-smooth {
 		scroll-behavior: smooth;
 	}
 }
-
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
 
 /** Prose **/
 
@@ -280,7 +308,7 @@
 }
 
 .prose.prose-doc .code-block {
-	@apply -mx-3 text-smd md:mx-0 md:text-base;
+	@apply text-smd -mx-3 md:mx-0 md:text-base;
 }
 
 .prose.prose-doc .code-block pre {
@@ -312,11 +340,10 @@
 }
 
 .prose.prose-doc img {
-	@apply !max-w-full xl:!max-w-xl;
+	@apply max-w-full! xl:max-w-xl!;
 }
 
-.prose.prose-doc img[src^="https://img.shields.io/"]
-{
+.prose.prose-doc img[src^="https://img.shields.io/"] {
 	@apply m-0 mb-1;
 }
 
@@ -325,89 +352,79 @@
 }
 
 .prose.prose-doc .language-select pre:first-of-type {
-	@apply !mt-1;
+	@apply mt-1!;
 }
 
 /* Prose Tip/Warning */
 
 .prose .note {
-	@apply !border-sky-500 !text-sky-700 bg-sky-50 not-italic;
+	@apply border-sky-500! bg-sky-50/50 text-sky-700! not-italic;
 	quotes: none;
-	--tw-bg-opacity: 0.5;
 }
 .prose .note a {
-	@apply !text-sky-800;
+	@apply text-sky-800!;
 }
 .dark .prose .note {
-	@apply !border-sky-800 !text-gray-400 bg-sky-900;
-	--tw-bg-opacity: 0.15;
+	@apply border-sky-800! bg-sky-900/15 text-gray-400!;
 }
 .dark .prose .note a {
-	@apply !text-sky-600;
+	@apply text-sky-600!;
 }
 
 .prose .tip {
-	@apply !border-green-500 !text-green-700 bg-green-50 not-italic;
+	@apply border-green-500! bg-green-50/50 text-green-700! not-italic;
 	quotes: none;
-	--tw-bg-opacity: 0.5;
 }
 .prose .tip a {
-	@apply !text-green-800;
+	@apply text-green-800!;
 }
 .dark .prose .tip {
-	@apply !border-green-800 !text-gray-400 bg-green-900;
-	--tw-bg-opacity: 0.15;
+	@apply border-green-800! bg-green-900/15 text-gray-400!;
 }
 .dark .prose .tip a {
-	@apply !text-green-600;
+	@apply text-green-600!;
 }
 
 .prose .important {
-	@apply !border-violet-500 !text-violet-700 bg-violet-50 not-italic;
+	@apply border-violet-500! bg-violet-50/50 text-violet-700! not-italic;
 	quotes: none;
-	--tw-bg-opacity: 0.5;
 }
 .prose .important a {
-	@apply !text-violet-800;
+	@apply text-violet-800!;
 }
 .dark .prose .important {
-	@apply !border-violet-800 !text-gray-400 bg-violet-900;
-	--tw-bg-opacity: 0.15;
+	@apply border-violet-800! bg-violet-900/15 text-gray-400!;
 }
 .dark .prose .important a {
-	@apply !text-violet-600;
+	@apply text-violet-600!;
 }
 
 .prose .warning {
-	@apply !border-orange-500 !text-orange-700 bg-orange-50 not-italic;
+	@apply border-orange-500! bg-orange-50/50 text-orange-700! not-italic;
 	quotes: none;
-	--tw-bg-opacity: 0.5;
 }
 .prose .warning a {
-	@apply !text-orange-800;
+	@apply text-orange-800!;
 }
 .dark .prose .warning {
-	@apply !border-orange-800 !text-gray-400 bg-orange-900;
-	--tw-bg-opacity: 0.15;
+	@apply border-orange-800! bg-orange-900/15 text-gray-400!;
 }
 .dark .prose .warning a {
-	@apply !text-orange-600;
+	@apply text-orange-600!;
 }
 
 .prose .caution {
-	@apply !border-red-500 !text-red-700 bg-red-50 not-italic;
+	@apply border-red-500! bg-red-50/50 text-red-700! not-italic;
 	quotes: none;
-	--tw-bg-opacity: 0.5;
 }
 .prose .caution a {
-	@apply !text-red-800;
+	@apply text-red-800!;
 }
 .dark .prose .caution {
-	@apply !border-red-800 !text-gray-400 bg-red-900;
-	--tw-bg-opacity: 0.15;
+	@apply border-red-800! bg-red-900/15 text-gray-400!;
 }
 .dark .prose .caution a {
-	@apply !text-red-600;
+	@apply text-red-600!;
 }
 .prose blockquote {
 	@apply py-3 text-base;
@@ -428,22 +445,22 @@
 	@apply my-2.5;
 }
 .prose blockquote h1 {
-	@apply mb-4 mt-0;
+	@apply mt-0 mb-4;
 }
 .prose blockquote h2 {
-	@apply mb-3.5 mt-0;
+	@apply mt-0 mb-3.5;
 }
 .prose blockquote h3 {
-	@apply mb-3 mt-0;
+	@apply mt-0 mb-3;
 }
 .prose blockquote h4 {
-	@apply mb-2.5 mt-0;
+	@apply mt-0 mb-2.5;
 }
 .prose blockquote h5 {
-	@apply mb-2 mt-0;
+	@apply mt-0 mb-2;
 }
 .prose blockquote h6 {
-	@apply mb-1.5 mt-0;
+	@apply mt-0 mb-1.5;
 }
 .prose blockquote ul,
 .prose blockquote ol {
@@ -490,7 +507,7 @@
 }
 
 .prose.prose-doc table img {
-	@apply !m-0;
+	@apply m-0!;
 }
 
 /** Prose Course **/
