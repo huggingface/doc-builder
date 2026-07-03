@@ -1,19 +1,39 @@
 <script lang="ts">
-	import type { SvelteComponent } from "svelte";
+	import type { Component } from "svelte";
 
-	export let classNames = "";
-	export let dataLabel: string | undefined = undefined;
-	export let dataUrl: string | undefined = undefined;
-	export let dataValue: string | undefined = undefined;
-	export let href: string | undefined = undefined;
-	export let icon: (new (...args: any) => SvelteComponent) | undefined = undefined;
-	export let iconClassNames = "";
-	export let label = "";
-	export let noFollow = false;
-	export let underline = false;
-	export let onClick: (e: MouseEvent) => void = () => {};
-	export let targetBlank = false;
-	export let useDeprecatedJS = true;
+	interface Props {
+		classNames?: string;
+		dataLabel?: string | undefined;
+		dataUrl?: string | undefined;
+		dataValue?: string | undefined;
+		href?: string | undefined;
+		icon?: Component<{ classNames?: string }> | undefined;
+		iconClassNames?: string;
+		label?: string;
+		noFollow?: boolean;
+		underline?: boolean;
+		onClick?: (e: MouseEvent) => void;
+		targetBlank?: boolean;
+		useDeprecatedJS?: boolean;
+		children?: import("svelte").Snippet;
+	}
+
+	let {
+		classNames = "",
+		dataLabel = undefined,
+		dataUrl = undefined,
+		dataValue = undefined,
+		href = undefined,
+		icon = undefined,
+		iconClassNames = "",
+		label = "",
+		noFollow = false,
+		underline = false,
+		onClick = () => {},
+		targetBlank = false,
+		useDeprecatedJS = true,
+		children,
+	}: Props = $props();
 </script>
 
 <li class="not-prose">
@@ -26,16 +46,17 @@
 		data-url={dataUrl}
 		data-value={dataValue}
 		{href}
-		on:click={onClick}
+		onclick={onClick}
 		rel={noFollow ? "nofollow" : undefined}
 		target={targetBlank ? "_blank" : undefined}
 	>
 		<!-- Adding children to the DropdownEntry element overwrite the default label/icon stuff -->
-		{#if $$slots.default}
-			<slot />
+		{#if children}
+			{@render children?.()}
 		{:else}
 			{#if icon}
-				<svelte:component this={icon} classNames="mr-1.5 {iconClassNames}" />
+				{@const SvelteComponent_1 = icon}
+				<SvelteComponent_1 classNames="mr-1.5 {iconClassNames}" />
 			{/if}
 			{label}
 		{/if}

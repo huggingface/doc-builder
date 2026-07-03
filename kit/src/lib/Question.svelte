@@ -3,7 +3,11 @@
 
 	import { answers } from "./stores";
 
-	export let choices: Choice[];
+	interface Props {
+		choices: Choice[];
+	}
+
+	let { choices }: Props = $props();
 
 	interface Choice {
 		text: string;
@@ -14,10 +18,10 @@
 
 	const id = randomId();
 
-	let isFalse: boolean = false;
-	let isIncomplete: boolean = false;
-	let selected: number[] = [];
-	let submitted: number[] = [];
+	let isFalse: boolean = $state(false);
+	let isIncomplete: boolean = $state(false);
+	let selected: number[] = $state([]);
+	let submitted: number[] = $state([]);
 
 	onMount(() => {
 		$answers = { ...$answers, [id]: { correct: false } };
@@ -54,7 +58,12 @@
 </script>
 
 <div>
-	<form on:submit|preventDefault={() => checkAnswer()}>
+	<form
+		onsubmit={(event) => {
+			event.preventDefault();
+			checkAnswer();
+		}}
+	>
 		{#each choices as choice, index}
 			<label class="block">
 				<input

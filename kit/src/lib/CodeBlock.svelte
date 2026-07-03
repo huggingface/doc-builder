@@ -1,11 +1,15 @@
-<script>
+<script lang="ts">
 	import CopyButton from "./CopyButton.svelte";
-	let hideCopyButton = true;
-	export let code = "";
-	export let highlighted = "";
-	export let lang = "";
-	export let wrap = false;
-	export let classNames = "";
+	let hideCopyButton = $state(true);
+	interface Props {
+		code?: string;
+		highlighted?: string;
+		lang?: string;
+		wrap?: boolean;
+		classNames?: string;
+	}
+
+	let { code = "", highlighted = "", lang = "", wrap = false, classNames = "" }: Props = $props();
 
 	function handleMouseOver() {
 		hideCopyButton = false;
@@ -17,10 +21,10 @@
 
 <div
 	class="code-block relative {classNames}"
-	on:mouseover={handleMouseOver}
-	on:focus={handleMouseOver}
-	on:mouseout={handleMouseOut}
-	on:blur={handleMouseOut}
+	onmouseover={handleMouseOver}
+	onfocus={handleMouseOver}
+	onmouseout={handleMouseOut}
+	onblur={handleMouseOut}
 >
 	<div class="absolute top-2.5 right-4">
 		<CopyButton
