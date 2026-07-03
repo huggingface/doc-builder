@@ -53,7 +53,9 @@ const config = {
 		if (
 			warning.message.includes("unused export property") ||
 			warning.code?.startsWith("a11y") ||
-			warning.message.includes("A11y")
+			warning.message.includes("A11y") ||
+			// md-generated doc content is full of `<video ... />` style self-closing tags
+			warning.code === "element_invalid_self_closing_tag"
 		) {
 			/// Too noisy
 			return;
