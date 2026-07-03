@@ -3,10 +3,15 @@
 
 	import IconCopyLink from "./IconCopyLink.svelte";
 
-	export let anchor: string;
+	interface Props {
+		anchor: string;
+		children?: import("svelte").Snippet;
+	}
+
+	let { anchor, children }: Props = $props();
 
 	const bgHighlightClass = "bg-yellow-50 dark:bg-[#494a3d]";
-	let containerEl: HTMLElement;
+	let containerEl = $state<HTMLElement>()!;
 
 	function onHashChange() {
 		const { hash } = window.location;
@@ -25,7 +30,7 @@
 	});
 </script>
 
-<svelte:window on:hashchange={onHashChange} />
+<svelte:window onhashchange={onHashChange} />
 
 <div class="relative group rounded-md" bind:this={containerEl}>
 	<a
@@ -35,5 +40,5 @@
 	>
 		<span><IconCopyLink classNames="text-smd" /></span>
 	</a>
-	<slot />
+	{@render children?.()}
 </div>

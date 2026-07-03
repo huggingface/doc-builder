@@ -2,10 +2,14 @@
 	import { onMount } from "svelte";
 	import mermaid from "mermaid";
 
-	export let code = "";
-	export let classNames = "";
+	interface Props {
+		code?: string;
+		classNames?: string;
+	}
 
-	let container: HTMLDivElement;
+	let { code = "", classNames = "" }: Props = $props();
+
+	let container = $state<HTMLDivElement>()!;
 	let chartId: string;
 
 	onMount(async () => {

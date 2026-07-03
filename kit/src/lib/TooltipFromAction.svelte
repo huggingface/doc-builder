@@ -1,8 +1,12 @@
 <script lang="ts">
-	export let txt: string;
-	export let x: number;
-	export let y: number;
-	export let id: string;
+	interface Props {
+		txt: string;
+		x: number;
+		y: number;
+		id: string;
+	}
+
+	let { txt, x, y, id }: Props = $props();
 </script>
 
 {#if txt}

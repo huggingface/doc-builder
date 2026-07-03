@@ -1,9 +1,13 @@
 <script lang="ts">
 	import IconCopyLink from "./IconCopyLink.svelte";
 
-	export let title: string;
-	export let local: string;
-	export let headingTag: string;
+	interface Props {
+		title: string;
+		local: string;
+		headingTag: string;
+	}
+
+	let { title, local, headingTag }: Props = $props();
 </script>
 
 <!-- 

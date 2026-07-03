@@ -6,7 +6,7 @@
 		PipelineType,
 	} from "@huggingface/tasks";
 	import { type InferenceProvider, snippets } from "@huggingface/inference";
-	import { onMount, SvelteComponent } from "svelte";
+	import { onMount, type Component } from "svelte";
 
 	import CodeBlock from "$lib/CodeBlock.svelte";
 	import IconCurl from "$lib/IconCurl.svelte";
@@ -42,21 +42,26 @@
 
 	type InferenceProviderNotOpenAI = Exclude<InferenceProvider, "openai">;
 
-	export let pipeline: PipelineType;
-	export let conversational = false;
-	export let providersMapping: Partial<
-		Record<
-			InferenceProviderNotOpenAI,
-			{
-				modelId: string;
-				providerModelId: string;
-			}
-		>
-	> = {};
+	interface Props {
+		pipeline: PipelineType;
+		conversational?: boolean;
+		providersMapping?: Partial<
+			Record<
+				InferenceProviderNotOpenAI,
+				{
+					modelId: string;
+					providerModelId: string;
+				}
+			>
+		>;
+		children?: import("svelte").Snippet;
+	}
 
-	let providers = Object.keys(providersMapping) as InferenceProviderNotOpenAI[];
-	let selectedProvider = providers[0];
-	let streaming = false;
+	let { pipeline, conversational = false, providersMapping = {}, children }: Props = $props();
+
+	let providers = $state(Object.keys(providersMapping) as InferenceProviderNotOpenAI[]);
+	let selectedProvider = $state(providers[0]);
+	let streaming = $state(false);
 
 	const availableSnippets = snippets.getInferenceSnippets(
 		{
@@ -74,36 +79,38 @@
 		}
 	);
 	const languages = [...new Set(availableSnippets.map((s) => s.language))];
-	let selectedLanguage = languages[0];
+	let selectedLanguage = $state(languages[0]);
 	const clientsByLanguage = Object.fromEntries(
 		languages.map((lang) => [
 			lang,
 			[...new Set(availableSnippets.filter((s) => s.language === lang).map((s) => s.client))],
 		])
 	);
-	$: clients = clientsByLanguage[selectedLanguage] ?? [];
-	$: selectedClient = clients?.[0];
+	let clients = $derived(clientsByLanguage[selectedLanguage] ?? []);
+	let selectedClient = $derived(clients?.[0]);
 
-	$: code = snippets
-		.getInferenceSnippets(
-			{
-				id: providersMapping[selectedProvider]!.modelId,
-				pipeline_tag: pipeline,
-				tags: conversational ? ["conversational"] : [],
-			} as ModelDataMinimal,
-			selectedProvider,
-			{
-				hfModelId: providersMapping[selectedProvider]!.modelId,
-				providerId: providersMapping[selectedProvider]!.providerModelId,
-				status: "live",
-				task: pipeline,
-				provider: selectedProvider,
-			},
-			{
-				streaming,
-			}
-		)
-		.find((s) => s.language === selectedLanguage && s.client === selectedClient)?.content;
+	let code = $derived(
+		snippets
+			.getInferenceSnippets(
+				{
+					id: providersMapping[selectedProvider]!.modelId,
+					pipeline_tag: pipeline,
+					tags: conversational ? ["conversational"] : [],
+				} as ModelDataMinimal,
+				selectedProvider,
+				{
+					hfModelId: providersMapping[selectedProvider]!.modelId,
+					providerId: providersMapping[selectedProvider]!.providerModelId,
+					status: "live",
+					task: pipeline,
+					provider: selectedProvider,
+				},
+				{
+					streaming,
+				}
+			)
+			.find((s) => s.language === selectedLanguage && s.client === selectedClient)?.content
+	);
 
 	const PRETTY_NAMES: Partial<
 		Record<InferenceProviderNotOpenAI | InferenceSnippetLanguage, string>
@@ -141,7 +148,7 @@
 	const ICONS: Partial<
 		Record<
 			InferenceProviderNotOpenAI | InferenceSnippetLanguage,
-			new (...args: any) => SvelteComponent
+			Component<{ classNames?: string }>
 		>
 	> = {
 		// inference providers
@@ -198,10 +205,11 @@
 							? 'border-gray-800 bg-black text-white dark:bg-gray-700'
 							: 'hover:shadow-xs cursor-pointer text-gray-500 opacity-90 hover:text-gray-700 dark:hover:text-gray-200'}"
 						type="button"
-						on:click={() => (selectedLanguage = language)}
+						onclick={() => (selectedLanguage = language)}
 					>
 						{#if ICONS[language]}
-							<svelte:component this={ICONS[language]} classNames="mr-1.5 text-current" />
+							{@const SvelteComponent_1 = ICONS[language]}
+							<SvelteComponent_1 classNames="mr-1.5 text-current" />
 						{/if}
 						{PRETTY_NAMES[language] ?? language}
 					</button>
@@ -222,7 +230,7 @@
 							? 'border-gray-800 bg-black text-white dark:bg-gray-700'
 							: 'hover:shadow-xs cursor-pointer text-gray-500 opacity-90 hover:text-gray-700 dark:hover:text-gray-200'}"
 						type="button"
-						on:click={() => (selectedClient = client)}
+						onclick={() => (selectedClient = client)}
 					>
 						{client}
 					</button>
@@ -244,41 +252,46 @@
 							? 'border-gray-800 bg-black text-white dark:bg-gray-700'
 							: 'hover:shadow-xs cursor-pointer text-gray-500 opacity-90 hover:text-gray-700 dark:hover:text-gray-200'}"
 						type="button"
-						on:click={() => (selectedProvider = provider)}
+						onclick={() => (selectedProvider = provider)}
 					>
 						{#if ICONS[provider]}
-							<svelte:component this={ICONS[provider]} classNames="mr-1.5 text-current" />
+							{@const SvelteComponent_2 = ICONS[provider]}
+							<SvelteComponent_2 classNames="mr-1.5 text-current" />
 						{/if}
 						{PRETTY_NAMES[provider] ?? provider}
 					</button>
 				{/each}
 				{#if providers.length > nVisibleProviders}
 					<Dropdown btnLabel="" classNames="colab-dropdown" noBtnClass useDeprecatedJS={false}>
-						<slot slot="button">
-							<p
-								class="text-md hover:shadow-xs flex cursor-pointer select-none items-center rounded-lg border px-1.5 py-1 leading-none text-gray-500 opacity-90 hover:text-gray-700 dark:hover:text-gray-200"
-							>
-								+{providers.length - nVisibleProviders}
-							</p>
-						</slot>
-						<slot slot="menu">
-							{#each providers.slice(nVisibleProviders) as provider, idx}
-								<DropdownEntry
-									classNames="text-sm !no-underline"
-									iconClassNames="mr-1.5 text-current"
-									icon={ICONS[provider]}
-									label={PRETTY_NAMES[provider] ?? provider}
-									useDeprecatedJS={false}
-									onClick={() => {
-										selectedProvider = provider;
-										providers = [
-											selectedProvider,
-											...providers.filter((p) => p !== selectedProvider),
-										];
-									}}
-								/>
-							{/each}
-						</slot>
+						{#snippet button()}
+							{#if children}{@render children()}{:else}
+								<p
+									class="text-md hover:shadow-xs flex cursor-pointer select-none items-center rounded-lg border px-1.5 py-1 leading-none text-gray-500 opacity-90 hover:text-gray-700 dark:hover:text-gray-200"
+								>
+									+{providers.length - nVisibleProviders}
+								</p>
+							{/if}
+						{/snippet}
+						{#snippet menu()}
+							{#if children}{@render children()}{:else}
+								{#each providers.slice(nVisibleProviders) as provider, idx}
+									<DropdownEntry
+										classNames="text-sm !no-underline"
+										iconClassNames="mr-1.5 text-current"
+										icon={ICONS[provider]}
+										label={PRETTY_NAMES[provider] ?? provider}
+										useDeprecatedJS={false}
+										onClick={() => {
+											selectedProvider = provider;
+											providers = [
+												selectedProvider,
+												...providers.filter((p) => p !== selectedProvider),
+											];
+										}}
+									/>
+								{/each}
+							{/if}
+						{/snippet}
 					</Dropdown>
 				{/if}
 			</div>
@@ -295,52 +308,56 @@
 				useDeprecatedJS={false}
 				forceMenuAlignement="right"
 			>
-				<slot slot="button">
-					<button
-						class="text-md hover:shadow-xs flex cursor-pointer select-none items-center rounded-lg border px-1.5 py-1 leading-none text-gray-500 opacity-90 hover:text-gray-700 dark:hover:text-gray-200"
-						type="button"
-						title="Settings dropdown"
-					>
-						<IconSettings classNames="mr-1" />
-						Settings
-					</button>
-				</slot>
-				<slot slot="menu">
-					<div class="flex flex-col gap-y-2 p-2">
-						{#if conversational}
-							<button
-								class="text-md do-not-close-dropdown group relative flex w-full cursor-default items-center gap-x-2 self-start border-b pb-2 leading-tight"
-								on:click={() => (streaming = !streaming)}
-								type="button"
+				{#snippet button()}
+					{#if children}{@render children()}{:else}
+						<button
+							class="text-md hover:shadow-xs flex cursor-pointer select-none items-center rounded-lg border px-1.5 py-1 leading-none text-gray-500 opacity-90 hover:text-gray-700 dark:hover:text-gray-200"
+							type="button"
+							title="Settings dropdown"
+						>
+							<IconSettings classNames="mr-1" />
+							Settings
+						</button>
+					{/if}
+				{/snippet}
+				{#snippet menu()}
+					{#if children}{@render children()}{:else}
+						<div class="flex flex-col gap-y-2 p-2">
+							{#if conversational}
+								<button
+									class="text-md do-not-close-dropdown group relative flex w-full cursor-default items-center gap-x-2 self-start border-b pb-2 leading-tight"
+									onclick={() => (streaming = !streaming)}
+									type="button"
+								>
+									<input
+										class="form-input not-prose do-not-close-dropdown"
+										type="checkbox"
+										bind:checked={streaming}
+										id="stream-checkbox"
+									/>
+									<span class="do-not-close-dropdown">Stream</span>
+								</button>
+							{/if}
+							<a
+								href="https://huggingface.co/settings/tokens"
+								class="flex items-center gap-x-1 whitespace-nowrap"
+								target="_blank"
+								title="Tokens settings"
 							>
-								<input
-									class="form-input not-prose do-not-close-dropdown"
-									type="checkbox"
-									bind:checked={streaming}
-									id="stream-checkbox"
-								/>
-								<span class="do-not-close-dropdown">Stream</span>
-							</button>
-						{/if}
-						<a
-							href="https://huggingface.co/settings/tokens"
-							class="flex items-center gap-x-1 whitespace-nowrap"
-							target="_blank"
-							title="Tokens settings"
-						>
-							<IconLinkExternal /> Manage tokens
-						</a>
+								<IconLinkExternal /> Manage tokens
+							</a>
 
-						<a
-							href="https://huggingface.co/settings/inference-providers/settings"
-							class="flex items-center gap-x-1 whitespace-nowrap"
-							title="Inference providers settings"
-							target="_blank"
-						>
-							<IconLinkExternal /> Manage providers
-						</a>
-					</div>
-				</slot>
+							<a
+								href="https://huggingface.co/settings/inference-providers/settings"
+								class="flex items-center gap-x-1 whitespace-nowrap"
+								title="Inference providers settings"
+								target="_blank"
+							>
+								<IconLinkExternal /> Manage providers
+							</a>
+						</div>
+					{/if}
+				{/snippet}
 			</Dropdown>
 			<Dropdown
 				classNames="md:hidden"
@@ -348,53 +365,57 @@
 				useDeprecatedJS={false}
 				forceMenuAlignement="left"
 			>
-				<slot slot="button">
-					<button
-						class="text-md hover:shadow-xs flex cursor-pointer select-none items-center rounded-lg border px-1.5 py-1 leading-none text-gray-500 opacity-90 hover:text-gray-700 dark:hover:text-gray-200"
-						type="button"
-						title="Settings dropdown"
-					>
-						<IconSettings classNames="mr-1" />
-						Settings
-					</button>
-				</slot>
-				<slot slot="menu">
-					<div class="flex flex-col gap-y-2 p-2">
-						{#if conversational}
-							<button
-								class="text-md do-not-close-dropdown group relative flex w-full cursor-default items-center gap-x-2 self-start border-b pb-2 leading-tight"
-								on:click={() => (streaming = !streaming)}
-								type="button"
+				{#snippet button()}
+					{#if children}{@render children()}{:else}
+						<button
+							class="text-md hover:shadow-xs flex cursor-pointer select-none items-center rounded-lg border px-1.5 py-1 leading-none text-gray-500 opacity-90 hover:text-gray-700 dark:hover:text-gray-200"
+							type="button"
+							title="Settings dropdown"
+						>
+							<IconSettings classNames="mr-1" />
+							Settings
+						</button>
+					{/if}
+				{/snippet}
+				{#snippet menu()}
+					{#if children}{@render children()}{:else}
+						<div class="flex flex-col gap-y-2 p-2">
+							{#if conversational}
+								<button
+									class="text-md do-not-close-dropdown group relative flex w-full cursor-default items-center gap-x-2 self-start border-b pb-2 leading-tight"
+									onclick={() => (streaming = !streaming)}
+									type="button"
+								>
+									<input
+										class="form-input not-prose do-not-close-dropdown"
+										type="checkbox"
+										bind:checked={streaming}
+									/>
+									<span class="do-not-close-dropdown">Stream</span>
+								</button>
+							{/if}
+							<a
+								href="/settings/tokens"
+								class="flex items-center gap-x-1 whitespace-nowrap"
+								target="_blank"
+								title="Tokens settings"
 							>
-								<input
-									class="form-input not-prose do-not-close-dropdown"
-									type="checkbox"
-									bind:checked={streaming}
-								/>
-								<span class="do-not-close-dropdown">Stream</span>
-							</button>
-						{/if}
-						<a
-							href="/settings/tokens"
-							class="flex items-center gap-x-1 whitespace-nowrap"
-							target="_blank"
-							title="Tokens settings"
-						>
-							<IconLinkExternal /> Manage tokens
-						</a>
+								<IconLinkExternal /> Manage tokens
+							</a>
 
-						<a
-							href="/settings/inference-providers"
-							class="flex items-center gap-x-1 whitespace-nowrap"
-							title="Inference providers settings"
-							target="_blank"
-						>
-							<IconLinkExternal /> Manage providers
-						</a>
-					</div>
-				</slot>
+							<a
+								href="/settings/inference-providers"
+								class="flex items-center gap-x-1 whitespace-nowrap"
+								title="Inference providers settings"
+								target="_blank"
+							>
+								<IconLinkExternal /> Manage providers
+							</a>
+						</div>
+					{/if}
+				{/snippet}
 			</Dropdown>
-			<div class="flex-grow md:hidden" />
+			<div class="flex-grow md:hidden"></div>
 		</div>
 	</div>
 </div>

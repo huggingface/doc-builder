@@ -3,15 +3,26 @@
 
 	type Alignement = "left" | "right";
 
-	export let classNames = "";
-	export let dropdownElement: HTMLElement | undefined = undefined;
-	export let forceAlignement: Alignement | undefined = undefined;
-	export let onClose: (e: MouseEvent) => void;
+	interface Props {
+		classNames?: string;
+		dropdownElement?: HTMLElement | undefined;
+		forceAlignement?: Alignement | undefined;
+		onClose: (e: MouseEvent) => void;
+		children?: import("svelte").Snippet;
+	}
+
+	let {
+		classNames = "",
+		dropdownElement = undefined,
+		forceAlignement = undefined,
+		onClose,
+		children,
+	}: Props = $props();
 
 	// MUST be set to left if forceAlignement is undefined or else
 	// the browser won't be able to properly compute x and width
-	let alignement: Alignement = forceAlignement ?? "left";
-	let element: HTMLElement | undefined;
+	let alignement: Alignement = $state(forceAlignement ?? "left");
+	let element: HTMLElement | undefined = $state();
 
 	onMount(() => {
 		document.addEventListener("click", handleClickDocument);
@@ -44,9 +55,9 @@
 	class="absolute top-full mt-1 min-w-full w-auto bg-white rounded-xl overflow-hidden shadow-lg z-10 border border-gray-100
 		{alignement === 'right' ? 'right-0' : 'left-0'}
 		{classNames}"
-	on:click={onClose}
+	onclick={onClose}
 >
 	<ul class="min-w-full w-auto">
-		<slot />
+		{@render children?.()}
 	</ul>
 </div>

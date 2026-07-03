@@ -2,9 +2,21 @@
 	import Dropdown from "./Dropdown.svelte";
 	import DropdownEntry from "./DropdownEntry.svelte";
 
-	export let options: { label: string; value: string }[] = [];
-	export let classNames = "";
-	export let containerStyle = "";
+	interface Props {
+		options?: { label: string; value: string }[];
+		classNames?: string;
+		containerStyle?: string;
+		alwaysVisible?: import("svelte").Snippet;
+		children?: import("svelte").Snippet;
+	}
+
+	let {
+		options = [],
+		classNames = "",
+		containerStyle = "",
+		alwaysVisible,
+		children,
+	}: Props = $props();
 
 	const googleColabOptions = options.filter((o) => o.value.includes("colab.research.google.com"));
 	const awsStudioOptions = options.filter((o) => o.value.includes("studiolab.sagemaker.aws"));
@@ -15,7 +27,7 @@
 </script>
 
 <div class="flex space-x-1 {classNames}" style={containerStyle}>
-	<slot name="alwaysVisible" />
+	{@render alwaysVisible?.()}
 	{#if googleColabOptions.length === 1}
 		<a href={googleColabOptions[0].value} target="_blank">
 			<img
@@ -26,24 +38,28 @@
 		</a>
 	{:else if googleColabOptions.length > 1}
 		<Dropdown btnLabel="" classNames="colab-dropdown" noBtnClass useDeprecatedJS={false}>
-			<slot slot="button">
-				<img
-					alt="Open In Colab"
-					class="!m-0"
-					src="https://colab.research.google.com/assets/colab-badge.svg"
-				/>
-			</slot>
-			<slot slot="menu">
-				{#each googleColabOptions as { label, value }}
-					<DropdownEntry
-						classNames="text-sm !no-underline"
-						iconClassNames="text-gray-500"
-						{label}
-						onClick={() => onClick(value)}
-						useDeprecatedJS={false}
+			{#snippet button()}
+				{#if children}{@render children()}{:else}
+					<img
+						alt="Open In Colab"
+						class="!m-0"
+						src="https://colab.research.google.com/assets/colab-badge.svg"
 					/>
-				{/each}
-			</slot>
+				{/if}
+			{/snippet}
+			{#snippet menu()}
+				{#if children}{@render children()}{:else}
+					{#each googleColabOptions as { label, value }}
+						<DropdownEntry
+							classNames="text-sm !no-underline"
+							iconClassNames="text-gray-500"
+							{label}
+							onClick={() => onClick(value)}
+							useDeprecatedJS={false}
+						/>
+					{/each}
+				{/if}
+			{/snippet}
 		</Dropdown>
 	{/if}
 	{#if awsStudioOptions.length === 1}
@@ -56,24 +72,28 @@
 		</a>
 	{:else if awsStudioOptions.length > 1}
 		<Dropdown btnLabel="" classNames="colab-dropdown" noBtnClass useDeprecatedJS={false}>
-			<slot slot="button">
-				<img
-					alt="Open In Studio Lab"
-					class="!m-0"
-					src="https://studiolab.sagemaker.aws/studiolab.svg"
-				/>
-			</slot>
-			<slot slot="menu">
-				{#each awsStudioOptions as { label, value }}
-					<DropdownEntry
-						classNames="text-sm !no-underline"
-						iconClassNames="text-gray-500"
-						{label}
-						onClick={() => onClick(value)}
-						useDeprecatedJS={false}
+			{#snippet button()}
+				{#if children}{@render children()}{:else}
+					<img
+						alt="Open In Studio Lab"
+						class="!m-0"
+						src="https://studiolab.sagemaker.aws/studiolab.svg"
 					/>
-				{/each}
-			</slot>
+				{/if}
+			{/snippet}
+			{#snippet menu()}
+				{#if children}{@render children()}{:else}
+					{#each awsStudioOptions as { label, value }}
+						<DropdownEntry
+							classNames="text-sm !no-underline"
+							iconClassNames="text-gray-500"
+							{label}
+							onClick={() => onClick(value)}
+							useDeprecatedJS={false}
+						/>
+					{/each}
+				{/if}
+			{/snippet}
 		</Dropdown>
 	{/if}
 </div>

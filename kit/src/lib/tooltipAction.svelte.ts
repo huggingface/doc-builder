@@ -1,35 +1,36 @@
+import { mount, unmount } from "svelte";
 import Tooltip from "./TooltipFromAction.svelte";
 
 const id = "docstring-tooltip";
 
-export function tooltip(element: HTMLElement, txt: string): any {
-	let tooltipComponent: any;
+export function tooltip(element: HTMLElement, txt: string) {
+	let tooltipComponent: Record<string, unknown> | undefined;
+	const props = $state({ txt, x: 0, y: 0, id });
+
 	function mouseOver(event: MouseEvent) {
 		cleanPrevious();
-		tooltipComponent = new Tooltip({
-			props: {
-				txt,
-				x: event.pageX,
-				y: event.pageY,
-				id,
-			},
+		props.x = event.pageX;
+		props.y = event.pageY;
+		tooltipComponent = mount(Tooltip, {
 			target: document.body,
+			props,
 		});
 	}
 	function mouseMove(event: MouseEvent) {
-		tooltipComponent.$set({
-			x: event.pageX,
-			y: event.pageY,
-		});
+		props.x = event.pageX;
+		props.y = event.pageY;
 	}
 	function mouseLeave() {
-		tooltipComponent.$destroy();
+		if (tooltipComponent) {
+			unmount(tooltipComponent);
+			tooltipComponent = undefined;
+		}
 	}
 
 	function cleanPrevious() {
-		const tooltipComponent = document.getElementById(id);
-		if (tooltipComponent) {
-			tooltipComponent.parentNode?.removeChild(tooltipComponent);
+		const previousTooltip = document.getElementById(id);
+		if (previousTooltip) {
+			previousTooltip.parentNode?.removeChild(previousTooltip);
 		}
 	}
 

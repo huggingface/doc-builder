@@ -4,7 +4,11 @@
 	import IconPytorch from "./IconPytorch.svelte";
 	import IconTensorflow from "./IconTensorflow.svelte";
 
-	export let ids: string[];
+	interface Props {
+		ids: string[];
+	}
+
+	let { ids }: Props = $props();
 	const storeKey = ids.join("-");
 	const group = getGroupStore(storeKey);
 
@@ -51,10 +55,10 @@
 				class="flex justify-center py-1.5 px-2.5 focus:outline-none
 			rounded-{i ? 'r' : 'l'}
 			{g.group !== $group && 'text-gray-500 filter grayscale'}"
-				on:click={() => changeGroup(g.group)}
+				onclick={() => changeGroup(g.group)}
 			>
 				{#if g.icon}
-					<svelte:component this={g.icon} classNames="mr-1.5" />
+					<g.icon classNames="mr-1.5" />
 				{/if}
 				<p class="!m-0 {g.classNames}">
 					{g.name}

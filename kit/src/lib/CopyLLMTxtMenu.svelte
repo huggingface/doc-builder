@@ -10,10 +10,19 @@
 	import IconMCP from "./IconMCP.svelte";
 	import IconHuggingChat from "./IconHuggingChat.svelte";
 
-	export let label = "Copy page";
-	export let markdownDescription = "Copy page as Markdown for LLMs";
-	export let containerClass = "";
-	export let containerStyle = "";
+	interface Props {
+		label?: string;
+		markdownDescription?: string;
+		containerClass?: string;
+		containerStyle?: string;
+	}
+
+	let {
+		label = "Copy page",
+		markdownDescription = "Copy page as Markdown for LLMs",
+		containerClass = "",
+		containerStyle = "",
+	}: Props = $props();
 
 	const isClient = typeof window !== "undefined";
 	const hasDocument = typeof document !== "undefined";
@@ -28,11 +37,11 @@
 	const SOURCE_URL_MD = SOURCE_URL.endsWith(".md") ? SOURCE_URL : SOURCE_URL + ".md";
 	let encodedPrompt: string | null = null;
 
-	let open = false;
-	let copied = false;
-	let triggerEl: HTMLDivElement | null = null;
-	let menuEl: HTMLDivElement | null = null;
-	let menuStyle = "";
+	let open = $state(false);
+	let copied = $state(false);
+	let triggerEl: HTMLDivElement | null = $state(null);
+	let menuEl: HTMLDivElement | null = $state(null);
+	let menuStyle = $state("");
 	let closeTimeout: ReturnType<typeof setTimeout> | null = null;
 	let sourceMarkdown: string | null = null;
 	let sourceFetchPromise: Promise<string> | null = null;
@@ -204,10 +213,10 @@
 </script>
 
 <svelte:window
-	on:mousedown={handleWindowPointer}
-	on:keydown={handleWindowKeydown}
-	on:resize={handleWindowResize}
-	on:scroll={handleWindowScroll}
+	onmousedown={handleWindowPointer}
+	onkeydown={handleWindowKeydown}
+	onresize={handleWindowResize}
+	onscroll={handleWindowScroll}
 />
 
 <div
@@ -218,7 +227,7 @@
 >
 	<div bind:this={triggerEl} class="inline-flex rounded-md max-sm:rounded-sm">
 		<button
-			on:click={copyMarkdown}
+			onclick={copyMarkdown}
 			class="inline-flex items-center gap-1 h-7 max-sm:h-7 px-2 max-sm:px-1.5 text-sm font-medium text-gray-800 border border-r-0 rounded-l-md max-sm:rounded-l-sm border-gray-200 bg-white hover:shadow-inner dark:border-gray-850 dark:bg-gray-950 dark:text-gray-200 dark:hover:bg-gray-800"
 			aria-live="polite"
 		>
@@ -230,7 +239,7 @@
 			<span>{copied ? "Copied" : label}</span>
 		</button>
 		<button
-			on:click={toggleMenu}
+			onclick={toggleMenu}
 			class="inline-flex items-center justify-center w-6 max-sm:w-5 h-7 max-sm:h-7 disabled:pointer-events-none text-sm text-gray-500 hover:text-gray-700 dark:hover:text-white rounded-r-md max-sm:rounded-r-sm border border-l transition border-gray-200 bg-white hover:shadow-inner dark:border-gray-850 dark:bg-gray-950 dark:text-gray-200 dark:hover:bg-gray-800"
 			aria-haspopup="menu"
 			aria-expanded={open}
@@ -249,7 +258,7 @@
 			class="fixed inset-0 z-40"
 			aria-hidden="true"
 			style="background: transparent;"
-			on:click={closeMenu}
+			onclick={closeMenu}
 		></div>
 		<div
 			bind:this={menuEl}
@@ -260,7 +269,7 @@
 		>
 			<button
 				role="menuitem"
-				on:click={() => {
+				onclick={() => {
 					copyMarkdown();
 					closeMenu();
 				}}
@@ -284,7 +293,7 @@
 				href={SOURCE_URL_MD}
 				target="_blank"
 				rel="noopener noreferrer"
-				on:click={closeMenu}
+				onclick={closeMenu}
 				class="{baseMenuItemClass} no-underline!"
 			>
 				<div class="border border-gray-200 dark:border-gray-850 rounded-lg p-1.5">
@@ -305,7 +314,7 @@
 					href={option.buildUrl()}
 					target="_blank"
 					rel="noopener noreferrer"
-					on:click={closeMenu}
+					onclick={closeMenu}
 					class="{baseMenuItemClass} no-underline!"
 				>
 					<div class="border border-gray-200 dark:border-gray-850 rounded-lg p-1.5">

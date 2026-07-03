@@ -1,10 +1,15 @@
 <script lang="ts">
 	import Tip from "./Tip.svelte";
 
-	export let version: string;
+	interface Props {
+		version: string;
+		children?: import("svelte").Snippet;
+	}
+
+	let { version, children }: Props = $props();
 </script>
 
 <Tip>
 	<p class="font-medium">Changed in {version}</p>
-	<slot />
+	{@render children?.()}
 </Tip>
