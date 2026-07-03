@@ -34,6 +34,20 @@ function renderCode(code) {
 	);
 }
 
+/**
+ * Svelte 5 raises a compile error (`node_invalid_placement`) when `<tr>` is a
+ * direct child of `<table>`, because browsers auto-insert `<tbody>` during
+ * parsing, which would break hydration. Raw-HTML tables in doc markdown
+ * commonly omit `<tbody>` (e.g. `<table><tr>...`), so add it explicitly —
+ * the resulting DOM is identical to what browsers produced for the old output.
+ * @param {string} code
+ */
+function wrapTableRowsInTbody(code) {
+	return code
+		.replace(/(<table\b[^>]*>)(\s*)(<tr\b)/g, "$1$2<tbody>$3")
+		.replace(/(<\/tr>)(\s*)(<\/table>)/g, "$1</tbody>$2$3");
+}
+
 function addFullWidthClassToTables(code) {
 	return code.replace(/<table\b([^>]*)>/g, (match, attrs) => {
 		if (attrs.includes('class="')) {
@@ -68,6 +82,7 @@ export const mdsvexPreprocess = {
 			const processed = await _mdsvexPreprocess.markup({ content, filename });
 			processed.code = renderKatex(processed.code, markedKatex);
 			processed.code = renderCode(processed.code, filename);
+			processed.code = wrapTableRowsInTbody(processed.code);
 			if (stretchTables) {
 				processed.code = addFullWidthClassToTables(processed.code);
 			}
