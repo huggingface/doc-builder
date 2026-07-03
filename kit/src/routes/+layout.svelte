@@ -1,6 +1,7 @@
 
 <script lang="ts">
 	import { onMount } from "svelte";
+	import { afterNavigate } from "$app/navigation";
 	import { base } from "$app/paths";
 	import { getHfDocFullPath } from "$lib/hfDocPaths.js";
 	import type { RawChapter } from "./endpoints/toc/+server";
@@ -9,22 +10,54 @@
 	export let data;
 	$: toc = (data.toc ?? []) as RawChapter[];
 
+	/**
+	 * Shorthand hf doc links (e.g. /docs/lib/page) should partial-load like
+	 * internal routes while keeping the shorthand URL in the address bar —
+	 * the behavior of the old `svelteKitCustomClient` fork.
+	 * SvelteKit treats URLs that don't start with the app's base path as
+	 * external before it consults the `reroute` hook (src/hooks.js), so:
+	 *  1. on click, momentarily expand the anchor's pathname to the full path
+	 *     so SvelteKit's own click handler resolves it as an internal route,
+	 *  2. after the navigation completes, restore the shorthand URL in the
+	 *     history entry.
+	 * Caveat: going back/forward onto a shorthand history entry falls back to
+	 * a full page load (the server serves the same page at shorthand URLs).
+	 */
+	let pendingShorthand: { href: string; fullPath: string } | null = null;
+
 	onMount(() => {
-		// Expand shorthand hf doc links (e.g. /docs/lib/page) to the full path
-		// before SvelteKit's own click handler reads the anchor, so they are
-		// treated as internal routes (partial loading instead of a full reload).
-		// Complements the `reroute` hook (src/hooks.js), which is not consulted
-		// for URLs that don't start with the app's base path.
 		const canonicalizeDocLinks = (event: MouseEvent) => {
+			// same conditions as SvelteKit's click handler: plain left-clicks only,
+			// so that e.g. cmd/ctrl-click opens the shorthand URL in a new tab
+			if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) {
+				return;
+			}
 			const anchor = (event.target as Element | null)?.closest("a");
-			if (!anchor || anchor.origin !== location.origin) return;
-			const fullPath = getHfDocFullPath(anchor.pathname);
-			if (fullPath && fullPath !== anchor.pathname) {
+			if (!anchor || anchor.origin !== location.origin || anchor.target) return;
+			const shorthandPathname = anchor.pathname;
+			const fullPath = getHfDocFullPath(shorthandPathname);
+			if (fullPath && fullPath !== shorthandPathname) {
+				pendingShorthand = { href: anchor.href, fullPath };
 				anchor.pathname = fullPath;
+				// restore the DOM link once SvelteKit's handler has read it
+				setTimeout(() => {
+					anchor.pathname = shorthandPathname;
+				});
 			}
 		};
 		document.addEventListener("click", canonicalizeDocLinks, { capture: true });
 		return () => document.removeEventListener("click", canonicalizeDocLinks, { capture: true });
+	});
+
+	afterNavigate((navigation) => {
+		if (
+			pendingShorthand &&
+			navigation.type === "link" &&
+			navigation.to?.url.pathname === pendingShorthand.fullPath
+		) {
+			history.replaceState(history.state, "", pendingShorthand.href);
+		}
+		pendingShorthand = null;
 	});
 </script>
 
