@@ -6,7 +6,7 @@
 	export let dataUrl: string | undefined = undefined;
 	export let dataValue: string | undefined = undefined;
 	export let href: string | undefined = undefined;
-	export let icon: typeof SvelteComponent | undefined = undefined;
+	export let icon: (new (...args: any) => SvelteComponent) | undefined = undefined;
 	export let iconClassNames = "";
 	export let label = "";
 	export let noFollow = false;

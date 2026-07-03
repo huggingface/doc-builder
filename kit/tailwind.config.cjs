@@ -156,9 +156,5 @@ module.exports = {
 			},
 		},
 	},
-	plugins: [
-		require("@tailwindcss/forms"),
-		require("@tailwindcss/typography"),
-		require("@tailwindcss/aspect-ratio"),
-	],
+	// Plugins are loaded via `@plugin` directives in src/app.css (tailwind v4)
 };
