@@ -55,7 +55,10 @@ const config = {
 			warning.code?.startsWith("a11y") ||
 			warning.message.includes("A11y") ||
 			// md-generated doc content is full of `<video ... />` style self-closing tags
-			warning.code === "element_invalid_self_closing_tag"
+			warning.code === "element_invalid_self_closing_tag" ||
+			// initial-value capture of props is intentional here: doc pages pass
+			// static props (same semantics as the pre-runes svelte 4 code)
+			warning.code === "state_referenced_locally"
 		) {
 			/// Too noisy
 			return;

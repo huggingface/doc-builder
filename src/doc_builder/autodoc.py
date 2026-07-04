@@ -194,29 +194,36 @@ def get_signature_component_svelte(name, anchor, signature, object_doc, source_l
     object_doc = remove_example_tags(object_doc)
     object_doc = hashlink_example_codeblock(object_doc, anchor)
 
-    svelte_str = "<docstring>"
-    svelte_str += f"<name>{name}</name>"
-    svelte_str += f"<anchor>{anchor}</anchor>"
+    # Metadata props are emitted directly as svelte component attributes. Their values
+    # are JS strings/JSON, where `{`, `<` and `#` are safe, so the MDX escaping
+    # (see `convert_special_chars`) is undone; `\_` needs no markdown escaping either.
+    def prop_value(text):
+        return text.replace("&amp;lcub;", "{").replace("&amp;lt;", "<").replace("&amp;num;", "#")
+
+    name = prop_value(str(name)).replace("\\_", "_")
+    svelte_str = f"<Docstring name={{{json.dumps(name)}}}"
+    svelte_str += f" anchor={{{json.dumps(prop_value(str(anchor)))}}}"
     if source_link:
-        svelte_str += f"<source>{source_link}</source>"
-    svelte_str += f"<parameters>{json.dumps(signature)}</parameters>"
+        svelte_str += f" source={{{json.dumps(prop_value(source_link))}}}"
+    svelte_str += f" parameters={{{prop_value(json.dumps(signature))}}}"
     if is_getset_desc:
-        svelte_str += "<isgetsetdescriptor>"
+        svelte_str += " isGetSetDescriptor={true}"
+    # the open tag must end with `>\n`: attribute values are single-line JSON, so the
+    # kit preprocessor (kit/preprocessors/docstring.js) can find the end of the tag
+    # unambiguously. The body carries the markdown-bearing sections, which the kit
+    # preprocessor renders (mdsvex) into the remaining props.
+    svelte_str += ">\n"
 
     if parameters is not None:
-        parameters_str = ""
         groups = _re_parameter_group.split(parameters)
         group_default = groups.pop(0)
-        parameters_str += f"<paramsdesc>{group_default}</paramsdesc>"
-        n_groups = len(groups) // 2
-        for idx in range(n_groups):
-            id = idx + 1
+        svelte_str += f"<paramsdesc>{group_default}</paramsdesc>"
+        for idx in range(len(groups) // 2):
             title, group = groups[2 * idx], groups[2 * idx + 1]
-            parameters_str += f"<paramsdesc{id}title>{title}</paramsdesc{id}title>"
-            parameters_str += f"<paramsdesc{id}>{group}</paramsdesc{id}>"
-
-        svelte_str += parameters_str
-        svelte_str += f"<paramgroups>{n_groups}</paramgroups>"
+            svelte_str += "<paramsgroup>"
+            svelte_str += f"<paramsgrouptitle>{title}</paramsgrouptitle>"
+            svelte_str += f"<paramsgroupdesc>{group}</paramsgroupdesc>"
+            svelte_str += "</paramsgroup>"
 
     if returntype is not None:
         svelte_str += f"<rettype>{returntype}</rettype>"
@@ -233,7 +240,7 @@ def get_signature_component_svelte(name, anchor, signature, object_doc, source_l
     if raisederrors is not None:
         svelte_str += f"<raisederrors>{raisederrors}</raisederrors>"
 
-    svelte_str += "</docstring>"
+    svelte_str += "</Docstring>"
 
     return svelte_str + f"\n{object_doc}\n"
 
