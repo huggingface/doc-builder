@@ -112,6 +112,24 @@ doc-builder build hub ~/git/hub-docs/docs/source --build_dir ~/tmp/test-build --
 
 **Important**: When specifying a semantic version with `--version`, it **must start with the letter "v"** (e.g., `v1.0.0`, `v2.3.1`). For branch names like `main`, `master`, or other default branches, the "v" prefix is not required.
 
+### Page-level HTML build cache
+
+Building the HTML docs of a large library (e.g. `transformers`) prerenders hundreds of pages, even when a commit only changed one of them. `--html_page_cache` enables a page-level cache so that only pages whose generated content changed are prerendered again:
+
+```bash
+# cache in a Hugging Face storage bucket (https://huggingface.co/docs/hub/storage-buckets) ...
+doc-builder build datasets ~/git/datasets/docs/source --build_dir ~/tmp/test-build --html \
+    --html_page_cache hf://buckets/hf-doc-build/doc-build-cache
+
+# ... or in a local directory
+doc-builder build datasets ~/git/datasets/docs/source --build_dir ~/tmp/test-build --html \
+    --html_page_cache ~/tmp/doc-page-cache --html_page_cache_write
+```
+
+A page is reused when its generated MDX (post autodoc and internal-link resolution — so docstring changes invalidate exactly the affected pages), the `kit` folder, and the doc-builder version are unchanged. Keys are version-normalized: pages that only differ by the built version (e.g. `main` vs `pr_123` in resolved internal links) share a cache entry, and on a cross-version reuse the page URLs are rewritten to the target version while asset URLs stay pinned to the source version, whose content-hashed assets remain hosted.
+
+`--html_page_cache_write` also stores freshly built pages. Only enable it on trusted builds (the shared GitHub workflows enable it on main-branch builds and keep PR builds read-only), so that untrusted code cannot poison the cache. Cache failures are never fatal: any error degrades to building the affected pages.
+
 ### Notebook conversion
 
 `doc-builder` can also automatically convert some of the documentation guides or tutorials into notebooks. This requires two steps:
