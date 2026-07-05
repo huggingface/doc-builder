@@ -23,6 +23,7 @@ from threading import Thread
 from doc_builder import build_doc
 from doc_builder.commands.build import check_node_is_available, docs_node_env, run_npm, stage_kit_routes
 from doc_builder.commands.convert_doc_file import find_root_git
+from doc_builder.mock_imports import mock_deps
 from doc_builder.utils import (
     is_watchdog_available,
     locate_kit_folder,
@@ -137,6 +138,9 @@ def start_sveltekit_dev(kit_dir, env):
 
 
 def preview_command(args):
+    if args.mock_deps:
+        # must happen before the documented library is imported
+        mock_deps(args.mock_deps.split(","))
     if not is_watchdog_available():
         raise ImportError(
             "Please install `watchdog` to run `doc-builder preview` command.\nYou can do so through pip: `pip install watchdog`"
@@ -215,6 +219,14 @@ def preview_command_parser(subparsers=None):
         "--not_python_module",
         action="store_true",
         help="Whether docs files do NOT have corresponding python module (like HF course & hub docs).",
+    )
+    parser.add_argument(
+        "--mock_deps",
+        type=str,
+        default=None,
+        help="Comma-separated list of heavy dependencies (e.g. `torch,tensorflow`) to mock instead of importing, so "
+        "the documented library can be introspected without installing them. Packages that are actually installed "
+        "are never mocked.",
     )
 
     if subparsers is not None:

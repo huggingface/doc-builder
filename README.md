@@ -130,6 +130,21 @@ A page is reused when its generated MDX (post autodoc and internal-link resoluti
 
 `--html_page_cache_write` also stores freshly built pages. Only enable it on trusted builds (the shared GitHub workflows enable it on main-branch builds and keep PR builds read-only), so that untrusted code cannot poison the cache. Cache failures are never fatal: any error degrades to building the affected pages.
 
+### Building without installing heavy dependencies
+
+doc-builder imports the documented library to read docstrings with `inspect` — necessary because libraries like `transformers` construct docstrings dynamically. Historically that meant installing the library's full dependency tree (torch, GPU wheels, custom containers) just to build documentation.
+
+`--mock_deps` mocks heavy dependencies instead, so only the documented library itself (and its light dependencies) needs to be installed:
+
+```bash
+pip install accelerate --no-deps  # plus its light dependencies
+doc-builder build accelerate ~/git/accelerate/docs/source --build_dir ~/tmp/test-build --mock_deps torch,deepspeed
+```
+
+The mocked packages are importable, pass the `importlib.util.find_spec` + `importlib.metadata` availability checks HF libraries use, are subclassable without affecting the real subclass's signature or docstring, behave as pass-through decorators, and render in signatures like the real objects (`repr(torch.float32) == "torch.float32"`). Packages that are actually installed are never mocked, and `doc-builder preview` supports the flag too.
+
+Fidelity, verified on `accelerate` built without torch installed: 46/48 pages byte-identical to a real-torch build; the two remaining pages differ only in typing paths rendered from the public import path instead of the internal one (e.g. `torch.nn.Module` instead of `torch.nn.modules.module.Module`).
+
 ### Notebook conversion
 
 `doc-builder` can also automatically convert some of the documentation guides or tutorials into notebooks. This requires two steps:

@@ -93,6 +93,12 @@ def get_type_name(typ):
     if isinstance(typ, type):
         # If it's a class, use its name.
         return getattr(typ, "__qualname__", None) or getattr(typ, "__name__", None) or str(typ)
+    # Non-classes carrying a name (e.g. mocked classes from `--mock_deps`) render like
+    # classes; typing constructs (whose reprs are the readable form) are excluded.
+    if getattr(typ, "__module__", "") != "typing":
+        qualname = getattr(typ, "__qualname__", None)
+        if isinstance(qualname, str):
+            return qualname
     return str(typ)  # otherwise, trust its string representation
 
 
