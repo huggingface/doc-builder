@@ -16,6 +16,7 @@ import importlib
 import inspect
 import json
 import re
+import sys
 from functools import lru_cache
 
 from .convert_md_to_mdx import convert_md_docstring_to_mdx
@@ -44,6 +45,16 @@ def find_object_in_package(object_name, package):
                 full_module_path = f"{module.__name__}.{split}"
                 importlib.import_module(full_module_path)
                 submodule = getattr(module, split, None)
+                if submodule is None:
+                    # a submodule can be importable without being bound as an
+                    # attribute of its parent (e.g. lazy-module parents whose
+                    # attribute binding was skipped because the submodule was
+                    # already in sys.modules when first accessed)
+                    submodule = sys.modules.get(full_module_path)
+                    if submodule is not None:
+                        # heal the missing binding so later attribute walks
+                        # (e.g. get_shortest_path) resolve too
+                        setattr(module, split, submodule)
             except ImportError:
                 return None  # Return None if the module cannot be found or imported
         module = submodule

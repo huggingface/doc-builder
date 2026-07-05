@@ -40,10 +40,13 @@ The documented library itself (and its light dependencies) must still be really
 installed: `inspect` reads the real source, docstrings and signatures from it.
 """
 
+import abc
 import importlib.abc
 import importlib.machinery
 import importlib.metadata
 import sys
+import types
+import typing
 
 MOCK_VERSION = "9999.0.0"
 
@@ -65,6 +68,10 @@ class _MockObject:
         short_name = display_name.rsplit(".", 1)[-1]
         object.__setattr__(self, "__name__", short_name)
         object.__setattr__(self, "__qualname__", short_name)
+        # tools rendering type names as `__module__.__qualname__` (e.g. transformers'
+        # auto_docstring) must see the mocked path, not this module's
+        parent = display_name.rsplit(".", 1)[0] if "." in display_name else display_name
+        object.__setattr__(self, "__module__", parent)
 
     def __repr__(self):
         return self.__display_name__
@@ -83,6 +90,26 @@ class _MockObject:
 
     def __mro_entries__(self, bases):
         return (_make_base_class(self.__display_name__),)
+
+    # PEP 604 unions in runtime-evaluated annotations (`torch.Tensor | None`): build a
+    # *real* typing.Union (mocks pass `typing._type_check` because they are callable),
+    # so tools that unwrap Optional/Union via typing.get_origin/get_args — like
+    # transformers' auto_docstring — treat it exactly like the real annotation
+    def __or__(self, other):
+        try:
+            return typing.Union[self, other]  # noqa: UP007
+        except TypeError:
+            return _make_mock(f"typing.Union[{self.__display_name__}, {_annotation_name(other)}]")
+
+    def __ror__(self, other):
+        try:
+            return typing.Union[other, self]  # noqa: UP007
+        except TypeError:
+            return _make_mock(f"typing.Union[{_annotation_name(other)}, {self.__display_name__}]")
+
+    def __getitem__(self, item):
+        # subscripted generics on mocks (`torch.Tensor[int]`-style, rare)
+        return self
 
     # keep common import-time expressions working
     def __iter__(self):
@@ -116,6 +143,18 @@ class _MockObject:
         return True
 
 
+def _annotation_name(obj):
+    """Renders `obj` the way `typing` renders it inside a union."""
+    display_name = getattr(obj, "__display_name__", None)
+    if display_name is not None:
+        return display_name
+    if isinstance(obj, type):
+        module = getattr(obj, "__module__", "")
+        qualname = getattr(obj, "__qualname__", str(obj))
+        return qualname if module in ("builtins", "") else f"{module}.{qualname}"
+    return str(obj)
+
+
 _mock_cache = {}
 _base_class_cache = {}
 
@@ -127,14 +166,31 @@ def _make_mock(display_name):
     return _mock_cache[display_name]
 
 
+class _MockBaseMeta(abc.ABCMeta):
+    """
+    Metaclass for mock base classes providing *class-level* attribute fallback: real
+    subclasses may rely on attributes the real base would provide (e.g. a model class
+    without its own `forward` inherits `torch.nn.Module.forward`). It intentionally
+    does NOT define `__call__`, so `inspect.signature` on subclasses still reads their
+    real `__init__` (a metaclass `__call__` would shadow it). Deriving from `ABCMeta`
+    keeps mock bases combinable with real ABC bases without metaclass conflicts.
+    """
+
+    def __getattr__(cls, name):
+        if name.startswith("__") and name.endswith("__"):
+            raise AttributeError(name)
+        base_display_name = getattr(cls, "__display_name__", cls.__name__)
+        return _make_mock(f"{base_display_name}.{name}")
+
+
 def _make_base_class(display_name):
     """
-    Creates (and caches) the plain class substituted when a mock is used as a base
-    class (`class Model(nn.Module)`). It provides permissive `__init__`/`__getattr__`
-    fallbacks but has metaclass `type`, keeping subclass introspection intact.
+    Creates (and caches) the class substituted when a mock is used as a base class
+    (`class Model(nn.Module)`). It provides permissive `__init__` and instance/class
+    attribute fallbacks while keeping subclass introspection intact.
     """
     if display_name not in _base_class_cache:
-        _base_class_cache[display_name] = type(
+        _base_class_cache[display_name] = _MockBaseMeta(
             display_name.rsplit(".", 1)[-1],
             (object,),
             {
@@ -147,6 +203,36 @@ def _make_base_class(display_name):
             },
         )
     return _base_class_cache[display_name]
+
+
+class _MockModule(types.ModuleType):
+    """
+    Mock module supporting the same expression surface as `_MockObject`: once code runs
+    `import torch.X`, the import system binds a real module object as the `X` attribute
+    of `torch` (shadowing the mock), and that module may then appear in runtime
+    expressions like PEP 604 annotations (`torch.Tensor | None` when `torch.Tensor` was
+    imported as a module path) or be called/subclassed.
+    """
+
+    def __getattr__(self, name):
+        if name.startswith("__") and name.endswith("__"):
+            raise AttributeError(name)
+        return _make_mock(f"{self.__name__}.{name}")
+
+    def __call__(self, *args, **kwargs):
+        return _make_mock(f"{self.__name__}")(*args, **kwargs)
+
+    def __or__(self, other):
+        return _make_mock(f"{self.__name__}").__or__(other)
+
+    def __ror__(self, other):
+        return _make_mock(f"{self.__name__}").__ror__(other)
+
+    def __mro_entries__(self, bases):
+        return (_make_base_class(self.__name__),)
+
+    def __getitem__(self, item):
+        return self
 
 
 class _MockDistribution(importlib.metadata.Distribution):
@@ -181,12 +267,9 @@ class MockFinder(importlib.abc.MetaPathFinder, importlib.abc.Loader):
         return spec
 
     def create_module(self, spec):
-        import types
-
-        module = types.ModuleType(spec.name)
+        module = _MockModule(spec.name)
         module.__version__ = MOCK_VERSION
         module.__path__ = []
-        module.__getattr__ = lambda name: _make_mock(f"{spec.name}.{name}")
         return module
 
     def exec_module(self, module):

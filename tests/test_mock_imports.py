@@ -66,8 +66,9 @@ class MockImportsTester(unittest.TestCase):
 
         self.assertEqual(list(inspect.signature(Model).parameters), ["hidden_size", "dropout"])
         self.assertEqual(Model.__doc__, "A real class inheriting from a mocked base.")
-        # metaclass stays `type`, like a normal class
-        self.assertIs(type(Model), type)
+        # the metaclass must not define `__call__`: it would shadow the subclass's
+        # real `__init__` under `inspect.signature`
+        self.assertNotIn("__call__", type(Model).__dict__)
 
     def test_mock_decorator_passes_through(self):
         module = importlib.import_module(PKG)
@@ -78,6 +79,31 @@ class MockImportsTester(unittest.TestCase):
 
         self.assertEqual(documented.__doc__, "Docstring survives mocked decorators.")
         self.assertEqual(list(inspect.signature(documented).parameters), ["a", "b"])
+
+    def test_pep604_unions_are_real_typing_unions(self):
+        import typing
+
+        module = importlib.import_module(PKG)
+        union = module.Tensor | None
+        # a real typing.Union, so tools unwrapping Optional via get_origin/get_args
+        # (e.g. transformers' auto_docstring) treat it like the real annotation
+        self.assertIs(typing.get_origin(union), typing.Union)
+        args = typing.get_args(union)
+        self.assertIs(args[1], type(None))
+        self.assertEqual(getattr(args[0], "__module__", None), PKG)
+        self.assertEqual(getattr(args[0], "__qualname__", None), "Tensor")
+        # reflected form with a real type on the left
+        union = int | module.Tensor
+        self.assertIs(typing.get_origin(union), typing.Union)
+
+    def test_subclass_inherits_mock_class_attributes(self):
+        module = importlib.import_module(PKG)
+
+        class Model(module.nn.Module):
+            pass
+
+        # class-level fallback: the real base (e.g. nn.Module) would provide `forward`
+        self.assertIsNotNone(getattr(Model, "forward", None))
 
     def test_installed_packages_are_not_mocked(self):
         # `json` is really installed, so it must be skipped
