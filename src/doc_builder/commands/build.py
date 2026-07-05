@@ -22,6 +22,7 @@ import tempfile
 from pathlib import Path
 
 from doc_builder import build_doc, update_versions_file
+from doc_builder.build_cache import PageCache, hash_kit_tree, page_cache_key
 from doc_builder.utils import (
     get_default_branch_name,
     get_doc_config,
@@ -213,8 +214,38 @@ def build_command(args):
 
     # If asked, convert the MDX files into HTML files.
     if args.html:
+        package_name = os.environ.get("package_name") or args.library_name
+
+        # Page-level HTML cache: reuse previously built pages whose generated mdx (and
+        # the kit itself) did not change, so the SvelteKit build only renders the rest.
+        page_cache = None
+        page_keys, manifest, reused = {}, {}, {}
+        if args.html_page_cache:
+            page_cache = PageCache(
+                args.html_page_cache,
+                package=package_name,
+                version=version,
+                language=args.language,
+                write=args.html_page_cache_write,
+            )
+            kit_hash = hash_kit_tree(kit_folder)
+            for mdx_file in output_path.rglob("*.mdx"):
+                rel = mdx_file.relative_to(output_path).as_posix()
+                page_keys[rel] = page_cache_key(
+                    mdx_file.read_text(encoding="utf-8"), kit_hash, package_name, version, args.language
+                )
+            manifest = page_cache.load_manifest()
+            reused = page_cache.fetch_pages(page_keys, manifest)
+            print(f"[page-cache] reusing {len(reused)}/{len(page_keys)} cached page(s)")
+
         with tempfile.TemporaryDirectory() as tmp_dir:
-            kit_dir, _, markdown_exports = stage_kit_routes(kit_folder, tmp_dir, output_path)
+            kit_dir, routes_dir, markdown_exports = stage_kit_routes(kit_folder, tmp_dir, output_path)
+
+            # Cached pages don't need to be prerendered again
+            for page in reused:
+                staged_route = Path(sveltify_file_route(routes_dir / page))
+                if staged_route.is_file():
+                    staged_route.unlink()
 
             # Move the objects.inv file at the root
             if not args.not_python_module:
@@ -230,6 +261,23 @@ def build_command(args):
             # Copy result back in the build_dir.
             shutil.rmtree(output_path)
             shutil.copytree(kit_dir / "build", output_path)
+
+            # Merge the cached pages into the build output
+            for page, fetched in reused.items():
+                cached_dest = output_path / (page.removesuffix(".mdx") + ".html")
+                cached_dest.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copyfile(fetched.html_path, cached_dest)
+
+            # Store the freshly built pages (no-op unless --html_page_cache_write)
+            if page_cache is not None:
+                built = {}
+                for page, key in page_keys.items():
+                    if page in reused:
+                        continue
+                    built_html = output_path / (page.removesuffix(".mdx") + ".html")
+                    if built_html.is_file():
+                        built[page] = (key, built_html)
+                page_cache.store_pages(built, manifest, reused)
             # write markdown routes alongside the generated html output
             for relative_path, content in markdown_exports:
                 markdown_dest = output_path / relative_path
@@ -299,6 +347,20 @@ def build_command_parser(subparsers=None):
         "--emit-warning",
         action="store_true",
         help="Emit conversion warnings, such as bare asserts in runnable markdown code blocks.",
+    )
+    parser.add_argument(
+        "--html_page_cache",
+        type=str,
+        default=None,
+        help="Page-level HTML build cache location: an HF storage bucket path (e.g. "
+        "`hf://buckets/hf-doc-build/doc-build-cache`) or a local directory. Only used with --html. Pages whose "
+        "generated mdx did not change are reused from the cache instead of being prerendered again.",
+    )
+    parser.add_argument(
+        "--html_page_cache_write",
+        action="store_true",
+        help="Also write freshly built pages to the page cache. Enable only on trusted builds (e.g. main-branch "
+        "builds), never on PR builds, so that untrusted code cannot poison the cache.",
     )
     if subparsers is not None:
         parser.set_defaults(func=build_command)
