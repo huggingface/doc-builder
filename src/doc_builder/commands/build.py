@@ -33,11 +33,21 @@ from doc_builder.utils import (
     write_markdown_route_file,
 )
 
+# The kit (SvelteKit) build currently runs on Vite 7, which requires Node.js >= 20.
+MIN_NODE_MAJOR_VERSION = 20
+
+# Build artifacts and dependencies do not need to be staged: `npm ci` recreates
+# node_modules and the build regenerates `.svelte-kit` and `build`.
+KIT_COPY_IGNORE = shutil.ignore_patterns("node_modules", ".svelte-kit", "build")
+
 
 def check_node_is_available():
+    """
+    Raises if Node.js is missing or older than `MIN_NODE_MAJOR_VERSION`.
+    """
     try:
         p = subprocess.run(
-            ["node", "-v"],
+            [resolve_npm_sibling("node"), "-v"],
             capture_output=True,
             check=True,
             encoding="utf-8",
@@ -45,15 +55,95 @@ def check_node_is_available():
         version = p.stdout.strip()
     except Exception as e:
         raise OSError(
-            "Using the --html flag requires node v14 to be installed, but it was not found in your system."
+            f"This command requires Node.js v{MIN_NODE_MAJOR_VERSION} or newer, but node was not found in your system."
         ) from e
 
-    major = int(version[1:].split(".")[0])
-    if major < 14:
+    major = int(version.removeprefix("v").split(".")[0])
+    if major < MIN_NODE_MAJOR_VERSION:
         raise OSError(
-            "Using the --html flag requires node v14 to be installed, but the version in your system is lower "
-            f"({version[1:]})"
+            f"This command requires Node.js v{MIN_NODE_MAJOR_VERSION} or newer, but the version in your system is "
+            f"lower ({version.removeprefix('v')})."
         )
+
+
+def resolve_npm_sibling(executable):
+    """
+    Resolves `node`/`npm` to a full path, which also works on Windows where
+    `npm` is `npm.cmd` (not directly runnable by `subprocess` without a shell).
+    """
+    resolved = shutil.which(executable)
+    if resolved is None:
+        raise OSError(f"`{executable}` was not found in your system (PATH).")
+    return resolved
+
+
+def run_npm(npm_args, cwd, env=None, quiet=True):
+    """
+    Runs `npm <npm_args>` in `cwd`. With `quiet=True`, stdout is captured
+    (stderr passes through so errors stay visible).
+    """
+    subprocess.run(
+        [resolve_npm_sibling("npm"), *npm_args],
+        stdout=subprocess.PIPE if quiet else None,
+        check=True,
+        encoding="utf-8",
+        cwd=str(cwd),
+        env=env,
+    )
+
+
+def docs_node_env(library_name, version, language):
+    """
+    Environment for the kit build/dev server: DOCS_* variables end up as compile-time
+    constants (see kit/vite.config.ts) and in the base path (see kit/svelte.config.js).
+    """
+    env = os.environ.copy()
+    env["DOCS_LIBRARY"] = env.get("package_name") or library_name
+    env["DOCS_VERSION"] = version
+    env["DOCS_LANGUAGE"] = language
+    return env
+
+
+def stage_kit_routes(kit_folder, tmp_dir, output_path):
+    """
+    Stages the SvelteKit app in `tmp_dir` with the generated doc files as routes:
+
+    1. copies the kit folder (without dependencies/build artifacts),
+    2. copies the generated files from `output_path` into `src/routes`,
+    3. renames `.mdx` files to the SvelteKit routing convention (`foo.mdx` ->
+       `foo/+page.svelte`) and writes the markdown (`foo.md`) route files.
+
+    Returns `(kit_dir, routes_dir, markdown_exports)` where `markdown_exports` is a
+    list of `(relative_posix_path, markdown_content)` tuples.
+    """
+    kit_dir = Path(tmp_dir) / "kit"
+    routes_dir = kit_dir / "src" / "routes"
+
+    shutil.copytree(kit_folder, kit_dir, ignore=KIT_COPY_IGNORE)
+
+    # Manual copy and overwrite from output_path to src/routes: we don't use
+    # shutil.copytree as it exists and contains important files.
+    for f in Path(output_path).iterdir():
+        dest = routes_dir / f.name
+        if f.is_dir():
+            if dest.is_dir():
+                shutil.rmtree(dest)
+            shutil.copytree(f, dest)
+        else:
+            shutil.copy(f, dest)
+
+    # make mdx file paths comply with the sveltekit routing mechanism
+    # see more: https://svelte.dev/docs/kit/routing
+    markdown_exports = []
+    for mdx_file_path in routes_dir.rglob("*.mdx"):
+        new_page_svelte = sveltify_file_route(mdx_file_path)
+        new_markdown = markdownify_file_route(mdx_file_path)
+        content = write_markdown_route_file(mdx_file_path, new_markdown)
+        markdown_exports.append((Path(new_markdown).relative_to(routes_dir).as_posix(), content))
+        Path(new_page_svelte).parent.mkdir(parents=True, exist_ok=True)
+        shutil.move(mdx_file_path, new_page_svelte)
+
+    return kit_dir, routes_dir, markdown_exports
 
 
 def build_command(args):
@@ -117,86 +207,37 @@ def build_command(args):
     )
 
     # dev build should not update _versions.yml
-    package_doc_path = os.path.join(args.build_dir, args.library_name)
-    if "pr_" not in version and os.path.isfile(os.path.join(package_doc_path, "_versions.yml")):
-        update_versions_file(os.path.join(args.build_dir, args.library_name), version, args.path_to_docs)
+    package_doc_path = Path(args.build_dir) / args.library_name
+    if "pr_" not in version and (package_doc_path / "_versions.yml").is_file():
+        update_versions_file(package_doc_path, version, args.path_to_docs)
 
     # If asked, convert the MDX files into HTML files.
     if args.html:
         with tempfile.TemporaryDirectory() as tmp_dir:
-            tmp_dir = Path(tmp_dir)
-            # Copy everything in a tmp dir
-            shutil.copytree(kit_folder, tmp_dir / "kit")
-            # Manual copy and overwrite from output_path to tmp_dir / "kit" / "src" / "routes"
-            # We don't use shutil.copytree as tmp_dir / "kit" / "src" / "routes" exists and contains important files.
-            svelte_kit_routes_dir = tmp_dir / "kit" / "src" / "routes"
-            for f in output_path.iterdir():
-                dest = svelte_kit_routes_dir / f.name
-                if f.is_dir():
-                    # Remove the dest folder if it exists
-                    if dest.is_dir():
-                        shutil.rmtree(dest)
-                    shutil.copytree(f, dest)
-                else:
-                    shutil.copy(f, dest)
-            # make mdx file paths comply with the sveltekit 1.0 routing mechanism
-            # see more: https://learn.svelte.dev/tutorial/pages
-            markdown_exports = []
-            for mdx_file_path in svelte_kit_routes_dir.rglob("*.mdx"):
-                new_page_svelte = sveltify_file_route(mdx_file_path)
-                new_markdown = markdownify_file_route(mdx_file_path)
-                write_markdown_route_file(mdx_file_path, new_markdown)
-                markdown_exports.append((new_markdown, os.path.relpath(new_markdown, svelte_kit_routes_dir)))
-                parent_path = os.path.dirname(new_page_svelte)
-                os.makedirs(parent_path, exist_ok=True)
-                shutil.move(mdx_file_path, new_page_svelte)
+            kit_dir, _, markdown_exports = stage_kit_routes(kit_folder, tmp_dir, output_path)
 
             # Move the objects.inv file at the root
             if not args.not_python_module:
-                shutil.move(tmp_dir / "kit" / "src" / "routes" / "objects.inv", tmp_dir / "objects.inv")
+                shutil.move(kit_dir / "src" / "routes" / "objects.inv", Path(tmp_dir) / "objects.inv")
 
             # Build doc with node
-            working_dir = str(tmp_dir / "kit")
             print("Installing node dependencies")
-            subprocess.run(
-                ["npm", "ci"],
-                stdout=subprocess.PIPE,
-                check=True,
-                encoding="utf-8",
-                cwd=working_dir,
-            )
+            run_npm(["ci"], cwd=kit_dir)
 
-            env = os.environ.copy()
-            env["DOCS_LIBRARY"] = (
-                env["package_name"] or args.library_name if "package_name" in env else args.library_name
-            )
-            env["DOCS_VERSION"] = version
-            env["DOCS_LANGUAGE"] = args.language
             print("Building HTML files. This will take a while :-)")
-            subprocess.run(
-                ["npm", "run", "build"],
-                stdout=subprocess.PIPE,
-                check=True,
-                encoding="utf-8",
-                cwd=working_dir,
-                env=env,
-            )
+            run_npm(["run", "build"], cwd=kit_dir, env=docs_node_env(args.library_name, version, args.language))
 
             # Copy result back in the build_dir.
             shutil.rmtree(output_path)
-            shutil.copytree(tmp_dir / "kit" / "build", output_path)
-            # copy markdown routes alongside the generated html output
-            markdown_data = []
-            for markdown_file, relative_path in markdown_exports:
-                markdown_source = Path(markdown_file)
+            shutil.copytree(kit_dir / "build", output_path)
+            # write markdown routes alongside the generated html output
+            for relative_path, content in markdown_exports:
                 markdown_dest = output_path / relative_path
                 markdown_dest.parent.mkdir(parents=True, exist_ok=True)
-                shutil.copy(markdown_source, markdown_dest)
-                with open(markdown_source, encoding="utf-8") as f:
-                    markdown_data.append((relative_path, f.read()))
+                markdown_dest.write_text(content, encoding="utf-8", newline="\n")
             write_llms_feeds(
                 output_path,
-                markdown_data,
+                markdown_exports,
                 package_name=args.library_name,
                 version=version,
                 language=args.language,
@@ -204,7 +245,7 @@ def build_command(args):
             )
             # Move the objects.inv file back
             if not args.not_python_module:
-                shutil.move(tmp_dir / "objects.inv", output_path / "objects.inv")
+                shutil.move(Path(tmp_dir) / "objects.inv", output_path / "objects.inv")
 
 
 def build_command_parser(subparsers=None):
