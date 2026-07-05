@@ -626,7 +626,7 @@ Step 1: get latest `huggingface/huggingface.js` by running the command below:
 
 ```
 cd kit
-npm run update-inference-providers
+bun run update-inference-providers
 ```
 
 Step 2: add an icon for the new provider in `kit/src/lib/InferenceSnippet/InferenceSnippet.svelte`.
@@ -932,8 +932,8 @@ Physics is the natural science that studies matter,[a] its fundamental constitue
 3. Install dependencies & run dev mode
 ```bash
 cd doc-builder/kit
-npm ci
-npm run dev -- --open
+bun install --frozen-lockfile
+bun run dev --open
 ```
 4. Start developing. See svelte files in `doc-builder/kit/src/lib` for reference. The flow should be:
     1. Create a svelte component in `doc-builder/kit/src/lib`

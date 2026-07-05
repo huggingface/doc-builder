@@ -33,43 +33,66 @@ from doc_builder.utils import (
     write_markdown_route_file,
 )
 
-# The kit (SvelteKit) build currently runs on Vite 7, which requires Node.js >= 20.
+# The kit (SvelteKit) app is installed with bun (https://bun.sh); vite itself still
+# runs on Node.js (>= 20 for Vite 7).
+MIN_BUN_VERSION = (1, 2)
 MIN_NODE_MAJOR_VERSION = 20
 
-# Build artifacts and dependencies do not need to be staged: `npm ci` recreates
+# Build artifacts and dependencies do not need to be staged: `bun install` recreates
 # node_modules and the build regenerates `.svelte-kit` and `build`.
 KIT_COPY_IGNORE = shutil.ignore_patterns("node_modules", ".svelte-kit", "build")
 
 
-def check_node_is_available():
+def check_toolchain_is_available():
     """
-    Raises if Node.js is missing or older than `MIN_NODE_MAJOR_VERSION`.
+    Raises if bun (installer/script runner) or Node.js (vite's runtime) is missing or
+    too old.
     """
+    min_bun = ".".join(str(v) for v in MIN_BUN_VERSION)
     try:
         p = subprocess.run(
-            [resolve_npm_sibling("node"), "-v"],
+            [resolve_bun(), "--version"],
             capture_output=True,
             check=True,
             encoding="utf-8",
         )
-        version = p.stdout.strip()
+        bun_version = p.stdout.strip()
     except Exception as e:
         raise OSError(
-            f"This command requires Node.js v{MIN_NODE_MAJOR_VERSION} or newer, but node was not found in your system."
+            f"This command requires bun v{min_bun} or newer, but bun was not found in your system. "
+            "See https://bun.sh for installation instructions."
         ) from e
 
-    major = int(version.removeprefix("v").split(".")[0])
-    if major < MIN_NODE_MAJOR_VERSION:
+    if tuple(int(v) for v in bun_version.split(".")[: len(MIN_BUN_VERSION)]) < MIN_BUN_VERSION:
+        raise OSError(
+            f"This command requires bun v{min_bun} or newer, but the version in your system is lower ({bun_version})."
+        )
+
+    try:
+        p = subprocess.run(
+            [resolve_executable("node"), "-v"],
+            capture_output=True,
+            check=True,
+            encoding="utf-8",
+        )
+        node_version = p.stdout.strip()
+    except Exception as e:
+        raise OSError(
+            f"This command requires Node.js v{MIN_NODE_MAJOR_VERSION} or newer (vite's runtime), but node was not "
+            "found in your system."
+        ) from e
+
+    if int(node_version.removeprefix("v").split(".")[0]) < MIN_NODE_MAJOR_VERSION:
         raise OSError(
             f"This command requires Node.js v{MIN_NODE_MAJOR_VERSION} or newer, but the version in your system is "
-            f"lower ({version.removeprefix('v')})."
+            f"lower ({node_version.removeprefix('v')})."
         )
 
 
-def resolve_npm_sibling(executable):
+def resolve_executable(executable):
     """
-    Resolves `node`/`npm` to a full path, which also works on Windows where
-    `npm` is `npm.cmd` (not directly runnable by `subprocess` without a shell).
+    Resolves an executable to a full path (also needed on Windows, where `subprocess`
+    cannot run e.g. `.cmd` shims without a resolved path).
     """
     resolved = shutil.which(executable)
     if resolved is None:
@@ -77,13 +100,25 @@ def resolve_npm_sibling(executable):
     return resolved
 
 
-def run_npm(npm_args, cwd, env=None, quiet=True):
+def resolve_bun():
     """
-    Runs `npm <npm_args>` in `cwd`. With `quiet=True`, stdout is captured
+    Resolves `bun` to a full path.
+    """
+    try:
+        return resolve_executable("bun")
+    except OSError as e:
+        raise OSError(
+            "`bun` was not found in your system (PATH). See https://bun.sh for installation instructions."
+        ) from e
+
+
+def run_bun(bun_args, cwd, env=None, quiet=True):
+    """
+    Runs `bun <bun_args>` in `cwd`. With `quiet=True`, stdout is captured
     (stderr passes through so errors stay visible).
     """
     subprocess.run(
-        [resolve_npm_sibling("npm"), *npm_args],
+        [resolve_bun(), *bun_args],
         stdout=subprocess.PIPE if quiet else None,
         check=True,
         encoding="utf-8",
@@ -149,8 +184,8 @@ def stage_kit_routes(kit_folder, tmp_dir, output_path):
 def build_command(args):
     read_doc_config(args.path_to_docs)
     if args.html:
-        # Error at the beginning if node is not properly installed.
-        check_node_is_available()
+        # Error at the beginning if bun/node are not properly installed.
+        check_toolchain_is_available()
         # Error at the beginning if we can't locate the kit folder
         kit_folder = locate_kit_folder()
         if kit_folder is None:
@@ -221,11 +256,11 @@ def build_command(args):
                 shutil.move(kit_dir / "src" / "routes" / "objects.inv", Path(tmp_dir) / "objects.inv")
 
             # Build doc with node
-            print("Installing node dependencies")
-            run_npm(["ci"], cwd=kit_dir)
+            print("Installing js dependencies")
+            run_bun(["install", "--frozen-lockfile"], cwd=kit_dir)
 
             print("Building HTML files. This will take a while :-)")
-            run_npm(["run", "build"], cwd=kit_dir, env=docs_node_env(args.library_name, version, args.language))
+            run_bun(["run", "build"], cwd=kit_dir, env=docs_node_env(args.library_name, version, args.language))
 
             # Copy result back in the build_dir.
             shutil.rmtree(output_path)

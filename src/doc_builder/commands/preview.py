@@ -21,7 +21,7 @@ from pathlib import Path
 from threading import Thread
 
 from doc_builder import build_doc
-from doc_builder.commands.build import check_node_is_available, docs_node_env, run_npm, stage_kit_routes
+from doc_builder.commands.build import check_toolchain_is_available, docs_node_env, run_bun, stage_kit_routes
 from doc_builder.commands.convert_doc_file import find_root_git
 from doc_builder.utils import (
     is_watchdog_available,
@@ -127,13 +127,13 @@ def start_watcher(path, event_handler):
 
 def start_sveltekit_dev(kit_dir, env):
     """
-    Installs sveltekit node dependencies & starts sveltekit in dev mode.
+    Installs sveltekit js dependencies & starts sveltekit in dev mode.
     """
-    print("Installing node dependencies")
-    run_npm(["ci"], cwd=kit_dir)
+    print("Installing js dependencies")
+    run_bun(["install", "--frozen-lockfile"], cwd=kit_dir)
 
     # start sveltekit in dev mode
-    run_npm(["run", "dev"], cwd=kit_dir, env=env, quiet=False)
+    run_bun(["run", "dev"], cwd=kit_dir, env=env, quiet=False)
 
 
 def preview_command(args):
@@ -143,8 +143,8 @@ def preview_command(args):
         )
 
     read_doc_config(args.path_to_docs)
-    # Error at the beginning if node is not properly installed.
-    check_node_is_available()
+    # Error at the beginning if bun/node are not properly installed.
+    check_toolchain_is_available()
     # Error at the beginning if we can't locate the kit folder
     kit_folder = locate_kit_folder()
     if kit_folder is None:
