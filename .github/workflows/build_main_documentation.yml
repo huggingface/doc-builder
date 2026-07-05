@@ -211,11 +211,13 @@ jobs:
         shell: bash
         env:
           NODE_OPTIONS: --max-old-space-size=6656
+          # needed for --html_page_cache_write (trusted main builds only)
+          HF_TOKEN: ${{ secrets.hf_token }}
         run: |
           source .venv/bin/activate
           echo "doc_folder has been set to ${{ env.doc_folder }}"
           cd doc-builder
-          args="--build_dir ../build_dir --clean --html ${{ inputs.additional_args }} --repo_owner ${{ inputs.repo_owner }} --repo_name ${{ inputs.package }} --version_tag_suffix=${{ inputs.version_tag_suffix }}"
+          args="--build_dir ../build_dir --clean --html --html_page_cache hf://buckets/hf-doc-build/doc-build-cache --html_page_cache_write ${{ inputs.additional_args }} --repo_owner ${{ inputs.repo_owner }} --repo_name ${{ inputs.package }} --version_tag_suffix=${{ inputs.version_tag_suffix }}"
 
           if [ ! -z "${{ inputs.notebook_folder }}" ];
           then
