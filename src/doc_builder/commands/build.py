@@ -23,7 +23,7 @@ from pathlib import Path
 
 from doc_builder import build_doc, update_versions_file
 from doc_builder.build_cache import PageCache, hash_kit_tree, page_cache_key
-from doc_builder.mock_imports import mock_deps
+from doc_builder.mock_imports import get_registry_mock_deps, mock_deps
 from doc_builder.utils import (
     get_default_branch_name,
     get_doc_config,
@@ -149,9 +149,14 @@ def stage_kit_routes(kit_folder, tmp_dir, output_path):
 
 
 def build_command(args):
-    if args.mock_deps:
-        # must happen before the documented library is imported
-        mock_deps(args.mock_deps.split(","))
+    # heavy deps that can be mocked come from the per-library registry
+    # (doc_builder/mock_deps/<library>.txt); --mock_deps adds extra ones.
+    # Must happen before the documented library is imported; packages that are
+    # actually installed are never mocked.
+    registry_deps = get_registry_mock_deps(args.library_name)
+    extra_deps = args.mock_deps.split(",") if args.mock_deps else []
+    if registry_deps or extra_deps:
+        mock_deps(registry_deps + extra_deps)
     read_doc_config(args.path_to_docs)
     if args.html:
         # Error at the beginning if node is not properly installed.

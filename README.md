@@ -134,12 +134,15 @@ A page is reused when its generated MDX (post autodoc and internal-link resoluti
 
 doc-builder imports the documented library to read docstrings with `inspect` — necessary because libraries like `transformers` construct docstrings dynamically. Historically that meant installing the library's full dependency tree (torch, GPU wheels, custom containers) just to build documentation.
 
-`--mock_deps` mocks heavy dependencies instead, so only the documented library itself (and its light dependencies) needs to be installed:
+doc-builder mocks heavy dependencies instead, so only the documented library itself (and its light dependencies) needs to be installed. The list of mockable dependencies per library lives in `src/doc_builder/mock_deps/<library>.txt` and is applied automatically:
 
 ```bash
 pip install accelerate --no-deps  # plus its light dependencies
-doc-builder build accelerate ~/git/accelerate/docs/source --build_dir ~/tmp/test-build --mock_deps torch,deepspeed
+doc-builder build accelerate ~/git/accelerate/docs/source --build_dir ~/tmp/test-build
+# torch and deepspeed are mocked automatically (src/doc_builder/mock_deps/accelerate.txt)
 ```
+
+For a library without a registry entry (or to experiment), `--mock_deps torch,...` adds extra mocks on top of the registry.
 
 The mocked packages are importable, pass the `importlib.util.find_spec` + `importlib.metadata` availability checks HF libraries use, are subclassable without affecting the real subclass's signature or docstring, behave as pass-through decorators, and render in signatures like the real objects (`repr(torch.float32) == "torch.float32"`). Packages that are actually installed are never mocked, and `doc-builder preview` supports the flag too.
 

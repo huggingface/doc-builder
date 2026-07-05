@@ -47,8 +47,40 @@ import importlib.metadata
 import sys
 import types
 import typing
+from pathlib import Path
 
 MOCK_VERSION = "9999.0.0"
+
+
+class _MockVersionString(str):
+    """
+    Version string comparable against tuples, like torch's `TorchVersion`
+    (libraries write e.g. `torch.__version__ >= (2, 6)`).
+    """
+
+    def _as_tuple(self):
+        return tuple(int(p) for p in self.split(".") if p.isdigit())
+
+    def _coerce(self, other):
+        if isinstance(other, tuple):
+            return tuple(int(p) if not isinstance(p, int) else p for p in other)
+        return None
+
+    def __ge__(self, other):
+        coerced = self._coerce(other)
+        return self._as_tuple() >= coerced if coerced is not None else str.__ge__(self, other)
+
+    def __gt__(self, other):
+        coerced = self._coerce(other)
+        return self._as_tuple() > coerced if coerced is not None else str.__gt__(self, other)
+
+    def __le__(self, other):
+        coerced = self._coerce(other)
+        return self._as_tuple() <= coerced if coerced is not None else str.__le__(self, other)
+
+    def __lt__(self, other):
+        coerced = self._coerce(other)
+        return self._as_tuple() < coerced if coerced is not None else str.__lt__(self, other)
 
 
 class _MockObject:
@@ -112,6 +144,9 @@ class _MockObject:
         return self
 
     # keep common import-time expressions working
+    def __len__(self):
+        return 0
+
     def __iter__(self):
         return iter(())
 
@@ -176,8 +211,15 @@ class _MockBaseMeta(abc.ABCMeta):
     keeps mock bases combinable with real ABC bases without metaclass conflicts.
     """
 
+    # only fall back for methods commonly inherited from framework bases and
+    # documented as such (e.g. `[[autodoc]] SomeModel - forward` where the model
+    # doesn't override nn.Module.forward). A blanket fallback would make
+    # `hasattr(cls, anything)` true and break libraries' own attribute checks
+    # (e.g. peft's prefix-registration validation).
+    _FALLBACK_ATTRIBUTES = {"forward", "call"}
+
     def __getattr__(cls, name):
-        if name.startswith("__") and name.endswith("__"):
+        if name not in _MockBaseMeta._FALLBACK_ATTRIBUTES:
             raise AttributeError(name)
         base_display_name = getattr(cls, "__display_name__", cls.__name__)
         return _make_mock(f"{base_display_name}.{name}")
@@ -268,7 +310,7 @@ class MockFinder(importlib.abc.MetaPathFinder, importlib.abc.Loader):
 
     def create_module(self, spec):
         module = _MockModule(spec.name)
-        module.__version__ = MOCK_VERSION
+        module.__version__ = _MockVersionString(MOCK_VERSION)
         module.__path__ = []
         return module
 
@@ -283,6 +325,23 @@ class MockFinder(importlib.abc.MetaPathFinder, importlib.abc.Loader):
         if name.replace("-", "_").lower() in {p.replace("-", "_").lower() for p in self.packages}:
             return [_MockDistribution(name)]
         return []
+
+
+def get_registry_mock_deps(library_name):
+    """
+    Returns the registered list of mockable heavy dependencies for a documented
+    library, from `doc_builder/mock_deps/<library_name>.txt` (one import name per
+    line, `#` comments). Empty when the library has no registry entry.
+    """
+    registry_file = Path(__file__).parent / "mock_deps" / f"{library_name}.txt"
+    if not registry_file.is_file():
+        return []
+    deps = []
+    for line in registry_file.read_text(encoding="utf-8").splitlines():
+        line = line.split("#", 1)[0].strip()
+        if line:
+            deps.append(line)
+    return deps
 
 
 def mock_deps(packages):

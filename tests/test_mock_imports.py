@@ -105,6 +105,19 @@ class MockImportsTester(unittest.TestCase):
         # class-level fallback: the real base (e.g. nn.Module) would provide `forward`
         self.assertIsNotNone(getattr(Model, "forward", None))
 
+    def test_registry_mock_deps(self):
+        from doc_builder.mock_imports import get_registry_mock_deps
+
+        deps = get_registry_mock_deps("transformers")
+        self.assertIn("torch", deps)
+        self.assertIn("tensorflow", deps)
+        # comments are stripped
+        self.assertTrue(all(not d.startswith("#") for d in deps))
+        # unknown library -> empty
+        self.assertEqual(get_registry_mock_deps("not-a-real-library"), [])
+        # validated as needing no mocks -> empty but present
+        self.assertEqual(get_registry_mock_deps("datasets"), [])
+
     def test_installed_packages_are_not_mocked(self):
         # `json` is really installed, so it must be skipped
         mocked = mock_deps(["json"])

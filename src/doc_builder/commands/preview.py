@@ -23,7 +23,7 @@ from threading import Thread
 from doc_builder import build_doc
 from doc_builder.commands.build import check_node_is_available, docs_node_env, run_npm, stage_kit_routes
 from doc_builder.commands.convert_doc_file import find_root_git
-from doc_builder.mock_imports import mock_deps
+from doc_builder.mock_imports import get_registry_mock_deps, mock_deps
 from doc_builder.utils import (
     is_watchdog_available,
     locate_kit_folder,
@@ -138,9 +138,14 @@ def start_sveltekit_dev(kit_dir, env):
 
 
 def preview_command(args):
-    if args.mock_deps:
-        # must happen before the documented library is imported
-        mock_deps(args.mock_deps.split(","))
+    # heavy deps that can be mocked come from the per-library registry
+    # (doc_builder/mock_deps/<library>.txt); --mock_deps adds extra ones.
+    # Must happen before the documented library is imported; packages that are
+    # actually installed are never mocked.
+    registry_deps = get_registry_mock_deps(args.library_name)
+    extra_deps = args.mock_deps.split(",") if args.mock_deps else []
+    if registry_deps or extra_deps:
+        mock_deps(registry_deps + extra_deps)
     if not is_watchdog_available():
         raise ImportError(
             "Please install `watchdog` to run `doc-builder preview` command.\nYou can do so through pip: `pip install watchdog`"
