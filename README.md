@@ -144,6 +144,8 @@ doc-builder build accelerate ~/git/accelerate/docs/source --build_dir ~/tmp/test
 
 For a library without a registry entry (or to experiment), `--mock_deps torch,...` adds extra mocks on top of the registry.
 
+The registry key is the doc-builder *library name* as passed to `doc-builder build` — for namespace subpackages that is the dotted module name (e.g. `mock_deps/optimum.intel.txt`), and libraries that build under a shared name share a file (optimum-onnx builds as `optimum`). A registered name may itself be a dotted submodule (e.g. `optimum.onnxruntime`), which mocks a missing sibling inside an installed namespace package.
+
 The mocked packages are importable, pass the `importlib.util.find_spec` + `importlib.metadata` availability checks HF libraries use, are subclassable without affecting the real subclass's signature or docstring, behave as pass-through decorators, and render in signatures like the real objects (`repr(torch.float32) == "torch.float32"`). Packages that are actually installed are never mocked, and `doc-builder preview` supports the flag too.
 
 Fidelity, verified on `accelerate` built without torch installed: 46/48 pages byte-identical to a real-torch build; the two remaining pages differ only in typing paths rendered from the public import path instead of the internal one (e.g. `torch.nn.Module` instead of `torch.nn.modules.module.Module`).

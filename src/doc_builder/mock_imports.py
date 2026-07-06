@@ -299,8 +299,10 @@ class MockFinder(importlib.abc.MetaPathFinder, importlib.abc.Loader):
         self.packages = set(packages)
 
     def _is_mocked(self, fullname):
-        root = fullname.split(".", 1)[0]
-        return root in self.packages
+        # prefix matching so a registered name can be a submodule of a namespace
+        # package (e.g. mock `optimum.onnxruntime` while the real `optimum` and
+        # `optimum.intel` stay importable)
+        return any(fullname == package or fullname.startswith(package + ".") for package in self.packages)
 
     def find_spec(self, fullname, path=None, target=None):
         if not self._is_mocked(fullname):

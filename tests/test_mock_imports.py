@@ -105,6 +105,24 @@ class MockImportsTester(unittest.TestCase):
         # class-level fallback: the real base (e.g. nn.Module) would provide `forward`
         self.assertIsNotNone(getattr(Model, "forward", None))
 
+    def test_dotted_submodule_mock(self):
+        # a registered dotted name mocks a missing submodule of a real (namespace)
+        # package, like `optimum.onnxruntime` when only `optimum` is installed
+        finder = MockFinder(["unittest.doc_builder_missing_sibling"])
+        sys.meta_path.insert(0, finder)
+        try:
+            module = importlib.import_module("unittest.doc_builder_missing_sibling.sub")
+            self.assertEqual(module.__name__, "unittest.doc_builder_missing_sibling.sub")
+            import unittest as real_unittest
+
+            # the real parent package is untouched
+            self.assertIs(real_unittest.TestCase, unittest.TestCase)
+        finally:
+            sys.meta_path.remove(finder)
+            for name in list(sys.modules):
+                if name.startswith("unittest.doc_builder_missing_sibling"):
+                    del sys.modules[name]
+
     def test_registry_mock_deps(self):
         from doc_builder.mock_imports import get_registry_mock_deps
 
