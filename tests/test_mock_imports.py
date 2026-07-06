@@ -105,6 +105,13 @@ class MockImportsTester(unittest.TestCase):
         # class-level fallback: the real base (e.g. nn.Module) would provide `forward`
         self.assertIsNotNone(getattr(Model, "forward", None))
 
+    def test_isinstance_issubclass_against_mock(self):
+        module = importlib.import_module(PKG)
+        # scipy>=1.17 does `issubclass(cls, torch.Tensor)` when torch is in
+        # sys.modules; a mock must answer False, not raise TypeError
+        self.assertFalse(issubclass(int, module.Tensor))
+        self.assertFalse(isinstance(3, module.Tensor))
+
     def test_dotted_submodule_mock(self):
         # a registered dotted name mocks a missing submodule of a real (namespace)
         # package, like `optimum.onnxruntime` when only `optimum` is installed
@@ -135,6 +142,18 @@ class MockImportsTester(unittest.TestCase):
         self.assertEqual(get_registry_mock_deps("not-a-real-library"), [])
         # validated as needing no mocks -> empty but present
         self.assertEqual(get_registry_mock_deps("datasets"), [])
+
+    def test_registry_real_deps(self):
+        from doc_builder.mock_imports import get_registry_mock_deps, get_registry_real_deps
+
+        resolved, nodeps = get_registry_real_deps("peft")
+        self.assertIn("transformers", resolved)
+        self.assertIn("accelerate", nodeps)  # accelerate's own deps include torch
+        # real:/nodeps: lines are install directives, not mocks
+        mocks = get_registry_mock_deps("peft")
+        self.assertIn("torch", mocks)
+        self.assertFalse(any(m.startswith(("real:", "nodeps:")) for m in mocks))
+        self.assertEqual(get_registry_real_deps("not-a-real-library"), ([], []))
 
     def test_installed_packages_are_not_mocked(self):
         # `json` is really installed, so it must be skipped

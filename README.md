@@ -134,15 +134,22 @@ A page is reused when its generated MDX (post autodoc and internal-link resoluti
 
 doc-builder imports the documented library to read docstrings with `inspect` — necessary because libraries like `transformers` construct docstrings dynamically. Historically that meant installing the library's full dependency tree (torch, GPU wheels, custom containers) just to build documentation.
 
-doc-builder mocks heavy dependencies instead, so only the documented library itself (and its light dependencies) needs to be installed. The list of mockable dependencies per library lives in `src/doc_builder/mock_deps/<library>.txt` and is applied automatically:
+doc-builder mocks heavy dependencies instead, so only the documented library itself (and its light dependencies) needs to be installed. Each library's registry file `src/doc_builder/mock_deps/<library>.txt` records both sides of that split:
+
+- bare lines name the heavy dependencies to **mock** at build time (applied automatically by `doc-builder build`/`preview`);
+- `real:<pip spec>` lines name the light dependencies a doc build must **install for real** (things the library imports unguarded, version-pinned requirements, packages used through `isinstance` checks, ...);
+- `nodeps:<pip spec>` lines are also installed for real but with `--no-deps`, because their own dependency trees pull in heavy packages (e.g. `accelerate`, whose install requires torch).
+
+`doc-builder light-install <library>` installs the `real:`/`nodeps:` dependencies (via `uv`), so a full light setup is:
 
 ```bash
-pip install accelerate --no-deps  # plus its light dependencies
+uv pip install ./accelerate --no-deps
+doc-builder light-install accelerate
 doc-builder build accelerate ~/git/accelerate/docs/source --build_dir ~/tmp/test-build
 # torch and deepspeed are mocked automatically (src/doc_builder/mock_deps/accelerate.txt)
 ```
 
-For a library without a registry entry (or to experiment), `--mock_deps torch,...` adds extra mocks on top of the registry.
+Install the library before running `light-install`: bare registry names are pinned to the library's own declared version ranges (e.g. transformers' `tokenizers>=0.22,<=0.23`), so registry files never have to chase upstream pins. `light-install` exits with code 3 when the library has no registry entry — `light-install <library> --check` tests this without installing anything, which is how the shared GitHub workflows decide between the light path and a full `[dev]` install. For a library without a registry entry (or to experiment), `--mock_deps torch,...` adds extra mocks on top of the registry.
 
 The registry key is the doc-builder *library name* as passed to `doc-builder build` — for namespace subpackages that is the dotted module name (e.g. `mock_deps/optimum.intel.txt`), and libraries that build under a shared name share a file (optimum-onnx builds as `optimum`). A registered name may itself be a dotted submodule (e.g. `optimum.onnxruntime`), which mocks a missing sibling inside an installed namespace package.
 

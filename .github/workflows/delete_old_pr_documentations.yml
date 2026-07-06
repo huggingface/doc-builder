@@ -16,8 +16,9 @@ jobs:
       - uses: denoland/setup-deno@11b63cf76cfcafb4e43f97b6cad24d8e8438f62d  # v1.5.2
         with:
           deno-version: v1.x
+      - uses: astral-sh/setup-uv@d31148d669074a8d0a63714ba94f3201e7020bc3  # v8.3.0
       - name: Install hf CLI
-        run: pip install -U huggingface_hub
+        run: uv tool install huggingface_hub
       - run: deno run --allow-env --allow-net --allow-run --allow-read ./delete-old-prs.ts
         env:
           HF_ACCESS_TOKEN: ${{ secrets.HF_ACCESS_TOKEN }}

@@ -165,6 +165,16 @@ class _MockObject:
     def __hash__(self):
         return hash(self.__display_name__)
 
+    # `issubclass(cls, torch.Tensor)` / `isinstance(x, torch.Tensor)` against a mock
+    # would be a TypeError (mocks are instances, not classes); scipy>=1.17 probes
+    # exactly this way when it sees `torch` in sys.modules. Nothing real is a
+    # subclass/instance of a mocked type, so answer False.
+    def __subclasscheck__(self, subclass):
+        return False
+
+    def __instancecheck__(self, instance):
+        return False
+
     def __lt__(self, other):
         return False
 
@@ -329,21 +339,48 @@ class MockFinder(importlib.abc.MetaPathFinder, importlib.abc.Loader):
         return []
 
 
+def registry_file_path(library_name):
+    """Path of a documented library's registry file (which may not exist)."""
+    return Path(__file__).parent / "mock_deps" / f"{library_name}.txt"
+
+
+def _read_registry(library_name):
+    registry_file = registry_file_path(library_name)
+    if not registry_file.is_file():
+        return []
+    lines = []
+    for line in registry_file.read_text(encoding="utf-8").splitlines():
+        line = line.split("#", 1)[0].strip()
+        if line:
+            lines.append(line)
+    return lines
+
+
 def get_registry_mock_deps(library_name):
     """
     Returns the registered list of mockable heavy dependencies for a documented
     library, from `doc_builder/mock_deps/<library_name>.txt` (one import name per
-    line, `#` comments). Empty when the library has no registry entry.
+    line, `#` comments). Lines prefixed with `real:` or `nodeps:` list packages to
+    install for real instead (see `get_registry_real_deps`) and are skipped here.
+    Empty when the library has no registry entry.
     """
-    registry_file = Path(__file__).parent / "mock_deps" / f"{library_name}.txt"
-    if not registry_file.is_file():
-        return []
-    deps = []
-    for line in registry_file.read_text(encoding="utf-8").splitlines():
-        line = line.split("#", 1)[0].strip()
-        if line:
-            deps.append(line)
-    return deps
+    return [line for line in _read_registry(library_name) if not line.startswith(("real:", "nodeps:"))]
+
+
+def get_registry_real_deps(library_name):
+    """
+    Returns the registered dependencies a light docs build must install for real
+    (not mock), as a tuple `(resolved, nodeps)` of pip requirement lists:
+    `real:<spec>` lines resolve normally, `nodeps:<spec>` lines must be installed
+    with `--no-deps` (their own dependency trees pull in heavy packages).
+    """
+    resolved, nodeps = [], []
+    for line in _read_registry(library_name):
+        if line.startswith("real:"):
+            resolved.append(line[len("real:") :].strip())
+        elif line.startswith("nodeps:"):
+            nodeps.append(line[len("nodeps:") :].strip())
+    return resolved, nodeps
 
 
 def mock_deps(packages):
