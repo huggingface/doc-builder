@@ -23,6 +23,7 @@ from pathlib import Path
 
 from doc_builder import build_doc, update_versions_file
 from doc_builder.build_cache import PageCache, hash_kit_tree, page_cache_key
+from doc_builder.mock_imports import get_registry_mock_deps, mock_deps
 from doc_builder.utils import (
     get_default_branch_name,
     get_doc_config,
@@ -148,6 +149,14 @@ def stage_kit_routes(kit_folder, tmp_dir, output_path):
 
 
 def build_command(args):
+    # heavy deps that can be mocked come from the per-library registry
+    # (doc_builder/mock_deps/<library>.txt); --mock_deps adds extra ones.
+    # Must happen before the documented library is imported; packages that are
+    # actually installed are never mocked.
+    registry_deps = get_registry_mock_deps(args.library_name)
+    extra_deps = args.mock_deps.split(",") if args.mock_deps else []
+    if registry_deps or extra_deps:
+        mock_deps(registry_deps + extra_deps)
     read_doc_config(args.path_to_docs)
     if args.html:
         # Error at the beginning if node is not properly installed.
@@ -355,6 +364,14 @@ def build_command_parser(subparsers=None):
         help="Page-level HTML build cache location: an HF storage bucket path (e.g. "
         "`hf://buckets/hf-doc-build/doc-build-cache`) or a local directory. Only used with --html. Pages whose "
         "generated mdx did not change are reused from the cache instead of being prerendered again.",
+    )
+    parser.add_argument(
+        "--mock_deps",
+        type=str,
+        default=None,
+        help="Comma-separated list of heavy dependencies (e.g. `torch,tensorflow`) to mock instead of importing, so "
+        "the documented library can be introspected without installing them. Packages that are actually installed "
+        "are never mocked.",
     )
     parser.add_argument(
         "--html_page_cache_write",
