@@ -49,6 +49,8 @@ setup(
     keywords="doc documentation doc-builder huggingface hugging face",
     url="https://github.com/huggingface/doc-builder",
     package_dir={"": "src"},
+    package_data={"doc_builder": ["mock_deps/*.txt"]},
+    include_package_data=True,
     packages=find_packages("src"),
     extras_require=extras,
     install_requires=install_requires,

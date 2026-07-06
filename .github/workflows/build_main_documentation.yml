@@ -46,12 +46,6 @@ on:
       convert_notebooks:
         type: boolean
         description: "Convert notebooks to markdown files before building docs."
-      # Docker image to use for the build. Set custom_container="huggingface/transformers-doc-builder" if you need
-      # a complete install. Default to `""` which means CI will run on the runner directly.
-      custom_container:
-        type: string
-        default: ""
-        description: "Docker image to use for the build."
     secrets:
       hf_token:
         required: true
@@ -61,8 +55,6 @@ on:
 jobs:
   build_main_documentation:
     runs-on: ubuntu-22.04
-    container:
-      ${{ inputs.custom_container }}
     defaults:
       run:
         shell: bash
@@ -92,28 +84,7 @@ jobs:
           node-version: '20'
           cache-dependency-path: "kit/package-lock.json"
 
-      - name: Export ROOT_APT_GET ('apt-get' or 'sudo apt-get')
-        # Use `sudo` only if running on the base runner.
-        # When using a container, `sudo` is not needed (and not installed)
-        run: |
-          if [ -z "${{ inputs.custom_container }}" ]
-          then
-            echo "ROOT_APT_GET=sudo apt-get" >> $GITHUB_ENV
-          else
-            echo "ROOT_APT_GET=apt-get" >> $GITHUB_ENV
-          fi
-
-      - name: Export PIP_OR_UV ('pip' or 'uv pip')
-        # Use `uv` only if running on the base runner.
-        # When using a container, `pip` has already been used to installed existing deps
-        # and is therefore quicker to resolve (already have some cached stuff).
-        run: |
-          if [ -z "${{ inputs.custom_container }}" ]
-          then
-            echo "PIP_OR_UV=uv pip" >> $GITHUB_ENV
-          else
-            echo "PIP_OR_UV=pip" >> $GITHUB_ENV
-          fi
+      - uses: astral-sh/setup-uv@d31148d669074a8d0a63714ba94f3201e7020bc3  # v8.3.0
 
       - name: Set env variables
         run: |
@@ -134,13 +105,11 @@ jobs:
 
       # Needed to upload zips to hf.co
       - name: Install zip
-        # Use sudo only if running on the base runner.
-        # When using a container, `sudo` is not needed (and not installed).
-        run: $ROOT_APT_GET install -y zip
+        run: sudo apt-get install -y zip
 
       - name: Install libgl1
         if: inputs.install_libgl1
-        run: $ROOT_APT_GET install -y libgl1
+        run: sudo apt-get install -y libgl1
 
       - name: Install Rust
         uses: dtolnay/rust-toolchain@3c5f7ea28cd621ae0bf5283f0e981fb97b8a7af9  # master 2026-03-27
@@ -148,32 +117,33 @@ jobs:
         with:
           toolchain: stable
 
-      # Use venv in both cases
-      - name: Install uv
-        run: |
-          pip install -U uv
-          uv venv
-
       - name: Setup environment
         shell: bash
         run: |
+          uv venv
           source .venv/bin/activate
-          $PIP_OR_UV uninstall doc-builder
           cd doc-builder
           git pull origin main
-          $PIP_OR_UV install .
+          uv pip install .
           cd ..
 
-          if [[ -n "${{ inputs.package_path }}" ]]
+          if [[ "${{ inputs.additional_args }}" == *"--not_python_module"* ]]
           then
-            cd ${{ inputs.package_path }}
-            $PIP_OR_UV install .[dev]
-          elif [[ "${{ inputs.additional_args }}" != *"--not_python_module"* ]];
-          then
-            cd ${{ inputs.package }}
-            $PIP_OR_UV install .[dev]
+            echo "Not a Python module; skipping package install."
+          else
+            package_dir="${{ inputs.package_path || inputs.package }}"
+            # Light install when the package has a mock-deps registry entry: only its
+            # real (light) doc-build deps are installed and the heavy ones are mocked
+            # at build time. Falls back to a full [dev] install otherwise.
+            if doc-builder light-install ${{ env.package_name }} --check
+            then
+              uv pip install "./$package_dir" --no-deps
+              doc-builder light-install ${{ env.package_name }}
+            else
+              echo "Falling back to a full install."
+              uv pip install "./$package_dir[dev]"
+            fi
           fi
-          cd ..
 
       - name: Setup git
         run: |
@@ -244,9 +214,8 @@ jobs:
           HF_TOKEN: ${{ secrets.hf_token }}
           PACKAGE_NAME: ${{ env.package_name }}
         run: |
-          pip install -U huggingface_hub
           cd build_dir
-          hf sync "./$PACKAGE_NAME" "hf://buckets/hf-doc-build/doc/$PACKAGE_NAME"
+          uvx --from huggingface_hub hf sync "./$PACKAGE_NAME" "hf://buckets/hf-doc-build/doc/$PACKAGE_NAME"
           cd ..
 
       - name: Push to dataset (legacy, kept for rollback safety)

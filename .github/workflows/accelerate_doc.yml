@@ -38,7 +38,12 @@ jobs:
         run: uv venv --python 3.10 .venv
 
       - name: Install Python dependencies
-        run: uv pip install --python .venv/bin/python ./doc-builder './accelerate[dev]'
+        # light install: only accelerate's real (light) doc-build deps; torch & co are
+        # mocked at build time from the mock-deps registry
+        run: |
+          uv pip install --python .venv/bin/python ./doc-builder
+          uv pip install --python .venv/bin/python --no-deps ./accelerate
+          ./.venv/bin/doc-builder light-install accelerate
 
       - name: Make documentation
         run: |

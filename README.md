@@ -130,6 +130,33 @@ A page is reused when its generated MDX (post autodoc and internal-link resoluti
 
 `--html_page_cache_write` also stores freshly built pages. Only enable it on trusted builds (the shared GitHub workflows enable it on main-branch builds and keep PR builds read-only), so that untrusted code cannot poison the cache. Cache failures are never fatal: any error degrades to building the affected pages.
 
+### Building without installing heavy dependencies
+
+doc-builder imports the documented library to read docstrings with `inspect` — necessary because libraries like `transformers` construct docstrings dynamically. Historically that meant installing the library's full dependency tree (torch, GPU wheels, custom containers) just to build documentation.
+
+doc-builder mocks heavy dependencies instead, so only the documented library itself (and its light dependencies) needs to be installed. Each library's registry file `src/doc_builder/mock_deps/<library>.txt` records both sides of that split:
+
+- bare lines name the heavy dependencies to **mock** at build time (applied automatically by `doc-builder build`/`preview`);
+- `real:<pip spec>` lines name the light dependencies a doc build must **install for real** (things the library imports unguarded, version-pinned requirements, packages used through `isinstance` checks, ...);
+- `nodeps:<pip spec>` lines are also installed for real but with `--no-deps`, because their own dependency trees pull in heavy packages (e.g. `accelerate`, whose install requires torch).
+
+`doc-builder light-install <library>` installs the `real:`/`nodeps:` dependencies (via `uv`), so a full light setup is:
+
+```bash
+uv pip install ./accelerate --no-deps
+doc-builder light-install accelerate
+doc-builder build accelerate ~/git/accelerate/docs/source --build_dir ~/tmp/test-build
+# torch and deepspeed are mocked automatically (src/doc_builder/mock_deps/accelerate.txt)
+```
+
+Install the library before running `light-install`: bare registry names are pinned to the library's own declared version ranges (e.g. transformers' `tokenizers>=0.22,<=0.23`), so registry files never have to chase upstream pins. `light-install` exits with code 3 when the library has no registry entry — `light-install <library> --check` tests this without installing anything, which is how the shared GitHub workflows decide between the light path and a full `[dev]` install. For a library without a registry entry (or to experiment), `--mock_deps torch,...` adds extra mocks on top of the registry.
+
+The registry key is the doc-builder *library name* as passed to `doc-builder build` — for namespace subpackages that is the dotted module name (e.g. `mock_deps/optimum.intel.txt`), and libraries that build under a shared name share a file (optimum-onnx builds as `optimum`). A registered name may itself be a dotted submodule (e.g. `optimum.onnxruntime`), which mocks a missing sibling inside an installed namespace package.
+
+The mocked packages are importable, pass the `importlib.util.find_spec` + `importlib.metadata` availability checks HF libraries use, are subclassable without affecting the real subclass's signature or docstring, behave as pass-through decorators, and render in signatures like the real objects (`repr(torch.float32) == "torch.float32"`). Packages that are actually installed are never mocked, and `doc-builder preview` supports the flag too.
+
+Fidelity, verified on `accelerate` built without torch installed: 46/48 pages byte-identical to a real-torch build; the two remaining pages differ only in typing paths rendered from the public import path instead of the internal one (e.g. `torch.nn.Module` instead of `torch.nn.modules.module.Module`).
+
 ### Notebook conversion
 
 `doc-builder` can also automatically convert some of the documentation guides or tutorials into notebooks. This requires two steps:

@@ -39,14 +39,13 @@ jobs:
           # Uncomment the following line to use a specific revision of doc-builder
           # ref: fix-corrupted-zip
 
+      - uses: astral-sh/setup-uv@d31148d669074a8d0a63714ba94f3201e7020bc3  # v8.3.0
+
       - name: Setup environment
         shell: bash
         id: setup-env
         run: |
-          pip install black
-          cd doc-builder
-          pip install .
-          cd ..
+          uv pip install --system ./doc-builder
           echo "current_work_dir=$(pwd)" >> $GITHUB_OUTPUT
 
       - name: 'Download artifact'
@@ -137,8 +136,7 @@ jobs:
           HF_TOKEN: ${{ secrets.hf_token }}
         run: |
           cd build_dir
-          pip install -U huggingface_hub
-          hf sync "./$PACKAGE_NAME" "hf://buckets/hf-doc-build/doc-dev/$PACKAGE_NAME"
+          uvx --from huggingface_hub hf sync "./$PACKAGE_NAME" "hf://buckets/hf-doc-build/doc-dev/$PACKAGE_NAME"
 
       - name: Find doc comment
         uses: peter-evans/find-comment@b30e6a3c0ed37e7c023ccd3f1db5c6c0b0c23aad  # v4.0.0
