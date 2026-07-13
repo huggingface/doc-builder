@@ -55,6 +55,9 @@ on:
         type: boolean
         default: false
         description: "Fail doc build when runnable warnings are emitted. Requires `additional_args` to include `--emit-warning`."
+      python_version:
+        type: string
+        description: "Python version for the build venv (e.g. '3.11'). Defaults to the runner's system Python."
 
 
 jobs:
@@ -133,7 +136,7 @@ jobs:
       - name: Setup environment
         shell: bash
         run: |
-          uv venv
+          uv venv ${{ inputs.python_version && format('--python {0}', inputs.python_version) || '' }}
           source .venv/bin/activate
           cd doc-builder
           git pull origin ${{ inputs.doc_builder_revision }}
