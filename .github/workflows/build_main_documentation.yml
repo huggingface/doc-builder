@@ -150,12 +150,18 @@ jobs:
           git config --global user.name "Hugging Face Doc Builder"
           git config --global user.email docs@huggingface.co
 
+      # The version list is read from the bucket we serve from, not from the legacy
+      # dataset: a version advertised in _versions.yml with no matching folder in the
+      # bucket makes hf.co/docs/<package> 404 on its default version.
       - name: Create build directory
+        env:
+          HF_TOKEN: ${{ secrets.hf_token }}
+          PACKAGE_NAME: ${{ env.package_name }}
         run: |
           mkdir build_dir
-          mkdir build_dir/${{ env.package_name }}
-          cd build_dir/${{ env.package_name }}
-          wget https://huggingface.co/datasets/hf-doc-build/doc-build/raw/main/${{ env.package_name }}/_versions.yml
+          mkdir build_dir/$PACKAGE_NAME
+          cd build_dir/$PACKAGE_NAME
+          uvx --from huggingface_hub hf cp "hf://buckets/hf-doc-build/doc/$PACKAGE_NAME/_versions.yml" _versions.yml
 
       - name: Run pre-command
         shell: bash
