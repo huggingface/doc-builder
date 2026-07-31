@@ -14,6 +14,7 @@
 
 import importlib.machinery
 import importlib.util
+import json
 import os
 import re
 import shutil
@@ -375,61 +376,98 @@ def strip_html_tags(text: str) -> str:
     return stripper.get_data()
 
 
+def _extract_svelte_prop(props: str, prop_name: str):
+    """
+    Read the JSON value of a `name={<json>}` svelte attribute out of an opening-tag
+    attribute string, or return `None` if the prop is absent or malformed.
+
+    The JSON is parsed with `raw_decode` so values containing `}` or `>` (type
+    annotations, defaults, ...) don't confuse the extraction.
+    """
+    match = re.search(rf"\b{prop_name}=\{{", props)
+    if match is None:
+        return None
+    try:
+        value, end = json.JSONDecoder().raw_decode(props, match.end())
+    except ValueError:
+        return None
+    if not props[end:].lstrip().startswith("}"):
+        return None
+    return value
+
+
+def _extract_section(block: str, tag: str):
+    """Return the (stripped) content of `<tag>...</tag>` in `block`, or `None`."""
+    match = re.search(rf"<{tag}>(.*?)</{tag}>", block, re.DOTALL)
+    return match.group(1).strip() if match else None
+
+
 def extract_docstring_info(docstring_block: str) -> dict:
-    """Extract information from a docstring block."""
+    """
+    Extract information from a `<Docstring ...>...</Docstring>` block.
+
+    Metadata (name, anchor, source, signature) comes from the component props, the
+    markdown-bearing sections (parameters, returns, ...) from the component body.
+    See `doc_builder.autodoc.get_signature_component_svelte` for the emitted shape.
+    """
     info = {
         "name": None,
         "anchor": None,
         "source": None,
         "parameters": None,
         "paramsdesc": None,
+        "paramsgroups": [],
         "rettype": None,
         "retdesc": None,
-        "description": None,
+        "yieldtype": None,
+        "yielddesc": None,
+        "raisederrors": None,
+        "raises": None,
+        "is_getset_descriptor": False,
     }
 
-    # Extract name
-    name_match = re.search(r"<name>(.*?)</name>", docstring_block, re.DOTALL)
-    if name_match:
-        raw_name = name_match.group(1).strip()
+    open_tag = re.match(r"<Docstring\s(?P<props>[^\n]*)>", docstring_block)
+    props = open_tag.group("props") if open_tag else ""
+
+    name = _extract_svelte_prop(props, "name")
+    if name:
         # Remove "class " or "def " prefix if present
-        cleaned_name = re.sub(r"^(class|def)\s+", "", raw_name)
-        info["name"] = cleaned_name
+        info["name"] = re.sub(r"^(class|def)\s+", "", name.strip())
 
-    # Extract anchor
-    anchor_match = re.search(r"<anchor>(.*?)</anchor>", docstring_block, re.DOTALL)
-    if anchor_match:
-        info["anchor"] = anchor_match.group(1).strip()
+    anchor = _extract_svelte_prop(props, "anchor")
+    # `anchor` is stringified python-side, so a missing anchor arrives as `"None"`.
+    if anchor and anchor != "None":
+        info["anchor"] = anchor.strip()
 
-    # Extract source
-    source_match = re.search(r"<source>(.*?)</source>", docstring_block, re.DOTALL)
-    if source_match:
-        info["source"] = source_match.group(1).strip()
+    source = _extract_svelte_prop(props, "source")
+    if source:
+        info["source"] = source.strip()
 
-    # Extract parameters description
-    paramsdesc_match = re.search(r"<paramsdesc>(.*?)</paramsdesc>", docstring_block, re.DOTALL)
-    if paramsdesc_match:
-        info["paramsdesc"] = paramsdesc_match.group(1).strip()
+    parameters = _extract_svelte_prop(props, "parameters")
+    if isinstance(parameters, list):
+        info["parameters"] = parameters
 
-    # Extract return type
-    rettype_match = re.search(r"<rettype>(.*?)</rettype>", docstring_block, re.DOTALL)
-    if rettype_match:
-        info["rettype"] = rettype_match.group(1).strip()
+    info["is_getset_descriptor"] = bool(_extract_svelte_prop(props, "isGetSetDescriptor"))
 
-    # Extract return description
-    retdesc_match = re.search(r"<retdesc>(.*?)</retdesc>", docstring_block, re.DOTALL)
-    if retdesc_match:
-        info["retdesc"] = retdesc_match.group(1).strip()
+    for key, tag in (
+        ("paramsdesc", "paramsdesc"),
+        ("rettype", "rettype"),
+        ("retdesc", "retdesc"),
+        ("yieldtype", "yieldtype"),
+        ("yielddesc", "yielddesc"),
+        ("raisederrors", "raisederrors"),
+        ("raises", "raises"),
+    ):
+        info[key] = _extract_section(docstring_block, tag)
 
-    # Extract text outside docstring tags but inside the div
-    # This is the description text
-    description_match = re.search(r"</docstring>(.*?)(?:</div>|$)", docstring_block, re.DOTALL)
-    if description_match:
-        desc_text = description_match.group(1).strip()
-        # Remove any remaining HTML tags
-        desc_text = re.sub(r"<[^>]+>", "", desc_text)
-        if desc_text:
-            info["description"] = desc_text
+    # Extra parameter groups, e.g. transformers' "Parameters for sequence generation".
+    for group in re.findall(r"<paramsgroup>(.*?)</paramsgroup>", docstring_block, re.DOTALL):
+        info["paramsgroups"].append(
+            {
+                "title": _extract_section(group, "paramsgrouptitle"),
+                "desc": _extract_section(group, "paramsgroupdesc"),
+            }
+        )
 
     return info
 
@@ -476,6 +514,23 @@ def format_parameters(paramsdesc: str) -> str:
     return "\n".join(formatted_params)
 
 
+def format_call_signature(name: str, parameters) -> str:
+    """
+    Render the `parameters` prop (a list of `{"name": ..., "val": ...}`) as a call
+    signature, e.g. ``HfApi.merge_pull_request(discussion_num: int, token = None)``.
+    """
+    args = ", ".join(f"{param.get('name', '')}{param.get('val', '')}".strip() for param in parameters)
+    return f"{name}({args})"
+
+
+def format_type(value: str) -> str:
+    """
+    Wrap a return/yield/raise type in backticks, unless it already carries markup
+    (a resolved `[Name](url)` doc link, inline code, ...) that backticks would break.
+    """
+    return value if re.search(r"[`\[\]<>]", value) else f"`{value}`"
+
+
 def process_docstring_block(docstring_block: str) -> str:
     """
     Process a docstring block by:
@@ -497,16 +552,18 @@ def process_docstring_block(docstring_block: str) -> str:
             parts.append(f"#### {info['name']}")
         parts.append("")
 
+        # Add the call signature (properties are not callable, so they have none)
+        if info["parameters"] is not None and not info["is_getset_descriptor"]:
+            parts.append("```python")
+            parts.append(format_call_signature(info["name"], info["parameters"]))
+            parts.append("```")
+            parts.append("")
+
     # Add source link if available
     if info["source"]:
         # Strip any HTML from source
         source_clean = strip_html_tags(info["source"])
         parts.append(f"[Source]({source_clean})")
-        parts.append("")
-
-    # Add description
-    if info["description"]:
-        parts.append(info["description"])
         parts.append("")
 
     # Add parameters description
@@ -518,22 +575,31 @@ def process_docstring_block(docstring_block: str) -> str:
         parts.append(formatted_params)
         parts.append("")
 
-    # Add return type
-    if info["rettype"]:
-        parts.append("**Returns:**")
+    # Add the extra parameter groups, if any
+    for group in info["paramsgroups"]:
+        if not group["desc"]:
+            continue
+        parts.append(f"**{group['title'] or 'Parameters'}:**")
         parts.append("")
-        # Strip HTML tags from return type
-        rettype_clean = strip_html_tags(info["rettype"])
-        parts.append(f"`{rettype_clean}`")
+        parts.append(format_parameters(group["desc"]))
         parts.append("")
 
-    # Add return description
-    if info["retdesc"]:
-        if not info["rettype"]:
-            parts.append("**Returns:**")
-            parts.append("")
-        parts.append(info["retdesc"])
+    # Add the returns / yields / raises sections
+    for type_key, desc_key, label in (
+        ("rettype", "retdesc", "Returns"),
+        ("yieldtype", "yielddesc", "Yields"),
+        ("raisederrors", "raises", "Raises"),
+    ):
+        if not info[type_key] and not info[desc_key]:
+            continue
+        header = f"**{label}:**"
+        if info[type_key]:
+            header += f" {format_type(info[type_key])}"
+        parts.append(header)
         parts.append("")
+        if info[desc_key]:
+            parts.append(info[desc_key])
+            parts.append("")
 
     result = "\n".join(parts)
 
@@ -611,18 +677,23 @@ def strip_html_from_markdown(content: str) -> str:
     Strip HTML from markdown content.
 
     Handles:
-    - Docstring blocks wrapped in <div class="docstring...">...</div>
+    - `<Docstring ...>...</Docstring>` components emitted by autodoc, which become a
+      level-4 heading with the signature, then the `**Parameters:**`/`**Returns:**`
+      sections. The object description follows the component in the source, so it
+      keeps its place right after those (same order as the rendered HTML page).
     - Other HTML tags throughout the document
     """
     result = content
 
-    # Process docstring blocks with their wrapping divs
-    # Pattern to match: <div class="docstring...">...<docstring>...</docstring>...</div>
-    docstring_pattern = r'<div[^>]*class="docstring[^"]*"[^>]*>.*?<docstring>.*?</docstring>.*?</div>'
+    # The opening tag's attribute values are single-line JSON (see
+    # `get_signature_component_svelte`), so it ends at the last `>` on its own line.
+    docstring_pattern = r"<Docstring\s[^\n]*>\n.*?</Docstring>"
 
     def replace_docstring(match):
         block = match.group(0)
-        return process_docstring_block(block)
+        # Trailing newline: the object description directly follows the component (with a
+        # single newline in between), and must not end up glued to the last section.
+        return process_docstring_block(block) + "\n"
 
     result = re.sub(docstring_pattern, replace_docstring, result, flags=re.DOTALL)
 

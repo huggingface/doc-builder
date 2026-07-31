@@ -127,3 +127,82 @@ class UtilsTester(unittest.TestCase):
         self.assertNotIn("<div", result)
         self.assertIn("warning", result)
         self.assertIn("inside", result)
+
+    def test_strip_html_from_markdown_docstring_component(self):
+        # Regression: method names, anchors, signatures and the section labels were
+        # dropped from the `.md` export because the old parser looked for the legacy
+        # `<docstring>` markup instead of the `<Docstring ...>` props.
+        content = (
+            '<div class="docstring border-l-2">\n\n'
+            '<Docstring name={"class huggingface_hub.HfApi"} anchor={"huggingface_hub.HfApi"} '
+            'source={"https://github.com/huggingface/huggingface_hub/blob/main/src/huggingface_hub/hf_api.py#L2226"} '
+            'parameters={[{"name": "endpoint", "val": ": str | None = None"}]}>\n'
+            "<paramsdesc>- **endpoint** (`str`, *optional*) --\n"
+            "  Endpoint of the Hub.</paramsdesc></Docstring>\n"
+            "Client to interact with the Hugging Face Hub via HTTP.\n\n"
+            '<div class="docstring border-l-2">\n\n'
+            '<Docstring name={"merge_pull_request"} anchor={"huggingface_hub.HfApi.merge_pull_request"} '
+            'parameters={[{"name": "repo_id", "val": ": str"}, {"name": "discussion_num", "val": ": int"}]}>\n'
+            "<paramsdesc>- **repo_id** (`str`) --\n"
+            "  A namespace and a repo name separated\n"
+            "  by a `/`.\n"
+            "- **discussion_num** (`int`) --\n"
+            "  The number of the Pull Request.</paramsdesc>"
+            "<rettype>[DiscussionStatusChange](https://hf.co/docs#DiscussionStatusChange)</rettype>"
+            "<retdesc>the status change event</retdesc></Docstring>\n"
+            "Merges a Pull Request.\n\n"
+            "</div></div>\n"
+        )
+        result = strip_html_from_markdown(content)
+
+        # Class: heading with anchor, signature and parameters
+        self.assertIn("#### huggingface_hub.HfApi[[huggingface_hub.HfApi]]", result)
+        self.assertIn("huggingface_hub.HfApi(endpoint: str | None = None)", result)
+        self.assertIn(
+            "[Source](https://github.com/huggingface/huggingface_hub/blob/main/src/huggingface_hub/hf_api.py#L2226)",
+            result,
+        )
+        # Method: heading with anchor, signature, and both section labels
+        self.assertIn("#### merge_pull_request[[huggingface_hub.HfApi.merge_pull_request]]", result)
+        self.assertIn("merge_pull_request(repo_id: str, discussion_num: int)", result)
+        self.assertEqual(result.count("**Parameters:**"), 2)
+        # A resolved doc link as return type keeps its markdown (no backtick wrapping)
+        self.assertIn("**Returns:** [DiscussionStatusChange](https://hf.co/docs#DiscussionStatusChange)", result)
+        # The description must not be glued to the last section of the docstring block
+        self.assertIn("the status change event\n\nMerges a Pull Request.", result)
+        # No leftover component markup
+        self.assertNotIn("<Docstring", result)
+        self.assertNotIn("paramsdesc", result)
+
+    def test_strip_html_from_markdown_docstring_getset_descriptor(self):
+        # Properties have no parameters and no anchor: heading only, no empty signature.
+        content = (
+            '<div class="docstring border-l-2">\n\n'
+            '<Docstring name={"content"} anchor={"None"} parameters={[]} isGetSetDescriptor={true}>\n'
+            "</Docstring>\n"
+            "Get the content of this `AddedToken`\n\n"
+            "</div>\n"
+        )
+        result = strip_html_from_markdown(content)
+        self.assertIn("#### content", result)
+        self.assertNotIn("[[None]]", result)
+        self.assertNotIn("content()", result)
+        self.assertIn("Get the content of this `AddedToken`", result)
+
+        # ... whereas a parameterless method keeps its (empty) signature
+        content = '<Docstring name={"dummy.reset"} anchor={"dummy.reset"} parameters={[]}>\n</Docstring>\nResets it.\n'
+        self.assertIn("dummy.reset()", strip_html_from_markdown(content))
+
+    def test_strip_html_from_markdown_docstring_props_with_angle_brackets(self):
+        # `>` inside the props JSON must not truncate the opening tag.
+        content = (
+            '<Docstring name={"dummy.func"} anchor={"dummy.func"} '
+            'parameters={[{"name": "cb", "val": ": Callable[[int], int] = <factory>"}]}>\n'
+            "<rettype>`int`</rettype></Docstring>\n"
+            "Does something.\n"
+        )
+        result = strip_html_from_markdown(content)
+        self.assertIn("#### dummy.func[[dummy.func]]", result)
+        self.assertIn("dummy.func(cb: Callable[[int], int] = <factory>)", result)
+        self.assertIn("**Returns:** `int`", result)
+        self.assertIn("Does something.", result)
