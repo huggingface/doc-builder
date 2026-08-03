@@ -13,6 +13,7 @@ install_requires = [
     "huggingface_hub",
     "pillow",
     "meilisearch==0.34.1",
+    "ruff",
 ]
 
 extras = {}
