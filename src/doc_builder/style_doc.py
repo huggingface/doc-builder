@@ -31,8 +31,10 @@ _re_code = re.compile(r"^(\s*)```(.*)$")
 _re_docstyle_ignore = re.compile(r"#\s*docstyle-ignore")
 # Re pattern that matches <Tip>, </Tip> and <Tip warning={true}> blocks.
 _re_tip = re.compile(r"^\s*</?Tip(>|\s+warning={true}>)\s*$")
-# Re pattern that matches blockquote tip markers: > [!NOTE], > [!TIP], > [!IMPORTANT], > [!WARNING], > [!CAUTION]
-_re_blockquote_tip = re.compile(r"^\s*> \[!(?:NOTE|TIP|IMPORTANT|WARNING|CAUTION)\]\s*$")
+# Re pattern that catches markdown blockquote lines.
+_re_blockquote_tip = re.compile(r"^(\s*>+\s?)(.*)$")
+# Re pattern that catches markdown callout headers (e.g. > [!NOTE]).
+_re_blockquote_callout = re.compile(r"^\s*>+\s*\[![^\]]+\]\s*$")
 
 DOCTEST_PROMPTS = [">>>", "..."]
 
@@ -241,6 +243,36 @@ def format_text(text, max_len, prefix="", min_indent=None):
     return "\n".join(new_lines)
 
 
+def format_blockquote_text(text, max_len, prefix):
+    """
+    Format markdown blockquote content while preserving the quote marker on wrapped lines.
+
+    Args:
+        text (`str`): The blockquote content to format, without the quote marker.
+        max_len (`int`): The maximum length per line to use.
+        prefix (`str`): The blockquote prefix to prepend to each output line.
+
+    Returns:
+        `str`: The formatted blockquote line(s).
+    """
+    text = re.sub(r"\s+", " ", text).strip()
+    if len(text) == 0:
+        return prefix.rstrip()
+
+    words = text.split(" ")
+    current_line = f"{prefix}{words[0]}"
+    new_lines = []
+    for word in words[1:]:
+        try_line = f"{current_line} {word}"
+        if len(try_line) > max_len:
+            new_lines.append(current_line)
+            current_line = f"{prefix}{word}"
+        else:
+            current_line = try_line
+    new_lines.append(current_line)
+    return "\n".join(new_lines)
+
+
 def split_line_on_first_colon(line):
     splits = line.split(":")
     return splits[0], ":".join(splits[1:])
@@ -366,7 +398,35 @@ def style_docstring(docstring, max_len):
             if idx < len(lines) - 1 and not is_empty_line(lines[idx + 1]):
                 new_lines.append("")
         elif blockquote_tip_search:
-            new_lines.append(line)
+            blockquote_prefix, blockquote_text = blockquote_tip_search.groups()
+            if _re_blockquote_callout.search(line) is not None:
+                new_lines.append(format_blockquote_text(blockquote_text, max_len=max_len, prefix=blockquote_prefix))
+
+                # Merge consecutive callout body lines in one wrapped blockquote paragraph.
+                look_ahead = idx + 1
+                callout_body_bits = []
+                while look_ahead < len(lines):
+                    next_search = _re_blockquote_tip.search(lines[look_ahead])
+                    if next_search is None:
+                        break
+                    next_prefix, next_text = next_search.groups()
+                    if next_prefix != blockquote_prefix:
+                        break
+                    if _re_blockquote_callout.search(lines[look_ahead]) is not None:
+                        break
+                    if is_empty_line(next_text):
+                        break
+                    callout_body_bits.append(next_text.strip())
+                    look_ahead += 1
+
+                if len(callout_body_bits) > 0:
+                    merged_callout_body = " ".join(callout_body_bits)
+                    new_lines.append(
+                        format_blockquote_text(merged_callout_body, max_len=max_len, prefix=blockquote_prefix)
+                    )
+                    idx = look_ahead - 1
+            else:
+                new_lines.append(format_blockquote_text(blockquote_text, max_len=max_len, prefix=blockquote_prefix))
         elif current_paragraph is None or find_indent(line) != current_indent:
             indent = find_indent(line)
             # Special behavior for parameters intros.
