@@ -191,6 +191,12 @@ function getTitleText(node) {
 }
 
 function treeVisitor() {
+	// Doc-body marker offsets, recomputed per document in transform(). Used to
+	// decide whether a link/image node sits inside the doc body without
+	// depending on visitor traversal order (see onLink).
+	let bodyStartOffset = -1;
+	let bodyEndOffset = Infinity;
+
 	return transform;
 
 	function transform(tree) {
@@ -223,8 +229,25 @@ function treeVisitor() {
 			// Replace the old node with the new Svelte node
 			parent.children[index] = svelteNode;
 		});
+		// The doc-body region is delimited by the HF DOC BODY markers. The
+		// stateful isWithinDocBody() check only works for visitors running in
+		// document order before the END marker is seen; for link/image URLs we
+		// instead locate the marker offsets up front and compare positions.
+		bodyStartOffset = -1;
+		bodyEndOffset = Infinity;
+		visit(tree, ["text", "html"], (node) => {
+			if (["<!--HF DOCBUILD BODY START-->", "HF_DOC_BODY_START"].includes(node.value)) {
+				bodyStartOffset = node.position?.start?.offset ?? -1;
+			}
+			if (["<!--HF DOCBUILD BODY END-->", "HF_DOC_BODY_END"].includes(node.value)) {
+				bodyEndOffset = Math.min(bodyEndOffset, node.position?.start?.offset ?? Infinity);
+			}
+		});
+
 		visit(tree, "text", onText);
 		visit(tree, "html", onHtml);
+		visit(tree, "link", onLink);
+		visit(tree, "image", onLink);
 		visit(tree, "blockquote", onBlockquote);
 
 		let jsonString = JSON.stringify(headings[0]);
@@ -263,6 +286,29 @@ function treeVisitor() {
 		}
 		node.value = node.value.replaceAll("{", "&#123;");
 		node.value = node.value.replaceAll("<", "&#60;");
+	}
+
+	/**
+	 * A link's URL is stored on the mdast node's `url` property, not in a
+	 * child text node, so `onText` never escapes curly braces inside it.
+	 * mdsvex then emits the raw braces into the `href`/`src` attribute of the
+	 * generated HTML, where Svelte 5 interprets `{...}` as an expression.
+	 * During prerendering this throws `ReferenceError: <name> is not defined`
+	 * (e.g. for URLs containing OpenAPI path params like `{username}`).
+	 * Escaping `{` as an HTML entity keeps the rendered URL identical while
+	 * making it inert to the Svelte compiler.
+	 */
+	function onLink(node) {
+		const offset = node.position?.start?.offset ?? -1;
+		if (bodyStartOffset === -1 || offset < bodyStartOffset || offset > bodyEndOffset) {
+			return;
+		}
+		if (typeof node.url === "string") {
+			node.url = node.url.replaceAll("{", "&#123;");
+		}
+		if (typeof node.title === "string") {
+			node.title = node.title.replaceAll("{", "&#123;");
+		}
 	}
 
 	function onHtml(node) {
