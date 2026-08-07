@@ -46,6 +46,9 @@ on:
       convert_notebooks:
         type: boolean
         description: "Convert notebooks to markdown files before building docs."
+      python_version:
+        type: string
+        description: "Python version for the build venv (e.g. '3.11'). Defaults to the runner's system Python."
     secrets:
       hf_token:
         required: true
@@ -120,7 +123,7 @@ jobs:
       - name: Setup environment
         shell: bash
         run: |
-          uv venv
+          uv venv ${{ inputs.python_version && format('--python {0}', inputs.python_version) || '' }}
           source .venv/bin/activate
           cd doc-builder
           git pull origin main
