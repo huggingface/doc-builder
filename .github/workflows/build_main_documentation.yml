@@ -49,6 +49,13 @@ on:
       python_version:
         type: string
         description: "Python version for the build venv (e.g. '3.11'). Defaults to the runner's system Python."
+      translated_languages:
+        type: string
+        description: >
+          Languages whose pages are machine-translated, separated by spaces. Their source is
+          pulled from the hf-doc-build/doc-translate bucket instead of from the repo. Anything
+          listed here must also appear in `languages`. Leave it empty (the default) and every
+          language comes from the repo as usual.
     secrets:
       hf_token:
         required: true
@@ -215,6 +222,48 @@ jobs:
           echo "https://colab.research.google.com/github/$REPO_OWNER/$PACKAGE/blob/$branch$remaining_part"
 
           doc-builder notebook-to-mdx "$DOC_FOLDER" --open_notebook_prefix "https://colab.research.google.com/github/$REPO_OWNER/$PACKAGE/blob/$branch$remaining_part"
+
+      # Machine-translated pages are not kept in the repo. A separate nightly job writes them to
+      # a bucket, and this step fetches them so the build has something to work from. It does
+      # nothing at all unless a workflow asks for it, since every HF library shares this file.
+      #
+      # The bucket path uses the repo name, not the Python package name. The job that writes
+      # those files names them after the repo it cloned, so both sides have to agree.
+      - name: Sync machine translations
+        if: inputs.translated_languages != ''
+        env:
+          HF_TOKEN: ${{ secrets.hf_token }}
+          BUCKET: hf://buckets/hf-doc-build/doc-translate/translations/${{ inputs.package }}
+          # This is handed over as an environment variable rather than written straight into
+          # the script below. GitHub pastes a ${{ }} value into the script text before bash
+          # reads any of it, so quoting it there would not stop someone slipping in extra
+          # commands -- and this job is holding a token that can write to our buckets.
+          TRANSLATED_LANGUAGES: ${{ inputs.translated_languages }}
+        run: |
+          for lang in $TRANSLATED_LANGUAGES; do
+            target="${{ env.doc_folder }}/$lang"
+            # Download next to where the files are going, rather than into /tmp. Same disk, so
+            # putting them in place is a rename instead of copying 700 files. Cleared out first
+            # in case an earlier run was interrupted halfway through.
+            staged="$target.incoming"
+            rm -rf "$staged"
+            uvx --from huggingface_hub hf sync "$BUCKET/$lang" "$staged"
+
+            # Download everything first, then swap it in. If we wrote straight into place and
+            # the download died halfway, the build would carry on quite happily with pages
+            # missing and nobody would notice. The sidebar file is the last thing we expect to
+            # see, so if it is there the download finished.
+            if [ ! -f "$staged/_toctree.yml" ]; then
+              echo "::error::no _toctree.yml in $BUCKET/$lang - refusing to build a partial tree"
+              exit 1
+            fi
+
+            # Replace the folder outright rather than merging into it. That also clears out
+            # pages whose English original has since been deleted -- transformers has 20 of
+            # those sitting in its Japanese docs today.
+            rm -rf "$target" && mv "$staged" "$target"
+            echo "$lang: $(find "$target" -name '*.md' | wc -l) page(s) from $BUCKET/$lang"
+          done
 
       - name: Make documentation
         shell: bash

@@ -1,0 +1,55 @@
+# How we want certain words translated into Japanese.
+#
+# Without this, the same word comes out three different ways across 733 pages and nobody
+# notices. These were written by hand, but they are not guesses: they come from the 152
+# pages that human translators had already done. Where those translators disagreed with each
+# other, the more common choice won. The numbers below are how many of those pages used each
+# one, which is the evidence for picking it.
+#
+# Matching ignores capitals and matches partial words, so `fine-tun` covers fine-tune,
+# fine-tuning and fine-tuned in one go.
+#
+# Editing this file re-translates any text containing the words you changed, and nothing
+# else. Keep the list short: matching terms are added to every request we send the model,
+# and it cannot reuse that work between requests.
+
+pin:
+  # These had a competing translation. The number is how many pages used this one.
+  fine-tun: 微調整                    # 54 files, vs ファインチューニング 15
+  pretrain: 事前トレーニング済み      # 30 files, vs 事前学習済みモデル 12
+  training: トレーニング              # 112 files, vs 学習 74
+  tokenizer: トークナイザー           # 35 files
+  sequence: シーケンス                # 49 files, vs 系列 6
+
+  # Nobody disagreed on these. They are here to stop the model inventing alternatives.
+  inference: 推論                     # 69
+  input: 入力                         # 83
+  output: 出力                        # 55
+  dataset: データセット               # 60
+  checkpoint: チェックポイント        # 50
+  batch: バッチ                       # 43
+  embedding: 埋め込み                 # 40
+  padding: パディング                 # 35
+  weight: 重み                        # 34
+  vocabulary: 語彙                    # 20
+  mixed precision: 混合精度           # 15
+  gradient: 勾配                      # 13
+  quantization: 量子化                # 10
+  distillation: 蒸留                  # 7
+  learning rate: 学習率               # 6
+
+# Words to leave in English. Only product names belong here. Things like `from_pretrained`
+# or `AutoModel` are written as code in the docs, so they are hidden from the model already
+# and need no help from us.
+keep:
+  - Hugging Face
+  - Hub
+  - Spaces
+  - Transformers
+  - Inference Endpoints
+  - Trainer
+  - pipeline
+
+# Left off on purpose: "layer" is split almost evenly between 層 (35 pages) and レイヤー
+# (23), with no clear winner, and 層 also turns up glued onto other words. Forcing either
+# one would read worse than letting the model pick whichever fits the sentence.

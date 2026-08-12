@@ -40,6 +40,9 @@ Repository = "https://github.com/huggingface/doc-builder"
 
 [project.optional-dependencies]
 transformers = ["transformers[dev]"]
+# `doc-builder translate` runs a real model, so these cannot be mocked away like the heavy
+# deps in `mock_deps/`. Kept an extra so the doc-build path never installs them.
+translate = ["torch", "transformers"]
 testing = [
     "pytest",
     "pytest-xdist",
@@ -93,6 +96,9 @@ build-backend = "setuptools.build_meta"
 
 [tool.setuptools]
 package-dir = {"" = "src"}
+
+[tool.setuptools.package-data]
+doc_builder = ["mock_deps/*.txt", "glossaries/*.yml"]
 
 [tool.setuptools.packages.find]
 where = ["src"]
