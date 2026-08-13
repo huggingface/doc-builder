@@ -42,7 +42,14 @@ Repository = "https://github.com/huggingface/doc-builder"
 transformers = ["transformers[dev]"]
 # `doc-builder translate` runs a real model, so these cannot be mocked away like the heavy
 # deps in `mock_deps/`. Kept an extra so the doc-build path never installs them.
-translate = ["torch", "transformers"]
+# accelerate is required by `device_map="cuda"` in translate/pipeline.py -- without it
+# from_pretrained raises before the model is even downloaded.
+#
+# kernels lets `flash_attention_2` fall back to the kernels-community/flash-attn2 kernel on
+# the Hub when the compiled flash-attn package isn't installed. Without it the fallback can't
+# happen and from_pretrained raises instead. Compiling flash-attn inside the job would be slow
+# and fragile, so the Hub kernel is the path we want.
+translate = ["torch", "transformers", "accelerate", "kernels>=0.11.0"]
 testing = [
     "pytest",
     "pytest-xdist",

@@ -186,7 +186,9 @@ def run(args, source_dir):
         print(f"[translate] dry run, would translate {len(missing)} segment(s)")
         return 0
 
-    fresh, failures = pipeline.translate_segments(missing, args.lang, glossary, args.model)
+    fresh, failures = pipeline.translate_segments(
+        missing, args.lang, glossary, args.model, attn_implementation=args.attn_implementation
+    )
     print(f"[translate] translated {len(fresh)}, {len(failures)} request failure(s)")
     for key, why in failures[:10]:
         print(f"[translate]   FAILED {key[:12]} {why}")
@@ -276,6 +278,15 @@ def translate_command_parser(subparsers=None):
         type=str,
         default=None,
         help="Newline-separated subset of page paths to translate, for smoke runs.",
+    )
+    parser.add_argument(
+        "--attn-implementation",
+        type=str,
+        default=pipeline.DEFAULT_ATTENTION,
+        help=(
+            "How attention is computed, e.g. 'paged|sdpa' (the default, always available) or "
+            "'paged|flash_attention_2' (faster, but needs flash-attn or a matching Hub kernel)."
+        ),
     )
     parser.add_argument(
         "--dry-run",

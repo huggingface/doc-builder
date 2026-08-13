@@ -27,6 +27,19 @@ PROMPT_VERSION = "v1"
 
 LANGUAGE_NAMES = {"ja": "Japanese"}
 
+# How attention is computed. Continuous batching needs a paged backend, and the `paged|`
+# prefix asks for one.
+#
+# sdpa is the default because it is built into PyTorch and always works. FlashAttention is
+# faster, but it needs either the compiled flash-attn package or a prebuilt kernel from the
+# Hub that matches the exact torch and CUDA version in the image -- and on a job image running
+# torch 2.13/CUDA 13, kernels-community/flash-attn2 published nothing newer than torch 2.12,
+# so loading the model failed outright. For a job that runs unattended overnight, a crash
+# costs a whole day of translations while slower decoding costs minutes.
+#
+# Override with --attn-implementation when you know the image has FlashAttention available.
+DEFAULT_ATTENTION = "paged|sdpa"
+
 # On purpose, this does not name a particular library. The prompt is part of each
 # paragraph's ID, so keeping it generic means the same boilerplate sentence translated for
 # one library can be reused for another instead of being paid for twice.
@@ -315,7 +328,9 @@ def build_requests(segments, tokenizer, language, glossary, max_new_token_ratio=
     return requests
 
 
-def translate_segments(segments, language, glossary, model_id, max_new_token_ratio=2.5):
+def translate_segments(
+    segments, language, glossary, model_id, max_new_token_ratio=2.5, attn_implementation=DEFAULT_ATTENTION
+):
     """Translate a batch of paragraphs on the GPU.
 
     Paragraphs range from a few words to a couple of thousand, and continuous batching is
@@ -337,7 +352,7 @@ def translate_segments(segments, language, glossary, model_id, max_new_token_rat
     tokenizer = AutoTokenizer.from_pretrained(model_id)
     model = AutoModelForCausalLM.from_pretrained(
         model_id,
-        attn_implementation="paged|flash_attention_2",
+        attn_implementation=attn_implementation,
         device_map="cuda",
         dtype=torch.bfloat16,
     )

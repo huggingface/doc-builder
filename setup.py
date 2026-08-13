@@ -19,7 +19,7 @@ install_requires = [
 extras = {}
 
 extras["transformers"] = ["transformers[dev]"]
-extras["translate"] = ["torch", "transformers"]
+extras["translate"] = ["torch", "transformers", "accelerate", "kernels>=0.11.0"]
 extras["testing"] = [
     "pytest",
     "pytest-xdist",
