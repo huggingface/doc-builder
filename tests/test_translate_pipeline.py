@@ -83,8 +83,10 @@ def test_token_budget_scales_with_content_not_prompt():
     """
 
     class FakeTok:
-        def apply_chat_template(self, msgs, tokenize=True, add_generation_prompt=True):
-            return list(range(sum(len(m["content"]) for m in msgs) // 4))
+        def apply_chat_template(self, msgs, tokenize=True, add_generation_prompt=True, return_dict=True):
+            # Mirrors transformers v5: a BatchEncoding unless return_dict=False is asked for.
+            ids = list(range(sum(len(m["content"]) for m in msgs) // 4))
+            return {"input_ids": ids, "attention_mask": [1] * len(ids)} if return_dict else ids
 
         def encode(self, text, add_special_tokens=False):
             return list(range(len(text) // 4))
@@ -100,6 +102,26 @@ def test_token_budget_scales_with_content_not_prompt():
     assert short_budget < short_prompt  # budget is not driven by prompt size
     assert short_budget >= 48  # but never below the floor
     assert long_budget > long_prompt  # long content gets room to expand into Japanese
+
+
+def test_build_requests_asks_for_token_ids_not_a_batchencoding():
+    """Regression: v5 defaults return_dict=True, so we got a dict and the batcher saw its keys.
+
+    The real failure was "too many dimensions 'str'" thrown deep inside the batcher, because it
+    iterated the dict and tried to tensorise the strings "input_ids" and "attention_mask".
+    """
+
+    class DictOnlyTok:
+        """A tokenizer that ignores return_dict -- stands in for a future default change."""
+
+        def apply_chat_template(self, msgs, tokenize=True, add_generation_prompt=True, return_dict=True):
+            return {"input_ids": [1, 2, 3], "attention_mask": [1, 1, 1]}
+
+        def encode(self, text, add_special_tokens=False):
+            return [1, 2, 3]
+
+    with pytest.raises(TypeError, match="list of token ids"):
+        pipeline.build_requests({"k": "some prose"}, DictOnlyTok(), "ja", {})
 
 
 # -- glossary -------------------------------------------------------------------

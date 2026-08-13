@@ -319,7 +319,18 @@ def build_requests(segments, tokenizer, language, glossary, max_new_token_ratio=
             build_prompt(text, language, glossary),
             tokenize=True,
             add_generation_prompt=True,
+            # Transformers v5 defaults this to True, which hands back a BatchEncoding rather
+            # than a plain list of token ids. Passing that straight to add_request makes the
+            # batcher iterate the dict's keys, so it ends up trying to build a tensor out of
+            # the strings "input_ids" and "attention_mask" -- which fails a long way from here
+            # with "too many dimensions 'str'". Ask for the list directly.
+            return_dict=False,
         )
+        if not (prompt and isinstance(prompt, list) and isinstance(prompt[0], int)):
+            raise TypeError(
+                f"expected a list of token ids from apply_chat_template, got {type(prompt).__name__}. "
+                "The tokenizer may have changed what it returns; see the note above."
+            )
         # Japanese output runs longer in tokens than English input, so one global cap
         # would either truncate long blocks or waste KV budget.
         content_tokens = len(tokenizer.encode(text, add_special_tokens=False))
@@ -362,6 +373,11 @@ def translate_segments(
     max_generated = max(b for _, _, b in requests)
 
     cb_config = ContinuousBatchingConfig(
+        # Leave the GPU some room. By default the KV cache grows to fill whatever memory is
+        # left after the weights, which on an 80GB card meant 72GB in use and only 6.4GB free
+        # -- so the CUDA-graph warmup could not get the 9.9GB it wanted and gave up. Losing
+        # warmup only costs speed, but there is no reason to pay it.
+        max_memory_percent=0.8,
         max_batch_tokens=16384,
         use_cuda_graph=True,
         # Compiling the model is worth it on a long run but not a short one, where the
