@@ -83,7 +83,7 @@ def test_token_budget_scales_with_content_not_prompt():
     """
 
     class FakeTok:
-        def apply_chat_template(self, msgs, tokenize=True, add_generation_prompt=True, return_dict=True):
+        def apply_chat_template(self, msgs, tokenize=True, add_generation_prompt=True, return_dict=True, **kw):
             # Mirrors transformers v5: a BatchEncoding unless return_dict=False is asked for.
             ids = list(range(sum(len(m["content"]) for m in msgs) // 4))
             return {"input_ids": ids, "attention_mask": [1] * len(ids)} if return_dict else ids
@@ -114,7 +114,7 @@ def test_build_requests_asks_for_token_ids_not_a_batchencoding():
     class DictOnlyTok:
         """A tokenizer that ignores return_dict -- stands in for a future default change."""
 
-        def apply_chat_template(self, msgs, tokenize=True, add_generation_prompt=True, return_dict=True):
+        def apply_chat_template(self, msgs, tokenize=True, add_generation_prompt=True, return_dict=True, **kw):
             return {"input_ids": [1, 2, 3], "attention_mask": [1, 1, 1]}
 
         def encode(self, text, add_special_tokens=False):
@@ -122,6 +122,23 @@ def test_build_requests_asks_for_token_ids_not_a_batchencoding():
 
     with pytest.raises(TypeError, match="list of token ids"):
         pipeline.build_requests({"k": "some prose"}, DictOnlyTok(), "ja", {})
+
+
+def test_reasoning_block_is_stripped():
+    """Regression: Qwen3 returned pages of <think> and never reached the translation.
+
+    Every page failed validation with "0 headings" and duplicated markers, because what got
+    cached was the model talking to itself about the markers.
+    """
+    thought = "<think>\nOkay, the user wants me to translate. Keep \u27e60\u27e7 in place.\n</think>\n"
+    assert pipeline.strip_reasoning(thought + "# \u898b\u51fa\u3057\n") == "# \u898b\u51fa\u3057\n"
+    # other tag spellings, and case
+    assert pipeline.strip_reasoning("<Thinking>x</Thinking>\n\u8a33") == "\u8a33"
+    # a page that legitimately mentions the tag mid-text is left alone
+    body = "\u8a33\u6587 <think>not at the start</think>"
+    assert pipeline.strip_reasoning(body) == body
+    # no reasoning at all is a no-op
+    assert pipeline.strip_reasoning("# \u898b\u51fa\u3057\n") == "# \u898b\u51fa\u3057\n"
 
 
 # -- glossary -------------------------------------------------------------------

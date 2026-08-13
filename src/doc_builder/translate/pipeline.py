@@ -56,6 +56,16 @@ translate, renumber, drop or duplicate them.
 
 GLOSSARY_HEADER = "\n- Use these renderings exactly:"
 
+# Reasoning models wrap their working in tags like <think>...</think> before giving an answer.
+# We ask them not to (see enable_thinking below), but not every model honours that, so strip it
+# here too -- otherwise the model's notes get cached and published as if they were a translation.
+REASONING_RE = re.compile(r"\A\s*<(think|thinking|reasoning)>.*?</\1>\s*", re.DOTALL | re.IGNORECASE)
+
+
+def strip_reasoning(text):
+    """Remove a leading block of model 'thinking' from a translation."""
+    return REASONING_RE.sub("", text)
+
 
 def glossary_path(language):
     """Where the glossary for this language lives inside the installed package.
@@ -325,6 +335,11 @@ def build_requests(segments, tokenizer, language, glossary, max_new_token_ratio=
             # the strings "input_ids" and "attention_mask" -- which fails a long way from here
             # with "too many dimensions 'str'". Ask for the list directly.
             return_dict=False,
+            # Reasoning models think out loud before answering, and that thinking eats the
+            # whole token budget: Qwen3 returned pages of "Okay, the user wants me to
+            # translate..." and never reached the translation. Templates that don't know this
+            # option ignore it.
+            enable_thinking=False,
         )
         if not (prompt and isinstance(prompt, list) and isinstance(prompt[0], int)):
             raise TypeError(
@@ -418,9 +433,8 @@ def translate_segments(
             if result.error or not result.is_finished():
                 failures.append((result.request_id, result.error or str(result.status)))
             else:
-                translations[result.request_id] = tokenizer.decode(
-                    result.generated_tokens, skip_special_tokens=True
-                ).strip()
+                decoded = tokenizer.decode(result.generated_tokens, skip_special_tokens=True)
+                translations[result.request_id] = strip_reasoning(decoded).strip()
             if len(translations) + len(failures) >= len(requests):
                 break
 
