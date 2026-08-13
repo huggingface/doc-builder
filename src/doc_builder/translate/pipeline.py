@@ -40,6 +40,12 @@ LANGUAGE_NAMES = {"ja": "Japanese"}
 # Override with --attn-implementation when you know the image has FlashAttention available.
 DEFAULT_ATTENTION = "paged|sdpa"
 
+# CUDA graphs record the GPU work once and replay it, which is faster -- but recording forbids
+# copying between CPU and GPU, and a mixture-of-experts model does exactly that when it picks
+# which experts to route each token to. Qwen3-30B-A3B died on this inside its MoE layer, so the
+# safe default is off. Turn it on with --cuda-graphs for a dense model.
+DEFAULT_CUDA_GRAPHS = False
+
 # On purpose, this does not name a particular library. The prompt is part of each
 # paragraph's ID, so keeping it generic means the same boilerplate sentence translated for
 # one library can be reused for another instead of being paid for twice.
@@ -355,7 +361,13 @@ def build_requests(segments, tokenizer, language, glossary, max_new_token_ratio=
 
 
 def translate_segments(
-    segments, language, glossary, model_id, max_new_token_ratio=2.5, attn_implementation=DEFAULT_ATTENTION
+    segments,
+    language,
+    glossary,
+    model_id,
+    max_new_token_ratio=2.5,
+    attn_implementation=DEFAULT_ATTENTION,
+    use_cuda_graph=DEFAULT_CUDA_GRAPHS,
 ):
     """Translate a batch of paragraphs on the GPU.
 
@@ -394,7 +406,7 @@ def translate_segments(
         # warmup only costs speed, but there is no reason to pay it.
         max_memory_percent=0.8,
         max_batch_tokens=16384,
-        use_cuda_graph=True,
+        use_cuda_graph=use_cuda_graph,
         # Compiling the model is worth it on a long run but not a short one, where the
         # setup time would be most of the job.
         default_compile_level=1 if len(requests) > 500 else 0,

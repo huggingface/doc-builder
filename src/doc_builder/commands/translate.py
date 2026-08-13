@@ -187,7 +187,12 @@ def run(args, source_dir):
         return 0
 
     fresh, failures = pipeline.translate_segments(
-        missing, args.lang, glossary, args.model, attn_implementation=args.attn_implementation
+        missing,
+        args.lang,
+        glossary,
+        args.model,
+        attn_implementation=args.attn_implementation,
+        use_cuda_graph=args.cuda_graphs,
     )
     print(f"[translate] translated {len(fresh)}, {len(failures)} request failure(s)")
     for key, why in failures[:10]:
@@ -286,6 +291,15 @@ def translate_command_parser(subparsers=None):
         help=(
             "How attention is computed, e.g. 'paged|sdpa' (the default, always available) or "
             "'paged|flash_attention_2' (faster, but needs flash-attn or a matching Hub kernel)."
+        ),
+    )
+    parser.add_argument(
+        "--cuda-graphs",
+        action="store_true",
+        default=pipeline.DEFAULT_CUDA_GRAPHS,
+        help=(
+            "Record and replay the GPU work for speed. Off by default because it is incompatible "
+            "with mixture-of-experts models, which copy between CPU and GPU to route experts."
         ),
     )
     parser.add_argument(
