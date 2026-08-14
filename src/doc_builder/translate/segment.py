@@ -79,6 +79,20 @@ MASK_PATTERNS = [
     ("directive", re.compile(r"\[\[[^\]\n]*\]\]")),
     ("math_block", re.compile(r"\$\$.*?\$\$", re.DOTALL)),
     ("math_inline", re.compile(r"\\\\\(.*?\\\\\)", re.DOTALL)),
+    # doc-builder's cross-reference: [`Pipeline`] with no (url) after it, which the build turns
+    # into a link to that class or method. Hidden whole, and hidden before the inline-code rule
+    # gets to it -- otherwise only the backticked name goes and the model is left looking at
+    # `[¤7¤]`, both brackets raw. That is the same shape that caused all the link damage, and
+    # there are 2,307 of them across 463 of the 732 pages.
+    #
+    # It is worth hiding the whole thing here, unlike a link, because what sits between the
+    # brackets is always an API name -- it is in backticks, so by definition it is not prose.
+    # There is nothing to translate and nothing to lose.
+    #
+    # Losing one of these is quieter than losing a link: `[Pipeline]` with a bracket missing is
+    # not malformed markdown, it just stops resolving, so it renders as plain text and no check
+    # would ever notice. Hiding it whole turns that into an ordinary missing marker.
+    ("xref", re.compile(r"\[`[^`\n]+`\](?!\()")),
     ("code", re.compile(r"(`+)[^\n]*?\1")),
     ("tag", re.compile(r"</?[a-zA-Z][^<>]{0,600}>")),
     # Links get both brackets hidden, leaving only the label between two markers:

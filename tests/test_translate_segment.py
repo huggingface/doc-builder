@@ -122,6 +122,40 @@ def test_link_label_is_still_translatable():
     assert "continuous batching" in masked
 
 
+def test_cross_reference_is_hidden_whole():
+    """`[`Foo`]` goes as one piece, brackets included.
+
+    Masking only the backticked name left `[¤0¤]` -- both brackets raw, the exact shape that
+    caused the link damage. 2,307 of these across 463 pages. Nothing is lost by hiding the
+    whole thing: what is between the brackets is in backticks, so it is an API name, not prose.
+    """
+    masked, placeholders = segment.mask("Use [`Pipeline`] to run it.\n")
+    assert masked == "Use ¤0¤ to run it.\n"
+    assert placeholders == ["[`Pipeline`]"]
+    assert "[" not in masked and "]" not in masked
+
+
+def test_cross_reference_loss_is_an_ordinary_missing_marker():
+    """The point of hiding it whole: no new check needed, the marker check already sees it.
+
+    A dropped `[Pipeline]` is not malformed markdown -- it just quietly stops resolving to a
+    link -- so nothing looking at the finished page would catch it.
+    """
+    masked, _ = segment.mask("Use [`Pipeline`] to run it.\n")
+    assert segment.placeholder_indices(masked) == [0]
+    assert segment.placeholder_indices("実行します。\n") == []  # dropped -> plain missing marker
+
+
+def test_linked_cross_reference_still_masks_as_a_link():
+    """`[`Foo`](url)` is a link, not a cross-reference -- the lookahead keeps them apart."""
+    masked, placeholders = segment.mask("See [`Trainer`](../trainer) now.\n")
+    # numbered in the order the patterns run, not the order they appear: `code` masks the name
+    # before `link_open` reaches the bracket
+    assert masked == "See ¤1¤¤0¤¤2¤ now.\n"
+    assert placeholders == ["`Trainer`", "[", "](../trainer)"]
+    assert segment.restore(masked, placeholders) == "See [`Trainer`](../trainer) now.\n"
+
+
 def test_bare_parentheses_in_prose_are_not_masked():
     """Only parentheses right after a `]` are a link target."""
     text = "Use it (carefully) with the tokenizer.\n"
