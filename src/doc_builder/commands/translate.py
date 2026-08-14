@@ -200,21 +200,28 @@ def run(args, source_dir):
 
     # This is the moment the whole design is built around: decide whether there is anything to
     # do before going anywhere near the model.
-    if not missing:
+    #
+    # --rebuild carries on anyway, using the cache. Nothing here needs a GPU when there is
+    # nothing to translate, so it is a cheap way to republish every page after a change to how
+    # pages are assembled or checked. Without it those changes never reach the bucket, because
+    # a warm run stops before it ever rebuilds a page.
+    if not missing and not args.rebuild:
         print("[translate] cache is warm, nothing to translate -- exiting before model load")
         return 0
     if args.dry_run:
         print(f"[translate] dry run, would translate {len(missing)} segment(s)")
         return 0
 
-    fresh, failures = pipeline.translate_segments(
-        missing,
-        args.lang,
-        glossary,
-        args.model,
-        attn_implementation=args.attn_implementation,
-        use_cuda_graph=args.cuda_graphs,
-    )
+    fresh, failures = ({}, [])
+    if missing:
+        fresh, failures = pipeline.translate_segments(
+            missing,
+            args.lang,
+            glossary,
+            args.model,
+            attn_implementation=args.attn_implementation,
+            use_cuda_graph=args.cuda_graphs,
+        )
     print(f"[translate] translated {len(fresh)}, {len(failures)} request failure(s)")
     for key, why in failures[:10]:
         print(f"[translate]   FAILED {key[:12]} {why}")
@@ -326,6 +333,15 @@ def translate_command_parser(subparsers=None):
         help=(
             "Record and replay the GPU work for speed. Off by default because it is incompatible "
             "with mixture-of-experts models, which copy between CPU and GPU to route experts."
+        ),
+    )
+    parser.add_argument(
+        "--rebuild",
+        action="store_true",
+        help=(
+            "Rebuild and republish every page from the cache even when nothing needs "
+            "translating. Use after changing how pages are assembled or checked. Needs no GPU "
+            "if the cache is warm."
         ),
     )
     parser.add_argument(
