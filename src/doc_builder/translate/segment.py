@@ -37,10 +37,11 @@ import re
 # The marker delimiters. `¤` is the Unicode "generic currency sign" -- a character that exists
 # to stand in for something else -- and it appears nowhere in the English or Japanese docs.
 #
-# It deliberately looks nothing like a bracket. The first version used `⟦ ⟧`, which sit right
-# next to the `]` of a link in `[some text]⟦0⟧`, and the model confused the two: it returned
-# `Gemma 4⟧⟦396⟧`, having eaten the `[` and turned the `]` into a `⟧`. Two links on one page
-# were lost that way, and every one of the ~4,900 links in the docs was exposed to it.
+# It also looks nothing like a bracket, which was meant to stop the model muddling a marker
+# with the `]` of a link. That turned out not to be the problem: with `¤` markers the model
+# still returns `Gemma 4⟧¤396¤` -- dropping the `[` and inventing a `⟧` it was never shown.
+# So the delimiter is not what causes it, and `link_marker_indices` below is what actually
+# catches it. `¤` is kept anyway; there is no reason to prefer a bracket-shaped marker.
 PH_OPEN = "¤"
 PH_CLOSE = "¤"
 
@@ -87,6 +88,18 @@ MASK_PATTERNS = [
     ("link", re.compile(r"(?<=\])\([^)\n]*\)")),
     ("callout", re.compile(r">[ \t]*\[!\w+\]")),
 ]
+
+# A marker that sits right after a `]` is the tail of a link: `[some text]¤0¤`. Keeping track
+# of these separately is how we notice the model dropping a link's opening bracket -- it emits
+# `some text⟧¤0¤`, which keeps the marker intact so the ordinary marker check is satisfied,
+# but leaves a URL floating with no link text attached to it.
+LINK_MARKER_RE = re.compile(f"\\]{PH_OPEN}(\\d+){PH_CLOSE}")
+
+
+def link_marker_indices(text):
+    """Markers that complete a link, i.e. the ones directly preceded by a `]`."""
+    return sorted(int(m.group(1)) for m in LINK_MARKER_RE.finditer(text))
+
 
 # A blank line marks the end of one chunk and the start of the next. The blank lines are
 # kept as part of the split so we can rebuild the page with its original spacing.

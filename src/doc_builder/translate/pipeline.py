@@ -19,7 +19,15 @@ import yaml
 
 from . import validate
 from .cache import segment_key, sha256_text
-from .segment import is_translatable, join_blocks, mask, placeholder_indices, restore, split_blocks
+from .segment import (
+    is_translatable,
+    join_blocks,
+    link_marker_indices,
+    mask,
+    placeholder_indices,
+    restore,
+    split_blocks,
+)
 
 # Change this to redo every translation from scratch. It is part of each paragraph's ID, so
 # editing it throws the whole cache away -- about $2.50-10 of GPU time for transformers.
@@ -212,6 +220,13 @@ def assemble_page(plan, translations):
         # guessing the hidden text and typing it out. That was 4 paragraphs out of 402, and it
         # failed 3 entire pages. Now those 4 stay English inside otherwise Japanese pages.
         if sorted(placeholder_indices(translated)) != sorted(placeholder_indices(unit.text)):
+            rejected.append(unit.key)
+            continue
+        # Every marker can be present and the link still be broken. The model drops the `[`
+        # from `[some text]¤0¤` and writes `some text⟧¤0¤` instead, which restores to a URL
+        # with nothing linking to it. The markers all check out, so only looking at what sits
+        # in front of them catches it.
+        if link_marker_indices(translated) != link_marker_indices(unit.text):
             rejected.append(unit.key)
             continue
         parts[index] = f"{unit.lead}{translated}{unit.trail}"
