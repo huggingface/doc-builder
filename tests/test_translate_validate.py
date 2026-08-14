@@ -14,7 +14,7 @@ def masked(text):
 
 def test_clean_page_passes():
     src = masked("# Title\n\nThe `tokenizer` converts text.\n")
-    trans = masked("# タイトル\n\n⟦0⟧はテキストを変換します。\n")
+    trans = masked("# タイトル\n\n¤0¤はテキストを変換します。\n")
     r = validate.validate_page("p.md", src, trans)
     assert r.ok, r.failures
 
@@ -35,7 +35,7 @@ def test_invented_placeholder_fails():
 
 def test_duplicated_placeholder_fails():
     src = masked("Call `fit` once.\n")
-    r = validate.validate_page("p.md", src, "⟦0⟧と⟦0⟧を呼びます。\n")
+    r = validate.validate_page("p.md", src, "¤0¤と¤0¤を呼びます。\n")
     assert not r.ok
     assert any("duplicated" in f for f in r.failures)
 
@@ -145,12 +145,12 @@ def test_image_links_are_counted():
 def test_link_check_needs_both_texts_to_run():
     """validate_page must not silently skip the check when only one side is passed."""
     src = masked("See [x](https://a.b) here.\n")
-    r = validate.validate_page("p.md", src, "⟦0⟧を見てください。\n")
+    r = validate.validate_page("p.md", src, "¤0¤を見てください。\n")
     assert r.ok  # no source/restored supplied -> link check not applicable
     r2 = validate.validate_page(
         "p.md",
         src,
-        "⟦0⟧を見てください。\n",
+        "¤0¤を見てください。\n",
         source="See [x](https://a.b) here.\n",
         restored="を見てください。\n(https://a.b)\n",
     )

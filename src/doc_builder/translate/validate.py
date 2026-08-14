@@ -123,7 +123,7 @@ def check_links(source, restored):
     """Are the links still put together properly?
 
     This looks like it repeats the marker check, but it does not. Only the `](url)` half of
-    a link is hidden; the opening `[` is left alone. So the model sees `[Sign up⟦0⟧` and has
+    a link is hidden; the opening `[` is left alone. So the model sees `[Sign up]¤0¤` and has
     to keep the marker next to its bracket. If it moves the marker elsewhere, every marker is
     still present exactly once -- the marker check is happy -- but the link is broken.
 

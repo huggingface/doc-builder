@@ -107,10 +107,16 @@ class SegmentCache:
         return self.blobs / key[:2] / f"{key}.txt"
 
     def get(self, key):
-        """The translation for this ID, or None if we do not have it or cannot read it."""
+        """The translation for this ID, or None if we do not have it or cannot read it.
+
+        Any filesystem trouble counts as "we do not have it", quietly. It used to be only
+        "file not found", so when a bucket mount presented one blob path as a directory the
+        run printed a full traceback -- which looks like a crash in a job nobody is watching,
+        for something that is handled perfectly well by translating the paragraph again.
+        """
         try:
             return self._blob_path(key).read_text(encoding="utf-8")
-        except FileNotFoundError:
+        except OSError:
             return None
         except Exception:
             traceback.print_exc()

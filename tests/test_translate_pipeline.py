@@ -159,7 +159,7 @@ def test_reordered_markers_are_accepted():
     """Japanese word order differs, so moving a marker is fine -- only losing one is not."""
     plan = plan_for("p.md", "Use `a` before `b`.\n")
     unit = next(iter(plan.units.values()))
-    swapped = unit.text.replace("⟦0⟧", "TMP").replace("⟦1⟧", "⟦0⟧").replace("TMP", "⟦1⟧")
+    swapped = unit.text.replace("¤0¤", "TMP").replace("¤1¤", "¤0¤").replace("TMP", "¤1¤")
     _, _, rejected = pipeline.assemble_page(plan, {unit.key: swapped})
     assert rejected == []
 
@@ -170,7 +170,7 @@ def test_reasoning_block_is_stripped():
     Every page failed validation with "0 headings" and duplicated markers, because what got
     cached was the model talking to itself about the markers.
     """
-    thought = "<think>\nOkay, the user wants me to translate. Keep \u27e60\u27e7 in place.\n</think>\n"
+    thought = "<think>\nOkay, the user wants me to translate. Keep \u00a40\u00a4 in place.\n</think>\n"
     assert pipeline.strip_reasoning(thought + "# \u898b\u51fa\u3057\n") == "# \u898b\u51fa\u3057\n"
     # other tag spellings, and case
     assert pipeline.strip_reasoning("<Thinking>x</Thinking>\n\u8a33") == "\u8a33"

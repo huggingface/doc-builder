@@ -104,7 +104,7 @@ def test_inline_code_masked_before_tags():
 
 
 def test_link_masking_keeps_brackets_balanced():
-    """Regression: hiding `](url)` left `[text⟦0⟧` with an unclosed bracket.
+    """Regression: hiding `](url)` left `[text¤0¤` with an unclosed bracket.
 
     The model treated that as broken markdown and "fixed" it by adding a `]`, which came back
     as `[text](url)]` -- 30 of them in one six-page run. Hiding only `(url)` leaves `[text]`

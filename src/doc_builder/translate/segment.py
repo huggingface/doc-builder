@@ -21,7 +21,7 @@ translation model, it would happily "translate" a variable name or a link.
 
 So we do this instead:
 
-1. Find each of those things and swap it for a numbered marker like `⟦0⟧`.
+1. Find each of those things and swap it for a numbered marker like `¤0¤`.
 2. Send only what is left -- the prose -- to the model.
 3. Swap the real content back in afterwards.
 
@@ -34,10 +34,15 @@ Each thing on the page is either hidden or translated, never partly both.
 
 import re
 
-# The markers use two unusual bracket characters. We checked the whole English doc set
-# and they appear nowhere in it, so a marker can never be confused for real text.
-PH_OPEN = "⟦"
-PH_CLOSE = "⟧"
+# The marker delimiters. `¤` is the Unicode "generic currency sign" -- a character that exists
+# to stand in for something else -- and it appears nowhere in the English or Japanese docs.
+#
+# It deliberately looks nothing like a bracket. The first version used `⟦ ⟧`, which sit right
+# next to the `]` of a link in `[some text]⟦0⟧`, and the model confused the two: it returned
+# `Gemma 4⟧⟦396⟧`, having eaten the `[` and turned the `]` into a `⟧`. Two links on one page
+# were lost that way, and every one of the ~4,900 links in the docs was exposed to it.
+PH_OPEN = "¤"
+PH_CLOSE = "¤"
 
 PLACEHOLDER_RE = re.compile(f"{PH_OPEN}(\\d+){PH_CLOSE}")
 
@@ -92,7 +97,7 @@ def mask(text):
     """Swap everything that must not be translated for numbered markers.
 
     Gives back the rewritten page and a list of what was taken out, where item `i` is what
-    `⟦i⟧` used to be.
+    `¤i¤` used to be.
     """
     placeholders = []
 
@@ -110,15 +115,15 @@ def restore(text, placeholders):
 
     This runs in a loop because markers can end up inside other markers. A real example
     from the docs is `[here](<INSERT LINK HERE>)`: the tag rule hides `<INSERT LINK HERE>`
-    first, and then the link rule hides the whole `](⟦12⟧)` around it. Python does not
-    look again at text it has just substituted in, so a single pass would leave a stray
-    `⟦12⟧` sitting in the finished page.
+    first, and then the link rule hides the `(¤12¤)` around it. Python does not look again at
+    text it has just substituted in, so a single pass would leave a stray `¤12¤` sitting in the
+    finished page.
 
     This only matters when putting things back. The page we send to the model has just the
     outer markers in it, so the checks in validate.py can stay simple.
 
     Raises an error if the text contains a marker we never created -- if the model invents
-    a `⟦99⟧`, we want to hear about it here rather than publish a broken page.
+    a `¤99¤`, we want to hear about it here rather than publish a broken page.
     """
 
     def _replace(match):
