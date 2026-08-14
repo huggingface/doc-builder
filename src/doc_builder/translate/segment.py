@@ -40,8 +40,9 @@ import re
 # It also looks nothing like a bracket, which was meant to stop the model muddling a marker
 # with the `]` of a link. That turned out not to be the problem: with `¤` markers the model
 # still returns `Gemma 4⟧¤396¤` -- dropping the `[` and inventing a `⟧` it was never shown.
-# So the delimiter is not what causes it, and `link_marker_indices` below is what actually
-# catches it. `¤` is kept anyway; there is no reason to prefer a bracket-shaped marker.
+# So the delimiter was never the cause. What fixed it was hiding both of a link's brackets
+# (see `link_open` below), which turns a mangled link into an ordinary missing marker. `¤` is
+# kept anyway; there is no reason to prefer a bracket-shaped marker.
 PH_OPEN = "¤"
 PH_CLOSE = "¤"
 
@@ -94,7 +95,12 @@ MASK_PATTERNS = [
     # Now they are, so a mangled link is just a missing marker, and the ordinary check catches
     # it with no special case. `link_open` only fires on a `[` that actually starts a link,
     # which is what the lookahead is for.
-    ("link_open", re.compile(r"\[(?=[^\]\n]*\]\([^)\n]*\))")),
+    # The lookahead allows one level of brackets inside the label, because 144 links in the docs
+    # have them: `[![Open In Colab](img)](link)` wraps an image in a link, and
+    # `[huggingface_hub[cli]](url)` has them in the text. A simpler lookahead that forbade any
+    # `]` before the `](` skipped those, so only the closing bracket got hidden and the exposed
+    # `[` came back -- along with the model's habit of "closing" it.
+    ("link_open", re.compile(r"\[(?=(?:[^\[\]\n]|\[[^\[\]\n]*\])*\]\([^)\n]*\))")),
     ("link_close", re.compile(r"\]\([^)\n]*\)")),
     ("callout", re.compile(r">[ \t]*\[!\w+\]")),
 ]
