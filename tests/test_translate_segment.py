@@ -103,6 +103,27 @@ def test_inline_code_masked_before_tags():
     assert "to the tokenizer." in masked
 
 
+def test_link_masking_keeps_brackets_balanced():
+    """Regression: hiding `](url)` left `[text⟦0⟧` with an unclosed bracket.
+
+    The model treated that as broken markdown and "fixed" it by adding a `]`, which came back
+    as `[text](url)]` -- 30 of them in one six-page run. Hiding only `(url)` leaves `[text]`
+    intact, so there is nothing to repair.
+    """
+    masked, placeholders = segment.mask("See [the guide](https://hf.co/docs) now.\n")
+    assert "[the guide]" in masked  # brackets still balanced for the model
+    assert placeholders == ["(https://hf.co/docs)"]
+    assert masked.count("[") == masked.count("]")
+
+
+def test_bare_parentheses_in_prose_are_not_masked():
+    """Only parentheses right after a `]` are a link target."""
+    text = "Use it (carefully) with the tokenizer.\n"
+    masked, placeholders = segment.mask(text)
+    assert placeholders == []
+    assert masked == text
+
+
 def test_multiline_tag_is_masked():
     """88 corpus tags span newlines; leaving them unmasked leaks URLs to the model."""
     text = '<img src="https://example.com/a.png"\n     alt="Architecture"/>\n\nProse.\n'

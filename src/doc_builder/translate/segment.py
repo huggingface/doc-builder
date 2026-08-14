@@ -74,7 +74,12 @@ MASK_PATTERNS = [
     ("math_inline", re.compile(r"\\\\\(.*?\\\\\)", re.DOTALL)),
     ("code", re.compile(r"(`+)[^\n]*?\1")),
     ("tag", re.compile(r"</?[a-zA-Z][^<>]{0,600}>")),
-    ("link", re.compile(r"\]\([^)\n]*\)")),
+    # Only the `(url)` half, so the `[text]` brackets stay balanced. Hiding `](url)` instead
+    # left the model looking at `[some text⟦0⟧` -- an opening bracket that never closes -- and
+    # it would helpfully "repair" that by adding a `]`, producing `[text](url)]` once the
+    # marker was put back. Thirty of those in one six-page run. Telling it not to in the prompt
+    # did not help, because the unbalanced bracket is a much stronger cue than an instruction.
+    ("link", re.compile(r"(?<=\])\([^)\n]*\)")),
     ("callout", re.compile(r">[ \t]*\[!\w+\]")),
 ]
 

@@ -23,7 +23,7 @@ from .segment import is_translatable, join_blocks, mask, restore, split_blocks
 
 # Change this to redo every translation from scratch. It is part of each paragraph's ID, so
 # editing it throws the whole cache away -- about $2.50-10 of GPU time for transformers.
-PROMPT_VERSION = "v2"
+PROMPT_VERSION = "v3"
 
 LANGUAGE_NAMES = {"ja": "Japanese"}
 
@@ -57,9 +57,8 @@ Rules:
 - Tokens like {ph_open}0{ph_close} stand in for code, tags and link targets that were taken \
 out before you saw the text. Copy every one of them into your translation exactly once, \
 unchanged. Never translate, renumber, drop or repeat one.
-- `[some text{ph_open}0{ph_close}` is a link. Translate the words between `[` and the token, \
-and leave the token immediately after them. Do not add a closing `]` -- the token already \
-contains it.
+- `[some text]{ph_open}0{ph_close}` is a link. Translate the words inside the brackets and \
+keep the token straight after the closing bracket.
 - Keep heading levels (`#`, `##`) exactly as they are.
 - Output only the translation. No preamble, no explanation, no code fences.{glossary}"""
 
