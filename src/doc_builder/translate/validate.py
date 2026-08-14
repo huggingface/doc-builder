@@ -204,6 +204,12 @@ def summarize(results):
     ]
     if rate > 0.02:
         lines.append(f"[validate] WARNING rejection rate {rate:.1%} exceeds 2% -- investigate")
-    for r in failed:
-        lines.append(str(r))
+
+    # Show every page that had anything to say, not just the ones that failed. A page can pass
+    # while still having paragraphs left in English, and printing only failures hid exactly the
+    # number worth watching: "quicktour.md passed" said nothing about the English paragraph
+    # sitting in the middle of it.
+    for r in results:
+        if not r.ok or r.warnings:
+            lines.append(str(r))
     return "\n".join(lines)

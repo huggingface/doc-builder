@@ -145,12 +145,13 @@ def test_image_links_are_counted():
 def test_link_check_needs_both_texts_to_run():
     """validate_page must not silently skip the check when only one side is passed."""
     src = masked("See [x](https://a.b) here.\n")
-    r = validate.validate_page("p.md", src, "¤0¤を見てください。\n")
+    # a link is two markers now -- one per bracket -- so a good translation carries both
+    r = validate.validate_page("p.md", src, "¤0¤x¤1¤を見てください。\n")
     assert r.ok  # no source/restored supplied -> link check not applicable
     r2 = validate.validate_page(
         "p.md",
         src,
-        "¤0¤を見てください。\n",
+        "¤0¤x¤1¤を見てください。\n",
         source="See [x](https://a.b) here.\n",
         restored="を見てください。\n(https://a.b)\n",
     )
@@ -193,6 +194,22 @@ def test_summary_flags_high_rejection_rate():
         r.failures.append("boom")
     out = validate.summarize(results)
     assert "95/100" in out and "5.0%" in out and "exceeds 2%" in out
+
+
+def test_summary_shows_warnings_on_pages_that_passed():
+    """Regression: a page could pass with an English paragraph in it and say nothing.
+
+    Only failures were printed, so "quicktour.md passed" hid the very number worth watching.
+    """
+    passed_with_warning = validate.Result(page="quicktour.md")
+    passed_with_warning.warnings.append("1 paragraph(s) kept in English: markers not preserved")
+    silent = validate.Result(page="installation.md")
+
+    out = validate.summarize([passed_with_warning, silent])
+    assert "2/2 pages passed" in out
+    assert "quicktour.md" in out  # shown despite passing
+    assert "kept in English" in out
+    assert "installation.md" not in out  # nothing to report, stays quiet
 
 
 def test_summary_clean_run_has_no_warning():

@@ -19,19 +19,11 @@ import yaml
 
 from . import validate
 from .cache import segment_key, sha256_text
-from .segment import (
-    is_translatable,
-    join_blocks,
-    link_marker_indices,
-    mask,
-    placeholder_indices,
-    restore,
-    split_blocks,
-)
+from .segment import is_translatable, join_blocks, mask, placeholder_indices, restore, split_blocks
 
 # Change this to redo every translation from scratch. It is part of each paragraph's ID, so
 # editing it throws the whole cache away -- about $2.50-10 of GPU time for transformers.
-PROMPT_VERSION = "v3"
+PROMPT_VERSION = "v4"
 
 LANGUAGE_NAMES = {"ja": "Japanese"}
 
@@ -65,8 +57,8 @@ Rules:
 - Tokens like {ph_open}0{ph_close} stand in for code, tags and link targets that were taken \
 out before you saw the text. Copy every one of them into your translation exactly once, \
 unchanged. Never translate, renumber, drop or repeat one.
-- `[some text]{ph_open}0{ph_close}` is a link. Translate the words inside the brackets and \
-keep the token straight after the closing bracket.
+- A phrase wrapped in two tokens, like {ph_open}0{ph_close}some text{ph_open}1{ph_close}, is a \
+link. Translate the words between the tokens and leave both tokens where they are.
 - Keep heading levels (`#`, `##`) exactly as they are.
 - Output only the translation. No preamble, no explanation, no code fences.{glossary}"""
 
@@ -220,13 +212,6 @@ def assemble_page(plan, translations):
         # guessing the hidden text and typing it out. That was 4 paragraphs out of 402, and it
         # failed 3 entire pages. Now those 4 stay English inside otherwise Japanese pages.
         if sorted(placeholder_indices(translated)) != sorted(placeholder_indices(unit.text)):
-            rejected.append(unit.key)
-            continue
-        # Every marker can be present and the link still be broken. The model drops the `[`
-        # from `[some text]¤0¤` and writes `some text⟧¤0¤` instead, which restores to a URL
-        # with nothing linking to it. The markers all check out, so only looking at what sits
-        # in front of them catches it.
-        if link_marker_indices(translated) != link_marker_indices(unit.text):
             rejected.append(unit.key)
             continue
         parts[index] = f"{unit.lead}{translated}{unit.trail}"

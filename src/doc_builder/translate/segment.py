@@ -80,26 +80,24 @@ MASK_PATTERNS = [
     ("math_inline", re.compile(r"\\\\\(.*?\\\\\)", re.DOTALL)),
     ("code", re.compile(r"(`+)[^\n]*?\1")),
     ("tag", re.compile(r"</?[a-zA-Z][^<>]{0,600}>")),
-    # Only the `(url)` half, so the `[text]` brackets stay balanced. Hiding `](url)` instead
-    # left the model looking at `[some text⟦0⟧` -- an opening bracket that never closes -- and
-    # it would helpfully "repair" that by adding a `]`, producing `[text](url)]` once the
-    # marker was put back. Thirty of those in one six-page run. Telling it not to in the prompt
-    # did not help, because the unbalanced bracket is a much stronger cue than an instruction.
-    ("link", re.compile(r"(?<=\])\([^)\n]*\)")),
+    # Links get both brackets hidden, leaving only the label between two markers:
+    #
+    #     [continuous batching](../cb)  ->  ¤0¤continuous batching¤1¤
+    #
+    # The label is still translated -- worth doing, since 80% of the 4,711 links in the docs
+    # have a real phrase there rather than an identifier -- but there is no markdown left for
+    # the model to get wrong. That matters because every earlier arrangement left one bracket
+    # exposed as raw text, and the model kept "fixing" it: first adding a `]` when the opening
+    # bracket looked unclosed, then dropping the `[` and inventing a `⟧` in its place. Neither
+    # was detectable by the marker check, because the brackets were not markers.
+    #
+    # Now they are, so a mangled link is just a missing marker, and the ordinary check catches
+    # it with no special case. `link_open` only fires on a `[` that actually starts a link,
+    # which is what the lookahead is for.
+    ("link_open", re.compile(r"\[(?=[^\]\n]*\]\([^)\n]*\))")),
+    ("link_close", re.compile(r"\]\([^)\n]*\)")),
     ("callout", re.compile(r">[ \t]*\[!\w+\]")),
 ]
-
-# A marker that sits right after a `]` is the tail of a link: `[some text]¤0¤`. Keeping track
-# of these separately is how we notice the model dropping a link's opening bracket -- it emits
-# `some text⟧¤0¤`, which keeps the marker intact so the ordinary marker check is satisfied,
-# but leaves a URL floating with no link text attached to it.
-LINK_MARKER_RE = re.compile(f"\\]{PH_OPEN}(\\d+){PH_CLOSE}")
-
-
-def link_marker_indices(text):
-    """Markers that complete a link, i.e. the ones directly preceded by a `]`."""
-    return sorted(int(m.group(1)) for m in LINK_MARKER_RE.finditer(text))
-
 
 # A blank line marks the end of one chunk and the start of the next. The blank lines are
 # kept as part of the split so we can rebuild the page with its original spacing.

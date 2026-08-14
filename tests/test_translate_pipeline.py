@@ -155,22 +155,6 @@ def test_paragraph_that_loses_a_marker_stays_english():
     assert "Set `a` to `b` now." in rebuilt  # the good one round-tripped
 
 
-def test_paragraph_that_loses_a_link_bracket_stays_english():
-    """Regression: markers survive but the link is still broken.
-
-    The model returns `Gemma 4⟧¤396¤` for `[Gemma 4]¤396¤` -- it drops the `[` and invents a
-    closing character it was never shown. Both markers are present and correct, so the marker
-    check is satisfied, but the URL restores with no link text attached. Changing the marker
-    delimiter did not stop this; only looking at what sits in front of the marker does.
-    """
-    plan = plan_for("p.md", "Models like [Gemma 4](https://a.b) accept audio.\n")
-    unit = next(iter(plan.units.values()))
-    broken = unit.text.replace("[Gemma 4]", "Gemma 4\u27e7")
-    _, rebuilt, rejected = pipeline.assemble_page(plan, {unit.key: broken})
-    assert rejected == [unit.key]
-    assert "[Gemma 4](https://a.b)" in rebuilt  # left as the English original
-
-
 def test_reordered_markers_are_accepted():
     """Japanese word order differs, so moving a marker is fine -- only losing one is not."""
     plan = plan_for("p.md", "Use `a` before `b`.\n")

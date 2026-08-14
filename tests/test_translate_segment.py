@@ -103,17 +103,23 @@ def test_inline_code_masked_before_tags():
     assert "to the tokenizer." in masked
 
 
-def test_link_masking_keeps_brackets_balanced():
-    """Regression: hiding `](url)` left `[text¤0¤` with an unclosed bracket.
+def test_link_masking_hides_both_brackets():
+    """Both brackets are markers, so a mangled link is just a missing marker.
 
-    The model treated that as broken markdown and "fixed" it by adding a `]`, which came back
-    as `[text](url)]` -- 30 of them in one six-page run. Hiding only `(url)` leaves `[text]`
-    intact, so there is nothing to repair.
+    Earlier versions left one bracket exposed as raw markdown and the model kept rewriting it:
+    adding a `]` when the opening bracket looked unclosed, then dropping the `[` and inventing
+    a `\u27e7`. Neither was visible to the marker check, because brackets were not markers.
     """
     masked, placeholders = segment.mask("See [the guide](https://hf.co/docs) now.\n")
-    assert "[the guide]" in masked  # brackets still balanced for the model
-    assert placeholders == ["(https://hf.co/docs)"]
-    assert masked.count("[") == masked.count("]")
+    assert masked == "See \u00a40\u00a4the guide\u00a41\u00a4 now.\n"
+    assert placeholders == ["[", "](https://hf.co/docs)"]
+    assert "[" not in masked and "]" not in masked  # no markdown left to get wrong
+
+
+def test_link_label_is_still_translatable():
+    """The label stays outside the markers -- 80% of link labels are real phrases."""
+    masked, _ = segment.mask("Read [continuous batching](../cb) first.\n")
+    assert "continuous batching" in masked
 
 
 def test_bare_parentheses_in_prose_are_not_masked():
