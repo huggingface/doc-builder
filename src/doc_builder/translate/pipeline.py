@@ -19,7 +19,7 @@ import yaml
 
 from . import validate
 from .cache import segment_key, sha256_text
-from .segment import is_translatable, join_blocks, mask, restore, split_blocks
+from .segment import is_translatable, join_blocks, mask, placeholder_indices, restore, split_blocks
 
 # Change this to redo every translation from scratch. It is part of each paragraph's ID, so
 # editing it throws the whole cache away -- about $2.50-10 of GPU time for transformers.
@@ -197,11 +197,26 @@ def assemble_page(plan, translations):
     the checks before anyone sees it.
     """
     parts = list(plan.parts)
+    rejected = []
     for index, unit in plan.units.items():
-        if unit.key in translations:
-            parts[index] = f"{unit.lead}{translations[unit.key]}{unit.trail}"
+        translated = translations.get(unit.key)
+        if translated is None:
+            continue
+        # Check this paragraph's markers before accepting it. Sorted, not in order: Japanese
+        # word order differs from English, so a model that moves a marker to the other end of
+        # the sentence is doing its job -- only dropping, repeating or inventing one is wrong.
+        #
+        # Doing this per paragraph rather than per page is what stops one bad paragraph costing
+        # the whole page. The model sometimes paraphrases a marker away when it stands for short
+        # inline code -- writing "from the checkpoint" instead of keeping `config.json`, or
+        # guessing the hidden text and typing it out. That was 4 paragraphs out of 402, and it
+        # failed 3 entire pages. Now those 4 stay English inside otherwise Japanese pages.
+        if sorted(placeholder_indices(translated)) != sorted(placeholder_indices(unit.text)):
+            rejected.append(unit.key)
+            continue
+        parts[index] = f"{unit.lead}{translated}{unit.trail}"
     masked_translation = join_blocks(parts)
-    return masked_translation, restore(masked_translation, plan.placeholders)
+    return masked_translation, restore(masked_translation, plan.placeholders), rejected
 
 
 def validate_plan(plan, masked_translation, glossary=None, restored=None):

@@ -149,6 +149,27 @@ def write_page(out_dir, page, text):
     dest.write_text(text, encoding="utf-8")
 
 
+def keep_published(path, source):
+    """Is the page already in the bucket still good enough to leave alone?
+
+    Only the checks that read a finished page apply here -- we have the published text, not the
+    marked-up version it was built from, so the marker checks cannot run. In practice that is
+    the check that matters, since it is the one that has caught pages published under older,
+    weaker rules.
+    """
+    if not path.is_file():
+        return False
+    try:
+        published = path.read_text(encoding="utf-8")
+    except OSError:
+        return False
+    problems = validate.check_links(source, published)
+    if problems:
+        print(f"[translate]   replacing published {path.name}: {problems[0]}")
+        return False
+    return True
+
+
 def run(args, source_dir):
     bucket = Path(args.bucket)
     out_dir = bucket / "translations" / args.package / args.lang
@@ -207,17 +228,22 @@ def run(args, source_dir):
 
     results, written, skipped = [], 0, 0
     for page, plan in plans.items():
-        masked_translation, page_text = pipeline.assemble_page(plan, available)
+        masked_translation, page_text, rejected = pipeline.assemble_page(plan, available)
         result = pipeline.validate_plan(plan, masked_translation, glossary, page_text)
+        if rejected:
+            result.warnings.append(f"{len(rejected)} paragraph(s) kept in English: markers not preserved")
         results.append(result)
         if result.ok:
             disclosed = pipeline.add_disclosure(page_text, page, args.lang, args.package)
             write_page(out_dir, page, disclosed)
             written += 1
         else:
-            # The page failed its checks. Leave the last good translation in place if there is
-            # one, otherwise fall back to English. We never publish a broken page.
-            if not (out_dir / page).is_file():
+            # This page failed its checks, so keep whatever is already published -- but only if
+            # that still passes today's checks. "The last good translation" meant good under the
+            # rules at the time, and the rules get stricter: continuous_batching.md sat in the
+            # bucket with 8 broken links for two runs, kept each time because the fresh attempt
+            # failed for an unrelated reason. Anything that no longer passes drops to English.
+            if not keep_published(out_dir / page, plan.source):
                 write_page(out_dir, page, plan.source)
             skipped += 1
 

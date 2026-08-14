@@ -117,6 +117,26 @@ def test_stray_bracket_already_in_the_source_is_not_flagged():
     assert validate.check_links(source, same) == []
 
 
+def test_keep_published_rejects_a_page_that_no_longer_passes(tmp_path):
+    """Regression: a page published under weaker checks survived later runs.
+
+    continuous_batching.md sat in the bucket with 8 stray brackets for two runs, kept each time
+    because the fresh attempt failed for an unrelated reason.
+    """
+    from doc_builder.commands.translate import keep_published
+
+    source = "See [the guide](https://hf.co/docs) now.\n"
+    page = tmp_path / "p.md"
+
+    page.write_text("詳しくは[ガイド](https://hf.co/docs)]を参照。\n", encoding="utf-8")
+    assert keep_published(page, source) is False  # stray bracket -> drop it
+
+    page.write_text("詳しくは[ガイド](https://hf.co/docs)を参照。\n", encoding="utf-8")
+    assert keep_published(page, source) is True  # clean -> leave it alone
+
+    assert keep_published(tmp_path / "missing.md", source) is False
+
+
 def test_image_links_are_counted():
     source = "![Diagram](https://hf.co/a.png)\n"
     assert validate.check_links(source, "画像なし\n")

@@ -35,7 +35,7 @@ def test_identity_pipeline_reproduces_page(page):
     source = page.read_text(encoding="utf-8")
     plan = plan_for(str(page.relative_to(EN_DOCS)), source)
     identity = {u.key: u.text for u in plan.units.values()}
-    _, rebuilt = pipeline.assemble_page(plan, identity)
+    _, rebuilt, _ = pipeline.assemble_page(plan, identity)
     assert rebuilt == source
 
 
@@ -52,7 +52,7 @@ def test_missing_translation_falls_back_to_english():
     plan = plan_for("p.md", source)
     first = plan.units[min(plan.units)]
     partial = {first.key: "# タイトル"}
-    _, rebuilt = pipeline.assemble_page(plan, partial)
+    _, rebuilt, _ = pipeline.assemble_page(plan, partial)
     assert "# タイトル" in rebuilt
     assert "First." in rebuilt  # untranslated block survives rather than vanishing
 
@@ -66,14 +66,23 @@ def test_pure_placeholder_blocks_are_not_sent_to_the_model():
         assert "[[autodoc]]" not in unit.text
 
 
-def test_validation_catches_a_model_that_drops_a_placeholder():
+def test_a_dropped_marker_is_caught_before_it_reaches_the_page():
+    """A paragraph that loses its markers is turned down and left in English.
+
+    On a one-paragraph page that means the whole page ends up English, which page validation
+    then rejects as "identical to the English source" -- the right answer, reached a step
+    earlier than it used to be. On a real page the other paragraphs still get translated.
+    """
     source = "Call `fit` on the `Trainer`.\n"
     plan = plan_for("p.md", source)
     key = next(iter(plan.segments))
-    masked_translation, _ = pipeline.assemble_page(plan, {key: "呼び出します。"})
+    masked_translation, rebuilt, rejected = pipeline.assemble_page(plan, {key: "呼び出します。"})
+
+    assert rejected == [key]
+    assert rebuilt == source  # left exactly as it was found
     result = pipeline.validate_plan(plan, masked_translation)
     assert not result.ok
-    assert any("dropped" in f for f in result.failures)
+    assert any("identical to the English source" in f for f in result.failures)
 
 
 def test_token_budget_scales_with_content_not_prompt():
@@ -123,6 +132,36 @@ def test_build_requests_asks_for_token_ids_not_a_batchencoding():
 
     with pytest.raises(TypeError, match="list of token ids"):
         pipeline.build_requests({"k": "some prose"}, DictOnlyTok(), "ja", {})
+
+
+def test_paragraph_that_loses_a_marker_stays_english():
+    """Regression: one bad paragraph used to fail the whole page.
+
+    The model paraphrases a marker away when it stands for short inline code -- writing "from
+    the checkpoint" instead of keeping `config.json`. That was 4 paragraphs out of 402 and it
+    cost 3 entire pages.
+    """
+    source = "Set `a` to `b` now.\n\nA second paragraph with `c` in it.\n"
+    plan = plan_for("p.md", source)
+    units = [plan.units[i] for i in sorted(plan.units)]
+    good, bad = units[0], units[1]
+    translations = {
+        good.key: good.text,  # markers intact
+        bad.key: "マーカーを落とした訳文",  # markers gone
+    }
+    _, rebuilt, rejected = pipeline.assemble_page(plan, translations)
+    assert rejected == [bad.key]
+    assert "A second paragraph with `c` in it." in rebuilt  # the bad one stayed English
+    assert "Set `a` to `b` now." in rebuilt  # the good one round-tripped
+
+
+def test_reordered_markers_are_accepted():
+    """Japanese word order differs, so moving a marker is fine -- only losing one is not."""
+    plan = plan_for("p.md", "Use `a` before `b`.\n")
+    unit = next(iter(plan.units.values()))
+    swapped = unit.text.replace("⟦0⟧", "TMP").replace("⟦1⟧", "⟦0⟧").replace("TMP", "⟦1⟧")
+    _, _, rejected = pipeline.assemble_page(plan, {unit.key: swapped})
+    assert rejected == []
 
 
 def test_reasoning_block_is_stripped():
