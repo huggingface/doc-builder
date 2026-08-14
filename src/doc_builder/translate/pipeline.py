@@ -23,7 +23,7 @@ from .segment import is_translatable, join_blocks, mask, restore, split_blocks
 
 # Change this to redo every translation from scratch. It is part of each paragraph's ID, so
 # editing it throws the whole cache away -- about $2.50-10 of GPU time for transformers.
-PROMPT_VERSION = "v1"
+PROMPT_VERSION = "v2"
 
 LANGUAGE_NAMES = {"ja": "Japanese"}
 
@@ -54,9 +54,12 @@ library from English into {language}.
 
 Rules:
 - Translate only the prose. Preserve the Markdown structure exactly.
-- Tokens like {ph_open}0{ph_close} are opaque placeholders for code, tags and URLs. \
-Reproduce every placeholder exactly once, unchanged, in a natural position. Never \
-translate, renumber, drop or duplicate them.
+- Tokens like {ph_open}0{ph_close} stand in for code, tags and link targets that were taken \
+out before you saw the text. Copy every one of them into your translation exactly once, \
+unchanged. Never translate, renumber, drop or repeat one.
+- `[some text{ph_open}0{ph_close}` is a link. Translate the words between `[` and the token, \
+and leave the token immediately after them. Do not add a closing `]` -- the token already \
+contains it.
 - Keep heading levels (`#`, `##`) exactly as they are.
 - Output only the translation. No preamble, no explanation, no code fences.{glossary}"""
 

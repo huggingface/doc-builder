@@ -99,6 +99,24 @@ def test_link_kept_adjacent_passes():
     assert validate.check_links(source, good) == []
 
 
+def test_stray_bracket_after_a_link_fails():
+    """Regression: `[text](url)]` is a valid link plus junk, so counting links let it through.
+
+    This shipped on chat_templating.md's first line -- 3 of them -- and the page passed.
+    """
+    source = "See [the guide](https://hf.co/docs) for details.\n"
+    junk = "詳しくは[ガイド](https://hf.co/docs)]を参照してください。\n"
+    assert validate.check_links(source, junk)
+    assert "stray" in validate.check_links(source, junk)[0]
+
+
+def test_stray_bracket_already_in_the_source_is_not_flagged():
+    """Only count brackets the model added, not ones the English page already had."""
+    source = "Odd but legal: [x](https://a.b)]\n"
+    same = "変だが合法: [x](https://a.b)]\n"
+    assert validate.check_links(source, same) == []
+
+
 def test_image_links_are_counted():
     source = "![Diagram](https://hf.co/a.png)\n"
     assert validate.check_links(source, "画像なし\n")

@@ -37,6 +37,11 @@ HEADING_RE = re.compile(r"^(#{1,6})[ \t]+\S", re.MULTILINE)
 # break -- that restriction is what lets us notice a marker that has drifted onto another line.
 MD_LINK_RE = re.compile(r"!?\[[^\]\n]*\]\([^)\n]*\)")
 
+# A link with a leftover `]` stuck to the end of it, e.g. `[text](url)]`. This is what a marker
+# nudged one character out of place leaves behind, and counting links alone will not see it --
+# the link itself is perfectly well formed, the bracket just sits there rendering as junk.
+ORPHAN_BRACKET_RE = re.compile(r"\]\([^)\n]*\)\]")
+
 
 @dataclass
 class Result:
@@ -127,11 +132,21 @@ def check_links(source, restored):
     around within the same line can still slip past, because the link is then merely
     pointing at the wrong words rather than malformed.
     """
+    problems = []
+
     want = len(MD_LINK_RE.findall(source))
     got = len(MD_LINK_RE.findall(restored))
     if got < want:
-        return [f"markdown links broken: {want} in source, {got} well-formed in output"]
-    return []
+        problems.append(f"markdown links broken: {want} in source, {got} well-formed in output")
+
+    # Counting links alone missed this one: the model produced `[text](url)]`, which is a valid
+    # link plus a stray bracket, so the count matched and the page shipped with visible junk in
+    # its first line. Compared against the source, in case a page legitimately writes that.
+    orphans = len(ORPHAN_BRACKET_RE.findall(restored)) - len(ORPHAN_BRACKET_RE.findall(source))
+    if orphans > 0:
+        problems.append(f"{orphans} link(s) followed by a stray ']'")
+
+    return problems
 
 
 def check_glossary(masked_source, masked_translation, glossary):

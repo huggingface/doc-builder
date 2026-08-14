@@ -7,6 +7,7 @@ assemble_page, restore -- so a bug in block indexing or reassembly shows up here
 
 import os
 import pathlib
+import re
 
 import pytest
 import yaml
@@ -163,10 +164,25 @@ def test_glossary_sha_is_stable_and_sensitive():
 
 def test_shipped_glossary_loads_and_pins_are_reachable():
     gloss = pipeline.load_glossary(pipeline.glossary_path("ja"))
-    assert gloss["pin"]["fine-tun"] == "微調整"
+    assert gloss["pin"]["fine-tune"] == "微調整"
     assert "Hub" in gloss["keep"]
     matched = pipeline.glossary_for_segment("How to fine-tune a model", gloss)
-    assert matched == {"fine-tun": "微調整"}
+    assert matched == {"fine-tune": "微調整"}
+
+
+@needs_corpus
+def test_glossary_keys_are_whole_words():
+    """Regression: a stem key like `fine-tun` was shown to the model, which then wrote
+    "微調整（fine-tun）" into the page.
+
+    The key is both the thing we match on and the English term the model is shown, so it has to
+    be a real word. Checked against the corpus: every key must appear followed by a word
+    boundary somewhere in the English docs.
+    """
+    gloss = pipeline.load_glossary(pipeline.glossary_path("ja"))
+    corpus = "\n".join(p.read_text(encoding="utf-8") for p in ALL_PAGES[:400]).lower()
+    stems = [term for term in gloss["pin"] if not re.search(rf"{re.escape(term.lower())}\b", corpus)]
+    assert not stems, f"glossary keys that are not whole words: {stems}"
 
 
 # -- disclosure -----------------------------------------------------------------
