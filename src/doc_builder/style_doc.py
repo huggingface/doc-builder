@@ -32,7 +32,7 @@ _re_docstyle_ignore = re.compile(r"#\s*docstyle-ignore")
 # Re pattern that matches <Tip>, </Tip> and <Tip warning={true}> blocks.
 _re_tip = re.compile(r"^\s*</?Tip(>|\s+warning={true}>)\s*$")
 # Re pattern that catches markdown blockquote lines.
-_re_blockquote_tip = re.compile(r"^\s*>\s?.*$")
+_re_blockquote = re.compile(r"^\s*>\s?.*$")
 
 DOCTEST_PROMPTS = [">>>", "..."]
 
