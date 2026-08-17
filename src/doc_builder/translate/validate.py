@@ -6,7 +6,7 @@ we can tell is whether the page still holds together: are the code samples intac
 headings still there, did the model actually translate anything. That is what happens here,
 and it is the only thing standing between a bad translation and the live docs.
 
-Four checks can reject a page. A fifth, the glossary one, only prints a warning -- odd
+Five checks can reject a page. A sixth, the glossary one, only prints a warning -- odd
 word choice reads a little off, it does not break the page, and throwing away a good
 translation over it would be worse.
 
@@ -149,6 +149,25 @@ def check_links(source, restored):
     return problems
 
 
+def check_invented_brackets(masked_source, masked_translation):
+    """Did the model make up markers of its own?
+
+    It has a habit of copying a marker back in a different pair of brackets -- `⟦0⟧` next to
+    the real `¤0¤`. The numbered form is cleaned up before we get here (see
+    `strip_echoed_markers`), so anything still using these brackets is a shape we have not
+    seen, and it should stop the page rather than quietly ship.
+
+    Worth its own check because nothing else could see it: `⟦` is not a marker, not a bracket
+    the link check counts, and it leaves the link count untouched. 176 of them reached the
+    published docs before this existed.
+    """
+    stray = set(re.findall(r"[⟦⟧]", masked_translation)) - set(re.findall(r"[⟦⟧]", masked_source))
+    if stray:
+        count = sum(masked_translation.count(c) for c in stray)
+        return [f"{count} invented bracket(s) not in the source: {sorted(stray)}"]
+    return []
+
+
 def check_glossary(masked_source, masked_translation, glossary):
     """Did the model stick to the agreed wording? Warning only, never a rejection.
 
@@ -182,6 +201,7 @@ def validate_page(page, masked_source, masked_translation, glossary=None, source
     result.failures += check_placeholders(masked_source, masked_translation)
     result.failures += check_headings(masked_source, masked_translation)
     result.failures += check_translated(masked_source, masked_translation)
+    result.failures += check_invented_brackets(masked_source, masked_translation)
     if source is not None and restored is not None:
         result.failures += check_links(source, restored)
     if glossary:

@@ -159,6 +159,54 @@ def test_link_check_needs_both_texts_to_run():
     assert any("links broken" in f for f in r2.failures)
 
 
+def test_invented_bracket_fails():
+    """Regression: 176 of these shipped across 26 pages, passing every check there was.
+
+    The model copies a marker back in different brackets next to the real one. Both real
+    markers are present and correct, so the marker check is happy, the link count is
+    unchanged, and `⟦0⟧` lands in the published page.
+    """
+    src = masked("See [the guide](https://hf.co/docs) now.\n")
+    r = validate.validate_page("p.md", src, "⟦0⟧¤0¤ガイド¤1¤⟦1⟧をご覧ください。\n")
+    assert not r.ok
+    assert any("invented bracket" in f for f in r.failures)
+
+
+def test_invented_bracket_already_in_the_source_is_not_flagged():
+    src = masked("Maths: ⟦x⟧ is a thing.\n")
+    r = validate.validate_page("p.md", src, "数学: ⟦x⟧ というものです。\n")
+    assert r.ok, r.failures
+
+
+def test_echoed_markers_are_stripped_before_the_check_sees_them():
+    """The numbered form is litter next to a correct translation, so it is removed, not rejected."""
+    from doc_builder.translate.pipeline import strip_echoed_markers
+
+    assert strip_echoed_markers("⟦0⟧¤0¤ガイド¤1¤⟦1⟧をご覧ください。") == "¤0¤ガイド¤1¤をご覧ください。"
+    # the model is not consistent about which bracket it uses at each end
+    assert strip_echoed_markers("🙂 ポジティブ⟧1⟧、🙁 ネガティブ⟧1⟧") == "🙂 ポジティブ、🙁 ネガティブ"
+    # a lone bracket is not the known form, so it survives for the check to reject
+    assert strip_echoed_markers("Gemma 4⟧¤396¤") == "Gemma 4⟧¤396¤"
+
+
+def test_stray_bracket_costs_one_paragraph_not_the_page():
+    """A lone `⟧` drops its own paragraph to English; the rest of the page still publishes.
+
+    Two pages in the first full run had exactly one stray character in them. Rejecting the
+    whole page for that would throw away a page of good Japanese.
+    """
+    from doc_builder.translate.pipeline import PagePlan, assemble_page
+
+    plan = PagePlan("p.md", "First para.\n\nSecond para.\n", "ja", "m", "sha")
+    keys = [u.key for u in plan.units.values()]
+    _, restored, rejected = assemble_page(plan, {keys[0]: "最初の段落。", keys[1]: "二番目の段落⟧"})
+
+    assert rejected == [keys[1]]
+    assert "最初の段落。" in restored  # good paragraph kept
+    assert "Second para." in restored  # bad one back to English
+    assert "⟧" not in restored
+
+
 def test_glossary_drift_warns_but_does_not_fail():
     src = masked("The tokenizer lives on the Hub.\n")
     trans = "トークナイザーはハブにあります。\n"  # 'Hub' translated away

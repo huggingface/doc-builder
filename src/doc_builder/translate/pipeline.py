@@ -75,6 +75,34 @@ def strip_reasoning(text):
     return REASONING_RE.sub("", text)
 
 
+# The model sometimes copies a marker back in a different pair of brackets, right next to the
+# real one, so `¤0¤the guide¤1¤` comes back as `⟦0⟧¤0¤the guide¤1¤⟦1⟧`. The real markers are
+# present and correct, so every check passed and the page shipped with `⟦0⟧` sitting in the
+# text -- 176 of them across 26 pages in the first full run.
+#
+# This is the one place where taking the syntax away is not an option: the model invents these
+# unprompted, so there is nothing exposed to hide. Changing the marker delimiters was already
+# tried and did not stop it.
+#
+# Only the numbered form is removed here. It is unambiguous -- `⟦` and `⟧` appear nowhere in
+# the 732 English pages -- and the translation around it is intact, so throwing the paragraph
+# away would lose good work for a bit of litter. Anything else using these brackets is left
+# alone on purpose, so validate.py can reject it and we hear about a new habit instead of
+# quietly cleaning up after it forever.
+#
+# Either bracket on either side, because the model is not consistent about which it uses: as
+# well as `⟦1⟧` it writes `⟧1⟧`, with the closing one at both ends. Some of those sit in
+# paragraphs that never had a marker to echo in the first place -- the English behind
+# `ポジティブ⟧1⟧、🙁 ネガティブ⟧1⟧` is plain prose, "🙂 positive, 🙁 negative" -- so the number
+# refers to nothing and there is no content at risk of being removed with it.
+ECHOED_MARKER_RE = re.compile(r"[⟦⟧]\d+[⟦⟧]")
+
+
+def strip_echoed_markers(text):
+    """Remove markers the model rewrote in the wrong brackets, e.g. `⟦0⟧`."""
+    return ECHOED_MARKER_RE.sub("", text)
+
+
 def glossary_path(language):
     """Where the glossary for this language lives inside the installed package.
 
@@ -202,6 +230,9 @@ def assemble_page(plan, translations):
         translated = translations.get(unit.key)
         if translated is None:
             continue
+        # Cleaned on the way out rather than on the way in, so a cache full of translations
+        # written before this existed is fixed by a --rebuild, with nothing retranslated.
+        translated = strip_echoed_markers(translated)
         # Check this paragraph's markers before accepting it. Sorted, not in order: Japanese
         # word order differs from English, so a model that moves a marker to the other end of
         # the sentence is doing its job -- only dropping, repeating or inventing one is wrong.
@@ -212,6 +243,13 @@ def assemble_page(plan, translations):
         # guessing the hidden text and typing it out. That was 4 paragraphs out of 402, and it
         # failed 3 entire pages. Now those 4 stay English inside otherwise Japanese pages.
         if sorted(placeholder_indices(translated)) != sorted(placeholder_indices(unit.text)):
+            rejected.append(unit.key)
+            continue
+        # Same treatment for brackets the model made up but did not number, like a lone `⟧`.
+        # These are dropped a paragraph at a time for the same reason as the markers above: a
+        # single stray character would otherwise cost a whole page of good Japanese. Two pages
+        # in the first full run came down to exactly one character each.
+        if validate.check_invented_brackets(unit.text, translated):
             rejected.append(unit.key)
             continue
         parts[index] = f"{unit.lead}{translated}{unit.trail}"
