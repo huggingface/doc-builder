@@ -260,10 +260,7 @@ def run(args, source_dir):
             out_dir,
             toc_tree,
             # Sidebar titles never go through assemble_page, so they need the same clean-up.
-            {
-                title: pipeline.strip_echoed_markers(available.get(key, title))
-                for key, title in toc_keys.items()
-            },
+            {title: pipeline.strip_echoed_markers(available.get(key, title)) for key, title in toc_keys.items()},
         )
 
     print(validate.summarize(results))
