@@ -121,12 +121,10 @@ def is_doc_builder_repo(path):
     """
     Detects whether a folder is the `doc_builder` or not.
     """
-    setup_file = Path(path) / "setup.py"
-    if not setup_file.exists():
+    pyproject_file = Path(path) / "pyproject.toml"
+    if not pyproject_file.exists():
         return False
-    with open(os.path.join(path, "setup.py")) as f:
-        first_line = f.readline()
-    return first_line == "# Doc-builder package setup.\n"
+    return 'name = "hf-doc-builder"' in pyproject_file.read_text()
 
 
 def locate_kit_folder():
