@@ -206,6 +206,7 @@ def build_mdx_files(package, doc_folder, output_dir, page_info, version_tag_suff
 
     all_files = list(doc_folder.glob("**/*"))
     all_errors = []
+    failed_files = []
     for file in tqdm(all_files, desc="Building the MDX files"):
         new_anchors = None
         errors = None
@@ -252,7 +253,9 @@ def build_mdx_files(package, doc_folder, output_dir, page_info, version_tag_suff
                 shutil.copy(file, dest_file)
 
         except Exception as e:
-            raise type(e)(f"There was an error when converting {file} to the MDX format.\n" + e.args[0]) from e
+            all_errors.append(f"There was an error when converting {file} to the MDX format.\n{e.args[0]}")
+            failed_files.append(str(file.with_suffix("").relative_to(doc_folder)))
+            continue
 
         if new_anchors is not None:
             page_name = str(file.with_suffix("").relative_to(doc_folder))
@@ -267,12 +270,8 @@ def build_mdx_files(package, doc_folder, output_dir, page_info, version_tag_suff
         if errors is not None:
             all_errors.extend(errors)
 
-    if len(all_errors) > 0:
-        raise ValueError(
-            "The deployment of the documentation will fail because of the following errors:\n" + "\n".join(all_errors)
-        )
-
-    return anchor_mapping, source_files_mapping
+    return anchor_mapping, source_files_mapping, all_errors, failed_files
+        
 
 
 def resolve_links(doc_folder, package, mapping, page_info):
@@ -394,11 +393,11 @@ def build_doc(
     read_doc_config(doc_folder)
 
     package = importlib.import_module(package_name) if is_python_module else None
-    anchors_mapping, source_files_mapping = build_mdx_files(
+    anchors_mapping, source_files_mapping, mdx_errors, failed_files = build_mdx_files(
         package, doc_folder, output_dir, page_info, version_tag_suffix=version_tag_suffix
     )
     if not watch_mode:
-        sphinx_refs = check_toc_integrity(doc_folder, output_dir)
+        sphinx_refs = check_toc_integrity(doc_folder, output_dir, known_failed_files=failed_files)
         sphinx_refs.extend(convert_anchors_mapping_to_sphinx_format(anchors_mapping, package))
 
     if is_python_module:
@@ -414,6 +413,11 @@ def build_doc(
 
     if not watch_mode:
         toctree_renamings(output_dir)
+    
+    if len(mdx_errors) > 0:
+        raise ValueError(
+            "The deployment of the documentation will fail because of the following errors:\n" + "\n".join(mdx_errors)
+        )
 
     return source_files_mapping, output_dir
 
@@ -463,7 +467,7 @@ def toctree_renamings(output_dir):
                 doc_file.rename(newlocal)
 
 
-def check_toc_integrity(doc_folder, output_dir):
+def check_toc_integrity(doc_folder, output_dir, known_failed_files=None):
     """
     Checks all the MDX files obtained after building the documentation are present in the table of contents.
 
@@ -510,6 +514,8 @@ def check_toc_integrity(doc_folder, output_dir):
         )
 
     files_not_exist = [f for f in toc_sections if f not in doc_files]
+    if known_failed_files:
+        files_not_exist = [f for f in files_not_exist if f not in known_failed_files]
     if len(files_not_exist) > 0:
         message = "\n".join([f"- {f}" for f in files_not_exist])
         raise RuntimeError(
