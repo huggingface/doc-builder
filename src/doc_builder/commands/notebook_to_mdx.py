@@ -25,7 +25,6 @@ from tqdm import tqdm
 
 from ..style_doc import format_code_example
 
-
 # CSI sequences (colors, cursor control like `\x1b[?25h`) and OSC sequences (e.g. terminal titles).
 _ANSI_ESCAPE_RE = re.compile(r"\x1b(?:\[[0-?]*[ -/]*[@-~]|\][^\x07\x1b]*(?:\x07|\x1b\\)?)")
 
