@@ -16,7 +16,8 @@
 Fast link checker for documentation files.
 
 This module checks internal links in markdown/mdx files to ensure they point
-to valid files. It handles links without extensions (e.g., `./fp16` instead of `./fp16.md`).
+to valid files and anchors. It handles links without extensions (e.g., `./fp16`
+instead of `./fp16.md`) and checks fragment anchors against headings and IDs.
 """
 
 import os
@@ -34,6 +35,10 @@ except ImportError:
 # Regex to match markdown links [text](url) and image links ![alt](url)
 # Captures the link text and URL separately
 _re_md_link = re.compile(r"!?\[([^\]]*)\]\(([^)]+)\)")
+_re_heading = re.compile(r"^\s{0,3}#{1,6}\s+(.+?)\s*$")
+_re_custom_anchor = re.compile(r"(?:\[\[([^\]]+)\]\]|\[\s+([^\]]*?)\s+\])\s*$")
+_re_html_anchor = re.compile(r'''\b(?:id|name)\s*=\s*(?:"([^"]+)"|'([^']+)')''', re.IGNORECASE)
+_re_fence = re.compile(r"^\s{0,3}(`{3,}|~{3,})")
 
 
 class LinkCheckResult:
@@ -103,6 +108,13 @@ def is_anchor_only(url: str) -> bool:
     return url.startswith("#")
 
 
+def split_link_url(link_url: str) -> tuple[str, str | None]:
+    """Split a local link into its path/query portion and fragment anchor."""
+    path_url, separator, anchor = link_url.partition("#")
+    path_url = path_url.split("?", 1)[0]
+    return path_url, anchor if separator else None
+
+
 def resolve_link_path(source_file: Path, link_url: str) -> Path | None:
     """
     Resolve a relative link URL to an absolute path.
@@ -112,18 +124,16 @@ def resolve_link_path(source_file: Path, link_url: str) -> Path | None:
         link_url: The link URL to resolve
 
     Returns:
-        The resolved path, or None if the link is external or an anchor
+        The resolved path, or None if the link is external or has no local path
     """
     # Strip query parameters and fragments from URL
     # For example: "./file.md?query=value#section" -> "./file.md"
-    if "?" in link_url:
-        link_url = link_url.split("?")[0]
-    if "#" in link_url:
-        link_url = link_url.split("#")[0]
+    original_link_url = link_url
+    link_url, _ = split_link_url(link_url)
 
-    # If nothing left after removing query/anchor, it's an anchor-only link
+    # An anchor-only link points back to the source file.
     if not link_url:
-        return None
+        return source_file if is_anchor_only(original_link_url) else None
 
     # Skip external links
     if is_external_link(link_url):
@@ -134,6 +144,63 @@ def resolve_link_path(source_file: Path, link_url: str) -> Path | None:
     link_path = (source_dir / link_url).resolve()
 
     return link_path
+
+
+def _heading_anchor(heading_text: str) -> str | None:
+    """Return the generated anchor for a Markdown heading, if it has one."""
+    custom_match = _re_custom_anchor.search(heading_text)
+    if custom_match:
+        return (custom_match.group(1) or custom_match.group(2)).strip() or None
+
+    # Ignore optional closing hashes in ATX headings, e.g. ``## Title ##``.
+    heading_text = re.sub(r"\s+#+\s*$", "", heading_text).strip()
+    anchor = re.sub(r"\s+", "-", heading_text.lower())
+    anchor = "".join(character for character in anchor if character.isalnum() or character == "-")
+    return anchor or None
+
+
+def extract_anchors(file_path: Path) -> set[str] | None:
+    """Extract generated and explicit anchors from a Markdown/MDX file."""
+    try:
+        with open(file_path, encoding="utf-8-sig") as f:
+            lines = f.readlines()
+    except Exception as e:
+        print(f"Warning: Could not read {file_path} to check anchors: {e}")
+        return None
+
+    anchors = set()
+    in_fence = False
+    fence_char = None
+
+    for line in lines:
+        fence_match = _re_fence.match(line)
+        if fence_match:
+            marker = fence_match.group(1)
+            marker_char = marker[0]
+            if not in_fence:
+                in_fence = True
+                fence_char = marker_char
+            elif marker_char == fence_char:
+                in_fence = False
+                fence_char = None
+            continue
+
+        if in_fence:
+            continue
+
+        for html_match in _re_html_anchor.finditer(line):
+            anchor = html_match.group(1) or html_match.group(2)
+            if anchor:
+                anchors.add(anchor)
+
+        heading_match = _re_heading.match(line)
+        if heading_match:
+            anchor = _heading_anchor(heading_match.group(1))
+            if anchor:
+                anchors.add(anchor)
+            continue
+
+    return anchors
 
 
 def find_target_file(link_path: Path) -> Path | None:
@@ -165,16 +232,6 @@ def find_target_file(link_path: Path) -> Path | None:
         if mdx_path.exists():
             return mdx_path
 
-        # If original had .html, try replacing with .md or .mdx
-        if link_path.suffix == ".html":
-            base = link_path.with_suffix("")
-            md_path = base.with_suffix(".md")
-            if md_path.exists():
-                return md_path
-            mdx_path = base.with_suffix(".mdx")
-            if mdx_path.exists():
-                return mdx_path
-
     return None
 
 
@@ -193,6 +250,7 @@ def check_file_links(file_path: Path, doc_folder: Path) -> tuple[list[tuple[str,
     """
     broken_links = []
     total_links = 0
+    anchor_cache: dict[Path, set[str] | None] = {}
 
     try:
         with open(file_path, encoding="utf-8-sig") as f:
@@ -203,8 +261,9 @@ def check_file_links(file_path: Path, doc_folder: Path) -> tuple[list[tuple[str,
             for match in _re_md_link.finditer(line):
                 link_text, link_url = match.groups()
 
-                # Skip external links and anchor-only links
-                if is_external_link(link_url) or is_anchor_only(link_url):
+                # Skip external links. Anchor-only links are checked against the
+                # headings and explicit IDs in the current file.
+                if is_external_link(link_url):
                     continue
 
                 # Count this as an internal link
@@ -217,7 +276,17 @@ def check_file_links(file_path: Path, doc_folder: Path) -> tuple[list[tuple[str,
 
                 # Check if target exists
                 target = find_target_file(link_path)
-                if target is None:
+                _, anchor = split_link_url(link_url)
+                anchor_exists = True
+                if target is not None and anchor and target.is_file():
+                    if target not in anchor_cache:
+                        anchor_cache[target] = extract_anchors(target)
+                    target_anchors = anchor_cache[target]
+                    # A read failure is already reported as a warning, so do
+                    # not turn it into a false broken-anchor result.
+                    anchor_exists = target_anchors is None or anchor in target_anchors
+
+                if target is None or not anchor_exists:
                     broken_links.append((link_text, link_url, line_num))
 
     except Exception as e:
