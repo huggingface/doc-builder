@@ -37,7 +37,7 @@ except ImportError:
 _re_md_link = re.compile(r"!?\[([^\]]*)\]\(([^)]+)\)")
 _re_heading = re.compile(r"^\s{0,3}#{1,6}\s+(.+?)\s*$")
 _re_custom_anchor = re.compile(r"(?:\[\[([^\]]+)\]\]|\[\s+([^\]]*?)\s+\])\s*$")
-_re_html_anchor = re.compile(r'''\b(?:id|name)\s*=\s*(?:"([^"]+)"|'([^']+)')''', re.IGNORECASE)
+_re_html_anchor = re.compile(r"""\b(?:id|name)\s*=\s*(?:"([^"]+)"|'([^']+)')""", re.IGNORECASE)
 _re_fence = re.compile(r"^\s{0,3}(`{3,}|~{3,})")
 
 
