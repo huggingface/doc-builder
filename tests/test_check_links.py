@@ -13,6 +13,12 @@ def test_check_file_links_validates_local_and_fragment_links(tmp_path):
 [missing target anchor](target.md#removed-section)
 [missing current anchor](#renamed-section)
 [external anchor](https://example.com/target#removed-section)
+[angle-bracket external](<https://example.com/target#removed-section>)
+``[inline code](missing.md)``
+
+```python
+[code example](missing.md)
+```
 """,
         encoding="utf-8",
     )
@@ -61,3 +67,16 @@ def test_check_links_reports_broken_fragment_links(tmp_path):
 
     assert result.has_broken_links()
     assert result.broken_links == [(tmp_path / "index.md", "missing", "page.md#missing", 1)]
+
+
+def test_find_target_file_supports_dots_in_extensionless_page_names(tmp_path):
+    document = tmp_path / "t5v1.1.md"
+    document.write_text("# T5v1.1\n", encoding="utf-8")
+
+    source = tmp_path / "source.md"
+    source.write_text("[T5v1.1](t5v1.1)\n", encoding="utf-8")
+
+    broken_links, total_links = check_file_links(source, tmp_path)
+
+    assert total_links == 1
+    assert broken_links == []

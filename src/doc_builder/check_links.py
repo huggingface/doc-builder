@@ -90,6 +90,10 @@ def is_external_link(url: str) -> bool:
     Returns:
         True if the URL is external, False otherwise
     """
+    url = url.strip()
+    if url.startswith("<") and url.endswith(">"):
+        url = url[1:-1]
+
     # Check for common external URL schemes
     external_schemes = ("http://", "https://", "mailto:", "ftp://", "tel:", "//")
     return any(url.startswith(scheme) for scheme in external_schemes)
@@ -110,6 +114,10 @@ def is_anchor_only(url: str) -> bool:
 
 def split_link_url(link_url: str) -> tuple[str, str | None]:
     """Split a local link into its path/query portion and fragment anchor."""
+    link_url = link_url.strip()
+    if link_url.startswith("<") and link_url.endswith(">"):
+        link_url = link_url[1:-1]
+
     path_url, separator, anchor = link_url.partition("#")
     path_url = path_url.split("?", 1)[0]
     return path_url, anchor if separator else None
@@ -137,6 +145,10 @@ def resolve_link_path(source_file: Path, link_url: str) -> Path | None:
 
     # Skip external links
     if is_external_link(link_url):
+        return None
+
+    # Root-relative URLs point at the published site rather than the source tree.
+    if link_url.startswith("/"):
         return None
 
     # Resolve relative path
@@ -220,19 +232,44 @@ def find_target_file(link_path: Path) -> Path | None:
     if link_path.exists():
         return link_path
 
-    # If the link has no extension or an .html extension, try adding .md or .mdx
-    if link_path.suffix in ("", ".html"):
+    # Try adding .md or .mdx for extensionless links, including names such as
+    # ``t5v1.1`` whose final dot is part of the page name.
+    if link_path.suffix not in (".md", ".mdx"):
+        base_path = link_path.with_suffix("") if link_path.suffix == ".html" else link_path
+
         # Try with .md extension
-        md_path = link_path.with_suffix(".md")
+        md_path = base_path.with_name(base_path.name + ".md")
         if md_path.exists():
             return md_path
 
         # Try with .mdx extension
-        mdx_path = link_path.with_suffix(".mdx")
+        mdx_path = base_path.with_name(base_path.name + ".mdx")
         if mdx_path.exists():
             return mdx_path
 
     return None
+
+
+def _inline_code_ranges(line: str) -> list[tuple[int, int]]:
+    """Return character ranges enclosed by matching backtick runs."""
+    ranges = []
+    delimiter = None
+    start = None
+
+    for match in re.finditer(r"`+", line):
+        marker = match.group()
+        if delimiter is None:
+            delimiter = marker
+            start = match.start()
+        elif marker == delimiter:
+            ranges.append((start, match.end()))
+            delimiter = None
+            start = None
+
+    if delimiter is not None:
+        ranges.append((start, len(line)))
+
+    return ranges
 
 
 def check_file_links(file_path: Path, doc_folder: Path) -> tuple[list[tuple[str, str, int]], int]:
@@ -256,9 +293,30 @@ def check_file_links(file_path: Path, doc_folder: Path) -> tuple[list[tuple[str,
         with open(file_path, encoding="utf-8-sig") as f:
             lines = f.readlines()
 
+        in_fence = False
+        fence_char = None
         for line_num, line in enumerate(lines, start=1):
+            fence_match = _re_fence.match(line)
+            if fence_match:
+                marker_char = fence_match.group(1)[0]
+                if not in_fence:
+                    in_fence = True
+                    fence_char = marker_char
+                elif marker_char == fence_char:
+                    in_fence = False
+                    fence_char = None
+                continue
+
+            if in_fence:
+                continue
+
+            inline_code_ranges = _inline_code_ranges(line)
+
             # Find all markdown links in the line
             for match in _re_md_link.finditer(line):
+                if any(start <= match.start() < end for start, end in inline_code_ranges):
+                    continue
+
                 link_text, link_url = match.groups()
 
                 # Skip external links. Anchor-only links are checked against the
