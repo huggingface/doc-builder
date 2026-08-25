@@ -8,6 +8,8 @@ This is the package we use to build the documentation of our Hugging Face repos.
   * [Installation](#installation)
   * [Previewing](#previewing)
   * [Doc building](#doc-building)
+  * [Doc styling](#doc-styling)
+    + [Using the pre-commit hook](#using-the-pre-commit-hook)
   * [Writing in notebooks](#writing-in-notebooks)
   * [Templates for GitHub Actions](#templates-for-github-actions)
     + [Enabling multilingual documentation](#enabling-multilingual-documentation)
@@ -215,6 +217,44 @@ pytest -q tests/docs/test_my_page_docs.py
 This executes trusted documentation code with `exec`, so keep it limited to repo-controlled docs and CI.
 
 For continuation blocks, `# pytest-decorator`, bare-assert warnings, and GitHub Actions wiring, see [docs/runnable-code-blocks.md](docs/runnable-code-blocks.md).
+
+## Doc styling
+
+`doc-builder style` reformats the docstrings of Python files and the code examples of mdx files in place:
+
+```bash
+doc-builder style src/my_package docs/source --max_len 119
+```
+
+Add `--check_only` to report the files that should be restyled without modifying them.
+
+### Using the pre-commit hook
+
+`doc-builder` ships a [pre-commit](https://pre-commit.com) hook, so the same styling can run on every commit. Add it
+to the `.pre-commit-config.yaml` of your repo:
+
+```yaml
+repos:
+  - repo: https://github.com/huggingface/doc-builder
+    rev: <rev>  # The tag or commit to point at, e.g. v0.6.0
+    hooks:
+      - id: doc-builder-style
+```
+
+The hook was added after `v0.5.0`, so pin a later tag, or a commit of `main` while no such tag exists yet. Running
+`pre-commit autoupdate` pins the latest tag for you.
+
+The hook restyles the files that are about to be committed, and fails if any of them was modified, in the same way as
+a formatter such as `ruff-format`. Only Python and mdx files are passed to it, since those are the only ones
+`doc-builder style` handles.
+
+Pass extra options with `args`, and restrict the hook to a subset of your repo with `files`:
+
+```yaml
+      - id: doc-builder-style
+        args: [--max_len, "119"]
+        files: ^(src|docs/source)/
+```
 
 ## Writing in notebooks
 
