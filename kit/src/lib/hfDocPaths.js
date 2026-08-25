@@ -21,7 +21,7 @@ export function getHfDocFullPath(pathname) {
 		const isCourse = _docType === "learn";
 		const versionRegex = isCourse ? /^(?:pr_\d+)$/ : /^(?:(master|main)|v[\d.]+(rc\d+)?|pr_\d+)$/;
 		const _version = versionRegex.test(params[0]) ? params.shift() : __DOCS_VERSION__;
-		const _lang = /^[a-z]{2}(-[A-Z]{2})?$/.test(params[0]) ? params.shift() : __DOCS_LANGUAGE__;
+		const _lang = /^[a-z]{2}(-[A-Za-z]{2})?$/.test(params[0]) ? params.shift() : __DOCS_LANGUAGE__;
 		const newChapterId = params.join("/");
 		if (
 			__DOCS_LIBRARY__ === _library &&
