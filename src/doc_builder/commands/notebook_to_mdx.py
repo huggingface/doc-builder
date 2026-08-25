@@ -14,7 +14,9 @@
 
 import argparse
 import base64
+import html
 import io
+import re
 from pathlib import Path
 
 import nbformat
@@ -22,6 +24,22 @@ from PIL import Image
 from tqdm import tqdm
 
 from ..style_doc import format_code_example
+
+# CSI sequences (colors, cursor control like `\x1b[?25h`) and OSC sequences (e.g. terminal titles).
+_ANSI_ESCAPE_RE = re.compile(r"\x1b(?:\[[0-?]*[ -/]*[@-~]|\][^\x07\x1b]*(?:\x07|\x1b\\)?)")
+
+
+def text_output_to_pre(output):
+    """
+    Wrap a cell's text output in a `<pre>` block, made safe for the MDX/Svelte pipeline.
+
+    ANSI color codes are stripped (they would render as garbage characters), and the text is
+    HTML-escaped: anything tag-like in an output (e.g. `<MODEL_ID>` in a CLI --help dump, or an
+    object repr like `<transformers.Trainer object at 0x...>`) would otherwise reach the Svelte
+    compiler as raw markup, which Svelte 5 rejects as an invalid element or component name.
+    """
+    output = _ANSI_ESCAPE_RE.sub("", output)
+    return f"<pre>\n{html.escape(output.strip(), quote=False)}\n</pre>"
 
 
 def png_to_jpeg(png_base64):
@@ -58,11 +76,9 @@ def notebook_to_mdx(notebook, max_len):
 
                 first_output = outputs[0]
                 if "text" in first_output:
-                    output = first_output["text"]
-                    output = f"<pre>\n{output.strip()}\n</pre>"
+                    output = text_output_to_pre(first_output["text"])
                 elif "text/plain" in first_output:
-                    output = first_output["text/plain"]
-                    output = f"<pre>\n{output.strip()}\n</pre>"
+                    output = text_output_to_pre(first_output["text/plain"])
                 elif "data" in first_output and "image/png" in first_output["data"]:
                     jpeg_base64 = png_to_jpeg(first_output["data"]["image/png"])
                     output = f'<img src="data:image/jpeg;base64,{jpeg_base64}">\n'
