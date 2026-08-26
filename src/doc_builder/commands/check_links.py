@@ -22,7 +22,12 @@ from doc_builder.check_links import check_links
 def check_links_command(args):
     """Run the link checker command."""
     print(f"Checking links in {args.path_to_docs}...")
-    result = check_links(args.path_to_docs, max_workers=args.max_workers, show_progress=not args.no_progress)
+    result = check_links(
+        args.path_to_docs,
+        max_workers=args.max_workers,
+        show_progress=not args.no_progress,
+        package_name=args.package_name,
+    )
 
     # Choose output format
     if args.format == "list":
@@ -44,6 +49,14 @@ def check_links_command_parser(subparsers=None):
         parser = argparse.ArgumentParser("Doc Builder check-links command")
 
     parser.add_argument("path_to_docs", type=str, help="Path to the documentation folder to check")
+    parser.add_argument(
+        "--package_name",
+        "--package-name",
+        dest="package_name",
+        type=str,
+        default=None,
+        help="Import name of the documented Python package (auto-detected when omitted)",
+    )
     parser.add_argument(
         "--max_workers",
         type=int,
