@@ -1677,12 +1677,6 @@ def _resolve_autodoc_anchors(all_files: list[Path], package_name: str | None) ->
     if not package_name:
         return {}
 
-    try:
-        package = importlib.import_module(package_name)
-        from .autodoc import find_object_in_package, get_shortest_path
-    except Exception:
-        return {}
-
     object_names = set()
     for file_path in all_files:
         try:
@@ -1692,13 +1686,20 @@ def _resolve_autodoc_anchors(all_files: list[Path], package_name: str | None) ->
         object_names.update(
             match.group(1) for line in content.splitlines() if (match := _re_autodoc.match(line)) is not None
         )
+    if not object_names:
+        return {}
+
+    try:
+        package = importlib.import_module(package_name)
+        from .autodoc import find_object_in_package, get_shortest_path
+    except Exception:
+        return {}
 
     resolved_anchors = {}
     for object_name in object_names:
         try:
             obj = find_object_in_package(object_name, package)
             if obj is None:
-                resolved_anchors[object_name] = None
                 continue
             shortest_path = get_shortest_path(obj, package)
             resolved_anchors[object_name] = "None" if shortest_path is None else shortest_path

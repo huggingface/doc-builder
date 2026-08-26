@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from doc_builder.check_links import check_file_links, check_links, extract_anchors
+from doc_builder.check_links import _resolve_autodoc_anchors, check_file_links, check_links, extract_anchors
 from doc_builder.commands.check_links import check_links_command_parser
 
 
@@ -297,9 +297,14 @@ def test_check_links_resolves_autodoc_aliases_from_the_documented_package(tmp_pa
         encoding="utf-8",
     )
     distribution.joinpath("top_level.txt").write_text("fake_alias_pkg\n", encoding="utf-8")
-    docs.joinpath("target.md").write_text("[[autodoc]] PublicAlias\n", encoding="utf-8")
+    docs.joinpath("target.md").write_text(
+        "[[autodoc]] PublicAlias\n[[autodoc]] MissingObject\n",
+        encoding="utf-8",
+    )
     docs.joinpath("source.md").write_text(
-        "[canonical](target.md#fake_alias_pkg.Canonical)\n[guessed alias](target.md#fake_alias_pkg.PublicAlias)\n",
+        "[canonical](target.md#fake_alias_pkg.Canonical)\n"
+        "[guessed alias](target.md#fake_alias_pkg.PublicAlias)\n"
+        "[unresolved fallback](target.md#fake_alias_pkg.MissingObject)\n",
         encoding="utf-8",
     )
     monkeypatch.syspath_prepend(str(project))
@@ -307,6 +312,18 @@ def test_check_links_resolves_autodoc_aliases_from_the_documented_package(tmp_pa
     result = check_links(docs, max_workers=1, show_progress=False)
 
     assert result.broken_links == [(docs / "source.md", "guessed alias", "target.md#fake_alias_pkg.PublicAlias", 2)]
+
+
+def test_resolve_autodoc_anchors_skips_package_import_without_directives(tmp_path, monkeypatch):
+    document = tmp_path / "document.md"
+    document.write_text("# Heading\n", encoding="utf-8")
+
+    def fail_import(_package_name):
+        raise AssertionError("package should not be imported")
+
+    monkeypatch.setattr("doc_builder.check_links.importlib.import_module", fail_import)
+
+    assert _resolve_autodoc_anchors([document], "side_effectful_package") == {}
 
 
 def test_check_links_parser_accepts_package_name_aliases():
