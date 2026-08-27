@@ -194,6 +194,13 @@ def build_mdx_files(package, doc_folder, output_dir, page_info, version_tag_suff
             Suffix to add after the version tag (e.g. 1.3.0 or main) in the documentation links.
             For example, the default `"src/"` suffix will result in a base link as `https://github.com/huggingface/{package_name}/blob/{version_tag}/src/`.
             For example, `version_tag_suffix=""` will result in a base link as `https://github.com/huggingface/{package_name}/blob/{version_tag}/`.
+
+    Returns:
+        `Tuple[Dict, Dict, List[str], List[str]]`: A 4-tuple of:
+            - `anchor_mapping`: map from anchor names to their page in the documentation.
+            - `source_files_mapping`: map from source file paths to their doc source file.
+            - `all_errors`: list of error message strings for files that failed to convert.
+            - `failed_files`: list of stem-relative paths (no suffix) of files that failed.
     """
     doc_folder = Path(doc_folder)
     output_dir = Path(output_dir)
@@ -253,7 +260,7 @@ def build_mdx_files(package, doc_folder, output_dir, page_info, version_tag_suff
                 shutil.copy(file, dest_file)
 
         except Exception as e:
-            all_errors.append(f"There was an error when converting {file} to the MDX format.\n{e.args[0]}")
+            all_errors.append(f"There was an error when converting {file} to the MDX format.\n{repr(e)}")
             failed_files.append(str(file.with_suffix("").relative_to(doc_folder)))
             continue
 
@@ -271,7 +278,6 @@ def build_mdx_files(package, doc_folder, output_dir, page_info, version_tag_suff
             all_errors.extend(errors)
 
     return anchor_mapping, source_files_mapping, all_errors, failed_files
-        
 
 
 def resolve_links(doc_folder, package, mapping, page_info):
@@ -397,8 +403,12 @@ def build_doc(
         package, doc_folder, output_dir, page_info, version_tag_suffix=version_tag_suffix
     )
     if not watch_mode:
-        sphinx_refs = check_toc_integrity(doc_folder, output_dir, known_failed_files=failed_files)
-        sphinx_refs.extend(convert_anchors_mapping_to_sphinx_format(anchors_mapping, package))
+        try:
+            sphinx_refs = check_toc_integrity(doc_folder, output_dir, known_failed_files=set(failed_files))
+            sphinx_refs.extend(convert_anchors_mapping_to_sphinx_format(anchors_mapping, package))
+        except RuntimeError as toc_err:
+            mdx_errors.append(str(toc_err))
+            sphinx_refs = []
 
     if is_python_module:
         if not watch_mode:
@@ -413,7 +423,7 @@ def build_doc(
 
     if not watch_mode:
         toctree_renamings(output_dir)
-    
+
     if len(mdx_errors) > 0:
         raise ValueError(
             "The deployment of the documentation will fail because of the following errors:\n" + "\n".join(mdx_errors)
