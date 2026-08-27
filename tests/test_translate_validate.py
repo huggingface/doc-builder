@@ -129,12 +129,15 @@ def test_keep_published_rejects_a_page_that_no_longer_passes(tmp_path):
     page = tmp_path / "p.md"
 
     page.write_text("詳しくは[ガイド](https://hf.co/docs)]を参照。\n", encoding="utf-8")
-    assert keep_published(page, source) is False  # stray bracket -> drop it
+    assert keep_published(page, source) is None  # stray bracket -> drop it
 
-    page.write_text("詳しくは[ガイド](https://hf.co/docs)を参照。\n", encoding="utf-8")
-    assert keep_published(page, source) is True  # clean -> leave it alone
+    # It gives back the text rather than a yes/no, because the tree is now assembled in memory
+    # before any of it is published, so the caller needs the page itself and not permission.
+    clean = "詳しくは[ガイド](https://hf.co/docs)を参照。\n"
+    page.write_text(clean, encoding="utf-8")
+    assert keep_published(page, source) == clean
 
-    assert keep_published(tmp_path / "missing.md", source) is False
+    assert keep_published(tmp_path / "missing.md", source) is None
 
 
 def test_image_links_are_counted():
@@ -156,7 +159,8 @@ def test_link_check_needs_both_texts_to_run():
         restored="を見てください。\n(https://a.b)\n",
     )
     assert not r2.ok
-    assert any("links broken" in f for f in r2.failures)
+    # the destination is named, not just counted -- that is what makes the message actionable
+    assert any("lost or altered" in f and "https://a.b" in f for f in r2.failures)
 
 
 def test_invented_bracket_fails():

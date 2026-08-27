@@ -49,7 +49,14 @@ transformers = ["transformers[dev]"]
 # the Hub when the compiled flash-attn package isn't installed. Without it the fallback can't
 # happen and from_pretrained raises instead. Compiling flash-attn inside the job would be slow
 # and fragile, so the Hub kernel is the path we want.
-translate = ["torch", "transformers", "accelerate", "kernels>=0.11.0"]
+#
+# transformers is floored at 5.8.0, the first release with `WorkloadHints` -- the newest of the
+# three continuous-batching pieces `translate/pipeline.py` uses. The other two are older:
+# `continuous_batching_context_manager` since 5.0.0 and `ContinuousBatchingConfig` since 5.4.0.
+# `WorkloadHints` comes from `transformers.generation.continuous_batching.utils`, which is not
+# really a public path, so the floor is the weaker half of the protection -- it stops a
+# resolution quietly picking a version where the import is not there yet, and nothing more.
+translate = ["torch", "transformers>=5.8.0", "accelerate", "kernels>=0.11.0"]
 testing = [
     "pytest",
     "pytest-xdist",

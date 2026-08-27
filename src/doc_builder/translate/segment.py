@@ -48,6 +48,47 @@ PH_CLOSE = "¤"
 
 PLACEHOLDER_RE = re.compile(f"{PH_OPEN}(\\d+){PH_CLOSE}")
 
+# What sits between the parentheses of a link, e.g. `(../cb)` or `(https://hf.co "title")`.
+#
+# The parentheses have to be counted rather than stopped at the first `)`. Nine links in the
+# docs put a bracketed phrase inside the URL -- `Fine_(LED)_guide.ipynb` -- and stopping at the
+# first `)` left `_guide.ipynb)` in front of the model as ordinary prose. The model was free to
+# rewrite that, and `check_links` never noticed, because its own regex made the same partial
+# match on both sides and the counts came out equal.
+#
+# One level of nesting is all this allows. Nothing in the docs nests deeper, and anything that
+# did would need a real parser rather than a regex.
+LINK_DEST = r"\((?:[^()\n]|\([^()\n]*\))*\)"
+
+
+# A reference definition, e.g. `[altup]: https://proceedings.neurips.cc/…`, on a line of its own.
+REF_DEF_RE = re.compile(r"^[ \t]*\[([^\[\]\n]+)\]:[ \t]+\S[^\n]*$", re.MULTILINE)
+
+
+def _ref_link_patterns(text):
+    """Patterns for the reference-style links this page actually defines.
+
+    Built per page rather than written into the list below, because `[a][b]` on its own is not
+    enough to go on: the docs are full of Python indexing like `outputs["train"][0]`, and 116
+    of those match that shape against four real reference links. A reference only counts if the
+    page defines it, which is also what CommonMark says -- an undefined one renders as plain
+    text, so masking it would be wrong as well as risky.
+
+    This runs after code and fences are already hidden, so definitions quoted inside a shell
+    session -- `[rank0]: ncclInternalError` in `model_doc/deepseek_v3.md` -- are out of sight
+    by the time we look.
+    """
+    labels = {m.group(1).lower() for m in REF_DEF_RE.finditer(text)}
+    if not labels:
+        return []
+    alternatives = "|".join(re.escape(label) for label in sorted(labels, key=len, reverse=True))
+    close = rf"\]\[(?:{alternatives})\]"
+    return [
+        re.compile(rf"\[(?=(?:[^\[\]\n]|\[[^\[\]\n]*\])*{close})", re.IGNORECASE),
+        re.compile(close, re.IGNORECASE),
+    ]
+
+
 # The patterns run top to bottom. Once something is hidden, later patterns cannot see it,
 # so the order is doing real work:
 #
@@ -55,6 +96,8 @@ PLACEHOLDER_RE = re.compile(f"{PH_OPEN}(\\d+){PH_CLOSE}")
 #   code blocks before inline code, so ``` is not mistaken for a short `snippet`
 #   [[autodoc]] before the general [[...]] rule, so it keeps its indented list of methods
 #   inline code before tags, so `<mask>` in backticks is hidden as one piece
+#   reference links before reference definitions, since finding the links means reading the
+#   definitions, and masking a definition puts it out of reach
 #
 # Two of the patterns are deliberately fussy, to stop them swallowing half the page:
 #
@@ -70,7 +113,23 @@ PLACEHOLDER_RE = re.compile(f"{PH_OPEN}(\\d+){PH_CLOSE}")
 #   rest of the document.
 MASK_PATTERNS = [
     ("comment", re.compile(r"<!--.*?-->", re.DOTALL)),
-    ("fence", re.compile(r"^[ \t]*(`{3,}|~{3,}).*?^[ \t]*\1[ \t]*$", re.DOTALL | re.MULTILINE)),
+    # The closing fence has to be the same character as the opener and *at least* as long --
+    # not exactly as long. An earlier version used a plain backreference, which meant a three
+    # backtick block closed by four backticks never found its closer: masking ran on to the
+    # next bare ``` further down the page and swallowed the prose and code in between. Two
+    # pages in the corpus do this (`model_doc/mms.md`, `model_doc/mistral3.md`), and the
+    # paragraphs they hid were never translated and never seen by any check -- masked text is
+    # preserved by definition, so the round-trip test passed the whole time.
+    #
+    # `fence` is the opener's run of delimiters, `fchar` the single character it is made of,
+    # so the closer is "that run, plus any number of the same character".
+    (
+        "fence",
+        re.compile(
+            r"^[ \t]*(?P<fence>(?P<fchar>[`~])(?P=fchar){2,}).*?^[ \t]*(?P=fence)(?P=fchar)*[ \t]*$",
+            re.DOTALL | re.MULTILINE,
+        ),
+    ),
     # Matches what build_doc actually accepts (see _re_autodoc and _re_list_item there):
     # the directive may be indented, and blank lines may sit before its list of methods.
     # An earlier version only matched it at the start of a line, which missed the indented
@@ -114,8 +173,19 @@ MASK_PATTERNS = [
     # `[huggingface_hub[cli]](url)` has them in the text. A simpler lookahead that forbade any
     # `]` before the `](` skipped those, so only the closing bracket got hidden and the exposed
     # `[` came back -- along with the model's habit of "closing" it.
-    ("link_open", re.compile(r"\[(?=(?:[^\[\]\n]|\[[^\[\]\n]*\])*\]\([^)\n]*\))")),
-    ("link_close", re.compile(r"\]\([^)\n]*\)")),
+    ("link_open", re.compile(rf"\[(?=(?:[^\[\]\n]|\[[^\[\]\n]*\])*\]{LINK_DEST})")),
+    ("link_close", re.compile(rf"\]{LINK_DEST}")),
+    # Reference-style links: `[Alternating Updates][altup]`, with `[altup]: https://...` further
+    # down the page. Only four of these exist in the docs, all in `model_doc/gemma3n.md`, and
+    # none of them were masked at all -- so the label `altup` went to the model as prose, where
+    # translating it would break the link silently.
+    #
+    # Handled the same way as an ordinary link: both brackets and the reference become markers,
+    # the visible text between them stays translatable.
+    ("ref_link", _ref_link_patterns),
+    # The definitions themselves go whole. There is nothing to translate in `[altup]: https://…`
+    # -- the label is an identifier and the rest is a URL.
+    ("ref_def", REF_DEF_RE),
     ("callout", re.compile(r">[ \t]*\[!\w+\]")),
 ]
 
@@ -137,7 +207,11 @@ def mask(text):
         return f"{PH_OPEN}{len(placeholders) - 1}{PH_CLOSE}"
 
     for _name, pattern in MASK_PATTERNS:
-        text = pattern.sub(_replace, text)
+        # Most entries are one compiled pattern. A couple need to look at the page first --
+        # reference links depend on which references it defines -- so those are a function that
+        # gets handed the text as it stands and gives back the patterns to run.
+        for compiled in pattern(text) if callable(pattern) else [pattern]:
+            text = compiled.sub(_replace, text)
     return text, placeholders
 
 
@@ -163,9 +237,11 @@ def restore(text, placeholders):
             raise ValueError(f"placeholder {index} out of range ({len(placeholders)} known)")
         return placeholders[index]
 
-    # Markers can only nest as deep as the number of patterns, so this many rounds is
-    # always enough. The limit is only here so a self-referencing marker cannot loop forever.
-    for _ in range(len(MASK_PATTERNS) + 1):
+    # Markers can only nest as deep as the patterns that were run, and one entry below can
+    # expand into more than one pattern, so double the count for headroom. Nothing in the docs
+    # nests more than three deep; the limit is only here so a self-referencing marker cannot
+    # loop forever.
+    for _ in range(2 * len(MASK_PATTERNS) + 1):
         restored = PLACEHOLDER_RE.sub(_replace, text)
         if restored == text:
             return restored

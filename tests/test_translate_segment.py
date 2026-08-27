@@ -11,11 +11,18 @@ import pathlib
 
 import pytest
 
-from doc_builder.translate import segment
+from doc_builder.translate import segment, validate
 
-EN_DOCS = pathlib.Path(os.environ.get("EN_DOCS", "/Users/steven/hf/transformers/docs/source/en"))
+# Twelve real pages live in tests/fixtures/translate_corpus, so the corpus tests run on every
+# CI run rather than only where a Transformers checkout happens to sit. They were chosen for
+# the shapes that have broken masking before -- see the README next to them.
+#
+# Point EN_DOCS at a full docs/source/en to run the same tests over all 740 pages, which is
+# worth doing before changing a pattern.
+FIXTURE_DOCS = pathlib.Path(__file__).parent / "fixtures" / "translate_corpus"
+EN_DOCS = pathlib.Path(os.environ.get("EN_DOCS", FIXTURE_DOCS))
 
-ALL_PAGES = sorted(EN_DOCS.rglob("*.md")) if EN_DOCS.is_dir() else []
+ALL_PAGES = sorted(p for p in EN_DOCS.rglob("*.md") if p.name != "README.md") if EN_DOCS.is_dir() else []
 
 # Only corpus-backed tests skip; the unit tests below must run everywhere.
 needs_corpus = pytest.mark.skipif(not ALL_PAGES, reason=f"English docs not found at {EN_DOCS}")
@@ -46,17 +53,54 @@ def test_placeholder_chars_absent_from_corpus():
 
 @needs_corpus
 def test_masking_leaves_prose_to_translate():
-    """Guard against over-masking.
+    """Guard against over-masking on a page that is mostly prose.
 
-    A pattern that over-matches still round-trips perfectly -- masked text is preserved
-    by definition -- so the round-trip test cannot catch it. This asserts that a
-    prose-heavy page keeps most of its characters translatable, and that a
-    reference-heavy page is mostly masked, which is the expected shape for each.
+    A pattern that over-matches still round-trips perfectly -- masked text is preserved by
+    definition -- so the round-trip test cannot catch it. This is the check that can.
     """
     prose = (EN_DOCS / "philosophy.md").read_text(encoding="utf-8")
     masked, _ = segment.mask(prose)
     prose_ratio = len(segment.PLACEHOLDER_RE.sub("", masked)) / len(prose)
     assert prose_ratio > 0.5, f"philosophy.md only {prose_ratio:.0%} translatable"
+
+
+@needs_corpus
+@pytest.mark.parametrize("page", ALL_PAGES, ids=lambda p: str(p.relative_to(EN_DOCS)))
+def test_every_page_keeps_some_prose(page):
+    """No page may come out with nothing left to translate.
+
+    This is the shape the fence bug took: `model_doc/mms.md` lost a whole paragraph and a
+    code block into one placeholder and still round-tripped, because a page that is hidden
+    is restored exactly. Nothing in the docs is pure code -- every page has at least a
+    heading and a sentence -- so a page with no translatable units means a pattern ate it.
+    """
+    text = page.read_text(encoding="utf-8")
+    masked, _ = segment.mask(text)
+    units = [b for i, b in enumerate(segment.split_blocks(masked)) if i % 2 == 0 and segment.is_translatable(b)]
+    assert units, f"{page.name} has no translatable prose left after masking"
+
+
+@needs_corpus
+@pytest.mark.parametrize("page", ALL_PAGES, ids=lambda p: str(p.relative_to(EN_DOCS)))
+def test_link_destinations_are_hidden_whole(page):
+    """Every link destination goes into a placeholder in one piece, or not at all.
+
+    Half a destination is worse than none: the balanced-parentheses bug hid
+    `](https://e/Fine_(LED)` and left `_guide.ipynb)` in the masked text, where it reads as
+    ordinary prose and the model is free to rewrite it. Checking the placeholders rather than
+    the masked text is what makes this precise -- a bare URL sitting in a sentence is not a
+    link and is meant to stay visible, so looking for `://` in the prose only finds those.
+    """
+    text = page.read_text(encoding="utf-8")
+    _, placeholders = segment.mask(text)
+    # Expanded, because a destination can be hidden as placeholders nested inside placeholders:
+    # `[a](https://hf.co/<user>)` masks the tag first, so the link holds `(https://hf.co/¤13¤)`.
+    # That destination is fully hidden, which is what this test is about.
+    markers = "\n".join(f"{segment.PH_OPEN}{i}{segment.PH_CLOSE}" for i in range(len(placeholders)))
+    hidden = segment.restore(markers, placeholders)
+    for kind, dest in validate.link_targets(text):
+        if kind in ("link", "image"):
+            assert dest in hidden, f"{page.name}: destination {dest} is not hidden in one piece"
 
 
 def test_autodoc_block_indented_or_blank_separated():
@@ -210,3 +254,93 @@ def test_pure_placeholder_block_is_not_translatable():
     masked, _ = segment.mask(fence)
     assert not segment.is_translatable(masked)
     assert segment.is_translatable("Real prose.")
+
+
+def test_fence_closes_on_a_longer_delimiter():
+    """A ``` block may be closed by ````, and CommonMark says that is a closer.
+
+    Regression: with a plain backreference the closer had to be the opener's exact length, so
+    this block never ended. Masking ran on to the next bare ``` and swallowed the paragraph
+    and the Python block in between -- prose that was then never translated and that no check
+    could see, because masked text round-trips perfectly by definition.
+
+    Real shape, from `model_doc/mms.md` (a ```bash block closed with four backticks) and
+    `model_doc/mistral3.md`.
+    """
+    text = "```bash\npip install x\n````\n\nProse to translate.\n\n```python\nprint(1)\n```\n\nMore prose.\n"
+    masked, placeholders = segment.mask(text)
+    assert len(placeholders) == 2  # the bash block and the python block, separately
+    assert "Prose to translate." in masked
+    assert "More prose." in masked
+    assert segment.restore(masked, placeholders) == text
+
+
+def test_fence_closes_on_an_equal_length_delimiter():
+    """Six backticks open and six close, which the old backreference already handled.
+
+    Kept so the "at least as long" fix cannot regress into "any length": a ``` line inside a
+    `````` block is content, not a closer. Real shape, from `model_doc/deepseek_v3.md`.
+    """
+    text = "``````text\nsome ``` output\n``````\n\nProse.\n"
+    masked, placeholders = segment.mask(text)
+    assert len(placeholders) == 1
+    assert "some ``` output" in placeholders[0]
+    assert "Prose." in masked
+
+
+def test_fence_delimiter_character_must_match():
+    """A ~~~ line does not close a ``` block."""
+    text = "```\ncode\n~~~\nstill code\n```\n\nProse.\n"
+    masked, placeholders = segment.mask(text)
+    assert len(placeholders) == 1
+    assert "still code" in placeholders[0]
+
+
+def test_link_destination_with_balanced_parentheses():
+    """`(LED)` inside a URL must not end the destination early.
+
+    Regression: stopping at the first `)` left `_guide.ipynb)` sitting in the masked text as
+    if it were prose, so the model was free to rewrite part of a URL. Nine links in the docs
+    have this shape, in community.md, mixtral.md, sam.md and layoutlmv3.md.
+    """
+    text = "See [LED](https://e/Fine_(LED)_guide.ipynb) for more.\n"
+    masked, placeholders = segment.mask(text)
+    assert masked == "See ¤0¤LED¤1¤ for more.\n"
+    assert placeholders == ["[", "](https://e/Fine_(LED)_guide.ipynb)"]
+    assert ".ipynb" not in masked  # no part of the URL is left in front of the model
+    assert segment.restore(masked, placeholders) == text
+
+
+def test_link_destination_with_a_title():
+    text = 'A [title link](https://hf.co "the title") here.\n'
+    masked, placeholders = segment.mask(text)
+    assert masked == "A ¤0¤title link¤1¤ here.\n"
+    assert segment.restore(masked, placeholders) == text
+
+
+def test_reference_style_link_is_masked():
+    """`[text][ref]` masks like an ordinary link, and its definition goes whole.
+
+    Four of these exist, all in `model_doc/gemma3n.md`, and none were masked at all before --
+    so `altup` went to the model as prose, where translating it would break the link with
+    nothing to notice.
+    """
+    text = "See [Alternating Updates][altup] here.\n\n[altup]: https://a.example/paper\n"
+    masked, placeholders = segment.mask(text)
+    assert "Alternating Updates" in masked  # the visible words stay translatable
+    assert "altup" not in masked
+    assert "a.example" not in masked
+    assert segment.restore(masked, placeholders) == text
+
+
+def test_undefined_reference_is_left_alone():
+    """`[a][b]` only counts when the page defines `b`.
+
+    Python indexing looks exactly like a reference link -- `outputs["train"][0]` -- and there
+    are 116 of those in the docs against four real references. CommonMark agrees: an
+    undefined reference renders as plain text, so masking it would be wrong as well as risky.
+    """
+    text = 'Then outputs["train"][0] is used.\n'
+    masked, placeholders = segment.mask(text)
+    assert placeholders == []
+    assert masked == text

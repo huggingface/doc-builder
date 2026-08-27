@@ -326,3 +326,50 @@ def test_toctree_values_collects_locals_and_titles_separately():
     tree = yaml.safe_load("- sections:\n  - local: a\n    title: A\n  - local: b\n    title: B\n")
     assert pipeline.toctree_values(tree, "local") == ["a", "b"]
     assert pipeline.toctree_values(tree, "title") == ["A", "B"]
+
+
+def test_empty_translation_keeps_the_english():
+    """A paragraph translated to nothing must not be deleted from the page.
+
+    Regression: for a paragraph with no markers in it, `""` matched the source's empty marker
+    list and passed the invented-bracket check, so the paragraph was replaced with nothing.
+    The page still passed validation, because whole-page checks only ask whether *something*
+    was translated -- one silently deleted paragraph does not show up there.
+    """
+    source = "# Title\n\nFirst paragraph.\n\nSecond paragraph.\n"
+    plan = pipeline.PagePlan("p.md", source, "ja", "m", "g")
+    keys = list(plan.segments)
+    translations = dict.fromkeys(keys, "翻訳")
+    empty_key = next(k for k, v in plan.segments.items() if v == "First paragraph.")
+    translations[empty_key] = ""
+
+    _, page_text, rejected = pipeline.assemble_page(plan, translations)
+    assert empty_key in rejected
+    assert "First paragraph." in page_text  # kept, not dropped
+
+
+def test_marker_only_translation_keeps_the_english():
+    """Markers alone are not a translation either -- the prose is still gone."""
+    source = "Run `pip install` to begin.\n"
+    plan = pipeline.PagePlan("p.md", source, "ja", "m", "g")
+    key = next(iter(plan.segments))
+    _, page_text, rejected = pipeline.assemble_page(plan, {key: "  ¤0¤  "})
+    assert rejected == [key]
+    assert "to begin." in page_text
+
+
+def test_has_prose():
+    assert pipeline.has_prose("こんにちは")
+    assert pipeline.has_prose("¤0¤ を使う")
+    assert not pipeline.has_prose("")
+    assert not pipeline.has_prose("   \n ")
+    assert not pipeline.has_prose("¤0¤¤1¤")
+
+
+def test_empty_toctree_title_falls_back_to_english():
+    """An empty sidebar title reads as a missing page, not an untranslated one."""
+    toc_keys = {"k1": "Quickstart", "k2": "Installation"}
+    from doc_builder.commands.translate import translated_titles
+
+    titles = translated_titles(toc_keys, {"k1": "クイックスタート", "k2": "  "})
+    assert titles == {"Quickstart": "クイックスタート", "Installation": "Installation"}

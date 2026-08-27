@@ -19,11 +19,26 @@ import yaml
 
 from . import validate
 from .cache import segment_key, sha256_text
-from .segment import is_translatable, join_blocks, mask, placeholder_indices, restore, split_blocks
+from .segment import (
+    PH_CLOSE,
+    PH_OPEN,
+    PLACEHOLDER_RE,
+    is_translatable,
+    join_blocks,
+    mask,
+    placeholder_indices,
+    restore,
+    split_blocks,
+)
 
 # Change this to redo every translation from scratch. It is part of each paragraph's ID, so
 # editing it throws the whole cache away -- about $2.50-10 of GPU time for transformers.
-PROMPT_VERSION = "v4"
+#
+# v5: the prompt used to describe the markers as `⟦0⟧` while the text it was given actually
+# contained `¤0¤`, so everything cached under v4 was translated against instructions that did
+# not match its input. Bumped alongside the fence and link-destination fixes in segment.py,
+# which change what the model is shown on the affected pages -- one bump covers all three.
+PROMPT_VERSION = "v5"
 
 LANGUAGE_NAMES = {"ja": "Japanese"}
 
@@ -103,6 +118,19 @@ def strip_echoed_markers(text):
     return ECHOED_MARKER_RE.sub("", text)
 
 
+def has_prose(text):
+    """Is there anything here besides markers and whitespace?
+
+    Every paragraph we send has prose in it by definition -- that is what `is_translatable`
+    decides -- so a translation with none coming back is not a translation. It used to be
+    accepted: for a paragraph with no markers in it, `""` matched the source's empty marker
+    list and passed the bracket check too, so the paragraph was replaced with nothing. The
+    page still passed, because whole-page checks only ask whether *something* was translated,
+    and one silently deleted paragraph in an otherwise good page does not show up there.
+    """
+    return bool(PLACEHOLDER_RE.sub("", text).strip())
+
+
 def glossary_path(language):
     """Where the glossary for this language lives inside the installed package.
 
@@ -157,10 +185,15 @@ def build_prompt(segment_text, language, glossary):
     else:
         glossary_block = ""
 
+    # The delimiters come from segment.py rather than being written out here. They were once
+    # hardcoded as `⟦` and `⟧`, which is not what `mask()` emits -- so the rule about copying
+    # every token through said nothing about the `¤0¤` markers actually in the text, and
+    # described a shape the model had never been shown. That is the likeliest reason it kept
+    # writing `⟦0⟧` back: it was doing as it was told.
     system = SYSTEM_PROMPT.format(
         language=LANGUAGE_NAMES.get(language, language),
-        ph_open="⟦",
-        ph_close="⟧",
+        ph_open=PH_OPEN,
+        ph_close=PH_CLOSE,
         glossary=glossary_block,
     )
     return [
@@ -233,6 +266,12 @@ def assemble_page(plan, translations):
         # Cleaned on the way out rather than on the way in, so a cache full of translations
         # written before this existed is fixed by a --rebuild, with nothing retranslated.
         translated = strip_echoed_markers(translated)
+        # Nothing but markers and whitespace means the model dropped the prose. Checked here as
+        # well as before caching, so a cache already holding one of these is repaired by a
+        # --rebuild rather than reprinting the same hole every night.
+        if not has_prose(translated):
+            rejected.append(unit.key)
+            continue
         # Check this paragraph's markers before accepting it. Sorted, not in order: Japanese
         # word order differs from English, so a model that moves a marker to the other end of
         # the sentence is doing its job -- only dropping, repeating or inventing one is wrong.
@@ -500,8 +539,14 @@ def translate_segments(
             if result.error or not result.is_finished():
                 failures.append((result.request_id, result.error or str(result.status)))
             else:
-                decoded = tokenizer.decode(result.generated_tokens, skip_special_tokens=True)
-                translations[result.request_id] = strip_reasoning(decoded).strip()
+                decoded = strip_reasoning(tokenizer.decode(result.generated_tokens, skip_special_tokens=True)).strip()
+                # Caught here as well as at assembly, because the cache is forever: an empty
+                # translation stored once is reused every night after, and nothing would ever
+                # ask the model for that paragraph again.
+                if has_prose(decoded):
+                    translations[result.request_id] = decoded
+                else:
+                    failures.append((result.request_id, "translation is empty once markers are removed"))
             if len(translations) + len(failures) >= len(requests):
                 break
 

@@ -15,10 +15,10 @@ those were swapped out for markers before translation, so if the markers survive
 did too. Checking them again would just be more code doing the same job.
 
 Links are the one exception, and it is worth knowing why. Hiding a URL guarantees the URL
-cannot change. It does not guarantee the link still works, because the opening `[` of
-`[text](url)` was never hidden -- so the model can drift the marker away from its bracket,
-leave every marker present and correct, and still produce a broken link. Two different
-things, and only the first is covered by the marker check.
+cannot change. It does not guarantee the link still holds together: the marker check only
+says every piece came back, not that the pieces are still arranged into working links. A
+marker that drifts to the wrong place leaves every marker present and correct and a broken
+link behind it. Two different things, and only the first is covered by the marker check.
 
 The first checks look at the page while the markers are still in place. That is what makes
 the heading count trustworthy: a `#` inside a shell snippet is already hidden, so it cannot
@@ -29,13 +29,19 @@ import re
 from collections import Counter
 from dataclasses import dataclass, field
 
-from .segment import PLACEHOLDER_RE, placeholder_indices
+from .segment import LINK_DEST, PLACEHOLDER_RE, REF_DEF_RE, placeholder_indices
 
 HEADING_RE = re.compile(r"^(#{1,6})[ \t]+\S", re.MULTILINE)
 
-# A markdown link or image, e.g. [text](url). It deliberately will not match across a line
-# break -- that restriction is what lets us notice a marker that has drifted onto another line.
-MD_LINK_RE = re.compile(r"!?\[[^\]\n]*\]\([^)\n]*\)")
+# A markdown link or image, e.g. [text](url), with its destination captured. It deliberately
+# will not match across a line break -- that restriction is what lets us notice a marker that
+# has drifted onto another line. The destination pattern is shared with segment.py so the two
+# cannot drift apart: when they did, a URL with brackets in it matched partially on both sides,
+# the counts agreed, and a rewritten URL sailed through.
+MD_LINK_RE = re.compile(rf"(?P<image>!?)\[[^\]\n]*\](?P<dest>{LINK_DEST})")
+
+# The reference-style equivalents, `[text][ref]` and the `[ref]: url` lines that define them.
+REF_LINK_RE = re.compile(r"(?P<image>!?)\[[^\]\n]*\]\[(?P<dest>[^\]\n]*)\]")
 
 # A link with a leftover `]` stuck to the end of it, e.g. `[text](url)]`. This is what a marker
 # nudged one character out of place leaves behind, and counting links alone will not see it --
@@ -119,25 +125,48 @@ def check_translated(masked_source, masked_translation):
     return []
 
 
+def link_targets(text):
+    """Every link in the text as (kind, destination), so two versions can be compared.
+
+    Destinations rather than a count. A count only says how many well-formed links there are,
+    which is the same number whether or not they still point anywhere near the right place --
+    and a partial match makes the count agree even when the URL has been rewritten. The
+    destinations are masked before translation, so any difference here is real damage.
+    """
+    targets = []
+    for match in MD_LINK_RE.finditer(text):
+        targets.append(("image" if match.group("image") else "link", match.group("dest")))
+    for match in REF_LINK_RE.finditer(text):
+        targets.append(("ref", match.group("dest").lower()))
+    for match in REF_DEF_RE.finditer(text):
+        targets.append(("ref-def", match.group(1).lower()))
+    return targets
+
+
 def check_links(source, restored):
-    """Are the links still put together properly?
+    """Are the links still put together properly, and still pointing where they did?
 
-    This looks like it repeats the marker check, but it does not. Only the `](url)` half of
-    a link is hidden; the opening `[` is left alone. So the model sees `[Sign up]¤0¤` and has
-    to keep the marker next to its bracket. If it moves the marker elsewhere, every marker is
-    still present exactly once -- the marker check is happy -- but the link is broken.
+    This looks like it repeats the marker check, but it does not. The marker check only says
+    every piece came back; it cannot say the pieces are still assembled into links. A marker
+    that drifts away from its bracket leaves every marker present exactly once and a broken
+    link behind it.
 
-    This one runs on the finished page rather than the marked-up one. It catches a marker
-    that has moved to a different line, which is the realistic mistake. A marker shuffled
-    around within the same line can still slip past, because the link is then merely
-    pointing at the wrong words rather than malformed.
+    This one runs on the finished page rather than the marked-up one, and compares the actual
+    destinations as a multiset. A multiset rather than a list, because Japanese word order
+    moves links around the sentence and that is fine; what is not fine is a destination
+    appearing, vanishing or changing.
     """
     problems = []
 
-    want = len(MD_LINK_RE.findall(source))
-    got = len(MD_LINK_RE.findall(restored))
-    if got < want:
-        problems.append(f"markdown links broken: {want} in source, {got} well-formed in output")
+    want, got = Counter(link_targets(source)), Counter(link_targets(restored))
+    lost = want - got
+    gained = got - want
+    if lost:
+        shown = sorted(f"{kind} {dest}" for kind, dest in lost.elements())[:3]
+        problems.append(f"{sum(lost.values())} link(s) lost or altered: {shown}")
+    if gained:
+        shown = sorted(f"{kind} {dest}" for kind, dest in gained.elements())[:3]
+        problems.append(f"{sum(gained.values())} link(s) not in the source: {shown}")
 
     # Counting links alone missed this one: the model produced `[text](url)]`, which is a valid
     # link plus a stray bracket, so the count matched and the page shipped with visible junk in
