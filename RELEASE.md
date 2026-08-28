@@ -17,7 +17,7 @@
    ```
 5. Build the source distribution and the wheel in the top-level directory:
    ```bash
-   rm -rf dist build
+   rm -rf dist
    uv build
    ```
 6. Upload the package to the pypi test server first:
@@ -28,7 +28,7 @@
    ```bash
    pip install hf-doc-builder
    pip uninstall hf-doc-builder
-   pip install -i https://testpypi.python.org/pypi hf-doc-builder
+   pip install -i https://test.pypi.org/simple/ hf-doc-builder
    ```
    It's recommended to check that there are no issues building the docs, so try running a command like `doc-builder`.
 8. Upload the final version to actual pypi:

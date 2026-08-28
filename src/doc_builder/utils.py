@@ -124,7 +124,8 @@ def is_doc_builder_repo(path):
     pyproject_file = Path(path) / "pyproject.toml"
     if not pyproject_file.exists():
         return False
-    return 'name = "hf-doc-builder"' in pyproject_file.read_text()
+    content = pyproject_file.read_text(encoding="utf-8")
+    return re.search(r"""^name\s*=\s*["']hf-doc-builder["']""", content, flags=re.MULTILINE) is not None
 
 
 def locate_kit_folder():
