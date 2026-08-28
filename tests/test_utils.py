@@ -19,7 +19,12 @@ from pathlib import Path
 
 import yaml
 
-from doc_builder.utils import strip_html_from_markdown, sveltify_file_route, update_versions_file
+from doc_builder.utils import (
+    is_doc_builder_repo,
+    strip_html_from_markdown,
+    sveltify_file_route,
+    update_versions_file,
+)
 
 
 class UtilsTester(unittest.TestCase):
@@ -206,3 +211,20 @@ class UtilsTester(unittest.TestCase):
         self.assertIn("dummy.func(cb: Callable[[int], int] = <factory>)", result)
         self.assertIn("**Returns:** `int`", result)
         self.assertIn("Does something.", result)
+
+    def test_is_doc_builder_repo(self):
+        # the actual repo, which `locate_kit_folder` relies on to find the `kit` folder
+        self.assertTrue(is_doc_builder_repo(Path(__file__).parent.parent))
+
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            # no pyproject.toml at all
+            self.assertFalse(is_doc_builder_repo(tmp_dir))
+
+            # a pyproject.toml belonging to another project
+            (Path(tmp_dir) / "pyproject.toml").write_text('[project]\nname = "something-else"\n', encoding="utf-8")
+            self.assertFalse(is_doc_builder_repo(tmp_dir))
+
+            # the name is matched regardless of quoting and spacing
+            for line in ('name = "hf-doc-builder"', "name='hf-doc-builder'", "name=  'hf-doc-builder'"):
+                (Path(tmp_dir) / "pyproject.toml").write_text(f"[project]\n{line}\n", encoding="utf-8")
+                self.assertTrue(is_doc_builder_repo(tmp_dir), line)
