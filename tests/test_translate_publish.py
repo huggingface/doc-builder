@@ -462,3 +462,84 @@ def test_pages_file_writes_to_a_preview_tree(env, tmp_path):
     assert (preview / "guide.md").is_file()
     assert not (preview / "index.md").exists()
     assert publish.read_pointer(env.root) == before
+
+
+def test_sidebar_entry_without_a_page_publishes_nothing(tmp_path, monkeypatch):
+    """The sidebar is the other half of the snapshot, and it was never checked against the pages.
+
+    Regression: an entry with no page behind it published a generation the sidebar points past --
+    which doc-builder refuses to build -- and the run exited 0.
+    """
+    no_gpu(monkeypatch)
+    bucket = tmp_path / "bucket"
+    en, _pages = write_many(tmp_path / "docs", 6)
+    args = make_args(bucket, tmp_path / "docs")
+    warm_cache(bucket, en, args)
+    root = publish.lang_root(bucket, "testpkg", "ja")
+    assert run(args, en) == 0
+    before = publish.read_pointer(root)
+
+    # the sidebar gains an entry with no file behind it
+    (en / "_toctree.yml").write_text(
+        yaml.safe_dump(
+            [{"sections": [{"local": f"p{i}", "title": f"Page {i}"} for i in range(7)], "title": "Start"}],
+            sort_keys=False,
+        ),
+        encoding="utf-8",
+    )
+    assert run(args, en) == 2
+    assert publish.read_pointer(root) == before
+
+
+def test_unreadable_cache_blob_is_dropped_from_the_index(env, monkeypatch):
+    """Being listed in the index is not the same as being readable.
+
+    Regression: a missing blob left its paragraph in English while the key stayed indexed, so the
+    model was never asked for it again and every later run reported success. Noticed on a run
+    that actually assembles, which is the run where the paragraph would go out in English.
+    """
+    assert run(env.args, env.en) == 0
+    cache = SegmentCache(env.bucket)
+    victim = sorted(cache.load_index())[0]
+    cache._blob_path(victim).unlink()
+
+    rebuild = make_args(env.bucket, env.tmp / "docs", rebuild=True)
+    run(rebuild, env.en)
+    assert victim not in SegmentCache(env.bucket).load_index()
+
+
+def test_preview_with_no_matching_page_fails(env, tmp_path):
+    """A pages file that matches nothing wrote an empty tree and exited 0."""
+    pages_file = tmp_path / "pages.txt"
+    pages_file.write_text("does_not_exist.md\n", encoding="utf-8")
+    args = make_args(env.bucket, env.tmp / "docs", pages_file=str(pages_file))
+    assert run(args, env.en) == 2
+
+
+def test_damaged_live_generation_is_rebuilt_under_a_new_name(env):
+    """A published generation is never written into.
+
+    Repairing in place replaces its files one at a time under whoever is reading it, and leaves
+    any unexpected extra file exactly where it was -- so it could never verify again.
+    """
+    assert run(env.args, env.en) == 0
+    first = publish.read_pointer(env.root)
+    (publish.generation_dir(env.root, first) / "index.md").write_text("damaged\n", encoding="utf-8")
+
+    assert run(env.args, env.en) == 0
+    second = publish.read_pointer(env.root)
+    assert second != first
+    assert "damaged" not in (live(env.root) / "index.md").read_text(encoding="utf-8")
+
+
+def test_gc_never_removes_the_published_generation(env):
+    """GC re-reads the pointer rather than trusting what a caller captured earlier."""
+    for i in range(6):
+        (env.en / "index.md").write_text(f"# Home\n\nBody {i}.\n", encoding="utf-8")
+        warm_cache(env.bucket, env.en, env.args)
+        assert run(env.args, env.en) == 0
+    live_name = publish.read_pointer(env.root)
+    kept = {p.name for p in (env.root / publish.GENERATIONS).iterdir() if p.is_dir()}
+    assert live_name in kept
+    assert len(kept) <= publish.KEEP_GENERATIONS
+    assert (live(env.root) / "index.md").is_file()

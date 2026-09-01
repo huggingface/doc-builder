@@ -373,3 +373,32 @@ def test_empty_toctree_title_falls_back_to_english():
 
     titles = translated_titles(toc_keys, {"k1": "クイックスタート", "k2": "  "})
     assert titles == {"Quickstart": "クイックスタート", "Installation": "Installation"}
+
+
+def test_echoed_segment_does_not_count_as_covered():
+    """A paragraph handed back in English is not a translated paragraph.
+
+    Regression: it passed every per-segment check and was counted as covered, so a page whose
+    heading translated and whose whole body came back in English reported 100% coverage and
+    published under the machine-translation banner.
+    """
+    source = "# Home\n\nFirst body paragraph.\n\nSecond body paragraph.\n"
+    plan = pipeline.PagePlan("p.md", source, "ja", "m", "g")
+    echoed = {key: ("# ホーム" if text.startswith("# ") else text) for key, text in plan.segments.items()}
+
+    _, page_text, outcome = pipeline.assemble_page(plan, echoed)
+    assert outcome.coverage < 0.5
+    assert "First body paragraph." in page_text  # unchanged either way; it is the count that matters
+
+
+def test_reflowed_translation_still_counts_as_translated():
+    """Whitespace is flattened before comparing, so a reflowed line is not mistaken for an echo."""
+    assert pipeline.is_echo("One two three.", "One   two\nthree.")
+    assert not pipeline.is_echo("One two three.", "一 二 三。")
+
+
+def test_full_translation_is_fully_covered():
+    source = "# Home\n\nFirst body paragraph.\n\nSecond body paragraph.\n"
+    plan = pipeline.PagePlan("p.md", source, "ja", "m", "g")
+    _, _, outcome = pipeline.assemble_page(plan, {k: v + "(ja)" for k, v in plan.segments.items()})
+    assert outcome.coverage == 1.0

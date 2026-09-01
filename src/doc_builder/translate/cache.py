@@ -24,6 +24,7 @@ Two habits borrowed from build_cache.py, for the same reasons it has them:
 import hashlib
 import json
 import os
+import tempfile
 import traceback
 from pathlib import Path
 
@@ -57,12 +58,27 @@ def atomic_write(path, text):
     Never a half-written file for someone else to read. Four places needed this -- the cache
     index, a translated paragraph, the manifest and the published pointer -- and each had its
     own copy of the same six lines.
+
+    The temporary name is unique per writer. A fixed `<name>.tmp` meant two processes writing the
+    same destination also wrote the same temporary file, and one of them moved it out from under
+    the other: with two writers this reliably produced a `FileNotFoundError` on one side while
+    the destination ended up holding the other's bytes. Unique names make concurrent writers
+    merely race for who lands last, which is the worst it should ever be.
     """
     path = Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)
-    tmp = path.with_name(path.name + ".tmp")
-    tmp.write_text(text, encoding="utf-8")
-    os.replace(tmp, path)
+    fd, tmp = tempfile.mkstemp(dir=path.parent, prefix=path.name + ".", suffix=".tmp")
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8") as fh:
+            fh.write(text)
+        os.replace(tmp, path)
+    except BaseException:
+        # Do not leave the temporary behind for the directory walks that list this tree.
+        try:
+            os.unlink(tmp)
+        except OSError:
+            pass
+        raise
 
 
 class SegmentCache:
@@ -141,6 +157,24 @@ class SegmentCache:
             if text is not None:
                 found[key] = text
         return found
+
+    def forget(self, keys):
+        """Take keys out of the index so the next run asks for them again.
+
+        For a key the index claims we have and whose blob will not read. Leaving it listed means
+        the model is never asked for that paragraph again, so the page keeps its English forever
+        and every later run reports success.
+        """
+        if self._known is None:
+            self.load_index()
+        self._known -= set(keys)
+        try:
+            atomic_write(self.index_path, json.dumps(sorted(self._known)))
+            return True
+        except Exception:
+            traceback.print_exc()
+            print("[cache] could not rewrite the index; the stale keys are still listed")
+            return False
 
     def put(self, key, text):
         """Save one translated paragraph. Says whether it worked."""

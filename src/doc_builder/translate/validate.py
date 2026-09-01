@@ -29,7 +29,7 @@ import re
 from collections import Counter
 from dataclasses import dataclass, field
 
-from .segment import BARE_URL, FOREIGN_BRACKETS, LINK_DEST, PLACEHOLDER_RE, REF_DEF_RE, placeholder_indices
+from .segment import FOREIGN_BRACKETS, LINK_DEST, PLACEHOLDER_RE, REF_DEF_RE, placeholder_indices
 
 HEADING_RE = re.compile(r"^(#{1,6})[ \t]+\S", re.MULTILINE)
 
@@ -45,10 +45,6 @@ OPENER_RE = re.compile(r"!?\[")
 
 # The reference-style equivalents, `[text][ref]` and the `[ref]: url` lines that define them.
 REF_LINK_RE = re.compile(r"(?P<image>!?)\[[^\]\n]*\]\[(?P<dest>[^\]\n]*)\]")
-
-# Every URL on the page, wherever it sits. Run over both versions the same way, so a URL inside
-# a link destination appears on both sides and cancels out; what is left is a URL that changed.
-BARE_URL_RE = re.compile(BARE_URL)
 
 # A link with a leftover `]` stuck to the end of it, e.g. `[text](url)]`. This is what a marker
 # nudged one character out of place leaves behind, and counting links alone will not see it --
@@ -174,12 +170,17 @@ def scan_links(text):
             stack.append(("link", i))
             i += 1
             continue
-        if char == "]" and i + 1 < n and text[i + 1] == "(":
-            dest = LINK_DEST_RE.match(text, i + 1)
-            if dest is not None:
-                if stack:
-                    kind, _start = stack.pop()
+        if char == "]":
+            dest = LINK_DEST_RE.match(text, i + 1) if i + 1 < n and text[i + 1] == "(" else None
+            if stack:
+                kind, _start = stack.pop()
+                if dest is not None:
                     found.append((kind, dest.group(0)))
+            # A `]` closes its opener whether or not a destination follows, which is what
+            # CommonMark does. Popping only on `](` left a stale opener behind: deleting the
+            # inner `[` of `[huggingface_hub[cli]](url)` then paired the outer text with the
+            # later destination, so the targets came out identical and the damage passed.
+            if dest is not None:
                 i = dest.end()
                 continue
         i += 1
@@ -193,13 +194,20 @@ def link_targets(text):
     without changing how many links there are. A count is the same number whether or not the
     links still point anywhere near the right place, and turning an image into a link leaves
     the count untouched too.
+
+    Bare URLs are deliberately not in here. They were, and it was wrong: they are masked before
+    translation, so the marker check already proves they came back byte-for-byte, and looking
+    for them again in the finished page only invents disagreements. Japanese attaches particles
+    with no space, so `https://…/DeepSeek-V3を参照してください` reads as one longer URL and a
+    perfectly correct translation was reported as one URL lost and another gained.
     """
     targets = list(scan_links(text))
     for match in REF_LINK_RE.finditer(text):
-        targets.append(("ref", match.group("dest").lower()))
+        # kind, not just the reference name: `![Diagram][fig]` losing its `!` leaves the same
+        # reference pointing at the same target, and only the kind says a picture became a link.
+        targets.append(("ref-image" if match.group("image") else "ref", match.group("dest").lower()))
     for match in REF_DEF_RE.finditer(text):
         targets.append(("ref-def", match.group(1).lower()))
-    targets.extend(("url", m.group(0)) for m in BARE_URL_RE.finditer(text))
     return targets
 
 

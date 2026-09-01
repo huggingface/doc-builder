@@ -82,7 +82,16 @@ LINK_DEST = r"\((?:[^()\n]|\([^()\n]*\))*\)"
 # characters -- the engine tries every combination before giving up, and
 # `mask("![" + "![x](y)"*16)` never finished. So the plain-character branch refuses the `!` that
 # starts an image, and the bare-brackets branch refuses a `]` that a destination follows.
-LINK_LABEL = rf"(?:(?!!\[)[^\[\]\n]|!?\[[^\[\]\n]*\]{LINK_DEST}|\[[^\[\]\n]*\](?!\())*"
+# A soft line break inside a label is allowed -- 25 links across 20 pages wrap their label
+# across source lines, and forbidding it masked only the closing half, leaving the opening `[`
+# in front of the model. A blank line still stops it, so a runaway `[` cannot cross a paragraph.
+#
+# This does give up one thing: `check_links` used to notice a marker that had drifted onto
+# another line, because a link spanning a newline could not match. That mattered when one
+# bracket was raw text. Both brackets are markers now, so a drifted marker fails the ordinary
+# marker check instead.
+_SOFT_BREAK = r"\n(?![ \t]*\n)"
+LINK_LABEL = rf"(?:(?!!\[)[^\[\]\n]|{_SOFT_BREAK}|!?\[[^\[\]\n]*\]{LINK_DEST}|\[[^\[\]\n]*\](?!\())*"
 
 
 # A URL as it appears in running text. Shared with validate.py, same reason as the link
@@ -126,7 +135,10 @@ def _ref_link_patterns(text):
     alternatives = "|".join(re.escape(label) for label in sorted(labels, key=len, reverse=True))
     close = rf"\]\[(?:{alternatives})\]"
     return [
-        re.compile(rf"\[(?=(?:[^\[\]\n]|\[[^\[\]\n]*\])*{close})", re.IGNORECASE),
+        # `!?` for the same reason the inline rule has it: left bare, the `!` is one character of
+        # ordinary text between two markers, and dropping it turns `![Diagram][fig]` into a link
+        # with every marker still in place.
+        re.compile(rf"!?\[(?=(?:[^\[\]\n]|\[[^\[\]\n]*\])*{close})", re.IGNORECASE),
         re.compile(close, re.IGNORECASE),
     ]
 
@@ -208,7 +220,11 @@ MASK_PATTERNS = [
             r"|"
             # padded on both sides: `$ K_{\text{past}} $`
             r"[ \t](?![\s$])(?:[^$\n]|\n(?![ \t]*\n)){0,200}?(?<![\s\\])[ \t]"
-            r")\$(?!\$)"
+            # Not a formula if a digit follows the closing `$`: `US$5 to US$10` used to mask as
+            # `$5 to US$`, quietly shielding ordinary prose from translation. Only a digit, and
+            # not punctuation -- `$\sigma$-VAE` in `model_doc/vibevoice.md` is a real formula
+            # followed by a hyphenated word, and forbidding `-` here un-masked it.
+            r")\$(?![\d$])"
         ),
     ),
     # doc-builder's cross-reference: [`Pipeline`] with no (url) after it, which the build turns

@@ -316,8 +316,46 @@ def test_nested_link_destinations_are_both_recorded():
     assert validate.check_links(source, "[![alt](inner.svg)](other.ipynb)\n")
 
 
-def test_bare_url_change_is_caught():
-    """Bare URLs are compared after restoration, not just masked."""
+def test_correct_japanese_after_a_bare_url_is_not_rejected():
+    """Japanese attaches particles with no space, and that is not a changed URL.
+
+    Regression: bare URLs were rediscovered in the finished page, so
+    `https://…/DeepSeek-V3を参照してください` read as one longer URL and a perfectly correct
+    translation came back as one URL lost and another gained -- failing every page in the corpus
+    that mentions a URL in prose.
+    """
     source = "See https://github.com/deepseek-ai/DeepSeek-V3 for details.\n"
-    assert not validate.check_links(source, source)
-    assert validate.check_links(source, source.replace("V3", "V4"))
+    translated = "https://github.com/deepseek-ai/DeepSeek-V3を参照してください。\n"
+    assert validate.check_links(source, translated) == []
+
+
+def test_a_changed_bare_url_is_caught_by_the_marker_check():
+    """The URL guarantee comes from masking, not from re-reading the output.
+
+    A bare URL is a placeholder by the time the model sees it, so it cannot be edited without
+    the marker going missing -- which is what makes rescanning the finished page unnecessary as
+    well as wrong.
+    """
+    source = "See https://github.com/deepseek-ai/DeepSeek-V3 for details.\n"
+    masked, placeholders = segment.mask(source)
+    assert placeholders == ["https://github.com/deepseek-ai/DeepSeek-V3"]
+    assert validate.check_placeholders(masked, "参照してください。\n")
+
+
+def test_nested_opener_is_closed_by_a_plain_bracket():
+    """A `]` closes its opener whether or not a destination follows it.
+
+    Regression: the scanner popped only on `](`, so deleting the inner `[` of
+    `[huggingface_hub[cli]](url)` left a stale opener that paired with the later destination.
+    The targets came out identical and the damage passed.
+    """
+    source = "[huggingface_hub[cli]](https://hf.co/x)\n"
+    damaged = "[huggingface_hubcli]](https://hf.co/x)\n"
+    assert validate.check_links(source, damaged)
+
+
+def test_reference_image_kind_is_recorded():
+    """`![Diagram][fig]` losing its `!` keeps the reference and the target; only the kind moves."""
+    source = "![Diagram][fig]\n\n[fig]: https://hf.co/a.png\n"
+    assert ("ref-image", "fig") in validate.link_targets(source)
+    assert validate.check_links(source, source.replace("![", "[", 1))

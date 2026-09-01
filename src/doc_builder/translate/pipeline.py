@@ -23,6 +23,7 @@ from .segment import (
     FOREIGN_BRACKETS,
     PH_CLOSE,
     PH_OPEN,
+    PLACEHOLDER_RE,
     has_prose,
     join_blocks,
     mask,
@@ -42,7 +43,11 @@ from .segment import (
 # v6: three more things the model should never have seen are now hidden -- the `!` of an image,
 # bare URLs in running text, and inline `$x$` formulas. All three change the paragraphs the
 # model is given, so all three need the cache thrown away, and one bump covers them together.
-PROMPT_VERSION = "v6"
+#
+# v7: link labels may now wrap across a line, a price range is no longer read as a formula, and
+# the `!` of a reference-style image is masked with its bracket. Same reasoning, same bargain --
+# one bump for the three of them.
+PROMPT_VERSION = "v7"
 
 LANGUAGE_NAMES = {"ja": "Japanese"}
 
@@ -200,6 +205,26 @@ def build_prompt(segment_text, language, glossary):
 # -- page pipeline (pure, no GPU) ------------------------------------------------
 
 
+def is_echo(source_text, translated):
+    """Did the model hand the English back instead of translating it?
+
+    Judged on the prose with the markers taken out, and with runs of whitespace flattened, so a
+    reflowed line still counts as the same text.
+
+    This decides coverage, not acceptance. Echoed text is identical to the English either way,
+    so keeping or rejecting it produces the same page -- what matters is that it must not be
+    *counted* as translated. It was: a page whose heading translated and whose every paragraph
+    came back in English reported 100% coverage and published under the machine-translation
+    banner. Not rejecting it also keeps the answer cached, so the model is not asked the same
+    question every night for a paragraph it will always answer the same way.
+    """
+    return _prose(source_text) == _prose(translated)
+
+
+def _prose(text):
+    return " ".join(PLACEHOLDER_RE.sub("", text).split())
+
+
 def accept_translation(source_text, raw):
     """Clean up a model's answer and decide whether it can be used. None means no.
 
@@ -315,7 +340,8 @@ def assemble_page(plan, translations):
             rejected.append(unit.key)
             continue
         parts[index] = f"{unit.lead}{translated}{unit.trail}"
-        covered += 1
+        if not is_echo(unit.text, translated):
+            covered += 1
     masked_translation = join_blocks(parts)
     outcome = PageOutcome(covered=covered, total=len(plan.units), rejected=rejected)
     return masked_translation, restore(masked_translation, plan.placeholders), outcome

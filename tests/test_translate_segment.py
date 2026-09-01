@@ -446,3 +446,66 @@ def test_no_urls_or_formulas_left_for_the_model(page):
     prose = segment.PLACEHOLDER_RE.sub("", masked)
     assert "://" not in prose, f"{page.name} leaves a URL in the prose"
     assert not re.search(r"(?<![$\\])\$[^$\n]{1,120}\$(?!\$)", prose), f"{page.name} leaves a formula in the prose"
+
+
+def test_link_label_may_wrap_across_a_line():
+    """25 links across 20 corpus pages wrap their label onto the next source line.
+
+    Forbidding the newline masked only the closing half, leaving the opening `[` in front of the
+    model -- and the model removes an opener it thinks is unmatched.
+    """
+    text = "See the [technical\nreport](https://hf.co/paper) for details.\n"
+    masked, placeholders = segment.mask(text)
+    assert placeholders == ["[", "](https://hf.co/paper)"]
+    assert "[" not in masked and "]" not in masked
+    assert segment.restore(masked, placeholders) == text
+
+
+def test_link_label_still_stops_at_a_blank_line():
+    """A soft break is allowed; a paragraph boundary is not, so a stray `[` cannot run away."""
+    text = "An unclosed [bracket here.\n\nA later paragraph](url).\n"
+    masked, placeholders = segment.mask(text)
+    assert "An unclosed [bracket here." in masked  # the stray bracket stays where it is
+    assert segment.restore(masked, placeholders) == text
+
+
+def test_price_ranges_are_not_math():
+    """A closing `$` followed by a digit or a range separator is a price, not a formula.
+
+    Regression: `US$5 to US$10` masked as `$5 to US$`, which hid ordinary prose from translation
+    while round-tripping perfectly, so nothing could see it.
+    """
+    for text in [
+        "Costs US$5 to US$10 per hour.\n",
+        "A $5-$10 range.\n",
+        "Either $5/$10 works.\n",
+        "It costs $5 and $10 today.\n",
+    ]:
+        masked, placeholders = segment.mask(text)
+        assert placeholders == [], text
+        assert masked == text
+
+
+def test_real_formulas_still_mask_after_the_price_fix():
+    """Only a digit may not follow the closing `$`.
+
+    `$\\sigma$-VAE` in `model_doc/vibevoice.md` is a real formula followed by a hyphenated word,
+    so forbidding `-` and `/` after the closing delimiter un-masked it. A digit is enough to tell
+    a price range apart.
+    """
+    for text, expected in [
+        ("The term $K_{a}$ here.\n", "$K_{a}$"),
+        ("Value $x^2$ ok.\n", "$x^2$"),
+        ("Both $ K_a $ and rest.\n", "$ K_a $"),
+        ("the $\\sigma$-VAE model\n", "$\\sigma$"),
+    ]:
+        assert segment.mask(text)[1] == [expected], text
+
+
+def test_reference_image_opener_is_masked():
+    """The `!` goes with the bracket here too, or dropping it turns a picture into a link."""
+    text = "![Diagram][fig]\n\n[fig]: https://hf.co/a.png\n"
+    masked, placeholders = segment.mask(text)
+    assert placeholders[0] == "!["
+    assert "!" not in masked.splitlines()[0]
+    assert segment.restore(masked, placeholders) == text

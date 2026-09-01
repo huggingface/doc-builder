@@ -275,16 +275,25 @@ def publish_generation(root, tree, current, manifest_target, manifest, failed):
     if generation == current and not publish.verify_generation(root, generation, tree):
         print(f"[translate] generation {generation} is already published and intact, nothing to do")
     else:
-        bad = publish.write_generation(root, generation, tree)
+        # A generation that is already published is never written into. Repairing it in place
+        # would replace its files one at a time under whoever is reading it, and would leave any
+        # unexpected extra file exactly where it was -- so the generation could never verify
+        # again. Repairs get a fresh, unreferenced directory like any other publish.
+        target = generation
+        if generation == current:
+            target = f"{generation}-r{publish.repair_suffix()}"
+            print(f"[translate] published generation {generation} is damaged; rebuilding it as {target}")
+        bad = publish.write_generation(root, target, tree)
         if bad:
             print(f"[translate] ERROR {len(bad)} file(s) did not survive the write: {bad[:5]}")
             print("[translate] the generation was not published; the existing one still stands")
             return 2
-        if not publish.promote(root, generation):
+        if not publish.promote(root, target):
             return 2
+        generation = target
         print(f"[translate] published generation {generation}, {len(tree)} file(s), {len(failed)} page(s) failed")
 
-    removed = publish.gc_generations(root, generation)
+    removed = publish.gc_generations(root)
     if removed:
         print(f"[translate] removed {len(removed)} old generation(s): {removed}")
 
@@ -305,9 +314,12 @@ def run(args, source_dir):
     root = publish.lang_root(bucket, args.package, f"{args.lang}.preview" if preview else args.lang)
     # What is published right now, for falling back on a page's last good translation and for
     # checking the manifest against reality. None on a first run.
-    # The pointer is read once and carried, rather than re-read by each thing that needs it.
+    # The pointer is read once and everything downstream is derived from that one value.
+    # `read_dir` used to call `current_dir()`, which read the pointer a second time -- so if
+    # anything promoted in between, `current` named one generation while we reconciled against
+    # and fell back on another.
     current = None if preview else publish.read_pointer(root)
-    read_dir = root if preview else publish.current_dir(root)
+    read_dir = root if preview else publish.generation_dir(root, current) if current else None
     if preview:
         print(f"[translate] --pages-file given: publishing to {root}, leaving the live tree alone")
     cache = SegmentCache(bucket)
@@ -342,6 +354,17 @@ def run(args, source_dir):
     if toc_tree is None and not preview:
         print(f"[translate] ERROR no readable {TOCTREE} under {source_dir}; refusing to publish")
         return 2
+    # The sidebar is the other half of the snapshot, and it was never checked against the pages.
+    # An entry with no page behind it publishes a tree the sidebar points past -- doc-builder
+    # refuses to build that, and the run reported success.
+    if toc_tree is not None and not preview:
+        dangling = sorted(set(pipeline.toctree_values(toc_tree, "local")) - {p.removesuffix(".md") for p in plans})
+        if dangling:
+            print(
+                f"[translate] ERROR {len(dangling)} sidebar entr(y/ies) have no page: {dangling[:5]}; "
+                "refusing to publish from an incomplete source"
+            )
+            return 2
 
     wanted = {}
     for plan in plans.values():
@@ -405,8 +428,16 @@ def run(args, source_dir):
         cache.save_index()
 
     # Pull together what we had already and what we just translated.
-    available = cache.get_many([k for k in wanted if k in known and k not in fresh])
+    reused = [k for k in wanted if k in known and k not in fresh]
+    available = cache.get_many(reused)
     available.update(fresh)
+    # Being listed in the index is not the same as being readable. A blob that has gone missing
+    # leaves its paragraph in English, and the key stays indexed -- so the model is never asked
+    # for it again and every later run reports success. Drop those keys so the next run does ask.
+    unreadable = [k for k in reused if k not in available]
+    if unreadable:
+        print(f"[translate] {len(unreadable)} cached segment(s) could not be read; dropping them from the index")
+        cache.forget(unreadable)
 
     tree, results, failed = assemble_tree(plans, available, glossary, args, read_dir)
 
@@ -428,14 +459,19 @@ def run(args, source_dir):
     # came back empty can still leave every page passing, because a page keeps its English and
     # goes on looking well-formed.
     attempted = len(missing)
-    if attempted >= SEGMENT_GATE_MIN_ATTEMPTS:
+    if attempted:
         success = len(fresh) / attempted
-        if success < args.min_segment_success:
+        if attempted >= SEGMENT_GATE_MIN_ATTEMPTS and success < args.min_segment_success:
             print(
                 f"[translate] ERROR only {success:.1%} of {attempted} requested segment(s) came back "
                 f"(below {args.min_segment_success:.0%}) -- publishing nothing"
             )
             return 2
+        if len(failures):
+            # Too few attempts for a rate to mean anything, so this does not block the publish --
+            # but it must not pass silently either. A single failed request used to leave an
+            # English paragraph behind and exit 0.
+            print(f"[translate] {len(failures)} of {attempted} requested segment(s) did not come back")
 
     # Refuse to publish a run that went badly wrong. Every failed page falls back to English or
     # to whatever it had before, so a night where the model returns rubbish for everything used
@@ -453,7 +489,13 @@ def run(args, source_dir):
     if preview:
         publish.write_tree(root, tree)
         print(f"[translate] wrote {len(tree)} file(s) to the preview tree")
-        return 0
+        # Isolated, but not exempt from saying how it went. A pages file that matched nothing used
+        # to write an empty tree and exit 0, and a preview whose pages all fell back to English
+        # looked exactly like one that worked.
+        if not plans:
+            print("[translate] ERROR no requested page exists; the preview tree is empty")
+            return 2
+        return 1 if rate > args.warn_failure_rate else 0
 
     code = publish_generation(
         root,

@@ -51,6 +51,7 @@ into `docs/source/<lang>` and it has no business in the docs.
 
 import json
 import shutil
+import time
 import traceback
 from pathlib import Path
 
@@ -203,10 +204,10 @@ def reconcile(out_dir, manifest, sources):
     return stale, orphans
 
 
-# How many generations to leave on the bucket, the published one included. Two, so the one it
-# replaced is still there if something looks wrong the morning after. Older ones are only
-# taking up room.
-KEEP_GENERATIONS = 2
+# How many generations to leave on the bucket, the published one included. More than two, so a
+# build that resolved the pointer just before a new run promoted still finds the generation it
+# asked for while it downloads it. Older ones are only taking up room.
+KEEP_GENERATIONS = 4
 
 GENERATIONS = "generations"
 POINTER = "CURRENT"
@@ -253,6 +254,16 @@ def generation_id(tree):
     """
     digest = sha256_text("\0".join(f"{page}\0{text}" for page, text in sorted(tree.items())))
     return digest[:16]
+
+
+def repair_suffix():
+    """A short suffix so a rebuilt generation gets a directory of its own.
+
+    A generation's name is its content hash, and the published one is never written into, so a
+    tree that has to be rebuilt under the same content needs a distinct name. Time-based, which
+    is enough: it only has to differ from the damaged one.
+    """
+    return f"{int(time.time())}"
 
 
 def verify_generation(root, generation, tree):
@@ -310,21 +321,25 @@ def promote(root, generation):
         return False
 
 
-def gc_generations(root, current, keep=KEEP_GENERATIONS):
+def gc_generations(root, keep=KEEP_GENERATIONS):
     """Delete old generations, keeping the newest few and never the published one.
 
-    Newest by modification time. `current` is the published generation, passed in rather than
-    re-read here -- the caller already knows it. Failures are only wasted space, so they are
-    reported and otherwise ignored.
+    Newest by modification time. The pointer is re-read here rather than taken from the caller:
+    a caller's idea of the published generation can be stale by the time we delete, and deleting
+    the generation `CURRENT` actually names is the one mistake this function must not make.
+
+    Failures are only wasted space, so they are reported and otherwise ignored.
     """
     base = Path(root) / GENERATIONS
     if not base.is_dir():
         return []
-    candidates = [p for p in base.iterdir() if p.is_dir() and p.name != current]
+    live = read_pointer(root)
+    candidates = [p for p in base.iterdir() if p.is_dir() and p.name != live]
     candidates.sort(key=lambda p: p.stat().st_mtime, reverse=True)
     removed = []
     # `keep` counts the published generation, which is never a candidate, so this many others
-    # survive alongside it.
+    # survive alongside it. Kept generous enough that a build which already resolved an older
+    # generation can finish syncing it before the folder goes away.
     for path in candidates[max(keep - 1, 0) :]:
         try:
             shutil.rmtree(path)
