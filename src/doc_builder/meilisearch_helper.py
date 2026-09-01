@@ -234,22 +234,23 @@ def generate_doc_id(library: str, page: str, text: str) -> str:
 @wait_for_task_completion
 def add_embeddings_to_db(client: Client, index_name: str, embeddings):
     index = client.index(index_name)
-    payload_data = [
-        {
-            "id": generate_doc_id(e.library, e.page, e.text),
-            "text": e.text,
-            "source_page_url": e.source_page_url,
-            "source_page_title": e.source_page_title,
-            "product": e.library,
-            "heading1": e.heading1,
-            "heading2": e.heading2,
-            "heading3": e.heading3,
-            "heading4": e.heading4,
-            "heading5": e.heading5,
-            "_vectors": {VECTOR_NAME: e.embedding},
+    payload_data = []
+    for embedding in embeddings:
+        document = {
+            "id": generate_doc_id(embedding.library, embedding.page, embedding.text),
+            "text": embedding.text,
+            "source_page_url": embedding.source_page_url,
+            "source_page_title": embedding.source_page_title,
+            "product": embedding.library,
+            "heading1": embedding.heading1,
+            "heading2": embedding.heading2,
+            "heading3": embedding.heading3,
+            "heading4": embedding.heading4,
+            "heading5": embedding.heading5,
         }
-        for e in embeddings
-    ]
+        if embedding.embedding is not None:
+            document["_vectors"] = {VECTOR_NAME: embedding.embedding}
+        payload_data.append(document)
     task_info = index.add_documents(payload_data)
     return client, task_info
 

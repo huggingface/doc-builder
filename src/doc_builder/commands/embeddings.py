@@ -18,9 +18,9 @@ import os
 from pathlib import Path
 
 from doc_builder import clean_meilisearch
-from doc_builder.build_embeddings import add_gradio_docs, call_embedding_inference
+from doc_builder.build_embeddings import add_gradio_docs, call_embedding_inference, chunks_to_documents
 from doc_builder.meilisearch_helper import add_embeddings_to_db
-from doc_builder.process_hf_docs import process_all_libraries
+from doc_builder.process_hf_docs import get_public_library_name, process_all_libraries, should_embed_chunk
 from doc_builder.utils import chunk_list
 
 
@@ -34,7 +34,7 @@ def get_credential(arg_value, env_var_name):
 def process_hf_docs_command(args):
     """
     Process documentation from HF doc-build dataset.
-    Downloads pre-built docs and generates embeddings.
+    Downloads pre-built docs and generates embeddings for eligible documents.
 
     With --incremental: only indexes new/changed pages and deletes stale ones,
     using the HF Hub tracker (hf-doc-build/doc-builder-embeddings-tracker) to
@@ -63,10 +63,6 @@ def process_hf_docs_command(args):
         hf_ie_token = get_credential(args.hf_ie_token, "HF_IE_TOKEN")
         meilisearch_key = get_credential(args.meilisearch_key, "MEILISEARCH_KEY")
 
-        if not hf_ie_url:
-            raise ValueError("HF_IE_URL is required. Set via --hf_ie_url or HF_IE_URL env var.")
-        if not hf_ie_token:
-            raise ValueError("HF_IE_TOKEN is required. Set via --hf_ie_token or HF_IE_TOKEN env var.")
         if not meilisearch_key:
             raise ValueError("MEILISEARCH_KEY is required. Set via --meilisearch_key or MEILISEARCH_KEY env var.")
         meilisearch_url = get_credential(args.meilisearch_url, "MEILISEARCH_URL")
@@ -88,33 +84,58 @@ def process_hf_docs_command(args):
 
 
 def _run_full(all_chunks, hf_ie_url, hf_ie_token, meilisearch_key, meilisearch_url, items_per_chunk):
-    """Full (non-incremental) indexing: embed everything and upload to the temp index."""
+    """Full (non-incremental) indexing: prepare every document and upload to the temp index."""
     import meilisearch
     from tqdm import tqdm
 
     from doc_builder.build_embeddings import MEILI_INDEX_TEMP
 
     print("\n" + "=" * 80)
-    print("GENERATING EMBEDDINGS (full rebuild)")
+    print("PREPARING SEARCH DOCUMENTS (full rebuild)")
     print("=" * 80)
-    print(f"\nTotal chunks to embed: {len(all_chunks)}")
+    print(f"\nTotal documents to index: {len(all_chunks)}")
 
-    embeddings = call_embedding_inference(
-        all_chunks,
-        hf_ie_url,
-        hf_ie_token,
-        is_python_module=False,
-    )
+    documents = _chunks_to_search_documents(all_chunks, hf_ie_url, hf_ie_token)
 
     print("\n" + "=" * 80)
     print("UPLOADING TO MEILISEARCH (temp index)")
     print("=" * 80)
 
     client = meilisearch.Client(meilisearch_url, meilisearch_key)
-    for chunk_embeddings in tqdm(chunk_list(embeddings, items_per_chunk), desc="Uploading to meilisearch"):
-        add_embeddings_to_db(client, MEILI_INDEX_TEMP, chunk_embeddings)
+    for document_chunk in tqdm(chunk_list(documents, items_per_chunk), desc="Uploading to meilisearch"):
+        add_embeddings_to_db(client, MEILI_INDEX_TEMP, document_chunk)
 
-    print(f"\nSuccessfully uploaded {len(embeddings)} embeddings to Meilisearch (temp index)")
+    print(f"\nSuccessfully uploaded {len(documents)} documents to Meilisearch (temp index)")
+
+
+def _chunks_to_search_documents(chunks, hf_ie_url, hf_ie_token):
+    chunks_to_embed = []
+    vectorless_chunks = []
+    for chunk in chunks:
+        if should_embed_chunk(chunk):
+            chunks_to_embed.append(chunk)
+        else:
+            vectorless_chunks.append(chunk)
+
+    print(f"Chunks requiring embeddings: {len(chunks_to_embed)}")
+    print(f"Full-text-only chunks      : {len(vectorless_chunks)}")
+
+    documents = []
+    if chunks_to_embed:
+        if not hf_ie_url:
+            raise ValueError("HF_IE_URL is required. Set via --hf_ie_url or HF_IE_URL env var.")
+        if not hf_ie_token:
+            raise ValueError("HF_IE_TOKEN is required. Set via --hf_ie_token or HF_IE_TOKEN env var.")
+        documents.extend(
+            call_embedding_inference(
+                chunks_to_embed,
+                hf_ie_url,
+                hf_ie_token,
+                is_python_module=False,
+            )
+        )
+    documents.extend(chunks_to_documents(vectorless_chunks))
+    return documents
 
 
 def _run_incremental(args, all_chunks, hf_ie_url, hf_ie_token, meilisearch_key, meilisearch_url, items_per_chunk):
@@ -152,7 +173,7 @@ def _run_incremental(args, all_chunks, hf_ie_url, hf_ie_token, meilisearch_key, 
 
     # When processing specific libraries, scope the diff to those libraries only
     if args.libraries:
-        lib_prefixes = tuple(sanitize_for_id(lib) + "-" for lib in args.libraries)
+        lib_prefixes = tuple(sanitize_for_id(get_public_library_name(lib)) + "-" for lib in args.libraries)
         existing_ids_in_scope = {doc_id for doc_id in existing_ids if doc_id.startswith(lib_prefixes)}
     else:
         existing_ids_in_scope = existing_ids
@@ -168,28 +189,23 @@ def _run_incremental(args, all_chunks, hf_ie_url, hf_ie_token, meilisearch_key, 
 
     # Embed and upload new/changed chunks
     if to_add_ids:
-        chunks_to_embed = [new_ids_map[doc_id] for doc_id in to_add_ids]
+        chunks_to_index = [new_ids_map[doc_id] for doc_id in to_add_ids]
 
         print("\n" + "=" * 80)
-        print("GENERATING EMBEDDINGS (incremental)")
+        print("PREPARING SEARCH DOCUMENTS (incremental)")
         print("=" * 80)
-        print(f"\nChunks to embed: {len(chunks_to_embed)}")
+        print(f"\nChunks to index: {len(chunks_to_index)}")
 
-        embeddings = call_embedding_inference(
-            chunks_to_embed,
-            hf_ie_url,
-            hf_ie_token,
-            is_python_module=False,
-        )
+        documents = _chunks_to_search_documents(chunks_to_index, hf_ie_url, hf_ie_token)
 
         print("\n" + "=" * 80)
         print("UPLOADING TO MEILISEARCH (main index)")
         print("=" * 80)
 
-        for chunk_embeddings in tqdm(chunk_list(embeddings, items_per_chunk), desc="Uploading to meilisearch"):
-            add_embeddings_to_db(client, MEILI_INDEX, chunk_embeddings)
+        for document_chunk in tqdm(chunk_list(documents, items_per_chunk), desc="Uploading to meilisearch"):
+            add_embeddings_to_db(client, MEILI_INDEX, document_chunk)
 
-        print(f"\nSuccessfully uploaded {len(embeddings)} embeddings to Meilisearch")
+        print(f"\nSuccessfully uploaded {len(documents)} documents to Meilisearch")
     else:
         print("\nNo new or changed documents — skipping embedding and upload.")
 
@@ -302,7 +318,7 @@ def embeddings_command_parser(subparsers=None):
         type=str,
         nargs="+",
         default=None,
-        help="Specific libraries to process (e.g., accelerate diffusers). If not specified, processes all libraries.",
+        help="Specific libraries to process (e.g., accelerate diffusers blog). If not specified, processes all libraries.",
     )
     parser_process_hf_docs.add_argument(
         "--excerpt-length", type=int, default=1000, help="Maximum length of each excerpt in characters (default: 1000)"
@@ -318,11 +334,14 @@ def embeddings_command_parser(subparsers=None):
     parser_process_hf_docs.add_argument(
         "--hf_ie_url",
         type=str,
-        help="Inference Endpoints URL (or set HF_IE_URL env var, required unless --skip-embeddings is set)",
+        help="Inference Endpoints URL (or set HF_IE_URL env var, required when selected documents need embeddings)",
         required=False,
     )
     parser_process_hf_docs.add_argument(
-        "--hf_ie_token", type=str, help="Hugging Face token (required unless --skip-embeddings is set)", required=False
+        "--hf_ie_token",
+        type=str,
+        help="Hugging Face token (required when selected documents need embeddings)",
+        required=False,
     )
     parser_process_hf_docs.add_argument(
         "--meilisearch_key",

@@ -696,30 +696,27 @@ def create_chunks(package, doc_folder, page_info, version_tag_suffix, is_python_
     return chunks
 
 
-def chunks_to_embeddings(client, chunks, is_python_module) -> list[Embedding]:
-    texts = []
-    for c in chunks:
-        prefix = f'Documentation of {"library" if is_python_module else "service"} "{c.package_name}" under section: {" > ".join(c.headings)}'
-        texts.append(prefix + "\n\n" + c.text)
-
-    inference_output = client.feature_extraction(texts, truncate=True)
-    inference_output = inference_output.tolist()
+def chunks_to_documents(chunks, embedding_vectors=None) -> list[Embedding]:
+    if embedding_vectors is None:
+        embedding_vectors = [None] * len(chunks)
+    if len(chunks) != len(embedding_vectors):
+        raise ValueError("Each chunk must have a corresponding embedding vector")
 
     embeddings = []
-    for c, embed in zip(chunks, inference_output, strict=False):
+    for c, embed in zip(chunks, embedding_vectors, strict=True):
         headings = [None] * 5
         last_heading = None
 
         for heading_str in c.headings:
-            level = heading_str.count("#")
+            level = len(heading_str) - len(heading_str.lstrip("#"))
             heading_text = heading_str.lstrip("# ").strip()
             if 1 <= level <= 5:
                 headings[level - 1] = heading_text
                 last_heading = heading_text
 
-        # If the page does not have any heading, add the last heading to the page URL
+        # Blog records must preserve the canonical URL returned by the Hub API.
         source_page_url = c.source_page_url
-        if "#" not in c.source_page_url and last_heading is not None:
+        if c.package_name != "blog" and "#" not in c.source_page_url and last_heading is not None:
             source_page_url += "#" + slugify(last_heading)
 
         embeddings.append(
@@ -739,6 +736,17 @@ def chunks_to_embeddings(client, chunks, is_python_module) -> list[Embedding]:
         )
 
     return embeddings
+
+
+def chunks_to_embeddings(client, chunks, is_python_module) -> list[Embedding]:
+    texts = []
+    for c in chunks:
+        prefix = f'Documentation of {"library" if is_python_module else "service"} "{c.package_name}" under section: {" > ".join(c.headings)}'
+        texts.append(prefix + "\n\n" + c.text)
+
+    inference_output = client.feature_extraction(texts, truncate=True)
+    inference_output = inference_output.tolist()
+    return chunks_to_documents(chunks, inference_output)
 
 
 def call_embedding_inference(chunks: list[Chunk], hf_ie_url, hf_ie_token, is_python_module) -> list[Embedding]:
