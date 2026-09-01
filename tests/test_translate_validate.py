@@ -124,20 +124,45 @@ def test_keep_published_rejects_a_page_that_no_longer_passes(tmp_path):
     because the fresh attempt failed for an unrelated reason.
     """
     from doc_builder.commands.translate import keep_published
+    from doc_builder.translate.pipeline import add_disclosure
 
     source = "See [the guide](https://hf.co/docs) now.\n"
     page = tmp_path / "p.md"
 
-    page.write_text("詳しくは[ガイド](https://hf.co/docs)]を参照。\n", encoding="utf-8")
-    assert keep_published(page, source) is None  # stray bracket -> drop it
+    def check(text):
+        page.write_text(text, encoding="utf-8")
+        return keep_published(page, source, "p.md", "ja", "transformers")
+
+    assert (
+        check(add_disclosure("詳しくは[ガイド](https://hf.co/docs)]を参照。\n", "p.md", "ja", "transformers")) is None
+    )
 
     # It gives back the text rather than a yes/no, because the tree is now assembled in memory
     # before any of it is published, so the caller needs the page itself and not permission.
-    clean = "詳しくは[ガイド](https://hf.co/docs)を参照。\n"
-    page.write_text(clean, encoding="utf-8")
-    assert keep_published(page, source) == clean
+    clean = add_disclosure("詳しくは[ガイド](https://hf.co/docs)を参照。\n", "p.md", "ja", "transformers")
+    assert check(clean) == clean
 
-    assert keep_published(tmp_path / "missing.md", source) is None
+    assert keep_published(tmp_path / "missing.md", source, "p.md", "ja", "transformers") is None
+
+
+def test_keep_published_accepts_what_this_command_publishes(tmp_path):
+    """A page produced by this command has to survive its own retention check.
+
+    It did not. Every published page carries the machine-translation banner, and the banner's
+    two links were compared against the bare English source, so `check_links` reported them as
+    invented and threw the page away -- meaning the "keep the last good translation" path never
+    once kept anything, and every failed update replaced good Japanese with raw English.
+    """
+    from doc_builder.commands.translate import keep_published
+    from doc_builder.translate.pipeline import add_disclosure
+
+    source = "# Title\n\nSee [the guide](https://hf.co/docs) and [another](https://hf.co/x).\n"
+    japanese = "# タイトル\n\n[ガイド](https://hf.co/docs)と[もう一つ](https://hf.co/x)を参照。\n"
+    published = add_disclosure(japanese, "p.md", "ja", "transformers")
+    page = tmp_path / "p.md"
+    page.write_text(published, encoding="utf-8")
+
+    assert keep_published(page, source, "p.md", "ja", "transformers") == published
 
 
 def test_image_links_are_counted():
@@ -203,9 +228,9 @@ def test_stray_bracket_costs_one_paragraph_not_the_page():
 
     plan = PagePlan("p.md", "First para.\n\nSecond para.\n", "ja", "m", "sha")
     keys = [u.key for u in plan.units.values()]
-    _, restored, rejected = assemble_page(plan, {keys[0]: "最初の段落。", keys[1]: "二番目の段落⟧"})
+    _, restored, outcome = assemble_page(plan, {keys[0]: "最初の段落。", keys[1]: "二番目の段落⟧"})
 
-    assert rejected == [keys[1]]
+    assert outcome.rejected == [keys[1]]
     assert "最初の段落。" in restored  # good paragraph kept
     assert "Second para." in restored  # bad one back to English
     assert "⟧" not in restored
@@ -244,7 +269,7 @@ def test_summary_flags_high_rejection_rate():
     results = [validate.Result(page=f"p{i}.md") for i in range(100)]
     for r in results[:5]:
         r.failures.append("boom")
-    out = validate.summarize(results)
+    out = validate.summarize(results, 0.02)
     assert "95/100" in out and "5.0%" in out and "exceeds 2%" in out
 
 
@@ -257,7 +282,7 @@ def test_summary_shows_warnings_on_pages_that_passed():
     passed_with_warning.warnings.append("1 paragraph(s) kept in English: markers not preserved")
     silent = validate.Result(page="installation.md")
 
-    out = validate.summarize([passed_with_warning, silent])
+    out = validate.summarize([passed_with_warning, silent], 0.02)
     assert "2/2 pages passed" in out
     assert "quicktour.md" in out  # shown despite passing
     assert "kept in English" in out
@@ -265,5 +290,34 @@ def test_summary_shows_warnings_on_pages_that_passed():
 
 
 def test_summary_clean_run_has_no_warning():
-    out = validate.summarize([validate.Result(page="p.md")])
+    out = validate.summarize([validate.Result(page="p.md")], 0.02)
     assert "1/1" in out and "exceeds" not in out
+
+
+def test_image_turned_into_a_link_is_caught():
+    """Dropping the `!` keeps every marker and changes what the page shows.
+
+    `[![Open In Colab](badge.svg)](notebook.ipynb)` with the `!` removed is still well-formed
+    markdown with the same link count, so nothing but the kind gives it away.
+    """
+    source = "[![Open In Colab](badge.svg)](notebook.ipynb)\n"
+    # a set, because check_links compares multisets -- Japanese word order moves links about
+    assert set(validate.link_targets(source)) == {("link", "(notebook.ipynb)"), ("image", "(badge.svg)")}
+    problems = validate.check_links(source, source.replace("[!", "["))
+    assert problems
+    assert any("image (badge.svg)" in p for p in problems)
+
+
+def test_nested_link_destinations_are_both_recorded():
+    """The outer destination used to be invisible -- only the inner one was ever compared."""
+    source = "[![alt](inner.svg)](outer.ipynb)\n"
+    assert set(validate.link_targets(source)) == {("link", "(outer.ipynb)"), ("image", "(inner.svg)")}
+    # rewriting only the outer destination has to be caught
+    assert validate.check_links(source, "[![alt](inner.svg)](other.ipynb)\n")
+
+
+def test_bare_url_change_is_caught():
+    """Bare URLs are compared after restoration, not just masked."""
+    source = "See https://github.com/deepseek-ai/DeepSeek-V3 for details.\n"
+    assert not validate.check_links(source, source)
+    assert validate.check_links(source, source.replace("V3", "V4"))

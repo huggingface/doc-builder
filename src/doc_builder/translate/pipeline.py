@@ -20,10 +20,10 @@ import yaml
 from . import validate
 from .cache import segment_key, sha256_text
 from .segment import (
+    FOREIGN_BRACKETS,
     PH_CLOSE,
     PH_OPEN,
-    PLACEHOLDER_RE,
-    is_translatable,
+    has_prose,
     join_blocks,
     mask,
     placeholder_indices,
@@ -38,7 +38,11 @@ from .segment import (
 # contained `¤0¤`, so everything cached under v4 was translated against instructions that did
 # not match its input. Bumped alongside the fence and link-destination fixes in segment.py,
 # which change what the model is shown on the affected pages -- one bump covers all three.
-PROMPT_VERSION = "v5"
+#
+# v6: three more things the model should never have seen are now hidden -- the `!` of an image,
+# bare URLs in running text, and inline `$x$` formulas. All three change the paragraphs the
+# model is given, so all three need the cache thrown away, and one bump covers them together.
+PROMPT_VERSION = "v6"
 
 LANGUAGE_NAMES = {"ja": "Japanese"}
 
@@ -60,6 +64,10 @@ DEFAULT_ATTENTION = "paged|sdpa"
 # which experts to route each token to. Qwen3-30B-A3B died on this inside its MoE layer, so the
 # safe default is off. Turn it on with --cuda-graphs for a dense model.
 DEFAULT_CUDA_GRAPHS = False
+
+# How much longer a translation may run than its source, in tokens. Japanese needs more tokens
+# than the English it came from, so one global cap would truncate long blocks or waste budget.
+MAX_NEW_TOKEN_RATIO = 2.5
 
 # On purpose, this does not name a particular library. The prompt is part of each
 # paragraph's ID, so keeping it generic means the same boilerplate sentence translated for
@@ -110,25 +118,12 @@ def strip_reasoning(text):
 # paragraphs that never had a marker to echo in the first place -- the English behind
 # `ポジティブ⟧1⟧、🙁 ネガティブ⟧1⟧` is plain prose, "🙂 positive, 🙁 negative" -- so the number
 # refers to nothing and there is no content at risk of being removed with it.
-ECHOED_MARKER_RE = re.compile(r"[⟦⟧]\d+[⟦⟧]")
+ECHOED_MARKER_RE = re.compile(rf"[{FOREIGN_BRACKETS}]\d+[{FOREIGN_BRACKETS}]")
 
 
 def strip_echoed_markers(text):
     """Remove markers the model rewrote in the wrong brackets, e.g. `⟦0⟧`."""
     return ECHOED_MARKER_RE.sub("", text)
-
-
-def has_prose(text):
-    """Is there anything here besides markers and whitespace?
-
-    Every paragraph we send has prose in it by definition -- that is what `is_translatable`
-    decides -- so a translation with none coming back is not a translation. It used to be
-    accepted: for a paragraph with no markers in it, `""` matched the source's empty marker
-    list and passed the bracket check too, so the paragraph was replaced with nothing. The
-    page still passed, because whole-page checks only ask whether *something* was translated,
-    and one silently deleted paragraph in an otherwise good page does not show up there.
-    """
-    return bool(PLACEHOLDER_RE.sub("", text).strip())
 
 
 def glossary_path(language):
@@ -205,6 +200,34 @@ def build_prompt(segment_text, language, glossary):
 # -- page pipeline (pure, no GPU) ------------------------------------------------
 
 
+def accept_translation(source_text, raw):
+    """Clean up a model's answer and decide whether it can be used. None means no.
+
+    One function because there are three doors a translation comes through -- a fresh model
+    reply, a cached blob at assembly time, and a sidebar title -- and each new way the model
+    misbehaved used to be guarded at whichever door it was noticed at. Titles ended up with two
+    of the rules, cache-write time with one, and assembly with all five, so the same bad text
+    was judged differently depending on where it arrived.
+
+    Cleaning happens on the way out rather than on the way in, so a cache full of answers
+    written before a rule existed is repaired by a --rebuild with nothing retranslated.
+    """
+    text = strip_echoed_markers(strip_reasoning(raw)).strip()
+    if not has_prose(text):
+        # Markers and whitespace only: the prose is gone, and replacing the paragraph with this
+        # would delete it from the page while every structural check still passed.
+        return None
+    # Sorted, not in order: Japanese word order differs from English, so a model that moves a
+    # marker to the other end of the sentence is doing its job -- only dropping, repeating or
+    # inventing one is wrong.
+    if sorted(placeholder_indices(text)) != sorted(placeholder_indices(source_text)):
+        return None
+    # Brackets it made up but did not number, like a lone `⟧`.
+    if validate.check_invented_brackets(source_text, text):
+        return None
+    return text
+
+
 class Unit(NamedTuple):
     """One paragraph to translate, with its surrounding blank space kept to one side.
 
@@ -236,7 +259,7 @@ class PagePlan:
         self.parts = split_blocks(self.masked)
         self.units = {}
         for i, part in enumerate(self.parts):
-            if i % 2 != 0 or not is_translatable(part):
+            if i % 2 != 0 or not has_prose(part):
                 continue
             core = part.strip()
             lead = part[: len(part) - len(part.lstrip())]
@@ -250,6 +273,25 @@ class PagePlan:
         return {u.key: u.text for u in self.units.values()}
 
 
+class PageOutcome(NamedTuple):
+    """How much of a page actually got translated.
+
+    `covered` counts paragraphs we published a translation for; `total` counts the ones that
+    needed one. The gap is paragraphs left in English -- either no translation came back, or the
+    one that did was rejected. Both are gaps, and neither used to be counted anywhere: a page
+    kept its English body and still reported as passing, because whole-page checks only ask
+    whether *something* was translated.
+    """
+
+    covered: int
+    total: int
+    rejected: list
+
+    @property
+    def coverage(self):
+        return self.covered / self.total if self.total else 1.0
+
+
 def assemble_page(plan, translations):
     """Put a page back together from its translated paragraphs.
 
@@ -258,42 +300,25 @@ def assemble_page(plan, translations):
     the checks before anyone sees it.
     """
     parts = list(plan.parts)
-    rejected = []
+    rejected, covered = [], 0
     for index, unit in plan.units.items():
-        translated = translations.get(unit.key)
+        raw = translations.get(unit.key)
+        if raw is None:
+            continue
+        # Judged per paragraph rather than per page, which is what stops one bad paragraph
+        # costing the whole page. The model sometimes paraphrases a marker away when it stands
+        # for short inline code -- writing "from the checkpoint" instead of keeping
+        # `config.json`. That was 4 paragraphs out of 402, and it failed 3 entire pages. Now
+        # those 4 stay English inside otherwise Japanese pages.
+        translated = accept_translation(unit.text, raw)
         if translated is None:
-            continue
-        # Cleaned on the way out rather than on the way in, so a cache full of translations
-        # written before this existed is fixed by a --rebuild, with nothing retranslated.
-        translated = strip_echoed_markers(translated)
-        # Nothing but markers and whitespace means the model dropped the prose. Checked here as
-        # well as before caching, so a cache already holding one of these is repaired by a
-        # --rebuild rather than reprinting the same hole every night.
-        if not has_prose(translated):
-            rejected.append(unit.key)
-            continue
-        # Check this paragraph's markers before accepting it. Sorted, not in order: Japanese
-        # word order differs from English, so a model that moves a marker to the other end of
-        # the sentence is doing its job -- only dropping, repeating or inventing one is wrong.
-        #
-        # Doing this per paragraph rather than per page is what stops one bad paragraph costing
-        # the whole page. The model sometimes paraphrases a marker away when it stands for short
-        # inline code -- writing "from the checkpoint" instead of keeping `config.json`, or
-        # guessing the hidden text and typing it out. That was 4 paragraphs out of 402, and it
-        # failed 3 entire pages. Now those 4 stay English inside otherwise Japanese pages.
-        if sorted(placeholder_indices(translated)) != sorted(placeholder_indices(unit.text)):
-            rejected.append(unit.key)
-            continue
-        # Same treatment for brackets the model made up but did not number, like a lone `⟧`.
-        # These are dropped a paragraph at a time for the same reason as the markers above: a
-        # single stray character would otherwise cost a whole page of good Japanese. Two pages
-        # in the first full run came down to exactly one character each.
-        if validate.check_invented_brackets(unit.text, translated):
             rejected.append(unit.key)
             continue
         parts[index] = f"{unit.lead}{translated}{unit.trail}"
+        covered += 1
     masked_translation = join_blocks(parts)
-    return masked_translation, restore(masked_translation, plan.placeholders), rejected
+    outcome = PageOutcome(covered=covered, total=len(plan.units), rejected=rejected)
+    return masked_translation, restore(masked_translation, plan.placeholders), outcome
 
 
 def validate_plan(plan, masked_translation, glossary=None, restored=None):
@@ -416,7 +441,7 @@ def apply_toctree_titles(node, translations):
 # -- model ----------------------------------------------------------------------
 
 
-def build_requests(segments, tokenizer, language, glossary, max_new_token_ratio=2.5):
+def build_requests(segments, tokenizer, language, glossary):
     """Turn each paragraph into something the model can read, plus a length limit.
 
     The length limit is worked out from the paragraph alone, not the whole prompt. The
@@ -449,7 +474,7 @@ def build_requests(segments, tokenizer, language, glossary, max_new_token_ratio=
         # Japanese output runs longer in tokens than English input, so one global cap
         # would either truncate long blocks or waste KV budget.
         content_tokens = len(tokenizer.encode(text, add_special_tokens=False))
-        budget = int(content_tokens * max_new_token_ratio) + 48
+        budget = int(content_tokens * MAX_NEW_TOKEN_RATIO) + 48
         requests.append((key, prompt, budget))
     return requests
 
@@ -459,7 +484,6 @@ def translate_segments(
     language,
     glossary,
     model_id,
-    max_new_token_ratio=2.5,
     attn_implementation=DEFAULT_ATTENTION,
     use_cuda_graph=DEFAULT_CUDA_GRAPHS,
 ):
@@ -478,9 +502,6 @@ def translate_segments(
     from transformers.generation import ContinuousBatchingConfig, GenerationConfig
     from transformers.generation.continuous_batching.utils import WorkloadHints
 
-    if not segments:
-        return {}, []
-
     tokenizer = AutoTokenizer.from_pretrained(model_id)
     model = AutoModelForCausalLM.from_pretrained(
         model_id,
@@ -489,7 +510,7 @@ def translate_segments(
         dtype=torch.bfloat16,
     )
 
-    requests = build_requests(segments, tokenizer, language, glossary, max_new_token_ratio)
+    requests = build_requests(segments, tokenizer, language, glossary)
     max_prompt = max(len(p) for _, p, _ in requests)
     max_generated = max(b for _, _, b in requests)
 
@@ -539,14 +560,15 @@ def translate_segments(
             if result.error or not result.is_finished():
                 failures.append((result.request_id, result.error or str(result.status)))
             else:
-                decoded = strip_reasoning(tokenizer.decode(result.generated_tokens, skip_special_tokens=True)).strip()
-                # Caught here as well as at assembly, because the cache is forever: an empty
-                # translation stored once is reused every night after, and nothing would ever
-                # ask the model for that paragraph again.
-                if has_prose(decoded):
-                    translations[result.request_id] = decoded
+                decoded = tokenizer.decode(result.generated_tokens, skip_special_tokens=True)
+                # Checked here as well as at assembly, because the cache is forever: an answer
+                # stored once is reused every night after, and nothing would ever ask the model
+                # for that paragraph again.
+                accepted = accept_translation(segments[result.request_id], decoded)
+                if accepted is not None:
+                    translations[result.request_id] = accepted
                 else:
-                    failures.append((result.request_id, "translation is empty once markers are removed"))
+                    failures.append((result.request_id, "translation rejected: no usable prose or markers changed"))
             if len(translations) + len(failures) >= len(requests):
                 break
 

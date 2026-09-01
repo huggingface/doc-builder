@@ -76,9 +76,9 @@ def test_a_dropped_marker_is_caught_before_it_reaches_the_page():
     source = "Call `fit` on the `Trainer`.\n"
     plan = plan_for("p.md", source)
     key = next(iter(plan.segments))
-    masked_translation, rebuilt, rejected = pipeline.assemble_page(plan, {key: "呼び出します。"})
+    masked_translation, rebuilt, outcome = pipeline.assemble_page(plan, {key: "呼び出します。"})
 
-    assert rejected == [key]
+    assert outcome.rejected == [key]
     assert rebuilt == source  # left exactly as it was found
     result = pipeline.validate_plan(plan, masked_translation)
     assert not result.ok
@@ -149,8 +149,8 @@ def test_paragraph_that_loses_a_marker_stays_english():
         good.key: good.text,  # markers intact
         bad.key: "マーカーを落とした訳文",  # markers gone
     }
-    _, rebuilt, rejected = pipeline.assemble_page(plan, translations)
-    assert rejected == [bad.key]
+    _, rebuilt, outcome = pipeline.assemble_page(plan, translations)
+    assert outcome.rejected == [bad.key]
     assert "A second paragraph with `c` in it." in rebuilt  # the bad one stayed English
     assert "Set `a` to `b` now." in rebuilt  # the good one round-tripped
 
@@ -160,8 +160,8 @@ def test_reordered_markers_are_accepted():
     plan = plan_for("p.md", "Use `a` before `b`.\n")
     unit = next(iter(plan.units.values()))
     swapped = unit.text.replace("¤0¤", "TMP").replace("¤1¤", "¤0¤").replace("TMP", "¤1¤")
-    _, _, rejected = pipeline.assemble_page(plan, {unit.key: swapped})
-    assert rejected == []
+    _, _, outcome = pipeline.assemble_page(plan, {unit.key: swapped})
+    assert outcome.rejected == []
 
 
 def test_reasoning_block_is_stripped():
@@ -343,8 +343,8 @@ def test_empty_translation_keeps_the_english():
     empty_key = next(k for k, v in plan.segments.items() if v == "First paragraph.")
     translations[empty_key] = ""
 
-    _, page_text, rejected = pipeline.assemble_page(plan, translations)
-    assert empty_key in rejected
+    _, page_text, outcome = pipeline.assemble_page(plan, translations)
+    assert empty_key in outcome.rejected
     assert "First paragraph." in page_text  # kept, not dropped
 
 
@@ -353,8 +353,8 @@ def test_marker_only_translation_keeps_the_english():
     source = "Run `pip install` to begin.\n"
     plan = pipeline.PagePlan("p.md", source, "ja", "m", "g")
     key = next(iter(plan.segments))
-    _, page_text, rejected = pipeline.assemble_page(plan, {key: "  ¤0¤  "})
-    assert rejected == [key]
+    _, page_text, outcome = pipeline.assemble_page(plan, {key: "  ¤0¤  "})
+    assert outcome.rejected == [key]
     assert "to begin." in page_text
 
 

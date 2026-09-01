@@ -18,12 +18,19 @@ Getting a finished translation into the bucket without breaking what is already 
 The bucket is what the build reads, so anything written here is published. Two things follow
 from that, and they are what this file exists for.
 
-**Nothing is written until the whole tree is ready.** Pages used to be written one at a time
-as they were assembled, which left the folder in a mixed state for the length of the run --
-new pages sitting behind the previous run's sidebar, and a half-written tree if the job died.
-The workflow's existence check is happy with a mixed tree, so it would build and publish one.
-Now the tree is assembled in memory (about 3MB for transformers), checked as a whole, and
-only then does anything touch the bucket.
+**A run publishes a whole generation or nothing.** Each run writes its tree to a folder of its
+own under `generations/`, never touching what is already published. When every file is written
+and read back correctly, one small file -- `CURRENT` -- is rewritten to name the new generation.
+That single write is the publish, and it is the only thing the build looks at.
+
+Nothing weaker than this works. Writing pages into the live folder one at a time leaves it
+mixed for the length of the run, and the file that sorts first is `_toctree.yml`, so the usual
+mixture is a new sidebar over old or missing pages. Assembling in memory first narrows that
+window but does not close it. Writing the manifest last only lets the *next* run notice; the
+build does not read the manifest, so a sync that lands in between publishes the mixture anyway.
+
+Deleting comes free from this. A generation contains exactly the pages that exist now, so a page
+removed from the English docs is simply not in it -- there is no pruning step to get half done.
 
 **A warm cache does not mean the output is current.** Knowing there is no new prose to
 translate says nothing about whether what is published matches the English docs. An edit that
@@ -47,7 +54,7 @@ import shutil
 import traceback
 from pathlib import Path
 
-from .cache import sha256_text
+from .cache import atomic_write, sha256_text
 
 # Bump when the shape of the manifest itself changes. An unreadable or older manifest is not an
 # error -- it just means we rebuild everything, which is correct and costs no GPU.
@@ -95,12 +102,8 @@ def save_manifest(path, manifest):
     disagreement and finishes the job. A manifest written first would instead claim the
     interrupted tree was complete.
     """
-    path = Path(path)
     try:
-        path.parent.mkdir(parents=True, exist_ok=True)
-        tmp = path.with_suffix(".json.tmp")
-        tmp.write_text(json.dumps(manifest, indent=1, sort_keys=True), encoding="utf-8")
-        tmp.replace(path)
+        atomic_write(path, json.dumps(manifest, indent=1, sort_keys=True))
         return True
     except Exception:
         traceback.print_exc()
@@ -108,15 +111,24 @@ def save_manifest(path, manifest):
         return False
 
 
-def build_manifest(language, model, gloss_sha, prompt_version, sources, published):
-    """Describe what we just published: what it was built from, and what it came out as."""
+def build_manifest(language, model, gloss_sha, prompt_version, sources, published, generation, failed=()):
+    """Describe what we just published: what it was built from, and what it came out as.
+
+    `failed` is the pages that fell back to English or to an older translation. They are
+    recorded by name because their `output` hash is a fallback rather than a real translation,
+    and a manifest that did not say so made them invisible: the next run compared the published
+    English against the recorded hash, found them equal, called the tree current and exited 0.
+    The page stayed English for good and the job went green the morning after it broke.
+    """
     return {
         "manifest_version": MANIFEST_VERSION,
         "output_version": OUTPUT_VERSION,
+        "generation": generation,
         "prompt_version": prompt_version,
         "language": language,
         "model": model,
         "glossary": gloss_sha,
+        "failed": sorted(failed),
         "pages": {
             page: {"source": sha256_text(sources[page]), "output": sha256_text(text)}
             for page, text in sorted(published.items())
@@ -147,7 +159,12 @@ def stale_reason(manifest, language, model, gloss_sha, prompt_version):
 
 
 def live_files(out_dir):
-    """Every file currently published, as paths relative to the tree."""
+    """Every file currently published, as paths relative to the tree.
+
+    `None` means nothing is published yet, which is the same answer as an empty tree.
+    """
+    if out_dir is None:
+        return set()
     out_dir = Path(out_dir)
     if not out_dir.is_dir():
         return set()
@@ -165,6 +182,8 @@ def reconcile(out_dir, manifest, sources):
 
     Gives back the pages to rebuild and the files to remove.
     """
+    if out_dir is None:
+        return set(sources), set()
     out_dir = Path(out_dir)
     recorded = manifest.get("pages", {})
     stale = set()
@@ -184,54 +203,143 @@ def reconcile(out_dir, manifest, sources):
     return stale, orphans
 
 
-def publish_tree(out_dir, tree):
-    """Write the finished tree into the bucket and take out anything that is no longer in it.
+# How many generations to leave on the bucket, the published one included. Two, so the one it
+# replaced is still there if something looks wrong the morning after. Older ones are only
+# taking up room.
+KEEP_GENERATIONS = 2
 
-    Removing is as much a part of publishing as writing. Without it, a page deleted from the
-    English docs stays in the bucket forever, gets copied into `docs/source/<lang>` by the
-    workflow, and goes on being served -- unlisted in the sidebar, so nobody finds it to
-    notice. The workflow's wholesale folder copy only clears orphans that are in the repo; the
-    ones in the bucket are ours to clear.
+GENERATIONS = "generations"
+POINTER = "CURRENT"
 
-    Only called once the tree has been checked, so "not in the tree" really does mean gone
-    rather than failed.
+
+def lang_root(bucket, package, language):
+    """The folder holding every generation for one language, plus the pointer."""
+    return Path(bucket) / "translations" / package / language
+
+
+def pointer_path(root):
+    return Path(root) / POINTER
+
+
+def read_pointer(root):
+    """Which generation is published right now, or None if none is."""
+    try:
+        name = pointer_path(root).read_text(encoding="utf-8").strip()
+    except OSError:
+        return None
+    # Only ever a folder name we wrote. Anything with a path separator in it is not ours.
+    return name if name and "/" not in name and name != ".." else None
+
+
+def generation_dir(root, generation):
+    return Path(root) / GENERATIONS / generation
+
+
+def current_dir(root):
+    """The published generation as a folder, or None if there is nothing published."""
+    generation = read_pointer(root)
+    if generation is None:
+        return None
+    path = generation_dir(root, generation)
+    return path if path.is_dir() else None
+
+
+def generation_id(tree):
+    """Name a generation after what is in it.
+
+    Content-addressed, so a run that produces exactly what is already published gets the same
+    name and can stop without writing anything. It also means a generation folder never needs
+    to be modified once written -- a different tree is a different folder.
     """
-    out_dir = Path(out_dir)
-    out_dir.mkdir(parents=True, exist_ok=True)
-    written = 0
-    for page, text in sorted(tree.items()):
-        dest = out_dir / page
-        dest.parent.mkdir(parents=True, exist_ok=True)
-        try:
-            if dest.is_file() and dest.read_text(encoding="utf-8") == text:
-                continue
-        except OSError:
-            pass
-        dest.write_text(text, encoding="utf-8")
-        written += 1
+    digest = sha256_text("\0".join(f"{page}\0{text}" for page, text in sorted(tree.items())))
+    return digest[:16]
 
-    removed = []
-    for name in sorted(live_files(out_dir) - set(tree)):
+
+def verify_generation(root, generation, tree):
+    """Read a generation back off disk and say which files are not what they should be.
+
+    Reading back is the point. A generation is only published once we know it is complete and
+    correct on the far side of a network filesystem, and the only way to know that is to look.
+    Also used to check whether an existing generation is still intact, since being named after
+    its contents is a claim about what should be there rather than proof that it is.
+    """
+    target = generation_dir(root, generation)
+    bad = []
+    for page, text in sorted(tree.items()):
         try:
-            (out_dir / name).unlink()
-            removed.append(name)
+            if (target / page).read_text(encoding="utf-8") != text:
+                bad.append(page)
+        except OSError as exc:
+            bad.append(f"{page} ({exc.__class__.__name__})")
+    extra = live_files(target) - set(tree)
+    bad.extend(sorted(extra))
+    return bad
+
+
+def _write_files(target, tree):
+    """Write a whole tree of pages under `target`."""
+    target = Path(target)
+    target.mkdir(parents=True, exist_ok=True)
+    for page, text in sorted(tree.items()):
+        dest = target / page
+        dest.parent.mkdir(parents=True, exist_ok=True)
+        dest.write_text(text, encoding="utf-8")
+
+
+def write_generation(root, generation, tree):
+    """Write every file of a generation, then read them all back.
+
+    Gives back the list of files that did not survive, empty if all is well.
+    """
+    _write_files(generation_dir(root, generation), tree)
+    return verify_generation(root, generation, tree)
+
+
+def promote(root, generation):
+    """Publish a generation by pointing at it. This is the moment it goes live.
+
+    One small write, and the only step that changes what anyone else can see. Written to a
+    temporary name first and moved into place, so a reader never catches it half-written.
+    """
+    try:
+        atomic_write(pointer_path(root), f"{generation}\n")
+        return True
+    except Exception:
+        traceback.print_exc()
+        print("[publish] could not update the pointer; nothing was published")
+        return False
+
+
+def gc_generations(root, current, keep=KEEP_GENERATIONS):
+    """Delete old generations, keeping the newest few and never the published one.
+
+    Newest by modification time. `current` is the published generation, passed in rather than
+    re-read here -- the caller already knows it. Failures are only wasted space, so they are
+    reported and otherwise ignored.
+    """
+    base = Path(root) / GENERATIONS
+    if not base.is_dir():
+        return []
+    candidates = [p for p in base.iterdir() if p.is_dir() and p.name != current]
+    candidates.sort(key=lambda p: p.stat().st_mtime, reverse=True)
+    removed = []
+    # `keep` counts the published generation, which is never a candidate, so this many others
+    # survive alongside it.
+    for path in candidates[max(keep - 1, 0) :]:
+        try:
+            shutil.rmtree(path)
+            removed.append(path.name)
         except OSError:
             traceback.print_exc()
-            print(f"[publish] could not remove {name}")
-    _prune_empty_dirs(out_dir)
-    return written, removed
+            print(f"[publish] could not remove old generation {path.name}")
+    return removed
 
 
-def _prune_empty_dirs(out_dir):
-    """Clear out folders left behind when every page inside them was removed."""
-    for path in sorted(Path(out_dir).rglob("*"), key=lambda p: len(p.parts), reverse=True):
-        if path.is_dir() and not any(path.iterdir()):
-            try:
-                path.rmdir()
-            except OSError:
-                pass
+def write_tree(out_dir, tree):
+    """Write a plain tree, replacing whatever was there.
 
-
-def clear_preview(out_dir):
-    """Empty a preview tree before writing a new one, so runs do not pile up in it."""
+    Only used for `--pages-file` preview runs, which nothing builds from. The live path goes
+    through generations instead.
+    """
     shutil.rmtree(out_dir, ignore_errors=True)
+    _write_files(out_dir, tree)

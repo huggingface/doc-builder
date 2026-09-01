@@ -51,6 +51,20 @@ def sha256_text(text):
     return hashlib.sha256(text.encode("utf-8")).hexdigest()
 
 
+def atomic_write(path, text):
+    """Write a file by writing a temporary one and moving it into place.
+
+    Never a half-written file for someone else to read. Four places needed this -- the cache
+    index, a translated paragraph, the manifest and the published pointer -- and each had its
+    own copy of the same six lines.
+    """
+    path = Path(path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    tmp = path.with_name(path.name + ".tmp")
+    tmp.write_text(text, encoding="utf-8")
+    os.replace(tmp, path)
+
+
 class SegmentCache:
     """Reads and writes translated paragraphs, filed under their ID.
 
@@ -90,10 +104,7 @@ class SegmentCache:
         """
         try:
             keys = sorted(p.stem for p in self.blobs.rglob("*.txt"))
-            self.root.mkdir(parents=True, exist_ok=True)
-            tmp = self.index_path.with_suffix(".json.tmp")
-            tmp.write_text(json.dumps(keys), encoding="utf-8")
-            os.replace(tmp, self.index_path)
+            atomic_write(self.index_path, json.dumps(keys))
             self._known = set(keys)
             return len(keys)
         except Exception:
@@ -134,11 +145,7 @@ class SegmentCache:
     def put(self, key, text):
         """Save one translated paragraph. Says whether it worked."""
         try:
-            path = self._blob_path(key)
-            path.parent.mkdir(parents=True, exist_ok=True)
-            tmp = path.with_suffix(".txt.tmp")
-            tmp.write_text(text, encoding="utf-8")
-            os.replace(tmp, path)
+            atomic_write(self._blob_path(key), text)
             return True
         except Exception:
             traceback.print_exc()

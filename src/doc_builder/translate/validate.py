@@ -29,24 +29,35 @@ import re
 from collections import Counter
 from dataclasses import dataclass, field
 
-from .segment import LINK_DEST, PLACEHOLDER_RE, REF_DEF_RE, placeholder_indices
+from .segment import BARE_URL, FOREIGN_BRACKETS, LINK_DEST, PLACEHOLDER_RE, REF_DEF_RE, placeholder_indices
 
 HEADING_RE = re.compile(r"^(#{1,6})[ \t]+\S", re.MULTILINE)
 
-# A markdown link or image, e.g. [text](url), with its destination captured. It deliberately
-# will not match across a line break -- that restriction is what lets us notice a marker that
-# has drifted onto another line. The destination pattern is shared with segment.py so the two
-# cannot drift apart: when they did, a URL with brackets in it matched partially on both sides,
-# the counts agreed, and a rewritten URL sailed through.
-MD_LINK_RE = re.compile(rf"(?P<image>!?)\[[^\]\n]*\](?P<dest>{LINK_DEST})")
+# A link destination, anchored so it can be matched at a known position. Shared with segment.py
+# so what gets masked and what gets checked cannot drift apart: when they did, a URL with
+# brackets in it matched partially on both sides, the counts agreed, and a rewritten URL got
+# through unnoticed.
+LINK_DEST_RE = re.compile(LINK_DEST)
+
+# Markdown link and image openers, found by scanning rather than by one big pattern. See
+# `link_targets` for why.
+OPENER_RE = re.compile(r"!?\[")
 
 # The reference-style equivalents, `[text][ref]` and the `[ref]: url` lines that define them.
 REF_LINK_RE = re.compile(r"(?P<image>!?)\[[^\]\n]*\]\[(?P<dest>[^\]\n]*)\]")
+
+# Every URL on the page, wherever it sits. Run over both versions the same way, so a URL inside
+# a link destination appears on both sides and cancels out; what is left is a URL that changed.
+BARE_URL_RE = re.compile(BARE_URL)
 
 # A link with a leftover `]` stuck to the end of it, e.g. `[text](url)]`. This is what a marker
 # nudged one character out of place leaves behind, and counting links alone will not see it --
 # the link itself is perfectly well formed, the bracket just sits there rendering as junk.
 ORPHAN_BRACKET_RE = re.compile(r"\]\([^)\n]*\)\]")
+
+# Brackets the model invents. The character set lives in segment.py next to the real markers,
+# so the stripper there and the check here cannot learn about a new family separately.
+FOREIGN_BRACKET_RE = re.compile(f"[{FOREIGN_BRACKETS}]")
 
 
 @dataclass
@@ -125,21 +136,70 @@ def check_translated(masked_source, masked_translation):
     return []
 
 
+def scan_links(text):
+    """Find every markdown link and image by walking the text once.
+
+    A scanner rather than a regex, because the regex that did this job could be made to take
+    unbounded time. Its label had to allow one nested link -- `[![badge](img)](target)` is all
+    over the docs -- and a label grammar with a nested alternation has two ways to read every
+    `![x](y)`: as one nested link, or as a `!`, a `[x]`, and some loose characters. With N
+    images after a bracket that never closes, the engine tries all of those combinations, and
+    on `"[" + "![x](y)"*N` it measured 105ms at N=12, 8.5s at N=16 and 12.4 minutes at N=20.
+    `check_links` runs on every page twice, so one malformed line would have hung the nightly
+    job until its six-hour timeout.
+
+    Walking the text is linear and has no combinations to try. Openers go on a stack; a `](`
+    with a destination after it closes the most recent one, which is what makes nesting fall
+    out for free. An opener that never closes is simply dropped, the same as CommonMark, and
+    costs nothing.
+
+    Gives back (kind, destination) pairs, innermost first within a nesting.
+    """
+    found = []
+    stack = []
+    i, n = 0, len(text)
+    while i < n:
+        char = text[i]
+        if char == "\n":
+            # Links do not span lines here, and that restriction is what lets the marker checks
+            # notice one that drifted onto the next line. Openers left over cannot close later.
+            stack.clear()
+            i += 1
+            continue
+        if char == "!" and text.startswith("![", i):
+            stack.append(("image", i))
+            i += 2
+            continue
+        if char == "[":
+            stack.append(("link", i))
+            i += 1
+            continue
+        if char == "]" and i + 1 < n and text[i + 1] == "(":
+            dest = LINK_DEST_RE.match(text, i + 1)
+            if dest is not None:
+                if stack:
+                    kind, _start = stack.pop()
+                    found.append((kind, dest.group(0)))
+                i = dest.end()
+                continue
+        i += 1
+    return found
+
+
 def link_targets(text):
     """Every link in the text as (kind, destination), so two versions can be compared.
 
-    Destinations rather than a count. A count only says how many well-formed links there are,
-    which is the same number whether or not they still point anywhere near the right place --
-    and a partial match makes the count agree even when the URL has been rewritten. The
-    destinations are masked before translation, so any difference here is real damage.
+    Destinations rather than a count, and the kind alongside, because both can be damaged
+    without changing how many links there are. A count is the same number whether or not the
+    links still point anywhere near the right place, and turning an image into a link leaves
+    the count untouched too.
     """
-    targets = []
-    for match in MD_LINK_RE.finditer(text):
-        targets.append(("image" if match.group("image") else "link", match.group("dest")))
+    targets = list(scan_links(text))
     for match in REF_LINK_RE.finditer(text):
         targets.append(("ref", match.group("dest").lower()))
     for match in REF_DEF_RE.finditer(text):
         targets.append(("ref-def", match.group(1).lower()))
+    targets.extend(("url", m.group(0)) for m in BARE_URL_RE.finditer(text))
     return targets
 
 
@@ -190,7 +250,11 @@ def check_invented_brackets(masked_source, masked_translation):
     the link check counts, and it leaves the link count untouched. 176 of them reached the
     published docs before this existed.
     """
-    stray = set(re.findall(r"[⟦⟧]", masked_translation)) - set(re.findall(r"[⟦⟧]", masked_source))
+    # Called once per accepted paragraph -- about 15,000 times on a cold run -- and almost
+    # always negative, so get out on a substring test before building any sets.
+    if not any(bracket in masked_translation for bracket in FOREIGN_BRACKETS):
+        return []
+    stray = set(FOREIGN_BRACKET_RE.findall(masked_translation)) - set(FOREIGN_BRACKET_RE.findall(masked_source))
     if stray:
         count = sum(masked_translation.count(c) for c in stray)
         return [f"{count} invented bracket(s) not in the source: {sorted(stray)}"]
@@ -238,11 +302,15 @@ def validate_page(page, masked_source, masked_translation, glossary=None, source
     return result
 
 
-def summarize(results):
+def summarize(results, warn_rate):
     """Summarise how the run went.
 
     Keep an eye on the rejection rate. If it starts creeping up, something has gone wrong
     with the model or the prompt, and it is the only warning we get.
+
+    `warn_rate` is passed in rather than known here. It used to be a hardcoded 2%, which
+    silently shadowed the command's `--warn-failure-rate`: raising that flag still printed
+    "exceeds 2% -- investigate", and the two numbers had nothing tying them together.
     """
     total = len(results)
     failed = [r for r in results if not r.ok]
@@ -251,8 +319,8 @@ def summarize(results):
     lines = [
         f"[validate] {total - len(failed)}/{total} pages passed, rejection rate {rate:.1%}, {warned} with warnings"
     ]
-    if rate > 0.02:
-        lines.append(f"[validate] WARNING rejection rate {rate:.1%} exceeds 2% -- investigate")
+    if rate > warn_rate:
+        lines.append(f"[validate] WARNING rejection rate {rate:.1%} exceeds {warn_rate:.0%} -- investigate")
 
     # Show every page that had anything to say, not just the ones that failed. A page can pass
     # while still having paragraphs left in English, and printing only failures hid exactly the

@@ -8,6 +8,7 @@ structure; if it fails, nothing else matters.
 
 import os
 import pathlib
+import re
 
 import pytest
 
@@ -76,7 +77,7 @@ def test_every_page_keeps_some_prose(page):
     """
     text = page.read_text(encoding="utf-8")
     masked, _ = segment.mask(text)
-    units = [b for i, b in enumerate(segment.split_blocks(masked)) if i % 2 == 0 and segment.is_translatable(b)]
+    units = [b for i, b in enumerate(segment.split_blocks(masked)) if i % 2 == 0 and segment.has_prose(b)]
     assert units, f"{page.name} has no translatable prose left after masking"
 
 
@@ -252,8 +253,8 @@ def test_restore_rejects_invented_placeholder():
 def test_pure_placeholder_block_is_not_translatable():
     fence = "```py\nprint(1)\n```"
     masked, _ = segment.mask(fence)
-    assert not segment.is_translatable(masked)
-    assert segment.is_translatable("Real prose.")
+    assert not segment.has_prose(masked)
+    assert segment.has_prose("Real prose.")
 
 
 def test_fence_closes_on_a_longer_delimiter():
@@ -344,3 +345,104 @@ def test_undefined_reference_is_left_alone():
     masked, placeholders = segment.mask(text)
     assert placeholders == []
     assert masked == text
+
+
+def test_image_opener_is_masked_with_its_bracket():
+    """The `!` goes with the bracket, not into the text.
+
+    Left bare between two markers it is one character of ordinary prose, and the model dropped
+    it -- which silently turns an image into a link while every marker stays intact.
+    """
+    masked, placeholders = segment.mask("![Diagram](https://hf.co/a.png)\n")
+    assert masked == "¤0¤Diagram¤1¤\n"
+    assert placeholders == ["![", "](https://hf.co/a.png)"]
+    assert "!" not in masked
+
+
+def test_image_inside_a_link_is_fully_masked():
+    """`[![alt](badge)](target)` -- an image used as a link's label. 142 of these in the docs.
+
+    Both destinations and both openers have to be hidden. A label grammar that stopped at the
+    first `]` left the outer link unrecognised, so only the inner destination was ever checked.
+    """
+    text = "[![Open In Colab](https://colab.example/badge.svg)](https://colab.example/nb.ipynb)\n"
+    masked, placeholders = segment.mask(text)
+    # numbered in document order: the outer `[`, then the inner `![`, then the two destinations
+    assert masked == "¤0¤¤1¤Open In Colab¤2¤¤3¤\n"
+    assert "[" not in masked and "]" not in masked and "!" not in masked
+    assert segment.restore(masked, placeholders) == text
+
+
+def test_bare_url_is_masked():
+    """A URL written straight into a sentence. 53 of these were handed to the model as prose."""
+    masked, placeholders = segment.mask("See https://github.com/deepseek-ai/DeepSeek-V3 for details.\n")
+    assert masked == "See ¤0¤ for details.\n"
+    assert placeholders == ["https://github.com/deepseek-ai/DeepSeek-V3"]
+
+
+def test_bare_url_keeps_trailing_punctuation_out():
+    """Prose puts a full stop after a URL, and it is not part of the address."""
+    for text, expected in [
+        ("See https://hf.co/docs.\n", "https://hf.co/docs"),
+        ("Try https://hf.co/docs, then stop.\n", "https://hf.co/docs"),
+        ("Wrap it (https://hf.co/docs) here.\n", "https://hf.co/docs"),
+    ]:
+        masked, placeholders = segment.mask(text)
+        assert placeholders == [expected], text
+        assert segment.restore(masked, placeholders) == text
+
+
+def test_bare_url_rule_leaves_link_destinations_alone():
+    """A URL already inside a link is hidden by the link rules, in one piece with its brackets."""
+    masked, placeholders = segment.mask("Read [the guide](https://hf.co/docs) now.\n")
+    assert placeholders == ["[", "](https://hf.co/docs)"]
+
+
+def test_inline_dollar_math_is_masked():
+    """`$x$` formulas, tight and padded. 170 of these across 9 pages went to the model as prose."""
+    masked, placeholders = segment.mask("The term $K_{\\text{past}}$ is reused.\n")
+    assert placeholders == ["$K_{\\text{past}}$"]
+    assert masked == "The term ¤0¤ is reused.\n"
+
+    # cache_explanation.md writes them with a space just inside each delimiter
+    masked, placeholders = segment.mask("Both $ K_{\\text{past}} $ and $ V_{\\text{past}} $ are cached.\n")
+    assert placeholders == ["$ K_{\\text{past}} $", "$ V_{\\text{past}} $"]
+
+
+def test_inline_dollar_math_spans_lines_within_a_paragraph():
+    """model_doc/reformer.md wraps formulas across source lines mid-paragraph."""
+    text = "Factorized into $(n_{\\text{buckets}}^1,\nn_{\\text{buckets}}^2)$. This is crucial.\n"
+    masked, placeholders = segment.mask(text)
+    assert len(placeholders) == 1 and "\n" in placeholders[0]
+    assert segment.restore(masked, placeholders) == text
+
+
+def test_dollar_signs_in_prose_are_not_math():
+    """A lone `$` is a dollar sign, and two of them are two prices rather than a formula.
+
+    The space rule is what separates them: a formula has no space just inside its delimiters,
+    or has one on both sides. `$5 and $10` has a space before the closing `$` and none after
+    the opening one, so it fails both ways.
+    """
+    for text in [
+        "It costs $5 and $10 today.\n",
+        "Total is $100.\n",
+        "costs $5\nor $10 today.\n",
+    ]:
+        masked, placeholders = segment.mask(text)
+        assert placeholders == [], text
+        assert masked == text
+
+
+@needs_corpus
+@pytest.mark.parametrize("page", ALL_PAGES, ids=lambda p: str(p.relative_to(EN_DOCS)))
+def test_no_urls_or_formulas_left_for_the_model(page):
+    """Nothing that has to come back byte-for-byte may be visible to the model.
+
+    URLs and formulas both round-trip perfectly while masked, so the round-trip test cannot see
+    either of these. Both were exposed until they were measured.
+    """
+    masked, _ = segment.mask(page.read_text(encoding="utf-8"))
+    prose = segment.PLACEHOLDER_RE.sub("", masked)
+    assert "://" not in prose, f"{page.name} leaves a URL in the prose"
+    assert not re.search(r"(?<![$\\])\$[^$\n]{1,120}\$(?!\$)", prose), f"{page.name} leaves a formula in the prose"

@@ -1,6 +1,6 @@
 # Translation corpus fixture
 
-Twelve real pages from `huggingface/transformers`, `docs/source/en`, copied here so the
+Thirteen real pages from `huggingface/transformers`, `docs/source/en`, copied here so the
 masking round-trip runs on every CI run instead of only on a machine that happens to have a
 Transformers checkout. They keep their original Apache-2.0 licence headers.
 
@@ -16,6 +16,8 @@ They are not a random sample. Each one is here because it broke something:
 | `model_doc/mixtral.md`, `model_doc/sam.md`, `model_doc/layoutlmv3.md` | more of the same |
 | `model_doc/blt.md` | `[here](<INSERT LINK HERE>)` -- one placeholder nested in another |
 | `model_doc/bert.md` | `[[autodoc]]` directives with indented member lists |
+| `community.md` (again) | 50 `[![badge](img)](link)` images used as link labels |
+| `perplexity.md` | inline `$...$` formulas, which nothing else here has |
 | `philosophy.md` | prose-heavy, so over-masking shows up as a low translatable ratio |
 | `quicktour.md` | `<hfoptions>` tags, multi-line `<img>` tags, mixed prose and code |
 

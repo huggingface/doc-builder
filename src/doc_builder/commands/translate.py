@@ -44,6 +44,13 @@ from doc_builder.translate.cache import SegmentCache, segment_key
 from doc_builder.translate.publish import TOCTREE
 
 DEFAULT_MODEL = "google/gemma-4-26B-A4B-it"
+
+# Below this many requested segments, the success-rate gate is off. A settled night asks the
+# model for a handful of new paragraphs, so a rate computed over one or two of them says nothing
+# about whether the model is working -- and one transient failure out of one request read as 0%
+# success and blocked the whole publish, including several hundred pages that were already fine.
+# Above it the rate means something. The per-page coverage bar covers the small nights.
+SEGMENT_GATE_MIN_ATTEMPTS = 20
 REPO_URL = "https://github.com/huggingface/{package}.git"
 
 
@@ -80,9 +87,12 @@ def select_pages(source_dir, pages_file):
 def plan_all(source_dir, pages, lang, model, gloss_sha):
     """Break every page into paragraphs, ready to translate.
 
-    A page we cannot read is skipped with a warning rather than stopping everything. A couple of
-    pages are shortcuts to files outside the docs folder, so if one of those ever points
-    somewhere we did not fetch, it should cost us that page and not the whole night.
+    Gives back the plans and the list of pages that could not be read. The caller decides what
+    an unreadable page means, because it depends on where the result is going: skipping one used
+    to be the forgiving choice, and it stopped being forgiving once publishing learned to prune.
+    A page missing from the source is a page missing from the tree, and a page missing from the
+    tree gets deleted -- so one transient read error was enough to unpublish a good translation
+    and leave the sidebar pointing at nothing, and an empty `--source` did that to every page.
     """
     plans, unreadable = {}, []
     for page in pages:
@@ -92,21 +102,23 @@ def plan_all(source_dir, pages, lang, model, gloss_sha):
             unreadable.append(f"{page} ({exc.__class__.__name__})")
             continue
         plans[page] = pipeline.PagePlan(page, text, lang, model, gloss_sha)
-    if unreadable:
-        print(f"[translate] WARNING skipped {len(unreadable)} unreadable page(s): {unreadable[:5]}")
-    return plans
+    return plans, unreadable
 
 
 def load_toctree(source_dir, lang, model, gloss_sha, pages=None):
     """Read the sidebar file and work out an ID for each of its titles.
+
+    Gives back the parsed tree, the title IDs, and the file's raw text -- the last so the
+    caller can record what it was built from without reading the same file a second time.
 
     Pass `pages` to cut the sidebar down to just those pages -- that is for test runs on a
     handful of pages. Leave it out and the whole sidebar is kept, which is the normal case.
     """
     path = source_dir / TOCTREE
     if not path.is_file():
-        return None, {}
-    tree = yaml.safe_load(path.read_text(encoding="utf-8"))
+        return None, {}, None
+    raw = path.read_text(encoding="utf-8")
+    tree = yaml.safe_load(raw)
 
     if pages is not None:
         # the sidebar refers to pages without the .md on the end
@@ -114,13 +126,13 @@ def load_toctree(source_dir, lang, model, gloss_sha, pages=None):
         tree = pipeline.prune_toctree(tree, keep)
         if tree is None:
             print("[translate] WARNING no toctree entries match the selected pages; skipping it")
-            return None, {}
+            return None, {}, None
 
     keys = {
         segment_key(title, model, pipeline.PROMPT_VERSION, gloss_sha, lang): title
         for title in pipeline.toctree_titles(tree)
     }
-    return tree, keys
+    return tree, keys, raw
 
 
 def translated_titles(toc_keys, available):
@@ -155,13 +167,20 @@ def render_toctree(tree, titles):
     return dumped
 
 
-def keep_published(path, source):
+def keep_published(path, source, page, lang, package):
     """Is the page already in the bucket still good enough to leave alone?
 
     Only the checks that read a finished page apply here -- we have the published text, not the
     marked-up version it was built from, so the marker checks cannot run. In practice that is
     the check that matters, since it is the one that has caught pages published under older,
     weaker rules.
+
+    The English is compared with its disclosure banner attached, because everything this command
+    publishes has one. Comparing against the bare source instead meant the banner's two links
+    counted as links the model had invented, so every page ever published by this command failed
+    here and dropped to raw English -- and the manifest then recorded that English as current.
+    Building the expected text with `add_disclosure` rather than stripping the banner back off
+    keeps the two from drifting apart.
     """
     if not path.is_file():
         return None
@@ -169,26 +188,37 @@ def keep_published(path, source):
         published = path.read_text(encoding="utf-8")
     except OSError:
         return None
-    problems = validate.check_links(source, published)
+    expected = pipeline.add_disclosure(source, page, lang, package)
+    problems = validate.check_links(expected, published)
     if problems:
         print(f"[translate]   replacing published {path.name}: {problems[0]}")
         return None
     return published
 
 
-def assemble_tree(plans, available, glossary, args, out_dir):
-    """Build every page, in memory, and say which ones failed their checks.
+def assemble_tree(plans, available, glossary, args, read_dir):
+    """Build every page, in memory, and say how each one turned out.
 
-    Nothing is written here. The whole tree has to exist and be checked before any of it is
-    published, so that an interrupted or failing run cannot leave a half-translated folder
-    behind for the build to pick up.
+    Nothing is written here. A whole generation is assembled and checked before any of it is
+    published, so a run that fails partway cannot leave a mixture behind.
+
+    `read_dir` is the currently published generation, used to fall back on a page's last good
+    translation. It is None on a first run.
     """
     tree, results, failed = {}, [], []
     for page, plan in plans.items():
-        masked_translation, page_text, rejected = pipeline.assemble_page(plan, available)
+        masked_translation, page_text, outcome = pipeline.assemble_page(plan, available)
         result = pipeline.validate_plan(plan, masked_translation, glossary, page_text)
-        if rejected:
-            result.warnings.append(f"{len(rejected)} paragraph(s) kept in English: markers not preserved")
+        if outcome.rejected:
+            result.warnings.append(f"{len(outcome.rejected)} paragraph(s) kept in English: markers not preserved")
+        # Coverage is a failure in its own right. A page where the heading translated and every
+        # paragraph stayed English passes every other check -- it is no longer identical to the
+        # source, its markers and headings are intact -- and it is not a translated page.
+        if outcome.coverage < args.min_page_coverage:
+            result.failures.append(
+                f"only {outcome.covered}/{outcome.total} paragraph(s) translated "
+                f"({outcome.coverage:.0%}, below {args.min_page_coverage:.0%})"
+            )
         results.append(result)
         if result.ok:
             tree[page] = pipeline.add_disclosure(page_text, page, args.lang, args.package)
@@ -198,10 +228,71 @@ def assemble_tree(plans, available, glossary, args, out_dir):
             # rules at the time, and the rules get stricter: continuous_batching.md sat in the
             # bucket with 8 broken links for two runs, kept each time because the fresh attempt
             # failed for an unrelated reason. Anything that no longer passes drops to English.
-            kept = keep_published(out_dir / page, plan.source)
+            kept = None
+            if read_dir is not None:
+                kept = keep_published(read_dir / page, plan.source, page, args.lang, args.package)
             tree[page] = kept if kept is not None else plan.source
             failed.append(page)
     return tree, results, failed
+
+
+def work_to_do(root, read_dir, current, manifest, sources, args, gloss_sha, preview):
+    """What needs republishing, and a sentence saying why. `why` of None means nothing does.
+
+    Two separate questions, and they used to be answered by the same `if`.
+
+    The cache answers the first, back in `run()`: is there new prose, i.e. do we need a GPU
+    tonight? The manifest answers the second: does what is published still match the English
+    docs? A code or link edit changes a page without adding a single new paragraph, and a
+    deleted paragraph adds none either, so a warm cache tells us nothing about the second
+    question. Answering both with the cache left those edits unpublished, and meant a tree a
+    previous run left incomplete could never repair itself.
+    """
+    if preview:
+        return set(sources), "preview run"
+    why = publish.stale_reason(manifest, args.lang, args.model, gloss_sha, pipeline.PROMPT_VERSION)
+    if not why and manifest.get("generation") != current:
+        why = "the published generation is not the one the manifest describes"
+    if why:
+        return set(sources), why
+    stale, orphans = publish.reconcile(read_dir, manifest, sources)
+    if not stale and not orphans:
+        return set(), None
+    return stale, f"{len(stale)} file(s) out of date, {len(orphans)} to remove"
+
+
+def publish_generation(root, tree, current, manifest_target, manifest, failed):
+    """Write the tree as a new generation, point at it, and record what was published.
+
+    Nothing anyone else can see changes until the pointer moves, which is the one small write
+    in the middle of this. Gives back an exit code: 0 if the tree is now published, 2 if it is
+    not and the previous generation still stands.
+    """
+    generation = publish.generation_id(tree)
+    # A generation is named after its contents, which is a claim about what should be on disk
+    # rather than proof that it is. Check before taking the shortcut, or a published generation
+    # that has been damaged would be recognised as "already correct" and never repaired.
+    if generation == current and not publish.verify_generation(root, generation, tree):
+        print(f"[translate] generation {generation} is already published and intact, nothing to do")
+    else:
+        bad = publish.write_generation(root, generation, tree)
+        if bad:
+            print(f"[translate] ERROR {len(bad)} file(s) did not survive the write: {bad[:5]}")
+            print("[translate] the generation was not published; the existing one still stands")
+            return 2
+        if not publish.promote(root, generation):
+            return 2
+        print(f"[translate] published generation {generation}, {len(tree)} file(s), {len(failed)} page(s) failed")
+
+    removed = publish.gc_generations(root, generation)
+    if removed:
+        print(f"[translate] removed {len(removed)} old generation(s): {removed}")
+
+    # The manifest goes last, and only records a generation that is actually published. If the
+    # run dies before this the manifest describes an older generation, disagrees with the
+    # pointer, and the next run rebuilds rather than trusting it.
+    publish.save_manifest(manifest_target, {**manifest, "generation": generation})
+    return 0
 
 
 def run(args, source_dir):
@@ -211,9 +302,14 @@ def run(args, source_dir):
     # live folder would delete the other 737 pages and replace the sidebar with three entries.
     # Nothing here touches the live tree or its manifest.
     preview = bool(args.pages_file)
-    out_dir = bucket / "translations" / args.package / (f"{args.lang}.preview" if preview else args.lang)
+    root = publish.lang_root(bucket, args.package, f"{args.lang}.preview" if preview else args.lang)
+    # What is published right now, for falling back on a page's last good translation and for
+    # checking the manifest against reality. None on a first run.
+    # The pointer is read once and carried, rather than re-read by each thing that needs it.
+    current = None if preview else publish.read_pointer(root)
+    read_dir = root if preview else publish.current_dir(root)
     if preview:
-        print(f"[translate] --pages-file given: publishing to {out_dir}, leaving the live tree alone")
+        print(f"[translate] --pages-file given: publishing to {root}, leaving the live tree alone")
     cache = SegmentCache(bucket)
 
     glossary = pipeline.load_glossary(args.glossary or pipeline.glossary_path(args.lang))
@@ -221,11 +317,31 @@ def run(args, source_dir):
     print(f"[translate] {args.package}/{args.lang} model={args.model} glossary={gloss_sha[:12]}")
 
     pages = select_pages(source_dir, args.pages_file)
-    plans = plan_all(source_dir, pages, args.lang, args.model, gloss_sha)
+    # An empty page set is never a real answer -- it means we are pointed at the wrong place, or
+    # the clone failed. Publishing it would prune the entire language.
+    if not pages and not preview:
+        print(f"[translate] ERROR no pages found under {source_dir}; refusing to publish an empty tree")
+        return 2
+    plans, unreadable = plan_all(source_dir, pages, args.lang, args.model, gloss_sha)
+    if unreadable:
+        # A preview run never touches the live tree, so it cannot delete anything and can carry
+        # on without the page. A full publish must not: see plan_all.
+        if not preview:
+            print(
+                f"[translate] ERROR {len(unreadable)} page(s) could not be read: {unreadable[:5]}; "
+                "refusing to publish from an incomplete source"
+            )
+            return 2
+        print(f"[translate] WARNING skipped {len(unreadable)} unreadable page(s): {unreadable[:5]}")
     # If we are only translating some pages, the sidebar has to be trimmed to match, or the
     # result cannot be built.
     subset = pages if preview else None
-    toc_tree, toc_keys = load_toctree(source_dir, args.lang, args.model, gloss_sha, subset)
+    toc_tree, toc_keys, toctree_text = load_toctree(source_dir, args.lang, args.model, gloss_sha, subset)
+    # The sidebar is not optional for a full publish. Without it the build has nothing to lay
+    # the pages out with, and going ahead would prune whatever sidebar is already there.
+    if toc_tree is None and not preview:
+        print(f"[translate] ERROR no readable {TOCTREE} under {source_dir}; refusing to publish")
+        return 2
 
     wanted = {}
     for plan in plans.values():
@@ -239,35 +355,30 @@ def run(args, source_dir):
         f"{len(missing)} missing ({len(wanted) - len(missing)} cached)"
     )
 
-    # Two separate questions, and they used to be answered by the same `if`.
-    #
-    # The cache answers the first: is there new prose, i.e. do we need a GPU tonight? The
-    # manifest answers the second: does what is published still match the English docs? A code
-    # or link edit changes a page without adding a single new paragraph, and a deleted
-    # paragraph adds none either, so a warm cache tells us nothing about the second question.
-    # Answering both with the cache left those edits unpublished, and meant a tree that a
-    # previous run left incomplete could never repair itself.
     manifest = publish.load_manifest(publish.manifest_path(bucket, args.package, args.lang))
     sources = {page: plan.source for page, plan in plans.items()}
     # The sidebar is tracked like any other page. It has to be: it is a file in the published
     # tree, so leaving it out means it never gets rebuilt when a title changes, and it looks
     # like an orphan to be deleted every single run.
     if toc_tree is not None:
-        sources[TOCTREE] = (source_dir / TOCTREE).read_text(encoding="utf-8")
-    if preview:
-        stale, orphans, why = set(sources), set(), "preview run"
-    else:
-        why = publish.stale_reason(manifest, args.lang, args.model, gloss_sha, pipeline.PROMPT_VERSION)
-        if why:
-            stale, orphans = set(sources), publish.live_files(out_dir) - set(sources)
-        else:
-            stale, orphans = publish.reconcile(out_dir, manifest, sources)
-            why = f"{len(stale)} file(s) out of date, {len(orphans)} to remove" if stale or orphans else None
+        sources[TOCTREE] = toctree_text
+    stale, why = work_to_do(root, read_dir, current, manifest, sources, args, gloss_sha, preview)
     if why:
         print(f"[translate] republishing: {why}")
 
     if not missing and not why and not args.rebuild:
         print("[translate] cache is warm and the published tree is current -- exiting before model load")
+        # Pages published as a fallback are current but not translated, and nothing here will
+        # change that: their paragraphs are cached, so the model is never asked again and the
+        # result would be identical if it were. Say so and stay red, rather than reporting
+        # success every night after the one night that reported the failure.
+        still_failed = manifest.get("failed") or []
+        if still_failed:
+            print(
+                f"[translate] {len(still_failed)} page(s) are still published as a fallback: "
+                f"{still_failed[:5]} -- they need a source, glossary or prompt change to be retried"
+            )
+            return 1
         return 0
     if args.dry_run:
         print(f"[translate] dry run, would translate {len(missing)} segment(s) and rebuild {len(stale)} file(s)")
@@ -287,14 +398,17 @@ def run(args, source_dir):
     for key, why_failed in failures[:10]:
         print(f"[translate]   FAILED {key[:12]} {why_failed}")
 
-    cache.put_many(fresh)
-    cache.save_index()
+    if fresh:
+        # Rebuilding the index means listing every blob on the bucket -- the walk the index
+        # exists to avoid -- so it is only worth doing when there is something new in it.
+        cache.put_many(fresh)
+        cache.save_index()
 
     # Pull together what we had already and what we just translated.
     available = cache.get_many([k for k in wanted if k in known and k not in fresh])
     available.update(fresh)
 
-    tree, results, failed = assemble_tree(plans, available, glossary, args, out_dir)
+    tree, results, failed = assemble_tree(plans, available, glossary, args, read_dir)
 
     toctree_text = None
     if toc_tree is not None:
@@ -304,11 +418,24 @@ def run(args, source_dir):
             # new pages behind an old sidebar are not listed, and a missing sidebar takes the
             # whole language down.
             print("[translate] ERROR sidebar could not be rebuilt; publishing nothing")
-            print(validate.summarize(results))
+            print(validate.summarize(results, args.warn_failure_rate))
             return 1
         tree[TOCTREE] = toctree_text
 
-    print(validate.summarize(results))
+    print(validate.summarize(results, args.warn_failure_rate))
+
+    # The same question asked of the model rather than of the pages. A run where most requests
+    # came back empty can still leave every page passing, because a page keeps its English and
+    # goes on looking well-formed.
+    attempted = len(missing)
+    if attempted >= SEGMENT_GATE_MIN_ATTEMPTS:
+        success = len(fresh) / attempted
+        if success < args.min_segment_success:
+            print(
+                f"[translate] ERROR only {success:.1%} of {attempted} requested segment(s) came back "
+                f"(below {args.min_segment_success:.0%}) -- publishing nothing"
+            )
+            return 2
 
     # Refuse to publish a run that went badly wrong. Every failed page falls back to English or
     # to whatever it had before, so a night where the model returns rubbish for everything used
@@ -324,22 +451,20 @@ def run(args, source_dir):
         return 2
 
     if preview:
-        publish.clear_preview(out_dir)
-    written, removed = publish.publish_tree(out_dir, tree)
-    print(f"[translate] published {written} changed file(s), removed {len(removed)}, {len(failed)} page(s) failed")
-    for name in removed[:10]:
-        print(f"[translate]   removed {name}")
-
-    if preview:
+        publish.write_tree(root, tree)
+        print(f"[translate] wrote {len(tree)} file(s) to the preview tree")
         return 0
 
-    # The manifest goes last, once the tree it describes is really in place. If the run dies
-    # before this, the manifest still describes the previous tree, disagrees with what is on
-    # disk, and the next run finishes the job.
-    publish.save_manifest(
+    code = publish_generation(
+        root,
+        tree,
+        current,
         publish.manifest_path(bucket, args.package, args.lang),
-        publish.build_manifest(args.lang, args.model, gloss_sha, pipeline.PROMPT_VERSION, sources, tree),
+        publish.build_manifest(args.lang, args.model, gloss_sha, pipeline.PROMPT_VERSION, sources, tree, "", failed),
+        failed,
     )
+    if code:
+        return code
 
     # Go red on a rate that is bad but not catastrophic. The pages are published -- a mostly
     # translated page beats no page -- but nobody watches a job that never fails, and this is
@@ -440,6 +565,21 @@ def translate_command_parser(subparsers=None):
             "Publish nothing if more than this fraction of pages fail their checks. A night "
             "where everything fails would otherwise write English over the whole language."
         ),
+    )
+    parser.add_argument(
+        "--min-page-coverage",
+        type=float,
+        default=0.75,
+        help=(
+            "Fail a page when fewer than this fraction of its paragraphs were translated. "
+            "Catches a page that passes every structural check while its body is still English."
+        ),
+    )
+    parser.add_argument(
+        "--min-segment-success",
+        type=float,
+        default=0.5,
+        help="Publish nothing if fewer than this fraction of the requested segments came back.",
     )
     parser.add_argument(
         "--warn-failure-rate",
