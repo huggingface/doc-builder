@@ -251,8 +251,6 @@ def work_to_do(root, read_dir, current, manifest, sources, args, gloss_sha, prev
     if preview:
         return set(sources), "preview run"
     why = publish.stale_reason(manifest, args.lang, args.model, gloss_sha, pipeline.PROMPT_VERSION)
-    if not why and manifest.get("generation") != current:
-        why = "the published generation is not the one the manifest describes"
     if why:
         return set(sources), why
     stale, orphans = publish.reconcile(read_dir, manifest, sources)
@@ -261,12 +259,16 @@ def work_to_do(root, read_dir, current, manifest, sources, args, gloss_sha, prev
     return stale, f"{len(stale)} file(s) out of date, {len(orphans)} to remove"
 
 
-def publish_generation(root, tree, current, manifest_target, manifest, failed):
-    """Write the tree as a new generation, point at it, and record what was published.
+def publish_generation(root, tree, current, failed, write_manifest):
+    """Write the tree as a new generation, record how it was built, and point at it.
 
-    Nothing anyone else can see changes until the pointer moves, which is the one small write
-    in the middle of this. Gives back an exit code: 0 if the tree is now published, 2 if it is
-    not and the previous generation still stands.
+    Nothing anyone else can see changes until the pointer moves, which is the one small write in
+    the middle of this. `write_manifest` is called with the generation name once the tree is on
+    disk and before the pointer moves, so that single switch makes the tree and its manifest
+    live together.
+
+    Gives back an exit code: 0 if the tree is now published, 2 if it is not and the previous
+    generation still stands.
     """
     generation = publish.generation_id(tree)
     # A generation is named after its contents, which is a claim about what should be on disk
@@ -288,6 +290,9 @@ def publish_generation(root, tree, current, manifest_target, manifest, failed):
             print(f"[translate] ERROR {len(bad)} file(s) did not survive the write: {bad[:5]}")
             print("[translate] the generation was not published; the existing one still stands")
             return 2
+        if not write_manifest(target):
+            print("[translate] ERROR could not record how the generation was built; not publishing it")
+            return 2
         if not publish.promote(root, target):
             return 2
         generation = target
@@ -296,11 +301,6 @@ def publish_generation(root, tree, current, manifest_target, manifest, failed):
     removed = publish.gc_generations(root)
     if removed:
         print(f"[translate] removed {len(removed)} old generation(s): {removed}")
-
-    # The manifest goes last, and only records a generation that is actually published. If the
-    # run dies before this the manifest describes an older generation, disagrees with the
-    # pointer, and the next run rebuilds rather than trusting it.
-    publish.save_manifest(manifest_target, {**manifest, "generation": generation})
     return 0
 
 
@@ -378,7 +378,9 @@ def run(args, source_dir):
         f"{len(missing)} missing ({len(wanted) - len(missing)} cached)"
     )
 
-    manifest = publish.load_manifest(publish.manifest_path(bucket, args.package, args.lang))
+    # Selected through the pointer, like the tree it describes: whichever generation is published
+    # is the one whose manifest counts.
+    manifest = publish.load_manifest(publish.manifest_path(root, current)) if current else {}
     sources = {page: plan.source for page, plan in plans.items()}
     # The sidebar is tracked like any other page. It has to be: it is a file in the published
     # tree, so leaving it out means it never gets rebuilt when a title changes, and it looks
@@ -497,14 +499,15 @@ def run(args, source_dir):
             return 2
         return 1 if rate > args.warn_failure_rate else 0
 
-    code = publish_generation(
-        root,
-        tree,
-        current,
-        publish.manifest_path(bucket, args.package, args.lang),
-        publish.build_manifest(args.lang, args.model, gloss_sha, pipeline.PROMPT_VERSION, sources, tree, "", failed),
-        failed,
-    )
+    def write_manifest(generation):
+        return publish.save_manifest(
+            publish.manifest_path(root, generation),
+            publish.build_manifest(
+                args.lang, args.model, gloss_sha, pipeline.PROMPT_VERSION, sources, tree, generation, failed
+            ),
+        )
+
+    code = publish_generation(root, tree, current, failed, write_manifest)
     if code:
         return code
 

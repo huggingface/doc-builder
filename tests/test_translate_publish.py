@@ -20,6 +20,7 @@ because the bug was in how the pieces were wired together rather than in any one
 """
 
 import argparse
+import json
 
 import pytest
 import yaml
@@ -150,7 +151,7 @@ def test_first_run_publishes_a_generation(env):
         "guide.md",
         "index.md",
     ]
-    assert publish.manifest_path(env.bucket, "testpkg", "ja").is_file()
+    assert publish.manifest_path(env.root, publish.read_pointer(env.root)).is_file()
 
 
 def test_publishing_is_one_pointer_write(env):
@@ -543,3 +544,77 @@ def test_gc_never_removes_the_published_generation(env):
     assert live_name in kept
     assert len(kept) <= publish.KEEP_GENERATIONS
     assert (live(env.root) / "index.md").is_file()
+
+
+def test_each_generation_keeps_its_own_manifest(env):
+    """The manifest is named after the tree it describes, not after the language.
+
+    One file per language meant two publishers finishing at once took turns clobbering it, so the
+    surviving manifest could describe a tree that `CURRENT` no longer named -- and the next run
+    would trust it. Now a late finisher writes only its own file and the pointer decides which
+    one counts.
+    """
+    assert run(env.args, env.en) == 0
+    first = publish.read_pointer(env.root)
+
+    (env.en / "index.md").write_text("# Home\n\nA second generation.\n", encoding="utf-8")
+    warm_cache(env.bucket, env.en, env.args)
+    assert run(env.args, env.en) == 0
+    second = publish.read_pointer(env.root)
+    assert second != first
+
+    # both records exist, each describing its own tree
+    for generation in (first, second):
+        recorded = publish.load_manifest(publish.manifest_path(env.root, generation))
+        assert recorded["generation"] == generation
+
+    # and the one the pointer names is the one a later run reads
+    assert (
+        publish.load_manifest(publish.manifest_path(env.root, publish.read_pointer(env.root)))["generation"] == second
+    )
+
+
+def test_a_late_publisher_cannot_overwrite_the_winners_manifest(env):
+    """Writer A finishing after writer B must leave B's record alone.
+
+    A single shared manifest let A record its own tree while `CURRENT` still named B's, so the
+    next run reconciled B's published pages against A's record and rebuilt for no reason -- or
+    worse, believed the wrong thing was current.
+    """
+    assert run(env.args, env.en) == 0
+    winner = publish.read_pointer(env.root)
+    winner_manifest = publish.load_manifest(publish.manifest_path(env.root, winner))
+
+    # a stale publisher writes the record for a generation that never became current
+    stale = "0123456789abcdef"
+    publish.save_manifest(
+        publish.manifest_path(env.root, stale),
+        publish.build_manifest("ja", "m", "g", "v1", {"index.md": "x"}, {"index.md": "y"}, stale, []),
+    )
+
+    assert publish.read_pointer(env.root) == winner
+    assert publish.load_manifest(publish.manifest_path(env.root, winner)) == winner_manifest
+
+
+def test_old_manifests_are_cleaned_up_with_their_generations(env):
+    """A manifest describing a tree that is gone has nothing left to describe."""
+    for i in range(6):
+        (env.en / "index.md").write_text(f"# Home\n\nRevision {i}.\n", encoding="utf-8")
+        warm_cache(env.bucket, env.en, env.args)
+        assert run(env.args, env.en) == 0
+    generations = {p.name for p in (env.root / publish.GENERATIONS).iterdir() if p.is_dir()}
+    manifests = {p.stem for p in (env.root / publish.MANIFESTS).glob("*.json")}
+    assert manifests == generations
+
+
+def test_a_manifest_filed_under_the_wrong_generation_is_ignored(env):
+    """Nothing should produce this, so it is treated as unusable rather than half-trusted."""
+    assert run(env.args, env.en) == 0
+    current = publish.read_pointer(env.root)
+    path = publish.manifest_path(env.root, current)
+    recorded = publish.load_manifest(path)
+    recorded["generation"] = "somethingelse00"
+    path.write_text(json.dumps(recorded), encoding="utf-8")
+
+    assert publish.load_manifest(path) == {}
+    assert run(env.args, env.en) == 0  # rebuilds rather than trusting it

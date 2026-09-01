@@ -45,8 +45,10 @@ missing or is not what we recorded, or when any of the versions below moved. Tha
 what lets a change to how pages are assembled reach the bucket on its own, instead of waiting
 for someone to remember to pass --rebuild.
 
-The manifest lives outside the published tree, because the workflow copies that tree wholesale
-into `docs/source/<lang>` and it has no business in the docs.
+Each generation carries its own manifest, named after it and stored beside the generations
+rather than inside any of them. The pointer therefore selects the tree and the record of how it
+was built in one move, and a run that finishes late cannot overwrite the record of the run that
+beat it.
 """
 
 import json
@@ -71,9 +73,29 @@ OUTPUT_VERSION = "v1"
 
 TOCTREE = "_toctree.yml"
 
+# How many generations to leave on the bucket, the published one included. More than two, so a
+# build that resolved the pointer just before a new run promoted still finds the generation it
+# asked for while it downloads it. Older ones are only taking up room.
+KEEP_GENERATIONS = 4
 
-def manifest_path(bucket, package, language):
-    return Path(bucket) / "state" / package / f"{language}.json"
+GENERATIONS = "generations"
+MANIFESTS = "manifests"
+POINTER = "CURRENT"
+
+
+def manifest_path(root, generation):
+    """Where the manifest describing one generation lives.
+
+    One file per generation, named after it, rather than one file per language that every run
+    rewrites. Two publishers finishing at once used to take turns clobbering that single file,
+    so the surviving manifest could describe a tree that `CURRENT` no longer named. Now each run
+    writes only its own, and the pointer decides which one is authoritative -- the manifest is
+    selected by the same atomic switch as the tree it belongs to.
+
+    It sits under the language root but outside `generations/`, which is the only thing the
+    build syncs, so it never reaches the docs.
+    """
+    return Path(root) / MANIFESTS / f"{generation}.json"
 
 
 def load_manifest(path):
@@ -91,6 +113,11 @@ def load_manifest(path):
         print("[publish] could not read the manifest; rebuilding everything")
         return {}
     if manifest.get("manifest_version") != MANIFEST_VERSION:
+        return {}
+    if manifest.get("generation") != Path(path).stem:
+        # Filed under one generation, claiming another. Nothing should produce this, so treat it
+        # as unusable rather than guess which half is right.
+        print(f"[publish] manifest at {path} describes {manifest.get('generation')!r}; ignoring it")
         return {}
     return manifest
 
@@ -202,15 +229,6 @@ def reconcile(out_dir, manifest, sources):
             stale.add(page)
     orphans = live_files(out_dir) - set(sources)
     return stale, orphans
-
-
-# How many generations to leave on the bucket, the published one included. More than two, so a
-# build that resolved the pointer just before a new run promoted still finds the generation it
-# asked for while it downloads it. Older ones are only taking up room.
-KEEP_GENERATIONS = 4
-
-GENERATIONS = "generations"
-POINTER = "CURRENT"
 
 
 def lang_root(bucket, package, language):
@@ -347,6 +365,9 @@ def gc_generations(root, keep=KEEP_GENERATIONS):
         except OSError:
             traceback.print_exc()
             print(f"[publish] could not remove old generation {path.name}")
+            continue
+        # the manifest describes a tree that is gone, so it goes too
+        manifest_path(root, path.name).unlink(missing_ok=True)
     return removed
 
 
