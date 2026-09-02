@@ -247,9 +247,8 @@ def add_embeddings_to_db(client: Client, index_name: str, embeddings):
             "heading3": embedding.heading3,
             "heading4": embedding.heading4,
             "heading5": embedding.heading5,
+            "_vectors": {VECTOR_NAME: embedding.embedding},
         }
-        if embedding.embedding is not None:
-            document["_vectors"] = {VECTOR_NAME: embedding.embedding}
         payload_data.append(document)
     task_info = index.add_documents(payload_data)
     return client, task_info
