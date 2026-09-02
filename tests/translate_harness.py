@@ -106,6 +106,21 @@ def assert_pointer_intact_after(root, before):
 # ---------------------------------------------------------------------------- fault injection
 
 
+def make_unreadable(path):
+    """Make a page fail to read, on any platform.
+
+    Not `chmod(0o000)`: Windows ignores POSIX permission bits, so the file stays readable, the
+    run publishes happily, and a test meant to prove we fail closed proves nothing. It passed on
+    Linux and macOS and failed only in CI.
+
+    A directory where a file should be raises `OSError` from `read_text()` everywhere
+    (`IsADirectoryError` on POSIX, `PermissionError` on Windows), and `rglob("*.md")` still
+    lists it -- so the page is planned and then fails to read, which is the path under test.
+    """
+    path.unlink()
+    path.mkdir()
+
+
 class FailingWrites:
     """Make the Nth page write fail, the way a network filesystem does mid-run.
 

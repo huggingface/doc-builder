@@ -28,6 +28,7 @@ import yaml
 from doc_builder.commands.translate import run
 from doc_builder.translate import pipeline, publish
 from doc_builder.translate.cache import SegmentCache
+from tests.translate_harness import make_unreadable
 
 TOCTREE = "- sections:\n  - local: index\n    title: Home\n  - local: guide\n    title: Guide\n  title: Get started\n"
 
@@ -290,11 +291,8 @@ def test_unreadable_page_does_not_delete_it(env):
     assert run(env.args, env.en) == 0
     before = publish.read_pointer(env.root)
 
-    (env.en / "guide.md").chmod(0o000)
-    try:
-        assert run(env.args, env.en) == 2
-    finally:
-        (env.en / "guide.md").chmod(0o644)
+    make_unreadable(env.en / "guide.md")
+    assert run(env.args, env.en) == 2
 
     assert publish.read_pointer(env.root) == before
     assert (live(env.root) / "guide.md").is_file()

@@ -44,6 +44,7 @@ from tests.translate_harness import (
     assert_published_tree_is_sound,
     english_fallbacks,
     fake_translation,
+    make_unreadable,
     marker_mutations,
     pause_before_promote,
     published_pages,
@@ -83,7 +84,7 @@ def test_a_healthy_run_is_sound(bucket_and_docs):
 @pytest.mark.parametrize(
     "break_it",
     [
-        pytest.param(lambda en: (en / "p3.md").chmod(0o000), id="unreadable page"),
+        pytest.param(lambda en: make_unreadable(en / "p3.md"), id="unreadable page"),
         pytest.param(lambda en: (en / "p3.md").unlink(), id="deleted page still in the sidebar"),
         pytest.param(lambda en: (en / "_toctree.yml").unlink(), id="no sidebar"),
         pytest.param(
@@ -107,11 +108,7 @@ def test_an_incomplete_source_never_reaches_the_bucket(bucket_and_docs, break_it
     snapshot = published_pages(root)
 
     break_it(en)
-    try:
-        code = run(args, en)
-    finally:
-        for p in en.glob("*.md"):
-            p.chmod(0o644)
+    code = run(args, en)
 
     assert code != 0, "a broken source must not report success"
     assert publish.read_pointer(root) == before, "the pointer moved on a broken source"
