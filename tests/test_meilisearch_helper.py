@@ -51,7 +51,7 @@ def make_chunk(text: str) -> Chunk:
     )
 
 
-def test_add_embeddings_to_db_omits_vectors_only_for_none():
+def test_add_embeddings_to_db_marks_none_as_vectorless():
     chunks = [make_chunk("vectorized"), make_chunk("vectorless"), make_chunk("empty-vector")]
     documents = chunks_to_documents(chunks, [[0.1, 0.2], None, []])
     client = FakeClient()
@@ -60,6 +60,6 @@ def test_add_embeddings_to_db_omits_vectors_only_for_none():
 
     payload_by_text = {document["text"]: document for document in client.index_instance.payload}
     assert payload_by_text["vectorized"]["_vectors"] == {VECTOR_NAME: [0.1, 0.2]}
-    assert "_vectors" not in payload_by_text["vectorless"]
+    assert payload_by_text["vectorless"]["_vectors"] == {VECTOR_NAME: None}
     assert payload_by_text["empty-vector"]["_vectors"] == {VECTOR_NAME: []}
     assert all(document["product"] == "test" for document in payload_by_text.values())
