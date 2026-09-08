@@ -24,7 +24,7 @@ npm ci --prefix kit
 hf auth login
 ```
 
-Commit and push the implementation to a reachable doc-builder branch before submitting a Job. The worker fetches your checkout's exact commit from its `origin` repository; it cannot access uncommitted local changes. A token needs access to HF Jobs, the destination Bucket, and the gated translation model, `google/gemma-4-26B-A4B-it`.
+Commit and push the implementation to a reachable doc-builder branch before submitting a Job. The worker fetches your checkout's exact commit from its `origin` repository; it cannot access uncommitted local changes. A token needs access to HF Jobs and the destination Bucket. The translation model is `Qwen/Qwen3-30B-A3B-Instruct-2507`.
 
 Set the source revision to a full Transformers commit SHA. You can validate a clean local Transformers checkout without a GPU or Bucket writes:
 
