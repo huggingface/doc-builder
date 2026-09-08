@@ -18,7 +18,7 @@ MODEL = "Qwen/Qwen3-30B-A3B-Instruct-2507"
 # The runtime pins the public generate_batch implementation inspected for result ordering.
 TRANSFORMERS_REVISION = "58a94493a64f74d04279a3a617297dfe355b0b89"
 LANGUAGES = {"ja": "Japanese"}
-SETTINGS = {"version": 8, "attention": "paged|sdpa", "context": 16384, "output": 4096, "group": 64}
+SETTINGS = {"version": 9, "attention": "paged|sdpa", "context": 16384, "output": 4096, "group": 64}
 
 
 def digest(value):
@@ -171,7 +171,11 @@ def prompt(unit, config, retry=False):
         if any(t["kind"] == "opaque" for t in unit.get("tokens", [])):
             text += " Leave the content of keep tags unchanged."
         if retry:
-            text += " Check that all opening, closing, and self-closing tags are present before answering."
+            tags = xml_tags(unit)
+            expected = " ".join(tags[int(m[1])] for m in PLACEHOLDER_RE.finditer(unit["text"]))
+            text += " Use each of these tags exactly once, preserving its number: " + " ".join(
+                re.findall(r"<[^>]+>", expected)
+            )
     terms = pins(unit["text"], config)
     if terms:
         text += " Required translations: " + json.dumps(terms, ensure_ascii=False)
