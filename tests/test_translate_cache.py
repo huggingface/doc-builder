@@ -1,90 +1,98 @@
-"""Cache tests, all on a local-directory backend -- no network."""
+import pytest
 
-from doc_builder.translate import cache
-
-MODEL = "google/gemma-4-26B-A4B-it"
-PROMPT = "v1"
-GLOSSARY = "abc123"
+from doc_builder.translate import pipeline
+from tests.translate_harness import config, files, generate
 
 
-def key_for(text, **over):
-    args = {
-        "masked_text": text,
-        "model_id": MODEL,
-        "prompt_version": PROMPT,
-        "glossary_sha": GLOSSARY,
-        "language": "ja",
-    }
-    args.update(over)
-    return cache.segment_key(**args)
+def execute(source, cache=None, cfg=None, fn=generate):
+    return pipeline.translate(source, pipeline.check_sidebar(source), cfg or config(), cache or {}, fn)
 
 
-def test_cold_miss_then_warm_hit(tmp_path):
-    c = cache.SegmentCache(tmp_path)
-    k = key_for("The tokenizer converts text.")
-
-    assert c.load_index() == set()
-    assert c.get(k) is None
-
-    assert c.put(k, "トークナイザーはテキストを変換します。")
-    assert c.save_index() == 1
-
-    warm = cache.SegmentCache(tmp_path)
-    assert warm.load_index() == {k}
-    assert warm.get(k) == "トークナイザーはテキストを変換します。"
+def no_gpu(*args, **kwargs):
+    pytest.fail("Warm cache initialized generation")
 
 
-def test_one_edited_segment_invalidates_exactly_one_key(tmp_path):
-    c = cache.SegmentCache(tmp_path)
-    blocks = ["Para one.", "Para two.", "Para three."]
-    for b in blocks:
-        c.put(key_for(b), f"<ja>{b}</ja>")
-    c.save_index()
-
-    edited = ["Para one.", "Para two, revised.", "Para three."]
-    keys = [key_for(b) for b in edited]
-    known = cache.SegmentCache(tmp_path).load_index()
-    misses = [k for k in keys if k not in known]
-
-    assert len(misses) == 1
-    assert misses[0] == key_for("Para two, revised.")
+def test_cold_then_warm_includes_sidebar():
+    source = files()
+    output, cache, failures = execute(source)
+    assert not failures
+    assert len(cache) == 3
+    again, next_cache, failures = execute(source, cache, fn=no_gpu)
+    assert not failures and again == output and next_cache == cache
+    assert output["image.svg"] == source["image.svg"]
 
 
-def test_key_changes_with_model_prompt_and_glossary():
-    text = "Load a pretrained model."
-    base = key_for(text)
-    assert key_for(text, model_id="other/model") != base
-    assert key_for(text, prompt_version="v2") != base
-    assert key_for(text, glossary_sha="def456") != base
-    assert key_for(text, language="ko") != base
-    assert key_for(text) == base
+@pytest.mark.parametrize(
+    "edit",
+    [
+        lambda s: s.replace(b"Read the guide.", b"Read another guide."),
+        lambda s: s + b"\n```python\ncode = 2\n```\n",
+        lambda s: s + b"\n[More guidance](https://example.com/changed)\n",
+        lambda s: s + b'\n<img src="new.svg"/>\n',
+        lambda s: s.replace(b"Read the guide.\n", b""),
+    ],
+)
+def test_whole_page_key_includes_every_source_byte(edit):
+    source = files()
+    _, cache, _ = execute(source)
+    source["index.md"] = edit(source["index.md"])
+    calls = []
+
+    def record(units, cfg, retry=False):
+        calls.extend(u["text"] for u in units)
+        return generate(units, cfg, retry)
+
+    _, changed, failures = execute(source, cache, fn=record)
+    assert not failures and calls
+    assert len(set(cache) & set(changed)) == 2
 
 
-def test_get_many_returns_only_hits(tmp_path):
-    c = cache.SegmentCache(tmp_path)
-    hit, missing = key_for("stored"), key_for("absent")
-    c.put(hit, "保存済み")
-    found = c.get_many([hit, missing])
-    assert found == {hit: "保存済み"}
+@pytest.mark.parametrize(
+    "mutate",
+    [
+        lambda c: c.update(version=c["version"] + 1),
+        lambda c: c.update(model_revision="b" * 40),
+        lambda c: c.update(tokenizer_revision="b" * 40),
+        lambda c: c["glossary"]["keep"].append("Transformers"),
+        lambda c: c.update(output=c["output"] + 1),
+    ],
+)
+def test_configuration_invalidates_cache(mutate):
+    source, cfg = files(), config()
+    _, cache, _ = execute(source, cfg=cfg)
+    mutate(cfg)
+    _, changed, failures = execute(source, cache, cfg)
+    assert not failures and not set(cache) & set(changed)
 
 
-def test_unreadable_index_is_treated_as_cold_not_fatal(tmp_path):
-    c = cache.SegmentCache(tmp_path)
-    c.put(key_for("x"), "エックス")
-    c.save_index()
-    c.index_path.write_text("{ this is not json", encoding="utf-8")
+@pytest.mark.parametrize(
+    "poison", ["", "   ", 4, None, "# Introduction\n\nRead the guide.\n", "# 翻訳\n", "# 翻訳\n\n¤999¤\n"]
+)
+def test_corrupt_cache_values_are_misses(poison):
+    source = files()
+    output, cache, _ = execute(source)
+    poisoned = dict.fromkeys(cache, poison)
+    rebuilt, _, failures = execute(source, poisoned)
+    assert not failures and rebuilt == output
 
-    fresh = cache.SegmentCache(tmp_path)
-    assert fresh.load_index() == set()  # degrades, does not raise
+
+def test_deleted_file_and_reordered_paragraphs_have_fresh_output():
+    source = files()
+    source["index.md"] += b"\nA second paragraph.\n"
+    _, cache, _ = execute(source)
+    del source["guide.mdx"]
+    source["_toctree.yml"] = b"- local: index\n  title: Introduction\n"
+    source["index.md"] = b"# Introduction\n\nA second paragraph.\n\nRead the guide.\n"
+    output, candidate, failures = execute(source, cache)
+    assert not failures and "guide.mdx" not in output
+    assert len(candidate) == 2
 
 
-def test_index_rebuilds_from_blobs_on_disk(tmp_path):
-    """save_index derives from blobs, so a lost index self-heals on the next write."""
-    c = cache.SegmentCache(tmp_path)
-    keys = {key_for(f"p{i}") for i in range(5)}
-    for k in keys:
-        c.put(k, "訳")
-    c.index_path.unlink(missing_ok=True)
-
-    assert cache.SegmentCache(tmp_path).save_index() == 5
-    assert cache.SegmentCache(tmp_path).load_index() == keys
+def test_invalid_sidebar_cache_paths_are_recomputed():
+    source = files()
+    _, cache, _ = execute(source)
+    for key, text in cache.items():
+        if "local:" in text:
+            cache[key] = text.replace("index", "ghost")
+    output, _, failures = execute(source, cache)
+    assert not failures and b"ghost" not in output["_toctree.yml"]

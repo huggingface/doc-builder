@@ -1,604 +1,342 @@
-"""
-The middle of the pipeline: build the prompt, take a page apart, put it back together, and
-run the model.
+# Copyright 2026 The HuggingFace Team. Licensed under the Apache License, Version 2.0.
+"""Translate complete source snapshots; cache complete, validated pages."""
 
-Everything here except `translate_segments` is ordinary text handling with no GPU involved,
-which is why the tests can cover it in under a second on a laptop.
-
-`torch` and `transformers` are imported inside `translate_segments` rather than at the top
-of the file. That way a night where nothing has changed never loads them at all, and the
-rest of this file can be imported anywhere.
-"""
-
+import hashlib
+import json
 import re
-from functools import lru_cache
+import subprocess
+from functools import cache as memoize
 from pathlib import Path
-from typing import NamedTuple
 
 import yaml
 
-from . import validate
-from .cache import segment_key, sha256_text
-from .segment import (
-    FOREIGN_BRACKETS,
-    PH_CLOSE,
-    PH_OPEN,
-    PLACEHOLDER_RE,
-    has_prose,
-    join_blocks,
-    mask,
-    placeholder_indices,
-    restore,
-    split_blocks,
-)
+from .segment import accept_unit, extract_pages, render_page, required, validate_pages
 
-# Change this to redo every translation from scratch. It is part of each paragraph's ID, so
-# editing it throws the whole cache away -- about $2.50-10 of GPU time for transformers.
-#
-# v5: the prompt used to describe the markers as `⟦0⟧` while the text it was given actually
-# contained `¤0¤`, so everything cached under v4 was translated against instructions that did
-# not match its input. Bumped alongside the fence and link-destination fixes in segment.py,
-# which change what the model is shown on the affected pages -- one bump covers all three.
-#
-# v6: three more things the model should never have seen are now hidden -- the `!` of an image,
-# bare URLs in running text, and inline `$x$` formulas. All three change the paragraphs the
-# model is given, so all three need the cache thrown away, and one bump covers them together.
-#
-# v7: link labels may now wrap across a line, a price range is no longer read as a formula, and
-# the `!` of a reference-style image is masked with its bracket. Same reasoning, same bargain --
-# one bump for the three of them.
-PROMPT_VERSION = "v7"
-
-LANGUAGE_NAMES = {"ja": "Japanese"}
-
-# How attention is computed. Continuous batching needs a paged backend, and the `paged|`
-# prefix asks for one.
-#
-# sdpa is the default because it is built into PyTorch and always works. FlashAttention is
-# faster, but it needs either the compiled flash-attn package or a prebuilt kernel from the
-# Hub that matches the exact torch and CUDA version in the image -- and on a job image running
-# torch 2.13/CUDA 13, kernels-community/flash-attn2 published nothing newer than torch 2.12,
-# so loading the model failed outright. For a job that runs unattended overnight, a crash
-# costs a whole day of translations while slower decoding costs minutes.
-#
-# Override with --attn-implementation when you know the image has FlashAttention available.
-DEFAULT_ATTENTION = "paged|sdpa"
-
-# CUDA graphs record the GPU work once and replay it, which is faster -- but recording forbids
-# copying between CPU and GPU, and a mixture-of-experts model does exactly that when it picks
-# which experts to route each token to. Qwen3-30B-A3B died on this inside its MoE layer, so the
-# safe default is off. Turn it on with --cuda-graphs for a dense model.
-DEFAULT_CUDA_GRAPHS = False
-
-# How much longer a translation may run than its source, in tokens. Japanese needs more tokens
-# than the English it came from, so one global cap would truncate long blocks or waste budget.
-MAX_NEW_TOKEN_RATIO = 2.5
-
-# On purpose, this does not name a particular library. The prompt is part of each
-# paragraph's ID, so keeping it generic means the same boilerplate sentence translated for
-# one library can be reused for another instead of being paid for twice.
-SYSTEM_PROMPT = """You are translating technical documentation for a Hugging Face \
-library from English into {language}.
-
-Rules:
-- Translate only the prose. Preserve the Markdown structure exactly.
-- Tokens like {ph_open}0{ph_close} stand in for code, tags and link targets that were taken \
-out before you saw the text. Copy every one of them into your translation exactly once, \
-unchanged. Never translate, renumber, drop or repeat one.
-- A phrase wrapped in two tokens, like {ph_open}0{ph_close}some text{ph_open}1{ph_close}, is a \
-link. Translate the words between the tokens and leave both tokens where they are.
-- Keep heading levels (`#`, `##`) exactly as they are.
-- Output only the translation. No preamble, no explanation, no code fences.{glossary}"""
-
-GLOSSARY_HEADER = "\n- Use these renderings exactly:"
-
-# Reasoning models wrap their working in tags like <think>...</think> before giving an answer.
-# We ask them not to (see enable_thinking below), but not every model honours that, so strip it
-# here too -- otherwise the model's notes get cached and published as if they were a translation.
-REASONING_RE = re.compile(r"\A\s*<(think|thinking|reasoning)>.*?</\1>\s*", re.DOTALL | re.IGNORECASE)
+MODEL = "google/gemma-4-26B-A4B-it"
+# The runtime pins the public generate_batch implementation inspected for result ordering.
+TRANSFORMERS_REVISION = "58a94493a64f74d04279a3a617297dfe355b0b89"
+LANGUAGES = {"ja": "Japanese"}
+SETTINGS = {"version": 2, "attention": "paged|sdpa", "context": 16384, "output": 4096, "group": 64}
 
 
-def strip_reasoning(text):
-    """Remove a leading block of model 'thinking' from a translation."""
-    return REASONING_RE.sub("", text)
+def digest(value):
+    return hashlib.sha256(json.dumps(value, sort_keys=True, ensure_ascii=False).encode()).hexdigest()
 
 
-# The model sometimes copies a marker back in a different pair of brackets, right next to the
-# real one, so `¤0¤the guide¤1¤` comes back as `⟦0⟧¤0¤the guide¤1¤⟦1⟧`. The real markers are
-# present and correct, so every check passed and the page shipped with `⟦0⟧` sitting in the
-# text -- 176 of them across 26 pages in the first full run.
-#
-# This is the one place where taking the syntax away is not an option: the model invents these
-# unprompted, so there is nothing exposed to hide. Changing the marker delimiters was already
-# tried and did not stop it.
-#
-# Only the numbered form is removed here. It is unambiguous -- `⟦` and `⟧` appear nowhere in
-# the 732 English pages -- and the translation around it is intact, so throwing the paragraph
-# away would lose good work for a bit of litter. Anything else using these brackets is left
-# alone on purpose, so validate.py can reject it and we hear about a new habit instead of
-# quietly cleaning up after it forever.
-#
-# Either bracket on either side, because the model is not consistent about which it uses: as
-# well as `⟦1⟧` it writes `⟧1⟧`, with the closing one at both ends. Some of those sit in
-# paragraphs that never had a marker to echo in the first place -- the English behind
-# `ポジティブ⟧1⟧、🙁 ネガティブ⟧1⟧` is plain prose, "🙂 positive, 🙁 negative" -- so the number
-# refers to nothing and there is no content at risk of being removed with it.
-ECHOED_MARKER_RE = re.compile(rf"[{FOREIGN_BRACKETS}]\d+[{FOREIGN_BRACKETS}]")
+def configuration(language, model_revision):
+    if language not in LANGUAGES:
+        raise ValueError(f"Unsupported language {language!r}; configure it in LANGUAGES first")
+    if not re.fullmatch(r"[a-f0-9]{40}", model_revision):
+        raise ValueError("Model revision must be a full commit SHA")
+    glossary = yaml.safe_load((Path(__file__).parents[1] / "glossaries" / f"{language}.yml").read_text())
+    from ..utils import locate_kit_folder
+
+    kit_hash = hashlib.sha256((locate_kit_folder() / "package-lock.json").read_bytes()).hexdigest()
+    return {
+        "kit_hash": kit_hash,
+        **SETTINGS,
+        "language": language,
+        "model": MODEL,
+        "model_revision": model_revision,
+        "tokenizer_revision": model_revision,
+        "glossary": glossary,
+        "transformers": TRANSFORMERS_REVISION,
+    }
 
 
-def strip_echoed_markers(text):
-    """Remove markers the model rewrote in the wrong brackets, e.g. `⟦0⟧`."""
-    return ECHOED_MARKER_RE.sub("", text)
+def git(repo, *args):
+    return subprocess.check_output(["git", "-C", str(repo), *args], text=True, encoding="utf-8").strip()
 
 
-def glossary_path(language):
-    """Where the glossary for this language lives inside the installed package.
-
-    Same approach `mock_imports` uses to find its own data files.
-    """
-    return Path(__file__).parent.parent / "glossaries" / f"{language}.yml"
-
-
-def load_glossary(path):
-    """Read a glossary file. Returns an empty one if there is no file there."""
-    try:
-        with open(path, encoding="utf-8") as fh:
-            return yaml.safe_load(fh) or {}
-    except FileNotFoundError:
-        return {}
+def sidebar_items(node):
+    if isinstance(node, list):
+        for value in node:
+            yield from sidebar_items(value)
+    elif isinstance(node, dict):
+        yield node
+        for value in node.values():
+            yield from sidebar_items(value)
 
 
-def glossary_sha(glossary):
-    """A short fingerprint of the glossary, so editing it re-translates the affected text."""
-    return sha256_text(yaml.safe_dump(glossary or {}, sort_keys=True, allow_unicode=True))
+def check_sidebar(files):
+    pages = {str(Path(name).with_suffix("")) for name in files if Path(name).suffix in {".md", ".mdx"}}
+    if not pages or "_toctree.yml" not in files:
+        raise ValueError("Source needs Markdown pages and _toctree.yml")
+    tree = yaml.safe_load(files["_toctree.yml"])
+    if not isinstance(tree, list) or not tree:
+        raise ValueError("Sidebar must be a nonempty list")
+    for item in sidebar_items(tree):
+        if "local" in item:
+            local = item["local"]
+            if not isinstance(local, str) or sum(local + ext in files for ext in (".md", ".mdx")) != 1:
+                raise ValueError(f"Sidebar page does not resolve uniquely: {local!r}")
+        if "title" in item and (not isinstance(item["title"], str) or not item["title"].strip()):
+            raise ValueError("Sidebar titles must be nonempty strings")
+    if not any("title" in item for item in sidebar_items(tree)):
+        raise ValueError("Sidebar needs at least one title")
+    return tree
 
 
-def glossary_for_segment(segment_text, glossary):
-    """Pick out just the glossary terms that actually appear in this paragraph.
+def inventory(repo, source_revision, pages=None):
+    """Read every tracked source file, including pages absent from the sidebar."""
+    repo = Path(repo).resolve()
+    if git(repo, "rev-parse", "HEAD") != source_revision:
+        raise ValueError("Source checkout does not match the requested revision")
+    if git(repo, "status", "--porcelain", "--untracked-files=no"):
+        raise ValueError("Source checkout has tracked changes; use a clean checkout")
+    root = repo / "docs/source/en"
+    tracked = git(repo, "ls-tree", "-r", "--name-only", "-z", source_revision, "--", "docs/source/en")
+    files = {}
+    for name in tracked.split("\0"):
+        if not name:
+            continue
+        path = repo / name
+        if not path.resolve(strict=True).is_relative_to(repo):
+            raise ValueError(f"Source symlink escapes the repository: {name}")
+        files[path.relative_to(root).as_posix()] = path.read_bytes()
+    tree = check_sidebar(files)
+    if pages is not None:
+        selected = set(pages)
+        if not selected or any(name not in files or Path(name).suffix not in {".md", ".mdx"} for name in selected):
+            raise ValueError("Preview needs at least one existing .md or .mdx page")
+        locals_ = {str(Path(name).with_suffix("")) for name in selected}
 
-    We could send the whole glossary every time, but there are around 14,000 paragraphs and
-    the model cannot reuse any of that work between them, so every unused line would be paid
-    for 14,000 times over.
-    """
-    if not glossary:
-        return {}
-    low = segment_text.lower()
-    return {term: rendering for term, lowered, rendering in _pins(glossary) if lowered in low}
+        def prune(items):
+            result = []
+            for item in items:
+                item = dict(item)
+                if "local" in item and item["local"] not in locals_:
+                    continue
+                if "sections" in item:
+                    item["sections"] = prune(item["sections"])
+                    if not item["sections"]:
+                        continue
+                result.append(item)
+            return result
 
-
-@lru_cache(maxsize=8)
-def _pins_cached(items):
-    return tuple((term, term.lower(), rendering) for term, rendering in items)
-
-
-def _pins(glossary):
-    """The glossary terms with their lowercase form worked out once, instead of per paragraph."""
-    return _pins_cached(tuple(sorted((glossary.get("pin") or {}).items())))
-
-
-def build_prompt(segment_text, language, glossary):
-    """Build the instructions and the paragraph into a chat message for the model."""
-    terms = glossary_for_segment(segment_text, glossary)
-    if terms:
-        lines = "".join(f"\n  - {t} -> {r}" for t, r in sorted(terms.items()))
-        glossary_block = GLOSSARY_HEADER + lines
-    else:
-        glossary_block = ""
-
-    # The delimiters come from segment.py rather than being written out here. They were once
-    # hardcoded as `⟦` and `⟧`, which is not what `mask()` emits -- so the rule about copying
-    # every token through said nothing about the `¤0¤` markers actually in the text, and
-    # described a shape the model had never been shown. That is the likeliest reason it kept
-    # writing `⟦0⟧` back: it was doing as it was told.
-    system = SYSTEM_PROMPT.format(
-        language=LANGUAGE_NAMES.get(language, language),
-        ph_open=PH_OPEN,
-        ph_close=PH_CLOSE,
-        glossary=glossary_block,
-    )
-    return [
-        {"role": "system", "content": system},
-        {"role": "user", "content": segment_text},
-    ]
-
-
-# -- page pipeline (pure, no GPU) ------------------------------------------------
+        tree = prune(tree)
+        if not tree:
+            tree = [{"local": str(Path(name).with_suffix("")), "title": Path(name).stem} for name in sorted(selected)]
+        files = {
+            name: value
+            for name, value in files.items()
+            if Path(name).suffix not in {".md", ".mdx"} or name in selected
+        }
+        files["_toctree.yml"] = yaml.safe_dump(tree, allow_unicode=True, sort_keys=False).encode()
+    return files, tree
 
 
-def is_echo(source_text, translated):
-    """Did the model hand the English back instead of translating it?
-
-    Judged on the prose with the markers taken out, and with runs of whitespace flattened, so a
-    reflowed line still counts as the same text.
-
-    This decides coverage, not acceptance. Echoed text is identical to the English either way,
-    so keeping or rejecting it produces the same page -- what matters is that it must not be
-    *counted* as translated. It was: a page whose heading translated and whose every paragraph
-    came back in English reported 100% coverage and published under the machine-translation
-    banner. Not rejecting it also keeps the answer cached, so the model is not asked the same
-    question every night for a paragraph it will always answer the same way.
-    """
-    return _prose(source_text) == _prose(translated)
+def pins(text, config):
+    return {
+        term: target
+        for term, target in (config["glossary"].get("pin") or {}).items()
+        if re.search(rf"(?<!\w){re.escape(term)}(?!\w)", text, re.I)
+    }
 
 
-def _prose(text):
-    return " ".join(PLACEHOLDER_RE.sub("", text).split())
-
-
-def accept_translation(source_text, raw):
-    """Clean up a model's answer and decide whether it can be used. None means no.
-
-    One function because there are three doors a translation comes through -- a fresh model
-    reply, a cached blob at assembly time, and a sidebar title -- and each new way the model
-    misbehaved used to be guarded at whichever door it was noticed at. Titles ended up with two
-    of the rules, cache-write time with one, and assembly with all five, so the same bad text
-    was judged differently depending on where it arrived.
-
-    Cleaning happens on the way out rather than on the way in, so a cache full of answers
-    written before a rule existed is repaired by a --rebuild with nothing retranslated.
-    """
-    text = strip_echoed_markers(strip_reasoning(raw)).strip()
-    if not has_prose(text):
-        # Markers and whitespace only: the prose is gone, and replacing the paragraph with this
-        # would delete it from the page while every structural check still passed.
-        return None
-    # Sorted, not in order: Japanese word order differs from English, so a model that moves a
-    # marker to the other end of the sentence is doing its job -- only dropping, repeating or
-    # inventing one is wrong.
-    if sorted(placeholder_indices(text)) != sorted(placeholder_indices(source_text)):
-        return None
-    # Brackets it made up but did not number, like a lone `⟧`.
-    if validate.check_invented_brackets(source_text, text):
-        return None
+def accept(unit, text, config):
+    text = accept_unit(unit, text)
+    for term, target in pins(unit["text"], config).items():
+        if target not in text:
+            raise ValueError(f"Translation needs glossary rendering {term!r}: {target}")
     return text
 
 
-class Unit(NamedTuple):
-    """One paragraph to translate, with its surrounding blank space kept to one side.
-
-    Trimming the blank space before working out the ID matters more than it sounds. The last
-    chunk on a page keeps a trailing newline, so without trimming, the same sentence would
-    get two different IDs and be translated twice. The docs repeat a lot of boilerplate --
-    "The abstract from the paper is the following:" appears across 513 model pages -- and
-    trimming means all of those share one translation. We keep the spacing so the page can be
-    rebuilt exactly as it was.
-    """
-
-    key: str
-    text: str
-    lead: str
-    trail: str
-
-
-class PagePlan:
-    """A page broken into pieces, ready to translate.
-
-    `parts` is the whole page in chunks. `units` picks out just the chunks with prose in
-    them and notes each one's ID. Everything else passes straight through untouched.
-    """
-
-    def __init__(self, page, source, language, model_id, gloss_sha):
-        self.page = page
-        self.source = source
-        self.masked, self.placeholders = mask(source)
-        self.parts = split_blocks(self.masked)
-        self.units = {}
-        for i, part in enumerate(self.parts):
-            if i % 2 != 0 or not has_prose(part):
-                continue
-            core = part.strip()
-            lead = part[: len(part) - len(part.lstrip())]
-            trail = part[len(part.rstrip()) :]
-            key = segment_key(core, model_id, PROMPT_VERSION, gloss_sha, language)
-            self.units[i] = Unit(key, core, lead, trail)
-
-    @property
-    def segments(self):
-        """The paragraphs to send to the model. Repeats collapse into one."""
-        return {u.key: u.text for u in self.units.values()}
-
-
-class PageOutcome(NamedTuple):
-    """How much of a page actually got translated.
-
-    `covered` counts paragraphs we published a translation for; `total` counts the ones that
-    needed one. The gap is paragraphs left in English -- either no translation came back, or the
-    one that did was rejected. Both are gaps, and neither used to be counted anywhere: a page
-    kept its English body and still reported as passing, because whole-page checks only ask
-    whether *something* was translated.
-    """
-
-    covered: int
-    total: int
-    rejected: list
-
-    @property
-    def coverage(self):
-        return self.covered / self.total if self.total else 1.0
-
-
-def assemble_page(plan, translations):
-    """Put a page back together from its translated paragraphs.
-
-    If a paragraph is missing a translation, its English is left in place. That is on
-    purpose: a page that is mostly translated beats no page at all, and it still has to pass
-    the checks before anyone sees it.
-    """
-    parts = list(plan.parts)
-    rejected, covered = [], 0
-    for index, unit in plan.units.items():
-        raw = translations.get(unit.key)
-        if raw is None:
-            continue
-        # Judged per paragraph rather than per page, which is what stops one bad paragraph
-        # costing the whole page. The model sometimes paraphrases a marker away when it stands
-        # for short inline code -- writing "from the checkpoint" instead of keeping
-        # `config.json`. That was 4 paragraphs out of 402, and it failed 3 entire pages. Now
-        # those 4 stay English inside otherwise Japanese pages.
-        translated = accept_translation(unit.text, raw)
-        if translated is None:
-            rejected.append(unit.key)
-            continue
-        parts[index] = f"{unit.lead}{translated}{unit.trail}"
-        if not is_echo(unit.text, translated):
-            covered += 1
-    masked_translation = join_blocks(parts)
-    outcome = PageOutcome(covered=covered, total=len(plan.units), rejected=rejected)
-    return masked_translation, restore(masked_translation, plan.placeholders), outcome
-
-
-def validate_plan(plan, masked_translation, glossary=None, restored=None):
-    return validate.validate_page(
-        plan.page,
-        plan.masked,
-        masked_translation,
-        glossary,
-        source=plan.source,
-        restored=restored,
+def prompt(unit, config):
+    terms = pins(unit["text"], config)
+    return (
+        f"Translate the following English prose into {LANGUAGES[config['language']]}. "
+        "Return only the translation. Preserve every numbered marker such as ¤0¤ exactly once. "
+        "Markers protect syntax: preserve their nesting and whitespace at formatting boundaries. "
+        "Do not add Markdown, explanations, or reasoning.\n"
+        + (f"Required terminology: {json.dumps(terms, ensure_ascii=False)}\n" if terms else "")
+        + "\n"
+        + unit["text"]
     )
 
 
-# -- disclosure -----------------------------------------------------------------
-
-DISCLOSURE = {
-    "ja": (
-        "> [!TIP]\n"
-        "> このページは機械翻訳されています。原文は[英語版]({en_url})を参照してください。\n"
-        "> 翻訳の問題は[こちら]({issue_url})から報告できます。\n"
-    )
-}
-
-# The library name is filled in rather than written in. This command works on any library, so
-# hardcoding "transformers" would put a link to the wrong docs site on every page of every
-# other library, and send its bug reports to the wrong repo.
-EN_DOCS_URL = "https://huggingface.co/docs/{package}/en/{slug}"
-DISCLOSURE_FALLBACK = (
-    "> [!TIP]\n"
-    "> This page was machine-translated. See the [English original]({en_url}).\n"
-    "> Report translation problems [here]({issue_url}).\n"
-)
-
-ISSUE_URL = "https://github.com/huggingface/{package}/issues/new?labels=documentation"
-LICENSE_HEADER_RE = re.compile(r"\A(<!--.*?-->\n)", re.DOTALL)
-
-
-def add_disclosure(page_text, page, language, package):
-    """Add the "this was machine-translated" notice, just below the licence header.
-
-    This is us being upfront, not a substitute for review. Readers should know that nobody
-    checked this page.
-    """
-    # If we have no notice written for this language, use the English one rather than adding
-    # nothing at all. Quietly publishing a machine translation with no warning on it is the
-    # exact thing this function exists to stop.
-    banner = DISCLOSURE.get(language, DISCLOSURE_FALLBACK)
-    slug = page[:-3] if page.endswith(".md") else page
-    banner = banner.format(
-        en_url=EN_DOCS_URL.format(package=package, slug=slug),
-        issue_url=ISSUE_URL.format(package=package),
-    )
-    match = LICENSE_HEADER_RE.match(page_text)
-    if match:
-        return f"{match.group(1)}\n{banner}\n{page_text[match.end() :].lstrip(chr(10))}"
-    return f"{banner}\n{page_text}"
-
-
-# -- toctree --------------------------------------------------------------------
-
-
-def toctree_dicts(node):
-    """Walk every entry in the sidebar file, top to bottom.
-
-    Reading and writing both go through here, so if the sidebar format ever grows a new kind
-    of entry, this is the only place that needs to learn about it.
-    """
-    if isinstance(node, dict):
-        yield node
-        for value in node.values():
-            yield from toctree_dicts(value)
-    elif isinstance(node, list):
-        for item in node:
-            yield from toctree_dicts(item)
-
-
-def toctree_values(node, field):
-    """Collect one field from every sidebar entry -- the titles, or the page names."""
-    return [d[field] for d in toctree_dicts(node) if isinstance(d.get(field), str)]
-
-
-def toctree_titles(node):
-    return toctree_values(node, "title")
-
-
-def prune_toctree(node, keep_locals):
-    """Cut the sidebar down to just the pages we are translating.
-
-    This is for test runs on a handful of pages. The sidebar lists every page in the docs, so
-    if we copied it over unchanged next to three translated pages, doc-builder would refuse to
-    build and tell us to remove the missing entries. It also stops a three-page test run from
-    translating all 756 sidebar titles.
-
-    Sidebar entries come in two shapes: a page, or a group of pages. A group is kept only if
-    something inside it survived, so we do not leave empty headings behind. Returns None if
-    nothing is left at all.
-    """
-    if isinstance(node, list):
-        kept = [p for p in (prune_toctree(item, keep_locals) for item in node) if p is not None]
-        return kept or None
-    if isinstance(node, dict):
-        if "local" in node:
-            return dict(node) if node["local"] in keep_locals else None
-        if "sections" in node:
-            sections = prune_toctree(node["sections"], keep_locals)
-            if sections is None:
-                return None
-            return {**node, "sections": sections}
-    return node
-
-
-def apply_toctree_titles(node, translations):
-    """Swap the sidebar titles for their translations."""
-    for d in toctree_dicts(node):
-        if isinstance(d.get("title"), str):
-            d["title"] = translations.get(d["title"], d["title"])
-    return node
-
-
-# -- model ----------------------------------------------------------------------
-
-
-def build_requests(segments, tokenizer, language, glossary):
-    """Turn each paragraph into something the model can read, plus a length limit.
-
-    The length limit is worked out from the paragraph alone, not the whole prompt. The
-    instructions are about 150 tokens and a typical paragraph is only about 16, so measuring
-    the whole thing would hand a one-line heading roughly six times the room it needs.
-    """
-    requests = []
-    for key, text in segments.items():
-        prompt = tokenizer.apply_chat_template(
-            build_prompt(text, language, glossary),
-            tokenize=True,
-            add_generation_prompt=True,
-            # Transformers v5 defaults this to True, which hands back a BatchEncoding rather
-            # than a plain list of token ids. Passing that straight to add_request makes the
-            # batcher iterate the dict's keys, so it ends up trying to build a tensor out of
-            # the strings "input_ids" and "attention_mask" -- which fails a long way from here
-            # with "too many dimensions 'str'". Ask for the list directly.
-            return_dict=False,
-            # Reasoning models think out loud before answering, and that thinking eats the
-            # whole token budget: Qwen3 returned pages of "Okay, the user wants me to
-            # translate..." and never reached the translation. Templates that don't know this
-            # option ignore it.
-            enable_thinking=False,
-        )
-        if not (prompt and isinstance(prompt, list) and isinstance(prompt[0], int)):
-            raise TypeError(
-                f"expected a list of token ids from apply_chat_template, got {type(prompt).__name__}. "
-                "The tokenizer may have changed what it returns; see the note above."
-            )
-        # Japanese output runs longer in tokens than English input, so one global cap
-        # would either truncate long blocks or waste KV budget.
-        content_tokens = len(tokenizer.encode(text, add_special_tokens=False))
-        budget = int(content_tokens * MAX_NEW_TOKEN_RATIO) + 48
-        requests.append((key, prompt, budget))
-    return requests
-
-
-def translate_segments(
-    segments,
-    language,
-    glossary,
-    model_id,
-    attn_implementation=DEFAULT_ATTENTION,
-    use_cuda_graph=DEFAULT_CUDA_GRAPHS,
-):
-    """Translate a batch of paragraphs on the GPU.
-
-    Paragraphs range from a few words to a couple of thousand, and continuous batching is
-    built for exactly that: as each one finishes, the next joins in, instead of everything
-    waiting for the longest one in the group.
-
-    We drive it through the manager rather than `generate_batch` because the manager lets us
-    label each request ourselves. Labelling each one with its cache ID means results file
-    themselves away as they arrive, and it does not matter what order they come back in.
-    """
+@memoize
+def load_model(model_id, revision, attention):
     import torch
     from transformers import AutoModelForCausalLM, AutoTokenizer
-    from transformers.generation import ContinuousBatchingConfig, GenerationConfig
-    from transformers.generation.continuous_batching.utils import WorkloadHints
 
-    tokenizer = AutoTokenizer.from_pretrained(model_id)
+    tokenizer = AutoTokenizer.from_pretrained(model_id, revision=revision)
     model = AutoModelForCausalLM.from_pretrained(
-        model_id,
-        attn_implementation=attn_implementation,
-        device_map="cuda",
-        dtype=torch.bfloat16,
+        model_id, revision=revision, device_map="cuda", dtype=torch.bfloat16, attn_implementation=attention
+    )
+    return tokenizer, model
+
+
+def split_unit(unit, tokenize, limit):
+    """Split only between complete inline elements; never truncate a prompt."""
+    if len(tokenize(unit)) <= limit:
+        return [unit]
+    stack, boundaries = [], []
+    for match in re.finditer(r"¤(\d+)¤|\s+", unit["text"]):
+        if match[1] is not None:
+            token = unit["tokens"][int(match[1])]
+            if token["kind"] == "open":
+                stack.append(token["pair"])
+            elif token["kind"] == "close":
+                stack.pop()
+        elif not stack and match.start() > 0 and match.end() < len(unit["text"]):
+            boundaries.append(match.end())
+    if not boundaries:
+        raise ValueError("Prose unit exceeds the context budget and has no safe split")
+    middle = min(boundaries, key=lambda offset: abs(offset - len(unit["text"]) / 2))
+    return split_unit({**unit, "text": unit["text"][:middle]}, tokenize, limit) + split_unit(
+        {**unit, "text": unit["text"][middle:]}, tokenize, limit
     )
 
-    requests = build_requests(segments, tokenizer, language, glossary)
-    max_prompt = max(len(p) for _, p, _ in requests)
-    max_generated = max(b for _, _, b in requests)
 
-    cb_config = ContinuousBatchingConfig(
-        # Leave the GPU some room. By default the KV cache grows to fill whatever memory is
-        # left after the weights, which on an 80GB card meant 72GB in use and only 6.4GB free
-        # -- so the CUDA-graph warmup could not get the 9.9GB it wanted and gave up. Losing
-        # warmup only costs speed, but there is no reason to pay it.
-        max_memory_percent=0.8,
-        max_batch_tokens=16384,
-        use_cuda_graph=use_cuda_graph,
-        # Compiling the model is worth it on a long run but not a short one, where the
-        # setup time would be most of the job.
-        default_compile_level=1 if len(requests) > 500 else 0,
-        max_requests_per_batch=256,  # keeps memory use in check on big batches
-    )
-    generation_config = GenerationConfig(
-        max_new_tokens=max_generated,
-        # Always pick the most likely word rather than sampling, so running the same
-        # paragraph twice gives the same answer. Otherwise a cached translation and a fresh
-        # one could differ, with no way to tell which we were looking at.
-        do_sample=False,
-        eos_token_id=tokenizer.eos_token_id,
-    )
-    # Telling it roughly what to expect lets it set aside the right amount of memory up
-    # front, instead of guessing.
-    hints = WorkloadHints(
-        max_prompt_length=max_prompt,
-        max_generated_length=max_generated,
-        num_requests=len(requests),
-    )
+def generate(units, config, retry=False):
+    """One public continuous-batching call per bounded group; model loads once."""
+    from transformers import GenerationConfig
+    from transformers.generation import ContinuousBatchingConfig
 
-    translations, failures = {}, []
-    with model.continuous_batching_context_manager(
-        generation_config=generation_config,
-        continuous_batching_config=cb_config,
-        workload_hints=hints,
-    ) as manager:
-        for key, prompt, budget in requests:
-            manager.add_request(input_ids=prompt, request_id=key, max_new_tokens=budget)
+    tokenizer, model = load_model(config["model"], config["model_revision"], config["attention"])
+    budget = config["output"] * (2 if retry else 1)
 
-        # Stop once we have heard back about every request. We cannot just loop until the
-        # results run out: the loop keeps going while the background worker is alive, and
-        # that worker is only shut down when we leave this block -- so waiting for it to
-        # finish from in here would hang forever.
-        for result in manager:
-            if result.error or not result.is_finished():
-                failures.append((result.request_id, result.error or str(result.status)))
-            else:
-                decoded = tokenizer.decode(result.generated_tokens, skip_special_tokens=True)
-                # Checked here as well as at assembly, because the cache is forever: an answer
-                # stored once is reused every night after, and nothing would ever ask the model
-                # for that paragraph again.
-                accepted = accept_translation(segments[result.request_id], decoded)
-                if accepted is not None:
-                    translations[result.request_id] = accepted
-                else:
-                    failures.append((result.request_id, "translation rejected: no usable prose or markers changed"))
-            if len(translations) + len(failures) >= len(requests):
-                break
+    def tokenize(unit):
+        return tokenizer.apply_chat_template(
+            [{"role": "user", "content": prompt(unit, config)}],
+            tokenize=True,
+            add_generation_prompt=True,
+            return_dict=False,
+            enable_thinking=False,
+        )
 
-    missing = set(segments) - set(translations) - {k for k, _ in failures}
-    for key in missing:
-        failures.append((key, "no result returned"))
-    return translations, failures
+    chunks = [split_unit(unit, tokenize, config["context"] - budget) for unit in units]
+    inputs = [tokenize(chunk) for group in chunks for chunk in group]
+    decoded = []
+    for offset in range(0, len(inputs), config["group"]):
+        group = inputs[offset : offset + config["group"]]
+        outputs = model.generate_batch(
+            group,
+            generation_config=GenerationConfig(
+                do_sample=False, max_new_tokens=budget, eos_token_id=model.generation_config.eos_token_id
+            ),
+            continuous_batching_config=ContinuousBatchingConfig(
+                use_cuda_graph=False,
+                default_compile_level=0,
+                max_memory_percent=0.8,
+                max_batch_tokens=16384,
+                max_requests_per_batch=config["group"],
+            ),
+        )
+        values = list(outputs.values())
+        eos = model.generation_config.eos_token_id
+        eos = {eos} if isinstance(eos, int) else set(eos or [tokenizer.eos_token_id])
+        if len(values) != len(group) or any(
+            o.error
+            or not o.is_finished()
+            or not o.generated_tokens
+            or o.generated_tokens[-1] not in eos
+            or o.prompt_ids != ids
+            for o, ids in zip(values, group, strict=True)
+        ):
+            raise ValueError("Continuous batching returned missing, failed, truncated, or misordered results")
+        decoded.extend(tokenizer.decode(o.generated_tokens, skip_special_tokens=True) for o in values)
+    result, cursor = [], 0
+    for group in chunks:
+        result.append(" ".join(decoded[cursor : cursor + len(group)]))
+        cursor += len(group)
+    return result
+
+
+def validate_cached(plans, values, config):
+    translated = validate_pages(plans, values, config["glossary"].get("keep") or [])
+    for plan, result in zip(plans, translated, strict=True):
+        for before, after in zip(plan["units"], result["units"], strict=True):
+            for target in pins(before["text"], config).values():
+                if target not in after["text"]:
+                    raise ValueError("Cached glossary mismatch")
+
+
+def translate(files, tree, config, cache, generate_fn=generate):
+    """Return accepted source, complete-page cache candidate, and explicit failures."""
+    tree = yaml.safe_load(files["_toctree.yml"])
+    names = sorted(name for name in files if Path(name).suffix in {".md", ".mdx"})
+    sources = [files[name].decode("utf-8") for name in names]
+    keep = config["glossary"].get("keep") or []
+    page_plans = extract_pages(sources, keep, normalize=True)
+    title_items = [item for item in sidebar_items(tree) if "title" in item]
+    title_plans = extract_pages([item["title"] for item in title_items], keep)
+    documents = {name: [plan] for name, plan in zip(names, page_plans, strict=True)}
+    documents["_toctree.yml"] = title_plans
+    keys = {
+        name: digest(
+            {"package": "transformers", "path": name, "source": files[name].decode("utf-8"), "config": config}
+        )
+        for name in documents
+    }
+    candidate, output, pending, errors = {}, dict(files), {}, {}
+    for name, plans in documents.items():
+        value = cache.get(keys[name])
+        try:
+            if not isinstance(value, str):
+                raise ValueError("Cache miss")
+            values = [value]
+            if name == "_toctree.yml":
+                cached_tree = check_sidebar({**files, name: value.encode()})
+                cached_items = [item for item in sidebar_items(cached_tree) if "title" in item]
+                values = [item["title"] for item in cached_items]
+                # Compare every YAML value except the titles being translated.
+                for item in cached_items:
+                    item["title"] = ""
+                original_tree = yaml.safe_load(files[name])
+                for item in sidebar_items(original_tree):
+                    if "title" in item:
+                        item["title"] = ""
+                if original_tree != cached_tree:
+                    raise ValueError("Cached sidebar structure mismatch")
+            validate_cached(plans, values, config)
+            candidate[keys[name]], output[name] = value, value.encode()
+        except (ValueError, TypeError, yaml.YAMLError):
+            pending[name] = plans
+    for attempt in range(2):
+        requests = [
+            (name, pi, ui, unit)
+            for name, plans in pending.items()
+            for pi, plan in enumerate(plans)
+            for ui, unit in enumerate(plan["units"])
+            if required(unit)
+        ]
+        answers = {}
+        for offset in range(0, len(requests), config["group"]):
+            group = requests[offset : offset + config["group"]]
+            try:
+                responses = generate_fn([r[3] for r in group], config, retry=bool(attempt))
+                if len(responses) != len(group):
+                    raise ValueError("Incomplete generation group")
+                for (name, pi, ui, unit), response in zip(group, responses, strict=True):
+                    try:
+                        answers[name, pi, ui] = accept(unit, response, config)
+                    except ValueError as exc:
+                        errors[name] = str(exc)
+            except (ValueError, RuntimeError) as exc:
+                for name, *_ in group:
+                    errors[name] = str(exc)
+        for name, plans in list(pending.items()):
+            try:
+                values = [
+                    render_page(
+                        plan,
+                        [answers[name, pi, ui] if required(u) else u["text"] for ui, u in enumerate(plan["units"])],
+                    )
+                    for pi, plan in enumerate(plans)
+                ]
+                validate_cached(plans, values, config)
+                value = values[0]
+                if name == "_toctree.yml":
+                    for item, title in zip(title_items, values, strict=True):
+                        item["title"] = title
+                    value = yaml.safe_dump(tree, allow_unicode=True, sort_keys=False)
+                candidate[keys[name]], output[name] = value, value.encode()
+                del pending[name]
+            except (KeyError, ValueError) as exc:
+                errors.setdefault(name, str(exc))
+    failures = [f"{name}: {errors.get(name, 'incomplete translation')}" for name in pending]
+    if not failures:
+        check_sidebar(output)
+    return output, candidate, failures
