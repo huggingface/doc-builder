@@ -164,8 +164,12 @@ async function extract(source, keep = []) {
 		literalEdits = [];
 	let cursor = 0;
 	for (const node of containers) {
-		const a = start(node.children[0]),
-			b = end(node.children.at(-1));
+		const a = start(node.children[0]);
+		let b = end(node.children.at(-1));
+		// Terminal exclamations belong to the skeleton, like paragraph separators.
+		if (node.children.at(-1).type === "text")
+			b -= source.slice(a, b).match(/(?<!\\)!+$/)?.[0].length || 0;
+		if (a === b) continue;
 		if (a < cursor) throw Error("Overlapping prose containers");
 		const spans = [];
 		let pairId = 0;

@@ -160,3 +160,14 @@ def test_parameter_names_in_link_labels_are_immutable():
     plan = segment.extract_pages(["Set [device_map](url) to auto."], normalize=True)[0]
     assert any(t["raw"] == "device_map" for t in plan["units"][0]["tokens"])
     assert "device" not in plan["units"][0]["text"]
+
+
+@pytest.mark.parametrize("source", ["Read this!\n", "Read **this**!!\n", "Read this\\!!\n", "`code!`\n"])
+def test_terminal_exclamations_roundtrip_outside_generation(source):
+    plan = segment.extract_pages([source])[0]
+    output = segment.render_page(plan, [u["text"].replace("Read", "読む") for u in plan["units"]])
+    assert output == source.replace("Read", "読む")
+    segment.validate_pages([plan], [output])
+    if source.startswith("Read"):
+        assert plan["pieces"][-1].startswith("!")
+        assert not any(t["raw"] == "!" for t in plan["units"][0]["tokens"])
