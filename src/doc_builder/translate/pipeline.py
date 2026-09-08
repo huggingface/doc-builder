@@ -18,7 +18,7 @@ MODEL = "Qwen/Qwen3-30B-A3B-Instruct-2507"
 # The runtime pins the public generate_batch implementation inspected for result ordering.
 TRANSFORMERS_REVISION = "58a94493a64f74d04279a3a617297dfe355b0b89"
 LANGUAGES = {"ja": "Japanese"}
-SETTINGS = {"version": 7, "attention": "paged|sdpa", "context": 16384, "output": 4096, "group": 64}
+SETTINGS = {"version": 8, "attention": "paged|sdpa", "context": 16384, "output": 4096, "group": 64}
 
 
 def digest(value):
@@ -167,7 +167,9 @@ def prompt(unit, config, retry=False):
         f"Translate English into {LANGUAGES[config['language']]}. Return only the translation, without explanations."
     )
     if "¤" in unit["text"]:
-        text += " Preserve every XML tag exactly, including paired opening and closing tags. Do not add any tags. Leave the content of keep tags unchanged. Translate only the prose."
+        text += " Preserve every XML tag exactly, including paired opening and closing tags. Do not add any tags. Translate only the prose."
+        if any(t["kind"] == "opaque" for t in unit.get("tokens", [])):
+            text += " Leave the content of keep tags unchanged."
         if retry:
             text += " Check that all opening, closing, and self-closing tags are present before answering."
     terms = pins(unit["text"], config)
@@ -266,7 +268,12 @@ def generate(units, config, retry=False):
         for unit, output in zip(flat[offset : offset + len(group)], values, strict=True):
             text = tokenizer.decode(output.generated_tokens, skip_special_tokens=True)
             for i, tag in enumerate(xml_tags(unit)):
-                text = text.replace(tag, f"¤{i}¤")
+                # Payloads are context only; render_page restores the original bytes by ID.
+                text = (
+                    re.sub(rf"<keep{i}>[^<>]*</keep{i}>", f"¤{i}¤", text)
+                    if tag.startswith("<keep")
+                    else text.replace(tag, f"¤{i}¤")
+                )
             decoded.append(text)
     result, cursor = [], 0
     for group in chunks:

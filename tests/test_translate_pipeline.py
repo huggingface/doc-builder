@@ -107,12 +107,14 @@ def test_model_xml_tags_express_nested_pairs_and_opaque_content():
     assert pipeline.xml_tags(unit) == ["<link0>", "<image1>", "</image1>", "</link0>", "<keep4>`code`</keep4>"]
 
 
-@pytest.mark.parametrize("fault", [None, "missing", "error", "unfinished", "truncated", "misordered"])
+@pytest.mark.parametrize(
+    "fault", [None, "missing", "error", "unfinished", "truncated", "misordered", "duplicate", "nested"]
+)
 def test_public_generate_batch_requires_complete_correctly_associated_results(monkeypatch, fault):
     import sys
     from types import ModuleType, SimpleNamespace
 
-    from doc_builder.translate.segment import extract_pages
+    from doc_builder.translate.segment import accept_unit, extract_pages, render_page
 
     class Tokenizer:
         eos_token_id = 0
@@ -134,7 +136,8 @@ def test_public_generate_batch_requires_complete_correctly_associated_results(mo
             results = [
                 SimpleNamespace(
                     prompt_ids=ids,
-                    generated_tokens=[ord(c) for c in ("<link0>訳</link0>" if i == 0 else "訳")] + [0],
+                    generated_tokens=[ord(c) for c in ("<link0>訳</link0><keep2>コード</keep2>" if i == 0 else "訳")]
+                    + [0],
                     error=None,
                     is_finished=lambda: True,
                 )
@@ -150,6 +153,9 @@ def test_public_generate_batch_requires_complete_correctly_associated_results(mo
                 results[0].generated_tokens = [ord("訳")]
             elif fault == "misordered":
                 results.reverse()
+            elif fault in {"duplicate", "nested"}:
+                bad = "<keep2>コード</keep2>" if fault == "duplicate" else "<keep2><keep2>コード</keep2></keep2>"
+                results[0].generated_tokens = [ord(c) for c in "<link0>訳</link0><keep2>コード</keep2>" + bad] + [0]
             return dict(enumerate(results))
 
     library, generation = ModuleType("transformers"), ModuleType("transformers.generation")
@@ -158,9 +164,15 @@ def test_public_generate_batch_requires_complete_correctly_associated_results(mo
     monkeypatch.setitem(sys.modules, "transformers", library)
     monkeypatch.setitem(sys.modules, "transformers.generation", generation)
     monkeypatch.setattr(pipeline, "load_model", lambda *args: (Tokenizer(), Model()))
-    units = extract_pages(["[First paragraph](url).\n\nSecond paragraph."])[0]["units"]
-    if fault:
+    plan = extract_pages(["[First paragraph](url) with `code`.\n\nSecond paragraph."])[0]
+    units = plan["units"]
+    if fault in {"duplicate", "nested"}:
+        with pytest.raises(ValueError):
+            accept_unit(units[0], pipeline.generate(units, config())[0])
+    elif fault:
         with pytest.raises(ValueError, match="results"):
             pipeline.generate(units, config())
     else:
-        assert pipeline.generate(units, config()) == ["¤0¤訳¤1¤", "訳"]
+        translated = pipeline.generate(units, config())
+        assert translated == ["¤0¤訳¤1¤¤2¤", "訳"]
+        assert "`code`" in render_page(plan, translated)
