@@ -100,6 +100,13 @@ def test_plain_headings_do_not_receive_marker_instructions():
     assert "Copy each marker" in protected
 
 
+def test_retry_lists_only_markers_present_in_the_current_chunk():
+    unit = {"text": "Read ¤4¤the guide¤5¤."}
+    retry = pipeline.prompt(unit, config(), retry=True)
+    assert "Copy exactly these source markers, each once: ¤4¤ ¤5¤." in retry
+    assert "¤0¤" not in retry
+
+
 @pytest.mark.parametrize("fault", [None, "missing", "error", "unfinished", "truncated", "misordered"])
 def test_public_generate_batch_requires_complete_correctly_associated_results(monkeypatch, fault):
     import sys
