@@ -17,7 +17,7 @@ MODEL = "Qwen/Qwen3-30B-A3B-Instruct-2507"
 # The runtime pins the public generate_batch implementation inspected for result ordering.
 TRANSFORMERS_REVISION = "58a94493a64f74d04279a3a617297dfe355b0b89"
 LANGUAGES = {"ja": "Japanese"}
-SETTINGS = {"version": 4, "attention": "paged|sdpa", "context": 16384, "output": 4096, "group": 64}
+SETTINGS = {"version": 5, "attention": "paged|sdpa", "context": 16384, "output": 4096, "group": 64}
 
 
 def digest(value):
@@ -143,21 +143,32 @@ def accept(unit, text, config):
     return text
 
 
-def prompt(unit, config):
+def prompt(unit, config, retry=False):
     terms = pins(unit["text"], config)
     markers = (
         "Copy each marker present in the source exactly once. "
         "A marker is a number between two ¤ characters. Never invent markers or translate their contents. "
         "Markers protect syntax: preserve their nesting and whitespace at formatting boundaries. "
+        "Do not use markers to format any new text. "
         if "¤" in unit["text"]
         else ""
     )
+    if retry and markers:
+        markers += (
+            "Copy exactly these source markers, each once: " + " ".join(re.findall(r"¤\d+¤", unit["text"])) + ". "
+        )
     return (
         f"Translate the following English prose into {LANGUAGES[config['language']]}. "
         "Return only the translation. "
         + markers
         + "Do not add Markdown, explanations, or reasoning.\n"
-        + (f"Required terminology: {json.dumps(terms, ensure_ascii=False)}\n" if terms else "")
+        + (
+            "Every Japanese rendering below must appear verbatim, including in feature names and link labels: "
+            + json.dumps(terms, ensure_ascii=False)
+            + "\n"
+            if terms
+            else ""
+        )
         + "\nSource text:\n"
         + unit["text"]
     )
@@ -207,7 +218,7 @@ def generate(units, config, retry=False):
 
     def tokenize(unit):
         return tokenizer.apply_chat_template(
-            [{"role": "user", "content": prompt(unit, config)}],
+            [{"role": "user", "content": prompt(unit, config, retry)}],
             tokenize=True,
             add_generation_prompt=True,
             return_dict=False,
