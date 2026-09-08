@@ -97,14 +97,14 @@ def test_plain_headings_do_not_receive_marker_instructions():
     plain = pipeline.prompt({"text": "Quickstart"}, config())
     assert "¤" not in plain and "marker" not in plain.lower()
     protected = pipeline.prompt({"text": "Read ¤0¤the guide¤1¤."}, config())
-    assert "Copy each marker" in protected
+    assert "Preserve every XML tag" in protected
 
 
-def test_retry_lists_only_markers_present_in_the_current_chunk():
-    unit = {"text": "Read ¤4¤the guide¤5¤."}
-    retry = pipeline.prompt(unit, config(), retry=True)
-    assert "Copy exactly these source markers, each once: ¤4¤ ¤5¤." in retry
-    assert "¤0¤" not in retry
+def test_model_xml_tags_express_nested_pairs_and_opaque_content():
+    from doc_builder.translate.segment import extract_pages
+
+    unit = extract_pages(["[![Notebook](badge.svg)](book.ipynb) and `code`."])[0]["units"][0]
+    assert pipeline.xml_tags(unit) == ["<g0>", "<g1>", "</g1>", "</g0>", "<ph4/>"]
 
 
 @pytest.mark.parametrize("fault", [None, "missing", "error", "unfinished", "truncated", "misordered"])
@@ -119,7 +119,9 @@ def test_public_generate_batch_requires_complete_correctly_associated_results(mo
 
         def apply_chat_template(self, messages, **kwargs):
             assert kwargs["return_dict"] is False and kwargs["enable_thinking"] is False
-            return [ord(c) for c in messages[0]["content"]]
+            assert [m["role"] for m in messages] == ["system", "user"]
+            assert "¤" not in messages[1]["content"]
+            return [ord(c) for c in "".join(m["content"] for m in messages)]
 
         def decode(self, tokens, **kwargs):
             return "".join(chr(t) for t in tokens if t)
@@ -130,8 +132,13 @@ def test_public_generate_batch_requires_complete_correctly_associated_results(mo
         def generate_batch(self, inputs, **kwargs):
             assert len(inputs) == 2
             results = [
-                SimpleNamespace(prompt_ids=ids, generated_tokens=[ord("訳"), 0], error=None, is_finished=lambda: True)
-                for ids in inputs
+                SimpleNamespace(
+                    prompt_ids=ids,
+                    generated_tokens=[ord(c) for c in ("<g0>訳</g0>" if i == 0 else "訳")] + [0],
+                    error=None,
+                    is_finished=lambda: True,
+                )
+                for i, ids in enumerate(inputs)
             ]
             if fault == "missing":
                 results.pop(0)
@@ -151,9 +158,9 @@ def test_public_generate_batch_requires_complete_correctly_associated_results(mo
     monkeypatch.setitem(sys.modules, "transformers", library)
     monkeypatch.setitem(sys.modules, "transformers.generation", generation)
     monkeypatch.setattr(pipeline, "load_model", lambda *args: (Tokenizer(), Model()))
-    units = extract_pages(["First paragraph.\n\nSecond paragraph."])[0]["units"]
+    units = extract_pages(["[First paragraph](url).\n\nSecond paragraph."])[0]["units"]
     if fault:
         with pytest.raises(ValueError, match="results"):
             pipeline.generate(units, config())
     else:
-        assert pipeline.generate(units, config()) == ["訳", "訳"]
+        assert pipeline.generate(units, config()) == ["¤0¤訳¤1¤", "訳"]

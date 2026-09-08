@@ -147,3 +147,10 @@ def test_literal_brace_groups_retain_translatable_prose(source, visible):
     assert visible in plan["units"][0]["text"]
     output = segment.render_page(plan, [fake_translation(u) for u in plan["units"]])
     segment.validate_pages([plan], [output])
+
+
+def test_blockquote_callout_marker_stays_outside_generation():
+    source = "> [!TIP]\n> An *architecture* is a skeleton.\n"
+    plan = segment.extract_pages([source])[0]
+    assert plan["pieces"][0] == "> [!TIP]\n> "
+    assert plan["units"][0]["text"] == "An ¤0¤architecture¤1¤ is a skeleton."

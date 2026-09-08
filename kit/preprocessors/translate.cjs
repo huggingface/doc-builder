@@ -143,7 +143,7 @@ async function extract(source, keep = []) {
 	for (const s of [...protectedSpans].reverse()) {
 		const raw = source.slice(s.a, s.b);
 		const standalone =
-			!source.slice(source.lastIndexOf("\n", s.a - 1) + 1, s.a).trim() &&
+			/^[ \t>]*$/.test(source.slice(source.lastIndexOf("\n", s.a - 1) + 1, s.a)) &&
 			!source
 				.slice(s.b, source.indexOf("\n", s.b) < 0 ? source.length : source.indexOf("\n", s.b))
 				.trim();
