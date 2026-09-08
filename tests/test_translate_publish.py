@@ -21,7 +21,7 @@ META = {
 def test_archive_and_browsable_files_match_and_readme_is_last():
     hub = Hub()
     prefix = artifact.run_prefix("ja", "unique", False)
-    source = artifact.disclose(files(), "ja")
+    source = artifact.disclose(files())
     result = artifact.upload_run(hub, "owner/bucket", prefix, source, META)
     assert hub.writes[-1] == [prefix + "/README.md"]
     assert all(name.startswith(prefix + "/") for batch in hub.writes for name in batch)
@@ -123,7 +123,7 @@ def test_bad_hash_missing_page_and_preview_leave_target_untouched(tmp_path):
 
 def test_disclosure_is_not_cached_and_follows_license():
     source = {"index.md": b"<!-- license -->\n\n# Heading\n"}
-    result = artifact.disclose(source, "ja")["index.md"].decode()
+    result = artifact.disclose(source)["index.md"].decode()
     assert result.startswith("<!-- license -->\n\n> ")
     assert "/main/en/index" in result
 

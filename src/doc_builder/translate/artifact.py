@@ -12,7 +12,7 @@ import warnings
 from pathlib import Path, PurePosixPath
 from urllib.parse import quote
 
-from .pipeline import check_sidebar
+from .pipeline import check_sidebar, digest
 
 
 def bucket_path(uri):
@@ -26,6 +26,30 @@ def run_prefix(language, run_id, preview):
     if not re.fullmatch(r"[a-z]{2,3}", language) or not re.fullmatch(r"[A-Za-z0-9_-]+", run_id):
         raise ValueError("Invalid language or run ID")
     return f"{'previews' if preview else 'runs'}/transformers/{language}/{run_id}"
+
+
+def run_metadata(source_revision, builder_revision, config, run_id, preview):
+    return {
+        "format": 1,
+        "package": "transformers",
+        "language": config["language"],
+        "source_revision": source_revision,
+        "doc_builder_revision": builder_revision,
+        "config_digest": digest(config),
+        "run_id": run_id,
+        "preview": preview,
+    }
+
+
+def run_result(bucket, prefix, files, data):
+    folder = f"https://huggingface.co/buckets/{bucket}/tree/{prefix}"
+    first_page = min(name for name in files if Path(name).suffix in {".md", ".mdx"})
+    return {
+        "translation_archive": f"hf://buckets/{bucket}/{prefix}/source.tar.gz",
+        "translation_archive_sha256": hashlib.sha256(data).hexdigest(),
+        "folder_url": folder,
+        "page_url": f"{folder}/source/{quote(first_page)}",
+    }
 
 
 def download(api, bucket, paths):
@@ -94,7 +118,7 @@ def verify_archive(data, expected, sha256=None, expected_files=None):
     return files, metadata
 
 
-def disclose(files, language):
+def disclose(files):
     result = dict(files)
     for name, value in files.items():
         if Path(name).suffix not in {".md", ".mdx"}:
@@ -118,9 +142,9 @@ def upload_run(api, bucket, prefix, files, metadata):
     if downloaded != list(remote.values()):
         raise ValueError("Uploaded translation files do not match the accepted tree")
     verify_archive(data, metadata, expected_files=files)
+    result = run_result(bucket, prefix, files, data)
     pages = sorted(name for name in files if Path(name).suffix in {".md", ".mdx"})
-    folder = f"https://huggingface.co/buckets/{bucket}/tree/{prefix}"
-    page_url = f"https://huggingface.co/buckets/{bucket}/tree/{prefix}/source/{quote(pages[0])}"
+    folder = result["folder_url"]
     readme = (
         f"# {metadata['language']} translations\n\nCompleted {'preview' if metadata['preview'] else 'full run'}. "
         f"Source: `{metadata['source_revision']}`.\n\nRead the translated Markdown below. "
@@ -132,12 +156,7 @@ def upload_run(api, bucket, prefix, files, metadata):
     api.batch_bucket_files(bucket, add=[(readme.encode(), readme_path)])
     if download(api, bucket, [readme_path])[0] != readme.encode():
         raise ValueError("Completion README verification failed")
-    return {
-        "translation_archive": f"hf://buckets/{bucket}/{prefix}/source.tar.gz",
-        "translation_archive_sha256": hashlib.sha256(data).hexdigest(),
-        "folder_url": folder,
-        "page_url": page_url,
-    }
+    return result
 
 
 def install(data, target, expected, sha256, expected_files):

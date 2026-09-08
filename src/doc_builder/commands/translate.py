@@ -39,7 +39,7 @@ def run(args, api=None, generate_fn=pipeline.generate):
         selected = Path(args.pages_file).read_text().splitlines() if args.pages_file else None
         if selected is not None:
             selected = [name.strip() for name in selected if name.strip() and not name.startswith("#")]
-        files, tree = pipeline.inventory(repo, args.source_revision, selected)
+        files, _ = pipeline.inventory(repo, args.source_revision, selected)
         if args.lang not in pipeline.LANGUAGES:
             raise ValueError(f"Unsupported language: {args.lang}")
         if args.dry_run:
@@ -63,7 +63,7 @@ def run(args, api=None, generate_fn=pipeline.generate):
         if not re.fullmatch(r"[a-f0-9]{40}", builder_revision):
             raise ValueError("Run from a pinned doc-builder checkout")
         cache = artifact.read_cache(api, bucket, f"cache/transformers/{args.lang}.json")
-        translated, candidate, failures = pipeline.translate(files, tree, config, cache, generate_fn)
+        translated, candidate, failures = pipeline.translate(files, config, cache, generate_fn)
         try:
             api.batch_bucket_files(
                 bucket, add=[(json.dumps(candidate, ensure_ascii=False).encode(), f"{prefix}/cache.json")]
@@ -72,17 +72,10 @@ def run(args, api=None, generate_fn=pipeline.generate):
             warnings.warn(f"Cache upload failed; this run's completed pages cannot be reused: {exc}", stacklevel=2)
         if failures:
             raise ValueError("Translation failed:\n" + "\n".join(failures))
-        metadata = {
-            "format": 1,
-            "package": "transformers",
-            "language": args.lang,
-            "source_revision": args.source_revision,
-            "doc_builder_revision": builder_revision,
-            "config_digest": pipeline.digest(config),
-            "run_id": args.run_id,
-            "preview": args.preview or selected is not None,
-        }
-        result = artifact.upload_run(api, bucket, prefix, artifact.disclose(translated, args.lang), metadata)
+        metadata = artifact.run_metadata(
+            args.source_revision, builder_revision, config, args.run_id, args.preview or selected is not None
+        )
+        result = artifact.upload_run(api, bucket, prefix, artifact.disclose(translated), metadata)
         print(json.dumps(result, indent=2))
         return result
 

@@ -2,7 +2,6 @@
 """Submit a pinned HF worker; only this runner may update the shared page cache."""
 
 import argparse
-import hashlib
 import json
 import os
 import re
@@ -90,7 +89,7 @@ def submit(args, api=None):
     }
     with tempfile.TemporaryDirectory() as directory:
         repo = checkout(args.source_revision, Path(directory) / "transformers")
-        files, tree = pipeline.inventory(repo, args.source_revision, args.pages)
+        files, _ = pipeline.inventory(repo, args.source_revision, args.pages)
         for previous in api.list_jobs(namespace=args.namespace, labels=labels):
             if stage(previous) not in TERMINAL:
                 stop_job(api, previous.id, args.namespace)
@@ -141,10 +140,7 @@ def submit(args, api=None):
             if state in {"COMPLETED", "ERROR"} and not preview:
                 candidate = artifact.read_cache(api, bucket, f"{prefix}/cache.json")
 
-                def no_generation(*args, **kwargs):
-                    raise ValueError("Cache candidate has no accepted translation for this page")
-
-                _, valid, _ = pipeline.translate(files, tree, config, candidate, no_generation)
+                _, valid = pipeline.load_valid_cache(files, config, candidate)
                 if valid:
                     try:
                         api.batch_bucket_files(
@@ -161,33 +157,17 @@ def submit(args, api=None):
             if state != "COMPLETED":
                 raise ValueError(f"Translation Job {job.id} ended in {state}; no build artifact selected")
             data = artifact.download(api, bucket, [f"{prefix}/source.tar.gz"])[0]
-            expected = {
-                "format": 1,
-                "package": "transformers",
-                "language": args.lang,
-                "source_revision": args.source_revision,
-                "doc_builder_revision": builder_revision,
-                "config_digest": pipeline.digest(config),
-                "run_id": run_id,
-                "preview": preview,
-            }
+            expected = artifact.run_metadata(args.source_revision, builder_revision, config, run_id, preview)
             accepted, _ = artifact.verify_archive(data, expected, expected_files=files)
             remote = [f"{prefix}/source/{name}" for name in accepted]
             if artifact.download(api, bucket, remote) != list(accepted.values()):
                 raise ValueError("Browsable source differs from the archive")
             if not artifact.download(api, bucket, [f"{prefix}/README.md"])[0]:
                 raise ValueError("Completed run README is missing")
-            folder = f"https://huggingface.co/buckets/{bucket}/tree/{prefix}"
-            first_page = sorted(name for name in accepted if Path(name).suffix in {".md", ".mdx"})[0]
-            from urllib.parse import quote
-
             result = {
-                "translation_archive": f"hf://buckets/{bucket}/{prefix}/source.tar.gz",
-                "translation_archive_sha256": hashlib.sha256(data).hexdigest(),
+                **artifact.run_result(bucket, prefix, accepted, data),
                 "translation_language": args.lang,
                 "doc_builder_revision": builder_revision,
-                "folder_url": folder,
-                "page_url": f"{folder}/source/{quote(first_page)}",
             }
             if os.environ.get("GITHUB_OUTPUT"):
                 with open(os.environ["GITHUB_OUTPUT"], "a") as stream:

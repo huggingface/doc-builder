@@ -5,7 +5,7 @@ from tests.translate_harness import config, files, generate
 
 
 def execute(source, cache=None, cfg=None, fn=generate):
-    return pipeline.translate(source, pipeline.check_sidebar(source), cfg or config(), cache or {}, fn)
+    return pipeline.translate(source, cfg or config(), cache or {}, fn)
 
 
 def no_gpu(*args, **kwargs):
@@ -20,6 +20,22 @@ def test_cold_then_warm_includes_sidebar():
     again, next_cache, failures = execute(source, cache, fn=no_gpu)
     assert not failures and again == output and next_cache == cache
     assert output["image.svg"] == source["image.svg"]
+
+
+@pytest.mark.parametrize("damage", ["structure", "unicode"])
+def test_cache_validation_accepts_only_current_complete_pages_without_translation(monkeypatch, damage):
+    source, cfg = files(), config()
+    output, cache, _ = execute(source, cfg=cfg)
+    key = pipeline.cache_key("index.md", source["index.md"], cfg)
+    cache[key] = "# Broken\n" if damage == "structure" else cache[key].replace("翻訳です。", "翻訳です。\ud800")
+    cache["obsolete-source-key"] = "Old translation"
+    monkeypatch.setattr(pipeline, "translate", no_gpu)
+    monkeypatch.setattr(pipeline, "load_model", no_gpu)
+
+    accepted, valid = pipeline.load_valid_cache(source, cfg, cache)
+
+    assert accepted == {name: output[name] for name in ("guide.mdx", "_toctree.yml")}
+    assert len(valid) == 2 and "obsolete-source-key" not in valid
 
 
 @pytest.mark.parametrize(
