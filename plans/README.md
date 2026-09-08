@@ -1,12 +1,12 @@
 # Translation refactor plan
 
-Planned and implemented locally on 2026-09-06. The user authorized the refactor after reviewing the plan. Changes remain confined to `doc-builder`; live Jobs, Bucket writes, Transformers integration, and production activation have not been performed.
+Planned and implemented locally on 2026-09-06. On 2026-09-07, the user authorized a live preview in `hf-doc-build` with results in its `doc-translate` Bucket. The two-page Qwen3 Job completed and its uploaded files passed read-back verification. Repository changes remain confined to `doc-builder`.
 
 | Plan | Outcome | Priority | Effort | Depends on | Status |
 | --- | --- | --- | --- | --- | --- |
-| [001](001-simplify-translation.md) | Simplify translation within doc-builder, with a page cache, Hub-browsable translated files, and a completed archive for builds | P1 | L | None | DONE locally; live verification pending |
+| [001](001-simplify-translation.md) | Simplify translation within doc-builder, with a page cache, Hub-browsable translated files, and a completed archive for builds | P1 | L | None | Implemented; GPU preview passed; human review pending |
 
-The parser, page cache, worker, Job runner, manual preview workflow, and opt-in shared consumer are implemented. The full repository suite passes (368 tests), and the parser checks pass across all 743 English pages at the pinned Transformers revision. Transformers workflow changes and production cutover are deferred, not completion requirements for this scope. Keep local implementation and later authorized live verification as separate status checkpoints.
+The parser, page cache, worker, Job runner, manual preview workflow, and opt-in shared consumer are implemented. The full repository suite passes (378 tests), and the parser checks pass across all 743 English pages at the pinned Transformers revision. The preview has some untranslated phrases requiring language review. Full-source translation awaits user feedback; authenticated Hub viewing and full HTML/build-cache verification remain pending. Transformers workflow changes and production cutover are deferred.
 
 The plan covers all 29 inline findings from mishig25's reviews, plus the dependency, glossary, MDX, corpus-CI, and live-build follow-ups in the review summaries. Its acceptance matrix distinguishes problems removed by the new architecture from checks that must still be implemented.
 

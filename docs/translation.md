@@ -11,7 +11,7 @@ flowchart LR
     Archive -. future integration .-> Build[Existing doc-builder workflow and HTML cache]
 ```
 
-This implementation is confined to doc-builder. The Transformers caller, existing translation schedules, and live serving remain unchanged. The worker runtime and Hub viewing flow still need a live GPU smoke test before production use.
+This implementation is confined to doc-builder. A two-page Qwen3 preview completed on an HF Job and passed Bucket read-back verification on 2026-09-07. Human review of the Japanese, authenticated Hub viewing, and a full archive/build-cache smoke remain pending before production use.
 
 ## Prepare a preview
 
@@ -66,7 +66,7 @@ The cache stores complete translated pages in one JSON file per package and lang
 
 Workers read the shared cache and write a candidate only inside their own run folder. Preview runs leave the shared cache unchanged. They can reuse an existing full-run cache, but preview results do not seed it. A serialized full-run runner updates the shared cache with validated complete pages, including pages completed by a failed Job.
 
-Any required prose unit that remains invalid after one retry fails the update. No successful archive is selected, and there is no English or previous-page fallback. The error identifies the page or sidebar and the failed check. Inspect the Job logs, correct the cause, and start a new run; completed page candidates remain available in the failed run's folder.
+Any required prose unit that remains invalid after one retry fails the update. The retry retains accepted units in memory and generates only the missing units. No successful archive is selected, and there is no English or previous-page fallback. The error identifies the page or sidebar and the failed check. Inspect the Job logs, correct the cause, and start a new run; completed page candidates remain available in the failed run's folder.
 
 To stop a recorded Job manually, run:
 
@@ -78,7 +78,7 @@ The workflow also runs this cleanup after cancellation or failure. The next runn
 
 ## Preserve syntax and terminology
 
-The kit's mdsvex parser supplies prose spans. The model receives complete inline prose containers with protected tokens for code, links, math, and doc-builder syntax. Acceptance checks preserve token identity, nesting, document structure, and glossary renderings; empty responses and English echoes fail.
+The kit's mdsvex parser supplies prose spans. The model receives complete inline prose containers with XML tags identifying formatting and immutable content. Original immutable content is restored by tag ID. Acceptance checks preserve token identity, nesting, document structure, and glossary renderings; empty responses and whole-unit English echoes fail. These checks do not establish translation quality: the live preview still contains some untranslated phrases inside otherwise Japanese paragraphs.
 
 The adapter preserves rendered structure through a few source normalizations: explicit original heading anchors, explicit targets for shortcut reference links, and escapes for literal Markdown delimiters that Japanese punctuation could turn into formatting. Bare URLs become explicit autolinks so adjacent Japanese particles cannot enter the URL. Headings whose IDs come from `[[autodoc]]` retain that behavior.
 
@@ -94,6 +94,6 @@ Before enabling a Transformers caller, run a real GPU preview, inspect its Hub l
 
 ## Next steps
 
-The worker pins [PyTorch 2.8.0 with CUDA 12.8](https://hub.docker.com/layers/pytorch/pytorch/2.8.0-cuda12.8-cudnn9-runtime/images/sha256%3A417bd75df6365104c283ea4c1651fb3530d9eb5a4c2fafa51943cff2a94e6385) by image digest, Node 22.14.0, Hub SDK 1.27.0, and a specific Transformers implementation revision in `src/doc_builder/translate/pipeline.py`. Model and tokenizer revisions are resolved once by the runner and passed to the worker. These pins are prepared for the live smoke test; they are not a claim of a tested GPU run.
+The worker pins [PyTorch 2.8.0 with CUDA 12.8](https://hub.docker.com/layers/pytorch/pytorch/2.8.0-cuda12.8-cudnn9-runtime/images/sha256%3A417bd75df6365104c283ea4c1651fb3530d9eb5a4c2fafa51943cff2a94e6385) by image digest, Node 22.14.0, Hub SDK 1.27.0, and a specific Transformers implementation revision in `src/doc_builder/translate/pipeline.py`. Model and tokenizer revisions are resolved once by the runner and passed to the worker. This runtime completed the two-page preview with Qwen3 on an A100; the full-source and warm-cache runs still need verification.
 
 See the [continuous batching guide](https://huggingface.co/docs/transformers/main/continuous_batching) for generation behavior and the [implementation plan](../plans/001-simplify-translation.md) for the review regression matrix and remaining live checks.
