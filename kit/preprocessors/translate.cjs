@@ -85,6 +85,7 @@ async function extract(source, keep = []) {
 		],
 		[/<\/?[A-Za-z][\w:.-]*(?:\s+(?:[^<>"']|"[^"]*"|'[^']*')*)?\s*\/?>/g, false],
 		[/\[!(?:NOTE|TIP|IMPORTANT|WARNING|CAUTION)\]/g, false],
+		[/\b[A-Za-z][A-Za-z0-9]*_(?:[A-Za-z0-9]+_)*[A-Za-z0-9]+\b/g, false], // Literal snake_case identifiers.
 		[/\{\\[A-Za-z]+\b/g, false], // TeX prose groups such as {\em Transient Global}.
 	];
 	for (const [pattern, block] of extensions)

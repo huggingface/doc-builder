@@ -38,7 +38,7 @@ def test_exactly_one_retry_and_complete_pages_survive_failure():
     assert len(failures) == 1 and failures[0].startswith("index.md:")
     assert len(candidate) == 2
     assert [retry for retry, _ in calls] == [False, True]
-    assert all("Guide" not in text for text in calls[1][1])
+    assert len(calls[1][1]) == 1 and "Read" in calls[1][1][0]
 
 
 def test_retry_can_recover():
@@ -104,7 +104,7 @@ def test_model_xml_tags_express_nested_pairs_and_opaque_content():
     from doc_builder.translate.segment import extract_pages
 
     unit = extract_pages(["[![Notebook](badge.svg)](book.ipynb) and `code`."])[0]["units"][0]
-    assert pipeline.xml_tags(unit) == ["<g0>", "<g1>", "</g1>", "</g0>", "<ph4/>"]
+    assert pipeline.xml_tags(unit) == ["<link0>", "<image1>", "</image1>", "</link0>", "<keep4>`code`</keep4>"]
 
 
 @pytest.mark.parametrize("fault", [None, "missing", "error", "unfinished", "truncated", "misordered"])
@@ -134,7 +134,7 @@ def test_public_generate_batch_requires_complete_correctly_associated_results(mo
             results = [
                 SimpleNamespace(
                     prompt_ids=ids,
-                    generated_tokens=[ord(c) for c in ("<g0>訳</g0>" if i == 0 else "訳")] + [0],
+                    generated_tokens=[ord(c) for c in ("<link0>訳</link0>" if i == 0 else "訳")] + [0],
                     error=None,
                     is_finished=lambda: True,
                 )

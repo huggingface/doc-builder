@@ -154,3 +154,9 @@ def test_blockquote_callout_marker_stays_outside_generation():
     plan = segment.extract_pages([source])[0]
     assert plan["pieces"][0] == "> [!TIP]\n> "
     assert plan["units"][0]["text"] == "An ¤0¤architecture¤1¤ is a skeleton."
+
+
+def test_parameter_names_in_link_labels_are_immutable():
+    plan = segment.extract_pages(["Set [device_map](url) to auto."], normalize=True)[0]
+    assert any(t["raw"] == "device_map" for t in plan["units"][0]["tokens"])
+    assert "device" not in plan["units"][0]["text"]
