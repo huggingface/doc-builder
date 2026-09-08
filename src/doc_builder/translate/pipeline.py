@@ -17,7 +17,7 @@ MODEL = "Qwen/Qwen3-30B-A3B-Instruct-2507"
 # The runtime pins the public generate_batch implementation inspected for result ordering.
 TRANSFORMERS_REVISION = "58a94493a64f74d04279a3a617297dfe355b0b89"
 LANGUAGES = {"ja": "Japanese"}
-SETTINGS = {"version": 2, "attention": "paged|sdpa", "context": 16384, "output": 4096, "group": 64}
+SETTINGS = {"version": 3, "attention": "paged|sdpa", "context": 16384, "output": 4096, "group": 64}
 
 
 def digest(value):
@@ -147,11 +147,12 @@ def prompt(unit, config):
     terms = pins(unit["text"], config)
     return (
         f"Translate the following English prose into {LANGUAGES[config['language']]}. "
-        "Return only the translation. Preserve every numbered marker such as ¤0¤ exactly once. "
+        "Return only the translation. Copy each marker present in the source exactly once. "
+        "A marker is a number between two ¤ characters. Never invent markers or translate their contents. "
         "Markers protect syntax: preserve their nesting and whitespace at formatting boundaries. "
         "Do not add Markdown, explanations, or reasoning.\n"
         + (f"Required terminology: {json.dumps(terms, ensure_ascii=False)}\n" if terms else "")
-        + "\n"
+        + "\nSource text:\n"
         + unit["text"]
     )
 
@@ -314,7 +315,10 @@ def translate(files, tree, config, cache, generate_fn=generate):
                     try:
                         answers[name, pi, ui] = accept(unit, response, config)
                     except ValueError as exc:
-                        errors[name] = str(exc)
+                        errors[name] = (
+                            f"Unit {pi + 1}.{ui + 1}: {exc}; "
+                            f"source={unit['text'][:300]!r}; response={str(response)[:300]!r}"
+                        )
             except (ValueError, RuntimeError) as exc:
                 for name, *_ in group:
                     errors[name] = str(exc)
