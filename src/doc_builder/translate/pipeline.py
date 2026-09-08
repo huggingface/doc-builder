@@ -297,6 +297,9 @@ def translate(files, tree, config, cache, generate_fn=generate):
         except (ValueError, TypeError, yaml.YAMLError):
             pending[name] = plans
     for attempt in range(2):
+        if not pending:
+            break
+        print(f"Translating {len(pending)} documents (attempt {attempt + 1}/2)", flush=True)
         requests = [
             (name, pi, ui, unit)
             for name, plans in pending.items()
@@ -307,6 +310,7 @@ def translate(files, tree, config, cache, generate_fn=generate):
         answers = {}
         for offset in range(0, len(requests), config["group"]):
             group = requests[offset : offset + config["group"]]
+            print(f"Generating units {offset + 1}-{offset + len(group)} of {len(requests)}", flush=True)
             try:
                 responses = generate_fn([r[3] for r in group], config, retry=bool(attempt))
                 if len(responses) != len(group):
@@ -339,6 +343,7 @@ def translate(files, tree, config, cache, generate_fn=generate):
                     value = yaml.safe_dump(tree, allow_unicode=True, sort_keys=False)
                 candidate[keys[name]], output[name] = value, value.encode()
                 del pending[name]
+                print(f"Accepted {name}", flush=True)
             except (KeyError, ValueError) as exc:
                 errors.setdefault(name, str(exc))
     failures = [f"{name}: {errors.get(name, 'incomplete translation')}" for name in pending]
