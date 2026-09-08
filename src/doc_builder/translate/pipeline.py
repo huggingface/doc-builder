@@ -10,14 +10,14 @@ from pathlib import Path
 
 import yaml
 
-from .segment import accept_unit, extract_pages, render_page, required, validate_pages
+from .segment import PLACEHOLDER_RE, accept_unit, extract_pages, render_page, required, validate_pages
 
 # Uniform KV dimensions are required by the pinned continuous-batching cache.
 MODEL = "Qwen/Qwen3-30B-A3B-Instruct-2507"
 # The runtime pins the public generate_batch implementation inspected for result ordering.
 TRANSFORMERS_REVISION = "58a94493a64f74d04279a3a617297dfe355b0b89"
 LANGUAGES = {"ja": "Japanese"}
-SETTINGS = {"version": 5, "attention": "paged|sdpa", "context": 16384, "output": 4096, "group": 64}
+SETTINGS = {"version": 6, "attention": "paged|sdpa", "context": 16384, "output": 4096, "group": 64}
 
 
 def digest(value):
@@ -143,35 +143,27 @@ def accept(unit, text, config):
     return text
 
 
+def xml_tags(unit):
+    """Give the model explicit pairs while retaining internal marker identities."""
+    pairs = {t["pair"]: i for i, t in enumerate(unit["tokens"]) if t["kind"] == "open"}
+    return [
+        f"<g{i}>" if t["kind"] == "open" else f"</g{pairs[t['pair']]}>" if t["kind"] == "close" else f"<ph{i}/>"
+        for i, t in enumerate(unit["tokens"])
+    ]
+
+
 def prompt(unit, config, retry=False):
+    text = (
+        f"Translate English into {LANGUAGES[config['language']]}. Return only the translation, without explanations."
+    )
+    if "¤" in unit["text"]:
+        text += " Preserve every XML tag exactly, including paired opening and closing tags. Do not add any tags. Translate only the prose."
+        if retry:
+            text += " Check that all opening, closing, and self-closing tags are present before answering."
     terms = pins(unit["text"], config)
-    markers = (
-        "Copy each marker present in the source exactly once. "
-        "A marker is a number between two ¤ characters. Never invent markers or translate their contents. "
-        "Markers protect syntax: preserve their nesting and whitespace at formatting boundaries. "
-        "Do not use markers to format any new text. "
-        if "¤" in unit["text"]
-        else ""
-    )
-    if retry and markers:
-        markers += (
-            "Copy exactly these source markers, each once: " + " ".join(re.findall(r"¤\d+¤", unit["text"])) + ". "
-        )
-    return (
-        f"Translate the following English prose into {LANGUAGES[config['language']]}. "
-        "Return only the translation. "
-        + markers
-        + "Do not add Markdown, explanations, or reasoning.\n"
-        + (
-            "Every Japanese rendering below must appear verbatim, including in feature names and link labels: "
-            + json.dumps(terms, ensure_ascii=False)
-            + "\n"
-            if terms
-            else ""
-        )
-        + "\nSource text:\n"
-        + unit["text"]
-    )
+    if terms:
+        text += " Required translations: " + json.dumps(terms, ensure_ascii=False)
+    return text
 
 
 @memoize
@@ -217,8 +209,10 @@ def generate(units, config, retry=False):
     budget = config["output"] * (2 if retry else 1)
 
     def tokenize(unit):
+        tags = xml_tags(unit)
+        source = PLACEHOLDER_RE.sub(lambda m: tags[int(m[1])], unit["text"])
         return tokenizer.apply_chat_template(
-            [{"role": "user", "content": prompt(unit, config, retry)}],
+            [{"role": "system", "content": prompt(unit, config, retry)}, {"role": "user", "content": source}],
             tokenize=True,
             add_generation_prompt=True,
             return_dict=False,
@@ -226,7 +220,8 @@ def generate(units, config, retry=False):
         )
 
     chunks = [split_unit(unit, tokenize, config["context"] - budget) for unit in units]
-    inputs = [tokenize(chunk) for group in chunks for chunk in group]
+    flat = [chunk for group in chunks for chunk in group]
+    inputs = [tokenize(chunk) for chunk in flat]
     decoded = []
     for offset in range(0, len(inputs), config["group"]):
         group = inputs[offset : offset + config["group"]]
@@ -255,7 +250,11 @@ def generate(units, config, retry=False):
             for o, ids in zip(values, group, strict=True)
         ):
             raise ValueError("Continuous batching returned missing, failed, truncated, or misordered results")
-        decoded.extend(tokenizer.decode(o.generated_tokens, skip_special_tokens=True) for o in values)
+        for unit, output in zip(flat[offset : offset + len(group)], values, strict=True):
+            text = tokenizer.decode(output.generated_tokens, skip_special_tokens=True)
+            for i, tag in enumerate(xml_tags(unit)):
+                text = text.replace(tag, f"¤{i}¤")
+            decoded.append(text)
     result, cursor = [], 0
     for group in chunks:
         result.append(" ".join(decoded[cursor : cursor + len(group)]))
