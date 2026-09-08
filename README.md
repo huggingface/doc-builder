@@ -305,6 +305,8 @@ Note the use of special arguments like `pr_number` and `package` under the `with
 
 ### Enabling multilingual documentation
 
+To generate translations with HF Jobs and read the results in a Bucket, see [Preview translated documentation](docs/translation.md).
+
 `doc-builder` can also convert documentation that's been translated from the English source into one or more languages. To enable the conversion, the documentation directories should be structured as follows:
 
 ```

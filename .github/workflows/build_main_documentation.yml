@@ -49,13 +49,18 @@ on:
       python_version:
         type: string
         description: "Python version for the build venv (e.g. '3.11'). Defaults to the runner's system Python."
-      translated_languages:
+      translation_archive:
         type: string
-        description: >
-          Languages whose pages are machine-translated, separated by spaces. Their source is
-          pulled from the hf-doc-build/doc-translate bucket instead of from the repo. Anything
-          listed here must also appear in `languages`. Leave it empty (the default) and every
-          language comes from the repo as usual.
+        description: "Exact completed translation archive in an HF Bucket"
+      translation_archive_sha256:
+        type: string
+        description: "Archive SHA-256 returned by the translation runner"
+      translation_language:
+        type: string
+        description: "The single translated language built by this call"
+      doc_builder_revision:
+        type: string
+        description: "Pinned doc-builder implementation SHA for a translation archive"
     secrets:
       hf_token:
         required: true
@@ -75,11 +80,13 @@ jobs:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
         with:
           repository: 'huggingface/doc-builder'
+          ref: ${{ inputs.translation_archive != '' && inputs.doc_builder_revision || '' }}
           path: doc-builder
 
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
         with:
           repository: '${{ inputs.repo_owner }}/${{ inputs.package }}'
+          ref: ${{ inputs.translation_archive != '' && inputs.commit_sha || '' }}
           path: ${{ inputs.package }}
 
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
@@ -128,12 +135,16 @@ jobs:
           toolchain: stable
 
       - name: Setup environment
+        env:
+          TRANSLATION_ARCHIVE: ${{ inputs.translation_archive }}
         shell: bash
         run: |
           uv venv ${{ inputs.python_version && format('--python {0}', inputs.python_version) || '' }}
           source .venv/bin/activate
           cd doc-builder
-          git pull origin main
+          if [ -z "$TRANSLATION_ARCHIVE" ]; then
+            git pull origin main
+          fi
           uv pip install .
           cd ..
 
@@ -193,59 +204,26 @@ jobs:
 
           doc-builder notebook-to-mdx ${{ env.doc_folder }} --open_notebook_prefix https://colab.research.google.com/github/${{ inputs.repo_owner }}/${{ inputs.package }}/blob/$branch$remaining_part
 
-      # Machine-translated pages are not kept in the repo. A separate nightly job writes them to
-      # a bucket, and this step fetches them so the build has something to work from. It does
-      # nothing at all unless a workflow asks for it, since every HF library shares this file.
-      #
-      # The bucket path uses the repo name, not the Python package name. The job that writes
-      # those files names them after the repo it cloned, so both sides have to agree.
-      - name: Sync machine translations
-        if: inputs.translated_languages != ''
+      - name: Install verified translation source
+        if: inputs.translation_archive != ''
         env:
           HF_TOKEN: ${{ secrets.hf_token }}
-          BUCKET: hf://buckets/hf-doc-build/doc-translate/translations/${{ inputs.package }}
-          # This is handed over as an environment variable rather than written straight into
-          # the script below. GitHub pastes a ${{ }} value into the script text before bash
-          # reads any of it, so quoting it there would not stop someone slipping in extra
-          # commands -- and this job is holding a token that can write to our buckets.
-          TRANSLATED_LANGUAGES: ${{ inputs.translated_languages }}
+          ARCHIVE: ${{ inputs.translation_archive }}
+          ARCHIVE_SHA256: ${{ inputs.translation_archive_sha256 }}
+          SOURCE_REVISION: ${{ inputs.commit_sha }}
+          BUILDER_REVISION: ${{ inputs.doc_builder_revision }}
+          LANGUAGE: ${{ inputs.translation_language }}
+          LANGUAGES: ${{ inputs.languages }}
+          PACKAGE: ${{ inputs.package }}
+          DOCS_SOURCE: ${{ env.doc_folder }}
         run: |
-          for lang in $TRANSLATED_LANGUAGES; do
-            target="${{ env.doc_folder }}/$lang"
-            # Download next to where the files are going, rather than into /tmp. Same disk, so
-            # putting them in place is a rename instead of copying 700 files. Cleared out first
-            # in case an earlier run was interrupted halfway through.
-            staged="$target.incoming"
-            rm -rf "$staged" "$staged.pointer"
-
-            # The translation job writes each run to a folder of its own under generations/ and
-            # then rewrites CURRENT to name the finished one. Read the pointer and take that
-            # folder, so we can only ever download a run that completed -- a job still writing,
-            # or one that died partway, is in a folder nothing points at.
-            uvx --from huggingface_hub hf sync "$BUCKET/$lang/CURRENT" "$staged.pointer"
-            generation="$(tr -d '[:space:]' < "$staged.pointer/CURRENT")"
-            case "$generation" in
-              "" | */* | .*)
-                echo "::error::$BUCKET/$lang/CURRENT does not name a generation - refusing to build"
-                exit 1
-                ;;
-            esac
-            uvx --from huggingface_hub hf sync "$BUCKET/$lang/generations/$generation" "$staged"
-
-            # The pointer is only rewritten after every file has been written and read back, so
-            # this should always hold. Checked anyway: a missing sidebar takes down the whole
-            # language, and the cost of noticing here is nothing.
-            if [ ! -f "$staged/_toctree.yml" ]; then
-              echo "::error::no _toctree.yml in generation $generation - refusing to build a partial tree"
-              exit 1
-            fi
-
-            # Replace the folder outright rather than merging into it. That also clears out
-            # pages whose English original has since been deleted -- transformers has 20 of
-            # those sitting in its Japanese docs today.
-            rm -rf "$target" "$staged.pointer" && mv "$staged" "$target"
-            echo "$lang: $(find "$target" -name '*.md' | wc -l) page(s) from generation $generation"
-          done
+          source .venv/bin/activate
+          test "$PACKAGE" = transformers
+          test -n "$BUILDER_REVISION"
+          test "$LANGUAGE" = "$LANGUAGES"
+          python -m doc_builder.translate.artifact --archive "$ARCHIVE" --sha256 "$ARCHIVE_SHA256" \
+            --source-revision "$SOURCE_REVISION" --doc-builder-revision "$BUILDER_REVISION" \
+            --language "$LANGUAGE" --repository "$PACKAGE" --docs-source "$DOCS_SOURCE"
 
       - name: Make documentation
         shell: bash
