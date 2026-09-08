@@ -129,6 +129,21 @@ def test_failed_full_job_recovers_only_complete_pages_without_build_output(setup
     assert not (tmp_path / "outputs").exists()
 
 
+def test_runner_validates_cache_without_reentering_translation(setup, monkeypatch):
+    args, api = setup
+    args.full = True
+    monkeypatch.setenv("GITHUB_ACTIONS", "true")
+    wait = api.wait_for_job
+
+    def completed(*args, **kwargs):
+        # The simulated worker has finished; the runner must only validate its output.
+        monkeypatch.setattr(pipeline, "translate", lambda *a, **k: pytest.fail("Runner entered translation"))
+        return wait(*args, **kwargs)
+
+    monkeypatch.setattr(api, "wait_for_job", completed)
+    assert "/runs/" in job.submit(args, api)["translation_archive"]
+
+
 @pytest.mark.parametrize("state", ["CANCELED", "DELETED", "RUNNING", "UNKNOWN"])
 def test_non_successful_job_has_no_outputs_or_cache_update(setup, state, tmp_path):
     args, api = setup

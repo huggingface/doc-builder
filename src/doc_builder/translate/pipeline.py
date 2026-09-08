@@ -150,16 +150,18 @@ def xml_tags(unit):
     pairs = {
         t["pair"]: f"{kinds.get(t['raw'], 'span')}{i}" for i, t in enumerate(unit["tokens"]) if t["kind"] == "open"
     }
-    return [
-        f"<{pairs[t['pair']]}>"
-        if t["kind"] == "open"
-        else f"</{pairs[t['pair']]}>"
-        if t["kind"] == "close"
-        else f"<keep{i}>{escape(t['raw'], quote=False)}</keep{i}>"
-        if t["raw"].strip(" \t\r\n>")
-        else f"<ph{i}/>"
-        for i, t in enumerate(unit["tokens"])
-    ]
+    tags = []
+    for i, token in enumerate(unit["tokens"]):
+        if token["kind"] == "open":
+            tag = f"<{pairs[token['pair']]}>"
+        elif token["kind"] == "close":
+            tag = f"</{pairs[token['pair']]}>"
+        elif token["raw"].strip(" \t\r\n>"):
+            tag = f"<keep{i}>{escape(token['raw'], quote=False)}</keep{i}>"
+        else:
+            tag = f"<ph{i}/>"
+        tags.append(tag)
+    return tags
 
 
 def prompt(unit, config, retry=False):
@@ -289,47 +291,71 @@ def validate_cached(plans, values, config):
                     raise ValueError("Cached glossary mismatch")
 
 
-def translate(files, tree, config, cache, generate_fn=generate):
-    """Return accepted source, complete-page cache candidate, and explicit failures."""
-    tree = yaml.safe_load(files["_toctree.yml"])
+def sidebar_title_items(tree):
+    return [item for item in sidebar_items(tree) if "title" in item]
+
+
+def cached_sidebar_titles(files, value):
+    """Read cached titles only when every other sidebar value is unchanged."""
+    cached_tree = check_sidebar({**files, "_toctree.yml": value.encode()})
+    items = sidebar_title_items(cached_tree)
+    titles = [item["title"] for item in items]
+    original_tree = yaml.safe_load(files["_toctree.yml"])
+    for item in items + sidebar_title_items(original_tree):
+        item["title"] = ""
+    if original_tree != cached_tree:
+        raise ValueError("Cached sidebar structure mismatch")
+    return titles
+
+
+def render_sidebar(source, titles):
+    tree = yaml.safe_load(source)
+    for item, title in zip(sidebar_title_items(tree), titles, strict=True):
+        item["title"] = title
+    return yaml.safe_dump(tree, allow_unicode=True, sort_keys=False)
+
+
+def prepare_documents(files, config):
+    tree = check_sidebar(files)
     names = sorted(name for name in files if Path(name).suffix in {".md", ".mdx"})
-    sources = [files[name].decode("utf-8") for name in names]
     keep = config["glossary"].get("keep") or []
-    page_plans = extract_pages(sources, keep, normalize=True)
-    title_items = [item for item in sidebar_items(tree) if "title" in item]
-    title_plans = extract_pages([item["title"] for item in title_items], keep)
-    documents = {name: [plan] for name, plan in zip(names, page_plans, strict=True)}
-    documents["_toctree.yml"] = title_plans
-    keys = {
-        name: digest(
-            {"package": "transformers", "path": name, "source": files[name].decode("utf-8"), "config": config}
-        )
-        for name in documents
-    }
-    candidate, output, pending, errors = {}, dict(files), {}, {}
+    plans = extract_pages([files[name].decode("utf-8") for name in names], keep, normalize=True)
+    documents = {name: [plan] for name, plan in zip(names, plans, strict=True)}
+    documents["_toctree.yml"] = extract_pages([item["title"] for item in sidebar_title_items(tree)], keep)
+    return documents
+
+
+def cache_key(name, source, config):
+    return digest({"package": "transformers", "path": name, "source": source.decode("utf-8"), "config": config})
+
+
+def load_valid_cache(files, config, cache, documents=None):
+    """Return accepted files and cache entries without entering generation or retry."""
+    if documents is None:
+        documents = prepare_documents(files, config)
+    cached_files, valid = {}, {}
     for name, plans in documents.items():
-        value = cache.get(keys[name])
+        key = cache_key(name, files[name], config)
+        value = cache.get(key)
+        if not isinstance(value, str):
+            continue
         try:
-            if not isinstance(value, str):
-                raise ValueError("Cache miss")
-            values = [value]
-            if name == "_toctree.yml":
-                cached_tree = check_sidebar({**files, name: value.encode()})
-                cached_items = [item for item in sidebar_items(cached_tree) if "title" in item]
-                values = [item["title"] for item in cached_items]
-                # Compare every YAML value except the titles being translated.
-                for item in cached_items:
-                    item["title"] = ""
-                original_tree = yaml.safe_load(files[name])
-                for item in sidebar_items(original_tree):
-                    if "title" in item:
-                        item["title"] = ""
-                if original_tree != cached_tree:
-                    raise ValueError("Cached sidebar structure mismatch")
+            values = cached_sidebar_titles(files, value) if name == "_toctree.yml" else [value]
             validate_cached(plans, values, config)
-            candidate[keys[name]], output[name] = value, value.encode()
+            cached_files[name] = value.encode()
         except (ValueError, TypeError, yaml.YAMLError):
-            pending[name] = plans
+            continue
+        valid[key] = value
+    return cached_files, valid
+
+
+def translate(files, config, cache, generate_fn=generate):
+    """Return accepted source, complete-page cache candidate, and explicit failures."""
+    documents = prepare_documents(files, config)
+    cached_files, candidate = load_valid_cache(files, config, cache, documents)
+    output = {**files, **cached_files}
+    pending = {name: plans for name, plans in documents.items() if name not in cached_files}
+    errors = {}
     answers = {}
     for attempt in range(2):
         if not pending:
@@ -371,12 +397,9 @@ def translate(files, tree, config, cache, generate_fn=generate):
                     for pi, plan in enumerate(plans)
                 ]
                 validate_cached(plans, values, config)
-                value = values[0]
-                if name == "_toctree.yml":
-                    for item, title in zip(title_items, values, strict=True):
-                        item["title"] = title
-                    value = yaml.safe_dump(tree, allow_unicode=True, sort_keys=False)
-                candidate[keys[name]], output[name] = value, value.encode()
+                value = render_sidebar(files[name], values) if name == "_toctree.yml" else values[0]
+                candidate[cache_key(name, files[name], config)] = value
+                output[name] = value.encode()
                 del pending[name]
                 print(f"Accepted {name}", flush=True)
             except KeyError as exc:
