@@ -93,6 +93,13 @@ def test_unknown_language_fails_before_model_load():
         pipeline.configuration("xx", "a" * 40)
 
 
+def test_plain_headings_do_not_receive_marker_instructions():
+    plain = pipeline.prompt({"text": "Quickstart"}, config())
+    assert "¤" not in plain and "marker" not in plain.lower()
+    protected = pipeline.prompt({"text": "Read ¤0¤the guide¤1¤."}, config())
+    assert "Copy each marker" in protected
+
+
 @pytest.mark.parametrize("fault", [None, "missing", "error", "unfinished", "truncated", "misordered"])
 def test_public_generate_batch_requires_complete_correctly_associated_results(monkeypatch, fault):
     import sys
