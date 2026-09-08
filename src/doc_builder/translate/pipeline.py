@@ -6,6 +6,7 @@ import json
 import re
 import subprocess
 from functools import cache as memoize
+from html import escape
 from pathlib import Path
 
 import yaml
@@ -17,7 +18,7 @@ MODEL = "Qwen/Qwen3-30B-A3B-Instruct-2507"
 # The runtime pins the public generate_batch implementation inspected for result ordering.
 TRANSFORMERS_REVISION = "58a94493a64f74d04279a3a617297dfe355b0b89"
 LANGUAGES = {"ja": "Japanese"}
-SETTINGS = {"version": 6, "attention": "paged|sdpa", "context": 16384, "output": 4096, "group": 64}
+SETTINGS = {"version": 7, "attention": "paged|sdpa", "context": 16384, "output": 4096, "group": 64}
 
 
 def digest(value):
@@ -144,10 +145,19 @@ def accept(unit, text, config):
 
 
 def xml_tags(unit):
-    """Give the model explicit pairs while retaining internal marker identities."""
-    pairs = {t["pair"]: i for i, t in enumerate(unit["tokens"]) if t["kind"] == "open"}
+    """Expose formatting roles and immutable inline content to the model."""
+    kinds = {"[": "link", "![": "image", "*": "em", "_": "em", "**": "strong", "__": "strong", "~~": "del"}
+    pairs = {
+        t["pair"]: f"{kinds.get(t['raw'], 'span')}{i}" for i, t in enumerate(unit["tokens"]) if t["kind"] == "open"
+    }
     return [
-        f"<g{i}>" if t["kind"] == "open" else f"</g{pairs[t['pair']]}>" if t["kind"] == "close" else f"<ph{i}/>"
+        f"<{pairs[t['pair']]}>"
+        if t["kind"] == "open"
+        else f"</{pairs[t['pair']]}>"
+        if t["kind"] == "close"
+        else f"<keep{i}>{escape(t['raw'], quote=False)}</keep{i}>"
+        if t["raw"].strip(" \t\r\n>")
+        else f"<ph{i}/>"
         for i, t in enumerate(unit["tokens"])
     ]
 
@@ -157,7 +167,7 @@ def prompt(unit, config, retry=False):
         f"Translate English into {LANGUAGES[config['language']]}. Return only the translation, without explanations."
     )
     if "¤" in unit["text"]:
-        text += " Preserve every XML tag exactly, including paired opening and closing tags. Do not add any tags. Translate only the prose."
+        text += " Preserve every XML tag exactly, including paired opening and closing tags. Do not add any tags. Leave the content of keep tags unchanged. Translate only the prose."
         if retry:
             text += " Check that all opening, closing, and self-closing tags are present before answering."
     terms = pins(unit["text"], config)
@@ -228,7 +238,10 @@ def generate(units, config, retry=False):
         outputs = model.generate_batch(
             group,
             generation_config=GenerationConfig(
-                do_sample=False, max_new_tokens=budget, eos_token_id=model.generation_config.eos_token_id
+                do_sample=retry,
+                max_new_tokens=budget,
+                eos_token_id=model.generation_config.eos_token_id,
+                **({"temperature": 0.7, "top_p": 0.8, "top_k": 20} if retry else {}),
             ),
             continuous_batching_config=ContinuousBatchingConfig(
                 use_cuda_graph=False,
@@ -312,6 +325,7 @@ def translate(files, tree, config, cache, generate_fn=generate):
             candidate[keys[name]], output[name] = value, value.encode()
         except (ValueError, TypeError, yaml.YAMLError):
             pending[name] = plans
+    answers = {}
     for attempt in range(2):
         if not pending:
             break
@@ -321,9 +335,8 @@ def translate(files, tree, config, cache, generate_fn=generate):
             for name, plans in pending.items()
             for pi, plan in enumerate(plans)
             for ui, unit in enumerate(plan["units"])
-            if required(unit)
+            if required(unit) and (name, pi, ui) not in answers
         ]
-        answers = {}
         for offset in range(0, len(requests), config["group"]):
             group = requests[offset : offset + config["group"]]
             print(f"Generating units {offset + 1}-{offset + len(group)} of {len(requests)}", flush=True)
@@ -361,8 +374,12 @@ def translate(files, tree, config, cache, generate_fn=generate):
                 candidate[keys[name]], output[name] = value, value.encode()
                 del pending[name]
                 print(f"Accepted {name}", flush=True)
-            except (KeyError, ValueError) as exc:
+            except KeyError as exc:
                 errors.setdefault(name, str(exc))
+            except ValueError as exc:
+                errors[name] = str(exc)
+                answers = {key: value for key, value in answers.items() if key[0] != name}
+                print(f"Rejected {name}: {exc}", flush=True)
     failures = [f"{name}: {errors.get(name, 'incomplete translation')}" for name in pending]
     if not failures:
         check_sidebar(output)
