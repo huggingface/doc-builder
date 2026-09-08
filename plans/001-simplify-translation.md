@@ -44,6 +44,19 @@ All 29 inline review requirements have local regression coverage or have been re
 
 **Still pending:** a real pinned GPU Job, generated Markdown click-through on the Hub, Japanese quality inspection, and a full accepted archive HTML build plus warm GPU/build-cache smoke. The documented Bucket URL shape and README behavior were checked read-only against the public Hub; no generated result has been claimed as live-tested. The runtime image and public continuous-batching API were checked against their published sources, but CUDA/model execution remains unverified. Enabling a Transformers caller and coordinating the legacy producer remain future work outside this scope.
 
+## Live preview result — 2026-09-07
+
+The user subsequently authorized pushing the doc-builder implementation, running Jobs in `hf-doc-build`, and writing preview results to `hf://buckets/hf-doc-build/doc-translate`. They selected `quicktour.md` and `models.md` and approved switching to Qwen3 after Gemma 4 proved incompatible with the pinned continuous-batching cache. Full-source translation waits for their review of the preview.
+
+- [Completed Job](https://huggingface.co/jobs/hf-doc-build/6a9f6cdf259f8e97255ed8aa): 182 seconds running on `a100-large`. Both pages and the pruned sidebar passed acceptance. The worker and runner independently read back the loose files and archive; the runner verified provenance, inventory, and completion README.
+- [Completed Bucket folder](https://huggingface.co/buckets/hf-doc-build/doc-translate/tree/previews/transformers/ja/local-1-9ec85d204462), with [quicktour.md](https://huggingface.co/buckets/hf-doc-build/doc-translate/tree/previews/transformers/ja/local-1-9ec85d204462/source/quicktour.md) and [models.md](https://huggingface.co/buckets/hf-doc-build/doc-translate/tree/previews/transformers/ja/local-1-9ec85d204462/source/models.md).
+- Source: `8eaf75f84e0ef68ccdaac14b739ace53a962bbee`; doc-builder: `f8707b046bf04f523f3d753b09bfdd52787944c5`; model/tokenizer: `Qwen/Qwen3-30B-A3B-Instruct-2507` at `0d7cf23991f47feeb3a57ecb4c9cee8ea4a17bfe`.
+- Archive: `hf://buckets/hf-doc-build/doc-translate/previews/transformers/ja/local-1-9ec85d204462/source.tar.gz`; SHA-256: `e91ad0dae8c40d559a8f58098b272f46a2ad355f9d923605a866da518993bddf`.
+- Live failures led to bounded fixes: paired semantic tags for model input, restoring immutable content by tag ID, preserving callout framing and terminal punctuation outside generation, protecting parameter names, explicit terminology, and retaining accepted units during the single retry. Failed runs did not produce completed preview archives.
+- Final repository suite: **378 passed**, with five expected cold-cache warnings. All **743** pinned corpus pages still pass extraction, round-trip, and simulated-translation structural checks.
+
+Technical success is not language approval. Inspection found untranslated prose such as “interchangeable,” “model skeleton,” and “not” in `models.md`, plus wording that needs editorial review. The Bucket is private; API read-back succeeded, but the available in-app browser was logged out, so authenticated Hub click-through remains for the user. No HTML build, warm remote cache run, full-source translation, Transformers edit, serving change, or production activation is claimed. The shared translation cache remains unchanged by these previews.
+
 ## Objective and explicit tradeoffs
 
 Translate the English Markdown/MDX sources in Transformers' `docs/source/en` into Japanese, with a language parameter that can later select other configured languages. Prepare generation with Transformers continuous batching on HF Jobs. Store reusable translations and ordinary translated source files in an HF Bucket, together with a completed archive for build transfer. Prepare an opt-in consumer in doc-builder's shared workflow that retains PR #800's HTML cache. Do not activate it from Transformers or change the current serving setup in this scope.
