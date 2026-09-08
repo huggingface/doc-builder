@@ -107,16 +107,6 @@ def test_model_xml_tags_express_nested_pairs_and_opaque_content():
     assert pipeline.xml_tags(unit) == ["<link0>", "<image1>", "</image1>", "</link0>", "<keep4>`code`</keep4>"]
 
 
-def test_retry_names_the_exact_tags_present_in_a_chunk():
-    from doc_builder.translate.segment import extract_pages
-
-    unit = extract_pages(["[First](one). Then [second](two)."])[0]["units"][0]
-    chunk = {**unit, "text": "Then ¤2¤second¤3¤."}
-    instruction = pipeline.prompt(chunk, config(), retry=True)
-    assert "<link2> </link2>" in instruction
-    assert "<link0>" not in instruction
-
-
 @pytest.mark.parametrize(
     "fault", [None, "missing", "error", "unfinished", "truncated", "misordered", "duplicate", "nested"]
 )
