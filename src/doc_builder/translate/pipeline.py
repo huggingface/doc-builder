@@ -12,7 +12,8 @@ import yaml
 
 from .segment import accept_unit, extract_pages, render_page, required, validate_pages
 
-MODEL = "google/gemma-4-26B-A4B-it"
+# Uniform KV dimensions are required by the pinned continuous-batching cache.
+MODEL = "Qwen/Qwen3-30B-A3B-Instruct-2507"
 # The runtime pins the public generate_batch implementation inspected for result ordering.
 TRANSFORMERS_REVISION = "58a94493a64f74d04279a3a617297dfe355b0b89"
 LANGUAGES = {"ja": "Japanese"}
