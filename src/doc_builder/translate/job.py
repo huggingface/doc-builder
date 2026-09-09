@@ -80,7 +80,7 @@ def submit(args, api=None):
     if args.full and os.environ.get("GITHUB_ACTIONS") != "true":
         raise ValueError("Full runs require a serialized GitHub Actions caller; use a preview locally")
     run_id = f"{os.environ.get('GITHUB_RUN_ID', 'local')}-{os.environ.get('GITHUB_RUN_ATTEMPT', '1')}-{uuid.uuid4().hex[:12]}"
-    prefix = artifact.run_prefix(args.lang, run_id, preview)
+    prefix = artifact.run_prefix(args.lang, run_id)
     labels = {
         "doc-builder-translation": "v2",
         "language": args.lang,
@@ -148,7 +148,7 @@ def submit(args, api=None):
                             add=[
                                 (
                                     json.dumps(valid, ensure_ascii=False).encode(),
-                                    f"cache/transformers/{args.lang}.json",
+                                    f"{artifact.language_prefix(args.lang)}/.cache.json",
                                 )
                             ],
                         )
@@ -164,8 +164,9 @@ def submit(args, api=None):
                 raise ValueError("Browsable source differs from the archive")
             if not artifact.download(api, bucket, [f"{prefix}/README.md"])[0]:
                 raise ValueError("Completed run README is missing")
+            artifact.publish_docs(api, bucket, args.lang, accepted)
             result = {
-                **artifact.run_result(bucket, prefix, accepted, data),
+                **artifact.run_result(bucket, prefix, accepted, data, docs_prefix=artifact.language_prefix(args.lang)),
                 "translation_language": args.lang,
                 "doc_builder_revision": builder_revision,
             }

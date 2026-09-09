@@ -90,9 +90,12 @@ def setup(source_repo, tmp_path, monkeypatch):  # noqa: F811 - pytest fixture in
 def test_preview_returns_only_verified_run_links_and_never_shared_writes(setup):
     args, api = setup
     result = job.submit(args, api)
-    assert "/previews/transformers/ja/" in result["translation_archive"]
-    assert result["page_url"].startswith(result["folder_url"])
-    assert all(name.startswith("previews/") for batch in api.writes for name in batch)
+    assert "/transformers/ja/.runs/" in result["translation_archive"]
+    assert result["folder_url"] == "https://huggingface.co/buckets/test/translations/tree/transformers/ja"
+    assert result["page_url"] == result["folder_url"] + "/guide.mdx"
+    assert ("test/translations", "transformers/ja/guide.mdx") in api.files
+    assert ("test/translations", "transformers/ja/.cache.json") not in api.files
+    assert all(name.startswith("transformers/ja/") for batch in api.writes for name in batch)
     assert json.loads(Path(args.job_record).read_text())["id"] == "job1"
     assert api.submitted[0]["secrets"] == {"HF_TOKEN": "test-token"}
     assert "test-token" not in str(api.submitted[0]["command"])
@@ -104,9 +107,9 @@ def test_full_runner_is_the_only_shared_cache_writer(setup, monkeypatch):
     args.full = True
     monkeypatch.setenv("GITHUB_ACTIONS", "true")
     result = job.submit(args, api)
-    canonical = "cache/transformers/ja.json"
-    assert api.writes[-1] == [canonical]
-    assert "/runs/" in result["translation_archive"]
+    canonical = "transformers/ja/.cache.json"
+    assert api.writes.count([canonical]) == 1
+    assert "/.runs/" in result["translation_archive"]
     cache = json.loads(api.files["test/translations", canonical])
     assert len(cache) == 3
     api.generator = lambda *a, **k: pytest.fail("Warm worker loaded the model")
@@ -122,11 +125,13 @@ def test_failed_full_job_recovers_only_complete_pages_without_build_output(setup
         return ["" if "Read" in u["text"] else generate([u], config)[0] for u in units]
 
     api.generator = broken
+    api.files["test/translations", "transformers/ja/index.md"] = b"previous accepted page"
     with pytest.raises(ValueError, match="ERROR"):
         job.submit(args, api)
-    assert len(json.loads(api.files["test/translations", "cache/transformers/ja.json"])) == 2
+    assert len(json.loads(api.files["test/translations", "transformers/ja/.cache.json"])) == 2
     assert not any(name.endswith("/README.md") or name.endswith(".tar.gz") for _, name in api.files)
     assert not (tmp_path / "outputs").exists()
+    assert api.files["test/translations", "transformers/ja/index.md"] == b"previous accepted page"
 
 
 def test_runner_validates_cache_without_reentering_translation(setup, monkeypatch):
@@ -141,7 +146,7 @@ def test_runner_validates_cache_without_reentering_translation(setup, monkeypatc
         return wait(*args, **kwargs)
 
     monkeypatch.setattr(api, "wait_for_job", completed)
-    assert "/runs/" in job.submit(args, api)["translation_archive"]
+    assert "/.runs/" in job.submit(args, api)["translation_archive"]
 
 
 @pytest.mark.parametrize("state", ["CANCELED", "DELETED", "RUNNING", "UNKNOWN"])

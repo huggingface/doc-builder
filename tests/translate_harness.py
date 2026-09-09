@@ -4,6 +4,8 @@ import re
 from pathlib import Path
 from types import SimpleNamespace
 
+from huggingface_hub.hf_api import BucketFile
+
 from doc_builder.translate import pipeline
 
 
@@ -45,12 +47,21 @@ class Hub:
     def __init__(self):
         self.files, self.writes, self.fail_at = {}, [], None
 
-    def batch_bucket_files(self, bucket_id, *, add):
-        self.writes.append([name for _, name in add])
+    def batch_bucket_files(self, bucket_id, *, add=None, delete=None):
+        self.writes.append([name for _, name in add or []] + (delete or []))
         if self.fail_at == len(self.writes):
             raise OSError("Interrupted upload")
-        for data, name in add:
+        for name in delete or []:
+            self.files.pop((bucket_id, name), None)
+        for data, name in add or []:
             self.files[bucket_id, name] = data if isinstance(data, bytes) else Path(data).read_bytes()
+
+    def list_bucket_tree(self, bucket_id, *, prefix, recursive):
+        return [
+            BucketFile(type="file", path=name, size=len(data), xetHash="test")
+            for (bucket, name), data in self.files.items()
+            if bucket == bucket_id and name.startswith(prefix)
+        ]
 
     def download_bucket_files(self, bucket_id, files, *, raise_on_missing_files):
         for remote, local in files:
