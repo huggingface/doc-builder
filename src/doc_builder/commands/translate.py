@@ -54,7 +54,7 @@ def run(args, api=None, generate_fn=pipeline.generate):
         bucket, path = artifact.bucket_path(args.bucket)
         if path:
             raise ValueError("Pass the Bucket root; each run gets its own output folder")
-        prefix = artifact.run_prefix(args.lang, args.run_id, args.preview or selected is not None)
+        prefix = artifact.run_prefix(args.lang, args.run_id)
         revision = args.model_revision or api.model_info(pipeline.MODEL).sha
         config = pipeline.configuration(args.lang, revision)
         builder_revision = pipeline.git(Path(__file__).resolve().parents[3], "rev-parse", "HEAD")
@@ -62,7 +62,7 @@ def run(args, api=None, generate_fn=pipeline.generate):
             raise ValueError("Commit implementation changes before running a translation Job")
         if not re.fullmatch(r"[a-f0-9]{40}", builder_revision):
             raise ValueError("Run from a pinned doc-builder checkout")
-        cache = artifact.read_cache(api, bucket, f"cache/transformers/{args.lang}.json")
+        cache = artifact.read_cache(api, bucket, f"{artifact.language_prefix(args.lang)}/.cache.json")
         translated, candidate, failures = pipeline.translate(files, config, cache, generate_fn)
         try:
             api.batch_bucket_files(

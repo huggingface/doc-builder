@@ -12,6 +12,8 @@ import warnings
 from pathlib import Path, PurePosixPath
 from urllib.parse import quote
 
+from huggingface_hub.hf_api import BucketFile
+
 from .pipeline import check_sidebar, digest
 
 
@@ -22,10 +24,16 @@ def bucket_path(uri):
     return match[1], match[2] or ""
 
 
-def run_prefix(language, run_id, preview):
-    if not re.fullmatch(r"[a-z]{2,3}", language) or not re.fullmatch(r"[A-Za-z0-9_-]+", run_id):
-        raise ValueError("Invalid language or run ID")
-    return f"{'previews' if preview else 'runs'}/transformers/{language}/{run_id}"
+def language_prefix(language):
+    if not re.fullmatch(r"[a-z]{2,3}", language):
+        raise ValueError("Invalid language")
+    return f"transformers/{language}"
+
+
+def run_prefix(language, run_id):
+    if not re.fullmatch(r"[A-Za-z0-9_-]+", run_id):
+        raise ValueError("Invalid run ID")
+    return f"{language_prefix(language)}/.runs/{run_id}"
 
 
 def run_metadata(source_revision, builder_revision, config, run_id, preview):
@@ -41,14 +49,15 @@ def run_metadata(source_revision, builder_revision, config, run_id, preview):
     }
 
 
-def run_result(bucket, prefix, files, data):
-    folder = f"https://huggingface.co/buckets/{bucket}/tree/{prefix}"
+def run_result(bucket, prefix, files, data, docs_prefix=None):
+    folder = f"https://huggingface.co/buckets/{bucket}/tree/{docs_prefix or prefix}"
+    source = folder if docs_prefix else f"{folder}/source"
     first_page = min(name for name in files if Path(name).suffix in {".md", ".mdx"})
     return {
         "translation_archive": f"hf://buckets/{bucket}/{prefix}/source.tar.gz",
         "translation_archive_sha256": hashlib.sha256(data).hexdigest(),
         "folder_url": folder,
-        "page_url": f"{folder}/source/{quote(first_page)}",
+        "page_url": f"{source}/{quote(first_page)}",
     }
 
 
@@ -159,6 +168,28 @@ def upload_run(api, bucket, prefix, files, metadata):
     return result
 
 
+def publish_docs(api, bucket, language, files):
+    """Replace the readable language folder after the runner verifies a complete run."""
+    prefix = language_prefix(language) + "/"
+    if any(name == ".cache.json" or name == ".runs" or name.startswith(".runs/") for name in files):
+        raise ValueError("Source collides with translation cache or run artifacts")
+    remote = {prefix + name: value for name, value in files.items()}
+    obsolete = [
+        entry.path
+        for entry in api.list_bucket_tree(bucket, prefix=prefix, recursive=True)
+        if isinstance(entry, BucketFile)
+        and entry.path.startswith(prefix)
+        and entry.path not in remote
+        and entry.path != prefix + ".cache.json"
+        and not entry.path.startswith(prefix + ".runs/")
+    ]
+    if obsolete:
+        api.batch_bucket_files(bucket, delete=obsolete)
+    api.batch_bucket_files(bucket, add=[(value, name) for name, value in remote.items()])
+    if download(api, bucket, list(remote)) != list(remote.values()):
+        raise ValueError("Published documentation differs from the verified archive")
+
+
 def install(data, target, expected, sha256, expected_files):
     files, metadata = verify_archive(data, expected, sha256, expected_files)
     if metadata["preview"]:
@@ -196,7 +227,7 @@ def main():
     parser.add_argument("--docs-source", required=True, type=Path)
     args = parser.parse_args()
     bucket, path = bucket_path(args.archive)
-    match = re.fullmatch(r"runs/transformers/([a-z]{2,3})/([A-Za-z0-9_-]+)/source.tar.gz", path)
+    match = re.fullmatch(r"transformers/([a-z]{2,3})/\.runs/([A-Za-z0-9_-]+)/source\.tar\.gz", path)
     if not match or match[1] != args.language:
         raise ValueError("Build input must identify a full translation run for the requested language")
     if not re.fullmatch(r"[a-f0-9]{64}", args.sha256):
