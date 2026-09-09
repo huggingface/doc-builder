@@ -49,6 +49,18 @@ on:
       python_version:
         type: string
         description: "Python version for the build venv (e.g. '3.11'). Defaults to the runner's system Python."
+      translation_archive:
+        type: string
+        description: "Exact completed translation archive in an HF Bucket"
+      translation_archive_sha256:
+        type: string
+        description: "Archive SHA-256 returned by the translation runner"
+      translation_language:
+        type: string
+        description: "The single translated language built by this call"
+      doc_builder_revision:
+        type: string
+        description: "Pinned doc-builder implementation SHA for a translation archive"
     secrets:
       hf_token:
         required: true
@@ -68,11 +80,13 @@ jobs:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
         with:
           repository: 'huggingface/doc-builder'
+          ref: ${{ inputs.translation_archive != '' && inputs.doc_builder_revision || '' }}
           path: doc-builder
 
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
         with:
           repository: '${{ inputs.repo_owner }}/${{ inputs.package }}'
+          ref: ${{ inputs.translation_archive != '' && inputs.commit_sha || '' }}
           path: ${{ inputs.package }}
 
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
@@ -121,12 +135,16 @@ jobs:
           toolchain: stable
 
       - name: Setup environment
+        env:
+          TRANSLATION_ARCHIVE: ${{ inputs.translation_archive }}
         shell: bash
         run: |
           uv venv ${{ inputs.python_version && format('--python {0}', inputs.python_version) || '' }}
           source .venv/bin/activate
           cd doc-builder
-          git pull origin main
+          if [ -z "$TRANSLATION_ARCHIVE" ]; then
+            git pull origin main
+          fi
           uv pip install .
           cd ..
 
@@ -185,6 +203,27 @@ jobs:
           echo https://colab.research.google.com/github/${{ inputs.repo_owner }}/${{ inputs.package }}/blob/$branch$remaining_part
 
           doc-builder notebook-to-mdx ${{ env.doc_folder }} --open_notebook_prefix https://colab.research.google.com/github/${{ inputs.repo_owner }}/${{ inputs.package }}/blob/$branch$remaining_part
+
+      - name: Install verified translation source
+        if: inputs.translation_archive != ''
+        env:
+          HF_TOKEN: ${{ secrets.hf_token }}
+          ARCHIVE: ${{ inputs.translation_archive }}
+          ARCHIVE_SHA256: ${{ inputs.translation_archive_sha256 }}
+          SOURCE_REVISION: ${{ inputs.commit_sha }}
+          BUILDER_REVISION: ${{ inputs.doc_builder_revision }}
+          LANGUAGE: ${{ inputs.translation_language }}
+          LANGUAGES: ${{ inputs.languages }}
+          PACKAGE: ${{ inputs.package }}
+          DOCS_SOURCE: ${{ env.doc_folder }}
+        run: |
+          source .venv/bin/activate
+          test "$PACKAGE" = transformers
+          test -n "$BUILDER_REVISION"
+          test "$LANGUAGE" = "$LANGUAGES"
+          python -m doc_builder.translate.artifact --archive "$ARCHIVE" --sha256 "$ARCHIVE_SHA256" \
+            --source-revision "$SOURCE_REVISION" --doc-builder-revision "$BUILDER_REVISION" \
+            --language "$LANGUAGE" --repository "$PACKAGE" --docs-source "$DOCS_SOURCE"
 
       - name: Make documentation
         shell: bash

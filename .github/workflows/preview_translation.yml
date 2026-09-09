@@ -1,0 +1,79 @@
+name: Preview translated documentation
+
+on:
+  workflow_dispatch:
+    inputs:
+      source_revision:
+        description: "Full Transformers source commit SHA"
+        required: true
+        type: string
+      language:
+        description: "Target language"
+        default: ja
+        type: string
+      pages:
+        description: "Space-separated page paths, or empty for all English pages"
+        type: string
+      bucket:
+        description: "Existing preview Bucket: hf://buckets/<owner>/<name>"
+        required: true
+        type: string
+      namespace:
+        description: "Hub namespace that runs and pays for the Job"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: translation-transformers-${{ inputs.language }}-${{ inputs.bucket }}
+  cancel-in-progress: false
+
+jobs:
+  preview:
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    env:
+      HF_TOKEN: ${{ secrets.HF_TOKEN }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          ref: ${{ github.sha }}
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+        with:
+          node-version: '22.14.0'
+      - uses: astral-sh/setup-uv@d31148d669074a8d0a63714ba94f3201e7020bc3
+      - name: Install runner and parser
+        run: |
+          uv venv --python 3.12
+          uv pip install -e . 'huggingface_hub==1.27.0'
+          npm ci --prefix kit
+      - name: Translate on HF Jobs
+        id: translation
+        env:
+          SOURCE_REVISION: ${{ inputs.source_revision }}
+          LANGUAGE: ${{ inputs.language }}
+          BUCKET: ${{ inputs.bucket }}
+          NAMESPACE: ${{ inputs.namespace }}
+          PAGES: ${{ inputs.pages }}
+          BUILDER_REPOSITORY: https://github.com/${{ github.repository }}.git
+        run: |
+          args=()
+          if [[ -n "$PAGES" ]]; then
+            read -r -a pages <<< "$PAGES"
+            args+=(--pages "${pages[@]}")
+          fi
+          .venv/bin/python -m doc_builder.translate.job --source-revision "$SOURCE_REVISION" \
+            --lang "$LANGUAGE" --bucket "$BUCKET" --namespace "$NAMESPACE" \
+            --doc-builder-repository "$BUILDER_REPOSITORY" "${args[@]}"
+      - name: Stop an unfinished Job
+        if: always()
+        run: .venv/bin/python -m doc_builder.translate.job --cancel-record translation-job.json
+      - name: Link to translated Markdown
+        if: success()
+        env:
+          FOLDER_URL: ${{ steps.translation.outputs.folder_url }}
+          PAGE_URL: ${{ steps.translation.outputs.page_url }}
+        run: |
+          printf '[Open the completed translation folder](%s)\n\n[Read a translated page](%s)\n' "$FOLDER_URL" "$PAGE_URL" >> "$GITHUB_STEP_SUMMARY"
