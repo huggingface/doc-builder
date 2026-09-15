@@ -1,4 +1,5 @@
 import subprocess
+from pathlib import Path
 
 import pytest
 
@@ -89,10 +90,10 @@ def test_wrong_revision_fails(repo):
 def test_source_symlinks_must_resolve_inside_repo(repo, tmp_path):
     target = repo / "docs/source/en/linked.md"
     try:
-        target.symlink_to("../../../README.md")
+        target.symlink_to(Path("../../../README.md"))
     except OSError:
         pytest.skip("This OS does not permit creating test symlinks")
-    (repo / "README.md").write_text("# Shared source\n")
+    (repo / "README.md").write_bytes(b"# Shared source\n")
     sha = commit(repo)
     assert pipeline.inventory(repo, sha)[0]["linked.md"] == b"# Shared source\n"
     target.unlink()

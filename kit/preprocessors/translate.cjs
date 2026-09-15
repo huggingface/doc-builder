@@ -122,10 +122,10 @@ async function extract(source, keep = []) {
 			const candidate = block
 				? raw + `{/${block[1]}}`
 				: branch
-				? branch[1] === "else"
-					? "{#if true}" + raw + "{/if}"
-					: "{#await promise}" + raw + "{/await}"
-				: raw;
+					? branch[1] === "else"
+						? "{#if true}" + raw + "{/if}"
+						: "{#await promise}" + raw + "{/await}"
+					: raw;
 			try {
 				let nodes;
 				try {
