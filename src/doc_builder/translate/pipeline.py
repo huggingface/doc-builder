@@ -26,7 +26,7 @@ def digest(value):
 
 
 def read_glossary(language):
-    return yaml.safe_load((Path(__file__).parents[1] / "glossaries" / f"{language}.yml").read_text())
+    return yaml.safe_load((Path(__file__).parents[1] / "glossaries" / f"{language}.yml").read_text(encoding="utf-8"))
 
 
 def configuration(language, model_revision):

@@ -16,6 +16,7 @@ def extract(pages):
         ["node", str(ROOT / "kit/preprocessors/translate.cjs")],
         input=json.dumps({"pages": pages}),
         text=True,
+        encoding="utf-8",
         capture_output=True,
         check=True,
     )
@@ -73,7 +74,7 @@ def test_corpus_roundtrip_and_visibility():
     root = Path(os.environ.get("EN_DOCS", ROOT / "tests/fixtures/translate_corpus"))
     paths = sorted(p for p in root.rglob("*") if p.suffix in {".md", ".mdx"} and p.name != "README.md")
     assert paths, f"No corpus at {root}"
-    sources = [p.read_text() for p in paths]
+    sources = [p.read_text(encoding="utf-8") for p in paths]
     for path, source, plan in zip(paths, sources, extract(sources), strict=True):
         assert restore(plan) == source, path
         assert plan["units"], path
@@ -86,7 +87,7 @@ def test_translated_corpus_structure():
 
     root = Path(os.environ.get("EN_DOCS", ROOT / "tests/fixtures/translate_corpus"))
     paths = sorted(p for p in root.rglob("*") if p.suffix in {".md", ".mdx"} and p.name != "README.md")
-    plans = extract_pages([p.read_text() for p in paths], normalize=True)
+    plans = extract_pages([p.read_text(encoding="utf-8") for p in paths], normalize=True)
     translations = []
     for plan in plans:
         responses = []
