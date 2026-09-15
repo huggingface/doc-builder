@@ -11,7 +11,7 @@ from pathlib import Path
 
 from huggingface_hub import HfApi
 
-from ..translate import artifact, pipeline
+from ..translate import artifact, pipeline, preflight
 
 
 def checkout(revision, directory):
@@ -33,7 +33,6 @@ def checkout(revision, directory):
 
 
 def run(args, api=None, generate_fn=pipeline.generate):
-    api = api or HfApi()
     with tempfile.TemporaryDirectory() as directory:
         repo = args.source or checkout(args.source_revision, Path(directory) / "transformers")
         selected = Path(args.pages_file).read_text().splitlines() if args.pages_file else None
@@ -43,12 +42,12 @@ def run(args, api=None, generate_fn=pipeline.generate):
         if args.lang not in pipeline.LANGUAGES:
             raise ValueError(f"Unsupported language: {args.lang}")
         if args.dry_run:
-            plans = pipeline.extract_pages(
-                [value.decode() for name, value in files.items() if Path(name).suffix in {".md", ".mdx"}],
-                normalize=True,
-            )
-            print(f"Validated {len(plans)} source pages at {args.source_revision}")
-            return
+            report = preflight.check(files, {"glossary": pipeline.read_glossary(args.lang)})
+            print(json.dumps(report, ensure_ascii=False, indent=2))
+            if report["errors"]:
+                raise ValueError("Preflight found syntax failures; inspect the errors in the report")
+            return report
+        api = api or HfApi()
         if not args.bucket or not args.run_id:
             raise ValueError("Generation requires --bucket and --run-id")
         bucket, path = artifact.bucket_path(args.bucket)
@@ -102,6 +101,8 @@ def translate_command_parser(subparsers=None):
     parser.add_argument("--model-revision", help="Pin the model and tokenizer commit SHA")
     parser.add_argument("--pages-file", help="Preview the relative page paths listed in this file")
     parser.add_argument("--preview", action="store_true", help="Keep this run isolated from full build artifacts")
-    parser.add_argument("--dry-run", action="store_true", help="Validate sources without generation or Bucket writes")
+    parser.add_argument(
+        "--dry-run", action="store_true", help="Audit labels and syntax locally without generation or Bucket writes"
+    )
     parser.set_defaults(func=translate_command)
     return parser

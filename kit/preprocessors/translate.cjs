@@ -6,15 +6,21 @@ const fs = require("node:fs");
 
 async function parse(source) {
 	let tree;
-	await compile(source, {
-		highlight: false,
-		smartypants: false,
-		remarkPlugins: [
-			() => (ast) => {
-				tree = structuredClone(ast);
-			},
-		],
-	});
+	// Hide API-link colons and admonitions from Markdown reference parsing without moving offsets.
+	await compile(
+		source
+			.replace(/(\[`[^`\n]+`\]):/g, "$1;")
+			.replace(/\[!(?:NOTE|TIP|IMPORTANT|WARNING|CAUTION)\]/g, (m) => " ".repeat(m.length)),
+		{
+			highlight: false,
+			smartypants: false,
+			remarkPlugins: [
+				() => (ast) => {
+					tree = structuredClone(ast);
+				},
+			],
+		}
+	);
 	return tree;
 }
 function walk(node, fn) {
@@ -37,14 +43,22 @@ const escapeRE = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 async function extract(source, keep = []) {
 	if (source.includes("¤")) throw Error("Source contains reserved translation marker ¤");
 	let protectedSpans = [];
-	function protect(a, b, block = false) {
+	function protect(a, b, block = false, kind = "opaque") {
 		if (a >= b || protectedSpans.some((s) => a < s.b && b > s.a && !(a <= s.a && b >= s.b))) return;
 		protectedSpans = protectedSpans.filter((s) => !(a <= s.a && b >= s.b));
-		protectedSpans.push({ a, b, block });
+		protectedSpans.push({ a, b, block, kind });
 	}
 	const initial = await parse(source);
+	const links = [];
 	walk(initial, (node) => {
+		if (node.type === "image" || (node.type === "link" && source[start(node)] === "["))
+			links.push([start(node), end(node)]);
 		if (node.type === "link" && source[start(node)] === "<") protect(start(node), end(node));
+		if (node.type === "link" && /^https?:\/\/(?:huggingface\.co|hf\.co)\//.test(node.url)) {
+			const id = node.url.replace(/^https?:\/\/[^/]+\//, "").replace(/\/$/, "");
+			if ([id, id.split("/").at(-1)].includes(title(node)))
+				protect(start(node.children[0]), end(node.children.at(-1)));
+		}
 		if (["code", "inlineCode", "yaml", "definition"].includes(node.type))
 			protect(start(node), end(node), node.type !== "inlineCode");
 	});
@@ -86,6 +100,7 @@ async function extract(source, keep = []) {
 		[/<\/?[A-Za-z][\w:.-]*(?:\s+(?:[^<>"']|"[^"]*"|'[^']*')*)?\s*\/?>/g, false],
 		[/\[!(?:NOTE|TIP|IMPORTANT|WARNING|CAUTION)\]/g, false],
 		[/\b[A-Za-z][A-Za-z0-9]*_(?:[A-Za-z0-9]+_)*[A-Za-z0-9]+\b/g, false], // Literal snake_case identifiers.
+		[/\b(?!(?:i\.e|e\.g)\b)[A-Za-z][\w-]*(?:[.@][\w-]+)+\b/g, false], // File names and qualified identifiers.
 		[/\{\\[A-Za-z]+\b/g, false], // TeX prose groups such as {\em Transient Global}.
 	];
 	for (const [pattern, block] of extensions)
@@ -134,10 +149,13 @@ async function extract(source, keep = []) {
 		// Unparseable braces are literal prose (for example {Pop, Piano Cover}).
 	}
 	// Raw URL labels and bare destinations are not always link nodes in mdsvex.
-	for (const m of source.matchAll(url)) protect(m.index, m.index + m[0].length);
+	for (const m of source.matchAll(url))
+		if (!links.some(([a, b]) => a <= m.index && m.index < b))
+			protect(m.index, m.index + m[0].length);
 	for (const word of [...keep].sort((a, b) => b.length - a.length)) {
-		const pattern = new RegExp(`(?<![A-Za-z0-9_])${escapeRE(word)}(?![A-Za-z0-9_])`, "giu");
-		for (const m of source.matchAll(pattern)) protect(m.index, m.index + m[0].length);
+		const pattern = new RegExp(`(?<![A-Za-z0-9_])${escapeRE(word)}s?(?![A-Za-z0-9_])`, "giu");
+		for (const m of source.matchAll(pattern))
+			protect(m.index, m.index + m[0].length, false, "name");
 	}
 	protectedSpans.sort((a, b) => a.a - b.a);
 	let cleaned = source;
@@ -148,10 +166,11 @@ async function extract(source, keep = []) {
 			!source
 				.slice(s.b, source.indexOf("\n", s.b) < 0 ? source.length : source.indexOf("\n", s.b))
 				.trim();
-		cleaned =
-			cleaned.slice(0, s.a) +
-			raw.replace(/[^\r\n]/g, s.block || standalone ? " " : "x") +
-			cleaned.slice(s.b);
+		// Table cell boundaries stay in the skeleton, never in a model prompt.
+		const mask = /^<\/?(?:table|thead|tbody|tfoot|tr|th|td)\b/.test(raw)
+			? raw.replace(/[^\r\n]/g, "\n")
+			: raw.replace(/[^\r\n]/g, s.block || standalone ? " " : "x");
+		cleaned = cleaned.slice(0, s.a) + mask + cleaned.slice(s.b);
 	}
 	const tree = await parse(cleaned);
 	const containers = [];
@@ -166,6 +185,9 @@ async function extract(source, keep = []) {
 	for (const node of containers) {
 		const a = start(node.children[0]);
 		let b = end(node.children.at(-1));
+		// Anchors are page structure, not translation context.
+		if (node.type === "heading")
+			b -= source.slice(a, b).match(/[ \t]*\[\[[^\]\n]+\]\]$/)?.[0].length || 0;
 		// Terminal exclamations belong to the skeleton, like paragraph separators.
 		if (node.children.at(-1).type === "text")
 			b -= source.slice(a, b).match(/(?<!\\)!+$/)?.[0].length || 0;
@@ -211,7 +233,7 @@ async function extract(source, keep = []) {
 			} else add(x, y);
 		}
 		for (const c of node.children) inline(c);
-		for (const s of protectedSpans) if (s.a >= a && s.b <= b) add(s.a, s.b);
+		for (const s of protectedSpans) if (s.a >= a && s.b <= b) add(s.a, s.b, s.kind);
 		spans.sort((x, y) => x.a - y.a || y.b - x.b);
 		const tokens = [];
 		let text = "",
@@ -226,6 +248,8 @@ async function extract(source, keep = []) {
 			return raw.replace(
 				/\\[!"#$%&\x27()*+,\-./:;<=>?@[\]\\^_`{|}~]|\r?\n[ \t>]*|[\\`*_[\]{}<>|~!#$]/g,
 				(m, offset) => {
+					if (/^\r?\n/.test(m))
+						literalEdits.push({ a: base + offset, b: base + offset + m.length, text: " " });
 					if (m === "_" || m === "*")
 						literalEdits.push({ a: base + offset, b: base + offset + 1, text: "\\" + m });
 					return token(m);

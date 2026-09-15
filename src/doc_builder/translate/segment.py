@@ -2,8 +2,15 @@
 """Source-position extraction and translation acceptance."""
 
 import re
+from collections import Counter
 
 PLACEHOLDER_RE = re.compile(r"¤(\d+)¤")
+
+
+class InvalidUnit(ValueError):
+    def __init__(self, message, page, unit):
+        super().__init__(message)
+        self.page, self.unit = page, unit
 
 
 def placeholder_indices(text):
@@ -27,12 +34,28 @@ def extract_pages(sources, keep=(), normalize=False):
     )
     if result.returncode:
         raise ValueError(f"Cannot extract translation source: {result.stderr.strip()}")
-    return json.loads(result.stdout)
+    return [{**plan, "keep": list(keep)} for plan in json.loads(result.stdout)]
 
 
 def required(unit):
-    """Only explicit keep terms, syntax, numbers and punctuation are exempt."""
-    return any(c.isalpha() for c in PLACEHOLDER_RE.sub("", unit["text"]))
+    """Preserve isolated acronym labels, numbers, and protected content."""
+    if unit.get("translate") is not None:
+        return unit["translate"]
+    prose = PLACEHOLDER_RE.sub("", unit["text"])
+    # Strip identifiers only for label classification; surrounding prose still needs translation.
+    prose = re.sub(
+        r"\b(?=[\w.-]*(?:[a-z][A-Z]|[A-Z]{2,}[a-z]|[A-Za-z][.-]?\d|\d[.-]?[A-Za-z]|_))[\w.-]+\b",
+        "",
+        prose,
+    )
+    if re.fullmatch(r"(?:v\d+)?/[\w./-]+", prose.strip()):
+        return False
+    # Units and benchmark notation are labels, not English sentences.
+    prose = re.sub(r"\bTop\s+\d+|\b\d+(?:\.\d+)?(?:[eE][+-]?\d+|[kKMGTB](?:-[a-z])?)?", "", prose)
+    words = [
+        word for word in re.findall(r"[^\W\d_]+", prose) if word not in {"tok", "s", "ms", "px", "m", "MB", "GB", "TB"}
+    ]
+    return bool(words) and not re.fullmatch(r"[A-Z]+(?: [A-Z])?", " ".join(words))
 
 
 def accept_unit(unit, response):
@@ -43,7 +66,9 @@ def accept_unit(unit, response):
     response = " ".join(response.split())
     ids = placeholder_indices(response)
     if sorted(ids) != list(range(len(unit["tokens"]))):
-        raise ValueError("Translation changed protected markers")
+        raise ValueError(
+            f"Translation changed protected markers: expected IDs {list(range(len(unit['tokens'])))}, got {ids}"
+        )
     stack = []
     for i in ids:
         token = unit["tokens"][i]
@@ -70,6 +95,16 @@ def accept_unit(unit, response):
             raise ValueError("Translation is empty or echoes the source")
     elif response != " ".join(unit["text"].split()):
         raise ValueError("Translation changed a protected-only unit")
+    if required(unit):
+        names = {i for i, t in enumerate(unit["tokens"]) if re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9 .()-]*", t["raw"])}
+        for i in names:
+            response = re.sub(rf"(?<=[A-Za-z0-9])¤{i}¤", f" ¤{i}¤", response)
+            response = re.sub(rf"¤{i}¤(?=[A-Za-z0-9])", f"¤{i}¤ ", response)
+        response = re.sub(
+            r"¤(\d+)¤(?=¤(\d+)¤)",
+            lambda m: m[0] + (" " if int(m[1]) in names and int(m[2]) in names else ""),
+            response,
+        )
     leading = re.match(r"\s*", unit["text"])[0]
     trailing = re.search(r"\s*$", unit["text"])[0]
     return leading + response.strip() + trailing
@@ -85,9 +120,14 @@ def render_page(plan, responses):
     return "".join(pieces) + plan["pieces"][-1]
 
 
-def token_structure(tokens):
+def token_structure(tokens, names=None):
     roots, stack = [], []
     for token in tokens:
+        # Repeated prose names are not new syntax; required occurrences still retain their containment.
+        if token["kind"] == "name" and names is not None:
+            if not names[token["raw"]]:
+                continue
+            names[token["raw"]] -= 1
         if token["kind"] == "close":
             if not stack or stack[-1][0] != token["pair"]:
                 raise ValueError("Invalid inline nesting")
@@ -109,11 +149,19 @@ def structure(plan):
 
 
 def validate_pages(originals, translations, keep=()):
-    plans = extract_pages(translations, keep)
-    for original, translated in zip(originals, plans, strict=True):
-        if structure(original) != structure(translated):
-            raise ValueError("Translation changed document structure or protected content")
-        for before, after in zip(original["units"], translated["units"], strict=True):
-            if required(before):
-                accept_unit({**after, "text": before["text"]}, after["text"])
+    plans = extract_pages(translations, originals[0].get("keep", keep) if originals else keep)
+    for pi, (original, translated) in enumerate(zip(originals, plans, strict=True)):
+        if original["pieces"] != translated["pieces"] or len(original["units"]) != len(translated["units"]):
+            raise ValueError(
+                "Translation changed document structure or protected content: page skeleton or unit count"
+            )
+        for ui, (before, after) in enumerate(zip(original["units"], translated["units"], strict=True)):
+            try:
+                if before["kind"] != after["kind"] or token_structure(before["tokens"]) != token_structure(
+                    after["tokens"], Counter(t["raw"] for t in before["tokens"] if t["kind"] == "name")
+                ):
+                    raise ValueError(f"Translation changed document structure or protected content in unit {ui + 1}")
+                accept_unit({**after, "text": before["text"], "translate": before.get("translate")}, after["text"])
+            except ValueError as exc:
+                raise InvalidUnit(str(exc), pi, ui) from exc
     return plans
