@@ -369,7 +369,9 @@ def prepare_documents(files, config):
 
 
 def cache_key(name, source, config):
-    return digest({"package": "transformers", "path": name, "source": source.decode("utf-8"), "config": config})
+    return digest(
+        {"package": "transformers", "path": name, "source": hashlib.sha256(source).hexdigest(), "config": config}
+    )
 
 
 def load_valid_cache(files, config, cache, documents=None):

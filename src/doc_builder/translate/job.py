@@ -1,13 +1,11 @@
 # Copyright 2026 The HuggingFace Team. Licensed under the Apache License, Version 2.0.
-"""Submit a pinned HF worker; only this runner may update the shared page cache."""
+"""Submit a pinned HF worker that updates canonical translated documents."""
 
 import argparse
 import json
 import os
 import re
 import tempfile
-import uuid
-import warnings
 from pathlib import Path
 
 from huggingface_hub import HfApi, get_token
@@ -62,9 +60,7 @@ def cancel_record(path, api):
 
 def submit(args, api=None):
     api = api or HfApi()
-    bucket, suffix = artifact.bucket_path(args.bucket)
-    if suffix:
-        raise ValueError("Pass a Bucket root")
+    bucket = artifact.bucket_path(args.bucket)
     root = Path(__file__).resolve().parents[3]
     builder_revision = pipeline.git(root, "rev-parse", "HEAD")
     if pipeline.git(root, "status", "--porcelain", "--untracked-files=no"):
@@ -74,25 +70,17 @@ def submit(args, api=None):
         raise ValueError("Doc-builder repository must be an HTTPS GitHub URL")
     model_revision = args.model_revision or api.model_info(pipeline.MODEL).sha
     config = pipeline.configuration(args.lang, model_revision)
-    preview = not args.full
-    if args.pages and not preview:
-        raise ValueError("Selected pages require a preview run")
-    if args.full and os.environ.get("GITHUB_ACTIONS") != "true":
-        raise ValueError("Full runs require a serialized GitHub Actions caller; use a preview locally")
-    run_id = f"{os.environ.get('GITHUB_RUN_ID', 'local')}-{os.environ.get('GITHUB_RUN_ATTEMPT', '1')}-{uuid.uuid4().hex[:12]}"
-    prefix = artifact.run_prefix(args.lang, run_id)
     labels = {
         "doc-builder-translation": "v2",
         "language": args.lang,
         "bucket": pipeline.digest(bucket)[:16],
-        "purpose": "preview" if preview else "full",
     }
     with tempfile.TemporaryDirectory() as directory:
         repo = checkout(args.source_revision, Path(directory) / "transformers")
         files, _ = pipeline.inventory(repo, args.source_revision, args.pages)
         for previous in api.list_jobs(namespace=args.namespace, labels=labels):
             if stage(previous) not in TERMINAL:
-                stop_job(api, previous.id, args.namespace)
+                raise ValueError(f"Translation Job {previous.id} is still active; wait for it before starting another")
         worker_args = [
             "transformers",
             "--source-revision",
@@ -101,13 +89,9 @@ def submit(args, api=None):
             args.lang,
             "--bucket",
             args.bucket,
-            "--run-id",
-            run_id,
             "--model-revision",
             model_revision,
         ]
-        if preview:
-            worker_args.append("--preview")
         bootstrap = BOOTSTRAP
         if args.pages:
             worker_args.extend(["--pages-file", "/tmp/translation-pages.txt"])
@@ -121,8 +105,8 @@ def submit(args, api=None):
             namespace=args.namespace,
             flavor=args.flavor,
             timeout="5h",
-            name=f"translate-{args.lang}-{run_id}",
-            labels={**labels, "run": run_id},
+            name=f"translate-{args.lang}",
+            labels=labels,
             secrets={"HF_TOKEN": token},
             env={
                 "BUILDER_REPOSITORY": repository,
@@ -137,36 +121,21 @@ def submit(args, api=None):
             print(f"Job: {job.url}", flush=True)
             completed = api.wait_for_job(job.id, namespace=args.namespace, timeout=5 * 3600 + 300, poll_interval=15)
             state = stage(completed)
-            if state in {"COMPLETED", "ERROR"} and not preview:
-                candidate = artifact.read_cache(api, bucket, f"{prefix}/cache.json")
-
-                _, valid = pipeline.load_valid_cache(files, config, candidate)
-                if valid:
-                    try:
-                        api.batch_bucket_files(
-                            bucket,
-                            add=[
-                                (
-                                    json.dumps(valid, ensure_ascii=False).encode(),
-                                    f"{artifact.language_prefix(args.lang)}/.cache.json",
-                                )
-                            ],
-                        )
-                    except Exception as exc:
-                        warnings.warn(f"Shared cache update failed; next run may recompute pages: {exc}", stacklevel=2)
             if state != "COMPLETED":
-                raise ValueError(f"Translation Job {job.id} ended in {state}; no build artifact selected")
-            data = artifact.download(api, bucket, [f"{prefix}/source.tar.gz"])[0]
-            expected = artifact.run_metadata(args.source_revision, builder_revision, config, run_id, preview)
-            accepted, _ = artifact.verify_archive(data, expected, expected_files=files)
-            remote = [f"{prefix}/source/{name}" for name in accepted]
-            if artifact.download(api, bucket, remote) != list(accepted.values()):
-                raise ValueError("Browsable source differs from the archive")
-            if not artifact.download(api, bucket, [f"{prefix}/README.md"])[0]:
-                raise ValueError("Completed run README is missing")
-            artifact.publish_docs(api, bucket, args.lang, accepted)
+                raise ValueError(f"Translation Job {job.id} ended in {state}; no build output selected")
+            state = artifact.read_state(api, bucket, args.lang)
+            if (
+                state.get("source_revision") != args.source_revision
+                or state.get("doc_builder_revision") != builder_revision
+                or state.get("config") != config
+            ):
+                raise ValueError("Translation state belongs to another run")
+            if not args.pages:
+                artifact.verify(
+                    api, bucket, files, args.lang, args.source_revision, builder_revision, pipeline.digest(state)
+                )
             result = {
-                **artifact.run_result(bucket, prefix, accepted, data, docs_prefix=artifact.language_prefix(args.lang)),
+                **artifact.result(bucket, args.lang, files, state),
                 "translation_language": args.lang,
                 "doc_builder_revision": builder_revision,
             }
@@ -192,7 +161,6 @@ def main():
     parser.add_argument("--doc-builder-repository", help="Fetch the implementation from this GitHub HTTPS repository")
     parser.add_argument("--flavor", default="a100-large", help="Choose the HF Job hardware")
     parser.add_argument("--job-record", default="translation-job.json", help="Record the Job ID for cancellation")
-    parser.add_argument("--full", action="store_true", help="Produce a full build artifact in a serialized workflow")
     args = parser.parse_args()
     if args.cancel_record:
         cancel_record(args.cancel_record, HfApi())

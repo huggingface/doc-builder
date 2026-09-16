@@ -49,18 +49,18 @@ on:
       python_version:
         type: string
         description: "Python version for the build venv (e.g. '3.11'). Defaults to the runner's system Python."
-      translation_archive:
+      translation_bucket:
         type: string
-        description: "Exact completed translation archive in an HF Bucket"
-      translation_archive_sha256:
+        description: "Bucket containing the canonical translated documents"
+      translation_state_sha256:
         type: string
-        description: "Archive SHA-256 returned by the translation runner"
+        description: "State SHA-256 returned by the translation runner"
       translation_language:
         type: string
         description: "The single translated language built by this call"
       doc_builder_revision:
         type: string
-        description: "Pinned doc-builder implementation SHA for a translation archive"
+        description: "Pinned doc-builder implementation SHA for translated documents"
     secrets:
       hf_token:
         required: true
@@ -71,8 +71,9 @@ permissions: {}
 
 jobs:
   build_main_documentation:
-    permissions:
-      contents: read
+    concurrency:
+      group: ${{ inputs.translation_bucket != '' && format('translation-transformers-{0}-{1}', inputs.translation_language, inputs.translation_bucket) || github.run_id }}
+      cancel-in-progress: false
     runs-on: ubuntu-22.04
     defaults:
       run:
@@ -89,14 +90,14 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
         with:
           repository: 'huggingface/doc-builder'
-          ref: ${{ inputs.translation_archive != '' && inputs.doc_builder_revision || '' }}
+          ref: ${{ inputs.translation_bucket != '' && inputs.doc_builder_revision || '' }}
           path: doc-builder
           persist-credentials: false
 
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
         with:
           repository: '${{ inputs.repo_owner }}/${{ inputs.package }}'
-          ref: ${{ inputs.translation_archive != '' && inputs.commit_sha || '' }}
+          ref: ${{ inputs.translation_bucket != '' && inputs.commit_sha || '' }}
           path: ${{ inputs.package }}
 
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
@@ -150,7 +151,7 @@ jobs:
 
       - name: Setup environment
         env:
-          TRANSLATION_ARCHIVE: ${{ inputs.translation_archive }}
+          TRANSLATION_BUCKET: ${{ inputs.translation_bucket }}
         shell: bash
         env:
           PYTHON_VERSION: ${{ inputs.python_version }}
@@ -166,7 +167,7 @@ jobs:
           fi
           source .venv/bin/activate
           cd doc-builder
-          if [ -z "$TRANSLATION_ARCHIVE" ]; then
+          if [ -z "$TRANSLATION_BUCKET" ]; then
             git pull origin main
           fi
           uv pip install .
@@ -235,11 +236,11 @@ jobs:
           doc-builder notebook-to-mdx "$DOC_FOLDER" --open_notebook_prefix "https://colab.research.google.com/github/$REPO_OWNER/$PACKAGE/blob/$branch$remaining_part"
 
       - name: Install verified translation source
-        if: inputs.translation_archive != ''
+        if: inputs.translation_bucket != ''
         env:
           HF_TOKEN: ${{ secrets.hf_token }}
-          ARCHIVE: ${{ inputs.translation_archive }}
-          ARCHIVE_SHA256: ${{ inputs.translation_archive_sha256 }}
+          BUCKET: ${{ inputs.translation_bucket }}
+          STATE_SHA256: ${{ inputs.translation_state_sha256 }}
           SOURCE_REVISION: ${{ inputs.commit_sha }}
           BUILDER_REVISION: ${{ inputs.doc_builder_revision }}
           LANGUAGE: ${{ inputs.translation_language }}
@@ -251,7 +252,7 @@ jobs:
           test "$PACKAGE" = transformers
           test -n "$BUILDER_REVISION"
           test "$LANGUAGE" = "$LANGUAGES"
-          python -m doc_builder.translate.artifact --archive "$ARCHIVE" --sha256 "$ARCHIVE_SHA256" \
+          python -m doc_builder.translate.artifact --bucket "$BUCKET" --state-sha256 "$STATE_SHA256" \
             --source-revision "$SOURCE_REVISION" --doc-builder-revision "$BUILDER_REVISION" \
             --language "$LANGUAGE" --repository "$PACKAGE" --docs-source "$DOCS_SOURCE"
 
