@@ -49,6 +49,18 @@ on:
       python_version:
         type: string
         description: "Python version for the build venv (e.g. '3.11'). Defaults to the runner's system Python."
+      translation_bucket:
+        type: string
+        description: "Bucket containing the canonical translated documents"
+      translation_state_sha256:
+        type: string
+        description: "State SHA-256 returned by the translation runner"
+      translation_language:
+        type: string
+        description: "The single translated language built by this call"
+      doc_builder_revision:
+        type: string
+        description: "Pinned doc-builder implementation SHA for translated documents"
     secrets:
       hf_token:
         required: true
@@ -57,6 +69,9 @@ on:
 
 jobs:
   build_main_documentation:
+    concurrency:
+      group: ${{ inputs.translation_bucket != '' && format('translation-transformers-{0}-{1}', inputs.translation_language, inputs.translation_bucket) || github.run_id }}
+      cancel-in-progress: false
     runs-on: ubuntu-22.04
     defaults:
       run:
@@ -68,11 +83,13 @@ jobs:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
         with:
           repository: 'huggingface/doc-builder'
+          ref: ${{ inputs.translation_bucket != '' && inputs.doc_builder_revision || '' }}
           path: doc-builder
 
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
         with:
           repository: '${{ inputs.repo_owner }}/${{ inputs.package }}'
+          ref: ${{ inputs.translation_bucket != '' && inputs.commit_sha || '' }}
           path: ${{ inputs.package }}
 
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
@@ -121,12 +138,16 @@ jobs:
           toolchain: stable
 
       - name: Setup environment
+        env:
+          TRANSLATION_BUCKET: ${{ inputs.translation_bucket }}
         shell: bash
         run: |
           uv venv ${{ inputs.python_version && format('--python {0}', inputs.python_version) || '' }}
           source .venv/bin/activate
           cd doc-builder
-          git pull origin main
+          if [ -z "$TRANSLATION_BUCKET" ]; then
+            git pull origin main
+          fi
           uv pip install .
           cd ..
 
@@ -185,6 +206,27 @@ jobs:
           echo https://colab.research.google.com/github/${{ inputs.repo_owner }}/${{ inputs.package }}/blob/$branch$remaining_part
 
           doc-builder notebook-to-mdx ${{ env.doc_folder }} --open_notebook_prefix https://colab.research.google.com/github/${{ inputs.repo_owner }}/${{ inputs.package }}/blob/$branch$remaining_part
+
+      - name: Install verified translation source
+        if: inputs.translation_bucket != ''
+        env:
+          HF_TOKEN: ${{ secrets.hf_token }}
+          BUCKET: ${{ inputs.translation_bucket }}
+          STATE_SHA256: ${{ inputs.translation_state_sha256 }}
+          SOURCE_REVISION: ${{ inputs.commit_sha }}
+          BUILDER_REVISION: ${{ inputs.doc_builder_revision }}
+          LANGUAGE: ${{ inputs.translation_language }}
+          LANGUAGES: ${{ inputs.languages }}
+          PACKAGE: ${{ inputs.package }}
+          DOCS_SOURCE: ${{ env.doc_folder }}
+        run: |
+          source .venv/bin/activate
+          test "$PACKAGE" = transformers
+          test -n "$BUILDER_REVISION"
+          test "$LANGUAGE" = "$LANGUAGES"
+          python -m doc_builder.translate.artifact --bucket "$BUCKET" --state-sha256 "$STATE_SHA256" \
+            --source-revision "$SOURCE_REVISION" --doc-builder-revision "$BUILDER_REVISION" \
+            --language "$LANGUAGE" --repository "$PACKAGE" --docs-source "$DOCS_SOURCE"
 
       - name: Make documentation
         shell: bash

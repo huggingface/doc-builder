@@ -24,6 +24,7 @@ from doc_builder.commands.notebook_to_mdx import notebook_to_mdx_command_parser
 from doc_builder.commands.preview import preview_command_parser
 from doc_builder.commands.push import push_command_parser
 from doc_builder.commands.style import style_command_parser
+from doc_builder.commands.translate import translate_command_parser
 
 
 def main():
@@ -40,6 +41,7 @@ def main():
     style_command_parser(subparsers=subparsers)
     preview_command_parser(subparsers=subparsers)
     push_command_parser(subparsers=subparsers)
+    translate_command_parser(subparsers=subparsers)
 
     # Let's go
     args = parser.parse_args()

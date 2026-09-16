@@ -26,7 +26,7 @@ dependencies = [
     "pyyaml",
     "packaging",
     "nbformat",
-    "huggingface_hub",
+    "huggingface_hub>=1.27.0",
     "pillow",
     "meilisearch==0.34.1",
     "watchdog>=6.0.0",
@@ -40,6 +40,8 @@ Repository = "https://github.com/huggingface/doc-builder"
 
 [project.optional-dependencies]
 transformers = ["transformers[dev]"]
+# GPU dependencies are needed only by the HF translation worker.
+translate = ["torch>=2.8", "transformers>=5.16.1", "accelerate", "kernels>=0.11.0"]
 testing = [
     "pytest",
     "pytest-xdist",
@@ -98,10 +100,10 @@ package-dir = {"" = "src"}
 where = ["src"]
 
 [tool.setuptools.package-data]
-doc_builder = ["mock_deps/*.txt"]
+doc_builder = ["mock_deps/*.txt", "glossaries/*.yml"]
 
 [tool.uv]
-override-dependencies = ["huggingface-hub>=1.5.0"]
+override-dependencies = ["huggingface-hub>=1.27.0"]
 
 [tool.ruff]
 line-length = 119
