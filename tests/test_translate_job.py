@@ -27,6 +27,7 @@ class Jobs(Hub):
     def run_job(self, **kwargs):
         self.submitted.append(kwargs)
         if self.do_work:
+            self.state = "COMPLETED"
             args = command.translate_command_parser().parse_args(
                 json.loads(kwargs["env"]["TRANSLATE_ARGUMENTS"]) + ["--source", str(self.repo)]
             )
@@ -77,7 +78,6 @@ def setup(source_repo, tmp_path, monkeypatch):  # noqa: F811 - pytest fixture in
         namespace="test",
         lang="ja",
         source_revision=actual_git(repo, "rev-parse", "HEAD"),
-        full=False,
         pages=None,
         model_revision="a" * 40,
         doc_builder_repository=None,
@@ -87,39 +87,24 @@ def setup(source_repo, tmp_path, monkeypatch):  # noqa: F811 - pytest fixture in
     return args, Jobs(repo)
 
 
-def test_preview_returns_only_verified_run_links_and_never_shared_writes(setup):
+def test_job_writes_only_canonical_files_and_warm_run_skips_generation(setup):
     args, api = setup
     result = job.submit(args, api)
-    assert "/transformers/ja/.runs/" in result["translation_archive"]
-    assert result["folder_url"] == "https://huggingface.co/buckets/test/translations/tree/transformers/ja"
+    assert result["translation_bucket"] == args.bucket
     assert result["page_url"] == result["folder_url"] + "/guide.mdx"
-    assert ("test/translations", "transformers/ja/guide.mdx") in api.files
-    assert ("test/translations", "transformers/ja/.cache.json") not in api.files
-    assert all(name.startswith("transformers/ja/") for batch in api.writes for name in batch)
+    assert len(api.files) == 5  # Four source files plus hashes-only state.
+    assert not any(".runs" in name or ".cache.json" in name for _, name in api.files)
     assert json.loads(Path(args.job_record).read_text())["id"] == "job1"
     assert api.submitted[0]["secrets"] == {"HF_TOKEN": "test-token"}
-    assert "test-token" not in str(api.submitted[0]["command"])
     assert "test-token" not in str(api.files)
-
-
-def test_full_runner_is_the_only_shared_cache_writer(setup, monkeypatch):
-    args, api = setup
-    args.full = True
-    monkeypatch.setenv("GITHUB_ACTIONS", "true")
-    result = job.submit(args, api)
-    canonical = "transformers/ja/.cache.json"
-    assert api.writes.count([canonical]) == 1
-    assert "/.runs/" in result["translation_archive"]
-    cache = json.loads(api.files["test/translations", canonical])
-    assert len(cache) == 3
     api.generator = lambda *a, **k: pytest.fail("Warm worker loaded the model")
-    assert job.submit(args, api)["translation_archive"] != result["translation_archive"]
+    api.writes.clear()
+    assert job.submit(args, api) == result
+    assert all(batch == ["transformers/ja/.translation-state.json"] for batch in api.writes)
 
 
-def test_failed_full_job_recovers_only_complete_pages_without_build_output(setup, monkeypatch, tmp_path):
+def test_failed_job_keeps_old_page_and_caches_successes_without_build_output(setup, tmp_path):
     args, api = setup
-    args.full = True
-    monkeypatch.setenv("GITHUB_ACTIONS", "true")
 
     def broken(units, config, retry=False):
         return ["" if "Read" in u["text"] else generate([u], config)[0] for u in units]
@@ -128,25 +113,25 @@ def test_failed_full_job_recovers_only_complete_pages_without_build_output(setup
     api.files["test/translations", "transformers/ja/index.md"] = b"previous accepted page"
     with pytest.raises(ValueError, match="ERROR"):
         job.submit(args, api)
-    assert len(json.loads(api.files["test/translations", "transformers/ja/.cache.json"])) == 2
-    assert not any(name.endswith("/README.md") or name.endswith(".tar.gz") for _, name in api.files)
+    state = job.artifact.read_state(api, "test/translations", "ja")
+    assert not state["complete"] and "index.md" not in state["files"]
+    assert "guide.mdx" in state["files"]
     assert not (tmp_path / "outputs").exists()
     assert api.files["test/translations", "transformers/ja/index.md"] == b"previous accepted page"
 
 
-def test_runner_validates_cache_without_reentering_translation(setup, monkeypatch):
+def test_selected_pages_preserve_other_docs_and_sidebar(setup):
     args, api = setup
-    args.full = True
-    monkeypatch.setenv("GITHUB_ACTIONS", "true")
-    wait = api.wait_for_job
-
-    def completed(*args, **kwargs):
-        # The simulated worker has finished; the runner must only validate its output.
-        monkeypatch.setattr(pipeline, "translate", lambda *a, **k: pytest.fail("Runner entered translation"))
-        return wait(*args, **kwargs)
-
-    monkeypatch.setattr(api, "wait_for_job", completed)
-    assert "/.runs/" in job.submit(args, api)["translation_archive"]
+    job.submit(args, api)
+    before = dict(api.files)
+    args.pages = ["index.md"]
+    job.submit(args, api)
+    for name in ["guide.mdx", "_toctree.yml", "image.svg"]:
+        assert (
+            api.files["test/translations", "transformers/ja/" + name]
+            == before["test/translations", "transformers/ja/" + name]
+        )
+    assert not job.artifact.read_state(api, "test/translations", "ja")["complete"]
 
 
 @pytest.mark.parametrize("state", ["CANCELED", "DELETED", "RUNNING", "UNKNOWN"])
@@ -160,20 +145,13 @@ def test_non_successful_job_has_no_outputs_or_cache_update(setup, state, tmp_pat
         assert api.canceled == ["job1"]
 
 
-def test_orphan_is_stopped_before_submission(setup):
+def test_active_translation_prevents_submission_even_for_other_scope(setup):
     args, api = setup
     api.previous = [job_info("old", "RUNNING")]
-    job.submit(args, api)
-    assert api.canceled == ["old"]
-    assert api.labels["purpose"] == "preview"
-
-
-def test_unstoppable_orphan_prevents_submission(setup):
-    args, api = setup
-    api.previous, api.refuse_stop = [job_info("old", "RUNNING")], True
-    with pytest.raises(ValueError, match="did not stop"):
+    with pytest.raises(ValueError, match="still active"):
         job.submit(args, api)
-    assert not api.submitted
+    assert not api.submitted and not api.canceled
+    assert "purpose" not in api.labels
 
 
 def test_recording_failure_still_stops_submitted_job(setup, monkeypatch):
@@ -201,16 +179,43 @@ def test_always_cleanup_uses_record_and_missing_record_is_harmless(setup):
     assert api.canceled == ["job1"]
 
 
-def test_wrong_archive_never_reaches_workflow_outputs(setup, monkeypatch, tmp_path):
+def test_changed_state_never_reaches_workflow_outputs(setup, monkeypatch, tmp_path):
     args, api = setup
-    original = job.artifact.verify_archive
 
-    def reject(data, expected, **kwargs):
-        if "expected_files" in kwargs and expected["preview"]:
-            raise ValueError("wrong source")
-        return original(data, expected, **kwargs)
+    def reject(*args, **kwargs):
+        raise ValueError("Translation state changed")
 
-    monkeypatch.setattr(job.artifact, "verify_archive", reject)
-    with pytest.raises(ValueError):
+    monkeypatch.setattr(job.artifact, "verify", reject)
+    with pytest.raises(ValueError, match="state changed"):
         job.submit(args, api)
     assert not (tmp_path / "outputs").exists()
+
+
+def test_failed_update_retains_old_hash_and_retry_only_generates_failed_page(setup, tmp_path):
+    from tests.test_translate_adversarial import commit
+
+    args, api = setup
+    job.submit(args, api)
+    old = dict(api.files)
+    root = api.repo / "docs/source/en"
+    (root / "index.md").write_bytes(b"# Introduction\n\nRead updated instructions.\n")
+    args.source_revision = commit(api.repo)
+    api.generator = lambda units, *a, **k: ["" for _ in units]
+    with pytest.raises(ValueError, match="ERROR"):
+        job.submit(args, api)
+    state = job.artifact.read_state(api, "test/translations", "ja")
+    assert not state["complete"]
+    assert (
+        api.files["test/translations", "transformers/ja/index.md"]
+        == old["test/translations", "transformers/ja/index.md"]
+    )
+    calls = []
+
+    def retry(units, cfg, retry=False):
+        calls.extend(u["text"] for u in units)
+        return generate(units, cfg, retry)
+
+    api.generator = retry
+    job.submit(args, api)
+    assert calls == ["Introduction", "Read updated instructions."]
+    assert job.artifact.read_state(api, "test/translations", "ja")["complete"]

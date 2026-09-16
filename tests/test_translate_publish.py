@@ -1,215 +1,196 @@
-import hashlib
-import io
-import sys
-import tarfile
+import json
 
 import pytest
 
-from doc_builder.translate import artifact
-from tests.translate_harness import Hub, files
+from doc_builder.translate import artifact, pipeline
+from tests.translate_harness import Hub, config, files, generate
 
-META = {
-    "format": 1,
-    "package": "transformers",
-    "language": "ja",
-    "source_revision": "a" * 40,
-    "doc_builder_revision": "b" * 40,
-    "config_digest": "c" * 64,
-    "run_id": "unique",
-    "preview": False,
-}
+BUCKET = "owner/bucket"
+PREFIX = "transformers/ja/"
 
 
-def test_archive_and_browsable_files_match_and_readme_is_last():
+@pytest.fixture
+def translated():
+    source = {**files(), "image.svg": b"\xff\x00binary"}
+    output, _, failures = pipeline.translate(source, config(), {}, generate)
+    assert not failures
+    return source, output
+
+
+def publish(hub, translated, state=None, **kwargs):
+    source, output = translated
+    return artifact.publish(hub, BUCKET, source, output, config(), state or {}, "a" * 40, "b" * 40, **kwargs)
+
+
+def verify(hub, source, state):
+    return artifact.verify(hub, BUCKET, source, "ja", "a" * 40, "b" * 40, pipeline.digest(state))
+
+
+def test_single_copy_is_cache_and_build_source(translated, tmp_path):
     hub = Hub()
-    prefix = artifact.run_prefix("ja", "unique")
-    source = artifact.disclose(files())
-    result = artifact.upload_run(hub, "owner/bucket", prefix, source, META)
-    assert hub.writes[-1] == [prefix + "/README.md"]
-    assert all(name.startswith(prefix + "/") for batch in hub.writes for name in batch)
-    data = hub.files["owner/bucket", prefix + "/source.tar.gz"]
-    restored, _ = artifact.verify_archive(data, META, result["translation_archive_sha256"], source)
-    assert restored == source
-    for name, value in source.items():
-        assert hub.files["owner/bucket", prefix + "/source/" + name] == value
-    readme = hub.files["owner/bucket", prefix + "/README.md"].decode()
-    assert result["page_url"] in readme
-    assert "/tree/transformers/ja/.runs/" in result["folder_url"] and "/blob/" not in result["page_url"]
-
-
-@pytest.mark.parametrize("at", [1, 2])
-def test_interrupted_upload_never_changes_another_run(at):
-    hub = Hub()
-    hub.files["owner/bucket", "transformers/ja/.runs/old/source/index.md"] = b"previous"
-    hub.fail_at = at
-    with pytest.raises(OSError):
-        artifact.upload_run(hub, "owner/bucket", "transformers/ja/.runs/new", files(), META)
-    assert hub.files["owner/bucket", "transformers/ja/.runs/old/source/index.md"] == b"previous"
-    assert ("owner/bucket", "transformers/ja/.runs/new/README.md") not in hub.files
-
-
-def test_corrupt_download_prevents_completion_readme():
-    class Corrupt(Hub):
-        def download_bucket_files(self, bucket_id, files, **kwargs):
-            super().download_bucket_files(bucket_id, files, **kwargs)
-            files[0][1].write_bytes(b"corrupt")
-
-    hub = Corrupt()
-    with pytest.raises(ValueError, match="accepted tree"):
-        artifact.upload_run(hub, "owner/bucket", "transformers/ja/.runs/new", files(), META)
-    assert len(hub.writes) == 1
-
-
-@pytest.mark.parametrize(
-    "key,value",
-    [
-        ("source_revision", "d" * 40),
-        ("language", "fr"),
-        ("run_id", "wrong"),
-        ("doc_builder_revision", "d" * 40),
-        ("config_digest", "d" * 64),
-        ("preview", True),
-    ],
-)
-def test_wrong_identity_is_rejected(key, value):
-    data = artifact.archive_bytes(files(), {**META, key: value})
-    with pytest.raises(ValueError, match="provenance"):
-        artifact.verify_archive(data, META)
-
-
-@pytest.mark.parametrize(
-    "name,kind",
-    [
-        ("source/../../escape", "file"),
-        ("/tmp/escape", "file"),
-        ("source/link", "symlink"),
-        ("source/hard", "hardlink"),
-        ("other/file", "file"),
-        ("source/index.md", "duplicate"),
-    ],
-)
-def test_malicious_members_are_rejected(name, kind):
-    out = io.BytesIO()
-    with tarfile.open(fileobj=out, mode="w:gz") as tar:
-        info = tarfile.TarInfo(name)
-        if kind in {"symlink", "hardlink"}:
-            info.type = tarfile.SYMTYPE if kind == "symlink" else tarfile.LNKTYPE
-            info.linkname = "/tmp/outside"
-            tar.addfile(info)
-        else:
-            info.size = 1
-            tar.addfile(info, io.BytesIO(b"x"))
-            if kind == "duplicate":
-                tar.addfile(info, io.BytesIO(b"y"))
-    with pytest.raises(ValueError):
-        artifact.verify_archive(out.getvalue(), META)
-
-
-def test_bad_hash_missing_page_and_preview_leave_target_untouched(tmp_path):
+    source, output = translated
+    state = publish(hub, translated)
+    assert len(hub.files) == len(source) + 1
+    assert set(state["files"]) == set(source)
+    assert all(set(entry) == {"key", "sha256"} for entry in state["files"].values())
+    assert "翻訳" not in json.dumps(state, ensure_ascii=False)
+    restored = verify(hub, source, state)
+    assert restored == artifact.disclose(output)
+    cache = artifact.read_cache(hub, BUCKET, source, config(), state)
+    again, _, errors = pipeline.translate(source, config(), cache, lambda *a, **k: pytest.fail("Loaded model"))
+    assert not errors and again == output
     target = tmp_path / "ja"
     target.mkdir()
-    (target / "previous.md").write_text("old")
-    data = artifact.archive_bytes(files(), META)
-    with pytest.raises(ValueError, match="checksum"):
-        artifact.install(data, target, META, "0" * 64, files())
-    with pytest.raises(ValueError, match="missing or unexpected"):
-        artifact.verify_archive(data, META, expected_files={**files(), "missing.md": b""})
-    preview = {**META, "preview": True}
-    with pytest.raises(ValueError, match="Preview"):
-        artifact.install(artifact.archive_bytes(files(), preview), target, preview, None, files())
-    assert (target / "previous.md").read_text() == "old"
-    artifact.install(data, target, META, None, files())
-    assert not (target / "previous.md").exists()
-    assert (target / "guide.mdx").read_bytes() == files()["guide.mdx"]
+    (target / "obsolete.md").write_bytes(b"old")
+    artifact.install(restored, target)
+    assert not (target / "obsolete.md").exists()
+    assert (target / "index.md").read_bytes() == restored["index.md"]
 
 
-def test_disclosure_is_not_cached_and_follows_license():
-    source = {"index.md": b"<!-- license -->\n\n# Heading\n"}
-    result = artifact.disclose(source)["index.md"].decode()
-    assert result.startswith("<!-- license -->\n\n> ")
-    assert "/main/en/index" in result
-
-
-def test_bad_or_missing_cache_is_a_cold_miss():
+@pytest.mark.parametrize("at", [2, 3])
+def test_interrupted_upload_blocks_build_and_can_resume(translated, at):
     hub = Hub()
-    with pytest.warns(UserWarning):
-        assert artifact.read_cache(hub, "o/b", "missing") == {}
-    hub.files["o/b", "cache"] = b"[]"
-    with pytest.warns(UserWarning):
-        assert artifact.read_cache(hub, "o/b", "cache") == {}
+    hub.fail_at = at
+    with pytest.raises(OSError):
+        publish(hub, translated)
+    state = artifact.read_state(hub, BUCKET, "ja")
+    assert not state["complete"]
+    with pytest.raises(ValueError, match="incomplete"):
+        verify(hub, translated[0], state)
+    hub.fail_at = None
+    state = publish(hub, translated, state)
+    assert verify(hub, translated[0], state)
 
 
-def test_publish_replaces_docs_and_preserves_internal_files_and_other_languages():
+@pytest.mark.parametrize("damage", ["missing", "corrupt"])
+def test_damaged_document_is_a_cache_miss_and_is_repaired(translated, damage):
     hub = Hub()
-    protected = {
-        "transformers/ja/.cache.json": b"cache",
-        "transformers/ja/.runs/old/source.tar.gz": b"archive",
-        "transformers/fr/index.md": b"French",
-        "transformers/ja-extra/index.md": b"another prefix",
+    source, _ = translated
+    state = publish(hub, translated)
+    if damage == "missing":
+        del hub.files[BUCKET, PREFIX + "index.md"]
+    else:
+        hub.files[BUCKET, PREFIX + "index.md"] = b"corrupt"
+    cache = artifact.read_cache(hub, BUCKET, source, config(), state)
+    assert pipeline.cache_key("index.md", source["index.md"], config()) not in cache
+    with pytest.raises((ValueError, KeyError)):
+        verify(hub, source, state)
+    state = publish(hub, translated, state)
+    assert verify(hub, source, state)
+
+
+def test_old_state_cannot_build_new_or_mixed_files(translated):
+    hub = Hub()
+    source, output = translated
+    old = publish(hub, translated)
+    updated = {**output, "index.md": output["index.md"].replace("翻訳".encode(), "日本語".encode())}
+    publish(hub, (source, updated), old)
+    with pytest.raises(ValueError, match="state changed"):
+        verify(hub, source, old)
+
+
+def test_state_change_during_download_is_rejected(translated, monkeypatch):
+    hub = Hub()
+    state = publish(hub, translated)
+    read = artifact.read_state
+    count = 0
+
+    def changing(*args):
+        nonlocal count
+        count += 1
+        result = read(*args)
+        return result if count == 1 else {**result, "complete": False}
+
+    monkeypatch.setattr(artifact, "read_state", changing)
+    with pytest.raises(ValueError, match="changed while downloading"):
+        verify(hub, translated[0], state)
+
+
+@pytest.mark.parametrize("change", ["source", "config", "missing", "revision", "partial"])
+def test_incompatible_state_cannot_build(translated, change):
+    hub = Hub()
+    source, _ = translated
+    state = publish(hub, translated, partial=change == "partial")
+    if change == "source":
+        source = {**source, "index.md": b"new English"}
+    if change == "config":
+        state["config"]["model_revision"] = "c" * 40
+    if change == "missing":
+        del state["files"]["index.md"]
+    if change == "revision":
+        state["source_revision"] = "d" * 40
+    hub.files[BUCKET, PREFIX + artifact.STATE] = json.dumps(state).encode()
+    with pytest.raises(ValueError):
+        verify(hub, source, state)
+
+
+def test_full_update_removes_obsolete_files_and_old_duplicates_only_in_language(translated):
+    hub = Hub()
+    for name in ["obsolete.md", ".cache.json", ".runs/old/source/index.md", ".runs/old/source.tar.gz"]:
+        hub.files[BUCKET, PREFIX + name] = b"old"
+    hub.files[BUCKET, "transformers/fr/index.md"] = b"French"
+    publish(hub, translated)
+    assert {name for bucket, name in hub.files if name.startswith(PREFIX)} == {
+        PREFIX + name for name in [*translated[0], artifact.STATE]
     }
-    hub.files.update({("o/b", path): data for path, data in protected.items()})
-    hub.files["o/b", "transformers/ja/obsolete.md"] = b"obsolete"
-    hub.files["o/b", "transformers/ja/index.md"] = b"old"
-    artifact.publish_docs(hub, "o/b", "ja", files())
-    assert ("o/b", "transformers/ja/obsolete.md") not in hub.files
-    for name, value in files().items():
-        assert hub.files["o/b", f"transformers/ja/{name}"] == value
-    for name, value in protected.items():
-        assert hub.files["o/b", name] == value
+    assert hub.files[BUCKET, "transformers/fr/index.md"] == b"French"
 
 
-@pytest.mark.parametrize("name", [".cache.json", ".runs", ".runs/old/source.tar.gz"])
-def test_publish_rejects_reserved_source_paths_without_writing(name):
+@pytest.mark.parametrize("name", ["../escape", "/tmp/escape", "folder\\escape", artifact.STATE, ".runs/a"])
+def test_reserved_or_unsafe_source_paths_never_write(translated, name):
     hub = Hub()
-    with pytest.raises(ValueError, match="collides"):
-        artifact.publish_docs(hub, "o/b", "ja", {**files(), name: b"collision"})
+    source, output = translated
+    with pytest.raises(ValueError, match="source path"):
+        publish(hub, ({**source, name: b"bad"}, output))
     assert not hub.writes
 
 
-def test_publish_readback_must_match_the_verified_source():
-    class Corrupt(Hub):
-        def download_bucket_files(self, bucket_id, files, **kwargs):
-            super().download_bucket_files(bucket_id, files, **kwargs)
-            files[0][1].write_bytes(b"corrupt")
-
-    with pytest.raises(ValueError, match="differs from the verified archive"):
-        artifact.publish_docs(Corrupt(), "o/b", "ja", files())
+def test_disclosure_roundtrip_preserves_license():
+    source = {"index.md": b"<!-- license -->\n\n# Heading\n"}
+    data = artifact.disclose(source)["index.md"]
+    assert data.startswith(b"<!-- license -->\n\n> ")
+    assert artifact.undisclose("index.md", data) == source["index.md"]
 
 
-def test_build_installs_archive_from_language_folder(monkeypatch, tmp_path):
-    from doc_builder.translate import pipeline
+def test_build_cli_installs_verified_canonical_files(translated, monkeypatch, tmp_path):
+    import sys
 
-    (tmp_path / "docs").mkdir()
-    data = artifact.archive_bytes(files(), META)
-    path = "transformers/ja/.runs/unique/source.tar.gz"
-    monkeypatch.setattr(pipeline, "inventory", lambda *args: (files(), []))
+    import huggingface_hub
 
-    def download(api, bucket, paths):
-        assert bucket == "o/b" and paths == [path]
-        return [data]
-
-    monkeypatch.setattr(artifact, "download", download)
+    hub = Hub()
+    state = publish(hub, translated)
+    source, output = translated
+    monkeypatch.setattr(huggingface_hub, "HfApi", lambda: hub)
+    monkeypatch.setattr(pipeline, "inventory", lambda *args: (source, []))
     monkeypatch.setattr(
         sys,
         "argv",
         [
             "artifact",
-            "--archive",
-            f"hf://buckets/o/b/{path}",
-            "--sha256",
-            hashlib.sha256(data).hexdigest(),
+            "--bucket",
+            f"hf://buckets/{BUCKET}",
+            "--state-sha256",
+            pipeline.digest(state),
             "--source-revision",
-            META["source_revision"],
+            "a" * 40,
             "--doc-builder-revision",
-            META["doc_builder_revision"],
+            "b" * 40,
             "--language",
             "ja",
             "--repository",
             str(tmp_path),
             "--docs-source",
-            str(tmp_path / "docs"),
+            str(tmp_path),
         ],
     )
     artifact.main()
-    for name, value in files().items():
-        assert (tmp_path / "docs" / "ja" / name).read_bytes() == value
+    assert (tmp_path / "ja/index.md").read_bytes() == artifact.disclose(output)["index.md"]
+
+
+def test_missing_accepted_page_cannot_mark_state_complete(translated):
+    hub = Hub()
+    source, output = translated
+    state = publish(hub, (source, {name: data for name, data in output.items() if name != "index.md"}))
+    assert not state["complete"]
+    with pytest.raises(ValueError, match="incomplete"):
+        verify(hub, source, state)

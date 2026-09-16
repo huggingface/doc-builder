@@ -1,4 +1,4 @@
-name: Preview translated documentation
+name: Translate documentation
 
 on:
   workflow_dispatch:
@@ -15,7 +15,7 @@ on:
         description: "Space-separated page paths, or empty for all English pages"
         type: string
       bucket:
-        description: "Existing preview Bucket: hf://buckets/<owner>/<name>"
+        description: "Translation Bucket: hf://buckets/<owner>/<name>"
         required: true
         type: string
       namespace:
@@ -26,12 +26,11 @@ on:
 permissions:
   contents: read
 
-concurrency:
-  group: translation-transformers-${{ inputs.language }}-${{ inputs.bucket }}
-  cancel-in-progress: false
-
 jobs:
   preview:
+    concurrency:
+      group: translation-transformers-${{ inputs.language }}-${{ inputs.bucket }}
+      cancel-in-progress: false
     runs-on: ubuntu-latest
     timeout-minutes: 360
     env:
