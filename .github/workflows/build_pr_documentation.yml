@@ -49,8 +49,7 @@ on:
       # Debug purposes only!
       doc_builder_revision:
         type: string
-        default: "main"
-        description: "Debug purposes only. Revision of `doc-builder` repo to use. Useful to test changes on `doc-builder`."
+        description: "Debug purposes only. Revision of `doc-builder` repo to use. Useful to test changes on `doc-builder`. Defaults to the revision of this reusable workflow, i.e. the one the caller pinned."
       fail_on_warning:
         type: boolean
         default: false
@@ -70,11 +69,14 @@ jobs:
       UV_HTTP_TIMEOUT: 900 # max 15min to install deps (shouldn't take more than 5min)
 
     steps:
+      # See build_main_documentation.yml: `ref` must be set explicitly, otherwise
+      # checkout falls back to the default branch and the caller's pin is a no-op.
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
         with:
-          repository: 'huggingface/doc-builder'
+          repository: ${{ job.workflow_repository }}
+          ref: ${{ inputs.doc_builder_revision || job.workflow_sha }}
           path: doc-builder
-          ref: ${{ inputs.doc_builder_revision }}
+          persist-credentials: false
 
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
         with:
@@ -139,7 +141,6 @@ jobs:
           uv venv ${{ inputs.python_version && format('--python {0}', inputs.python_version) || '' }}
           source .venv/bin/activate
           cd doc-builder
-          git pull origin ${{ inputs.doc_builder_revision }}
           uv pip install .
           cd ..
 
