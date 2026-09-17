@@ -55,8 +55,12 @@ on:
       token:
         required: false
 
+permissions: {}
+
 jobs:
   build_main_documentation:
+    permissions:
+      contents: read
     runs-on: ubuntu-22.04
     defaults:
       run:
@@ -97,20 +101,24 @@ jobs:
       - uses: astral-sh/setup-uv@d31148d669074a8d0a63714ba94f3201e7020bc3  # v8.3.0
 
       - name: Set env variables
+        env:
+          PATH_TO_DOCS: ${{ inputs.path_to_docs }}
+          PACKAGE: ${{ inputs.package }}
+          PACKAGE_NAME_INPUT: ${{ inputs.package_name }}
         run: |
-          if [ -z "${{ inputs.path_to_docs }}" ]
+          if [ -z "$PATH_TO_DOCS" ]
           then
-            echo "doc_folder=${{ inputs.package }}/docs/source" >> $GITHUB_ENV
-            echo "path_to_docs not provided, defaulting to ${{ inputs.package }}/docs/source"
+            echo "doc_folder=$PACKAGE/docs/source" >> $GITHUB_ENV
+            echo "path_to_docs not provided, defaulting to $PACKAGE/docs/source"
           else
-            echo "doc_folder=${{ inputs.path_to_docs }}" >> $GITHUB_ENV
+            echo "doc_folder=$PATH_TO_DOCS" >> $GITHUB_ENV
           fi
 
-          if [ -z "${{ inputs.package_name }}" ];
+          if [ -z "$PACKAGE_NAME_INPUT" ];
           then
-            echo "package_name=${{ inputs.package }}" >> $GITHUB_ENV
+            echo "package_name=$PACKAGE" >> $GITHUB_ENV
           else
-            echo "package_name=${{ inputs.package_name }}" >> $GITHUB_ENV
+            echo "package_name=$PACKAGE_NAME_INPUT" >> $GITHUB_ENV
           fi
 
       # Needed to upload zips to hf.co
@@ -129,25 +137,35 @@ jobs:
 
       - name: Setup environment
         shell: bash
+        env:
+          PYTHON_VERSION: ${{ inputs.python_version }}
+          ADDITIONAL_ARGS: ${{ inputs.additional_args }}
+          PACKAGE_DIR_INPUT: ${{ inputs.package_path || inputs.package }}
+          PACKAGE_NAME: ${{ env.package_name }}
         run: |
-          uv venv ${{ inputs.python_version && format('--python {0}', inputs.python_version) || '' }}
+          if [ -n "$PYTHON_VERSION" ]
+          then
+            uv venv --python "$PYTHON_VERSION"
+          else
+            uv venv
+          fi
           source .venv/bin/activate
           cd doc-builder
           uv pip install .
           cd ..
 
-          if [[ "${{ inputs.additional_args }}" == *"--not_python_module"* ]]
+          if [[ "$ADDITIONAL_ARGS" == *"--not_python_module"* ]]
           then
             echo "Not a Python module; skipping package install."
           else
-            package_dir="${{ inputs.package_path || inputs.package }}"
+            package_dir="$PACKAGE_DIR_INPUT"
             # Light install when the package has a mock-deps registry entry: only its
             # real (light) doc-build deps are installed and the heavy ones are mocked
             # at build time. Falls back to a full [dev] install otherwise.
-            if doc-builder light-install ${{ env.package_name }} --check
+            if doc-builder light-install "$PACKAGE_NAME" --check
             then
               uv pip install "./$package_dir" --no-deps
-              doc-builder light-install ${{ env.package_name }}
+              doc-builder light-install "$PACKAGE_NAME"
             else
               echo "Falling back to a full install."
               uv pip install "./$package_dir[dev]"
@@ -174,23 +192,29 @@ jobs:
 
       - name: Run pre-command
         shell: bash
+        env:
+          PRE_COMMAND: ${{ inputs.pre_command }}
         run: |
           source .venv/bin/activate
-          if [ ! -z "${{ inputs.pre_command }}" ]
+          if [ ! -z "$PRE_COMMAND" ]
           then
-            bash -c "${{ inputs.pre_command }}"
+            bash -c "$PRE_COMMAND"
           fi
 
       - name: Convert notebooks to markdown files
         if: inputs.convert_notebooks
+        env:
+          DOC_FOLDER: ${{ env.doc_folder }}
+          REPO_OWNER: ${{ inputs.repo_owner }}
+          PACKAGE: ${{ inputs.package }}
         run: |
           source .venv/bin/activate
           branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}
-          remaining_part=$(echo "${{ env.doc_folder }}" | perl -pe 's|^[^/]+||')
+          remaining_part=$(echo "$DOC_FOLDER" | perl -pe 's|^[^/]+||')
           remaining_part=${remaining_part%/}
-          echo https://colab.research.google.com/github/${{ inputs.repo_owner }}/${{ inputs.package }}/blob/$branch$remaining_part
+          echo "https://colab.research.google.com/github/$REPO_OWNER/$PACKAGE/blob/$branch$remaining_part"
 
-          doc-builder notebook-to-mdx ${{ env.doc_folder }} --open_notebook_prefix https://colab.research.google.com/github/${{ inputs.repo_owner }}/${{ inputs.package }}/blob/$branch$remaining_part
+          doc-builder notebook-to-mdx "$DOC_FOLDER" --open_notebook_prefix "https://colab.research.google.com/github/$REPO_OWNER/$PACKAGE/blob/$branch$remaining_part"
 
       - name: Make documentation
         shell: bash
@@ -198,27 +222,35 @@ jobs:
           NODE_OPTIONS: --max-old-space-size=6656
           # needed for --html_page_cache_write (trusted main builds only)
           HF_TOKEN: ${{ secrets.hf_token }}
+          DOC_FOLDER: ${{ env.doc_folder }}
+          PACKAGE_NAME: ${{ env.package_name }}
+          ADDITIONAL_ARGS: ${{ inputs.additional_args }}
+          REPO_OWNER: ${{ inputs.repo_owner }}
+          PACKAGE: ${{ inputs.package }}
+          VERSION_TAG_SUFFIX: ${{ inputs.version_tag_suffix }}
+          NOTEBOOK_FOLDER: ${{ inputs.notebook_folder }}
+          LANGUAGES: ${{ inputs.languages }}
         run: |
           source .venv/bin/activate
-          echo "doc_folder has been set to ${{ env.doc_folder }}"
+          echo "doc_folder has been set to $DOC_FOLDER"
           cd doc-builder
-          args="--build_dir ../build_dir --clean --html --html_page_cache hf://buckets/hf-doc-build/doc-build-cache --html_page_cache_write ${{ inputs.additional_args }} --repo_owner ${{ inputs.repo_owner }} --repo_name ${{ inputs.package }} --version_tag_suffix=${{ inputs.version_tag_suffix }}"
+          args="--build_dir ../build_dir --clean --html --html_page_cache hf://buckets/hf-doc-build/doc-build-cache --html_page_cache_write $ADDITIONAL_ARGS --repo_owner $REPO_OWNER --repo_name $PACKAGE --version_tag_suffix=$VERSION_TAG_SUFFIX"
 
-          if [ ! -z "${{ inputs.notebook_folder }}" ];
+          if [ ! -z "$NOTEBOOK_FOLDER" ];
           then
             args="$args --notebook_dir ../notebook_dir"
           fi
 
-          if [ -z "${{ inputs.languages }}" ];
+          if [ -z "$LANGUAGES" ];
           then
             echo "languages not provided, defaulting to English"
-            doc-builder build ${{ env.package_name }} ../${{ env.doc_folder }} $args
+            doc-builder build "$PACKAGE_NAME" "../$DOC_FOLDER" $args
           else
-            IFS=', ' read -r -a langs <<< "${{ inputs.languages }}"
+            IFS=', ' read -r -a langs <<< "$LANGUAGES"
             for lang in "${langs[@]}"
             do
                 echo "Generating docs for language $lang"
-                doc-builder build ${{ env.package_name }} ../${{ env.doc_folder }}/$lang $args --language $lang
+                doc-builder build "$PACKAGE_NAME" "../$DOC_FOLDER/$lang" $args --language "$lang"
             done
           fi
 
@@ -234,23 +266,33 @@ jobs:
           cd ..
 
       - name: Push to dataset (legacy, kept for rollback safety)
+        env:
+          PACKAGE_NAME: ${{ env.package_name }}
+          HF_TOKEN: ${{ secrets.hf_token }}
+          COMMIT_SHA: ${{ inputs.commit_sha }}
+          REPO_OWNER: ${{ inputs.repo_owner }}
+          PACKAGE: ${{ inputs.package }}
         run: |
           source .venv/bin/activate
           cd build_dir
-          doc-builder push ${{ env.package_name }} --doc_build_repo_id "hf-doc-build/doc-build" --token "${{ secrets.hf_token }}" --commit_msg "Updated with commit ${{ inputs.commit_sha }} See: https://github.com/${{ inputs.repo_owner }}/${{ inputs.package }}/commit/${{ inputs.commit_sha }}" --n_retries 5 --upload_version_yml
+          doc-builder push "$PACKAGE_NAME" --doc_build_repo_id "hf-doc-build/doc-build" --token "$HF_TOKEN" --commit_msg "Updated with commit $COMMIT_SHA See: https://github.com/$REPO_OWNER/$PACKAGE/commit/$COMMIT_SHA" --n_retries 5 --upload_version_yml
           cd ..
 
       - name: Commit notebooks
+        env:
+          NOTEBOOK_FOLDER: ${{ inputs.notebook_folder }}
+          PACKAGE: ${{ inputs.package }}
+          COMMIT_SHA: ${{ inputs.commit_sha }}
         run: |
           if [ -d "notebook_dir" ]
           then
             cd notebooks
             git pull
-            cp -r ../notebook_dir/. ${{ inputs.notebook_folder }}
+            cp -r ../notebook_dir/. "$NOTEBOOK_FOLDER"
             git status
             if [[ `git status --porcelain` ]]; then
-              git add ${{ inputs.notebook_folder }}
-              git commit -m "Updated ${{ inputs.package }} doc notebooks with commit ${{ inputs.commit_sha }} \n\nSee: https://github.com/huggingface/${{ inputs.package }}/commit/${{ inputs.commit_sha }}"
+              git add "$NOTEBOOK_FOLDER"
+              git commit -m "Updated $PACKAGE doc notebooks with commit $COMMIT_SHA \n\nSee: https://github.com/huggingface/$PACKAGE/commit/$COMMIT_SHA"
               git push origin main ||
               (echo "Failed on the first try, rebasing and pushing again" && git pull --rebase && git push origin main) ||
               (echo "Failed on the second try, rebasing and pushing again" && git pull --rebase && git push origin main)
