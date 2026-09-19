@@ -484,6 +484,8 @@ def check_toc_integrity(doc_folder, output_dir, known_failed_files=None):
     Args:
         doc_folder (`str` or `os.PathLike`): The folder where the source files of the documentation lie.
         output_dir (`str` or `os.PathLike`): The folder where the doc is built.
+        known_failed_files (`Optional[Set[str]]`, *optional*): Source-relative page paths that failed MDX conversion.
+            They are excluded from the missing-output check because the build reports their conversion errors separately.
     """
     output_dir = Path(output_dir)
     doc_files = [str(f.relative_to(output_dir).with_suffix("")) for f in output_dir.glob("**/*.mdx")]
