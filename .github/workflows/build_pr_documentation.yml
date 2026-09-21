@@ -59,8 +59,12 @@ on:
         description: "Python version for the build venv (e.g. '3.11'). Defaults to the runner's system Python."
 
 
+permissions: {}
+
 jobs:
   build_pr_documentation:
+    permissions:
+      contents: read
     runs-on: ubuntu-22.04
     defaults:
       run:
@@ -102,27 +106,31 @@ jobs:
       - uses: astral-sh/setup-uv@d31148d669074a8d0a63714ba94f3201e7020bc3  # v8.3.0
 
       - name: Set env variables
+        env:
+          PATH_TO_DOCS: ${{ inputs.path_to_docs }}
+          PACKAGE: ${{ inputs.package }}
+          PACKAGE_NAME_INPUT: ${{ inputs.package_name }}
         run: |
-          if [ -z "${{ inputs.path_to_docs }}" ]
+          if [ -z "$PATH_TO_DOCS" ]
           then
-            echo "doc_folder=${{ inputs.package }}/docs/source" >> $GITHUB_ENV
-            echo "path_to_docs not provided, defaulting to ${{ inputs.package }}/docs/source"
+            echo "doc_folder=$PACKAGE/docs/source" >> $GITHUB_ENV
+            echo "path_to_docs not provided, defaulting to $PACKAGE/docs/source"
           else
-            echo "doc_folder=${{ inputs.path_to_docs }}" >> $GITHUB_ENV
+            echo "doc_folder=$PATH_TO_DOCS" >> $GITHUB_ENV
           fi
 
-          if [ -z "${{ inputs.package_name }}" ];
+          if [ -z "$PACKAGE_NAME_INPUT" ];
           then
-            package_name=${{ inputs.package }}
+            package_name="$PACKAGE"
           else
-            package_name=${{ inputs.package_name }}
+            package_name="$PACKAGE_NAME_INPUT"
           fi
 
-          if [ -z "${{ inputs.package_name }}" ];
+          if [ -z "$PACKAGE_NAME_INPUT" ];
           then
-            echo "package_name=${{ inputs.package }}" >> $GITHUB_ENV
+            echo "package_name=$PACKAGE" >> $GITHUB_ENV
           else
-            echo "package_name=${{ inputs.package_name }}" >> $GITHUB_ENV
+            echo "package_name=$PACKAGE_NAME_INPUT" >> $GITHUB_ENV
           fi
 
       - name: Install libgl1
@@ -137,25 +145,30 @@ jobs:
 
       - name: Setup environment
         shell: bash
+        env:
+          PYTHON_VERSION: ${{ inputs.python_version }}
+          ADDITIONAL_ARGS: ${{ inputs.additional_args }}
+          PACKAGE_DIR_INPUT: ${{ inputs.package_path || inputs.package }}
+          PACKAGE_NAME: ${{ env.package_name }}
         run: |
-          uv venv ${{ inputs.python_version && format('--python {0}', inputs.python_version) || '' }}
+          uv venv ${PYTHON_VERSION:+--python "$PYTHON_VERSION"}
           source .venv/bin/activate
           cd doc-builder
           uv pip install .
           cd ..
 
-          if [[ "${{ inputs.additional_args }}" == *"--not_python_module"* ]]
+          if [[ "$ADDITIONAL_ARGS" == *"--not_python_module"* ]]
           then
             echo "Not a Python module; skipping package install."
           else
-            package_dir="${{ inputs.package_path || inputs.package }}"
+            package_dir="$PACKAGE_DIR_INPUT"
             # Light install when the package has a mock-deps registry entry: only its
             # real (light) doc-build deps are installed and the heavy ones are mocked
             # at build time. Falls back to a full [dev] install otherwise.
-            if doc-builder light-install ${{ env.package_name }} --check
+            if doc-builder light-install "$PACKAGE_NAME" --check
             then
               uv pip install "./$package_dir" --no-deps
-              doc-builder light-install ${{ env.package_name }}
+              doc-builder light-install "$PACKAGE_NAME"
             else
               echo "Falling back to a full install."
               uv pip install "./$package_dir[dev]"
@@ -175,58 +188,74 @@ jobs:
 
       - name: Convert notebooks to markdown files
         if: inputs.convert_notebooks
+        env:
+          DOC_FOLDER: ${{ env.doc_folder }}
+          REPO_OWNER: ${{ inputs.repo_owner }}
+          PACKAGE: ${{ inputs.package }}
         run: |
           source .venv/bin/activate
           branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}
-          remaining_part=$(echo "${{ env.doc_folder }}" | perl -pe 's|^[^/]+||')
+          remaining_part=$(echo "$DOC_FOLDER" | perl -pe 's|^[^/]+||')
           remaining_part=${remaining_part%/}
-          echo https://colab.research.google.com/github/${{ inputs.repo_owner }}/${{ inputs.package }}/blob/$branch$remaining_part
+          echo "https://colab.research.google.com/github/$REPO_OWNER/$PACKAGE/blob/$branch$remaining_part"
 
-          doc-builder notebook-to-mdx ${{ env.doc_folder }} --open_notebook_prefix https://colab.research.google.com/github/${{ inputs.repo_owner }}/${{ inputs.package }}/blob/$branch$remaining_part
+          doc-builder notebook-to-mdx "$DOC_FOLDER" --open_notebook_prefix "https://colab.research.google.com/github/$REPO_OWNER/$PACKAGE/blob/$branch$remaining_part"
 
       - name: Make documentation
         env:
           NODE_OPTIONS: --max-old-space-size=6656
+          DOC_FOLDER: ${{ env.doc_folder }}
+          PACKAGE_NAME: ${{ env.package_name }}
+          PR_NUMBER: ${{ inputs.pr_number }}
+          ADDITIONAL_ARGS: ${{ inputs.additional_args }}
+          REPO_OWNER: ${{ inputs.repo_owner }}
+          PACKAGE: ${{ inputs.package }}
+          VERSION_TAG_SUFFIX: ${{ inputs.version_tag_suffix }}
+          LANGUAGES: ${{ inputs.languages }}
+          FAIL_ON_WARNING: ${{ inputs.fail_on_warning }}
         shell: bash
         run: |
           source .venv/bin/activate
-          echo "doc_folder has been set to ${{ env.doc_folder }}"
+          echo "doc_folder has been set to $DOC_FOLDER"
           cd doc-builder
           mkdir -p ../build_dir
           log_file="../build_dir/doc-build.log"
           : > "$log_file"
           set -o pipefail
-          args="--build_dir ../build_dir --clean --version pr_${{ inputs.pr_number }} --html --html_page_cache hf://buckets/hf-doc-build/doc-build-cache ${{ inputs.additional_args }} --repo_owner ${{ inputs.repo_owner }} --repo_name ${{ inputs.package }} --version_tag_suffix=${{ inputs.version_tag_suffix }}"
+          args="--build_dir ../build_dir --clean --version pr_$PR_NUMBER --html --html_page_cache hf://buckets/hf-doc-build/doc-build-cache $ADDITIONAL_ARGS --repo_owner $REPO_OWNER --repo_name $PACKAGE --version_tag_suffix=$VERSION_TAG_SUFFIX"
 
-          if [ -z "${{ inputs.languages }}" ];
+          if [ -z "$LANGUAGES" ];
           then
             echo "languages not provided, defaulting to English"
-            doc-builder build ${{ env.package_name }} ../${{ env.doc_folder }} $args 2>&1 | tee -a "$log_file"
+            doc-builder build "$PACKAGE_NAME" "../$DOC_FOLDER" $args 2>&1 | tee -a "$log_file"
           else
-            IFS=', ' read -r -a langs <<< "${{ inputs.languages }}"
+            IFS=', ' read -r -a langs <<< "$LANGUAGES"
             for lang in "${langs[@]}"
             do
                 echo "Generating docs for language $lang"
-                doc-builder build ${{ env.package_name }} ../${{ env.doc_folder }}/$lang $args --language $lang 2>&1 | tee -a "$log_file"
+                doc-builder build "$PACKAGE_NAME" "../$DOC_FOLDER/$lang" $args --language "$lang" 2>&1 | tee -a "$log_file"
             done
           fi
 
           warnings_emitted=false
-          if [[ "${{ inputs.additional_args }}" == *"--emit-warning"* ]] && grep -q "Bare assert found in runnable:" "$log_file"; then
+          if [[ "$ADDITIONAL_ARGS" == *"--emit-warning"* ]] && grep -q "Bare assert found in runnable:" "$log_file"; then
             warnings_emitted=true
           fi
           echo "$warnings_emitted" > ../build_dir/warnings_emitted
 
-          if [[ "$warnings_emitted" == "true" && "${{ inputs.fail_on_warning }}" == "true" ]]; then
+          if [[ "$warnings_emitted" == "true" && "$FAIL_ON_WARNING" == "true" ]]; then
             echo "::error::Doc build failed because warnings were emitted (fail_on_warning=true)."
             exit 1
           fi
           cd ..
 
       - name: Save commit_sha & pr_number
+        env:
+          COMMIT_SHA: ${{ inputs.commit_sha }}
+          PR_NUMBER: ${{ inputs.pr_number }}
         run: |
-          echo ${{ inputs.commit_sha }} > ./build_dir/commit_sha
-          echo ${{ inputs.pr_number }} > ./build_dir/pr_number
+          echo "$COMMIT_SHA" > ./build_dir/commit_sha
+          echo "$PR_NUMBER" > ./build_dir/pr_number
 
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02  # v4.6.2
         with:
