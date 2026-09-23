@@ -75,14 +75,14 @@ jobs:
     steps:
       # See build_main_documentation.yml: `ref` must be set explicitly, otherwise
       # checkout falls back to the default branch and the caller's pin is a no-op.
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
         with:
           repository: ${{ job.workflow_repository }}
           ref: ${{ inputs.doc_builder_revision || job.workflow_sha }}
           path: doc-builder
           persist-credentials: false
 
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
         with:
           repository: '${{ inputs.repo_owner }}/${{ inputs.package }}'
           path: ${{ inputs.package }}
@@ -98,12 +98,12 @@ jobs:
          git fetch https://github.com/$REPO_OWNER/$PACKAGE.git refs/pull/$PR_NUMBER/merge:refs/remotes/pull/$PR_NUMBER/merge
          git checkout refs/remotes/pull/$PR_NUMBER/merge
 
-      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e  # v6.4.0
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020  # v7.0.0
         with:
           node-version: '20'
           cache-dependency-path: "kit/package-lock.json"
 
-      - uses: astral-sh/setup-uv@d31148d669074a8d0a63714ba94f3201e7020bc3  # v8.3.0
+      - uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4  # v10.1.0
 
       - name: Set env variables
         env:
@@ -138,7 +138,7 @@ jobs:
         run: sudo apt-get install -y libgl1
 
       - name: Install Rust
-        uses: dtolnay/rust-toolchain@3c5f7ea28cd621ae0bf5283f0e981fb97b8a7af9  # master 2026-03-27
+        uses: dtolnay/rust-toolchain@02cb101ec7c40f2c49e1d9714d64511d8e1b74de # v1
         if: inputs.install_rust
         with:
           toolchain: stable
@@ -257,7 +257,7 @@ jobs:
           echo "$COMMIT_SHA" > ./build_dir/commit_sha
           echo "$PR_NUMBER" > ./build_dir/pr_number
 
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02  # v4.6.2
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
         with:
           name: doc-build-artifact
           path: build_dir/
