@@ -21,8 +21,6 @@ import zipfile
 from pathlib import Path
 from time import sleep, time
 
-from huggingface_hub import HfApi, hf_hub_download
-
 REPO_TYPE = "dataset"
 SEPARATOR = "/"
 
@@ -57,6 +55,8 @@ def merge_with_existing_docs(api, doc_build_repo_id, zip_file_path, path_docs_bu
             temp_dir = Path(temp_dir)
 
             # Download existing zip
+            from huggingface_hub import hf_hub_download
+
             existing_zip_path = hf_hub_download(
                 repo_id=doc_build_repo_id,
                 repo_type=REPO_TYPE,
@@ -135,6 +135,8 @@ def push_command_add(args):
 
     zip_file_path = create_zip_name(library_name, doc_version_folder)
 
+    from huggingface_hub import HfApi
+
     api = HfApi()
 
     # Merge with existing docs to preserve all languages (handles parallel builds)
@@ -207,6 +209,8 @@ def push_command_remove(args):
     doc_version_folder = args.doc_version
     doc_build_repo_id = args.doc_build_repo_id
     commit_msg = args.commit_msg
+
+    from huggingface_hub import HfApi
 
     api = HfApi()
     zip_file_path = create_zip_name(library_name, doc_version_folder)
