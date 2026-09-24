@@ -280,7 +280,7 @@ doc-builder notebook-to-mdx {path to notebook file or folder containing notebook
 * `upload_pr_documentation.yml`: responsible for uploading the PR artifacts to the Hugging Face Hub.
 * `delete_doc_comment_trigger.yml`: responsible for removing the comments from the `HuggingFaceDocBuilder` bot that provides a URL to the PR docs.
 
-Within each workflow, the main thing to include is a pointer from the `uses` field to the corresponding workflow in `doc-builder`. For example, this is what the PR workflow looks like in the `datasets` library:
+Within each workflow, the main thing to include is a pointer from the `uses` field to the corresponding workflow in `doc-builder`. For example, this is what the PR workflow looks like:
 
 ```yaml
 name: Build PR Documentation
@@ -289,7 +289,7 @@ on:
   pull_request:
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.run_id }}
   cancel-in-progress: true
 
 jobs:
