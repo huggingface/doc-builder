@@ -22,7 +22,6 @@ from pathlib import Path
 
 import httpx
 import meilisearch
-from huggingface_hub import InferenceClient
 from tqdm import tqdm
 
 from .autodoc import autodoc_markdown, resolve_links_in_text
@@ -761,6 +760,8 @@ def call_embedding_inference(chunks: list[Chunk], hf_ie_url, hf_ie_token, is_pyt
     batch_size = 20
     embeddings = []
 
+    from huggingface_hub import InferenceClient
+
     client = InferenceClient(base_url=hf_ie_url, token=hf_ie_token)
 
     with ThreadPoolExecutor(max_workers=16) as executor:
@@ -885,6 +886,8 @@ def add_gradio_docs(hf_ie_url: str, hf_ie_token: str, meilisearch_key: str, meil
     # Step 2: create embeddings
     batch_size = 20
     embeddings = []
+
+    from huggingface_hub import InferenceClient
 
     client = InferenceClient(base_url=hf_ie_url, token=hf_ie_token)
 
