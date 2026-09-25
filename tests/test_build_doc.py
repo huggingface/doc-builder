@@ -20,6 +20,7 @@ import unittest
 from doc_builder.build_doc import (
     _re_autodoc,
     _re_list_item,
+    build_doc,
     build_mdx_files,
     check_toc_integrity,
     resolve_links,
@@ -174,3 +175,19 @@ Content."""
                 any("broken_page" in err for err in all_errors),
                 "The collected error doesn't mention broken_page — hard to diagnose later.",
             )
+
+            # The public build function must resolve links before it reports the
+            # aggregated conversion error. This verifies the intended ordering.
+            with tempfile.TemporaryDirectory() as full_build_output:
+                with self.assertRaisesRegex(ValueError, "broken_page"):
+                    build_doc(
+                        "doc_builder",
+                        doc_folder,
+                        full_build_output,
+                        is_python_module=True,
+                        clean=False,
+                    )
+                with open(os.path.join(full_build_output, "links.mdx"), encoding="utf-8") as f:
+                    self.assertIn(
+                        "[build_doc()](/docs/doc_builder/main/en/good_page#doc_builder.build_doc)", f.read()
+                    )
