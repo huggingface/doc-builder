@@ -90,7 +90,7 @@ Content."""
         being written or from contributing their anchors.  The error must be aggregated
         and returned, not raised immediately.
 
-        Asserts all three things specified in the PR review:
+        Asserts all four behaviors required by the fix:
           1. Other pages are still written to output_dir.
           2. Links to a good page still resolve.
           3. TOC validation accepts the known failed page.
