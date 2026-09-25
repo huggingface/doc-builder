@@ -413,6 +413,8 @@ def build_doc(
     if is_python_module:
         if not watch_mode:
             build_sphinx_objects_ref(sphinx_refs, output_dir, page_info)
+        # Failed pages have no output and therefore deliberately contribute no anchors.
+        # Their links may remain unresolved, but the aggregated error below fails the build.
         resolve_links(output_dir, package, anchors_mapping, page_info)
 
     if notebook_dir is not None:
