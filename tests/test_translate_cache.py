@@ -69,7 +69,6 @@ def test_whole_page_key_includes_every_source_byte(edit):
         lambda c: c.update(version=c["version"] + 1),
         lambda c: c.update(model_revision="b" * 40),
         lambda c: c.update(tokenizer_revision="b" * 40),
-        lambda c: c["glossary"]["keep"].append("Transformers"),
         lambda c: c.update(output=c["output"] + 1),
     ],
 )
@@ -112,3 +111,45 @@ def test_invalid_sidebar_cache_paths_are_recomputed():
             cache[key] = text.replace("index", "ghost")
     output, _, failures = execute(source, cache)
     assert not failures and b"ghost" not in output["_toctree.yml"]
+
+
+@pytest.mark.parametrize("section", ["keep", "pin", "labels"])
+def test_glossary_changes_only_invalidate_pages_containing_the_term(section):
+    cfg = config()
+    sources = {"relevant.md": b"Use OCRBench.", "other.md": b"Use another benchmark."}
+    before = {name: pipeline.cache_key(name, source, cfg) for name, source in sources.items()}
+    if section == "keep":
+        cfg["glossary"]["keep"].append("OCRBench")
+    elif section == "pin":
+        cfg["glossary"]["pin"]["OCRBench"] = "OCRBench"
+    else:
+        cfg["glossary"]["labels"] = {"keep": ["ocrbench"], "translate": []}
+    assert pipeline.cache_key("relevant.md", sources["relevant.md"], cfg) != before["relevant.md"]
+    assert pipeline.cache_key("other.md", sources["other.md"], cfg) == before["other.md"]
+
+
+def test_parser_hash_ignores_unrelated_dependencies(tmp_path, monkeypatch):
+    import json
+
+    from doc_builder import utils
+
+    (tmp_path / "preprocessors").mkdir()
+    parser = tmp_path / "preprocessors/translate.cjs"
+    parser.write_text("parser")
+    lock = tmp_path / "package-lock.json"
+    packages = {f"node_modules/{name}": {"version": "1"} for name in ("mdsvex", "svelte", "unrelated")}
+
+    def cfg():
+        lock.write_text(json.dumps({"packages": packages}))
+        return pipeline.configuration("ja", pipeline.MODEL_REVISION)["kit_hash"]
+
+    monkeypatch.setattr(utils, "locate_kit_folder", lambda: tmp_path)
+    before = cfg()
+    packages["node_modules/unrelated"]["version"] = "2"
+    assert cfg() == before
+    for name in ("mdsvex", "svelte"):
+        packages[f"node_modules/{name}"]["version"] = "2"
+        assert cfg() != before
+        before = cfg()
+    parser.write_text("changed parser")
+    assert cfg() != before

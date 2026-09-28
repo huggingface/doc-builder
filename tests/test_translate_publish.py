@@ -187,10 +187,60 @@ def test_build_cli_installs_verified_canonical_files(translated, monkeypatch, tm
     assert (tmp_path / "ja/index.md").read_bytes() == artifact.disclose(output)["index.md"]
 
 
-def test_missing_accepted_page_cannot_mark_state_complete(translated):
+def test_missing_accepted_page_uses_english_and_remains_a_cache_miss(translated):
     hub = Hub()
     source, output = translated
     state = publish(hub, (source, {name: data for name, data in output.items() if name != "index.md"}))
-    assert not state["complete"]
-    with pytest.raises(ValueError, match="incomplete"):
+    assert state["complete"]
+    assert verify(hub, source, state)["index.md"] == source["index.md"]
+    assert state["files"]["index.md"]["key"] is None
+    assert pipeline.cache_key("index.md", source["index.md"], config()) not in artifact.read_cache(
+        hub, BUCKET, source, config(), state
+    )
+
+
+@pytest.mark.parametrize("damage", ["missing", "corrupt", "none"])
+def test_fallback_preserves_only_verified_bytes_and_stays_retryable(translated, damage):
+    hub = Hub()
+    source, output = translated
+    state = publish(hub, translated)
+    original = hub.files[BUCKET, PREFIX + "index.md"]
+    if damage == "missing":
+        del hub.files[BUCKET, PREFIX + "index.md"]
+    elif damage == "corrupt":
+        hub.files[BUCKET, PREFIX + "index.md"] = b"corrupt"
+    accepted = {k: v for k, v in output.items() if k != "index.md"}
+    for _ in range(2):
+        state = publish(hub, (source, accepted), state)
+        restored = verify(hub, source, state)
+        assert restored["index.md"] == (original if damage == "none" else source["index.md"])
+        assert state["files"]["index.md"]["fallback"] == pipeline.cache_key("index.md", source["index.md"], config())
+        assert pipeline.cache_key("index.md", source["index.md"], config()) not in artifact.read_cache(
+            hub, BUCKET, source, config(), state
+        )
+    hub.files[BUCKET, PREFIX + "index.md"] = b"corrupted fallback"
+    with pytest.raises(ValueError, match="source or output"):
         verify(hub, source, state)
+    state = publish(hub, translated, state)
+    assert "fallback" not in state["files"]["index.md"]
+
+
+def test_failed_sidebar_uses_current_english_structure(translated):
+    hub = Hub()
+    source, output = translated
+    state = publish(hub, translated)
+    source = {k: v for k, v in source.items() if k != "guide.mdx"}
+    source["_toctree.yml"] = b"- local: index\n  title: Introduction\n"
+    accepted = {k: v for k, v in output.items() if k in source and k != "_toctree.yml"}
+    state = publish(hub, (source, accepted), state)
+    assert verify(hub, source, state)["_toctree.yml"] == source["_toctree.yml"]
+
+
+def test_english_fallback_tracks_source_changes(translated):
+    hub = Hub()
+    source, output = translated
+    accepted = {k: v for k, v in output.items() if k != "index.md"}
+    state = publish(hub, (source, accepted))
+    source = {**source, "index.md": b"# Updated English\n\nNew guidance.\n"}
+    state = publish(hub, (source, accepted), state)
+    assert verify(hub, source, state)["index.md"] == source["index.md"]

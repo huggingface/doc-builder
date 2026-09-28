@@ -103,7 +103,7 @@ def test_job_writes_only_canonical_files_and_warm_run_skips_generation(setup):
     assert all(batch == ["transformers/ja/.translation-state.json"] for batch in api.writes)
 
 
-def test_failed_job_keeps_old_page_and_caches_successes_without_build_output(setup, tmp_path):
+def test_failed_job_uses_english_when_previous_page_is_unverified(setup, tmp_path):
     args, api = setup
 
     def broken(units, config, retry=False):
@@ -114,10 +114,14 @@ def test_failed_job_keeps_old_page_and_caches_successes_without_build_output(set
     with pytest.raises(ValueError, match="ERROR"):
         job.submit(args, api)
     state = job.artifact.read_state(api, "test/translations", "ja")
-    assert not state["complete"] and "index.md" not in state["files"]
+    assert state["complete"] and state["files"]["index.md"]["fallback"]
+    assert state["files"]["index.md"]["key"] is None
     assert "guide.mdx" in state["files"]
-    assert not (tmp_path / "outputs").exists()
-    assert api.files["test/translations", "transformers/ja/index.md"] == b"previous accepted page"
+    assert "translation_state_sha256=" in (tmp_path / "outputs").read_text()
+    assert (
+        api.files["test/translations", "transformers/ja/index.md"]
+        == (api.repo / "docs/source/en/index.md").read_bytes()
+    )
 
 
 def test_selected_pages_preserve_other_docs_and_sidebar(setup):
@@ -125,16 +129,18 @@ def test_selected_pages_preserve_other_docs_and_sidebar(setup):
     job.submit(args, api)
     before = dict(api.files)
     args.pages = ["index.md"]
-    job.submit(args, api)
-    for name in ["guide.mdx", "_toctree.yml", "image.svg"]:
+    result = job.submit(args, api)
+    assert result["folder_url"].endswith("/transformers/ja-preview")
+    for name in ["index.md", "guide.mdx", "_toctree.yml", "image.svg", job.artifact.STATE]:
         assert (
             api.files["test/translations", "transformers/ja/" + name]
             == before["test/translations", "transformers/ja/" + name]
         )
-    assert not job.artifact.read_state(api, "test/translations", "ja")["complete"]
+    assert job.artifact.read_state(api, "test/translations", "ja")["complete"]
+    assert not job.artifact.read_state(api, "test/translations", "ja", preview=True)["complete"]
 
 
-@pytest.mark.parametrize("state", ["CANCELED", "DELETED", "RUNNING", "UNKNOWN"])
+@pytest.mark.parametrize("state", ["ERROR", "CANCELED", "DELETED", "RUNNING", "UNKNOWN"])
 def test_non_successful_job_has_no_outputs_or_cache_update(setup, state, tmp_path):
     args, api = setup
     api.do_work, api.state = False, state
@@ -204,7 +210,10 @@ def test_failed_update_retains_old_hash_and_retry_only_generates_failed_page(set
     with pytest.raises(ValueError, match="ERROR"):
         job.submit(args, api)
     state = job.artifact.read_state(api, "test/translations", "ja")
-    assert not state["complete"]
+    assert state["complete"] and state["files"]["index.md"]["fallback"]
+    files, _ = pipeline.inventory(api.repo, args.source_revision)
+    job.artifact.verify(api, "test/translations", files, "ja", args.source_revision, "b" * 40, pipeline.digest(state))
+    assert f"translation_state_sha256={pipeline.digest(state)}" in (tmp_path / "outputs").read_text()
     assert (
         api.files["test/translations", "transformers/ja/index.md"]
         == old["test/translations", "transformers/ja/index.md"]
@@ -219,3 +228,33 @@ def test_failed_update_retains_old_hash_and_retry_only_generates_failed_page(set
     job.submit(args, api)
     assert calls == ["Introduction", "Read updated instructions."]
     assert job.artifact.read_state(api, "test/translations", "ja")["complete"]
+    assert "fallback" not in job.artifact.read_state(api, "test/translations", "ja")["files"]["index.md"]
+
+
+def test_default_model_revision_is_pinned(setup):
+    args, api = setup
+    args.model_revision = None
+    api.model_info = lambda *a: pytest.fail("Resolved mutable model HEAD")
+    job.submit(args, api)
+    state = job.artifact.read_state(api, "test/translations", "ja")
+    assert state["config"]["model_revision"] == pipeline.MODEL_REVISION
+
+
+def test_worker_default_model_revision_is_pinned(setup):
+    args, api = setup
+    api.model_info = lambda *a: pytest.fail("Resolved mutable model HEAD")
+    worker = command.translate_command_parser().parse_args(
+        [
+            "transformers",
+            "--source-revision",
+            args.source_revision,
+            "--source",
+            str(api.repo),
+            "--bucket",
+            args.bucket,
+        ]
+    )
+    command.run(worker, api, generate)
+    assert (
+        job.artifact.read_state(api, "test/translations", "ja")["config"]["model_revision"] == pipeline.MODEL_REVISION
+    )

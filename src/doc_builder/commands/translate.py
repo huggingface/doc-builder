@@ -50,15 +50,15 @@ def run(args, api=None, generate_fn=pipeline.generate):
         if not args.bucket:
             raise ValueError("Generation requires --bucket")
         bucket = artifact.bucket_path(args.bucket)
-        revision = args.model_revision or api.model_info(pipeline.MODEL).sha
+        revision = args.model_revision or pipeline.MODEL_REVISION
         config = pipeline.configuration(args.lang, revision)
         builder_revision = pipeline.git(Path(__file__).resolve().parents[3], "rev-parse", "HEAD")
         if pipeline.git(Path(__file__).resolve().parents[3], "status", "--porcelain", "--untracked-files=no"):
             raise ValueError("Commit implementation changes before running a translation Job")
         if not re.fullmatch(r"[a-f0-9]{40}", builder_revision):
             raise ValueError("Run from a pinned doc-builder checkout")
-        state = artifact.read_state(api, bucket, args.lang)
-        cache = artifact.read_cache(api, bucket, files, config, state)
+        state = artifact.read_state(api, bucket, args.lang, preview=selected is not None)
+        cache = artifact.read_cache(api, bucket, files, config, state, preview=selected is not None)
         translated, candidate, failures = pipeline.translate(files, config, cache, generate_fn)
         # Complete pages have cache entries; non-prose assets pass through unchanged.
         accepted = {
@@ -80,7 +80,7 @@ def run(args, api=None, generate_fn=pipeline.generate):
         )
         if failures:
             raise ValueError("Translation failed:\n" + "\n".join(failures))
-        result = artifact.result(bucket, args.lang, files, state)
+        result = artifact.result(bucket, args.lang, files, state, preview=selected is not None)
         print(json.dumps(result, indent=2))
         return result
 

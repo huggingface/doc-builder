@@ -23,10 +23,10 @@ def bucket_path(uri):
     return match[1]
 
 
-def language_prefix(language):
+def language_prefix(language, preview=False):
     if not re.fullmatch(r"[a-z]{2,3}", language):
         raise ValueError("Invalid language")
-    return f"transformers/{language}"
+    return f"transformers/{language}" + ("-preview" if preview else "")
 
 
 def sha256(data):
@@ -43,8 +43,8 @@ def download(api, bucket, prefix, names):
         return {name: path.read_bytes() for name, path in targets.items()}
 
 
-def read_state(api, bucket, language):
-    path = f"{language_prefix(language)}/{STATE}"
+def read_state(api, bucket, language, preview=False):
+    path = f"{language_prefix(language, preview)}/{STATE}"
     if not any(e.path == path for e in api.list_bucket_tree(bucket, prefix=path, recursive=False)):
         return {}
     state = json.loads(download(api, bucket, "", [path])[path])
@@ -73,14 +73,15 @@ def undisclose(name, data):
     return data.replace(note, b"", 1)
 
 
-def read_cache(api, bucket, files, config, state):
-    prefix = language_prefix(config["language"])
+def read_cache(api, bucket, files, config, state, preview=False):
+    prefix = language_prefix(config["language"], preview)
     entries = state.get("files", {})
     existing = {e.path for e in api.list_bucket_tree(bucket, prefix=prefix + "/", recursive=True)}
     names = [
         name
         for name in files
         if (Path(name).suffix in {".md", ".mdx"} or name == "_toctree.yml")
+        and not entries.get(name, {}).get("fallback")
         and entries.get(name, {}).get("key") == pipeline.cache_key(name, files[name], config)
         and f"{prefix}/{name}" in existing
     ]
@@ -92,7 +93,7 @@ def read_cache(api, bucket, files, config, state):
 
 
 def publish(api, bucket, files, accepted, config, state, source_revision, builder_revision, partial=False):
-    prefix = language_prefix(config["language"]) + "/"
+    prefix = language_prefix(config["language"], partial) + "/"
     for name in files:
         path = PurePosixPath(name)
         if path.is_absolute() or ".." in path.parts or "\\" in name or name.startswith("."):
@@ -120,8 +121,28 @@ def publish(api, bucket, files, accepted, config, state, source_revision, builde
         for e in api.list_bucket_tree(bucket, prefix=prefix, recursive=True)
         if isinstance(e, BucketFile) and e.path.startswith(prefix)
     }
-    names = [name for name in values if prefix + name in existing]
+    names = [name for name in files if prefix + name in existing]
     previous = download(api, bucket, prefix, names)
+    # fallback records the attempted key; key retains the last translation key (None for English).
+    fallbacks = {}
+    for name in files.keys() - accepted.keys():
+        if partial and Path(name).suffix not in {".md", ".mdx"}:
+            continue
+        entry = entries.get(name, {})
+        # Old sidebars may reference deleted pages; use the current English sidebar.
+        if (
+            name != "_toctree.yml"
+            and entry.get("key")
+            and name in previous
+            and entry.get("sha256") == sha256(previous[name])
+        ):
+            values[name] = previous[name]
+        else:
+            values[name] = files[name]
+            entry = {"key": None, "sha256": sha256(files[name])}
+        fallbacks[name] = {**entry, "fallback": pipeline.cache_key(name, files[name], config)}
+    if not partial:
+        pipeline.check_sidebar(values)
     changed = {name: data for name, data in values.items() if previous.get(name) != data}
     if changed:
         api.batch_bucket_files(bucket, add=[(data, prefix + name) for name, data in changed.items()])
@@ -129,6 +150,7 @@ def publish(api, bucket, files, accepted, config, state, source_revision, builde
         raise ValueError("Uploaded translations do not match validated pages")
     for name, data in values.items():
         entries[name] = {"key": pipeline.cache_key(name, files[name], config), "sha256": sha256(data)}
+    entries.update(fallbacks)
     if not partial:
         obsolete = sorted(existing - {prefix + name for name in files} - {prefix + STATE})
         if obsolete:
@@ -156,7 +178,8 @@ def verify(api, bucket, files, language, source_revision, builder_revision, stat
     values = download(api, bucket, prefix, files)
     for name, data in values.items():
         entry = state["files"][name]
-        if entry["key"] != pipeline.cache_key(name, files[name], config) or entry["sha256"] != sha256(data):
+        key = entry.get("fallback") or entry["key"]
+        if key != pipeline.cache_key(name, files[name], config) or entry["sha256"] != sha256(data):
             raise ValueError(f"Translation does not match current source or output: {name}")
     if read_state(api, bucket, language) != state:
         raise ValueError("Translation state changed while downloading")
@@ -164,8 +187,8 @@ def verify(api, bucket, files, language, source_revision, builder_revision, stat
     return values
 
 
-def result(bucket, language, files, state):
-    folder = f"https://huggingface.co/buckets/{bucket}/tree/{language_prefix(language)}"
+def result(bucket, language, files, state, preview=False):
+    folder = f"https://huggingface.co/buckets/{bucket}/tree/{language_prefix(language, preview)}"
     first = min(name for name in files if Path(name).suffix in {".md", ".mdx"})
     return {
         "translation_bucket": f"hf://buckets/{bucket}",

@@ -15,6 +15,7 @@ from .segment import PLACEHOLDER_RE, InvalidUnit, accept_unit, extract_pages, re
 
 # Uniform KV dimensions are required by the pinned continuous-batching cache.
 MODEL = "Qwen/Qwen3-30B-A3B-Instruct-2507"
+MODEL_REVISION = "0d7cf23991f47feeb3a57ecb4c9cee8ea4a17bfe"
 # The runtime pins the public generate_batch implementation inspected for result ordering.
 TRANSFORMERS_REVISION = "58a94493a64f74d04279a3a617297dfe355b0b89"
 LANGUAGES = {"ja": "Japanese"}
@@ -37,7 +38,14 @@ def configuration(language, model_revision):
     glossary = read_glossary(language)
     from ..utils import locate_kit_folder
 
-    kit_hash = hashlib.sha256((locate_kit_folder() / "package-lock.json").read_bytes()).hexdigest()
+    kit = locate_kit_folder()
+    packages = json.loads((kit / "package-lock.json").read_text(encoding="utf-8"))["packages"]
+    kit_hash = digest(
+        [
+            (kit / "preprocessors/translate.cjs").read_text(encoding="utf-8"),
+            *[packages[f"node_modules/{name}"]["version"] for name in ("mdsvex", "svelte")],
+        ]
+    )
     return {
         "kit_hash": kit_hash,
         **SETTINGS,
@@ -369,6 +377,21 @@ def prepare_documents(files, config):
 
 
 def cache_key(name, source, config):
+    # A glossary edit only invalidates pages that mention the affected terms.
+    text = source.decode("utf-8", errors="ignore").casefold()
+    glossary = config["glossary"]
+
+    def relevant(words):
+        return [word for word in words or [] if word.casefold() in text]
+
+    config = {
+        **config,
+        "glossary": {
+            "keep": relevant(glossary.get("keep")),
+            "pin": {k: v for k, v in (glossary.get("pin") or {}).items() if k.casefold() in text},
+            "labels": {k: relevant(glossary.get("labels", {}).get(k)) for k in ("keep", "translate")},
+        },
+    }
     return digest(
         {"package": "transformers", "path": name, "source": hashlib.sha256(source).hexdigest(), "config": config}
     )

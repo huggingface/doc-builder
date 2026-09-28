@@ -70,9 +70,9 @@ jobs:
         if: always()
         run: .venv/bin/python -m doc_builder.translate.job --cancel-record translation-job.json
       - name: Link to translated Markdown
-        if: success()
+        if: ${{ !cancelled() && steps.translation.outputs.folder_url != '' }}
         env:
           FOLDER_URL: ${{ steps.translation.outputs.folder_url }}
           PAGE_URL: ${{ steps.translation.outputs.page_url }}
         run: |
-          printf '[Open the completed translation folder](%s)\n\n[Read a translated page](%s)\n' "$FOLDER_URL" "$PAGE_URL" >> "$GITHUB_STEP_SUMMARY"
+          printf '[Open the translation folder](%s)\n\n[Read a translated page](%s)\n' "$FOLDER_URL" "$PAGE_URL" >> "$GITHUB_STEP_SUMMARY"

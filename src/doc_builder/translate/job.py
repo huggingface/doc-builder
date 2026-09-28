@@ -68,7 +68,7 @@ def submit(args, api=None):
     repository = args.doc_builder_repository or pipeline.git(root, "remote", "get-url", "origin")
     if not re.fullmatch(r"https://github.com/[\w.-]+/doc-builder(?:\.git)?", repository):
         raise ValueError("Doc-builder repository must be an HTTPS GitHub URL")
-    model_revision = args.model_revision or api.model_info(pipeline.MODEL).sha
+    model_revision = args.model_revision or pipeline.MODEL_REVISION
     config = pipeline.configuration(args.lang, model_revision)
     labels = {
         "doc-builder-translation": "v2",
@@ -120,22 +120,26 @@ def submit(args, api=None):
             Path(args.job_record).write_text(json.dumps({"id": job.id, "namespace": args.namespace}))
             print(f"Job: {job.url}", flush=True)
             completed = api.wait_for_job(job.id, namespace=args.namespace, timeout=5 * 3600 + 300, poll_interval=15)
-            state = stage(completed)
-            if state != "COMPLETED":
-                raise ValueError(f"Translation Job {job.id} ended in {state}; no build output selected")
-            state = artifact.read_state(api, bucket, args.lang)
+            status = stage(completed)
+            if status not in {"COMPLETED", "ERROR"}:
+                raise ValueError(f"Translation Job {job.id} ended in {status}; no build output selected")
+            state = artifact.read_state(api, bucket, args.lang, preview=bool(args.pages))
             if (
                 state.get("source_revision") != args.source_revision
                 or state.get("doc_builder_revision") != builder_revision
                 or state.get("config") != config
             ):
                 raise ValueError("Translation state belongs to another run")
+            if status == "ERROR" and (
+                args.pages or not any(e.get("fallback") for e in state.get("files", {}).values())
+            ):
+                raise ValueError(f"Translation Job {job.id} ended in ERROR; no build output selected")
             if not args.pages:
                 artifact.verify(
                     api, bucket, files, args.lang, args.source_revision, builder_revision, pipeline.digest(state)
                 )
             result = {
-                **artifact.result(bucket, args.lang, files, state),
+                **artifact.result(bucket, args.lang, files, state, preview=bool(args.pages)),
                 "translation_language": args.lang,
                 "doc_builder_revision": builder_revision,
             }
@@ -144,6 +148,8 @@ def submit(args, api=None):
                     for key, value in result.items():
                         stream.write(f"{key}={value}\n")
             print(json.dumps(result, indent=2))
+            if status == "ERROR":
+                raise ValueError(f"Translation Job {job.id} ended in ERROR; verified build outputs are available")
             return result
         finally:
             stop_job(api, job.id, args.namespace)
