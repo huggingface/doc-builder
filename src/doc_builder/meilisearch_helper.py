@@ -155,7 +155,7 @@ def update_db_settings(client: Client, index_name: str):
     task_info = index.update_settings(
         {
             "searchableAttributes": ["heading1", "heading2", "heading3", "heading4", "heading5", "text"],
-            "filterableAttributes": ["product"],
+            "filterableAttributes": ["product", "id"],
         }
     )
     return client, task_info
