@@ -9,7 +9,7 @@ import tempfile
 from pathlib import Path, PurePosixPath
 from urllib.parse import quote
 
-from huggingface_hub.hf_api import BucketFile
+from huggingface_hub import BucketFile
 
 from . import pipeline
 

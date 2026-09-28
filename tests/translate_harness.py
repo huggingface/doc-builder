@@ -4,7 +4,7 @@ import re
 from pathlib import Path
 from types import SimpleNamespace
 
-from huggingface_hub.hf_api import BucketFile
+from huggingface_hub import BucketFile
 
 from doc_builder.translate import pipeline
 
