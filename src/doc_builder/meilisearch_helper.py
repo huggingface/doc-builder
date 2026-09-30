@@ -195,6 +195,53 @@ def get_all_document_ids(client: Client, index_name: str) -> set[str]:
     return all_ids
 
 
+def update_all_documents(
+    client: Client,
+    index_name: str,
+    fields: list[str],
+    transform: Callable[[dict], dict | None],
+    batch_size: int = 1000,
+    dry_run: bool = False,
+) -> int:
+    """
+    Apply `transform` to every document of an index and write back the fields it returns.
+
+    Writes are partial updates: fields that `transform` doesn't return, including the stored vectors, are kept.
+    `transform` receives a dict with `id` and `fields` (None when missing), and returns the fields to update or
+    None to leave the document unchanged.
+
+    Returns:
+        The number of updated documents (documents that would be updated with `dry_run`).
+    """
+    index = client.index(index_name)
+    task_uids = []
+    updated = 0
+    offset = 0
+
+    while True:
+        docs = index.get_documents({"fields": ["id", *fields], "limit": batch_size, "offset": offset}).results
+        updates = []
+        for doc in docs:
+            values = {field: getattr(doc, field, None) for field in ["id", *fields]}
+            changes = transform(values)
+            if changes:
+                updates.append({"id": values["id"], **changes})
+        if updates and not dry_run:
+            task_uids.append(index.update_documents(updates).task_uid)
+        updated += len(updates)
+        offset += len(docs)
+        print(f"Scanned {offset} documents, {updated} to update")
+        if len(docs) < batch_size:
+            break
+
+    for task_uid in task_uids:
+        task = client.wait_for_task(task_uid, timeout_in_ms=600_000, interval_in_ms=1_000)
+        if task.status != "succeeded":
+            raise RuntimeError(f"Meilisearch task {task_uid} {task.status}: {task.error}")
+
+    return updated
+
+
 def delete_documents_from_db(client: Client, index_name: str, doc_ids: list[str]):
     """Delete a batch of documents by ID from a Meilisearch index."""
     index = client.index(index_name)
@@ -239,6 +286,7 @@ def add_embeddings_to_db(client: Client, index_name: str, embeddings):
         document = {
             "id": generate_doc_id(embedding.library, embedding.page, embedding.text),
             "text": embedding.text,
+            "text_plain": embedding.text_plain,
             "source_page_url": embedding.source_page_url,
             "source_page_title": embedding.source_page_title,
             "product": embedding.library,
