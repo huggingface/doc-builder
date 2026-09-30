@@ -332,6 +332,7 @@ def test_incremental_course_scope_uses_public_product_prefix(monkeypatch):
         ("Trainer[[api-reference]][[transformers.Trainer]]", "Trainer"),
         ("__call__[[transformers.TopKLogitsWarper.__call__]]", "__call__"),
         ("Using `huggingface_hub` with **Spaces**", "Using huggingface_hub with Spaces"),
+        ("Using _Adapters_ at Hugging Face", "Using Adapters at Hugging Face"),
         ("Returns: [0, 0, 1] for sequence pairs", "Returns: [0, 0, 1] for sequence pairs"),
         (None, None),
     ],
@@ -407,5 +408,27 @@ def test_chunks_to_documents_cleans_headings_and_adds_plain_text():
     assert document.text == chunk.text
     assert document.text_plain == "Uses fast tokenizers."
     assert (document.heading1, document.heading2) == ("Tokenizer", "BatchEncoding")
-    # The URL fragment is unchanged, so existing links keep working
-    assert document.source_page_url.endswith("#batchencodingtransformersbatchencoding")
+    assert document.source_page_url.endswith("/main_classes/tokenizer#transformers.BatchEncoding")
+
+
+@pytest.mark.parametrize(
+    ("heading", "anchor"),
+    [
+        ("token_to_word[[transformers.BatchEncoding.token_to_word]]", "transformers.BatchEncoding.token_to_word"),
+        ("Trainer[[api-reference]][[transformers.Trainer]]", "transformers.Trainer"),
+        (
+            "__call__[[transformers.NoRepeatNGramLogitsProcessor.__call__]]",
+            "transformers.NoRepeatNGramLogitsProcessor.__call__",
+        ),
+        ("Low-rank adaptation", "low-rank-adaptation"),
+        ("3.1 Improving positional embeddings of LLMs", "31-improving-positional-embeddings-of-llms"),
+    ],
+)
+def test_markdown_chunk_urls_use_the_rendered_heading_anchor(tmp_path, heading, anchor):
+    page = tmp_path / "main_classes" / "tokenizer.md"
+    page.parent.mkdir()
+    page.write_text(f"# Tokenizer\n\n### {heading}\n\nSome content.", encoding="utf-8")
+
+    chunks = process_markdown_file(page, "transformers", tmp_path)
+
+    assert chunks[-1].source_page_url.endswith(f"/docs/transformers/main_classes/tokenizer#{anchor}")

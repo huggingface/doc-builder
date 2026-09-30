@@ -93,9 +93,16 @@ class FakeMigrationIndex:
 
 
 class FakeMigrationClient:
-    def __init__(self, documents):
+    def __init__(self, documents, pending_task_checks=0):
         self.index_instance = FakeMigrationIndex(documents)
         self.waited = []
+        self.pending_task_checks = pending_task_checks
+
+    def get_tasks(self, params):
+        assert params == {"indexUids": ["test-index"], "statuses": ["enqueued", "processing"]}
+        assert not self.index_instance.updates, "pending tasks must be waited for before any write"
+        self.pending_task_checks -= 1
+        return SimpleNamespace(results=[SimpleNamespace(uid=1)] if self.pending_task_checks >= 0 else [])
 
     def index(self, index_name):
         assert index_name == "test-index"
@@ -131,3 +138,14 @@ def test_update_all_documents_dry_run_does_not_write():
 
     assert updated == 1
     assert client.index_instance.updates == []
+
+
+def test_update_all_documents_waits_for_pending_index_tasks_before_scanning(monkeypatch):
+    sleeps = []
+    monkeypatch.setattr("doc_builder.meilisearch_helper.sleep", sleeps.append)
+    client = FakeMigrationClient([{"id": "doc", "text": "**x**"}], pending_task_checks=2)
+
+    update_all_documents(client, "test-index", ["text"], lambda doc: {"text_plain": "x"})
+
+    assert len(sleeps) == 2
+    assert client.index_instance.updates == [[{"id": "doc", "text_plain": "x"}]]

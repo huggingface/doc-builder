@@ -27,6 +27,7 @@ from markdown_it import MarkdownIt
 from tqdm import tqdm
 
 from .autodoc import autodoc_markdown, resolve_links_in_text
+from .check_links import _heading_anchor
 from .convert_md_to_mdx import process_md
 from .convert_rst_to_mdx import find_indent, is_empty_line
 from .meilisearch_helper import (
@@ -51,6 +52,7 @@ _re_md_anchor = re.compile(r"\[\[(.*)]]")
 _re_non_alphaneumeric = re.compile(r"[^a-z0-9\s]+", re.IGNORECASE)
 _re_congruent_whitespaces = re.compile(r"\s{2,}")
 _re_md_anchor_suffix = re.compile(r"(?:\s*\[\[[^\]\n]+\]\])+\s*$")
+_re_custom_heading_anchor = re.compile(r"\[\[([^\]]+)\]\]\s*$")
 _re_html_tag = re.compile(r"</?[A-Za-z][^<>]*>")
 _re_fence = re.compile(r"^\s*(?:`{3,}|~{3,})(.*)$", re.MULTILINE)
 _re_starts_with_heading = re.compile(r"^\s*#{1,6}\s")
@@ -69,7 +71,7 @@ def _inline_to_plain_text(token, is_heading: bool) -> str:
             parts.append(child.content)
         elif child.type in ("softbreak", "hardbreak"):
             parts.append(" ")
-        elif child.type in ("em_open", "em_close", "strong_open", "strong_close") and "_" in child.markup:
+        elif child.type in ("strong_open", "strong_close") and child.markup == "__":
             # `__call__` is an identifier, not bold text
             parts.append(child.markup)
     text = "".join(parts)
@@ -80,6 +82,15 @@ def _inline_to_plain_text(token, is_heading: bool) -> str:
         return " ".join(text.replace("|", " ").split())
     # Fences flattened into a line (e.g. in autodoc parameter descriptions) are not parsed as code blocks
     return _re_inline_fence.sub("", text)
+
+
+def heading_anchor(heading: str) -> str | None:
+    """
+    Id the docs renderer gives a heading: its trailing `[[anchor]]` as-is (e.g. `transformers.Foo.__call__`),
+    otherwise a slug of its visible text.
+    """
+    custom_anchor = _re_custom_heading_anchor.search(heading)
+    return custom_anchor.group(1) if custom_anchor else _heading_anchor(heading, atx=False)
 
 
 def clean_heading(heading: str | None) -> str | None:
@@ -805,8 +816,9 @@ def chunks_to_documents(chunks, embedding_vectors=None) -> list[Embedding]:
 
         # Blog records must preserve the canonical URL returned by the Hub API.
         source_page_url = c.source_page_url
-        if c.package_name != "blog" and "#" not in c.source_page_url and last_heading is not None:
-            source_page_url += "#" + slugify(last_heading)
+        anchor = last_heading and heading_anchor(last_heading)
+        if c.package_name != "blog" and "#" not in c.source_page_url and anchor:
+            source_page_url += "#" + anchor
 
         embeddings.append(
             Embedding(
