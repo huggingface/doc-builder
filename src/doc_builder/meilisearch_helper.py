@@ -210,6 +210,9 @@ def update_all_documents(
     `transform` receives a dict with `id` and `fields` (None when missing), and returns the fields to update or
     None to leave the document unchanged.
 
+    Partial updates also create documents that don't exist, so pending tasks of the index (e.g. deletions queued
+    by an ingestion run) are waited for before scanning: otherwise deleted documents would come back as stubs.
+
     Returns:
         The number of updated documents (documents that would be updated with `dry_run`).
     """
@@ -217,6 +220,12 @@ def update_all_documents(
     task_uids = []
     updated = 0
     offset = 0
+
+    while not dry_run and (
+        pending := client.get_tasks({"indexUids": [index_name], "statuses": ["enqueued", "processing"]}).results
+    ):
+        print(f"Waiting for {len(pending)} pending tasks on index '{index_name}' before scanning...")
+        sleep(60)
 
     while True:
         docs = index.get_documents({"fields": ["id", *fields], "limit": batch_size, "offset": offset}).results
@@ -235,7 +244,8 @@ def update_all_documents(
             break
 
     for task_uid in task_uids:
-        task = client.wait_for_task(task_uid, timeout_in_ms=600_000, interval_in_ms=1_000)
+        # Tasks wait in the instance-wide queue, which can take hours when other indexes are busy
+        task = client.wait_for_task(task_uid, timeout_in_ms=24 * 3_600_000, interval_in_ms=30_000)
         if task.status != "succeeded":
             raise RuntimeError(f"Meilisearch task {task_uid} {task.status}: {task.error}")
 

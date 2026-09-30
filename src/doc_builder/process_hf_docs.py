@@ -32,7 +32,7 @@ from packaging import version as package_version
 from tqdm import tqdm
 
 from .api_docs import extract_api_docstrings
-from .build_embeddings import Chunk, split_markdown_by_headings
+from .build_embeddings import Chunk, heading_anchor, split_markdown_by_headings
 
 HF_DATASET_REPO = "hf-doc-build/doc-build"
 HF_DATASET_API_URL = f"https://huggingface.co/api/datasets/{HF_DATASET_REPO}/tree/main"
@@ -318,11 +318,8 @@ def process_markdown_file(
                         last_heading = headings_dict[f"heading{i}"]
                         break
 
-                if last_heading:
-                    # Create anchor from heading (lowercase, replace spaces with hyphens)
-                    anchor = last_heading.lower().replace(" ", "-")
-                    # Remove special characters
-                    anchor = "".join(c for c in anchor if c.isalnum() or c == "-")
+                anchor = last_heading and heading_anchor(last_heading)
+                if anchor:
                     url = f"{base_url}#{anchor}"
 
             # Create a chunk for each excerpt
