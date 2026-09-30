@@ -16,7 +16,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from doc_builder.build_embeddings import Chunk, chunks_to_documents
+from doc_builder.build_embeddings import Chunk, chunks_to_documents, clean_heading, markdown_to_plain_text
 from doc_builder.commands import embeddings as embeddings_command
 from doc_builder.process_hf_docs import (
     HF_BLOG_API_URL,
@@ -323,3 +323,89 @@ def test_incremental_course_scope_uses_public_product_prefix(monkeypatch):
     assert saved_trackers == [
         ({"course-legacy-page-a1b2c3d4", "datasets-page-a1b2c3d4"}, None),
     ]
+
+
+@pytest.mark.parametrize(
+    ("heading", "expected"),
+    [
+        ("BatchEncoding[[transformers.BatchEncoding]]", "BatchEncoding"),
+        ("Trainer[[api-reference]][[transformers.Trainer]]", "Trainer"),
+        ("__call__[[transformers.TopKLogitsWarper.__call__]]", "__call__"),
+        ("Using `huggingface_hub` with **Spaces**", "Using huggingface_hub with Spaces"),
+        ("Returns: [0, 0, 1] for sequence pairs", "Returns: [0, 0, 1] for sequence pairs"),
+        (None, None),
+    ],
+)
+def test_clean_heading(heading, expected):
+    assert clean_heading(heading) == expected
+
+
+def test_markdown_to_plain_text_removes_syntax_and_keeps_code():
+    markdown = (
+        "#### token_to_word[[transformers.BatchEncoding.token_to_word]]\n\n"
+        "```python\ntoken_to_word(batch_index: int)\n```\n\n"
+        "[Source](https://github.com/huggingface/transformers)\n\n"
+        "**Parameters:**\n\nbatch_index (`int`, *optional*) : Index of the sequence."
+    )
+
+    assert markdown_to_plain_text(markdown) == (
+        "token_to_word\ntoken_to_word(batch_index: int)\nSource\nParameters:\n"
+        "batch_index (int, optional) : Index of the sequence."
+    )
+
+
+def test_markdown_to_plain_text_treats_indented_components_as_prose():
+    markdown = "<Tip warning={true}>\n\n    ## Installation\n\n    Run `pip install <b>spaces</b>`.\n\n</Tip>"
+
+    assert markdown_to_plain_text(markdown) == "Installation\nRun pip install <b>spaces</b>."
+
+
+@pytest.mark.parametrize(
+    ("markdown", "expected"),
+    [
+        # Continuation excerpt: the bare fence closes a block opened in the previous excerpt
+        (
+            "int = 0)\n```\n\nSee [the guide](./guide) for **details**.\n\n```python\nx = 1\n```",
+            "int = 0)\nSee the guide for details.\nx = 1",
+        ),
+        # First excerpt of a section: the bare fence opens a block continued in the next excerpt
+        (
+            "## Installation\n\nFollow the [guide](https://example.com):\n\n```\npip install foo",
+            "Installation\nFollow the guide:\npip install foo",
+        ),
+    ],
+)
+def test_markdown_to_plain_text_handles_code_blocks_cut_by_excerpts(markdown, expected):
+    assert markdown_to_plain_text(markdown) == expected
+
+
+@pytest.mark.parametrize(
+    ("markdown", "expected"),
+    [
+        # Table rows whose header was left in the previous excerpt
+        ("ll    | 4 vCPU | 15 GB |\n| Nvidia A10G | 12 vCPU | 46 GB |", "ll 4 vCPU 15 GB Nvidia A10G 12 vCPU 46 GB"),
+        # Links cut at the start or the end of the excerpt
+        ("ions](./spaces-sdks-docker#permissions); `USER` runs", "; USER runs"),
+        (
+            "Character spans are returned as a [`CharSpan`](/docs/transformers/main/en/intern",
+            "Character spans are returned as a CharSpan",
+        ),
+    ],
+)
+def test_markdown_to_plain_text_handles_tables_and_links_cut_by_excerpts(markdown, expected):
+    assert markdown_to_plain_text(markdown) == expected
+
+
+def test_chunks_to_documents_cleans_headings_and_adds_plain_text():
+    chunk = make_chunk("transformers", "main_classes/tokenizer", text="Uses **fast** `tokenizers`.")._replace(
+        source_page_url="https://huggingface.co/docs/transformers/main_classes/tokenizer",
+        headings=["# Tokenizer", "## BatchEncoding[[transformers.BatchEncoding]]"],
+    )
+
+    [document] = chunks_to_documents([chunk])
+
+    assert document.text == chunk.text
+    assert document.text_plain == "Uses fast tokenizers."
+    assert (document.heading1, document.heading2) == ("Tokenizer", "BatchEncoding")
+    # The URL fragment is unchanged, so existing links keep working
+    assert document.source_page_url.endswith("#batchencodingtransformersbatchencoding")

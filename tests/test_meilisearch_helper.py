@@ -15,7 +15,7 @@
 from types import SimpleNamespace
 
 from doc_builder.build_embeddings import Chunk, chunks_to_documents
-from doc_builder.meilisearch_helper import VECTOR_NAME, add_embeddings_to_db
+from doc_builder.meilisearch_helper import VECTOR_NAME, add_embeddings_to_db, generate_doc_id, update_all_documents
 
 
 class FakeIndex:
@@ -63,3 +63,71 @@ def test_add_embeddings_to_db_marks_none_as_vectorless():
     assert payload_by_text["vectorless"]["_vectors"] == {VECTOR_NAME: None}
     assert payload_by_text["empty-vector"]["_vectors"] == {VECTOR_NAME: []}
     assert all(document["product"] == "test" for document in payload_by_text.values())
+    assert all(document["text_plain"] == document["text"] for document in payload_by_text.values())
+
+
+def test_add_embeddings_to_db_ids_only_depend_on_text():
+    chunk = make_chunk("**bold**")._replace(headings=["# Heading[[anchor]]"])
+    client = FakeClient()
+
+    add_embeddings_to_db(client, "test-index", chunks_to_documents([chunk]))
+
+    [document] = client.index_instance.payload
+    assert document["id"] == generate_doc_id("test", "**bold**", "**bold**")
+    assert (document["text_plain"], document["heading1"]) == ("bold", "Heading")
+
+
+class FakeMigrationIndex:
+    def __init__(self, documents):
+        self.documents = documents
+        self.updates = []
+
+    def get_documents(self, params):
+        page = self.documents[params["offset"] : params["offset"] + params["limit"]]
+        results = [SimpleNamespace(**{k: v for k, v in doc.items() if k in params["fields"]}) for doc in page]
+        return SimpleNamespace(results=results)
+
+    def update_documents(self, documents):
+        self.updates.append(documents)
+        return SimpleNamespace(task_uid=len(self.updates))
+
+
+class FakeMigrationClient:
+    def __init__(self, documents):
+        self.index_instance = FakeMigrationIndex(documents)
+        self.waited = []
+
+    def index(self, index_name):
+        assert index_name == "test-index"
+        return self.index_instance
+
+    def wait_for_task(self, task_uid, **kwargs):
+        self.waited.append(task_uid)
+        return SimpleNamespace(status="succeeded", error=None)
+
+
+def test_update_all_documents_writes_only_changed_fields_in_batches():
+    documents = [{"id": f"doc-{i}", "text": "**x**" if i % 2 else "x", "heading1": "h"} for i in range(5)]
+    client = FakeMigrationClient(documents)
+
+    def transform(doc):
+        assert set(doc) == {"id", "text", "text_plain"}
+        return {"text_plain": "x"} if doc["text"] != "x" else None
+
+    updated = update_all_documents(client, "test-index", ["text", "text_plain"], transform, batch_size=2)
+
+    assert updated == 2
+    assert client.index_instance.updates == [
+        [{"id": "doc-1", "text_plain": "x"}],
+        [{"id": "doc-3", "text_plain": "x"}],
+    ]
+    assert client.waited == [1, 2]
+
+
+def test_update_all_documents_dry_run_does_not_write():
+    client = FakeMigrationClient([{"id": "doc", "text": "**x**"}])
+
+    updated = update_all_documents(client, "test-index", ["text"], lambda doc: {"text_plain": "x"}, dry_run=True)
+
+    assert updated == 1
+    assert client.index_instance.updates == []
