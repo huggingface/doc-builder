@@ -14,6 +14,7 @@
 
 
 import concurrent
+import html
 import importlib
 import re
 from collections import namedtuple
@@ -22,6 +23,7 @@ from pathlib import Path
 
 import httpx
 import meilisearch
+from markdown_it import MarkdownIt
 from tqdm import tqdm
 
 from .autodoc import autodoc_markdown, resolve_links_in_text
@@ -39,7 +41,7 @@ from .utils import chunk_list, read_doc_config
 Chunk = namedtuple("Chunk", "text source_page_url source_page_title package_name headings page")
 Embedding = namedtuple(
     "Embedding",
-    "text source_page_url source_page_title library embedding heading1 heading2 heading3 heading4 heading5 page",
+    "text text_plain source_page_url source_page_title library embedding heading1 heading2 heading3 heading4 heading5 page",
 )
 
 MEILI_INDEX = "docs-semantic-search"
@@ -48,6 +50,94 @@ MEILI_INDEX_TEMP = "docs-semantic-search-temp"
 _re_md_anchor = re.compile(r"\[\[(.*)]]")
 _re_non_alphaneumeric = re.compile(r"[^a-z0-9\s]+", re.IGNORECASE)
 _re_congruent_whitespaces = re.compile(r"\s{2,}")
+_re_md_anchor_suffix = re.compile(r"(?:\s*\[\[[^\]\n]+\]\])+\s*$")
+_re_html_tag = re.compile(r"</?[A-Za-z][^<>]*>")
+_re_fence = re.compile(r"^\s*(?:`{3,}|~{3,})(.*)$", re.MULTILINE)
+_re_starts_with_heading = re.compile(r"^\s*#{1,6}\s")
+_re_leading_whitespace = re.compile(r"^[ \t]+", re.MULTILINE)
+_re_cut_link_start = re.compile(r"^[^\[\n]*?\]\([^)\s]*\)")
+_re_cut_link_end = re.compile(r"\[([^\]\n]*)\]\([^)\s]*$")
+_re_table_row = re.compile(r"^\s*\||\|\s*$")
+_re_inline_fence = re.compile(r"(?:`{3,}|~{3,})[\w-]*")
+_plain_text_md = MarkdownIt("commonmark", {"html": True}).enable("table")
+
+
+def _inline_to_plain_text(token, is_heading: bool) -> str:
+    parts = []
+    for child in token.children or []:
+        if child.type in ("text", "code_inline", "image"):
+            parts.append(child.content)
+        elif child.type in ("softbreak", "hardbreak"):
+            parts.append(" ")
+        elif child.type in ("em_open", "em_close", "strong_open", "strong_close") and "_" in child.markup:
+            # `__call__` is an identifier, not bold text
+            parts.append(child.markup)
+    text = "".join(parts)
+    if is_heading:
+        return _re_md_anchor_suffix.sub("", text)
+    if all(_re_table_row.search(line) for line in token.content.splitlines()):
+        # Rows of a table whose header was left in the previous excerpt
+        return " ".join(text.replace("|", " ").split())
+    # Fences flattened into a line (e.g. in autodoc parameter descriptions) are not parsed as code blocks
+    return _re_inline_fence.sub("", text)
+
+
+def clean_heading(heading: str | None) -> str | None:
+    """
+    Plain-text heading without Markdown syntax or doc-builder `[[anchor]]` suffixes,
+    e.g. "`BatchEncoding`[[transformers.BatchEncoding]]" -> "BatchEncoding".
+    """
+    if heading is None:
+        return None
+    return " ".join(
+        _inline_to_plain_text(token, is_heading=True) for token in _plain_text_md.parseInline(heading)
+    ).strip()
+
+
+def _starts_inside_code_block(markdown: str) -> bool:
+    """
+    Excerpts are split by length, so a chunk can start or end inside a code block, which leaves it with an odd
+    number of fences. Opening fences usually name a language and closing ones never do, which tells the two apart.
+    """
+    infos = [info.strip() for info in _re_fence.findall(markdown)]
+    if len(infos) % 2 == 0 or infos[0]:
+        return False
+    named_openers_if_starts_inside = sum(bool(info) for info in infos[1::2])
+    named_openers_if_ends_inside = sum(bool(info) for info in infos[2::2])
+    if named_openers_if_starts_inside != named_openers_if_ends_inside:
+        return named_openers_if_starts_inside > named_openers_if_ends_inside
+    # The first excerpt of a section starts with its heading
+    return not _re_starts_with_heading.match(markdown)
+
+
+def markdown_to_plain_text(markdown: str) -> str:
+    """
+    Plain-text version of a Markdown chunk, used for search result snippets: Markdown syntax, HTML tags and
+    doc-builder heading anchors are removed, code is kept as text.
+    """
+    # Chunk lines are often indented inside components like <Tip>: that is not indented code.
+    markdown = _re_leading_whitespace.sub("", markdown)
+    # Excerpts are split by length, so links can be cut at either end of a chunk.
+    markdown = _re_cut_link_end.sub(r"\1", _re_cut_link_start.sub("", markdown))
+    if _starts_inside_code_block(markdown):
+        markdown = "```\n" + markdown
+
+    blocks = []
+    is_heading = False
+    for token in _plain_text_md.parse(markdown):
+        if token.type == "heading_open":
+            is_heading = True
+        elif token.type == "heading_close":
+            is_heading = False
+        elif token.type == "inline":
+            blocks.append(_inline_to_plain_text(token, is_heading))
+        elif token.type == "fence":
+            blocks.append(token.content)
+        elif token.type == "html_block":
+            blocks.append(html.unescape(_re_html_tag.sub("", token.content)))
+
+    lines = (" ".join(line.split()) for block in blocks for line in block.splitlines())
+    return "\n".join(line for line in lines if line)
 
 
 class MarkdownChunkNode:
@@ -710,7 +800,7 @@ def chunks_to_documents(chunks, embedding_vectors=None) -> list[Embedding]:
             level = len(heading_str) - len(heading_str.lstrip("#"))
             heading_text = heading_str.lstrip("# ").strip()
             if 1 <= level <= 5:
-                headings[level - 1] = heading_text
+                headings[level - 1] = clean_heading(heading_text)
                 last_heading = heading_text
 
         # Blog records must preserve the canonical URL returned by the Hub API.
@@ -721,6 +811,7 @@ def chunks_to_documents(chunks, embedding_vectors=None) -> list[Embedding]:
         embeddings.append(
             Embedding(
                 text=c.text,
+                text_plain=markdown_to_plain_text(c.text),
                 source_page_url=source_page_url,
                 source_page_title=c.source_page_title,
                 library=c.package_name,
