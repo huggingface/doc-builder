@@ -252,10 +252,12 @@ def update_all_documents(
     return updated
 
 
+@wait_for_task_completion
 def delete_documents_from_db(client: Client, index_name: str, doc_ids: list[str]):
-    """Delete a batch of documents by ID from a Meilisearch index."""
+    """Delete a batch of documents by ID from a Meilisearch index, and wait for the deletion to succeed."""
     index = client.index(index_name)
-    index.delete_documents(doc_ids)
+    task_info = index.delete_documents(doc_ids)
+    return client, task_info
 
 
 def sanitize_for_id(text):

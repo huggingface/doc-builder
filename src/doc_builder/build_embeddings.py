@@ -30,10 +30,12 @@ from .autodoc import autodoc_markdown, resolve_links_in_text
 from .check_links import _heading_anchor
 from .convert_md_to_mdx import process_md
 from .convert_rst_to_mdx import find_indent, is_empty_line
+from .embeddings_tracker import save_tracker
 from .meilisearch_helper import (
     add_embeddings_to_db,
     create_embedding_db,
     delete_embedding_db,
+    get_all_document_ids,
     swap_indexes,
     update_db_settings,
 )
@@ -951,13 +953,17 @@ def build_embeddings(
         add_embeddings_to_db(client, MEILI_INDEX_TEMP, chunk_embeddings)
 
 
-def clean_meilisearch(meilisearch_key: str, swap: bool, meilisearch_url: str):
+def clean_meilisearch(meilisearch_key: str, swap: bool, meilisearch_url: str, hf_token: str | None = None):
     """
     Swap & delete temp index.
+
+    After a swap, the incremental-update tracker is rebuilt from the new main index: a full rebuild replaces every
+    document, so the previous tracker would make incremental runs miss stale documents.
     """
     client = meilisearch.Client(meilisearch_url, meilisearch_key)
     if swap:
         swap_indexes(client, MEILI_INDEX, MEILI_INDEX_TEMP)
+        save_tracker(get_all_document_ids(client, MEILI_INDEX), hf_token)
     delete_embedding_db(client, MEILI_INDEX_TEMP)
     create_embedding_db(client, MEILI_INDEX_TEMP)
     update_db_settings(client, MEILI_INDEX_TEMP)
