@@ -12,11 +12,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import sys
 from types import SimpleNamespace
 
 import pytest
 
-from doc_builder.build_embeddings import Chunk, chunks_to_documents, clean_heading, markdown_to_plain_text
+from doc_builder.build_embeddings import (
+    Chunk,
+    chunks_to_documents,
+    clean_heading,
+    clean_meilisearch,
+    markdown_to_plain_text,
+)
 from doc_builder.commands import embeddings as embeddings_command
 from doc_builder.process_hf_docs import (
     HF_BLOG_API_URL,
@@ -432,3 +439,55 @@ def test_markdown_chunk_urls_use_the_rendered_heading_anchor(tmp_path, heading, 
     chunks = process_markdown_file(page, "transformers", tmp_path)
 
     assert chunks[-1].source_page_url.endswith(f"/docs/transformers/main_classes/tokenizer#{anchor}")
+
+
+def test_incremental_keeps_ids_whose_deletion_failed_in_the_tracker(monkeypatch):
+    existing_ids = {f"datasets-page-{i:04}" for i in range(1001)}
+    saved_trackers = []
+
+    def delete_documents(client, index, ids):
+        if "datasets-page-1000" in ids:
+            raise Exception("Meilisearch operation failed")
+
+    monkeypatch.setattr("doc_builder.embeddings_tracker.load_tracker", lambda token: existing_ids)
+    monkeypatch.setattr("doc_builder.embeddings_tracker.save_tracker", lambda ids, token: saved_trackers.append(ids))
+    monkeypatch.setattr("doc_builder.meilisearch_helper.delete_documents_from_db", delete_documents)
+    monkeypatch.setattr("meilisearch.Client", lambda *args: object())
+
+    with pytest.raises(Exception, match="Meilisearch operation failed"):
+        embeddings_command._run_incremental(
+            SimpleNamespace(libraries=None, hf_token=None), [], None, None, "meili-key", "https://meili.test", 2
+        )
+
+    # The first batch of 1000 was deleted, the failed one stays tracked so the next run retries its deletion
+    assert saved_trackers == [{"datasets-page-1000"}]
+
+
+# `doc_builder.build_embeddings` is also the name of a function re-exported by `doc_builder`
+build_embeddings_module = sys.modules["doc_builder.build_embeddings"]
+
+
+def test_meilisearch_clean_swap_rebuilds_the_tracker_from_the_main_index(monkeypatch):
+    calls = []
+    monkeypatch.setattr("meilisearch.Client", lambda *args: "client")
+    for name in ("swap_indexes", "delete_embedding_db", "create_embedding_db", "update_db_settings"):
+        monkeypatch.setattr(build_embeddings_module, name, lambda *args, name=name: calls.append(name))
+    monkeypatch.setattr(
+        build_embeddings_module, "get_all_document_ids", lambda client, index: {"main-doc-1", "main-doc-2"}
+    )
+    monkeypatch.setattr(
+        build_embeddings_module, "save_tracker", lambda ids, token: calls.append(("save_tracker", ids, token))
+    )
+
+    clean_meilisearch("meili-key", True, "https://meili.test", "hf-token")
+
+    assert calls[:2] == ["swap_indexes", ("save_tracker", {"main-doc-1", "main-doc-2"}, "hf-token")]
+
+
+def test_meilisearch_clean_without_swap_leaves_the_tracker(monkeypatch):
+    monkeypatch.setattr("meilisearch.Client", lambda *args: "client")
+    for name in ("delete_embedding_db", "create_embedding_db", "update_db_settings"):
+        monkeypatch.setattr(build_embeddings_module, name, lambda *args: None)
+    monkeypatch.setattr(build_embeddings_module, "save_tracker", lambda *args: pytest.fail("tracker saved"))
+
+    clean_meilisearch("meili-key", False, "https://meili.test")
