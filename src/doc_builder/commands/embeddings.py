@@ -209,21 +209,25 @@ def _run_incremental(args, all_chunks, hf_ie_url, hf_ie_token, meilisearch_key, 
     else:
         print("\nNo new or changed documents — skipping embedding and upload.")
 
-    # Delete stale docs
-    if to_delete_ids:
-        print(f"\nDeleting {len(to_delete_ids)} stale documents from Meilisearch...")
-        DELETE_BATCH = 1000
-        to_delete_list = sorted(to_delete_ids)
-        for i in tqdm(range(0, len(to_delete_list), DELETE_BATCH), desc="Deleting stale docs"):
-            batch = to_delete_list[i : i + DELETE_BATCH]
-            delete_documents_from_db(client, MEILI_INDEX, batch)
-        print("Stale documents deleted.")
-    else:
-        print("\nNo stale documents to delete.")
-
-    # Update tracker: keep IDs outside the scope unchanged, replace in-scope with new_ids
-    updated_ids = (existing_ids - existing_ids_in_scope) | new_ids
-    save_tracker(updated_ids, hf_token)
+    # Stale IDs stay in the tracker until their deletion succeeds, so a failed deletion is retried by the next run
+    # instead of leaving documents in the index that the tracker no longer knows about.
+    undeleted_ids = set(to_delete_ids)
+    try:
+        if to_delete_ids:
+            print(f"\nDeleting {len(to_delete_ids)} stale documents from Meilisearch...")
+            DELETE_BATCH = 1000
+            to_delete_list = sorted(to_delete_ids)
+            for i in tqdm(range(0, len(to_delete_list), DELETE_BATCH), desc="Deleting stale docs"):
+                batch = to_delete_list[i : i + DELETE_BATCH]
+                delete_documents_from_db(client, MEILI_INDEX, batch)
+                undeleted_ids.difference_update(batch)
+            print("Stale documents deleted.")
+        else:
+            print("\nNo stale documents to delete.")
+    finally:
+        # Keep IDs outside the scope unchanged, replace in-scope with new_ids
+        updated_ids = (existing_ids - existing_ids_in_scope) | new_ids | undeleted_ids
+        save_tracker(updated_ids, hf_token)
 
 
 def meilisearch_clean_command(args):
@@ -234,7 +238,12 @@ def meilisearch_clean_command(args):
     meilisearch_url = get_credential(args.meilisearch_url, "MEILISEARCH_URL")
     if not meilisearch_url:
         raise ValueError("MEILISEARCH_URL is required. Set via --meilisearch_url or MEILISEARCH_URL env var.")
-    clean_meilisearch(meilisearch_key, args.swap, meilisearch_url)
+    hf_token = get_credential(args.hf_token, "HF_TOKEN")
+    if args.swap and not hf_token:
+        raise ValueError(
+            "HF_TOKEN is required with --swap to update the tracker. Set via --hf_token or HF_TOKEN env var."
+        )
+    clean_meilisearch(meilisearch_key, args.swap, meilisearch_url, hf_token)
 
 
 def add_gradio_docs_command(args):
@@ -272,6 +281,13 @@ def embeddings_command_parser(subparsers=None):
     )
     parser_meilisearch_clean.add_argument(
         "--swap", action="store_true", help="Whether to swap temp index with prod index."
+    )
+    parser_meilisearch_clean.add_argument(
+        "--hf_token",
+        type=str,
+        required=False,
+        default=None,
+        help="HuggingFace token with write access to the tracker dataset (or set HF_TOKEN env var). Required with --swap.",
     )
     if subparsers is not None:
         parser_meilisearch_clean.set_defaults(func=meilisearch_clean_command)

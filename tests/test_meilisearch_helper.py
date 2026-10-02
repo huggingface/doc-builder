@@ -14,13 +14,27 @@
 
 from types import SimpleNamespace
 
+import pytest
+
 from doc_builder.build_embeddings import Chunk, chunks_to_documents
-from doc_builder.meilisearch_helper import VECTOR_NAME, add_embeddings_to_db, generate_doc_id, update_all_documents
+from doc_builder.meilisearch_helper import (
+    VECTOR_NAME,
+    add_embeddings_to_db,
+    delete_documents_from_db,
+    generate_doc_id,
+    update_all_documents,
+)
 
 
 class FakeIndex:
-    def __init__(self):
+    def __init__(self, task_status="succeeded"):
         self.payload = None
+        self.deleted = None
+        self.task_status = task_status
+
+    def delete_documents(self, ids):
+        self.deleted = ids
+        return SimpleNamespace(task_uid=7)
 
     def add_documents(self, payload):
         self.payload = payload
@@ -28,12 +42,12 @@ class FakeIndex:
 
     def get_task(self, task_uid):
         assert task_uid == 7
-        return SimpleNamespace(status="succeeded")
+        return SimpleNamespace(status=self.task_status, error={"message": "boom", "type": "internal", "link": ""})
 
 
 class FakeClient:
-    def __init__(self):
-        self.index_instance = FakeIndex()
+    def __init__(self, task_status="succeeded"):
+        self.index_instance = FakeIndex(task_status)
 
     def index(self, index_name):
         assert index_name == "test-index"
@@ -149,3 +163,16 @@ def test_update_all_documents_waits_for_pending_index_tasks_before_scanning(monk
 
     assert len(sleeps) == 2
     assert client.index_instance.updates == [[{"id": "doc", "text_plain": "x"}]]
+
+
+def test_delete_documents_from_db_waits_for_the_deletion():
+    client = FakeClient()
+
+    delete_documents_from_db(client, "test-index", ["doc-1"])
+
+    assert client.index_instance.deleted == ["doc-1"]
+
+
+def test_delete_documents_from_db_raises_when_the_deletion_fails():
+    with pytest.raises(Exception, match="boom"):
+        delete_documents_from_db(FakeClient(task_status="failed"), "test-index", ["doc-1"])
