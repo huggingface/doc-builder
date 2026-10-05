@@ -68,6 +68,7 @@ jobs:
 
       - name: Check pr_number against the triggering run
         if: github.event.workflow_run.event != 'workflow_dispatch'
+        shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
           PR_NUMBER: ${{ steps.github-context.outputs.pr_number }}
@@ -77,10 +78,21 @@ jobs:
           if jq -e --argjson n "$PR_NUMBER" 'index($n) != null' <<< "$RUN_PR_NUMBERS" > /dev/null; then
             exit 0
           fi
-          # `pull_requests` is empty for PRs opened from forks, compare the PR head instead
-          pr_head=$(gh api "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER" --jq '.head.repo.full_name + ":" + .head.ref')
-          if [ "$pr_head" != "$RUN_HEAD" ]; then
+          if jq -e 'length > 0' <<< "$RUN_PR_NUMBERS" > /dev/null; then
             echo "pr_number $PR_NUMBER does not match the triggering run"
+            exit 1
+          fi
+
+          # Fork runs may omit pull_requests. Only use an unambiguous head match,
+          # including closed PRs so a reused branch cannot select an older PR.
+          head_owner=${RUN_HEAD%%/*}
+          head_branch=${RUN_HEAD#*:}
+          pr_numbers=$(gh api --method GET "repos/$GITHUB_REPOSITORY/pulls" \
+            -f head="$head_owner:$head_branch" -f state=all -f per_page=100 \
+            --paginate --slurp | \
+            jq --arg head "$RUN_HEAD" '[.[][] | select((.head.repo.full_name + ":" + .head.ref) == $head) | .number]')
+          if ! jq -e --argjson n "$PR_NUMBER" 'length == 1 and .[0] == $n' <<< "$pr_numbers" > /dev/null; then
+            echo "pr_number $PR_NUMBER does not uniquely match the triggering run"
             exit 1
           fi
 
