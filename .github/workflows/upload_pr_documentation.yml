@@ -66,6 +66,24 @@ jobs:
             exit 1
           fi
 
+      - name: Check pr_number against the triggering run
+        if: github.event.workflow_run.event != 'workflow_dispatch'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ steps.github-context.outputs.pr_number }}
+          RUN_PR_NUMBERS: ${{ toJSON(github.event.workflow_run.pull_requests.*.number) }}
+          RUN_HEAD: ${{ github.event.workflow_run.head_repository.full_name }}:${{ github.event.workflow_run.head_branch }}
+        run: |
+          if jq -e --argjson n "$PR_NUMBER" 'index($n) != null' <<< "$RUN_PR_NUMBERS" > /dev/null; then
+            exit 0
+          fi
+          # `pull_requests` is empty for PRs opened from forks, compare the PR head instead
+          pr_head=$(gh api "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER" --jq '.head.repo.full_name + ":" + .head.ref')
+          if [ "$pr_head" != "$RUN_HEAD" ]; then
+            echo "pr_number $PR_NUMBER does not match the triggering run"
+            exit 1
+          fi
+
       - name: Get warning status
         id: warning-context
         run: |
@@ -119,10 +137,12 @@ jobs:
         shell: bash
         env:
           PACKAGE_NAME: ${{ inputs.package_name }}
+          PR_NUMBER: ${{ steps.github-context.outputs.pr_number }}
           HF_TOKEN: ${{ secrets.hf_token }}
         run: |
           cd build_dir
-          uvx --from huggingface_hub hf sync "./$PACKAGE_NAME" "hf://buckets/hf-doc-build/doc-dev/$PACKAGE_NAME"
+          test -d "./$PACKAGE_NAME/pr_$PR_NUMBER"
+          uvx --from huggingface_hub hf sync "./$PACKAGE_NAME/pr_$PR_NUMBER" "hf://buckets/hf-doc-build/doc-dev/$PACKAGE_NAME/pr_$PR_NUMBER"
 
       - name: Find doc comment
         uses: peter-evans/find-comment@b30e6a3c0ed37e7c023ccd3f1db5c6c0b0c23aad  # v4.0.0
