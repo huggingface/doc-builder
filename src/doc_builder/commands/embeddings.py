@@ -215,12 +215,9 @@ def _run_incremental(args, all_chunks, hf_ie_url, hf_ie_token, meilisearch_key, 
     try:
         if to_delete_ids:
             print(f"\nDeleting {len(to_delete_ids)} stale documents from Meilisearch...")
-            DELETE_BATCH = 1000
-            to_delete_list = sorted(to_delete_ids)
-            for i in tqdm(range(0, len(to_delete_list), DELETE_BATCH), desc="Deleting stale docs"):
-                batch = to_delete_list[i : i + DELETE_BATCH]
-                delete_documents_from_db(client, MEILI_INDEX, batch)
-                undeleted_ids.difference_update(batch)
+            # A single task: waiting on one task per batch can take hours when the shared task queue is busy
+            delete_documents_from_db(client, MEILI_INDEX, sorted(to_delete_ids))
+            undeleted_ids.clear()
             print("Stale documents deleted.")
         else:
             print("\nNo stale documents to delete.")

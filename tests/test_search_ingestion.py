@@ -442,13 +442,33 @@ def test_markdown_chunk_urls_use_the_rendered_heading_anchor(tmp_path, heading, 
     assert chunks[-1].source_page_url.endswith(f"/docs/transformers/main_classes/tokenizer#{anchor}")
 
 
+def test_incremental_deletes_stale_documents_in_one_task(monkeypatch):
+    existing_ids = {f"datasets-page-{i:04}" for i in range(2500)}
+    deleted_batches = []
+    saved_trackers = []
+
+    monkeypatch.setattr("doc_builder.embeddings_tracker.load_tracker", lambda token: existing_ids)
+    monkeypatch.setattr("doc_builder.embeddings_tracker.save_tracker", lambda ids, token: saved_trackers.append(ids))
+    monkeypatch.setattr(
+        "doc_builder.meilisearch_helper.delete_documents_from_db",
+        lambda client, index, ids: deleted_batches.append(ids),
+    )
+    monkeypatch.setattr("meilisearch.Client", lambda *args: object())
+
+    embeddings_command._run_incremental(
+        SimpleNamespace(libraries=None, hf_token=None), [], None, None, "meili-key", "https://meili.test", 2
+    )
+
+    assert deleted_batches == [sorted(existing_ids)]
+    assert saved_trackers == [set()]
+
+
 def test_incremental_keeps_ids_whose_deletion_failed_in_the_tracker(monkeypatch):
-    existing_ids = {f"datasets-page-{i:04}" for i in range(1001)}
+    existing_ids = {f"datasets-page-{i:04}" for i in range(3)}
     saved_trackers = []
 
     def delete_documents(client, index, ids):
-        if "datasets-page-1000" in ids:
-            raise Exception("Meilisearch operation failed")
+        raise Exception("Meilisearch operation failed")
 
     monkeypatch.setattr("doc_builder.embeddings_tracker.load_tracker", lambda token: existing_ids)
     monkeypatch.setattr("doc_builder.embeddings_tracker.save_tracker", lambda ids, token: saved_trackers.append(ids))
@@ -460,8 +480,8 @@ def test_incremental_keeps_ids_whose_deletion_failed_in_the_tracker(monkeypatch)
             SimpleNamespace(libraries=None, hf_token=None), [], None, None, "meili-key", "https://meili.test", 2
         )
 
-    # The first batch of 1000 was deleted, the failed one stays tracked so the next run retries its deletion
-    assert saved_trackers == [{"datasets-page-1000"}]
+    # The stale IDs stay tracked so the next run retries their deletion
+    assert saved_trackers == [existing_ids]
 
 
 # `doc_builder.build_embeddings` is also the name of a function re-exported by `doc_builder`

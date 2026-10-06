@@ -75,7 +75,7 @@ def main():
         if fields is None:
             return None
         changes = {field: value for field, value in fields.items() if value != doc[field]}
-        changed_fields.update(changes)
+        changed_fields.update(changes.keys())
         if changes and len(samples) < 5:
             samples.append({field: (doc[field], value) for field, value in changes.items() if field != "text_plain"})
         return changes or None
