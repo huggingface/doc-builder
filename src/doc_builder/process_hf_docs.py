@@ -32,7 +32,7 @@ from packaging import version as package_version
 from tqdm import tqdm
 
 from .api_docs import extract_api_docstrings
-from .build_embeddings import Chunk, heading_anchor, split_markdown_by_headings
+from .build_embeddings import Chunk, clean_heading, heading_anchor, split_markdown_by_headings
 
 HF_DATASET_REPO = "hf-doc-build/doc-build"
 HF_DATASET_API_URL = f"https://huggingface.co/api/datasets/{HF_DATASET_REPO}/tree/main"
@@ -290,7 +290,11 @@ def process_markdown_file(
 
         # Generate base URL for this file
         base_url = markdown_file_to_url(file_path, library_name, base_dir)
-        page_title = get_page_title(file_path)
+        # The page's first heading is its rendered title, the file name is a fallback
+        page_title = next(
+            (clean_heading(s["headings"]["heading1"]) for s in sections if s["headings"].get("heading1")),
+            None,
+        ) or get_page_title(file_path)
 
         public_library_name = get_public_library_name(library_name)
 

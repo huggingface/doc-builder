@@ -23,6 +23,7 @@ from doc_builder.build_embeddings import (
     clean_heading,
     clean_meilisearch,
     markdown_to_plain_text,
+    split_markdown_by_headings,
 )
 from doc_builder.commands import embeddings as embeddings_command
 from doc_builder.process_hf_docs import (
@@ -491,3 +492,56 @@ def test_meilisearch_clean_without_swap_leaves_the_tracker(monkeypatch):
     monkeypatch.setattr(build_embeddings_module, "save_tracker", lambda *args: pytest.fail("tracker saved"))
 
     clean_meilisearch("meili-key", False, "https://meili.test")
+
+
+def test_split_markdown_by_headings_ignores_comments_in_code_blocks():
+    markdown = (
+        "# Hyperparameter search\n\nPick a backend.\n\n"
+        "```py\n# install one of these backends\npip install optuna\n```\n\n"
+        "~~~~\n```\n# still code\n```\n~~~~\n\n"
+        "## Run the search\n\nCall `hyperparameter_search`."
+    )
+
+    sections = split_markdown_by_headings(markdown)
+
+    assert [section["headings"] for section in sections] == [
+        {"heading1": "Hyperparameter search"},
+        {"heading1": "Hyperparameter search", "heading2": "Run the search"},
+    ]
+    assert "# install one of these backends" in sections[0]["excerpts"][0]
+    assert "# still code" in sections[0]["excerpts"][0]
+
+
+@pytest.mark.parametrize(
+    ("content", "title"),
+    [
+        ("# Hyperparameter search[[hyperparameter-search]]\n\n## Run the search\n\nText.", "Hyperparameter search"),
+        ("Intro without a title.\n\n## Run the search\n\nText.", "Hpo Train"),
+    ],
+)
+def test_markdown_page_title_is_its_first_heading(tmp_path, content, title):
+    page = tmp_path / "hpo_train.md"
+    page.write_text(content, encoding="utf-8")
+
+    chunks = process_markdown_file(page, "transformers", tmp_path)
+
+    assert {chunk.source_page_title for chunk in chunks} == {title}
+
+
+@pytest.mark.parametrize(
+    ("markdown", "expected"),
+    [
+        ("Dataset review request for <Dataset name>", "Dataset review request for <Dataset name>"),
+        ('The chat template places a special "<image>" token', 'The chat template places a special "<image>" token'),
+        ("Press <kbd>Ctrl</kbd>+C to stop", "Press Ctrl+C to stop"),
+        ("<Tip warning={true}>\n\nUse a GPU.\n\n</Tip>", "Use a GPU."),
+        ('<hfoption id="PyTorch">\n\nUse PyTorch.', "Use PyTorch."),
+        ('<Youtube id="abc"/>\n\nWatch it.', "Watch it."),
+    ],
+)
+def test_markdown_to_plain_text_keeps_placeholders_and_removes_markup(markdown, expected):
+    assert markdown_to_plain_text(markdown) == expected
+
+
+def test_clean_heading_keeps_placeholders():
+    assert clean_heading("kernel.<name>[[kernel-name]]") == "kernel.<name>"
