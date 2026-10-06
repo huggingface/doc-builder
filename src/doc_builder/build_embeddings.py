@@ -56,6 +56,17 @@ _re_congruent_whitespaces = re.compile(r"\s{2,}")
 _re_md_anchor_suffix = re.compile(r"(?:\s*\[\[[^\]\n]+\]\])+\s*$")
 _re_custom_heading_anchor = re.compile(r"\[\[([^\]]+)\]\]\s*$")
 _re_html_tag = re.compile(r"</?[A-Za-z][^<>]*>")
+_re_tag_name = re.compile(r"^</?([A-Za-z][\w-]*)")
+_re_closing_tag_name = re.compile(r"</([A-Za-z][\w-]*)\s*>")
+_re_fence_delimiter = re.compile(r"^\s*(`{3,}|~{3,})(.*)$")
+_re_heading_line = re.compile(r"^(#{1,6})\s+(.+)$")
+# Tags written without attributes and never closed, e.g. `<model_id>`, are placeholders shown as text
+_MARKUP_TAG_NAMES = frozenset(
+    "a abbr audio b blockquote br caption cite code col colgroup dd del details dfn div dl dt em figcaption figure "
+    "h1 h2 h3 h4 h5 h6 hr i iframe img ins kbd li mark ol p picture pre q s samp section small source span strong "
+    "sub summary sup svg table tbody td tfoot th thead tr u ul var video "
+    "tip hfoptions hfoption frameworkcontent pt tf jax".split()
+)
 _re_fence = re.compile(r"^\s*(?:`{3,}|~{3,})(.*)$", re.MULTILINE)
 _re_starts_with_heading = re.compile(r"^\s*#{1,6}\s")
 _re_leading_whitespace = re.compile(r"^[ \t]+", re.MULTILINE)
@@ -66,10 +77,23 @@ _re_inline_fence = re.compile(r"(?:`{3,}|~{3,})[\w-]*")
 _plain_text_md = MarkdownIt("commonmark", {"html": True}).enable("table")
 
 
-def _inline_to_plain_text(token, is_heading: bool) -> str:
+def _is_markup_tag(tag: str, closed_tag_names: set[str]) -> bool:
+    name = _re_tag_name.match(tag)
+    if not name or tag.startswith("</") or tag.endswith("/>") or "=" in tag:
+        return True
+    return name.group(1).lower() in _MARKUP_TAG_NAMES or name.group(1).lower() in closed_tag_names
+
+
+def _closed_tag_names(markdown: str) -> set[str]:
+    return {name.lower() for name in _re_closing_tag_name.findall(markdown)}
+
+
+def _inline_to_plain_text(token, is_heading: bool, closed_tag_names: set[str]) -> str:
     parts = []
     for child in token.children or []:
         if child.type in ("text", "code_inline", "image"):
+            parts.append(child.content)
+        elif child.type == "html_inline" and not _is_markup_tag(child.content, closed_tag_names):
             parts.append(child.content)
         elif child.type in ("softbreak", "hardbreak"):
             parts.append(" ")
@@ -102,8 +126,9 @@ def clean_heading(heading: str | None) -> str | None:
     """
     if heading is None:
         return None
+    closed_tag_names = _closed_tag_names(heading)
     return " ".join(
-        _inline_to_plain_text(token, is_heading=True) for token in _plain_text_md.parseInline(heading)
+        _inline_to_plain_text(token, True, closed_tag_names) for token in _plain_text_md.parseInline(heading)
     ).strip()
 
 
@@ -137,17 +162,24 @@ def markdown_to_plain_text(markdown: str) -> str:
 
     blocks = []
     is_heading = False
+    closed_tag_names = _closed_tag_names(markdown)
     for token in _plain_text_md.parse(markdown):
         if token.type == "heading_open":
             is_heading = True
         elif token.type == "heading_close":
             is_heading = False
         elif token.type == "inline":
-            blocks.append(_inline_to_plain_text(token, is_heading))
+            blocks.append(_inline_to_plain_text(token, is_heading, closed_tag_names))
         elif token.type == "fence":
             blocks.append(token.content)
         elif token.type == "html_block":
-            blocks.append(html.unescape(_re_html_tag.sub("", token.content)))
+            blocks.append(
+                html.unescape(
+                    _re_html_tag.sub(
+                        lambda tag: "" if _is_markup_tag(tag.group(), closed_tag_names) else tag.group(), token.content
+                    )
+                )
+            )
 
     lines = (" ".join(line.split()) for block in blocks for line in block.splitlines())
     return "\n".join(line for line in lines if line)
@@ -586,6 +618,23 @@ def build_headings_object(heading_stack: list[str]) -> dict:
     return headings
 
 
+def _lines_in_code_blocks(lines: list[str]) -> set[int]:
+    """Indexes of the lines of fenced code blocks, where `#` starts a comment rather than a heading."""
+    code_lines = set()
+    opening_fence = None
+    for index, line in enumerate(lines):
+        fence = _re_fence_delimiter.match(line)
+        if opening_fence:
+            code_lines.add(index)
+            closing = fence and fence.group(1)[0] == opening_fence[0] and len(fence.group(1)) >= len(opening_fence)
+            if closing and not fence.group(2).strip():
+                opening_fence = None
+        elif fence:
+            code_lines.add(index)
+            opening_fence = fence.group(1)
+    return code_lines
+
+
 def split_markdown_by_headings(markdown_content: str, excerpts_max_length: int = 1000) -> list[dict]:
     """
     Split markdown content by headings and create sections with excerpts.
@@ -599,6 +648,7 @@ def split_markdown_by_headings(markdown_content: str, excerpts_max_length: int =
         List of dictionaries with 'excerpts' (list of text chunks) and 'headings' (dict) keys
     """
     lines = markdown_content.split("\n")
+    code_lines = _lines_in_code_blocks(lines)
     sections = []
 
     current_section = ""
@@ -607,7 +657,7 @@ def split_markdown_by_headings(markdown_content: str, excerpts_max_length: int =
 
     while line_index < len(lines):
         line = lines[line_index]
-        heading_match = re.match(r"^(#{1,6})\s+(.+)$", line)
+        heading_match = line_index not in code_lines and _re_heading_line.match(line)
 
         if heading_match:
             # Save the previous section if it has content
@@ -645,7 +695,7 @@ def split_markdown_by_headings(markdown_content: str, excerpts_max_length: int =
             line_index += 1
             while line_index < len(lines):
                 next_line = lines[line_index]
-                next_heading_match = re.match(r"^(#{1,6})\s+(.+)$", next_line)
+                next_heading_match = line_index not in code_lines and _re_heading_line.match(next_line)
 
                 if next_heading_match:
                     # Found next heading, break to process it
