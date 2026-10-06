@@ -97,24 +97,28 @@ export const mdsvexPreprocess = {
  * @param {string} content
  * @param {Record<any, any>} markedKatex
  */
-function markKatex(content, markedKatex) {
-	const REGEX_LATEX_DISPLAY = /\n\$\$([\s\S]+?)\$\$/g;
-	const REGEX_LATEX_INLINE = /\s\\\\\(([\s\S]+?)\\\\\)/g;
+export function markKatex(content, markedKatex) {
+	// Capture-and-restore the required boundary whitespace so formulas are not
+	// glued to the preceding text (and consecutive `\( ... \)` lines don't
+	// collapse into one paragraph). `$...$` already does this; `\(...\)` and
+	// `$$...$$` previously consumed the leading `\s`/`\n` and dropped it.
+	const REGEX_LATEX_DISPLAY = /(\n)\$\$([\s\S]+?)\$\$/g;
+	const REGEX_LATEX_INLINE = /(\s)\\\\\(([\s\S]+?)\\\\\)/g;
 	// Match $...$ with whitespace boundaries to avoid matching in HTML/code
 	const REGEX_LATEX_INLINE_DOLLAR = /(\s)(\$)([^$\n`<>]+?)(\$)(\s)/g;
 	let counter = 0;
 	return content
-		.replace(REGEX_LATEX_DISPLAY, (_, tex) => {
+		.replace(REGEX_LATEX_DISPLAY, (_, newline, tex) => {
 			const displayMode = true;
 			const marker = `KATEXPARSE${counter++}MARKER`;
 			markedKatex[marker] = { tex, displayMode };
-			return marker;
+			return newline + marker;
 		})
-		.replace(REGEX_LATEX_INLINE, (_, tex) => {
+		.replace(REGEX_LATEX_INLINE, (_, space, tex) => {
 			const displayMode = false;
 			const marker = `KATEXPARSE${counter++}MARKER`;
 			markedKatex[marker] = { tex, displayMode };
-			return marker;
+			return space + marker;
 		})
 		.replace(
 			REGEX_LATEX_INLINE_DOLLAR,
