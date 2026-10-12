@@ -20,6 +20,7 @@ import sys
 import tempfile
 
 from .convert_rst_to_mdx import parse_rst_docstring, remove_indent
+from .runnable_params import strip_runnable_frontmatter
 
 _re_doctest_flags = re.compile(r"^(>>>.*\S)(\s+)# doctest:\s+\+[A-Z_]+\s*$", flags=re.MULTILINE)
 
@@ -269,7 +270,7 @@ def strip_md_extension_from_internal_links(text):
 
 
 _re_runnable_block = re.compile(
-    r"(?P<fence>```(?:py|python))\s+runnable:(?P<label>\S+)\n(?P<code>.*?\n)```$",
+    r"(?P<fence>```(?:py|python))\s+runnable:(?P<label>\S+)(?P<attributes>[^\n]*)\n(?P<code>.*?\n)```$",
     re.DOTALL | re.MULTILINE,
 )
 _re_bare_assert = re.compile(r"^assert(?:\s|\()")
@@ -430,7 +431,7 @@ def _should_emit_bare_assert_warnings(page_info=None):
 def clean_runnable_blocks(text, page_info=None):
     """
     Process ```py runnable:<label> code blocks:
-      1. Strip the runnable:<label> annotation from the fence.
+      1. Strip the runnable:<label> annotation and any key=value attributes from the fence.
       2. Remove ``# doc-builder: hide`` lines and blocks from displayed code.
       3. Optionally warn on bare ``assert`` statements when
          ``page_info["emit_warning"]`` is enabled, unless explicitly silenced
@@ -469,6 +470,7 @@ def process_md(text, page_info):
         4. Fix image links
         5. Strip .md extensions from internal links
         6. Clean runnable code blocks
+        7. Remove the runnable blocks' parameters from the frontmatter
     """
     text = convert_include(text, page_info)
     text = convert_literalinclude(text, page_info)
@@ -476,6 +478,7 @@ def process_md(text, page_info):
     text = fix_img_links(text, page_info)
     text = strip_md_extension_from_internal_links(text)
     text = clean_runnable_blocks(text, page_info=page_info)
+    text = strip_runnable_frontmatter(text)
     return text
 
 
