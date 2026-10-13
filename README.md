@@ -13,6 +13,7 @@ This is the package we use to build the documentation of our Hugging Face repos.
   * [Writing in notebooks](#writing-in-notebooks)
   * [Templates for GitHub Actions](#templates-for-github-actions)
     + [Enabling multilingual documentation](#enabling-multilingual-documentation)
+    + [Machine-translated documentation](#machine-translated-documentation)
     + [Redirects](#redirects)
   * [Fixing and testing doc-builder](#fixing-and-testing-doc-builder)
   * [Development Commands](#development-commands)
@@ -326,6 +327,22 @@ doc-builder build {package_name} {path_to_docs} --build_dir {build_dir} --langua
 ```
 
 To automatically build the documentation for all languages via the GitHub Actions templates, simply provide the `languages` argument to your workflow, with a space-separated list of the languages you wish to build, e.g. `languages: en es`.
+
+### Machine-translated documentation
+
+`doc-builder translate-docs` translates the *built* English pages (`<library>/<version>/en/` in `hf://buckets/hf-doc-build/doc`) with an LLM on HF Inference Providers and writes them to `<library>/<version>/<language>/` in a translation bucket. Only the prose changes: links, code and the page structure are kept, so the translated page hydrates against the same JS as the English one.
+
+The [`translate_docs.yml`](.github/workflows/translate_docs.yml) workflow runs it daily, incrementally:
+
+- `main` is checked every run; only pages whose English build changed are translated again, and pages removed from the English build are removed.
+- A release is translated once, then frozen. Releases published before a language was enabled are not backfilled.
+- Translations are cached per paragraph, so an edited page only sends its edited paragraphs to the model.
+
+Libraries and languages are configured in `TRANSLATED_DOCS` (`src/doc_builder/translate_docs.py`), terminology in `src/doc_builder/translation_glossaries/<language>.yml`. To try it locally, write to a directory instead of a bucket:
+
+```bash
+doc-builder translate-docs --libraries transformers --languages ja --bucket ./translations --max_pages 3
+```
 
 ### Redirects
 

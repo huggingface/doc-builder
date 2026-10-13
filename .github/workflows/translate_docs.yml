@@ -1,0 +1,67 @@
+name: Translate documentation
+
+on:
+  schedule:
+    - cron: "35 7 * * *" # every day at 07:35, after the search engine population
+  # to run this workflow manually from the Actions tab
+  workflow_dispatch:
+    inputs:
+      libraries:
+        description: "Space-separated libraries (empty: every configured library)"
+        type: string
+      languages:
+        description: "Space-separated languages (empty: the languages configured per library)"
+        type: string
+      versions:
+        description: "Space-separated versions (empty: main and new releases)"
+        type: string
+      max_pages:
+        description: "Translate at most this many pages per version (empty: all)"
+        type: string
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
+permissions: {}
+
+jobs:
+  translate:
+    permissions:
+      contents: read
+    runs-on: ubuntu-latest
+    timeout-minutes: 360  # Set timeout to 6 hours
+    steps:
+      - name: Checkout doc-builder
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4  # v10.1.0
+        with:
+          version: "latest"
+
+      - name: Set up Python 3.10
+        run: uv python install 3.10
+
+      - name: Install doc-builder
+        run: |
+          uv sync --extra dev
+          # the bucket and inference APIs move fast; always use the latest client
+          uv pip install --upgrade huggingface_hub
+
+      - name: Translate
+        env:
+          HF_TOKEN: ${{ secrets.TRANSLATION_HF_TOKEN }}
+          TRANSLATION_BUCKET: ${{ secrets.TRANSLATION_BUCKET }}
+          LIBRARIES: ${{ inputs.libraries }}
+          LANGUAGES: ${{ inputs.languages }}
+          VERSIONS: ${{ inputs.versions }}
+          MAX_PAGES: ${{ inputs.max_pages }}
+        run: |
+          args=()
+          if [ -n "$LIBRARIES" ]; then args+=(--libraries $LIBRARIES); fi
+          if [ -n "$LANGUAGES" ]; then args+=(--languages $LANGUAGES); fi
+          if [ -n "$VERSIONS" ]; then args+=(--versions $VERSIONS); fi
+          if [ -n "$MAX_PAGES" ]; then args+=(--max_pages "$MAX_PAGES"); fi
+          # --no-sync keeps the upgraded huggingface_hub
+          uv run --no-sync doc-builder translate-docs "${args[@]}"
