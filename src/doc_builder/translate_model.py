@@ -16,17 +16,13 @@
 Translate one block of a built doc page with an LLM served by HF Inference Providers.
 
 Every answer is validated before it is used and cached by the exact request that produced it
-(system prompt + block), so unchanged blocks are never sent to the model again, and editing the
-glossary only invalidates the blocks whose prompt contains the edited terms.
+(system prompt + block), so unchanged blocks are never sent to the model again.
 """
 
 import hashlib
 import json
 import re
 import time
-from pathlib import Path
-
-import yaml
 
 from .translate_html import check_markup
 
@@ -35,7 +31,6 @@ PROVIDER = "cerebras"
 # Bump to invalidate every cached translation (e.g. after a prompt change).
 PROMPT_VERSION = 1
 LANGUAGE_NAMES = {"ja": "Japanese"}
-GLOSSARY_DIR = Path(__file__).parent / "translation_glossaries"
 
 INSTRUCTIONS = """You translate Hugging Face documentation from English into natural, professional {language}, as written by an experienced {language} ML engineer.{style}
 
@@ -66,22 +61,6 @@ Return only a JSON object mapping every id (as a string) to its translation."""
 STYLE = {"ja": " Use the です・ます style."}
 
 
-def load_glossary(language):
-    path = GLOSSARY_DIR / f"{language}.yml"
-    return yaml.safe_load(path.read_text(encoding="utf-8")) if path.exists() else {}
-
-
-def glossary_hint(text, glossary):
-    terms = {
-        term: target
-        for term, target in (glossary.get("terms") or {}).items()
-        if re.search(rf"(?<![\w-]){re.escape(term)}(?![\w-])", text, re.I)
-    }
-    if not terms:
-        return ""
-    return "\n\nUse this terminology where the meaning fits: " + json.dumps(terms, ensure_ascii=False)
-
-
 class TranslationFailed(Exception):
     pass
 
@@ -97,15 +76,13 @@ class Translator:
             raise ValueError(f"No translation settings for language {language!r}; add it to LANGUAGE_NAMES")
         self.language = language
         self.cache = cache
-        self.glossary = load_glossary(language)
         self._complete = complete or _inference_completion(token)
         self.model_calls = 0
 
-    def _system(self, kind, text):
+    def _system(self, kind):
         name = LANGUAGE_NAMES[self.language]
         prompt = INSTRUCTIONS.format(language=name, style=STYLE.get(self.language, ""))
-        prompt += MARKUP_PROMPT if kind == "markup" else SEGMENTS_PROMPT
-        return prompt + glossary_hint(text, self.glossary)
+        return prompt + (MARKUP_PROMPT if kind == "markup" else SEGMENTS_PROMPT)
 
     def _key(self, system, user):
         payload = json.dumps([MODEL, PROVIDER, PROMPT_VERSION, system, user], ensure_ascii=False)
@@ -141,7 +118,7 @@ class Translator:
             check_markup(markup, answer)
             return answer
 
-        return self._ask(self._system("markup", markup), markup, check)
+        return self._ask(self._system("markup"), markup, check)
 
     def translate_segments(self, segments):
         """Translate the numbered segments of a block; returns `{id: text}`."""
@@ -161,9 +138,7 @@ class Translator:
                 raise ValueError("a fixed segment was repeated in a translation")
             return data
 
-        text = " ".join(s.get("text") or s.get("fixed") for s in segments)
-        user = json.dumps(segments, ensure_ascii=False)
-        return self._ask(self._system("segments", text), user, check)
+        return self._ask(self._system("segments"), json.dumps(segments, ensure_ascii=False), check)
 
 
 def _inference_completion(token):

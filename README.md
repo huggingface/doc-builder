@@ -338,7 +338,7 @@ The [`translate_docs.yml`](.github/workflows/translate_docs.yml) workflow runs i
 - A release is translated once, then frozen. Releases published before a language was enabled are not backfilled.
 - Translations are cached per paragraph, so an edited page only sends its edited paragraphs to the model.
 
-Libraries and languages are configured in `TRANSLATED_DOCS` (`src/doc_builder/translate_docs.py`), terminology in `src/doc_builder/translation_glossaries/<language>.yml`. To try it locally, write to a directory instead of a bucket:
+Libraries and languages are configured in `TRANSLATED_DOCS` (`src/doc_builder/translate_docs.py`). To try it locally, write to a directory instead of a bucket:
 
 ```bash
 doc-builder translate-docs --libraries transformers --languages ja --bucket ./translations --max_pages 3
