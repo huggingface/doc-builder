@@ -1,5 +1,6 @@
 <script lang="ts">
 	import IconCopyLink from "./IconCopyLink.svelte";
+	import { escapeHtml } from "./utils";
 
 	interface Props {
 		title: string;
@@ -21,7 +22,7 @@
 			id={local}
 			class="header-link block pr-1.5 text-lg no-hover:hidden with-hover:absolute with-hover:p-1.5 with-hover:opacity-0 with-hover:group-hover:opacity-100 with-hover:right-full"
 			href="#{local}"><span><IconCopyLink /></span></a
-		> <span>{title}</span>
+		> <span>{@html escapeHtml(title)}</span>
 	</h1>
 {:else if headingTag === "h2"}
 	<h2 class="relative group">
@@ -29,7 +30,7 @@
 			id={local}
 			class="header-link block pr-1.5 text-lg no-hover:hidden with-hover:absolute with-hover:p-1.5 with-hover:opacity-0 with-hover:group-hover:opacity-100 with-hover:right-full"
 			href="#{local}"><span><IconCopyLink /></span></a
-		> <span>{title}</span>
+		> <span>{@html escapeHtml(title)}</span>
 	</h2>
 {:else if headingTag === "h3"}
 	<h3 class="relative group">
@@ -37,7 +38,7 @@
 			id={local}
 			class="header-link block pr-1.5 text-lg no-hover:hidden with-hover:absolute with-hover:p-1.5 with-hover:opacity-0 with-hover:group-hover:opacity-100 with-hover:right-full"
 			href="#{local}"><span><IconCopyLink /></span></a
-		> <span>{title}</span>
+		> <span>{@html escapeHtml(title)}</span>
 	</h3>
 {:else if headingTag === "h4"}
 	<h4 class="relative group">
@@ -45,7 +46,7 @@
 			id={local}
 			class="header-link block pr-1.5 text-lg no-hover:hidden with-hover:absolute with-hover:p-1.5 with-hover:opacity-0 with-hover:group-hover:opacity-100 with-hover:right-full"
 			href="#{local}"><span><IconCopyLink /></span></a
-		> <span>{title}</span>
+		> <span>{@html escapeHtml(title)}</span>
 	</h4>
 {:else if headingTag === "h5"}
 	<h5 class="relative group">
@@ -53,7 +54,7 @@
 			id={local}
 			class="header-link block pr-1.5 text-lg no-hover:hidden with-hover:absolute with-hover:p-1.5 with-hover:opacity-0 with-hover:group-hover:opacity-100 with-hover:right-full"
 			href="#{local}"><span><IconCopyLink /></span></a
-		> <span>{title}</span>
+		> <span>{@html escapeHtml(title)}</span>
 	</h5>
 {:else}
 	<h6 class="relative group">
@@ -61,6 +62,6 @@
 			id={local}
 			class="header-link block pr-1.5 text-lg no-hover:hidden with-hover:absolute with-hover:p-1.5 with-hover:opacity-0 with-hover:group-hover:opacity-100 with-hover:right-full"
 			href="#{local}"><span><IconCopyLink /></span></a
-		> <span>{title}</span>
+		> <span>{@html escapeHtml(title)}</span>
 	</h6>
 {/if}

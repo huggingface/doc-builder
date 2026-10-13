@@ -2,6 +2,7 @@
 	import { onMount, tick } from "svelte";
 	import { tooltip } from "./tooltipAction.svelte";
 	import IconCopyLink from "./IconCopyLink.svelte";
+	import { escapeHtml } from "./utils";
 
 	type Parameter = {
 		anchor: string;
@@ -219,7 +220,7 @@
 		{#if parameterGroups}
 			{#each parameterGroups as { title, parametersDescription }}
 				<p class="flex items-center font-semibold">
-					{title} <span class="flex-auto border-t-2 ml-3"></span>
+					{@html escapeHtml(title)} <span class="flex-auto border-t-2 ml-3"></span>
 				</p>
 				<ul class="px-2">
 					{#each parametersDescription as { anchor, description }}
@@ -249,13 +250,14 @@
 					? bgHighlightClass
 					: ''}"
 			>
-				<p class="text-base">{returnsTitle}</p>
+				<p class="text-base">{@html escapeHtml(returnsTitle)}</p>
 				{#if !!returnType}
 					{@html returnType}
 				{/if}
 				<span class="flex-auto border-t-2 border-gray-100 dark:border-gray-700"></span>
 			</div>
-			<p class="text-base">{@html returnDescription || ""}</p>
+			<!-- a <div>, not a <p>: the description contains its own <p> elements -->
+			<div class="text-base">{@html returnDescription || ""}</div>
 		{/if}
 		{#if !!raiseType}
 			<div
@@ -268,7 +270,7 @@
 				{/if}
 				<span class="flex-auto border-t-2 border-gray-100 dark:border-gray-700"></span>
 			</div>
-			<p class="text-base">{@html raiseDescription || ""}</p>
+			<div class="text-base">{@html raiseDescription || ""}</div>
 		{/if}
 	</div>
 </div>

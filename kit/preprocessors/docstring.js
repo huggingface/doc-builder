@@ -3,6 +3,18 @@ import htmlparser2 from "htmlparser2";
 import { replaceAsync, renderSvelteChars, generateTagRegex } from "./utils.js";
 import { mdsvexPreprocess } from "./mdsvex/index.js";
 
+/**
+ * mdsvex prepends a page-level `<script context="module">` metadata block to everything it
+ * compiles. Inside a docstring fragment it would end up as a stray inline script in the page.
+ */
+async function markupFragment(content, filename) {
+	const result = await mdsvexPreprocess.markup({ content, filename });
+	return {
+		...result,
+		code: result.code.replace(/<script context="module">[\s\S]*?<\/script>/, ""),
+	};
+}
+
 const REGEX_PARAMSDESC = generateTagRegex("paramsdesc");
 const REGEX_PARAMSGROUP = generateTagRegex("paramsgroup", true);
 const REGEX_PARAMSGROUP_TITLE = generateTagRegex("paramsgrouptitle");
@@ -44,7 +56,7 @@ export const docstringPreprocess = {
 				let paramsContent = body.match(REGEX_PARAMSDESC)[1];
 				// escape }} by adding void character `&zwnj;` in between
 				paramsContent = paramsContent.replace(/}}/g, "}&zwnj;}");
-				let { code } = await mdsvexPreprocess.markup({ content: paramsContent, filename });
+				let { code } = await markupFragment(paramsContent, filename);
 				// render <Tip> components that are inside parameter descriptions
 				code = code.replace(REGEX_TIP, (_tip, isWarning, tipContent) => {
 					const color = isWarning ? "orange" : "green";
@@ -83,37 +95,37 @@ export const docstringPreprocess = {
 
 			if (body.match(REGEX_RETDESC)) {
 				const retDesc = body.match(REGEX_RETDESC)[1];
-				const { code } = await mdsvexPreprocess.markup({ content: retDesc, filename });
+				const { code } = await markupFragment(retDesc, filename);
 				svelteComponent += ` returnDescription={${JSON.stringify(code)}} `;
 			}
 
 			if (body.match(REGEX_RETTYPE)) {
 				const retType = body.match(REGEX_RETTYPE)[1];
-				const { code } = await mdsvexPreprocess.markup({ content: retType, filename });
+				const { code } = await markupFragment(retType, filename);
 				svelteComponent += ` returnType={${JSON.stringify(code)}} `;
 			}
 
 			if (body.match(REGEX_YIELDESC)) {
 				const yieldDesc = body.match(REGEX_YIELDESC)[1];
-				const { code } = await mdsvexPreprocess.markup({ content: yieldDesc, filename });
+				const { code } = await markupFragment(yieldDesc, filename);
 				svelteComponent += ` returnDescription={${JSON.stringify(code)}} `;
 			}
 
 			if (body.match(REGEX_YIELDTYPE)) {
 				const yieldType = body.match(REGEX_YIELDTYPE)[1];
-				const { code } = await mdsvexPreprocess.markup({ content: yieldType, filename });
+				const { code } = await markupFragment(yieldType, filename);
 				svelteComponent += ` returnType={${JSON.stringify(code)}} isYield={true} `;
 			}
 
 			if (body.match(REGEX_RAISEDESC)) {
 				const raiseDesc = body.match(REGEX_RAISEDESC)[1];
-				const { code } = await mdsvexPreprocess.markup({ content: raiseDesc, filename });
+				const { code } = await markupFragment(raiseDesc, filename);
 				svelteComponent += ` raiseDescription={${JSON.stringify(code)}} `;
 			}
 
 			if (body.match(REGEX_RAISETYPE)) {
 				const raiseType = body.match(REGEX_RAISETYPE)[1];
-				const { code } = await mdsvexPreprocess.markup({ content: raiseType, filename });
+				const { code } = await markupFragment(raiseType, filename);
 				svelteComponent += ` raiseType={${JSON.stringify(code)}} `;
 			}
 
@@ -121,7 +133,7 @@ export const docstringPreprocess = {
 			for (const [, groupBody] of body.matchAll(REGEX_PARAMSGROUP)) {
 				const title = groupBody.match(REGEX_PARAMSGROUP_TITLE)[1];
 				const groupContent = groupBody.match(REGEX_PARAMSGROUP_DESC)[1];
-				const { code } = await mdsvexPreprocess.markup({ content: groupContent, filename });
+				const { code } = await markupFragment(groupContent, filename);
 				parameterGroups.push({
 					title,
 					parametersDescription: parseRenderedParamsList(code, anchor) ?? [],
@@ -160,12 +172,14 @@ function parseRenderedParamsList(code, anchor) {
 		const paramAnchor = `${anchor}.${name}`;
 		let description = domUtils.getInnerHTML(childEl).trim();
 
-		// strip enclosing paragraph tags <p> & </p>
+		// unwrap the first paragraph so it renders inline next to the parameter name; later
+		// paragraphs keep their <p> tags (stripping only the outer tags would leave a stray
+		// `</p><p>` inside the rendering <span>, which breaks hydration)
 		if (description.startsWith("<p>")) {
-			description = description.slice("<p>".length);
-		}
-		if (description.endsWith("</p>")) {
-			description = description.slice(0, -"</p>".length);
+			const end = description.indexOf("</p>");
+			if (end !== -1) {
+				description = description.slice("<p>".length, end) + description.slice(end + "</p>".length);
+			}
 		}
 
 		result.push({ anchor: paramAnchor, description, name });
