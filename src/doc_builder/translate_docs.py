@@ -45,7 +45,7 @@ from .translate_model import TranslationFailed, Translator
 
 SOURCE_BUCKET = "hf://buckets/hf-doc-build/doc"
 # Libraries and languages translated by the scheduled job.
-TRANSLATED_DOCS = {"transformers": ["ja"]}
+TRANSLATED_DOCS = {"transformers": ["zh", "ja", "ko", "pt", "es", "fr", "vi", "id", "tr", "ru", "ar"]}
 # Copied unchanged from the English build: Markdown (served for `Accept: text/plain`), llms.txt files and redirects.
 COPIED_SUFFIXES = {".md", ".txt"}
 COPIED_NAMES = {"_redirects.yml"}

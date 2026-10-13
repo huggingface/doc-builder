@@ -30,7 +30,20 @@ MODEL = "Qwen/Qwen3.8-27B"
 PROVIDER = "cerebras"
 # Bump to invalidate every cached translation (e.g. after a prompt change).
 PROMPT_VERSION = 1
-LANGUAGE_NAMES = {"ja": "Japanese"}
+# Doc language code (the folder name moon-landing serves) -> the language the model writes.
+LANGUAGE_NAMES = {
+    "zh": "Simplified Chinese",
+    "ja": "Japanese",
+    "ko": "Korean",
+    "pt": "Brazilian Portuguese",
+    "es": "Spanish",
+    "fr": "French",
+    "vi": "Vietnamese",
+    "id": "Indonesian",
+    "tr": "Turkish",
+    "ru": "Russian",
+    "ar": "Modern Standard Arabic",
+}
 
 INSTRUCTIONS = """You translate Hugging Face documentation from English into natural, professional {language}, as written by an experienced {language} ML engineer.{style}
 
@@ -58,7 +71,11 @@ Because the fixed segments cannot move, write each translated segment so the who
 
 Return only a JSON object mapping every id (as a string) to its translation."""
 
-STYLE = {"ja": " Use the です・ます style."}
+STYLE = {
+    "ja": " Use the です・ます style.",
+    "ko": " Use the formal 합니다 style.",
+    "es": " Use neutral Spanish that reads naturally in both Latin America and Spain.",
+}
 
 
 class TranslationFailed(Exception):
