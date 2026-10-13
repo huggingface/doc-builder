@@ -18,3 +18,12 @@ export function getQueryParamValue(key: string) {
 	const searchParams = new URLSearchParams(currentUrl.search);
 	return searchParams.get(key); // This will return the value or null if the key is not found.
 }
+
+/**
+ * Escape text for `{@html}`. Prose rendered from props uses `{@html}` instead of `{text}` because
+ * hydration keeps the server-rendered HTML of an `{@html}` block, while a `{text}` node is
+ * overwritten with the prop value, which undoes post-build edits of the HTML such as translations.
+ */
+export function escapeHtml(text: string) {
+	return text.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;");
+}

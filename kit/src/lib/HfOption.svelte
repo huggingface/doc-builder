@@ -10,6 +10,7 @@
 	let { id, option, children }: Props = $props();
 </script>
 
-{#if $selectedHfOptions[id] === option}
+<!-- Every option is in the server-rendered HTML; inactive ones are only hidden. -->
+<div hidden={$selectedHfOptions[id] !== option}>
 	{@render children?.()}
-{/if}
+</div>
