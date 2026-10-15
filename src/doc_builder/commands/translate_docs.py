@@ -15,7 +15,7 @@
 import argparse
 import os
 
-from doc_builder.translate_docs import SOURCE_BUCKET, TRANSLATED_DOCS, translate_docs
+from doc_builder.translate_docs import MAX_ENGLISH_BLOCKS, SOURCE_BUCKET, TRANSLATED_DOCS, translate_docs
 
 
 def translate_docs_command(args):
@@ -31,7 +31,7 @@ def translate_docs_command(args):
         if not languages:
             raise ValueError(f"No languages configured for {library!r}; pass --languages.")
         translations[library] = languages
-    translate_docs(
+    stats = translate_docs(
         bucket,
         source_url=args.source,
         translations=translations,
@@ -40,6 +40,11 @@ def translate_docs_command(args):
         max_pages=args.max_pages,
         workers=args.workers,
     )
+    if stats.failed():
+        raise SystemExit(
+            f"{stats.english_blocks}/{stats.blocks} blocks were kept in English (more than {MAX_ENGLISH_BLOCKS:.0%}):"
+            " the model or provider is likely failing. Pages were published with the English blocks."
+        )
 
 
 def translate_docs_command_parser(subparsers=None):

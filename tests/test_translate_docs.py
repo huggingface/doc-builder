@@ -22,7 +22,8 @@ from pathlib import Path
 import yaml
 
 from doc_builder import translate_html as th
-from doc_builder.translate_docs import Store, translate_library
+from doc_builder.translate_docs import RunStats, Store, translate_library, translate_page
+from doc_builder.translate_model import Translator
 
 DATA = Path(__file__).parent / "data" / "translate"
 LIB = "hydrationlib"
@@ -80,10 +81,16 @@ class TranslateDocsTester(unittest.TestCase):
     def write_versions(self, versions):
         (self.source_dir / LIB / "_versions.yml").write_text(yaml.safe_dump([{"version": v} for v in versions]))
 
-    def run_job(self, model=None, **kwargs):
+    def run_job(self, model=None, target=None, **kwargs):
         model = model or FakeModel()
-        translate_library(
-            Store(str(self.source_dir)), Store(str(self.target_dir)), LIB, "ja", complete=model, workers=2, **kwargs
+        self.stats = translate_library(
+            Store(str(self.source_dir)),
+            target or Store(str(self.target_dir)),
+            LIB,
+            "ja",
+            complete=model,
+            workers=2,
+            **kwargs,
         )
         return model
 
@@ -176,3 +183,42 @@ class TranslateDocsTester(unittest.TestCase):
         self.assertFalse(self.ja("main", "index.html").exists())
         entry = self.tracker()["versions"]["main"]["files"]["index.html"]
         self.assertFalse(entry["complete"])
+        self.assertEqual(self.stats.waiting, [f"{LIB}/main/ja/index.html"])
+
+    def test_page_is_recorded_only_after_its_upload(self):
+        class FailingUpload(Store):
+            def write(self, files):
+                if any(p.endswith(".html") for p in files):
+                    raise OSError("upload interrupted")
+                super().write(files)
+
+        with self.assertRaises(OSError):
+            self.run_job(target=FailingUpload(str(self.target_dir)))
+        # the tracker was saved, but without pages that never reached the bucket
+        self.assertNotIn("index.html", self.tracker()["versions"]["main"]["files"])
+        self.run_job()
+        self.assertTrue(self.ja("main", "index.html").exists())
+
+    def test_incomplete_pages_are_reported(self):
+        self.run_job(FakeModel(fail_on="Text of the second option."))
+        self.assertEqual(self.stats.english_blocks, 2)  # once per page that has the block
+        self.assertEqual(
+            {page for page, _, _ in self.stats.incomplete},
+            {f"{LIB}/main/ja/index.html", f"{LIB}/main/ja/guides/old.html"},
+        )
+        self.assertEqual(self.tracker()["versions"]["main"]["files"]["index.html"]["english_blocks"], 1)
+        self.assertFalse(self.stats.failed())  # a few English blocks: published, retried, warned
+        self.assertTrue(RunStats(blocks=10, english_blocks=2).failed())  # systematic failure: the run fails
+
+    def test_nested_blocks_are_translated_once(self):
+        metadata = th.split_page((DATA / "page.html").read_text(encoding="utf-8"))[0]
+        body = "<ul><li>install the library\n<ul><li>run the <code>pip</code> installation</li></ul></li></ul>"
+        model = FakeModel()
+        html, (blocks, failed), _ = translate_page(
+            metadata + "\n" + body, Translator("ja", {}, complete=model), LIB, "main", "ja", workers=1
+        )
+        self.assertEqual((blocks, failed, model.calls), (2, 0, 2))
+        self.assertEqual(
+            th.split_page(html)[1],
+            "<ul><li>訳install the library\n<ul><li>訳run the <code>pip</code>訳 installation</li></ul></li></ul>",
+        )

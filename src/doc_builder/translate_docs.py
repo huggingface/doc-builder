@@ -34,8 +34,10 @@ State lives in the translation bucket under `.translation/<library>/<language>/`
 import gzip
 import hashlib
 import json
+import os
 import tempfile
 from concurrent.futures import ThreadPoolExecutor
+from dataclasses import dataclass, field
 from pathlib import Path, PurePosixPath
 
 import yaml
@@ -51,6 +53,43 @@ COPIED_SUFFIXES = {".md", ".txt"}
 COPIED_NAMES = {"_redirects.yml"}
 STATE_DIR = ".translation"
 FLUSH_EVERY = 20  # pages; bounds the work lost if a run is interrupted
+# Above this share of blocks kept in English, a run fails: something is systematically wrong (model, prompt, provider).
+MAX_ENGLISH_BLOCKS = 0.1
+
+
+@dataclass
+class RunStats:
+    """What a run translated, and what it could not: a successful run can still leave English in pages."""
+
+    pages: int = 0
+    blocks: int = 0
+    english_blocks: int = 0
+    incomplete: list[tuple[str, int, int]] = field(default_factory=list)  # (page, english blocks, blocks)
+    waiting: list[str] = field(default_factory=list)  # pages built before #851, waiting for a rebuild
+
+    def failed(self):
+        return self.blocks > 0 and self.english_blocks / self.blocks > MAX_ENGLISH_BLOCKS
+
+    def report(self):
+        """Print the summary; on GitHub Actions also annotate the run and write the job summary."""
+        lines = [
+            f"Translated {self.pages} pages: {self.blocks - self.english_blocks}/{self.blocks} blocks,"
+            f" {self.english_blocks} kept in English; {len(self.waiting)} pages waiting for a rebuild."
+        ]
+        lines += [f"- {page}: {english}/{blocks} blocks kept in English" for page, english, blocks in self.incomplete]
+        lines += [f"- {page}: built before huggingface/doc-builder#851, not translated" for page in self.waiting]
+        print("\n".join(lines))
+        if os.environ.get("GITHUB_ACTIONS") != "true":
+            return
+        if self.incomplete or self.waiting:
+            print(
+                f"::warning title=Incomplete translations::{len(self.incomplete)} pages keep English blocks and"
+                f" {len(self.waiting)} pages are waiting for a rebuild; they are retried on the next run."
+                " See the job summary."
+            )
+        if summary := os.environ.get("GITHUB_STEP_SUMMARY"):
+            with open(summary, "a", encoding="utf-8") as f:
+                f.write("### Translation\n\n" + "\n".join(lines) + "\n")
 
 
 class Store:
@@ -83,7 +122,7 @@ class Store:
                     if path.is_file() and "_app" not in PurePosixPath(rel).parts:
                         files[rel] = hashlib.sha256(path.read_bytes()).hexdigest()
             return files
-        from huggingface_hub.hf_api import BucketFolder
+        from huggingface_hub import BucketFolder
 
         base = self._remote(directory).rstrip("/") + "/"
         pending = [base]
@@ -169,7 +208,7 @@ class LanguageState:
 
 def translate_page(page, translator, library, version, language, workers=8):
     """
-    Translate a built page. Returns `(html, failed_blocks, (english_title, translated_title))`.
+    Translate a built page. Returns `(html, (blocks, blocks_kept_in_english), (english_title, translated_title))`.
     A block that cannot be translated stays in English.
     """
     metadata, body = th.split_page(page)
@@ -203,7 +242,7 @@ def translate_page(page, translator, library, version, language, workers=8):
     english_title = th.page_title(metadata)
     body = th.rewrite_links(th.apply_edits(body, edits), library, version, language)
     metadata = th.translate_metadata(metadata, titles)
-    return metadata + "\n" + body, failed, (english_title, th.page_title(metadata))
+    return metadata + "\n" + body, (len(blocks), failed), (english_title, th.page_title(metadata))
 
 
 def translate_toctree(source, page_titles, translator):
@@ -241,7 +280,7 @@ def _strip_titles(node):
     return node
 
 
-def translate_version(source, target, state, translator, library, version, language, max_pages=None, workers=8):
+def translate_version(source, target, state, translator, library, version, language, stats, max_pages=None, workers=8):
     """Bring `<library>/<version>/<language>` in the target up to date with the English build."""
     src_dir, dst_dir = f"{library}/{version}/en", f"{library}/{version}/{language}"
     record = state.version(version)
@@ -268,7 +307,15 @@ def translate_version(source, target, state, translator, library, version, langu
     for rel in copied:
         tracked[rel] = {"source": english[rel], "complete": True}
 
-    pending = {}
+    pending = {}  # path -> (translated page, tracker entry)
+
+    def flush():
+        # A page is only recorded once its upload succeeded: an interrupted upload is retried next run.
+        target.write({f"{dst_dir}/{p}": html for p, (html, _) in pending.items()})
+        tracked.update({p: entry for p, (_, entry) in pending.items()})
+        pending.clear()
+        state.save()
+
     for i, path in enumerate(pages, 1):
         page = source.read([f"{src_dir}/{path}"]).get(f"{src_dir}/{path}")
         if page is None:
@@ -278,16 +325,21 @@ def translate_version(source, target, state, translator, library, version, langu
             # built before huggingface/doc-builder#851: the translation would be replaced by English on load
             print(f"  [{i}/{len(pages)}] {path}: built by an older doc-builder, waiting for a rebuild")
             tracked[path] = {"source": english[path], "complete": False, "reason": "not hydration-safe"}
+            stats.waiting.append(f"{dst_dir}/{path}")
             continue
-        html, failed, title = translate_page(text, translator, library, version, language, workers)
-        pending[f"{dst_dir}/{path}"] = html.encode()
-        tracked[path] = {"source": english[path], "complete": failed == 0, "title": list(title)}
-        print(f"  [{i}/{len(pages)}] {path}: {'ok' if not failed else f'{failed} blocks kept in English'}")
+        html, (blocks, failed), title = translate_page(text, translator, library, version, language, workers)
+        entry = {"source": english[path], "complete": failed == 0, "title": list(title)}
+        if failed:
+            entry["english_blocks"] = failed
+            stats.incomplete.append((f"{dst_dir}/{path}", failed, blocks))
+        pending[path] = (html.encode(), entry)
+        stats.pages += 1
+        stats.blocks += blocks
+        stats.english_blocks += failed
+        print(f"  [{i}/{len(pages)}] {path}: {'ok' if not failed else f'{failed}/{blocks} blocks kept in English'}")
         if len(pending) >= FLUSH_EVERY:
-            target.write(pending)
-            pending = {}
-            state.save()
-    target.write(pending)
+            flush()
+    flush()
 
     if "_toctree.yml" in english:
         page_titles = {
@@ -324,8 +376,19 @@ def release_versions(source, library):
 
 
 def translate_library(
-    source, target, library, language, token=None, versions=None, max_pages=None, workers=8, complete=None
+    source,
+    target,
+    library,
+    language,
+    token=None,
+    versions=None,
+    max_pages=None,
+    workers=8,
+    complete=None,
+    stats=None,
 ):
+    """Returns the `RunStats` of this library/language (accumulated into `stats` if given)."""
+    stats = stats if stats is not None else RunStats()
     state = LanguageState(target, library, language)
     releases = release_versions(source, library)
     if "baseline_versions" not in state.tracker:
@@ -337,14 +400,19 @@ def translate_library(
     translator = Translator(language, state.cache, complete=complete, token=token)
     try:
         for version in versions:
-            translate_version(source, target, state, translator, library, version, language, max_pages, workers)
+            translate_version(source, target, state, translator, library, version, language, stats, max_pages, workers)
     finally:
         state.save()
         print(f"{library}/{language}: {translator.model_calls} model calls")
+    return stats
 
 
 def translate_docs(target_url, source_url=SOURCE_BUCKET, translations=None, token=None, **kwargs):
+    """Translate every configured library/language; returns the `RunStats` of the whole run."""
     source, target = Store(source_url, token), Store(target_url, token)
+    stats = RunStats()
     for library, languages in (translations or TRANSLATED_DOCS).items():
         for language in languages:
-            translate_library(source, target, library, language, token=token, **kwargs)
+            translate_library(source, target, library, language, token=token, stats=stats, **kwargs)
+    stats.report()
+    return stats

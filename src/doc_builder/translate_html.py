@@ -55,6 +55,7 @@ class Block:
     end: int
     nodes: list[TextNode] = field(default_factory=list)
     anchor: str | None = None  # heading id, used to translate the page metadata
+    has_children: bool = False  # contains other blocks, e.g. a list item with a nested list
 
 
 def split_page(page):
@@ -104,6 +105,9 @@ def find_blocks(body):
             is_code = name in CODE_TAGS or "font-mono" in token
             block = None
             if name in BLOCK_TAGS and not in_code and not is_code:
+                for _, ancestor, _ in stack:
+                    if ancestor is not None:
+                        ancestor.has_children = True
                 block = Block(tag=name, start=m.end(), end=-1)
                 blocks.append(block)
             stack.append((name, block, is_code))
@@ -129,7 +133,11 @@ def find_blocks(body):
 
 
 def is_static(body, block):
-    return "<!--" not in body[block.start : block.end]
+    """
+    Whether the whole block can be re-emitted with its inline elements moved: hydration never walks
+    into it, and it contains no other block (which is translated, and replaced, on its own).
+    """
+    return not block.has_children and "<!--" not in body[block.start : block.end]
 
 
 def visible_text(fragment):
