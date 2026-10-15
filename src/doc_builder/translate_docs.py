@@ -217,8 +217,13 @@ def translate_page(page, translator, library, version, language, workers=8):
     def work(block):
         try:
             if th.is_static(body, block):
-                markup, elements = th.to_markup(body[block.start : block.end])
-                return [(block.start, block.end, th.from_markup(translator.translate_markup(markup), elements))]
+                region, frozen = (block.start, block.end), False
+            else:
+                # docstring parameters and headings: their {@html} content may still be reordered
+                region, frozen = th.html_region(body, block), True
+            if region:
+                markup, elements = th.to_markup(body[region[0] : region[1]], freeze_leading_strong=frozen)
+                return [(*region, th.from_markup(translator.translate_markup(markup), elements))]
             return th.replace_text_nodes(block, translator.translate_segments(th.segments(body, block)))
         except TranslationFailed as exc:
             print(f"  kept in English ({exc}): {th.visible_text(body[block.start : block.end])[:80]!r}")

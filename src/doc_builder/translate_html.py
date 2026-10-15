@@ -140,6 +140,32 @@ def is_static(body, block):
     return not block.has_children and "<!--" not in body[block.start : block.end]
 
 
+def html_region(body, block):
+    """
+    `(start, end)` of the `{@html …}` content that holds all of a block's prose, or None.
+
+    Svelte renders `{@html x}` as the only child of an element as `<span><!---->x<!----></span>` and
+    adopts that content as is during hydration, so it can be translated like a static block, with
+    its inline elements moved (e.g. docstring parameter descriptions and headings).
+    """
+    if block.has_children:
+        return None
+    inner = body[block.start : block.end]
+    comments = list(re.finditer(r"<!--.*?-->", inner, re.S))
+    for first, second in zip(comments, comments[1:], strict=False):
+        start, end = block.start + first.end(), block.start + second.start()
+        if (
+            first[0] == second[0] == "<!---->"
+            and inner[: first.start()].endswith(">")
+            and not inner[: first.start()].endswith("/>")
+            and re.match(r"<[A-Za-z]", inner[inner.rfind("<", 0, first.start()) :])  # right after an opening tag
+            and inner[second.end() :].startswith("</")  # right before its closing tag
+            and all(start <= n.start and n.end <= end for n in block.nodes)
+        ):
+            return start, end
+    return None
+
+
 def visible_text(fragment):
     fragment = re.sub(r"<(svg|script|style)\b.*?</\1>", "", fragment, flags=re.S)
     return re.sub(r"\s+", " ", html.unescape(re.sub(r"<[^>]*>", "", fragment))).strip()
@@ -148,15 +174,17 @@ def visible_text(fragment):
 # --------------------------------------------------------------------- static blocks: markup
 
 
-def to_markup(inner):
+def to_markup(inner, freeze_leading_strong=False):
     """
     Static block inner HTML -> `(markup, elements)`.
 
     Links and formatting become `<tN>…</tN>`, line breaks and images `<tN/>`, code `<cN>…</cN>`
-    (content shown for context, restored verbatim). Text is HTML-escaped.
+    (content shown for context, restored verbatim). Text is HTML-escaped. With
+    `freeze_leading_strong`, a leading `<strong>` (a docstring parameter name) is kept as code.
     """
     elements, out, stack = {}, [], []
     tokens = [m[0] for m in TOKEN_RE.finditer(inner)]
+    first = next((i for i, t in enumerate(tokens) if t.strip()), None)
     i = 0
     while i < len(tokens):
         token = tokens[i]
@@ -168,10 +196,11 @@ def to_markup(inner):
             out.append(f"</t{n}>")
         elif token.startswith("<"):
             name, n = _tag_name(token), len(elements)
+            frozen = freeze_leading_strong and i == first and name == "strong"
             if name in VOID_TAGS or token.endswith("/>"):
                 elements[n] = {"open": token, "close": ""}
                 out.append(f"<t{n}/>")
-            elif name in CODE_TAGS:
+            elif name in CODE_TAGS or frozen:
                 depth, j = 1, i + 1
                 while depth:
                     if _tag_name(tokens[j]) == name and not tokens[j].endswith("/>"):
@@ -204,16 +233,30 @@ def markup_structure(markup):
                 raise ValueError(f"misnested </{kind}{n}>")
             _, _, start = stack.pop()
             if kind == "c":
-                code[n] = markup[start : m.start()]
+                content = markup[start : m.start()]
+                if code.setdefault(n, content) != content:
+                    raise ValueError("code was changed")
         else:
-            if n in parent:
+            here = stack[-1][1] if stack else None
+            # code may be mentioned twice (e.g. "the former" spelled out), links and formatting may not
+            if n in parent and not (kind == "c" and parent[n] == here):
                 raise ValueError(f"duplicated tag <{kind}{n}>")
-            parent[n] = stack[-1][1] if stack else None
+            parent[n] = here
             if not self_closing:
                 stack.append((kind, n, m.end()))
     if stack:
         raise ValueError("unclosed tag")
     return parent, code
+
+
+def drop_invented_tags(source, translated):
+    """
+    Remove tags the source doesn't have, keeping their content: models wrap names in code tags of
+    their own (`<cN>ByteFallback</cN>`) or a whole answer in an element (`<comment id="c1">…`).
+    Source text is HTML-escaped, so any other raw tag in an answer was invented.
+    """
+    known = set(re.findall(r"</?([tc]\d+)/?>", source))
+    return re.sub(r"</?([A-Za-z][\w:-]*)(?:\s[^<>]*)?/?>", lambda m: m[0] if m[1] in known else "", translated).strip()
 
 
 def check_markup(source, translated):
@@ -224,10 +267,15 @@ def check_markup(source, translated):
         raise ValueError("tags were dropped, added or nested differently")
     if code != want_code:
         raise ValueError("code was changed")
-    outside_code = re.sub(r"<c(\d+)>.*?</c\1>", "", translated, flags=re.S)
+
+    def outside_code(markup):
+        return html.unescape(re.sub(r"<c(\d+)>.*?</c\1>", "", markup, flags=re.S))
+
     for content in want_code.values():
-        if len(content) > 3 and html.unescape(content) in html.unescape(outside_code):
-            raise ValueError(f"code {html.unescape(content)!r} repeated outside its tag")
+        content = html.unescape(content)
+        # prose may mention code too (e.g. "-100"); only an extra occurrence is a duplicate
+        if len(content) > 3 and outside_code(translated).count(content) > outside_code(source).count(content):
+            raise ValueError(f"code {content!r} repeated outside its tag")
 
 
 def from_markup(markup, elements):
@@ -278,9 +326,13 @@ def replace_text_nodes(block, translations):
     edits = []
     for i, node in enumerate(block.nodes):
         prefix, _, trail = _split_node(node)
+        text = translations[str(i)].strip()
+        # the prefix is kept as is; a model that repeats its punctuation would double it (", , ")
+        mark = prefix.rstrip()[-1:]
+        if mark in (",", ".", ";", ":") and text.startswith(mark):
+            text = text[1:].lstrip()
         # never empty: removing a text node could shift Svelte's hydration walk
-        text = translations[str(i)].strip() or " "
-        edits.append((node.start, node.end, html.escape(prefix + text + trail, quote=False)))
+        edits.append((node.start, node.end, html.escape(prefix + (text or " ") + trail, quote=False)))
     return edits
 
 

@@ -24,7 +24,7 @@ import json
 import re
 import time
 
-from .translate_html import check_markup
+from .translate_html import check_markup, drop_invented_tags
 
 MODEL = "Qwen/Qwen3.8-27B"
 PROVIDER = "cerebras"
@@ -82,6 +82,24 @@ class TranslationFailed(Exception):
     pass
 
 
+# Frequent English function words: never part of names or code, rare in a real translation.
+ENGLISH_FUNCTION_WORDS = {
+    "the", "to", "of", "and", "is", "are", "for", "with", "that", "this", "by", "you", "your",
+    "from", "can", "be", "an", "it", "which", "when", "will", "into", "using", "should",
+}  # fmt: skip
+
+
+def english_share(text):
+    words = re.findall(r"[A-Za-z]+", text.lower())
+    return sum(w in ENGLISH_FUNCTION_WORDS for w in words) / len(words) if len(words) >= 6 else 0.0
+
+
+def check_translated(source, translation):
+    """Reject an answer that is still English prose (models sometimes just reword the source)."""
+    if english_share(source) >= 0.15 and english_share(translation) >= 0.15:
+        raise ValueError("the answer is still in English; translate it")
+
+
 class Translator:
     """
     Translates blocks into `language`. `cache` maps request keys to validated answers and is
@@ -105,23 +123,28 @@ class Translator:
         payload = json.dumps([MODEL, PROVIDER, PROMPT_VERSION, system, user], ensure_ascii=False)
         return hashlib.sha256(payload.encode()).hexdigest()
 
-    def _ask(self, system, user, check):
+    def _ask(self, system, user, check, response_format=None):
         """Cached, validated answer; one retry that tells the model what was wrong."""
+        language = LANGUAGE_NAMES[self.language]
+        # stating the task next to the text keeps instruction-like sentences ("Use X to …") from being answered in English
+        user = f"Translate into {language}:\n\n{user}"
         key = self._key(system, user)
         if key in self.cache:
             return self.cache[key]
         messages = [{"role": "system", "content": system}, {"role": "user", "content": user}]
         error = None
-        for _ in range(2):
+        for attempt in range(2):
             self.model_calls += 1
-            answer = self._complete(messages).strip()
+            # the retry samples: at temperature 0 the model repeats the same invalid answer
+            answer = self._complete(messages, temperature=0.5 if attempt else 0, response_format=response_format)
+            answer = answer.strip()
             try:
                 result = check(answer)
             except ValueError as exc:
                 error = str(exc)
                 messages = messages[:2] + [
                     {"role": "assistant", "content": answer},
-                    {"role": "user", "content": f"That answer is invalid: {error}. Answer again."},
+                    {"role": "user", "content": f"That answer is invalid: {error}. Answer again, in {language}."},
                 ]
                 continue
             self.cache[key] = result
@@ -132,7 +155,10 @@ class Translator:
         """Translate a static block given as markup (see `translate_html.to_markup`)."""
 
         def check(answer):
+            answer = drop_invented_tags(markup, answer)
             check_markup(markup, answer)
+            prose = re.sub(r"<c(\d+)>.*?</c\1>|</?t\d+/?>", " ", answer, flags=re.S)
+            check_translated(re.sub(r"<c(\d+)>.*?</c\1>|</?t\d+/?>", " ", markup, flags=re.S), prose)
             return answer
 
         return self._ask(self._system("markup"), markup, check)
@@ -141,6 +167,7 @@ class Translator:
         """Translate the numbered segments of a block; returns `{id: text}`."""
         ids = {str(s["id"]) for s in segments if "id" in s}
         fixed = [s["fixed"] for s in segments if "fixed" in s and len(s["fixed"]) > 3]
+        source = "".join(s["text"] for s in segments if "id" in s)
 
         def check(answer):
             answer = re.sub(r"^```(?:json)?\s*|\s*```$", "", answer)
@@ -150,12 +177,25 @@ class Translator:
                 raise ValueError(f"not valid JSON ({exc})") from None
             if not isinstance(data, dict) or set(data) != ids or not all(isinstance(v, str) for v in data.values()):
                 raise ValueError(f"expected exactly the ids {sorted(ids)}")
+            # a fixed string may also be part of the English prose (e.g. "-100"); only an extra copy is a repeat
             joined = "".join(data.values())
-            if any(f in joined for f in fixed):
+            if any(joined.count(f) > source.count(f) for f in fixed):
                 raise ValueError("a fixed segment was repeated in a translation")
+            check_translated(" ".join(s["text"] for s in segments if "id" in s), " ".join(data.values()))
             return data
 
-        return self._ask(self._system("segments"), json.dumps(segments, ensure_ascii=False), check)
+        # the provider enforces exactly these keys; without it models return lists or split segments
+        schema = {
+            "type": "object",
+            "properties": {i: {"type": "string"} for i in sorted(ids)},
+            "required": sorted(ids),
+            "additionalProperties": False,
+        }
+        response_format = {
+            "type": "json_schema",
+            "json_schema": {"name": "translation", "strict": True, "schema": schema},
+        }
+        return self._ask(self._system("segments"), json.dumps(segments, ensure_ascii=False), check, response_format)
 
 
 def _inference_completion(token):
@@ -164,14 +204,15 @@ def _inference_completion(token):
 
     client = InferenceClient(provider=PROVIDER, token=token)
 
-    def complete(messages):
+    def complete(messages, temperature=0, response_format=None):
         for attempt in range(8):
             try:
                 response = client.chat_completion(
                     model=MODEL,
                     messages=messages,
-                    temperature=0,
+                    temperature=temperature,
                     max_tokens=4096,
+                    response_format=response_format,
                     # the model reasons by default, which only adds latency for translation
                     extra_body={"reasoning_effort": "none"},
                 )

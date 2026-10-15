@@ -18,6 +18,7 @@ import shutil
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 import yaml
 
@@ -36,11 +37,11 @@ class FakeModel:
         self.calls = 0
         self.fail_on = fail_on
 
-    def __call__(self, messages):
+    def __call__(self, messages, temperature=0, response_format=None):
         self.calls += 1
-        system, user = messages[0]["content"], messages[1]["content"]
+        system, user = messages[0]["content"], messages[1]["content"].split("\n\n", 1)[1]
         if self.fail_on and self.fail_on in user:
-            return "not a valid answer <x>"
+            return "not a valid answer <"
         if "light markup" in system:
             # translate text outside code tags, keep every tag in place
             parts = re.split(r"(<c(\d+)>.*?</c\2>|</?t\d+/?>)", user)
@@ -57,6 +58,10 @@ class FakeModel:
 
 class TranslateDocsTester(unittest.TestCase):
     def setUp(self):
+        # the fake model's "訳" + English is not a real translation; that check has its own test
+        patcher = mock.patch("doc_builder.translate_model.check_translated")
+        patcher.start()
+        self.addCleanup(patcher.stop)
         self.tmp = Path(tempfile.mkdtemp())
         self.source_dir = self.tmp / "source"
         self.target_dir = self.tmp / "target"

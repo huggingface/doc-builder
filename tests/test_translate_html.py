@@ -81,11 +81,38 @@ class TranslateHtmlTester(unittest.TestCase):
             '<code>a &lt; b</code> と <a href="/x">ガイド</a> を参照してください。',
         )
 
+    def test_repeated_prefix_punctuation_is_not_doubled(self):
+        body = "<li><!---->If an <code>int</code>, compute logits.</li>"
+        block = th.find_blocks(body)[0]
+        edits = th.replace_text_nodes(block, {"0": "Если передано значение типа", "1": ", вычислить logits."})
+        self.assertEqual(
+            th.visible_text(th.apply_edits(body, edits)), "Если передано значение типа int, вычислить logits."
+        )
+
+    def test_invented_tags_are_dropped(self):
+        # models wrap names in code tags of their own; the tag goes, the name stays as text
+        answer = th.drop_invented_tags("This uses ByteFallback.", "Isso usa <cN>ByteFallback</cN> <c7>x</c7>.")
+        self.assertEqual(answer, "Isso usa ByteFallback x.")
+        self.assertEqual(th.drop_invented_tags("See <t0>it</t0>", "Veja <t0>isso</t0>"), "Veja <t0>isso</t0>")
+        wrapped = '<comment id="c1">حمّل مُجمِّع بيانات.</comment>'
+        self.assertEqual(th.drop_invented_tags("Load a data collator.", wrapped), "حمّل مُجمِّع بيانات.")
+
+    def test_code_also_in_prose_is_not_a_repeat(self):
+        # "-100" is both code and prose in the source, so the translation may keep both
+        th.check_markup("Use <c0>-100</c0> or -100 here", "<c0>-100</c0> または -100 を使います")
+
+    def test_code_may_be_mentioned_twice(self):
+        markup, elements = th.to_markup("Call the <code>Module</code> instance instead.")
+        answer = "<c0>Module</c0> 인스턴스는 … 이 함수 대신 <c0>Module</c0> 인스턴스를 호출해야 합니다."
+        th.check_markup(markup, answer)
+        self.assertEqual(th.from_markup(answer, elements).count("<code>Module</code>"), 2)
+
     def test_check_markup_rejects(self):
         markup = "Use <t0><c1>Trainer</c1></t0> with <c2>bf16=True</c2>."
         for bad in [
             "Use <c1>Trainer</c1> with <c2>bf16=True</c2>.",  # dropped link
             "<t0><c1>Trainer</c1></t0> <t0>x</t0> <c2>bf16=True</c2>",  # duplicated tag
+            "<t0><c1>Trainer</c1></t0> <c2>bf16=True</c2> <c2>fp16=True</c2>",  # duplicated code, changed
             "<t0><c1>Trainer</c1></t0> と <c2>fp16=True</c2>",  # changed code
             "<c1>Trainer</c1> <t0></t0> <c2>bf16=True</c2>",  # different nesting
             "<t0><c1>Trainer</c1></t0> で bf16=True <c2>bf16=True</c2>",  # code outside its tag
@@ -111,3 +138,14 @@ class TranslateHtmlTester(unittest.TestCase):
         self.assertEqual(data["title"], 'ハイドレーション "確認"')
         self.assertEqual([s["title"] for s in data["sections"]][:1], ["オプション"])
         self.assertEqual(th.page_title(translated), 'ハイドレーション "確認"')
+
+    def test_still_english_answers_are_rejected(self):
+        from doc_builder.translate_model import check_translated
+
+        source = "Use Accelerator to automatically detect an available accelerator for inference."
+        with self.assertRaises(ValueError):
+            check_translated(source, "Use Accelerator to detect automatically an available accelerator for inference.")
+        check_translated(
+            source, "Usa Accelerator para detectar automáticamente un acelerador disponible para la inferencia."
+        )
+        check_translated(source, "Accelerator を使用して、推論に利用できるアクセラレータを自動的に検出します。")
