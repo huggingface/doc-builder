@@ -393,8 +393,11 @@ const _mdsvexPreprocess = mdsvex({
 		highlighter: function (code, lang) {
 			const REGEX_CODE_INPUT = /^(>>>\s|\.\.\.\s)/m;
 			const _highlight = (code) =>
-				lang && hljs.getLanguage(lang)
-					? hljs.highlight(lang, code, true).value
+				lang
+					? hljs.highlight(code, {
+							language: hljs.getLanguage(lang) ? lang : "plaintext",
+							ignoreIllegals: true,
+						}).value
 					: hljs.highlightAuto(code).value;
 			const base64 = (val) => btoa(encodeURIComponent(val));
 			const escape = (code) =>
