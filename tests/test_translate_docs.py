@@ -216,6 +216,13 @@ class TranslateDocsTester(unittest.TestCase):
         # the first page was published and recorded, so the next run resumes after it
         self.assertTrue(self.ja("main", "guides/old.html").exists())
         self.assertIn("guides/old.html", self.tracker()["versions"]["main"]["files"])
+        # the sidebar is there too; the page that isn't translated yet keeps its English title
+        toctree = yaml.safe_load(self.ja("main", "_toctree.yml").read_text(encoding="utf-8"))
+        self.assertEqual(toctree[0]["title"], "訳Get started")
+        self.assertEqual(toctree[0]["sections"][0], {"local": "index", "title": "Hydration check"})
+        self.run_job()
+        toctree = yaml.safe_load(self.ja("main", "_toctree.yml").read_text(encoding="utf-8"))
+        self.assertEqual(toctree[0]["sections"][0], {"local": "index", "title": "訳Hydration check"})
 
     def test_page_built_before_hydration_fix_is_skipped(self):
         shutil.copy(DATA / "page_before_851.html", self.source_dir / LIB / "main" / "en" / "index.html")

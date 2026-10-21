@@ -261,8 +261,11 @@ def translate_page(page, translator, library, version, language, workers=8):
     return metadata + "\n" + body, (len(blocks), failed), (english_title, th.page_title(metadata))
 
 
-def translate_toctree(source, page_titles, translator):
-    """Same structure as the English toctree; titles of page entries reuse the page's translated title."""
+def translate_toctree(source, page_titles, translator, untranslated=()):
+    """
+    Same structure as the English toctree; titles of page entries reuse the page's translated title.
+    Entries of `untranslated` pages (not translated yet) keep their English title, like the page.
+    """
     tree = yaml.safe_load(source)
 
     def visit(items):
@@ -272,7 +275,7 @@ def translate_toctree(source, page_titles, translator):
                 pair = page_titles.get(item.get("local"))
                 if pair and pair[0] == title and pair[1]:
                     item["title"] = pair[1]
-                else:
+                elif item.get("local") not in untranslated:
                     try:
                         item["title"] = translator.translate_segments([{"id": 0, "text": title}])["0"].strip() or title
                     except TranslationFailed:
@@ -369,12 +372,29 @@ def translate_version(source, target, state, translator, library, version, langu
         tracked[rel] = {"source": english[rel], "complete": True}
 
     pending = {}  # path -> (translated page, tracker entry)
+    toctree = (
+        source.read([f"{src_dir}/_toctree.yml"])[f"{src_dir}/_toctree.yml"] if "_toctree.yml" in english else None
+    )
+
+    def write_toctree():
+        page_titles = {
+            str(PurePosixPath(p).with_suffix("")): tuple(e["title"]) for p, e in tracked.items() if e.get("title")
+        }
+        html_pages = {str(PurePosixPath(p).with_suffix("")) for p in english if p.endswith(".html")}
+        translated = translate_toctree(toctree, page_titles, translator, untranslated=html_pages - set(page_titles))
+        digest = hashlib.sha256(translated).hexdigest()
+        if record.get("toctree") != digest:
+            target.write({f"{dst_dir}/_toctree.yml": translated})
+            record["toctree"] = digest
 
     def flush():
         # A page is only recorded once its upload succeeded: an interrupted upload is retried next run.
         target.write({f"{dst_dir}/{p}": html for p, (html, _) in pending.items()})
         tracked.update({p: entry for p, (_, entry) in pending.items()})
         pending.clear()
+        if toctree is not None:
+            # updated with every batch of pages, so a partly translated folder already has its sidebar
+            write_toctree()
         state.save()
 
     try:
@@ -427,17 +447,6 @@ def translate_version(source, target, state, translator, library, version, langu
     finally:
         # pages finished before an error (e.g. rate limiting that outlasts the retries) are kept
         flush()
-
-    if "_toctree.yml" in english:
-        page_titles = {
-            str(PurePosixPath(p).with_suffix("")): tuple(e["title"]) for p, e in tracked.items() if e.get("title")
-        }
-        toctree = source.read([f"{src_dir}/_toctree.yml"])[f"{src_dir}/_toctree.yml"]
-        translated = translate_toctree(toctree, page_titles, translator)
-        digest = hashlib.sha256(translated).hexdigest()
-        if record.get("toctree") != digest:
-            target.write({f"{dst_dir}/_toctree.yml": translated})
-            record["toctree"] = digest
 
     if "llms.txt" in english and (markdown or record.get("llms_source") != english["llms.txt"]):
         feeds = translate_llms_feeds(source, target, src_dir, dst_dir, library, english)
