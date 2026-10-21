@@ -17,6 +17,7 @@ import json
 import re
 import unittest
 from pathlib import Path
+from unittest import mock
 
 from doc_builder import translate_html as th
 
@@ -165,3 +166,20 @@ class TranslateHtmlTester(unittest.TestCase):
             source, "Usa Accelerator para detectar automáticamente un acelerador disponible para la inferencia."
         )
         check_translated(source, "Accelerator を使用して、推論に利用できるアクセラレータを自動的に検出します。")
+
+    def test_rate_limits_are_waited_out(self):
+        import httpx
+        from huggingface_hub import InferenceClient
+        from huggingface_hub.errors import HfHubHTTPError
+
+        from doc_builder import translate_model
+
+        limited = httpx.Response(429, headers={"Retry-After": "7"}, request=httpx.Request("POST", "https://x"))
+        answer = mock.Mock(choices=[mock.Mock(message=mock.Mock(content="ok"))])
+        calls = [HfHubHTTPError("rate limited", response=limited)] * 2 + [answer]
+        with (
+            mock.patch.object(InferenceClient, "chat_completion", side_effect=calls),
+            mock.patch.object(translate_model.time, "sleep") as sleep,
+        ):
+            self.assertEqual(translate_model._inference_completion("hf_test")([]), "ok")
+        self.assertIn(mock.call(7.0), sleep.call_args_list)  # the provider's Retry-After
