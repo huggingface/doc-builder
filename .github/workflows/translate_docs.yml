@@ -66,8 +66,9 @@ jobs:
     timeout-minutes: 360  # Set timeout to 6 hours; an interrupted language resumes on the next run
     strategy:
       fail-fast: false
-      # each language has its own state; parallelism is bounded by the inference provider's rate limits
-      max-parallel: 4
+      # each language has its own state; parallelism is bounded by the inference provider's rate limits:
+      # with 4 languages at once, Cerebras kept answering 429
+      max-parallel: 2
       matrix:
         include: ${{ fromJSON(needs.plan.outputs.matrix) }}
     name: translate (${{ matrix.library }}, ${{ matrix.language }})
