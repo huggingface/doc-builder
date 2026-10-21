@@ -222,14 +222,15 @@ def to_markup(inner, freeze_leading_strong=False):
 
 
 def markup_structure(markup):
-    """`(parent of each tag, code contents)`; raises ValueError on malformed markup."""
+    """`(shape of each tag: kind, self-closing, parent; code contents)`; raises ValueError on malformed markup."""
     parent, code, stack = {}, {}, []
     for m in re.finditer(r"<(/?)([tc])(\d+)(/?)>|[<>]", markup):
         if m[0] in "<>":
             raise ValueError("unescaped < or > in text")
         closing, kind, n, self_closing = m[1], m[2], int(m[3]), m[4]
         if closing:
-            if not stack or stack[-1][1] != n:
+            # a closing tag must close the innermost open tag of the same kind and number
+            if self_closing or not stack or stack[-1][:2] != (kind, n):
                 raise ValueError(f"misnested </{kind}{n}>")
             _, _, start = stack.pop()
             if kind == "c":
@@ -238,10 +239,12 @@ def markup_structure(markup):
                     raise ValueError("code was changed")
         else:
             here = stack[-1][1] if stack else None
-            # code may be mentioned twice (e.g. "the former" spelled out), links and formatting may not
-            if n in parent and not (kind == "c" and parent[n] == here):
-                raise ValueError(f"duplicated tag <{kind}{n}>")
-            parent[n] = here
+            # the shape catches a link turned into a self-closing tag, which would leave its <a> unclosed
+            shape = (kind, bool(self_closing), here)
+            # code may be mentioned twice (e.g. "the former" spelled out) with the same shape; links may not
+            if n in parent and not (kind == "c" and parent[n] == shape):
+                raise ValueError(f"duplicated or changed tag <{kind}{n}>")
+            parent[n] = shape
             if not self_closing:
                 stack.append((kind, n, m.end()))
     if stack:

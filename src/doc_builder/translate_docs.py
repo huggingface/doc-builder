@@ -48,7 +48,7 @@ from .translate_model import BILL_TO, TranslationFailed, Translator
 
 SOURCE_BUCKET = "hf://buckets/hf-doc-build/doc"
 # Libraries and languages translated by the scheduled job.
-TRANSLATED_DOCS = {"transformers": ["zh", "ja", "ko", "pt", "es", "fr", "vi", "id", "tr", "ru", "ar"]}
+TRANSLATED_DOCS = {"hub": ["zh", "ja", "ko", "pt", "es", "fr", "vi", "id", "tr", "ru", "ar"]}
 # Copied unchanged from the English build: llms.txt files and redirects. Pages (`.html`) and their
 # Markdown (`.md`, served for "Copy page" and `Accept: text/plain`) are translated.
 COPIED_SUFFIXES = {".txt"}

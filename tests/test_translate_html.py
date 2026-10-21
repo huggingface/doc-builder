@@ -107,6 +107,22 @@ class TranslateHtmlTester(unittest.TestCase):
         th.check_markup(markup, answer)
         self.assertEqual(th.from_markup(answer, elements).count("<code>Module</code>"), 2)
 
+    def test_tag_shape_must_not_change(self):
+        markup, _ = th.to_markup('See <a href="/x">the guide</a> and <code>pip</code>.')
+        for bad in [
+            "<t0/> と <c1>pip</c1> を参照",  # a link as a self-closing tag would leave <a> unclosed
+            "<t0>ガイド</c0> と <c1>pip</c1>",  # closed by a tag of another kind
+            "<t0>ガイド</t0/> と <c1>pip</c1>",  # closed by a self-closing tag
+        ]:
+            with self.assertRaises(ValueError, msg=bad):
+                th.check_markup(markup, bad)
+
+    def test_empty_answer_is_rejected(self):
+        from doc_builder.translate_model import TranslationFailed, Translator
+
+        with self.assertRaises(TranslationFailed):
+            Translator("ja", {}, complete=lambda messages, **kwargs: "").translate_markup("Load a model for training.")
+
     def test_check_markup_rejects(self):
         markup = "Use <t0><c1>Trainer</c1></t0> with <c2>bf16=True</c2>."
         for bad in [

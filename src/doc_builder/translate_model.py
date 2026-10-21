@@ -98,7 +98,9 @@ def english_share(text):
 
 
 def check_translated(source, translation):
-    """Reject an answer that is still English prose (models sometimes just reword the source)."""
+    """Reject an answer that is empty or still English prose (models sometimes just reword the source)."""
+    if source.strip() and not translation.strip():
+        raise ValueError("the translated text is empty")
     if english_share(source) >= 0.15 and english_share(translation) >= 0.15:
         raise ValueError("the answer is still in English; translate it")
 
