@@ -119,8 +119,11 @@ class TranslateDocsTester(unittest.TestCase):
         toctree = yaml.safe_load(self.ja("main", "_toctree.yml").read_text(encoding="utf-8"))
         self.assertEqual(toctree[0]["title"], "訳Get started")
         self.assertEqual(toctree[0]["sections"][0], {"local": "index", "title": "訳Hydration check"})
-        # Markdown is copied, assets are not
-        self.assertTrue(self.ja("main", "index.md").exists())
+        # Markdown is translated next to the page; code stays as is; assets are not copied
+        md = self.ja("main", "index.md").read_text(encoding="utf-8")
+        self.assertTrue(md.startswith("# 訳Hydration check"))
+        self.assertIn("訳Text of the second option.", md)
+        self.assertIn("```python\nhydrationlib.tokenize(", md)
         self.assertFalse(self.ja("main", "_app").exists())
         # releases that existed before translation started are not backfilled
         self.assertFalse(self.ja("v1.0.0", "index.html").exists())
@@ -206,10 +209,10 @@ class TranslateDocsTester(unittest.TestCase):
 
     def test_incomplete_pages_are_reported(self):
         self.run_job(FakeModel(fail_on="Text of the second option."))
-        self.assertEqual(self.stats.english_blocks, 2)  # once per page that has the block
+        self.assertEqual(self.stats.english_blocks, 3)  # once per page and Markdown file that has the block
         self.assertEqual(
             {page for page, _, _ in self.stats.incomplete},
-            {f"{LIB}/main/ja/index.html", f"{LIB}/main/ja/guides/old.html"},
+            {f"{LIB}/main/ja/index.html", f"{LIB}/main/ja/guides/old.html", f"{LIB}/main/ja/index.md"},
         )
         self.assertEqual(self.tracker()["versions"]["main"]["files"]["index.html"]["english_blocks"], 1)
         self.assertFalse(self.stats.failed())  # a few English blocks: published, retried, warned

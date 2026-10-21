@@ -43,13 +43,15 @@ from pathlib import Path, PurePosixPath
 import yaml
 
 from . import translate_html as th
+from .translate_md import translate_md
 from .translate_model import TranslationFailed, Translator
 
 SOURCE_BUCKET = "hf://buckets/hf-doc-build/doc"
 # Libraries and languages translated by the scheduled job.
 TRANSLATED_DOCS = {"transformers": ["zh", "ja", "ko", "pt", "es", "fr", "vi", "id", "tr", "ru", "ar"]}
-# Copied unchanged from the English build: Markdown (served for `Accept: text/plain`), llms.txt files and redirects.
-COPIED_SUFFIXES = {".md", ".txt"}
+# Copied unchanged from the English build: llms.txt files and redirects. Pages (`.html`) and their
+# Markdown (`.md`, served for "Copy page" and `Accept: text/plain`) are translated.
+COPIED_SUFFIXES = {".txt"}
 COPIED_NAMES = {"_redirects.yml"}
 STATE_DIR = ".translation"
 FLUSH_EVERY = 20  # pages; bounds the work lost if a run is interrupted
@@ -300,12 +302,16 @@ def translate_version(source, target, state, translator, library, version, langu
         return entry is None or entry["source"] != english[path] or not entry.get("complete", True)
 
     pages = sorted(p for p in english if p.endswith(".html") and outdated(p))
+    markdown = sorted(p for p in english if p.endswith(".md") and outdated(p))
     copies = sorted(
         p for p in english if (PurePosixPath(p).suffix in COPIED_SUFFIXES or p in COPIED_NAMES) and outdated(p)
     )
     if max_pages is not None:
         pages = pages[:max_pages]
-    print(f"{dst_dir}: {len(pages)} pages to translate, {len(copies)} files to copy")
+        markdown = [p for p in markdown if p[: -len(".md")] + ".html" in pages]
+    print(
+        f"{dst_dir}: {len(pages)} pages and {len(markdown)} Markdown files to translate, {len(copies)} files to copy"
+    )
 
     copied = {path[len(src_dir) + 1 :]: data for path, data in source.read(f"{src_dir}/{p}" for p in copies).items()}
     target.write({f"{dst_dir}/{rel}": data for rel, data in copied.items()})
@@ -342,6 +348,25 @@ def translate_version(source, target, state, translator, library, version, langu
         stats.blocks += blocks
         stats.english_blocks += failed
         print(f"  [{i}/{len(pages)}] {path}: {'ok' if not failed else f'{failed}/{blocks} blocks kept in English'}")
+        if len(pending) >= FLUSH_EVERY:
+            flush()
+
+    for i, path in enumerate(markdown, 1):
+        data = source.read([f"{src_dir}/{path}"]).get(f"{src_dir}/{path}")
+        if data is None:
+            continue
+        md, blocks, failed = translate_md(
+            data.decode("utf-8"), translator.translate_markup, library, version, language, workers
+        )
+        entry = {"source": english[path], "complete": failed == 0}
+        if failed:
+            entry["english_blocks"] = failed
+            stats.incomplete.append((f"{dst_dir}/{path}", failed, blocks))
+        pending[path] = (md.encode(), entry)
+        stats.pages += 1
+        stats.blocks += blocks
+        stats.english_blocks += failed
+        print(f"  [{i}/{len(markdown)}] {path}: {'ok' if not failed else f'{failed}/{blocks} blocks kept in English'}")
         if len(pending) >= FLUSH_EVERY:
             flush()
     flush()
