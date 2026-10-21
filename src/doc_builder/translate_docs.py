@@ -305,7 +305,8 @@ def translate_llms_feeds(source, target, src_dir, dst_dir, library, english):
     from .utils import write_llms_feeds
 
     language = PurePosixPath(dst_dir).name
-    llms = source.read([f"{src_dir}/llms.txt"])[f"{src_dir}/llms.txt"].decode("utf-8")
+    # a feed written on Windows has CRLF line endings
+    llms = source.read([f"{src_dir}/llms.txt"])[f"{src_dir}/llms.txt"].decode("utf-8").replace("\r\n", "\n")
     pages = [p for p in english if p.endswith(".md")]
     order, base = [], None
     for url in re.findall(r"^- \[.*\]\((\S+)\)$", llms, re.M):
