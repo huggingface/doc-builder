@@ -35,10 +35,13 @@ import gzip
 import hashlib
 import json
 import os
+import re
 import tempfile
+import warnings
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field
 from pathlib import Path, PurePosixPath
+from urllib.parse import quote
 
 import yaml
 
@@ -51,10 +54,12 @@ SOURCE_BUCKET = "hf://buckets/hf-doc-build/doc"
 TRANSLATION_BUCKET = "hf://buckets/hf-doc-build/doc-translate"
 # Libraries and languages translated by the scheduled job.
 TRANSLATED_DOCS = {"hub": ["zh", "ja", "ko", "pt", "es", "fr", "vi", "id", "tr", "ru", "ar"]}
-# Copied unchanged from the English build: llms.txt files and redirects. Pages (`.html`) and their
-# Markdown (`.md`, served for "Copy page" and `Accept: text/plain`) are translated.
-COPIED_SUFFIXES = {".txt"}
+# Copied unchanged from the English build. Pages (`.html`) and their Markdown (`.md`, served for
+# "Copy page" and `Accept: text/plain`) are translated; llms.txt and llms-full.txt are rebuilt from
+# the translated Markdown.
+COPIED_SUFFIXES = set()
 COPIED_NAMES = {"_redirects.yml"}
+LLMS_FEEDS = ("llms.txt", "llms-full.txt")
 STATE_DIR = ".translation"
 FLUSH_EVERY = 20  # pages; bounds the work lost if a run is interrupted
 # Above this share of blocks kept in English, a run fails: something is systematically wrong (model, prompt, provider).
@@ -150,11 +155,13 @@ class Store:
             for i in range(0, len(paths), 200):
                 batch = paths[i : i + 200]
                 targets = {p: Path(tmp) / str(i + j) for j, p in enumerate(batch)}
-                self.api.download_bucket_files(
-                    self.bucket_id,
-                    [(self._remote(p), str(t)) for p, t in targets.items()],
-                    raise_on_missing_files=False,
-                )
+                with warnings.catch_warnings():  # missing files are expected: read returns what exists
+                    warnings.simplefilter("ignore")
+                    self.api.download_bucket_files(
+                        self.bucket_id,
+                        [(self._remote(p), str(t)) for p, t in targets.items()],
+                        raise_on_missing_files=False,
+                    )
                 result.update({p: t.read_bytes() for p, t in targets.items() if t.is_file()})
         return result
 
@@ -289,6 +296,46 @@ def _strip_titles(node):
     return node
 
 
+def translate_llms_feeds(source, target, src_dir, dst_dir, library, english):
+    """
+    Rebuild llms.txt and llms-full.txt of a translated folder from its translated Markdown, with
+    doc-builder's own generator: the English pages in the English order, translated titles and
+    content, and URLs pointing to the translated Markdown (`<english base>/<language>/<page>.md`).
+    """
+    from .utils import write_llms_feeds
+
+    language = PurePosixPath(dst_dir).name
+    llms = source.read([f"{src_dir}/llms.txt"])[f"{src_dir}/llms.txt"].decode("utf-8")
+    pages = [p for p in english if p.endswith(".md")]
+    order, base = [], None
+    for url in re.findall(r"^- \[.*\]\((\S+)\)$", llms, re.M):
+        # the longest match: ".../xet/index.md" also ends with "/index.md"
+        page = max((p for p in pages if url.endswith("/" + quote(p, safe="/"))), key=len, default=None)
+        if page and page not in order:
+            order.append(page)
+            base = base or url[: -len(quote(page, safe="/")) - 1]
+    # the English feed lists the current pages; Markdown of removed pages lingers in the bucket
+    order = order or sorted(pages)
+    translated = target.read(f"{dst_dir}/{p}" for p in order)
+    # a page whose Markdown isn't translated yet (e.g. a partial run) keeps its English text
+    fallback = source.read(f"{src_dir}/{p}" for p in order if f"{dst_dir}/{p}" not in translated)
+    items = [
+        (p, (translated.get(f"{dst_dir}/{p}") or fallback.get(f"{src_dir}/{p}") or b"").decode("utf-8")) for p in order
+    ]
+    with tempfile.TemporaryDirectory() as directory:
+        write_llms_feeds(
+            Path(directory),
+            items,
+            base_url=f"{base}/{language}" if base else None,
+            package_name=library,
+            language=language,
+            is_python_module=False,
+        )
+        return {
+            name: (Path(directory) / name).read_bytes() for name in LLMS_FEEDS if (Path(directory) / name).exists()
+        }
+
+
 def translate_version(source, target, state, translator, library, version, language, stats, max_pages=None, workers=8):
     """Bring `<library>/<version>/<language>` in the target up to date with the English build."""
     src_dir, dst_dir = f"{library}/{version}/en", f"{library}/{version}/{language}"
@@ -383,6 +430,14 @@ def translate_version(source, target, state, translator, library, version, langu
         if record.get("toctree") != digest:
             target.write({f"{dst_dir}/_toctree.yml": translated})
             record["toctree"] = digest
+
+    if "llms.txt" in english and (markdown or record.get("llms_source") != english["llms.txt"]):
+        feeds = translate_llms_feeds(source, target, src_dir, dst_dir, library, english)
+        digest = hashlib.sha256(b"".join(feeds.values())).hexdigest()
+        if record.get("llms") != digest:
+            target.write({f"{dst_dir}/{name}": data for name, data in feeds.items()})
+            record["llms"] = digest
+        record["llms_source"] = english["llms.txt"]
 
     # Pages removed from the English build disappear from the translation too.
     existing = target.walk(dst_dir)
