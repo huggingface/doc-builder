@@ -15,16 +15,17 @@
 import argparse
 import os
 
-from doc_builder.translate_docs import MAX_ENGLISH_BLOCKS, SOURCE_BUCKET, TRANSLATED_DOCS, translate_docs
+from doc_builder.translate_docs import (
+    MAX_ENGLISH_BLOCKS,
+    SOURCE_BUCKET,
+    TRANSLATED_DOCS,
+    TRANSLATION_BUCKET,
+    translate_docs,
+)
 from doc_builder.translate_model import BILL_TO
 
 
 def translate_docs_command(args):
-    bucket = args.bucket or os.environ.get("TRANSLATION_BUCKET")
-    if not bucket:
-        raise ValueError(
-            "Pass --bucket or set TRANSLATION_BUCKET (hf://buckets/<owner>/<name>, or a local directory)."
-        )
     inference_token = args.inference_token or os.environ.get("TRANSLATION_INFERENCE_TOKEN")
     if not inference_token:
         raise ValueError(
@@ -38,7 +39,7 @@ def translate_docs_command(args):
             raise ValueError(f"No languages configured for {library!r}; pass --languages.")
         translations[library] = languages
     stats = translate_docs(
-        bucket,
+        args.bucket,
         inference_token,
         source_url=args.source,
         translations=translations,
@@ -67,7 +68,8 @@ def translate_docs_command_parser(subparsers=None):
     parser.add_argument(
         "--bucket",
         type=str,
-        help="Where translations are written: hf://buckets/<owner>/<name> or a local directory (default: $TRANSLATION_BUCKET).",
+        default=TRANSLATION_BUCKET,
+        help=f"Where translations are written: hf://buckets/<owner>/<name> or a local directory. Default: {TRANSLATION_BUCKET}.",
     )
     parser.add_argument(
         "--source",

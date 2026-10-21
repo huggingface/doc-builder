@@ -330,7 +330,7 @@ To automatically build the documentation for all languages via the GitHub Action
 
 ### Machine-translated documentation
 
-`doc-builder translate-docs` translates the *built* English pages (`<library>/<version>/en/` in `hf://buckets/hf-doc-build/doc`) with an LLM on HF Inference Providers and writes them to `<library>/<version>/<language>/` in a translation bucket. Only the prose changes: links, code and the page structure are kept, so the translated page hydrates against the same JS as the English one. Each page's Markdown (`<page>.md`, served for "Copy page" and `text/plain` requests) is translated the same way, next to the page.
+`doc-builder translate-docs` translates the *built* English pages (`<library>/<version>/en/` in `hf://buckets/hf-doc-build/doc`) with an LLM on HF Inference Providers and writes them to `<library>/<version>/<language>/` in `hf://buckets/hf-doc-build/doc-translate`. Only the prose changes: links, code and the page structure are kept, so the translated page hydrates against the same JS as the English one. Each page's Markdown (`<page>.md`, served for "Copy page" and `text/plain` requests) is translated the same way, next to the page.
 
 The [`translate_docs.yml`](.github/workflows/translate_docs.yml) workflow runs it daily, incrementally:
 

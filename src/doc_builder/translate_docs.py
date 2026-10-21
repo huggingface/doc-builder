@@ -47,6 +47,8 @@ from .translate_md import translate_md
 from .translate_model import BILL_TO, TranslationFailed, Translator
 
 SOURCE_BUCKET = "hf://buckets/hf-doc-build/doc"
+# Where translations are published, in the same <library>/<version>/<language>/ layout.
+TRANSLATION_BUCKET = "hf://buckets/hf-doc-build/doc-translate"
 # Libraries and languages translated by the scheduled job.
 TRANSLATED_DOCS = {"hub": ["zh", "ja", "ko", "pt", "es", "fr", "vi", "id", "tr", "ru", "ar"]}
 # Copied unchanged from the English build: llms.txt files and redirects. Pages (`.html`) and their
