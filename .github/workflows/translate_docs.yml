@@ -1,0 +1,107 @@
+name: Translate documentation
+
+on:
+  schedule:
+    - cron: "35 7 * * *" # every day at 07:35, after the search engine population
+  # to run this workflow manually from the Actions tab
+  workflow_dispatch:
+    inputs:
+      libraries:
+        description: "Space-separated libraries (empty: every configured library)"
+        type: string
+      languages:
+        description: "Space-separated languages (empty: the languages configured per library)"
+        type: string
+      versions:
+        description: "Space-separated versions (empty: main and new releases)"
+        type: string
+      max_pages:
+        description: "Translate at most this many pages per version (empty: all)"
+        type: string
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
+permissions: {}
+
+jobs:
+  plan:
+    permissions:
+      contents: read
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.plan.outputs.matrix }}
+    steps:
+      - name: Checkout doc-builder
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+
+      - name: List library/language pairs
+        id: plan
+        env:
+          LIBRARIES: ${{ inputs.libraries }}
+          LANGUAGES: ${{ inputs.languages }}
+        # TRANSLATED_DOCS in translate_docs.py is the single source of truth
+        run: |
+          python3 - <<'EOF' >> "$GITHUB_OUTPUT"
+          import ast, json, os
+          source = open("src/doc_builder/translate_docs.py").read()
+          node = next(n for n in ast.parse(source).body if isinstance(n, ast.Assign) and n.targets[0].id == "TRANSLATED_DOCS")
+          configured = ast.literal_eval(node.value)
+          libraries = os.environ["LIBRARIES"].split() or list(configured)
+          pairs = [
+              {"library": library, "language": language}
+              for library in libraries
+              for language in (os.environ["LANGUAGES"].split() or configured.get(library, []))
+          ]
+          print("matrix=" + json.dumps(pairs))
+          EOF
+
+  translate:
+    needs: plan
+    if: needs.plan.outputs.matrix != '[]'
+    permissions:
+      contents: read
+    runs-on: ubuntu-latest
+    timeout-minutes: 360  # Set timeout to 6 hours; an interrupted language resumes on the next run
+    strategy:
+      fail-fast: false
+      # each language has its own state; parallelism is bounded by the inference provider's rate limits
+      max-parallel: 4
+      matrix:
+        include: ${{ fromJSON(needs.plan.outputs.matrix) }}
+    name: translate (${{ matrix.library }}, ${{ matrix.language }})
+    steps:
+      - name: Checkout doc-builder
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4  # v10.1.0
+        with:
+          version: "latest"
+
+      - name: Set up Python 3.10
+        run: uv python install 3.10
+
+      - name: Install doc-builder
+        run: |
+          uv sync --extra dev
+          # the bucket and inference APIs move fast; always use the latest client
+          uv pip install --upgrade huggingface_hub
+
+      - name: Translate
+        env:
+          # buckets: the same token as the search engine population; inference: its own token
+          HF_TOKEN: ${{ secrets.HF_EMBED_DATASETS_TOKEN }}
+          TRANSLATION_INFERENCE_TOKEN: ${{ secrets.TRANSLATION_INFERENCE_TOKEN }}
+          TRANSLATION_BUCKET: ${{ secrets.TRANSLATION_BUCKET }}
+          LIBRARY: ${{ matrix.library }}
+          LANGUAGE: ${{ matrix.language }}
+          VERSIONS: ${{ inputs.versions }}
+          MAX_PAGES: ${{ inputs.max_pages }}
+        run: |
+          args=(--libraries "$LIBRARY" --languages "$LANGUAGE")
+          if [ -n "$VERSIONS" ]; then args+=(--versions $VERSIONS); fi
+          if [ -n "$MAX_PAGES" ]; then args+=(--max_pages "$MAX_PAGES"); fi
+          # --no-sync keeps the upgraded huggingface_hub
+          uv run --no-sync doc-builder translate-docs "${args[@]}"

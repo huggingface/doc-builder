@@ -54,6 +54,10 @@ on:
         required: true
       token:
         required: false
+      translation_dispatch_token:
+        # GitHub token allowed to run workflows in huggingface/doc-builder (Actions: write).
+        # When set, translated docs are updated right after this build instead of on the daily schedule.
+        required: false
 
 permissions: {}
 
@@ -264,6 +268,29 @@ jobs:
           cd build_dir
           uvx --from huggingface_hub hf sync "./$PACKAGE_NAME" "hf://buckets/hf-doc-build/doc/$PACKAGE_NAME"
           cd ..
+
+      # Translations follow the English build without waiting for the daily run; never fails the build.
+      - name: Trigger translation
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ secrets.translation_dispatch_token }}
+          PACKAGE_NAME: ${{ env.package_name }}
+        run: |
+          if [ -z "$GH_TOKEN" ]; then
+            echo "No translation_dispatch_token; translations update on the daily schedule."
+            exit 0
+          fi
+          if ! python3 - "$PACKAGE_NAME" <<'EOF'
+          import ast, sys
+          source = open("doc-builder/src/doc_builder/translate_docs.py").read()
+          node = next(n for n in ast.parse(source).body if isinstance(n, ast.Assign) and n.targets[0].id == "TRANSLATED_DOCS")
+          sys.exit(0 if sys.argv[1] in ast.literal_eval(node.value) else 1)
+          EOF
+          then
+            echo "$PACKAGE_NAME is not translated."
+            exit 0
+          fi
+          gh workflow run translate_docs.yml --repo huggingface/doc-builder -f libraries="$PACKAGE_NAME"
 
       - name: Push to dataset (legacy, kept for rollback safety)
         env:
