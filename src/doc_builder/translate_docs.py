@@ -44,7 +44,7 @@ import yaml
 
 from . import translate_html as th
 from .translate_md import translate_md
-from .translate_model import TranslationFailed, Translator
+from .translate_model import BILL_TO, TranslationFailed, Translator
 
 SOURCE_BUCKET = "hf://buckets/hf-doc-build/doc"
 # Libraries and languages translated by the scheduled job.
@@ -415,6 +415,7 @@ def translate_library(
     max_pages=None,
     workers=8,
     complete=None,
+    bill_to=BILL_TO,
     stats=None,
 ):
     """Returns the `RunStats` of this library/language (accumulated into `stats` if given)."""
@@ -427,7 +428,7 @@ def translate_library(
     baseline = set(state.tracker["baseline_versions"])
     if versions is None:
         versions = ["main"] + [v for v in releases if v not in baseline and not state.version(v).get("frozen")]
-    translator = Translator(language, state.cache, complete=complete, token=token)
+    translator = Translator(language, state.cache, complete=complete, token=token, bill_to=bill_to)
     try:
         for version in versions:
             translate_version(source, target, state, translator, library, version, language, stats, max_pages, workers)

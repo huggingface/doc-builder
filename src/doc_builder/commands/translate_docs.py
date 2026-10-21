@@ -16,6 +16,7 @@ import argparse
 import os
 
 from doc_builder.translate_docs import MAX_ENGLISH_BLOCKS, SOURCE_BUCKET, TRANSLATED_DOCS, translate_docs
+from doc_builder.translate_model import BILL_TO
 
 
 def translate_docs_command(args):
@@ -45,6 +46,7 @@ def translate_docs_command(args):
         versions=args.versions,
         max_pages=args.max_pages,
         workers=args.workers,
+        bill_to=args.bill_to,
     )
     if stats.failed():
         raise SystemExit(
@@ -84,6 +86,12 @@ def translate_docs_command_parser(subparsers=None):
     parser.add_argument("--max_pages", type=int, help="Translate at most this many pages per version (for testing).")
     parser.add_argument("--workers", type=int, default=8, help="Concurrent model requests per page.")
     parser.add_argument("--hf_token", type=str, help="Token for the buckets (default: $HF_TOKEN).")
+    parser.add_argument(
+        "--bill_to",
+        type=str,
+        default=BILL_TO,
+        help=f"Organization billed for inference (X-HF-Bill-To). Default: {BILL_TO}; pass '' to bill the token's owner.",
+    )
     parser.add_argument(
         "--inference_token",
         type=str,

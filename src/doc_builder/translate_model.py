@@ -28,6 +28,9 @@ from .translate_html import check_markup, drop_invented_tags
 
 MODEL = "Qwen/Qwen3.8-27B"
 PROVIDER = "cerebras"
+# Inference usage is billed to this organization (`X-HF-Bill-To` header), not to the token's owner:
+# https://huggingface.co/docs/inference-providers/pricing#billing-for-team-and-enterprise-organizations
+BILL_TO = "huggingface"
 # Bump to invalidate every cached translation (e.g. after a prompt change).
 PROMPT_VERSION = 1
 # Doc language code (the folder name moon-landing serves) -> the language the model writes.
@@ -106,12 +109,12 @@ class Translator:
     updated in place; `complete` performs the chat completion (injectable for tests).
     """
 
-    def __init__(self, language, cache, complete=None, token=None):
+    def __init__(self, language, cache, complete=None, token=None, bill_to=BILL_TO):
         if language not in LANGUAGE_NAMES:
             raise ValueError(f"No translation settings for language {language!r}; add it to LANGUAGE_NAMES")
         self.language = language
         self.cache = cache
-        self._complete = complete or _inference_completion(token)
+        self._complete = complete or _inference_completion(token, bill_to)
         self.model_calls = 0
 
     def _system(self, kind):
@@ -198,11 +201,11 @@ class Translator:
         return self._ask(self._system("segments"), json.dumps(segments, ensure_ascii=False), check, response_format)
 
 
-def _inference_completion(token):
+def _inference_completion(token, bill_to=BILL_TO):
     from huggingface_hub import InferenceClient
     from huggingface_hub.errors import HfHubHTTPError
 
-    client = InferenceClient(provider=PROVIDER, token=token)
+    client = InferenceClient(provider=PROVIDER, token=token, bill_to=bill_to or None)
 
     def complete(messages, temperature=0, response_format=None):
         for attempt in range(8):

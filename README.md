@@ -338,7 +338,7 @@ The [`translate_docs.yml`](.github/workflows/translate_docs.yml) workflow runs i
 - A release is translated once, then frozen. Releases published before a language was enabled are not backfilled.
 - Translations are cached per paragraph, so an edited page only sends its edited paragraphs to the model.
 
-Libraries and languages are configured in `TRANSLATED_DOCS` (`src/doc_builder/translate_docs.py`). The workflow reads and writes the buckets with `HF_EMBED_DATASETS_TOKEN` (the search engine population's token) and calls the model with `TRANSLATION_INFERENCE_TOKEN`. To try it locally, write to a directory instead of a bucket:
+Libraries and languages are configured in `TRANSLATED_DOCS` (`src/doc_builder/translate_docs.py`). The workflow reads and writes the buckets with `HF_EMBED_DATASETS_TOKEN` (the search engine population's token) and calls the model with `TRANSLATION_INFERENCE_TOKEN`. Inference is billed to the `huggingface` organization ([`X-HF-Bill-To`](https://huggingface.co/docs/inference-providers/pricing#billing-for-team-and-enterprise-organizations); `--bill_to` to change it), so the token's owner must be a member of it. To try it locally, write to a directory instead of a bucket:
 
 ```bash
 TRANSLATION_INFERENCE_TOKEN=hf_... doc-builder translate-docs --libraries transformers --languages ja --bucket ./translations --max_pages 3
