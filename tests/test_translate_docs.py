@@ -25,6 +25,7 @@ import yaml
 from doc_builder import translate_html as th
 from doc_builder.translate_docs import RunStats, Store, translate_library, translate_page
 from doc_builder.translate_model import Translator
+from doc_builder.utils import write_llms_feeds
 
 DATA = Path(__file__).parent / "data" / "translate"
 LIB = "hydrationlib"
@@ -80,6 +81,8 @@ class TranslateDocsTester(unittest.TestCase):
         (en / "guides" / "old.html").write_text(page, encoding="utf-8")
         shutil.copy(DATA / "page.md", en / "index.md")
         shutil.copy(DATA / "_toctree.yml", en / "_toctree.yml")
+        # the English feeds, as `doc-builder build` writes them
+        write_llms_feeds(en, [("index.md", (DATA / "page.md").read_text(encoding="utf-8"))], package_name=LIB)
         (en / "_app").mkdir()
         (en / "_app" / "chunk.js").write_text("// asset")
 
@@ -134,6 +137,17 @@ class TranslateDocsTester(unittest.TestCase):
         before = self.ja("main", "index.html").read_bytes()
         self.assertEqual(self.run_job().calls, 0)
         self.assertEqual(self.ja("main", "index.html").read_bytes(), before)
+
+    def test_llms_feeds_are_rebuilt_from_the_translation(self):
+        self.run_job()
+        english = (self.source_dir / LIB / "main" / "en" / "llms.txt").read_text(encoding="utf-8")
+        self.assertIn(f"- [Hydration check](https://huggingface.co/docs/{LIB}/main/index.md)", english)
+        llms = self.ja("main", "llms.txt").read_text(encoding="utf-8")
+        # translated title, and the URL of the translated Markdown
+        self.assertIn(f"- [訳Hydration check](https://huggingface.co/docs/{LIB}/main/ja/index.md)", llms)
+        full = self.ja("main", "llms-full.txt").read_text(encoding="utf-8")
+        self.assertTrue(full.startswith(llms.rstrip("\n")))
+        self.assertIn("訳Text of the second option.", full)
 
     def test_edited_paragraph_only_translates_that_paragraph(self):
         self.run_job()
