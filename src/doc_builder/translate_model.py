@@ -21,7 +21,9 @@ Every answer is validated before it is used and cached by the exact request that
 
 import hashlib
 import json
+import random
 import re
+import threading
 import time
 
 from .translate_html import check_markup, drop_invented_tags
@@ -203,14 +205,38 @@ class Translator:
         return self._ask(self._system("segments"), json.dumps(segments, ensure_ascii=False), check, response_format)
 
 
+RETRY_STATUSES = (429, 500, 502, 503, 504)
+# With the backoff below, about 15 minutes of retries before a request fails the run.
+MAX_ATTEMPTS = 12
+
+
+def _retry_after(response):
+    """Seconds from a `Retry-After` header, if the provider sent one."""
+    try:
+        return min(300.0, max(0.0, float(response.headers.get("Retry-After"))))
+    except (AttributeError, TypeError, ValueError):
+        return None
+
+
 def _inference_completion(token, bill_to=BILL_TO):
     from huggingface_hub import InferenceClient
     from huggingface_hub.errors import HfHubHTTPError
 
     client = InferenceClient(provider=PROVIDER, token=token, bill_to=bill_to or None)
+    # When one request is rate-limited, every thread of the job waits, instead of each one
+    # hammering the provider until it runs out of retries.
+    pause = {"until": 0.0}
+    lock = threading.Lock()
+
+    def wait_for_pause():
+        with lock:
+            delay = pause["until"] - time.monotonic()
+        if delay > 0:
+            time.sleep(delay)
 
     def complete(messages, temperature=0, response_format=None):
-        for attempt in range(8):
+        for attempt in range(MAX_ATTEMPTS):
+            wait_for_pause()
             try:
                 response = client.chat_completion(
                     model=MODEL,
@@ -224,8 +250,12 @@ def _inference_completion(token, bill_to=BILL_TO):
                 return response.choices[0].message.content or ""
             except HfHubHTTPError as exc:
                 status = getattr(exc.response, "status_code", None)
-                if status not in (429, 500, 502, 503, 504) or attempt == 7:
+                if status not in RETRY_STATUSES or attempt == MAX_ATTEMPTS - 1:
                     raise
-                time.sleep(min(60, 2**attempt))
+                delay = _retry_after(exc.response) or min(120, 2**attempt) * random.uniform(0.5, 1.5)
+                if status == 429:
+                    with lock:
+                        pause["until"] = max(pause["until"], time.monotonic() + delay)
+                time.sleep(delay)
 
     return complete

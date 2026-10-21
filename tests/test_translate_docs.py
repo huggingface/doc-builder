@@ -22,6 +22,7 @@ from unittest import mock
 
 import yaml
 
+from doc_builder import translate_docs as translate_docs_module
 from doc_builder import translate_html as th
 from doc_builder.translate_docs import RunStats, Store, translate_library, translate_page
 from doc_builder.translate_model import Translator
@@ -184,6 +185,23 @@ class TranslateDocsTester(unittest.TestCase):
         self.assertEqual(model.calls, 1)  # only the failed block; the rest comes from the cache
         self.assertIn("訳Text of the second option.", self.ja("main", "index.html").read_text(encoding="utf-8"))
         self.assertTrue(self.tracker()["versions"]["main"]["files"]["index.html"]["complete"])
+
+    def test_finished_pages_are_kept_when_the_run_fails(self):
+        real = translate_docs_module.translate_page
+        calls = []
+
+        def second_page_fails(*args, **kwargs):
+            calls.append(1)
+            if len(calls) == 2:
+                raise RuntimeError("rate limited for too long")
+            return real(*args, **kwargs)
+
+        with mock.patch.object(translate_docs_module, "translate_page", second_page_fails):
+            with self.assertRaises(RuntimeError):
+                self.run_job()
+        # the first page was published and recorded, so the next run resumes after it
+        self.assertTrue(self.ja("main", "guides/old.html").exists())
+        self.assertIn("guides/old.html", self.tracker()["versions"]["main"]["files"])
 
     def test_page_built_before_hydration_fix_is_skipped(self):
         shutil.copy(DATA / "page_before_851.html", self.source_dir / LIB / "main" / "en" / "index.html")

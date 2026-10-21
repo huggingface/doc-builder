@@ -329,49 +329,56 @@ def translate_version(source, target, state, translator, library, version, langu
         pending.clear()
         state.save()
 
-    for i, path in enumerate(pages, 1):
-        page = source.read([f"{src_dir}/{path}"]).get(f"{src_dir}/{path}")
-        if page is None:
-            continue
-        text = page.decode("utf-8")
-        if not th.is_hydration_safe(th.split_page(text)[1]):
-            # built before huggingface/doc-builder#851: the translation would be replaced by English on load
-            print(f"  [{i}/{len(pages)}] {path}: built by an older doc-builder, waiting for a rebuild")
-            tracked[path] = {"source": english[path], "complete": False, "reason": "not hydration-safe"}
-            stats.waiting.append(f"{dst_dir}/{path}")
-            continue
-        html, (blocks, failed), title = translate_page(text, translator, library, version, language, workers)
-        entry = {"source": english[path], "complete": failed == 0, "title": list(title)}
-        if failed:
-            entry["english_blocks"] = failed
-            stats.incomplete.append((f"{dst_dir}/{path}", failed, blocks))
-        pending[path] = (html.encode(), entry)
-        stats.pages += 1
-        stats.blocks += blocks
-        stats.english_blocks += failed
-        print(f"  [{i}/{len(pages)}] {path}: {'ok' if not failed else f'{failed}/{blocks} blocks kept in English'}")
-        if len(pending) >= FLUSH_EVERY:
-            flush()
+    try:
+        for i, path in enumerate(pages, 1):
+            page = source.read([f"{src_dir}/{path}"]).get(f"{src_dir}/{path}")
+            if page is None:
+                continue
+            text = page.decode("utf-8")
+            if not th.is_hydration_safe(th.split_page(text)[1]):
+                # built before huggingface/doc-builder#851: the translation would be replaced by English on load
+                print(f"  [{i}/{len(pages)}] {path}: built by an older doc-builder, waiting for a rebuild")
+                tracked[path] = {"source": english[path], "complete": False, "reason": "not hydration-safe"}
+                stats.waiting.append(f"{dst_dir}/{path}")
+                continue
+            html, (blocks, failed), title = translate_page(text, translator, library, version, language, workers)
+            entry = {"source": english[path], "complete": failed == 0, "title": list(title)}
+            if failed:
+                entry["english_blocks"] = failed
+                stats.incomplete.append((f"{dst_dir}/{path}", failed, blocks))
+            pending[path] = (html.encode(), entry)
+            stats.pages += 1
+            stats.blocks += blocks
+            stats.english_blocks += failed
+            print(
+                f"  [{i}/{len(pages)}] {path}: {'ok' if not failed else f'{failed}/{blocks} blocks kept in English'}"
+            )
+            if len(pending) >= FLUSH_EVERY:
+                flush()
 
-    for i, path in enumerate(markdown, 1):
-        data = source.read([f"{src_dir}/{path}"]).get(f"{src_dir}/{path}")
-        if data is None:
-            continue
-        md, blocks, failed = translate_md(
-            data.decode("utf-8"), translator.translate_markup, library, version, language, workers
-        )
-        entry = {"source": english[path], "complete": failed == 0}
-        if failed:
-            entry["english_blocks"] = failed
-            stats.incomplete.append((f"{dst_dir}/{path}", failed, blocks))
-        pending[path] = (md.encode(), entry)
-        stats.pages += 1
-        stats.blocks += blocks
-        stats.english_blocks += failed
-        print(f"  [{i}/{len(markdown)}] {path}: {'ok' if not failed else f'{failed}/{blocks} blocks kept in English'}")
-        if len(pending) >= FLUSH_EVERY:
-            flush()
-    flush()
+        for i, path in enumerate(markdown, 1):
+            data = source.read([f"{src_dir}/{path}"]).get(f"{src_dir}/{path}")
+            if data is None:
+                continue
+            md, blocks, failed = translate_md(
+                data.decode("utf-8"), translator.translate_markup, library, version, language, workers
+            )
+            entry = {"source": english[path], "complete": failed == 0}
+            if failed:
+                entry["english_blocks"] = failed
+                stats.incomplete.append((f"{dst_dir}/{path}", failed, blocks))
+            pending[path] = (md.encode(), entry)
+            stats.pages += 1
+            stats.blocks += blocks
+            stats.english_blocks += failed
+            print(
+                f"  [{i}/{len(markdown)}] {path}: {'ok' if not failed else f'{failed}/{blocks} blocks kept in English'}"
+            )
+            if len(pending) >= FLUSH_EVERY:
+                flush()
+    finally:
+        # pages finished before an error (e.g. rate limiting that outlasts the retries) are kept
+        flush()
 
     if "_toctree.yml" in english:
         page_titles = {
