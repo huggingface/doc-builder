@@ -81,11 +81,16 @@ class TranslateDocsTester(unittest.TestCase):
         (en / "index.html").write_text(page, encoding="utf-8")
         (en / "guides" / "old.html").write_text(page, encoding="utf-8")
         shutil.copy(DATA / "page.md", en / "index.md")
+        shutil.copy(DATA / "page.md", en / "guides" / "old.md")
         shutil.copy(DATA / "_toctree.yml", en / "_toctree.yml")
-        # the English feeds, as `doc-builder build` writes them
-        write_llms_feeds(en, [("index.md", (DATA / "page.md").read_text(encoding="utf-8"))], package_name=LIB)
+        self.write_llms(version, ["index.md", "guides/old.md"])
         (en / "_app").mkdir()
         (en / "_app" / "chunk.js").write_text("// asset")
+
+    def write_llms(self, version, pages):
+        # the English feeds, as `doc-builder build` writes them: they list the pages of the build
+        md = (DATA / "page.md").read_text(encoding="utf-8")
+        write_llms_feeds(self.source_dir / LIB / version / "en", [(p, md) for p in pages], package_name=LIB)
 
     def write_versions(self, versions):
         (self.source_dir / LIB / "_versions.yml").write_text(yaml.safe_dump([{"version": v} for v in versions]))
@@ -173,6 +178,17 @@ class TranslateDocsTester(unittest.TestCase):
         self.assertFalse(self.ja("main", "guides/old.html").exists())
         self.assertNotIn("guides/old.html", self.tracker()["versions"]["main"]["files"])
 
+    def test_page_left_over_from_an_earlier_build_is_removed(self):
+        self.run_job()
+        self.assertTrue(self.ja("main", "guides/old.html").exists())
+        # a new build no longer has the page, but its files stay in the English bucket
+        self.write_llms("main", ["index.md"])
+        self.run_job()
+        self.assertFalse(self.ja("main", "guides/old.html").exists())
+        self.assertFalse(self.ja("main", "guides/old.md").exists())
+        self.assertNotIn("guides/old.html", self.tracker()["versions"]["main"]["files"])
+        self.assertEqual(self.stats.waiting, [])
+
     def test_new_release_is_translated_once(self):
         self.run_job()
         self.add_version("v1.1.0")
@@ -248,10 +264,10 @@ class TranslateDocsTester(unittest.TestCase):
 
     def test_incomplete_pages_are_reported(self):
         self.run_job(FakeModel(fail_on="Text of the second option."))
-        self.assertEqual(self.stats.english_blocks, 3)  # once per page and Markdown file that has the block
+        self.assertEqual(self.stats.english_blocks, 4)  # once per page and Markdown file that has the block
         self.assertEqual(
             {page for page, _, _ in self.stats.incomplete},
-            {f"{LIB}/main/ja/index.html", f"{LIB}/main/ja/guides/old.html", f"{LIB}/main/ja/index.md"},
+            {f"{LIB}/main/ja/{p}" for p in ["index.html", "guides/old.html", "index.md", "guides/old.md"]},
         )
         self.assertEqual(self.tracker()["versions"]["main"]["files"]["index.html"]["english_blocks"], 1)
         self.assertFalse(self.stats.failed())  # a few English blocks: published, retried, warned

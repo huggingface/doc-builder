@@ -299,6 +299,38 @@ def _strip_titles(node):
     return node
 
 
+def llms_pages(llms, pages):
+    """The `pages` (Markdown paths) an English llms.txt links to, in its order, and the base URL of its links."""
+    order, base = [], None
+    # a feed written on Windows has CRLF line endings
+    for url in re.findall(r"^- \[.*\]\((\S+)\)$", llms.replace("\r\n", "\n"), re.M):
+        # the longest match: ".../xet/index.md" also ends with "/index.md"
+        page = max((p for p in pages if url.endswith("/" + quote(p, safe="/"))), key=len, default=None)
+        if page and page not in order:
+            order.append(page)
+            base = base or url[: -len(quote(page, safe="/")) - 1]
+    return order, base
+
+
+def latest_build(source, src_dir, english):
+    """
+    `english` without the pages of earlier builds: the bucket keeps pages that were removed from the
+    docs (nothing deletes them, and they are never rebuilt). The English llms.txt lists the latest build's pages.
+    """
+    if "llms.txt" not in english:
+        return english
+    llms = source.read([f"{src_dir}/llms.txt"])[f"{src_dir}/llms.txt"].decode("utf-8")
+    listed, _ = llms_pages(llms, [p for p in english if p.endswith(".md")])
+    if not listed:
+        return english
+    built = {str(PurePosixPath(p).with_suffix("")) for p in listed}
+    return {
+        p: v
+        for p, v in english.items()
+        if PurePosixPath(p).suffix not in (".html", ".md") or str(PurePosixPath(p).with_suffix("")) in built
+    }
+
+
 def translate_llms_feeds(source, target, src_dir, dst_dir, library, english):
     """
     Rebuild llms.txt and llms-full.txt of a translated folder from its translated Markdown, with
@@ -308,17 +340,9 @@ def translate_llms_feeds(source, target, src_dir, dst_dir, library, english):
     from .utils import write_llms_feeds
 
     language = PurePosixPath(dst_dir).name
-    # a feed written on Windows has CRLF line endings
-    llms = source.read([f"{src_dir}/llms.txt"])[f"{src_dir}/llms.txt"].decode("utf-8").replace("\r\n", "\n")
+    llms = source.read([f"{src_dir}/llms.txt"])[f"{src_dir}/llms.txt"].decode("utf-8")
     pages = [p for p in english if p.endswith(".md")]
-    order, base = [], None
-    for url in re.findall(r"^- \[.*\]\((\S+)\)$", llms, re.M):
-        # the longest match: ".../xet/index.md" also ends with "/index.md"
-        page = max((p for p in pages if url.endswith("/" + quote(p, safe="/"))), key=len, default=None)
-        if page and page not in order:
-            order.append(page)
-            base = base or url[: -len(quote(page, safe="/")) - 1]
-    # the English feed lists the current pages; Markdown of removed pages lingers in the bucket
+    order, base = llms_pages(llms, pages)
     order = order or sorted(pages)
     translated = target.read(f"{dst_dir}/{p}" for p in order)
     # a page whose Markdown isn't translated yet (e.g. a partial run) keeps its English text
@@ -349,6 +373,8 @@ def translate_version(source, target, state, translator, library, version, langu
     if not english:
         print(f"{src_dir}: no English build, skipping")
         return
+    # pages left over from earlier builds are treated as removed: not translated, and their translation is deleted
+    english = latest_build(source, src_dir, english)
 
     def outdated(path):
         entry = tracked.get(path)
