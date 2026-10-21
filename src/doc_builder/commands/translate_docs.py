@@ -24,6 +24,11 @@ def translate_docs_command(args):
         raise ValueError(
             "Pass --bucket or set TRANSLATION_BUCKET (hf://buckets/<owner>/<name>, or a local directory)."
         )
+    inference_token = args.inference_token or os.environ.get("TRANSLATION_INFERENCE_TOKEN")
+    if not inference_token:
+        raise ValueError(
+            "Pass --inference_token or set TRANSLATION_INFERENCE_TOKEN (a token for HF Inference Providers)."
+        )
     libraries = args.libraries or list(TRANSLATED_DOCS)
     translations = {}
     for library in libraries:
@@ -33,6 +38,7 @@ def translate_docs_command(args):
         translations[library] = languages
     stats = translate_docs(
         bucket,
+        inference_token,
         source_url=args.source,
         translations=translations,
         token=args.hf_token or os.environ.get("HF_TOKEN"),
@@ -77,7 +83,12 @@ def translate_docs_command_parser(subparsers=None):
     )
     parser.add_argument("--max_pages", type=int, help="Translate at most this many pages per version (for testing).")
     parser.add_argument("--workers", type=int, default=8, help="Concurrent model requests per page.")
-    parser.add_argument("--hf_token", type=str, help="Token for HF Inference and the buckets (default: $HF_TOKEN).")
+    parser.add_argument("--hf_token", type=str, help="Token for the buckets (default: $HF_TOKEN).")
+    parser.add_argument(
+        "--inference_token",
+        type=str,
+        help="Token for HF Inference Providers (default: $TRANSLATION_INFERENCE_TOKEN). Required.",
+    )
 
     if subparsers is not None:
         parser.set_defaults(func=translate_docs_command)

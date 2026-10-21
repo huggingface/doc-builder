@@ -437,12 +437,15 @@ def translate_library(
     return stats
 
 
-def translate_docs(target_url, source_url=SOURCE_BUCKET, translations=None, token=None, **kwargs):
-    """Translate every configured library/language; returns the `RunStats` of the whole run."""
+def translate_docs(target_url, inference_token, source_url=SOURCE_BUCKET, translations=None, token=None, **kwargs):
+    """
+    Translate every configured library/language; returns the `RunStats` of the whole run.
+    `token` reads and writes the buckets; `inference_token` calls the model on HF Inference Providers.
+    """
     source, target = Store(source_url, token), Store(target_url, token)
     stats = RunStats()
     for library, languages in (translations or TRANSLATED_DOCS).items():
         for language in languages:
-            translate_library(source, target, library, language, token=token, stats=stats, **kwargs)
+            translate_library(source, target, library, language, token=inference_token, stats=stats, **kwargs)
     stats.report()
     return stats
