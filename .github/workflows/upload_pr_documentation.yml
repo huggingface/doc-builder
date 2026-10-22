@@ -133,16 +133,42 @@ jobs:
         env:
           WARNINGS_EMITTED: ${{ steps.warning-context.outputs.warnings_emitted }}
           HUB_DOCS_URL: ${{ steps.hfhub-context.outputs.hub_docs_url }}
+          MAX_PAGES: 20
         run: |
           warning_message=""
           if [ "$WARNINGS_EMITTED" = "true" ]; then
             warning_message=" Some warnings were emitted during doc build; check the workflow logs for details."
           fi
 
+          # The artifact comes from an untrusted (possibly fork) build: strictly validate each entry
+          pages=()
+          if [ -f ./build_dir/changed_pages ]; then
+            while IFS= read -r page; do
+              if [[ "$page" =~ ^[A-Za-z0-9_][A-Za-z0-9._/-]*$ && "$page" != *..* ]]; then
+                pages+=("$page")
+              elif [ -n "$page" ]; then
+                echo "Ignoring invalid changed page entry"
+              fi
+            done < ./build_dir/changed_pages
+            rm -f ./build_dir/changed_pages
+          fi
+
+          pages_message=""
+          if [ ${#pages[@]} -gt 0 ]; then
+            pages_message=$'\n\nPages changed in this PR:'
+            for page in "${pages[@]:0:$MAX_PAGES}"; do
+              pages_message+=$'\n'"- [\`${page}\`](${HUB_DOCS_URL}/${page})"
+            done
+            if [ ${#pages[@]} -gt "$MAX_PAGES" ]; then
+              pages_message+=$'\n'"- … and $(( ${#pages[@]} - MAX_PAGES )) more"
+            fi
+          fi
+
+          delimiter="EOF_$(openssl rand -hex 8)"
           {
-            echo "message<<EOF"
-            echo "The docs for this PR live [here](${HUB_DOCS_URL}). All of your documentation changes will be reflected on that endpoint. The docs are available until 30 days after the last update.${warning_message}"
-            echo "EOF"
+            echo "message<<$delimiter"
+            echo "The docs for this PR live [here](${HUB_DOCS_URL}). All of your documentation changes will be reflected on that endpoint. The docs are available until 30 days after the last update.${warning_message}${pages_message}"
+            echo "$delimiter"
           } >> $GITHUB_OUTPUT
 
       - name: Sync to bucket

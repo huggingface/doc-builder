@@ -257,6 +257,56 @@ jobs:
           echo "$COMMIT_SHA" > ./build_dir/commit_sha
           echo "$PR_NUMBER" > ./build_dir/pr_number
 
+      # List the doc pages touched by the PR so the upload workflow can link to them
+      # directly in the PR comment. Best-effort: never fails the build.
+      - name: Save changed pages
+        continue-on-error: true
+        env:
+          PACKAGE: ${{ inputs.package }}
+          PR_NUMBER: ${{ inputs.pr_number }}
+          LANGUAGES: ${{ inputs.languages }}
+          DOC_FOLDER: ${{ env.doc_folder }}
+          PACKAGE_NAME: ${{ env.package_name }}
+        run: |
+          : > ./build_dir/changed_pages
+          # DOC_FOLDER is relative to the workspace (e.g. `hub-docs/docs/hub/`); make it relative to the repo root
+          docs_prefix="${DOC_FOLDER#"$PACKAGE"/}"
+          docs_prefix="${docs_prefix%/}/"
+          built_root="./build_dir/${PACKAGE_NAME}/pr_${PR_NUMBER}"
+
+          # The checked out commit is the PR merge commit: its first parent is the base branch,
+          # so diffing against it gives the PR's changes (no API call / extra permission needed).
+          (
+            cd "$PACKAGE"
+            git fetch --quiet --depth=2 origin "$(git rev-parse HEAD)"
+            if [ "$(git rev-list --no-walk --count --merges HEAD)" != "1" ]; then
+              echo "HEAD is not a PR merge commit, skipping"
+              exit 0
+            fi
+            git diff --name-only --diff-filter=d HEAD^1 HEAD
+          ) > changed_files.txt
+
+          while IFS= read -r file; do
+            [[ "$file" == "$docs_prefix"* ]] || continue
+            rel="${file#"$docs_prefix"}"
+            case "$rel" in
+              *.md|*.mdx) ;;
+              *) continue ;;
+            esac
+            page="${rel%.*}"
+            # Without `languages`, docs are built under `en/`; with it, the first path component is already the language
+            if [ -z "$LANGUAGES" ]; then
+              page="en/$page"
+            fi
+            # Only keep pages that were actually built
+            if [ -f "$built_root/$page.html" ]; then
+              echo "$page" >> ./build_dir/changed_pages
+            fi
+          done < changed_files.txt
+
+          echo "Changed pages:"
+          cat ./build_dir/changed_pages
+
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
         with:
           name: doc-build-artifact
