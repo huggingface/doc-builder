@@ -53,7 +53,10 @@ SOURCE_BUCKET = "hf://buckets/hf-doc-build/doc"
 # Where translations are published, in the same <library>/<version>/<language>/ layout.
 TRANSLATION_BUCKET = "hf://buckets/hf-doc-build/doc-translate"
 # Libraries and languages translated by the scheduled job.
-TRANSLATED_DOCS = {"hub": ["zh", "ja", "ko", "pt", "es", "fr", "vi", "id", "tr", "ru", "ar"]}
+TRANSLATED_DOCS = {
+    "hub": ["zh", "ja", "ko", "pt", "es", "fr", "vi", "id", "tr", "ru", "ar"],
+    "transformers": ["zh", "ja", "ko", "pt", "es", "fr", "vi", "id", "tr", "ru", "ar"],
+}
 # Copied unchanged from the English build. Pages (`.html`) and their Markdown (`.md`, served for
 # "Copy page" and `Accept: text/plain`) are translated; llms.txt and llms-full.txt are rebuilt from
 # the translated Markdown.
