@@ -9,6 +9,7 @@
 	import IconAnthropic from "./IconAnthropic.svelte";
 	import IconMCP from "./IconMCP.svelte";
 	import IconHuggingChat from "./IconHuggingChat.svelte";
+	import { copyMenuStrings } from "./copyMenuStrings";
 
 	interface Props {
 		label?: string;
@@ -17,15 +18,16 @@
 		containerStyle?: string;
 	}
 
+	const isClient = typeof window !== "undefined";
+	const hasDocument = typeof document !== "undefined";
+	const t = copyMenuStrings(isClient ? window.location.pathname : "");
+
 	let {
-		label = "Copy page",
-		markdownDescription = "Copy page as Markdown for LLMs",
+		label = t.copyPage,
+		markdownDescription = t.copyPageDescription,
 		containerClass = "",
 		containerStyle = "",
 	}: Props = $props();
-
-	const isClient = typeof window !== "undefined";
-	const hasDocument = typeof document !== "undefined";
 
 	function resolveSourceUrl() {
 		if (!isClient || !window.location) return;
@@ -55,8 +57,8 @@
 
 	const externalOptions: ExternalOption[] = [
 		{
-			label: "Open in HuggingChat",
-			description: "Ask questions about this page",
+			label: t.openIn("HuggingChat"),
+			description: t.askQuestions,
 			icon: "huggingchat",
 			buildUrl: () => {
 				const encodedAttachment = encodeURIComponent(SOURCE_URL_MD);
@@ -67,8 +69,8 @@
 			},
 		},
 		{
-			label: "Open in ChatGPT",
-			description: "Ask questions about this page",
+			label: t.openIn("ChatGPT"),
+			description: t.askQuestions,
 			icon: "chatgpt",
 			buildUrl: () =>
 				encodedPrompt
@@ -76,15 +78,15 @@
 					: "https://chatgpt.com",
 		},
 		{
-			label: "Open in Claude",
-			description: "Ask questions about this page",
+			label: t.openIn("Claude"),
+			description: t.askQuestions,
 			icon: "claude",
 			buildUrl: () =>
 				encodedPrompt ? `https://claude.ai/new?q=${encodedPrompt}` : "https://claude.ai/new",
 		},
 		{
-			label: "Connect to MCP Client",
-			description: "Install MCP server on Cursor, VS Code, etc.",
+			label: t.connectMcp,
+			description: t.connectMcpDescription,
 			icon: "mcp",
 			buildUrl: () => "https://huggingface.co/mcp",
 		},
@@ -164,16 +166,27 @@
 	function openMenu() {
 		open = true;
 		ensurePromptAndUrl();
-		if (isClient && triggerEl) {
-			void tick().then(() => {
-				if (!triggerEl) return;
-				const rect = triggerEl.getBoundingClientRect();
-				const gutter = 10;
-				const minWidth = Math.max(rect.width + 80, 220);
-				const right = Math.max(window.innerWidth - rect.right, gutter);
-				menuStyle = `top:${rect.bottom + gutter}px;right:${right}px;min-width:${minWidth}px;`;
-			});
-		}
+		if (isClient) void positionMenu();
+	}
+
+	async function positionMenu() {
+		await tick();
+		if (!triggerEl) return;
+		const rect = triggerEl.getBoundingClientRect();
+		const gutter = 10;
+		const size = `min-width:${Math.max(rect.width + 80, 220)}px;max-width:${window.innerWidth - 2 * gutter}px;`;
+		menuStyle = `top:${rect.bottom + gutter}px;left:0;visibility:hidden;${size}`;
+		await tick();
+		if (!menuEl) return;
+		const width = menuEl.getBoundingClientRect().width;
+		// Open towards the page content: leftwards from the trigger's right edge, or rightwards from its
+		// left edge in right-to-left pages (where the trigger sits at the left, next to the sidebar).
+		const rtl = !!triggerEl.closest('[dir="rtl"]');
+		const left = Math.max(
+			gutter,
+			Math.min(rtl ? rect.left : rect.right - width, window.innerWidth - gutter - width)
+		);
+		menuStyle = `top:${rect.bottom + gutter}px;left:${left}px;${size}`;
 	}
 
 	function closeMenu() {
@@ -236,14 +249,14 @@
 			>
 				<IconCopy classNames="sm:size-3.5 size-3" />
 			</span>
-			<span>{copied ? "Copied" : label}</span>
+			<span dir="auto">{copied ? t.copied : label}</span>
 		</button>
 		<button
 			onclick={toggleMenu}
 			class="inline-flex items-center justify-center w-6 max-sm:w-5 h-7 max-sm:h-7 disabled:pointer-events-none text-sm text-gray-500 hover:text-gray-700 dark:hover:text-white rounded-r-md max-sm:rounded-r-sm border border-l transition border-gray-200 bg-white hover:shadow-inner dark:border-gray-850 dark:bg-gray-950 dark:text-gray-200 dark:hover:bg-gray-800"
 			aria-haspopup="menu"
 			aria-expanded={open}
-			aria-label={open ? "Close copy menu" : "Open copy menu"}
+			aria-label={open ? t.closeMenu : t.openMenu}
 		>
 			<IconCaret
 				classNames={`transition-transform text-gray-400 overflow-visible sm:size-3.5 size-3 ${
@@ -265,7 +278,7 @@
 			role="menu"
 			class="fixed z-50 backdrop-blur-xl rounded-xl max-h-[420px] overflow-y-auto p-1 border flex flex-col border-gray-200 bg-white dark:border-gray-850 dark:bg-gray-950 dark:text-gray-200"
 			style={menuStyle}
-			aria-label="Copy menu"
+			aria-label={t.menu}
 		>
 			<button
 				role="menuitem"
@@ -278,7 +291,7 @@
 				<div class="border border-gray-200 dark:border-gray-850 rounded-lg p-1.5">
 					<IconCopy classNames="w-4 h-4 shrink-0" />
 				</div>
-				<div class="flex flex-col px-1">
+				<div class="flex flex-col px-1" dir="auto">
 					<div class="text-sm font-medium text-gray-800 dark:text-gray-300 flex items-center gap-1">
 						{label}
 					</div>
@@ -299,12 +312,12 @@
 				<div class="border border-gray-200 dark:border-gray-850 rounded-lg p-1.5">
 					<IconCode classNames="w-4 h-4 shrink-0" />
 				</div>
-				<div class="flex flex-col px-1">
+				<div class="flex flex-col px-1" dir="auto">
 					<div class="text-sm font-medium text-gray-800 dark:text-gray-300 flex items-center gap-1">
-						View as Markdown
+						{t.viewMarkdown}
 						<IconArrowUpRight classNames="w-4 h-4 text-gray-500 dark:text-gray-300 shrink-0" />
 					</div>
-					<div class="text-xs text-gray-600 dark:text-gray-400">View this page as plain text</div>
+					<div class="text-xs text-gray-600 dark:text-gray-400">{t.viewMarkdownDescription}</div>
 				</div>
 			</a>
 
@@ -328,7 +341,7 @@
 							<IconMCP classNames="w-4 h-4 shrink-0" />
 						{/if}
 					</div>
-					<div class="flex flex-col px-1">
+					<div class="flex flex-col px-1" dir="auto">
 						<div
 							class="text-sm font-medium text-gray-800 dark:text-gray-200 flex items-center gap-1"
 						>
