@@ -174,14 +174,19 @@
 		if (!triggerEl) return;
 		const rect = triggerEl.getBoundingClientRect();
 		const gutter = 10;
-		const minWidth = Math.max(rect.width + 80, 220);
-		const right = Math.max(window.innerWidth - rect.right, gutter);
-		menuStyle = `top:${rect.bottom + gutter}px;right:${right}px;min-width:${minWidth}px;`;
+		const size = `min-width:${Math.max(rect.width + 80, 220)}px;max-width:${window.innerWidth - 2 * gutter}px;`;
+		menuStyle = `top:${rect.bottom + gutter}px;left:0;visibility:hidden;${size}`;
 		await tick();
-		// no room left of the trigger (it sits at the start of the line in right-to-left pages): open rightwards
-		if (menuEl && menuEl.getBoundingClientRect().left < gutter) {
-			menuStyle = `top:${rect.bottom + gutter}px;left:${Math.max(rect.left, gutter)}px;min-width:${minWidth}px;`;
-		}
+		if (!menuEl) return;
+		const width = menuEl.getBoundingClientRect().width;
+		// Open towards the page content: leftwards from the trigger's right edge, or rightwards from its
+		// left edge in right-to-left pages (where the trigger sits at the left, next to the sidebar).
+		const rtl = !!triggerEl.closest('[dir="rtl"]');
+		const left = Math.max(
+			gutter,
+			Math.min(rtl ? rect.left : rect.right - width, window.innerWidth - gutter - width)
+		);
+		menuStyle = `top:${rect.bottom + gutter}px;left:${left}px;${size}`;
 	}
 
 	function closeMenu() {
