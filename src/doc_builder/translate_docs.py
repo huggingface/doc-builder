@@ -27,6 +27,8 @@ Like `populate-search-engine --incremental`, every run diffs against a tracker:
   language was first translated are never backfilled.
 - Translations are cached per block, so a page whose HTML changed (e.g. after a doc-builder
   update that changes every page's asset hashes) only sends its edited paragraphs to the model.
+- A page with blocks kept in English (answers that failed validation) is retried on the next
+  runs, up to `MAX_TRIES` translations of the same English; after that only an English change retries it.
 
 State lives in the translation bucket under `.translation/<library>/<language>/`.
 """
@@ -62,6 +64,8 @@ COPIED_NAMES = {"_redirects.yml"}
 LLMS_FEEDS = ("llms.txt", "llms-full.txt")
 STATE_DIR = ".translation"
 FLUSH_EVERY = 20  # pages; bounds the work lost if a run is interrupted
+# Translations of the same English page while some of its blocks fail: past that, the model keeps getting them wrong.
+MAX_TRIES = 3
 # Above this share of blocks kept in English, a run fails: something is systematically wrong (model, prompt, provider).
 MAX_ENGLISH_BLOCKS = 0.1
 
@@ -378,7 +382,14 @@ def translate_version(source, target, state, translator, library, version, langu
 
     def outdated(path):
         entry = tracked.get(path)
-        return entry is None or entry["source"] != english[path] or not entry.get("complete", True)
+        if entry is None or entry["source"] != english[path]:
+            return True
+        return not entry.get("complete", True) and entry.get("tries", 0) < MAX_TRIES
+
+    def tries(path):
+        """Translations of the current English of `path` with blocks kept in English, this one included."""
+        previous = tracked.get(path)
+        return (previous.get("tries", 0) if previous and previous["source"] == english[path] else 0) + 1
 
     pages = sorted(p for p in english if p.endswith(".html") and outdated(p))
     markdown = sorted(p for p in english if p.endswith(".md") and outdated(p))
@@ -388,8 +399,10 @@ def translate_version(source, target, state, translator, library, version, langu
     if max_pages is not None:
         pages = pages[:max_pages]
         markdown = [p for p in markdown if p[: -len(".md")] + ".html" in pages]
+    given_up = sum(not outdated(p) and not tracked[p].get("complete", True) for p in english if p in tracked)
     print(
         f"{dst_dir}: {len(pages)} pages and {len(markdown)} Markdown files to translate, {len(copies)} files to copy"
+        + (f"; {given_up} keep English blocks after {MAX_TRIES} tries" if given_up else "")
     )
 
     copied = {path[len(src_dir) + 1 :]: data for path, data in source.read(f"{src_dir}/{p}" for p in copies).items()}
@@ -438,7 +451,7 @@ def translate_version(source, target, state, translator, library, version, langu
             html, (blocks, failed), title = translate_page(text, translator, library, version, language, workers)
             entry = {"source": english[path], "complete": failed == 0, "title": list(title)}
             if failed:
-                entry["english_blocks"] = failed
+                entry.update(english_blocks=failed, tries=tries(path))
                 stats.incomplete.append((f"{dst_dir}/{path}", failed, blocks))
             pending[path] = (html.encode(), entry)
             stats.pages += 1
@@ -459,7 +472,7 @@ def translate_version(source, target, state, translator, library, version, langu
             )
             entry = {"source": english[path], "complete": failed == 0}
             if failed:
-                entry["english_blocks"] = failed
+                entry.update(english_blocks=failed, tries=tries(path))
                 stats.incomplete.append((f"{dst_dir}/{path}", failed, blocks))
             pending[path] = (md.encode(), entry)
             stats.pages += 1
@@ -490,9 +503,8 @@ def translate_version(source, target, state, translator, library, version, langu
         target.delete(f"{dst_dir}/{p}" for p in stale)
     record["files"] = {p: e for p, e in tracked.items() if p in english}
 
-    done = all(e.get("complete", True) for e in record["files"].values()) and set(record["files"]) >= {
-        p for p in english if p.endswith(".html")
-    }
+    settled = all(e.get("complete", True) or e.get("tries", 0) >= MAX_TRIES for e in record["files"].values())
+    done = settled and set(record["files"]) >= {p for p in english if p.endswith(".html")}
     if version != "main" and done:
         record["frozen"] = True
         print(f"{dst_dir}: complete, frozen")
