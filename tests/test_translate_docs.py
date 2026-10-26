@@ -24,7 +24,7 @@ import yaml
 
 from doc_builder import translate_docs as translate_docs_module
 from doc_builder import translate_html as th
-from doc_builder.translate_docs import RunStats, Store, translate_library, translate_page
+from doc_builder.translate_docs import MAX_TRIES, RunStats, Store, translate_library, translate_page
 from doc_builder.translate_model import Translator
 from doc_builder.utils import write_llms_feeds
 
@@ -215,6 +215,31 @@ class TranslateDocsTester(unittest.TestCase):
         self.assertEqual(model.calls, 1)  # only the failed block; the rest comes from the cache
         self.assertIn("訳Text of the second option.", self.ja("main", "index.html").read_text(encoding="utf-8"))
         self.assertTrue(self.tracker()["versions"]["main"]["files"]["index.html"]["complete"])
+
+    def test_block_that_keeps_failing_waits_for_an_english_change(self):
+        fail = "Text of the second option."
+        calls = [self.run_job(FakeModel(fail_on=fail)).calls for _ in range(MAX_TRIES + 1)]
+        self.assertTrue(all(calls[:MAX_TRIES]))
+        self.assertEqual(calls[MAX_TRIES], 0)  # given up: the block stays English
+        self.assertEqual(self.tracker()["versions"]["main"]["files"]["index.html"]["tries"], MAX_TRIES)
+        en = self.source_dir / LIB / "main" / "en" / "index.html"
+        en.write_text(
+            en.read_text(encoding="utf-8").replace("Text of the first option.", "Edited first option."),
+            encoding="utf-8",
+        )
+        self.run_job()
+        self.assertIn("訳Text of the second option.", self.ja("main", "index.html").read_text(encoding="utf-8"))
+
+    def test_release_is_frozen_once_its_failing_blocks_are_given_up(self):
+        fail = "Text of the second option."
+        self.run_job(FakeModel(fail_on=fail))
+        self.add_version("v1.1.0")
+        self.write_versions(["main", "v1.1.0", "v1.0.0"])
+        for _ in range(MAX_TRIES - 1):
+            self.run_job(FakeModel(fail_on=fail))
+        self.assertFalse(self.tracker()["versions"]["v1.1.0"]["frozen"])
+        self.run_job(FakeModel(fail_on=fail))
+        self.assertTrue(self.tracker()["versions"]["v1.1.0"]["frozen"])
 
     def test_finished_pages_are_kept_when_the_run_fails(self):
         real = translate_docs_module.translate_page
