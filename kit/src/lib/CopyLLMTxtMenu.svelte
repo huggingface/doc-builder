@@ -44,6 +44,8 @@
 	let triggerEl: HTMLDivElement | null = $state(null);
 	let menuEl: HTMLDivElement | null = $state(null);
 	let menuStyle = $state("");
+	// in right-to-left pages, the menu is laid out right-to-left too
+	let rtl = $state(false);
 	let closeTimeout: ReturnType<typeof setTimeout> | null = null;
 	let sourceMarkdown: string | null = null;
 	let sourceFetchPromise: Promise<string> | null = null;
@@ -93,7 +95,7 @@
 	];
 
 	const baseMenuItemClass =
-		"cursor-pointer text-sm group relative w-full select-none outline-none flex items-center gap-1 px-1.5 py-1.5 rounded-xl text-left transition border-gray-200 bg-white hover:shadow-inner dark:border-gray-850 dark:bg-gray-950 dark:text-gray-200 dark:hover:bg-gray-800";
+		"cursor-pointer text-sm group relative w-full select-none outline-none flex items-center gap-1 px-1.5 py-1.5 rounded-xl text-start transition border-gray-200 bg-white hover:shadow-inner dark:border-gray-850 dark:bg-gray-950 dark:text-gray-200 dark:hover:bg-gray-800";
 
 	function ensurePromptAndUrl() {
 		if (encodedPrompt || !isClient) return;
@@ -165,6 +167,7 @@
 
 	function openMenu() {
 		open = true;
+		rtl = !!triggerEl?.closest('[dir="rtl"]');
 		ensurePromptAndUrl();
 		if (isClient) void positionMenu();
 	}
@@ -181,7 +184,6 @@
 		const width = menuEl.getBoundingClientRect().width;
 		// Open towards the page content: leftwards from the trigger's right edge, or rightwards from its
 		// left edge in right-to-left pages (where the trigger sits at the left, next to the sidebar).
-		const rtl = !!triggerEl.closest('[dir="rtl"]');
 		const left = Math.max(
 			gutter,
 			Math.min(rtl ? rect.left : rect.right - width, window.innerWidth - gutter - width)
@@ -276,6 +278,7 @@
 		<div
 			bind:this={menuEl}
 			role="menu"
+			dir={rtl ? "rtl" : undefined}
 			class="fixed z-50 backdrop-blur-xl rounded-xl max-h-[420px] overflow-y-auto p-1 border flex flex-col border-gray-200 bg-white dark:border-gray-850 dark:bg-gray-950 dark:text-gray-200"
 			style={menuStyle}
 			aria-label={t.menu}
@@ -291,7 +294,7 @@
 				<div class="border border-gray-200 dark:border-gray-850 rounded-lg p-1.5">
 					<IconCopy classNames="w-4 h-4 shrink-0" />
 				</div>
-				<div class="flex flex-col px-1" dir="auto">
+				<div class="flex flex-col flex-1 min-w-0 px-1" dir="auto">
 					<div class="text-sm font-medium text-gray-800 dark:text-gray-300 flex items-center gap-1">
 						{label}
 					</div>
@@ -312,7 +315,7 @@
 				<div class="border border-gray-200 dark:border-gray-850 rounded-lg p-1.5">
 					<IconCode classNames="w-4 h-4 shrink-0" />
 				</div>
-				<div class="flex flex-col px-1" dir="auto">
+				<div class="flex flex-col flex-1 min-w-0 px-1" dir="auto">
 					<div class="text-sm font-medium text-gray-800 dark:text-gray-300 flex items-center gap-1">
 						{t.viewMarkdown}
 						<IconArrowUpRight classNames="w-4 h-4 text-gray-500 dark:text-gray-300 shrink-0" />
@@ -341,7 +344,7 @@
 							<IconMCP classNames="w-4 h-4 shrink-0" />
 						{/if}
 					</div>
-					<div class="flex flex-col px-1" dir="auto">
+					<div class="flex flex-col flex-1 min-w-0 px-1" dir="auto">
 						<div
 							class="text-sm font-medium text-gray-800 dark:text-gray-200 flex items-center gap-1"
 						>
@@ -351,7 +354,7 @@
 							{option.description}
 						</div>
 					</div>
-					<IconArrowUpRight classNames="w-4 h-4 text-gray-500 dark:text-gray-300" />
+					<IconArrowUpRight classNames="w-4 h-4 text-gray-500 dark:text-gray-300 shrink-0" />
 				</a>
 			{/each}
 		</div>
