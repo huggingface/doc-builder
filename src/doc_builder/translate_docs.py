@@ -17,8 +17,8 @@ Machine-translate built English docs into other languages, incrementally.
 
 Reads the built English pages (`<library>/<version>/en/`) from the doc bucket served by
 huggingface.co and writes translated pages next to them, to `<library>/<version>/<language>/`, so
-moon-landing serves them like any other language. A language folder that already exists when the job
-first gets to it comes from the library's own docs build (a human translation) and is never touched.
+moon-landing serves them like any other language. A language folder with its own `_app/` comes from the
+library's own docs build (a human translation, the workflows' `languages` input) and is never touched.
 
 Like `populate-search-engine --incremental`, every run diffs against a tracker:
 
@@ -123,6 +123,17 @@ class Store:
 
     def _remote(self, rel):
         return f"{self.prefix}/{rel}" if self.prefix else rel
+
+    def has_folder(self, directory, name):
+        if not self.is_bucket:
+            return (self.root / directory / name).is_dir()
+        from huggingface_hub import BucketFolder
+
+        base = self._remote(directory).rstrip("/") + "/"
+        return any(
+            isinstance(entry, BucketFolder) and PurePosixPath(entry.path).name == name
+            for entry in self.api.list_bucket_tree(self.bucket_id, prefix=base, recursive=False)
+        )
 
     def walk(self, directory):
         """`{path relative to directory: content hash}`, skipping `_app` (SvelteKit assets)."""
@@ -379,13 +390,10 @@ def translate_version(source, target, state, translator, library, version, langu
         return
     # pages left over from earlier builds are treated as removed: not translated, and their translation is deleted
     english = latest_build(source, src_dir, english)
-    if not (record.get("owned") or tracked):
-        if target.walk(dst_dir):
-            print(f"{dst_dir}: built by the library's docs build, skipping")
-            return
-        # recorded before anything is written, so an interrupted first run still owns the folder
-        record["owned"] = True
-        state.save()
+    # docs builds ship their own JS in `_app/`; translations reuse the English one
+    if target.has_folder(dst_dir, "_app"):
+        print(f"{dst_dir}: built by the library's docs build, skipping")
+        return
 
     def outdated(path):
         entry = tracked.get(path)

@@ -190,13 +190,25 @@ class TranslateDocsTester(unittest.TestCase):
         self.assertEqual(self.stats.waiting, [])
 
     def test_language_built_by_the_docs_build_is_left_alone(self):
-        # a human translation, built into the same bucket by the library's own docs build
+        # a human translation, built into the same bucket by the library's own docs build (with its own JS)
         human = self.ja("main", "index.html")
-        human.parent.mkdir(parents=True)
+        (human.parent / "_app").mkdir(parents=True)
+        (human.parent / "_app" / "chunk.js").write_text("// asset")
         human.write_text("human translation", encoding="utf-8")
         self.assertEqual(self.run_job().calls, 0)
         self.assertEqual(human.read_text(encoding="utf-8"), "human translation")
         self.assertFalse(self.ja("main", "guides/old.html").exists())
+
+    def test_language_taken_over_by_the_docs_build_is_left_alone(self):
+        self.run_job()
+        # the library starts building this language itself
+        (self.target_dir / LIB / "main" / "ja" / "_app").mkdir()
+        (self.target_dir / LIB / "main" / "ja" / "_app" / "chunk.js").write_text("// asset")
+        self.ja("main", "index.html").write_text("human translation", encoding="utf-8")
+        en = self.source_dir / LIB / "main" / "en" / "index.html"
+        en.write_text(en.read_text(encoding="utf-8").replace("Text of the first option.", "Edited."), encoding="utf-8")
+        self.assertEqual(self.run_job().calls, 0)
+        self.assertEqual(self.ja("main", "index.html").read_text(encoding="utf-8"), "human translation")
 
     def test_only_files_the_job_wrote_are_deleted(self):
         self.run_job()
