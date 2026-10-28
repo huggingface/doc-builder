@@ -23,7 +23,12 @@ from .convert_rst_to_mdx import parse_rst_docstring, remove_indent
 
 _re_doctest_flags = re.compile(r"^(>>>.*\S)(\s+)# doctest:\s+\+[A-Z_]+\s*$", flags=re.MULTILINE)
 
-COPY_MENU_SNIPPET = '<CopyLLMTxtMenu containerStyle="float: right; margin-left: 10px; display: inline-flex; position: relative; z-index: 10;"></CopyLLMTxtMenu>\n\n'
+# Floats the page menus ("Copy page", notebooks) to the end of the heading line, in left-to-right and
+# right-to-left pages alike.
+FLOATED_MENU_STYLE = (
+    "float: inline-end; margin-inline-start: 10px; display: inline-flex; position: relative; z-index: 10;"
+)
+COPY_MENU_SNIPPET = f'<CopyLLMTxtMenu containerStyle="{FLOATED_MENU_STYLE}"></CopyLLMTxtMenu>\n\n'
 
 _FLOAT_RIGHT_BLOCK_PATTERN = re.compile(
     r"(<div\s+style=\"float:\s*right[^>]*>.*?</div>\s*)+$", flags=re.IGNORECASE | re.DOTALL
@@ -480,7 +485,7 @@ def process_md(text, page_info):
 
 
 def add_copy_menu_before_first_h1(text):
-    if "float: right; margin-left: 10px;" in text and "<CopyLLMTxtMenu" in text:
+    if "<CopyLLMTxtMenu" in text:
         return text
 
     front_matter_match = re.match(r"^---\n.*?\n---\n", text, flags=re.DOTALL)
