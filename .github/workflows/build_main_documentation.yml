@@ -23,8 +23,9 @@ on:
       # supply --not_python_module for HF Course
       additional_args:
         type: string
+      # Ignored: only English is built, other languages are machine-translated (translate_docs.yml).
+      # Still accepted so that callers passing it keep working.
       languages:
-      # supply space-separated language codes
         type: string
       package_path:
         type: string
@@ -247,15 +248,13 @@ jobs:
 
           if [ -z "$LANGUAGES" ];
           then
-            echo "languages not provided, defaulting to English"
             doc-builder build "$PACKAGE_NAME" "../$DOC_FOLDER" $args
           else
-            IFS=', ' read -r -a langs <<< "$LANGUAGES"
-            for lang in "${langs[@]}"
-            do
-                echo "Generating docs for language $lang"
-                doc-builder build "$PACKAGE_NAME" "../$DOC_FOLDER/$lang" $args --language "$lang"
-            done
+            # With `languages`, the docs are in one folder per language; only the English one is built.
+            if [ -n "$(tr ', ' '\n\n' <<< "$LANGUAGES" | grep -vx 'en' | grep -v '^$')" ]; then
+              echo "::warning::Only English is built (languages: $LANGUAGES); other languages are machine-translated by translate_docs.yml."
+            fi
+            doc-builder build "$PACKAGE_NAME" "../$DOC_FOLDER/en" $args --language en
           fi
 
           cd ..
