@@ -90,7 +90,7 @@ HF_DOC_BODY_END
         page_info = {"package_name": "transformers", "version": "main", "language": "en"}
         md_text = """<div style="float: right;">\n existing block\n</div>\n\n# Heading"""
         result = convert_md_to_mdx(md_text, page_info)
-        expected_body = """<CopyLLMTxtMenu containerStyle="float: right; margin-left: 10px; display: inline-flex; position: relative; z-index: 10;"></CopyLLMTxtMenu>
+        expected_body = """<CopyLLMTxtMenu containerStyle="float: inline-end; margin-inline-start: 10px; display: inline-flex; position: relative; z-index: 10;"></CopyLLMTxtMenu>
 
 <div style="float: right;">
  existing block
