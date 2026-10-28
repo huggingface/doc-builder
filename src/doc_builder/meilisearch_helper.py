@@ -18,20 +18,22 @@ from meilisearch.errors import MeilisearchApiError
 VECTOR_NAME = "embeddings"
 VECTOR_DIM = 768  # dim of https://huggingface.co/BAAI/bge-base-en-v1.5
 
-MeilisearchFunc = Callable[..., tuple[Client, TaskInfo]]
+MeilisearchFunc = Callable[..., tuple[Client, TaskInfo] | tuple[Client, TaskInfo, Callable[[], bool]]]
 
 
 def wait_for_task_completion(func: MeilisearchFunc) -> MeilisearchFunc:
     """
     Decorator to wait for MeiliSearch task completion
-    A function that is being decorated should return (Client, TaskInfo)
+    A function that is being decorated should return (Client, TaskInfo), or (Client, TaskInfo, is_applied) where
+    `is_applied` tells from the index whether the task's changes were applied
     """
 
     @wraps(func)
     def wrapped_meilisearch_function(*args, **kwargs):
         try:
             # Extract the Client and Task info from the function's return value
-            client, task = func(*args, **kwargs)
+            client, task, *rest = func(*args, **kwargs)
+            is_applied = rest[0] if rest else None
             index_id = args[1]  # Adjust this index based on where it actually appears in your arguments
             task_id = task.task_uid
 
@@ -45,6 +47,19 @@ def wait_for_task_completion(func: MeilisearchFunc) -> MeilisearchFunc:
                     # Reset retry count on successful API call
                     retry_count = 0
                 except (json.JSONDecodeError, MeilisearchApiError) as e:
+                    if isinstance(e, MeilisearchApiError) and e.code == "task_not_found":
+                        # The hub's search crons delete every finished task of the shared instance, so a task can
+                        # finish and be deleted between two polls: only the index can tell whether it succeeded
+                        if is_applied is None:
+                            raise Exception(
+                                f"Task {task_id} was deleted once finished, before its status was read"
+                            ) from e
+                        if not is_applied():
+                            raise Exception(
+                                f"Task {task_id} was deleted once finished, and its changes are not in the index"
+                            ) from e
+                        print(f"Task {task_id} was deleted once finished, its changes are in the index")
+                        return None
                     retry_count += 1
                     if retry_count <= max_retries:
                         print(
@@ -257,7 +272,7 @@ def delete_documents_from_db(client: Client, index_name: str, doc_ids: list[str]
     """Delete a batch of documents by ID from a Meilisearch index, and wait for the deletion to succeed."""
     index = client.index(index_name)
     task_info = index.delete_documents(doc_ids)
-    return client, task_info
+    return client, task_info, lambda: get_all_document_ids(client, index_name).isdisjoint(doc_ids)
 
 
 def sanitize_for_id(text):
@@ -311,7 +326,8 @@ def add_embeddings_to_db(client: Client, index_name: str, embeddings):
         }
         payload_data.append(document)
     task_info = index.add_documents(payload_data)
-    return client, task_info
+    doc_ids = {document["id"] for document in payload_data}
+    return client, task_info, lambda: doc_ids <= get_all_document_ids(client, index_name)
 
 
 def swap_indexes(
