@@ -79,6 +79,7 @@ export const mdsvexPreprocess = {
 			stretchTables = content.includes(STRETCH_TABLES_FLAG);
 			content = markKatex(content, markedKatex);
 			content = escapeSvelteConditionals(content);
+			content = separateCalloutMarkers(content);
 			const processed = await _mdsvexPreprocess.markup({ content, filename });
 			processed.code = renderKatex(processed.code, markedKatex);
 			processed.code = renderCode(processed.code, filename);
@@ -467,6 +468,66 @@ const _mdsvexPreprocess = mdsvex({
 		},
 	},
 });
+
+/**
+ * Put a GitHub-style callout marker (`> [!NOTE]`, `> [!TIP]`, ...) that sits
+ * alone on its line into its own paragraph by inserting an empty `>` line
+ * after it, e.g. `> [!NOTE]\n> [link](x) text` -> `> [!NOTE]\n>\n> [link](x) text`.
+ *
+ * The old remark-parse bundled with mdsvex accepts whitespace (including a
+ * line break) between `[text]` and `[label]` of a full reference link, which
+ * CommonMark forbids. So when the callout content starts with a link,
+ * `[!NOTE]\n[Managed accounts](...)` is parsed as a single full
+ * `linkReference` whose identifier is "managed accounts", and `onBlockquote`
+ * never sees the `!note` marker. As a standalone paragraph, the marker is
+ * parsed as a shortcut reference, which `onBlockquote` handles (and then drops
+ * the emptied paragraph). Lines inside fenced code blocks are left untouched.
+ * @param {string} code
+ */
+function separateCalloutMarkers(code) {
+	const REGEX_BLOCKQUOTE_PREFIX = /^[ \t]*(?:>[ \t]?)*/;
+	const REGEX_CALLOUT_MARKER = /^\[!(?:note|tip|important|warning|caution)\]\s*$/i;
+	const REGEX_FENCE = /^ {0,3}(`{3,}|~{3,})(.*)$/;
+	const lines = code.split("\n");
+	const out = [];
+	let openFence = null;
+	for (let i = 0; i < lines.length; i++) {
+		const line = lines[i];
+		out.push(line);
+		const prefix = line.match(REGEX_BLOCKQUOTE_PREFIX)[0];
+		const rest = line.slice(prefix.length);
+		const fence = rest.match(REGEX_FENCE);
+		if (openFence) {
+			if (
+				fence &&
+				fence[1][0] === openFence[0] &&
+				fence[1].length >= openFence.length &&
+				!fence[2].trim()
+			) {
+				openFence = null;
+			}
+			continue;
+		}
+		if (fence && !(fence[1][0] === "`" && fence[2].includes("`"))) {
+			openFence = fence[1];
+			continue;
+		}
+		const depth = (prefix.match(/>/g) || []).length;
+		if (!depth || !REGEX_CALLOUT_MARKER.test(rest.trim())) {
+			continue;
+		}
+		const next = lines[i + 1];
+		if (next === undefined) {
+			continue;
+		}
+		const nextPrefix = next.match(REGEX_BLOCKQUOTE_PREFIX)[0];
+		const nextDepth = (nextPrefix.match(/>/g) || []).length;
+		if (nextDepth === depth && next.slice(nextPrefix.length).trim()) {
+			out.push(prefix.trimEnd());
+		}
+	}
+	return out.join("\n");
+}
 
 function escapeSvelteConditionals(code) {
 	const REGEX_SVELTE_IF_START = /(\{#if[^}]+\})/g;
