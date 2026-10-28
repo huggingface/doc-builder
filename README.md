@@ -326,7 +326,7 @@ Note that each language directory has its own table of contents file `_toctree.y
 doc-builder build {package_name} {path_to_docs} --build_dir {build_dir} --language {lang_id}
 ```
 
-To automatically build the documentation for all languages via the GitHub Actions templates, simply provide the `languages` argument to your workflow, with a space-separated list of the languages you wish to build, e.g. `languages: en es`.
+The GitHub Actions template for main builds (`build_main_documentation.yml`) only builds English: other languages are machine-translated from the English build (see below). Passing its former `languages` input fails the build; point `path_to_docs` at the English docs (e.g. `docs/source/en`) instead.
 
 ### Machine-translated documentation
 
