@@ -23,8 +23,8 @@ on:
       # supply --not_python_module for HF Course
       additional_args:
         type: string
-      # Ignored: only English is built, other languages are machine-translated (translate_docs.yml).
-      # Still accepted so that callers passing it keep working.
+      # Not supported: passing it fails the build. Only English is built; other languages are
+      # machine-translated by translate_docs.yml. Kept only to fail with an explicit error.
       languages:
         type: string
       package_path:
@@ -74,6 +74,14 @@ jobs:
       UV_HTTP_TIMEOUT: 900 # max 15min to install deps (shouldn't take more than 5min)
 
     steps:
+      - name: Reject the languages input
+        if: inputs.languages != ''
+        env:
+          LANGUAGES: ${{ inputs.languages }}
+        run: |
+          echo "::error::The languages input is no longer supported (got: $LANGUAGES). Only English is built; other languages are machine-translated by doc-builder's translate_docs.yml. Remove it and point path_to_docs at the English docs (e.g. docs/source/en)."
+          exit 1
+
       # Check out this reusable workflow's own revision, so that the doc-builder
       # code installed below is exactly the revision the caller pinned in `uses:`.
       # Without an explicit `ref`, actions/checkout falls back to the default
@@ -234,7 +242,6 @@ jobs:
           PACKAGE: ${{ inputs.package }}
           VERSION_TAG_SUFFIX: ${{ inputs.version_tag_suffix }}
           NOTEBOOK_FOLDER: ${{ inputs.notebook_folder }}
-          LANGUAGES: ${{ inputs.languages }}
         run: |
           source .venv/bin/activate
           echo "doc_folder has been set to $DOC_FOLDER"
@@ -246,16 +253,7 @@ jobs:
             args="$args --notebook_dir ../notebook_dir"
           fi
 
-          if [ -z "$LANGUAGES" ];
-          then
-            doc-builder build "$PACKAGE_NAME" "../$DOC_FOLDER" $args
-          else
-            # With `languages`, the docs are in one folder per language; only the English one is built.
-            if [ -n "$(tr ', ' '\n\n' <<< "$LANGUAGES" | grep -vx 'en' | grep -v '^$')" ]; then
-              echo "::warning::Only English is built (languages: $LANGUAGES); other languages are machine-translated by translate_docs.yml."
-            fi
-            doc-builder build "$PACKAGE_NAME" "../$DOC_FOLDER/en" $args --language en
-          fi
+          doc-builder build "$PACKAGE_NAME" "../$DOC_FOLDER" $args
 
           cd ..
 
