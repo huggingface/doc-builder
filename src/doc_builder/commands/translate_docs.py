@@ -16,10 +16,9 @@ import argparse
 import os
 
 from doc_builder.translate_docs import (
+    DOC_BUCKET,
     MAX_ENGLISH_BLOCKS,
-    SOURCE_BUCKET,
     TRANSLATED_DOCS,
-    TRANSLATION_BUCKET,
     translate_docs,
 )
 from doc_builder.translate_model import BILL_TO
@@ -68,14 +67,14 @@ def translate_docs_command_parser(subparsers=None):
     parser.add_argument(
         "--bucket",
         type=str,
-        default=TRANSLATION_BUCKET,
-        help=f"Where translations are written: hf://buckets/<owner>/<name> or a local directory. Default: {TRANSLATION_BUCKET}.",
+        default=DOC_BUCKET,
+        help=f"Where translations are written: hf://buckets/<owner>/<name> or a local directory. Default: {DOC_BUCKET}.",
     )
     parser.add_argument(
         "--source",
         type=str,
-        default=SOURCE_BUCKET,
-        help=f"Bucket (or local directory) with the built English docs. Default: {SOURCE_BUCKET}.",
+        default=DOC_BUCKET,
+        help=f"Bucket (or local directory) with the built English docs. Default: {DOC_BUCKET}.",
     )
     parser.add_argument("--libraries", type=str, nargs="+", help=f"Default: {', '.join(TRANSLATED_DOCS)}.")
     parser.add_argument("--languages", type=str, nargs="+", help="Default: the languages configured per library.")

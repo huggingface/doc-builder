@@ -16,8 +16,9 @@
 Machine-translate built English docs into other languages, incrementally.
 
 Reads the built English pages (`<library>/<version>/en/`) from the doc bucket served by
-huggingface.co and writes translated pages to `<library>/<version>/<language>/` in a translation
-bucket, in the same layout, so moon-landing serves them like any other language.
+huggingface.co and writes translated pages next to them, to `<library>/<version>/<language>/`, so
+moon-landing serves them like any other language. A language folder that already exists when the job
+first gets to it comes from the library's own docs build (a human translation) and is never touched.
 
 Like `populate-search-engine --incremental`, every run diffs against a tracker:
 
@@ -30,7 +31,7 @@ Like `populate-search-engine --incremental`, every run diffs against a tracker:
 - A page with blocks kept in English (answers that failed validation) is retried on the next
   runs, up to `MAX_TRIES` translations of the same English; after that only an English change retries it.
 
-State lives in the translation bucket under `.translation/<library>/<language>/`.
+State lives in the doc bucket under `.translation/<library>/<language>/`.
 """
 
 import gzip
@@ -51,9 +52,8 @@ from . import translate_html as th
 from .translate_md import translate_md
 from .translate_model import BILL_TO, TranslationFailed, Translator
 
-SOURCE_BUCKET = "hf://buckets/hf-doc-build/doc"
-# Where translations are published, in the same <library>/<version>/<language>/ layout.
-TRANSLATION_BUCKET = "hf://buckets/hf-doc-build/doc-translate"
+# Served by huggingface.co: English builds are read from it, translations are written to it.
+DOC_BUCKET = "hf://buckets/hf-doc-build/doc"
 # Libraries and languages translated by the scheduled job.
 TRANSLATED_DOCS = {"hub": ["zh", "ja", "ko", "pt", "es", "fr", "vi", "id", "tr", "ru", "ar"]}
 # Copied unchanged from the English build. Pages (`.html`) and their Markdown (`.md`, served for
@@ -196,7 +196,7 @@ class Store:
 
 
 class LanguageState:
-    """Tracker and block cache of one library/language, stored in the translation bucket."""
+    """Tracker and block cache of one library/language, stored in the doc bucket."""
 
     def __init__(self, store, library, language):
         self.store = store
@@ -379,6 +379,13 @@ def translate_version(source, target, state, translator, library, version, langu
         return
     # pages left over from earlier builds are treated as removed: not translated, and their translation is deleted
     english = latest_build(source, src_dir, english)
+    if not (record.get("owned") or tracked):
+        if target.walk(dst_dir):
+            print(f"{dst_dir}: built by the library's docs build, skipping")
+            return
+        # recorded before anything is written, so an interrupted first run still owns the folder
+        record["owned"] = True
+        state.save()
 
     def outdated(path):
         entry = tracked.get(path)
@@ -495,9 +502,9 @@ def translate_version(source, target, state, translator, library, version, langu
             record["llms"] = digest
         record["llms_source"] = english["llms.txt"]
 
-    # Pages removed from the English build disappear from the translation too.
+    # Pages removed from the English build disappear from the translation too (only files this job wrote).
     existing = target.walk(dst_dir)
-    stale = sorted(p for p in existing if p not in english and p != "_toctree.yml")
+    stale = sorted(p for p in existing if p not in english and p in tracked)
     if stale:
         print(f"{dst_dir}: deleting {len(stale)} pages removed from the English build")
         target.delete(f"{dst_dir}/{p}" for p in stale)
@@ -550,7 +557,7 @@ def translate_library(
     return stats
 
 
-def translate_docs(target_url, inference_token, source_url=SOURCE_BUCKET, translations=None, token=None, **kwargs):
+def translate_docs(target_url, inference_token, source_url=DOC_BUCKET, translations=None, token=None, **kwargs):
     """
     Translate every configured library/language; returns the `RunStats` of the whole run.
     `token` reads and writes the buckets; `inference_token` calls the model on HF Inference Providers.

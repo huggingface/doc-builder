@@ -189,6 +189,22 @@ class TranslateDocsTester(unittest.TestCase):
         self.assertNotIn("guides/old.html", self.tracker()["versions"]["main"]["files"])
         self.assertEqual(self.stats.waiting, [])
 
+    def test_language_built_by_the_docs_build_is_left_alone(self):
+        # a human translation, built into the same bucket by the library's own docs build
+        human = self.ja("main", "index.html")
+        human.parent.mkdir(parents=True)
+        human.write_text("human translation", encoding="utf-8")
+        self.assertEqual(self.run_job().calls, 0)
+        self.assertEqual(human.read_text(encoding="utf-8"), "human translation")
+        self.assertFalse(self.ja("main", "guides/old.html").exists())
+
+    def test_only_files_the_job_wrote_are_deleted(self):
+        self.run_job()
+        other = self.ja("main", "notes.html")
+        other.write_text("written by someone else", encoding="utf-8")
+        self.run_job()
+        self.assertTrue(other.exists())
+
     def test_new_release_is_translated_once(self):
         self.run_job()
         self.add_version("v1.1.0")
