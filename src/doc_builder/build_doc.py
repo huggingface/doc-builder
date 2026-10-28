@@ -24,7 +24,7 @@ import yaml
 from tqdm import tqdm
 
 from .autodoc import autodoc_svelte, find_object_in_package, get_source_path, resolve_links_in_text
-from .convert_md_to_mdx import convert_md_to_mdx
+from .convert_md_to_mdx import FLOATED_MENU_STYLE, convert_md_to_mdx
 from .convert_rst_to_mdx import convert_rst_to_mdx, find_indent, is_empty_line
 from .convert_to_notebook import generate_notebooks_from_file
 from .utils import get_doc_config, read_doc_config
@@ -62,9 +62,9 @@ def resolve_open_in_colab(content, page_info):
     ]
     formatted_links = ['    {label: "' + key + '", value: "' + value + '"},' for key, value in links]
 
-    svelte_component = """<DocNotebookDropdown
-  containerStyle="float: right; margin-left: 10px; display: inline-flex; position: relative; z-index: 10;"
-  options={[
+    svelte_component = f"""<DocNotebookDropdown
+  containerStyle="{FLOATED_MENU_STYLE}"
+  options={{[
 """
     svelte_component += "\n".join(formatted_links)
     svelte_component += "\n]} />\n\n"
@@ -73,11 +73,11 @@ def resolve_open_in_colab(content, page_info):
     content = content.replace("[[open-in-colab]]\n", "").replace("[[open-in-colab]]", "")
 
     # Find CopyLLMTxtMenu and place DocNotebookDropdown right after it
-    # With float:right, elements appear right-to-left, so placing after makes CopyLLMTxtMenu rightmost
+    # Floated elements line up from the end of the line, so placing after makes CopyLLMTxtMenu the outermost
     copy_menu_match = re.search(r"<CopyLLMTxtMenu\s+containerStyle=[^>]+></CopyLLMTxtMenu>", content)
 
     if copy_menu_match:
-        # Insert after CopyLLMTxtMenu (so Copy page appears rightmost when floated)
+        # Insert after CopyLLMTxtMenu (so Copy page appears outermost when floated)
         insert_pos = copy_menu_match.end()
         # Remove any leading whitespace before CopyLLMTxtMenu and after it
         prefix = content[: copy_menu_match.start()].lstrip()
