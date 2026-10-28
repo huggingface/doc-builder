@@ -38,6 +38,8 @@ HF_DATASET_REPO = "hf-doc-build/doc-build"
 HF_DATASET_API_URL = f"https://huggingface.co/api/datasets/{HF_DATASET_REPO}/tree/main"
 HF_DATASET_BASE_URL = f"https://huggingface.co/datasets/{HF_DATASET_REPO}/resolve/main"
 HF_BLOG_API_URL = "https://huggingface.co/api/blog"
+HF_COMMUNITY_BLOG_API_URL = f"{HF_BLOG_API_URL}/community"
+BLOG_LISTING_ATTEMPTS = 3
 HF_BASE_URL = "https://huggingface.co"
 
 
@@ -379,44 +381,58 @@ def process_api_html_file(file_path: Path, library_name: str, base_dir: Path) ->
     return chunks
 
 
+def fetch_blog_listing(api_url: str, items_key: str) -> dict[str, str]:
+    """Titles by URL of every post in a paginated blog listing."""
+    # The community listing pages through live posts with an offset, so a post published or removed mid-crawl shifts
+    # the pages: crawl again until the pages add up to the announced total
+    for _attempt in range(BLOG_LISTING_ATTEMPTS):
+        first_response = httpx.get(api_url, params={"p": 0}, timeout=60, follow_redirects=True)
+        first_response.raise_for_status()
+        first_page = first_response.json()
+
+        total_items = first_page["numTotalItems"]
+        items_per_page = first_page["numItemsPerPage"]
+        if not isinstance(total_items, int) or not isinstance(items_per_page, int) or items_per_page <= 0:
+            raise ValueError("Blog API returned invalid pagination metadata")
+
+        pages = [first_page]
+        for page_index in range(1, ceil(total_items / items_per_page)):
+            response = httpx.get(
+                api_url,
+                params={"p": page_index},
+                timeout=60,
+                follow_redirects=True,
+            )
+            response.raise_for_status()
+            pages.append(response.json())
+
+        blog_items = []
+        for page in pages:
+            page_items = page.get(items_key)
+            if not isinstance(page_items, list):
+                raise ValueError(f"Blog API response is missing {items_key}")
+            blog_items.extend(page_items)
+
+        unique_items = {}
+        for item in blog_items:
+            title = item.get("title")
+            blog_url = item.get("url")
+            if not isinstance(title, str) or not title.strip() or not isinstance(blog_url, str) or not blog_url:
+                raise ValueError("Blog API returned an item without a title or URL")
+            unique_items[blog_url] = title.strip()
+
+        if len(unique_items) == total_items:
+            return unique_items
+
+    raise ValueError(f"Blog API returned {len(unique_items)} unique {items_key} items, expected {total_items}")
+
+
 def fetch_blog_chunks() -> list[Chunk]:
-    first_response = httpx.get(HF_BLOG_API_URL, params={"p": 0}, timeout=60, follow_redirects=True)
-    first_response.raise_for_status()
-    first_page = first_response.json()
-
-    total_items = first_page["numTotalItems"]
-    items_per_page = first_page["numItemsPerPage"]
-    if not isinstance(total_items, int) or not isinstance(items_per_page, int) or items_per_page <= 0:
-        raise ValueError("Blog API returned invalid pagination metadata")
-
-    pages = [first_page]
-    for page_index in range(1, ceil(total_items / items_per_page)):
-        response = httpx.get(
-            HF_BLOG_API_URL,
-            params={"p": page_index},
-            timeout=60,
-            follow_redirects=True,
-        )
-        response.raise_for_status()
-        pages.append(response.json())
-
-    blog_items = []
-    for page in pages:
-        all_blogs = page.get("allBlogs")
-        if not isinstance(all_blogs, list):
-            raise ValueError("Blog API response is missing allBlogs")
-        blog_items.extend(all_blogs)
-
-    unique_items = {}
-    for item in blog_items:
-        title = item.get("title")
-        blog_url = item.get("url")
-        if not isinstance(title, str) or not title.strip() or not isinstance(blog_url, str) or not blog_url:
-            raise ValueError("Blog API returned an item without a title or URL")
-        unique_items[blog_url] = title.strip()
-
-    if len(unique_items) != total_items:
-        raise ValueError(f"Blog API returned {len(unique_items)} unique allBlogs items, expected {total_items}")
+    # Official posts and community posts are disjoint listings, both served under /blog
+    unique_items = {
+        **fetch_blog_listing(HF_BLOG_API_URL, "allBlogs"),
+        **fetch_blog_listing(HF_COMMUNITY_BLOG_API_URL, "posts"),
+    }
 
     return [
         Chunk(

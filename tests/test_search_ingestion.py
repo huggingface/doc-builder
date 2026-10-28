@@ -28,7 +28,9 @@ from doc_builder.build_embeddings import (
 from doc_builder.commands import embeddings as embeddings_command
 from doc_builder.process_hf_docs import (
     HF_BLOG_API_URL,
+    HF_COMMUNITY_BLOG_API_URL,
     fetch_blog_chunks,
+    fetch_blog_listing,
     markdown_file_to_url,
     process_all_libraries,
     process_api_html_file,
@@ -180,9 +182,9 @@ class FakeResponse:
         return self.payload
 
 
-def test_fetch_blog_chunks_paginates_and_uses_only_all_blogs(monkeypatch):
+def test_fetch_blog_chunks_paginates_official_and_community_listings(monkeypatch):
     pages = {
-        0: {
+        (HF_BLOG_API_URL, 0): {
             "numTotalItems": 3,
             "numItemsPerPage": 2,
             "allBlogs": [
@@ -198,18 +200,26 @@ def test_fetch_blog_chunks_paginates_and_uses_only_all_blogs(monkeypatch):
                     "canonical": False,
                 },
             ],
-            "communityBlogPosts": [{"title": "Ignored community post", "url": "/blog/user/ignored"}],
+            "communityBlogPosts": [{"title": "Sidebar community post", "url": "/blog/user/sidebar"}],
         },
-        1: {
+        (HF_BLOG_API_URL, 1): {
             "allBlogs": [{"title": "Last post", "url": "/blog/last-post"}],
-            "communityBlogPosts": [{"title": "Also ignored", "url": "/blog/user/also-ignored"}],
+            "communityBlogPosts": [{"title": "Sidebar community post", "url": "/blog/user/sidebar"}],
+        },
+        (HF_COMMUNITY_BLOG_API_URL, 0): {
+            "numTotalItems": 2,
+            "numItemsPerPage": 1,
+            "posts": [{"title": "Community post", "url": "/blog/user/community-post", "canonical": False}],
+        },
+        (HF_COMMUNITY_BLOG_API_URL, 1): {
+            "posts": [{"title": "Older community post", "url": "/blog/other-user/older"}],
         },
     }
     calls = []
 
     def fake_get(url, *, params, timeout, follow_redirects):
         calls.append((url, params, timeout, follow_redirects))
-        return FakeResponse(pages[params["p"]])
+        return FakeResponse(pages[url, params["p"]])
 
     monkeypatch.setattr("doc_builder.process_hf_docs.httpx.get", fake_get)
 
@@ -218,18 +228,50 @@ def test_fetch_blog_chunks_paginates_and_uses_only_all_blogs(monkeypatch):
     assert calls == [
         (HF_BLOG_API_URL, {"p": 0}, 60, True),
         (HF_BLOG_API_URL, {"p": 1}, 60, True),
+        (HF_COMMUNITY_BLOG_API_URL, {"p": 0}, 60, True),
+        (HF_COMMUNITY_BLOG_API_URL, {"p": 1}, 60, True),
     ]
-    assert [chunk.text for chunk in chunks] == ["First post", "Namespaced post", "Last post"]
+    assert [chunk.text for chunk in chunks] == [
+        "First post",
+        "Namespaced post",
+        "Last post",
+        "Community post",
+        "Older community post",
+    ]
     assert [chunk.source_page_url for chunk in chunks] == [
         "https://huggingface.co/blog/first-post",
         "https://huggingface.co/blog/acme/namespaced-post",
         "https://huggingface.co/blog/last-post",
+        "https://huggingface.co/blog/user/community-post",
+        "https://huggingface.co/blog/other-user/older",
     ]
     assert all(chunk.package_name == "blog" for chunk in chunks)
     assert all(chunk.text == chunk.source_page_title for chunk in chunks)
     assert all(chunk.headings == [f"# {chunk.text}"] for chunk in chunks)
-    assert "Ignored community post" not in {chunk.text for chunk in chunks}
+    # The listing's sidebar only previews community posts, which come from the community listing
+    assert "Sidebar community post" not in {chunk.text for chunk in chunks}
     assert "This body must not be indexed." not in {chunk.text for chunk in chunks}
+
+
+def test_fetch_blog_listing_crawls_again_when_pages_shift(monkeypatch):
+    newest = {"title": "Newest", "url": "/blog/user/newest"}
+    oldest = {"title": "Oldest", "url": "/blog/user/oldest"}
+    # The post between them is removed after the first page is fetched, so "Oldest" moves up past the crawl
+    responses = iter(
+        [
+            {"numTotalItems": 3, "numItemsPerPage": 1, "posts": [newest]},
+            {"posts": [oldest]},
+            {"posts": []},
+            {"numTotalItems": 2, "numItemsPerPage": 1, "posts": [newest]},
+            {"posts": [oldest]},
+        ]
+    )
+    monkeypatch.setattr("doc_builder.process_hf_docs.httpx.get", lambda *args, **kwargs: FakeResponse(next(responses)))
+
+    assert fetch_blog_listing(HF_COMMUNITY_BLOG_API_URL, "posts") == {
+        "/blog/user/newest": "Newest",
+        "/blog/user/oldest": "Oldest",
+    }
 
 
 def test_fetch_blog_chunks_rejects_incomplete_results(monkeypatch):
