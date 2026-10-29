@@ -31,12 +31,20 @@ from doc_builder.convert_md_to_mdx import (
 
 
 class ConvertMdToMdxTester(unittest.TestCase):
+    def test_agent_prompt_is_available_and_preserves_content(self):
+        page_info = {"package_name": "transformers", "version": "main", "language": "en"}
+        prompt = "<AgentPrompt>\n\nBuild a **working** example.\n\n</AgentPrompt>"
+        result = convert_md_to_mdx(prompt, page_info)
+        self.assertIn('import AgentPrompt from "$lib/AgentPrompt.svelte";', result)
+        self.assertIn(prompt, result)
+
     def test_convert_md_to_mdx(self):
         page_info = {"package_name": "transformers", "version": "v4.10.0", "language": "fr"}
         md_text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit"
         expected_conversion = """<script lang="ts">
 import {onMount} from "svelte";
 import Tip from "$lib/Tip.svelte";
+import AgentPrompt from "$lib/AgentPrompt.svelte";
 import CopyLLMTxtMenu from "$lib/CopyLLMTxtMenu.svelte";
 import Youtube from "$lib/Youtube.svelte";
 import Docstring from "$lib/Docstring.svelte";

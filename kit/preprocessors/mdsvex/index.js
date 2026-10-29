@@ -358,7 +358,7 @@ function treeVisitor() {
 		}
 		const markerWithBang = identifier.startsWith("!") ? identifier.slice(1) : identifier;
 		const marker = markerWithBang.toLowerCase();
-		if (!TIP_MARKERS.includes(marker)) {
+		if (!TIP_MARKERS.includes(marker) && marker !== "agentprompt") {
 			return;
 		}
 
@@ -375,6 +375,10 @@ function treeVisitor() {
 		}
 
 		node.data = node.data || {};
+		if (marker === "agentprompt") {
+			node.data.hName = "AgentPrompt";
+			return;
+		}
 		node.data.hProperties = node.data.hProperties || {};
 		const existingClasses = node.data.hProperties.className || [];
 		const normalizedClasses = Array.isArray(existingClasses)
