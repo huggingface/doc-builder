@@ -66,6 +66,9 @@ STATE_DIR = ".translation"
 FLUSH_EVERY = 20  # pages; bounds the work lost if a run is interrupted
 # Translations of the same English page while some of its blocks fail: past that, the model keeps getting them wrong.
 MAX_TRIES = 3
+# Bump when `translate_html.find_blocks` finds prose it used to skip (2: raw HTML outside paragraphs and lists),
+# so translated pages are processed again; their other blocks come from the cache.
+BLOCKS_VERSION = 2
 # Above this share of blocks kept in English, a run fails: something is systematically wrong (model, prompt, provider).
 MAX_ENGLISH_BLOCKS = 0.1
 
@@ -399,6 +402,8 @@ def translate_version(source, target, state, translator, library, version, langu
         entry = tracked.get(path)
         if entry is None or entry["source"] != english[path]:
             return True
+        if path.endswith(".html") and entry.get("blocks", 1) < BLOCKS_VERSION:
+            return True
         return not entry.get("complete", True) and entry.get("tries", 0) < MAX_TRIES
 
     def tries(path):
@@ -464,7 +469,7 @@ def translate_version(source, target, state, translator, library, version, langu
                 stats.waiting.append(f"{dst_dir}/{path}")
                 continue
             html, (blocks, failed), title = translate_page(text, translator, library, version, language, workers)
-            entry = {"source": english[path], "complete": failed == 0, "title": list(title)}
+            entry = {"source": english[path], "complete": failed == 0, "title": list(title), "blocks": BLOCKS_VERSION}
             if failed:
                 entry.update(english_blocks=failed, tries=tries(path))
                 stats.incomplete.append((f"{dst_dir}/{path}", failed, blocks))

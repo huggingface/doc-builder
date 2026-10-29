@@ -24,7 +24,7 @@ import yaml
 
 from doc_builder import translate_docs as translate_docs_module
 from doc_builder import translate_html as th
-from doc_builder.translate_docs import MAX_TRIES, RunStats, Store, translate_library, translate_page
+from doc_builder.translate_docs import BLOCKS_VERSION, MAX_TRIES, RunStats, Store, translate_library, translate_page
 from doc_builder.translate_model import Translator
 from doc_builder.utils import write_llms_feeds
 
@@ -154,6 +154,18 @@ class TranslateDocsTester(unittest.TestCase):
         full = self.ja("main", "llms-full.txt").read_text(encoding="utf-8")
         self.assertTrue(full.startswith(llms.rstrip("\n")))
         self.assertIn("訳Text of the second option.", full)
+
+    def test_pages_from_an_older_block_detection_are_processed_again(self):
+        self.run_job()
+        tracker_path = self.target_dir / ".translation" / LIB / "ja" / "tracker.json"
+        tracker = self.tracker()
+        for entry in tracker["versions"]["main"]["files"].values():
+            entry.pop("blocks", None)
+        tracker_path.write_text(json.dumps(tracker))
+        model = self.run_job()
+        self.assertEqual(self.stats.pages, 2)  # the two HTML pages, not their Markdown
+        self.assertEqual(model.calls, 0)  # every block comes from the cache
+        self.assertEqual(self.tracker()["versions"]["main"]["files"]["index.html"]["blocks"], BLOCKS_VERSION)
 
     def test_edited_paragraph_only_translates_that_paragraph(self):
         self.run_job()

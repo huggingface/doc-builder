@@ -48,6 +48,23 @@ class TranslateHtmlTester(unittest.TestCase):
         # the docstring signature is code
         self.assertFalse(any(t.startswith("( text") for t in texts))
 
+    def test_raw_html_prose_outside_blocks(self):
+        # raw HTML in the docs (e.g. the Hub index's cards): no <p> or <li>, prose straight in divs and links
+        body = (
+            '<div class="grid"><div class="card"><div class="title"><svg><path d="M0"></path></svg> Subscriptions'
+            ' &amp; Plans</div> <a href="./pro">PRO subscription</a> <a href="./sso">Single Sign-On</a></div></div>'
+        )
+        blocks = th.find_blocks(body)
+        self.assertEqual(
+            [[n.raw.strip() for n in b.nodes] for b in blocks],
+            [["PRO subscription", "Single Sign-On"], ["Subscriptions &amp; Plans"]],
+        )
+        card, title = blocks
+        self.assertTrue(card.has_children)  # the title is translated on its own
+        self.assertTrue(th.is_static(body, title))
+        # component output, which hydration walks into, is not raw HTML
+        self.assertEqual(th.find_blocks('<div class="menu"><button><!---->Copy page<!----></button></div>'), [])
+
     def test_docstring_parameter_segments(self):
         _, body = th.split_page(read("page.html"))
         block = next(b for b in th.find_blocks(body) if "Whether to pad" in body[b.start : b.end])
