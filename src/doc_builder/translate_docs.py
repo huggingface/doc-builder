@@ -18,7 +18,8 @@ Machine-translate built English docs into other languages, incrementally.
 Reads the built English pages (`<library>/<version>/en/`) from the doc bucket served by
 huggingface.co and writes translated pages next to them, to `<library>/<version>/<language>/`, so
 moon-landing serves them like any other language. A language folder with its own `_app/` comes from the
-library's own docs build (a human translation, the workflows' `languages` input) and is never touched.
+library's own docs build (a human translation, the workflows' former `languages` input). Those of `main` are deleted
+before its first machine translation; any other is never touched.
 
 Like `populate-search-engine --incremental`, every run diffs against a tracker:
 
@@ -39,6 +40,7 @@ import hashlib
 import json
 import os
 import re
+import shutil
 import tempfile
 import warnings
 from concurrent.futures import ThreadPoolExecutor
@@ -127,16 +129,22 @@ class Store:
     def _remote(self, rel):
         return f"{self.prefix}/{rel}" if self.prefix else rel
 
-    def has_folder(self, directory, name):
+    def folders(self, directory):
+        """Names of the folders directly in `directory`."""
         if not self.is_bucket:
-            return (self.root / directory / name).is_dir()
+            root = self.root / directory
+            return sorted(p.name for p in root.iterdir() if p.is_dir()) if root.is_dir() else []
         from huggingface_hub import BucketFolder
 
         base = self._remote(directory).rstrip("/") + "/"
-        return any(
-            isinstance(entry, BucketFolder) and PurePosixPath(entry.path).name == name
+        return sorted(
+            PurePosixPath(entry.path).name
             for entry in self.api.list_bucket_tree(self.bucket_id, prefix=base, recursive=False)
+            if isinstance(entry, BucketFolder)
         )
+
+    def has_folder(self, directory, name):
+        return name in self.folders(directory)
 
     def walk(self, directory):
         """`{path relative to directory: content hash}`, skipping `_app` (SvelteKit assets)."""
@@ -207,6 +215,24 @@ class Store:
             return
         for i in range(0, len(paths), 500):
             self.api.batch_bucket_files(self.bucket_id, delete=[self._remote(p) for p in paths[i : i + 500]])
+
+    def delete_folder(self, directory):
+        """Delete `directory` and everything in it, `_app` included. Returns the number of files deleted."""
+        if not self.is_bucket:
+            root = self.root / directory
+            count = sum(p.is_file() for p in root.rglob("*"))
+            shutil.rmtree(root, ignore_errors=True)
+            return count
+        from huggingface_hub import BucketFolder
+
+        base = self._remote(directory).rstrip("/") + "/"
+        paths = [
+            f"{directory}/{entry.path[len(base) :]}"
+            for entry in self.api.list_bucket_tree(self.bucket_id, prefix=base, recursive=True)
+            if not isinstance(entry, BucketFolder)
+        ]
+        self.delete(paths)
+        return len(paths)
 
 
 class LanguageState:
@@ -382,17 +408,35 @@ def translate_llms_feeds(source, target, src_dir, dst_dir, library, english):
         }
 
 
+def clear_docs_build_translations(target, library, language):
+    """
+    Before the first machine translation of `<library>/main` into `language`, delete the translations of `main` built
+    by the library's docs build: `main` builds no longer update them (huggingface/doc-builder#870), and they would
+    clash with the machine translation, in its folder or next to it (e.g. `cn` or `zh-CN` next to `zh`).
+    """
+    main = f"{library}/main"
+    # the other configured languages run in parallel jobs, each clearing its own folder
+    others = {"en", *TRANSLATED_DOCS.get(library, ())} - {language}
+    for name in target.folders(main):
+        # nothing in this language's folder is ours yet; elsewhere, only folders of a docs build (never a translation)
+        if name == language or (name not in others and target.has_folder(f"{main}/{name}", "_app")):
+            count = target.delete_folder(f"{main}/{name}")
+            print(f"{main}/{name}: deleted the translation built by the docs build ({count} files)")
+
+
 def translate_version(source, target, state, translator, library, version, language, stats, max_pages=None, workers=8):
     """Bring `<library>/<version>/<language>` in the target up to date with the English build."""
     src_dir, dst_dir = f"{library}/{version}/en", f"{library}/{version}/{language}"
-    record = state.version(version)
-    tracked = record["files"]
     english = source.walk(src_dir)
     if not english:
         print(f"{src_dir}: no English build, skipping")
         return
     # pages left over from earlier builds are treated as removed: not translated, and their translation is deleted
     english = latest_build(source, src_dir, english)
+    if version == "main" and version not in state.tracker["versions"]:
+        clear_docs_build_translations(target, library, language)
+    record = state.version(version)
+    tracked = record["files"]
     # docs builds ship their own JS in `_app/`; translations reuse the English one
     if target.has_folder(dst_dir, "_app"):
         print(f"{dst_dir}: built by the library's docs build, skipping")
