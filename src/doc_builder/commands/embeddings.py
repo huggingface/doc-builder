@@ -15,6 +15,7 @@
 
 import argparse
 import os
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 from doc_builder import clean_meilisearch
@@ -39,7 +40,17 @@ def process_hf_docs_command(args):
     With --incremental: only indexes new/changed pages and deletes stale ones,
     using the HF Hub tracker (hf-doc-build/doc-builder-embeddings-tracker) to
     compare current IDs against what is already in Meilisearch.
+
+    With --recent-blog-days: only fetches the blog posts of the last days, and keeps
+    the older ones in the index until a run without it.
     """
+
+    blog_published_after = None
+    if args.recent_blog_days is not None:
+        # A full rebuild replaces the index, which would then only hold the recent posts
+        if not args.incremental:
+            raise ValueError("--recent-blog-days requires --incremental")
+        blog_published_after = datetime.now(timezone.utc) - timedelta(days=args.recent_blog_days)
 
     print("Processing documentation from HF doc-build dataset...")
 
@@ -49,6 +60,7 @@ def process_hf_docs_command(args):
         excerpts_max_length=args.excerpt_length,
         libraries=args.libraries if args.libraries else None,
         skip_download=args.skip_download,
+        blog_published_after=blog_published_after,
     )
 
     # Collect all chunks
@@ -177,8 +189,12 @@ def _run_incremental(args, all_chunks, hf_ie_url, hf_ie_token, meilisearch_key, 
         existing_ids_in_scope = {doc_id for doc_id in existing_ids if doc_id.startswith(lib_prefixes)}
     else:
         existing_ids_in_scope = existing_ids
+    # Fetching only the recent blog posts can't tell which older ones were removed: a full fetch deletes them
+    if args.recent_blog_days is not None:
+        blog_prefix = sanitize_for_id("blog") + "-"
+        existing_ids_in_scope = {doc_id for doc_id in existing_ids_in_scope if not doc_id.startswith(blog_prefix)}
 
-    to_add_ids = new_ids - existing_ids_in_scope
+    to_add_ids = new_ids - existing_ids
     to_delete_ids = existing_ids_in_scope - new_ids
 
     print(f"\nExisting IDs in scope : {len(existing_ids_in_scope)}")
@@ -376,6 +392,16 @@ def embeddings_command_parser(subparsers=None):
             "(hf-doc-build/doc-builder-embeddings-tracker) to diff against the current Meilisearch state. "
             "Uploads go directly to the main index (no temp-index swap needed). "
             "Run migrations/export_meili_ids_to_hf.py once to bootstrap the tracker."
+        ),
+    )
+    parser_process_hf_docs.add_argument(
+        "--recent-blog-days",
+        type=int,
+        default=None,
+        help=(
+            "Only fetch the blog posts published in the last N days, instead of every post. "
+            "Older blog posts stay in the index: removed or renamed ones are only deleted by a run without this flag. "
+            "Requires --incremental."
         ),
     )
     parser_process_hf_docs.add_argument(
