@@ -59,6 +59,7 @@ DOC_BUCKET = "hf://buckets/hf-doc-build/doc"
 # Libraries and languages translated by the scheduled job.
 TRANSLATED_DOCS = {
     "hub": ["zh", "ja", "ko", "pt", "es", "fr", "vi", "id", "tr", "ru", "ar"],
+    "huggingface_hub": ["zh", "ja", "ko", "pt", "es", "fr", "vi", "id", "tr", "ru", "ar"],
     "lerobot": ["zh", "ja", "ko", "pt", "es", "fr", "vi", "id", "tr", "ru", "ar"],
 }
 # Copied unchanged from the English build. Pages (`.html`) and their Markdown (`.md`, served for
