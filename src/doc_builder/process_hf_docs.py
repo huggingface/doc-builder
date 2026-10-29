@@ -23,6 +23,7 @@ import json
 import os
 import tempfile
 import zipfile
+from datetime import datetime
 from math import ceil
 from pathlib import Path
 from urllib.parse import urljoin
@@ -381,58 +382,84 @@ def process_api_html_file(file_path: Path, library_name: str, base_dir: Path) ->
     return chunks
 
 
+def fetch_blog_page(api_url: str, page_index: int, items_key: str) -> tuple[dict, list[dict]]:
+    """A page of a paginated blog listing, and its posts."""
+    response = httpx.get(api_url, params={"p": page_index}, timeout=60, follow_redirects=True)
+    response.raise_for_status()
+    page = response.json()
+
+    page_items = page.get(items_key)
+    if not isinstance(page_items, list):
+        raise ValueError(f"Blog API response is missing {items_key}")
+    for item in page_items:
+        title = item.get("title")
+        blog_url = item.get("url")
+        if not isinstance(title, str) or not title.strip() or not isinstance(blog_url, str) or not blog_url:
+            raise ValueError("Blog API returned an item without a title or URL")
+    return page, page_items
+
+
+def get_blog_pagination(first_page: dict) -> tuple[int, int]:
+    """The number of posts and of pages announced by the first page of a blog listing."""
+    total_items = first_page["numTotalItems"]
+    items_per_page = first_page["numItemsPerPage"]
+    if not isinstance(total_items, int) or not isinstance(items_per_page, int) or items_per_page <= 0:
+        raise ValueError("Blog API returned invalid pagination metadata")
+    return total_items, ceil(total_items / items_per_page)
+
+
+def get_published_at(blog_item: dict) -> datetime:
+    published_at = blog_item.get("publishedAt")
+    if not isinstance(published_at, str):
+        raise ValueError("Blog API returned an item without a publication date")
+    # datetime.fromisoformat only reads the "Z" suffix from Python 3.11
+    return datetime.fromisoformat(published_at.replace("Z", "+00:00"))
+
+
 def fetch_blog_listing(api_url: str, items_key: str) -> dict[str, str]:
     """Titles by URL of every post in a paginated blog listing."""
     # The community listing pages through live posts with an offset, so a post published or removed mid-crawl shifts
     # the pages: crawl again until the pages add up to the announced total
     for _attempt in range(BLOG_LISTING_ATTEMPTS):
-        first_response = httpx.get(api_url, params={"p": 0}, timeout=60, follow_redirects=True)
-        first_response.raise_for_status()
-        first_page = first_response.json()
+        first_page, blog_items = fetch_blog_page(api_url, 0, items_key)
+        total_items, num_pages = get_blog_pagination(first_page)
+        for page_index in range(1, num_pages):
+            blog_items.extend(fetch_blog_page(api_url, page_index, items_key)[1])
 
-        total_items = first_page["numTotalItems"]
-        items_per_page = first_page["numItemsPerPage"]
-        if not isinstance(total_items, int) or not isinstance(items_per_page, int) or items_per_page <= 0:
-            raise ValueError("Blog API returned invalid pagination metadata")
-
-        pages = [first_page]
-        for page_index in range(1, ceil(total_items / items_per_page)):
-            response = httpx.get(
-                api_url,
-                params={"p": page_index},
-                timeout=60,
-                follow_redirects=True,
-            )
-            response.raise_for_status()
-            pages.append(response.json())
-
-        blog_items = []
-        for page in pages:
-            page_items = page.get(items_key)
-            if not isinstance(page_items, list):
-                raise ValueError(f"Blog API response is missing {items_key}")
-            blog_items.extend(page_items)
-
-        unique_items = {}
-        for item in blog_items:
-            title = item.get("title")
-            blog_url = item.get("url")
-            if not isinstance(title, str) or not title.strip() or not isinstance(blog_url, str) or not blog_url:
-                raise ValueError("Blog API returned an item without a title or URL")
-            unique_items[blog_url] = title.strip()
-
+        unique_items = {item["url"]: item["title"].strip() for item in blog_items}
         if len(unique_items) == total_items:
             return unique_items
 
     raise ValueError(f"Blog API returned {len(unique_items)} unique {items_key} items, expected {total_items}")
 
 
-def fetch_blog_chunks() -> list[Chunk]:
+def fetch_recent_blog_listing(api_url: str, items_key: str, published_after: datetime) -> dict[str, str]:
+    """Titles by URL of the posts published after a date in a paginated blog listing."""
+    first_page, page_items = fetch_blog_page(api_url, 0, items_key)
+    _total_items, num_pages = get_blog_pagination(first_page)
+
+    recent_items = {}
+    page_index = 0
+    while True:
+        for item in page_items:
+            if get_published_at(item) > published_after:
+                recent_items[item["url"]] = item["title"].strip()
+        page_index += 1
+        # Listings go from the newest post to the oldest, except for a post pinned to the top of the first page
+        if page_index >= num_pages or not page_items or get_published_at(page_items[-1]) <= published_after:
+            return recent_items
+        page_items = fetch_blog_page(api_url, page_index, items_key)[1]
+
+
+def fetch_blog_chunks(published_after: datetime | None = None) -> list[Chunk]:
+    """Chunks for the titles of every blog post, or of the posts published after a date."""
+    unique_items = {}
     # Official posts and community posts are disjoint listings, both served under /blog
-    unique_items = {
-        **fetch_blog_listing(HF_BLOG_API_URL, "allBlogs"),
-        **fetch_blog_listing(HF_COMMUNITY_BLOG_API_URL, "posts"),
-    }
+    for api_url, items_key in [(HF_BLOG_API_URL, "allBlogs"), (HF_COMMUNITY_BLOG_API_URL, "posts")]:
+        if published_after is None:
+            unique_items.update(fetch_blog_listing(api_url, items_key))
+        else:
+            unique_items.update(fetch_recent_blog_listing(api_url, items_key, published_after))
 
     return [
         Chunk(
@@ -525,6 +552,7 @@ def process_all_libraries(
     excerpts_max_length: int = 1000,
     libraries: list[str] | None = None,
     skip_download: bool = False,
+    blog_published_after: datetime | None = None,
 ) -> dict:
     """
     Process all libraries from the HF doc-build dataset.
@@ -534,6 +562,7 @@ def process_all_libraries(
         excerpts_max_length: Maximum length of each excerpt
         libraries: List of specific libraries to process (None = all)
         skip_download: Skip download if files already exist
+        blog_published_after: Only fetch the blog posts published after this date (None = every post)
 
     Returns:
         Dictionary mapping library names to their chunks
@@ -567,8 +596,11 @@ def process_all_libraries(
         results[library_name] = chunks
 
     if include_blog:
-        print("\n📝 Processing blog titles")
-        results["blog"] = fetch_blog_chunks()
+        if blog_published_after is None:
+            print("\n📝 Processing blog titles")
+        else:
+            print(f"\n📝 Processing titles of blog posts published after {blog_published_after.isoformat()}")
+        results["blog"] = fetch_blog_chunks(published_after=blog_published_after)
 
     # Summary
     print("\n" + "=" * 80)

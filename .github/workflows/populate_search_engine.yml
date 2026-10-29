@@ -2,9 +2,15 @@ name: Populate Search Engine
 
 on:
   schedule:
-    - cron: "5 7 * * *" # every day at 07:05
+    - cron: "5 7 * * 1-6" # Monday to Saturday at 07:05, with the blog posts of the last two days
+    - cron: "5 7 * * 0" # Sunday at 07:05, with every blog post, which also deletes removed and renamed posts
   # to run this workflow manually from the Actions tab
   workflow_dispatch:
+    inputs:
+      all_blog_posts:
+        description: "Fetch every blog post, which also deletes removed and renamed posts (unchecked: the last two days)"
+        type: boolean
+        default: true
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -40,4 +46,11 @@ jobs:
           MEILISEARCH_KEY: ${{ secrets.MEILISEARCH_KEY }}
           MEILISEARCH_URL: ${{ secrets.MEILISEARCH_URL }}
           HF_TOKEN: ${{ secrets.HF_EMBED_DATASETS_TOKEN }}
-        run: uv run doc-builder populate-search-engine --incremental
+          ALL_BLOG_POSTS: ${{ github.event.schedule == '5 7 * * 0' || inputs.all_blog_posts }}
+        run: |
+          if [ "$ALL_BLOG_POSTS" = true ]; then
+            uv run doc-builder populate-search-engine --incremental
+          else
+            # Two days, so that a run delayed or failed the day before misses no post
+            uv run doc-builder populate-search-engine --incremental --recent-blog-days 2
+          fi
