@@ -201,15 +201,44 @@ class TranslateDocsTester(unittest.TestCase):
         self.assertNotIn("guides/old.html", self.tracker()["versions"]["main"]["files"])
         self.assertEqual(self.stats.waiting, [])
 
-    def test_language_built_by_the_docs_build_is_left_alone(self):
-        # a human translation, built into the same bucket by the library's own docs build (with its own JS)
-        human = self.ja("main", "index.html")
-        (human.parent / "_app").mkdir(parents=True)
-        (human.parent / "_app" / "chunk.js").write_text("// asset")
-        human.write_text("human translation", encoding="utf-8")
+    def human_translation(self, version, language):
+        """A translation built into the same bucket by the library's own docs build (with its own JS)."""
+        folder = self.target_dir / LIB / version / language
+        (folder / "_app").mkdir(parents=True)
+        (folder / "_app" / "chunk.js").write_text("// asset")
+        (folder / "index.html").write_text("human translation", encoding="utf-8")
+        (folder / "only-human.html").write_text("human translation", encoding="utf-8")
+        return folder
+
+    @mock.patch.dict(translate_docs_module.TRANSLATED_DOCS, {LIB: ["ja", "ko"]})
+    def test_first_translation_of_main_deletes_the_docs_build_translations(self):
+        en, ja, ko, cn = (self.human_translation("main", lang) for lang in ("en", "ja", "ko", "cn"))
+        release = self.human_translation("v1.0.0", "cn")
+        # a machine translation of a language that isn't configured (a manual run)
+        (self.target_dir / LIB / "main" / "de").mkdir()
+        (self.target_dir / LIB / "main" / "de" / "index.html").write_text("translation", encoding="utf-8")
+        self.run_job()
+        self.assertIn("訳Text of the second option.", (ja / "index.html").read_text(encoding="utf-8"))
+        self.assertFalse((ja / "only-human.html").exists())
+        self.assertFalse((ja / "_app").exists())
+        self.assertFalse(cn.exists())
+        # left alone: English, the job of another configured language, other versions, and translations
+        for kept in (en, ko, release):
+            self.assertEqual((kept / "index.html").read_text(encoding="utf-8"), "human translation")
+        self.assertTrue((self.target_dir / LIB / "main" / "de" / "index.html").exists())
+        # only the first translation
+        cn = self.human_translation("main", "cn")
+        self.run_job()
+        self.assertTrue((cn / "index.html").exists())
+
+    def test_release_built_by_the_docs_build_is_left_alone(self):
+        self.run_job()
+        self.add_version("v1.1.0")
+        self.write_versions(["main", "v1.1.0", "v1.0.0"])
+        human = self.human_translation("v1.1.0", "ja")
         self.assertEqual(self.run_job().calls, 0)
-        self.assertEqual(human.read_text(encoding="utf-8"), "human translation")
-        self.assertFalse(self.ja("main", "guides/old.html").exists())
+        self.assertEqual((human / "index.html").read_text(encoding="utf-8"), "human translation")
+        self.assertFalse(self.ja("v1.1.0", "guides/old.html").exists())
 
     def test_language_taken_over_by_the_docs_build_is_left_alone(self):
         self.run_job()
