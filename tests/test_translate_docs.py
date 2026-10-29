@@ -335,12 +335,28 @@ class TranslateDocsTester(unittest.TestCase):
         self.assertEqual(toctree[0]["sections"][0], {"local": "index", "title": "訳Hydration check"})
 
     def test_page_built_before_hydration_fix_is_skipped(self):
-        shutil.copy(DATA / "page_before_851.html", self.source_dir / LIB / "main" / "en" / "index.html")
+        shutil.copy(DATA / "page_before_851.html", self.source_dir / LIB / "main" / "en" / "guides" / "old.html")
         self.run_job()
-        self.assertFalse(self.ja("main", "index.html").exists())
-        entry = self.tracker()["versions"]["main"]["files"]["index.html"]
+        self.assertTrue(self.ja("main", "index.html").exists())
+        self.assertFalse(self.ja("main", "guides/old.html").exists())
+        entry = self.tracker()["versions"]["main"]["files"]["guides/old.html"]
         self.assertFalse(entry["complete"])
-        self.assertEqual(self.stats.waiting, [f"{LIB}/main/ja/index.html"])
+        self.assertEqual(self.stats.waiting, [f"{LIB}/main/ja/guides/old.html"])
+
+    def test_first_translation_waits_for_a_build_after_the_hydration_fix(self):
+        index = self.source_dir / LIB / "main" / "en" / "index.html"
+        rebuilt = index.read_text(encoding="utf-8")
+        shutil.copy(DATA / "page_before_851.html", index)
+        human = self.human_translation("main", "ja")
+        self.assertEqual(self.run_job().calls, 0)
+        self.assertEqual(self.stats.waiting, [f"{LIB}/main/ja"])
+        # the docs build's translation stays until the machine translation can replace it
+        self.assertEqual((human / "index.html").read_text(encoding="utf-8"), "human translation")
+        self.assertNotIn("main", self.tracker()["versions"])
+        index.write_text(rebuilt, encoding="utf-8")
+        self.run_job()
+        self.assertIn("訳Text of the second option.", self.ja("main", "index.html").read_text(encoding="utf-8"))
+        self.assertFalse((human / "only-human.html").exists())
 
     def test_page_is_recorded_only_after_its_upload(self):
         class FailingUpload(Store):

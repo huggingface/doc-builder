@@ -42,6 +42,7 @@ import os
 import re
 import shutil
 import tempfile
+import traceback
 import warnings
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field
@@ -56,8 +57,49 @@ from .translate_model import BILL_TO, TranslationFailed, Translator
 
 # Served by huggingface.co: English builds are read from it, translations are written to it.
 DOC_BUCKET = "hf://buckets/hf-doc-build/doc"
-# Libraries and languages translated by the scheduled job.
-TRANSLATED_DOCS = {"hub": ["zh", "ja", "ko", "pt", "es", "fr", "vi", "id", "tr", "ru", "ar"]}
+# Languages of the scheduled job: every library below is translated into each of them.
+LANGUAGES = ["zh", "ja", "ko", "pt", "es", "fr", "vi", "id", "tr", "ru", "ar"]
+# Libraries translated by the scheduled job: those of huggingface.co/docs.
+TRANSLATED_LIBRARIES = [
+    "accelerate",
+    "autotrain",
+    "bitsandbytes",
+    "chat-ui",
+    "dataset-viewer",
+    "datasets",
+    "diffusers",
+    "evaluate",
+    "google-cloud",
+    "hub",
+    "huggingface.js",
+    "huggingface_hub",
+    "inference-endpoints",
+    "inference-providers",
+    "kernels",
+    "leaderboards",
+    "lerobot",
+    "lighteval",
+    "microsoft-azure",
+    "openenv",
+    "optimum",
+    "optimum-neuron",
+    "optimum-tpu",
+    "peft",
+    "reachy_mini",
+    "safetensors",
+    "sagemaker",
+    "smolagents",
+    "text-embeddings-inference",
+    "text-generation-inference",
+    "timm",
+    "tokenizers",
+    "trackio",
+    "transformers",
+    "transformers.js",
+    "trl",
+    "xet",
+]
+TRANSLATED_DOCS = dict.fromkeys(TRANSLATED_LIBRARIES, LANGUAGES)
 # Copied unchanged from the English build. Pages (`.html`) and their Markdown (`.md`, served for
 # "Copy page" and `Accept: text/plain`) are translated; llms.txt and llms-full.txt are rebuilt from
 # the translated Markdown.
@@ -83,7 +125,7 @@ class RunStats:
     blocks: int = 0
     english_blocks: int = 0
     incomplete: list[tuple[str, int, int]] = field(default_factory=list)  # (page, english blocks, blocks)
-    waiting: list[str] = field(default_factory=list)  # pages built before #851, waiting for a rebuild
+    waiting: list[str] = field(default_factory=list)  # pages or versions built before #851, awaiting a rebuild
 
     def failed(self):
         return self.blocks > 0 and self.english_blocks / self.blocks > MAX_ENGLISH_BLOCKS
@@ -92,7 +134,7 @@ class RunStats:
         """Print the summary; on GitHub Actions also annotate the run and write the job summary."""
         lines = [
             f"Translated {self.pages} pages: {self.blocks - self.english_blocks}/{self.blocks} blocks,"
-            f" {self.english_blocks} kept in English; {len(self.waiting)} pages waiting for a rebuild."
+            f" {self.english_blocks} kept in English; {len(self.waiting)} pages or versions waiting for a rebuild."
         ]
         lines += [f"- {page}: {english}/{blocks} blocks kept in English" for page, english, blocks in self.incomplete]
         lines += [f"- {page}: built before huggingface/doc-builder#851, not translated" for page in self.waiting]
@@ -102,7 +144,7 @@ class RunStats:
         if self.incomplete or self.waiting:
             print(
                 f"::warning title=Incomplete translations::{len(self.incomplete)} pages keep English blocks and"
-                f" {len(self.waiting)} pages are waiting for a rebuild; they are retried on the next run."
+                f" {len(self.waiting)} pages or versions are waiting for a rebuild; they are retried on the next run."
                 " See the job summary."
             )
         if summary := os.environ.get("GITHUB_STEP_SUMMARY"):
@@ -408,6 +450,16 @@ def translate_llms_feeds(source, target, src_dir, dst_dir, library, english):
         }
 
 
+def built_before_851(source, src_dir, english):
+    """Whether the English build predates huggingface/doc-builder#851, judging by its first page."""
+    pages = sorted(p for p in english if p.endswith(".html"))
+    if not pages:
+        return False
+    page = "index.html" if "index.html" in pages else pages[0]
+    data = source.read([f"{src_dir}/{page}"]).get(f"{src_dir}/{page}")
+    return data is not None and not th.is_hydration_safe(th.split_page(data.decode("utf-8"))[1])
+
+
 def clear_docs_build_translations(target, library, language):
     """
     Before the first machine translation of `<library>/main` into `language`, delete the translations of `main` built
@@ -415,7 +467,7 @@ def clear_docs_build_translations(target, library, language):
     clash with the machine translation, in its folder or next to it (e.g. `cn` or `zh-CN` next to `zh`).
     """
     main = f"{library}/main"
-    # the other configured languages run in parallel jobs, each clearing its own folder
+    # the other configured languages clear their own folder, on their own first translation (they may run in parallel)
     others = {"en", *TRANSLATED_DOCS.get(library, ())} - {language}
     for name in target.folders(main):
         # nothing in this language's folder is ours yet; elsewhere, only folders of a docs build (never a translation)
@@ -433,8 +485,15 @@ def translate_version(source, target, state, translator, library, version, langu
         return
     # pages left over from earlier builds are treated as removed: not translated, and their translation is deleted
     english = latest_build(source, src_dir, english)
-    if version == "main" and version not in state.tracker["versions"]:
-        clear_docs_build_translations(target, library, language)
+    if not state.tracker["versions"].get(version, {}).get("files"):
+        # First translation. Pages built before #851 would be replaced by English on load: wait for a rebuild,
+        # and leave the docs build's translations until then.
+        if built_before_851(source, src_dir, english):
+            print(f"{src_dir}: built before huggingface/doc-builder#851, waiting for a rebuild")
+            stats.waiting.append(dst_dir)
+            return
+        if version == "main":
+            clear_docs_build_translations(target, library, language)
     record = state.version(version)
     tracked = record["files"]
     # docs builds ship their own JS in `_app/`; translations reuse the English one
@@ -621,8 +680,16 @@ def translate_docs(target_url, inference_token, source_url=DOC_BUCKET, translati
     """
     source, target = Store(source_url, token), Store(target_url, token)
     stats = RunStats()
+    failed = []
     for library, languages in (translations or TRANSLATED_DOCS).items():
         for language in languages:
-            translate_library(source, target, library, language, token=inference_token, stats=stats, **kwargs)
+            # one language failing (e.g. the provider timing out) doesn't stop the others
+            try:
+                translate_library(source, target, library, language, token=inference_token, stats=stats, **kwargs)
+            except Exception:
+                traceback.print_exc()
+                failed.append(f"{library}/{language}")
     stats.report()
+    if failed:
+        raise RuntimeError(f"Translation failed for {', '.join(failed)}")
     return stats
