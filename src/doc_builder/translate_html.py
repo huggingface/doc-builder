@@ -34,6 +34,9 @@ from dataclasses import dataclass, field
 TAG_RE = re.compile(r"<(?:[^>\"']|\"[^\"]*\"|'[^']*')*>")
 TOKEN_RE = re.compile(r"<!--.*?-->|" + TAG_RE.pattern + r"|[^<]+", re.S)
 BLOCK_TAGS = {"p", "li", "h1", "h2", "h3", "h4", "h5", "h6", "td", "th", "dt", "dd", "figcaption"}
+# Prose outside any block (e.g. raw HTML in the docs: `<div>Title</div> <a>link</a>`) is translated with its
+# nearest `div` as the block, when hydration never walks into that div.
+LOOSE_TEXT_CONTAINER = "div"
 HEADING_TAGS = {"h1", "h2", "h3", "h4", "h5", "h6"}
 # Content of these elements is never prose.
 CODE_TAGS = {"pre", "code", "kbd", "script", "style", "svg", "math"}
@@ -56,6 +59,7 @@ class Block:
     nodes: list[TextNode] = field(default_factory=list)
     anchor: str | None = None  # heading id, used to translate the page metadata
     has_children: bool = False  # contains other blocks, e.g. a list item with a nested list
+    loose: bool = False  # a LOOSE_TEXT_CONTAINER holding prose outside any other block
 
 
 def split_page(page):
@@ -82,7 +86,7 @@ def _tag_name(tag):
 
 def find_blocks(body):
     """Blocks that contain English prose, in document order."""
-    stack, blocks, parents = [], [], {}  # stack entries: (tag, block, is_code)
+    stack, blocks, parents = [], [], {}  # stack entries: (tag, block, is_code, end of the opening tag)
     for m in TOKEN_RE.finditer(body):
         token = m[0]
         if token.startswith("<!--"):
@@ -91,7 +95,7 @@ def find_blocks(body):
             name = _tag_name(token)
             for i in range(len(stack) - 1, -1, -1):
                 if stack[i][0] == name:
-                    for _, block, _ in stack[i:]:
+                    for _, block, _, _ in stack[i:]:
                         if block is not None:
                             block.end = m.start()
                     del stack[i:]
@@ -100,23 +104,34 @@ def find_blocks(body):
             name = _tag_name(token)
             if name is None or name in VOID_TAGS or token.endswith("/>"):
                 continue
-            in_code = any(code for _, _, code in stack)
+            in_code = any(code for _, _, code, _ in stack)
             # monospace elements hold code, e.g. docstring signatures
             is_code = name in CODE_TAGS or "font-mono" in token
             block = None
             if name in BLOCK_TAGS and not in_code and not is_code:
-                for _, ancestor, _ in stack:
+                for _, ancestor, _, _ in stack:
                     if ancestor is not None:
                         ancestor.has_children = True
                 block = Block(tag=name, start=m.end(), end=-1)
                 blocks.append(block)
-            stack.append((name, block, is_code))
-        elif not any(code for _, _, code in stack):
-            block = next((b for _, b, _ in reversed(stack) if b is not None), None)
+            stack.append((name, block, is_code, m.end()))
+        elif not any(code for _, _, code, _ in stack):
+            block = next((b for _, b, _, _ in reversed(stack) if b is not None), None)
+            container = next((i for i in range(len(stack) - 1, -1, -1) if stack[i][0] == LOOSE_TEXT_CONTAINER), None)
+            if block is None and container is not None and re.search(r"[A-Za-z]{2}", token):
+                name, _, is_code, start = stack[container]
+                # blocks made since the div opened are inside it
+                block = Block(
+                    tag=name, start=start, end=-1, loose=True, has_children=any(b.start >= start for b in blocks)
+                )
+                blocks.append(block)
+                stack[container] = (name, block, is_code, start)
             if block is not None and re.search(r"[A-Za-z]{2}", token):
                 block.nodes.append(TextNode(m.start(), m.end(), token))
                 parents[m.start()] = stack[-1][0]
     blocks = [b for b in blocks if b.nodes and b.end >= 0]
+    # a loose block with hydration markers holds component output, not raw HTML
+    blocks = sorted((b for b in blocks if not (b.loose and "<!--" in body[b.start : b.end])), key=lambda b: b.start)
     for b in blocks:
         if b.tag in HEADING_TAGS:
             anchor = re.search(r'<a id="([^"]+)"', body[b.start : b.end])
