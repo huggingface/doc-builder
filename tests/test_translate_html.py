@@ -200,3 +200,31 @@ class TranslateHtmlTester(unittest.TestCase):
         ):
             self.assertEqual(translate_model._inference_completion("hf_test")([]), "ok")
         self.assertIn(mock.call(7.0), sleep.call_args_list)  # the provider's Retry-After
+
+    def test_failing_provider_falls_back(self):
+        import httpx
+        from huggingface_hub import InferenceClient
+        from huggingface_hub.errors import HfHubHTTPError
+
+        from doc_builder import translate_model
+
+        # what the router answers for a provider its circuit breaker paused
+        paused = httpx.Response(503, headers={"Retry-After": "5"}, request=httpx.Request("POST", "https://x"))
+        answer = mock.Mock(choices=[mock.Mock(message=mock.Mock(content="ok"))])
+        used = []
+
+        def chat_completion(client, **kwargs):
+            used.append(client.provider)
+            if client.provider == translate_model.PROVIDER:
+                raise HfHubHTTPError("paused", response=paused)
+            return answer
+
+        with (
+            mock.patch.object(InferenceClient, "chat_completion", autospec=True, side_effect=chat_completion),
+            mock.patch.object(translate_model.time, "sleep"),
+        ):
+            complete = translate_model._inference_completion("hf_test")
+            self.assertEqual(complete([]), "ok")
+            self.assertEqual(complete([]), "ok")  # the run stays on the fallback
+        fallback = translate_model.FALLBACK_PROVIDERS[0]
+        self.assertEqual(used, [translate_model.PROVIDER] * translate_model.FALLBACK_AFTER + [fallback] * 2)

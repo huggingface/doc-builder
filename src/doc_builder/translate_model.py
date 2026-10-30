@@ -30,6 +30,10 @@ from .translate_html import check_markup, drop_invented_tags
 
 MODEL = "Qwen/Qwen3.8-27B"
 PROVIDER = "cerebras"
+# Used in order once the provider before keeps failing (e.g. paused by the router's circuit breaker).
+# They serve the same model, so their answers are cached like PROVIDER's and not retranslated once it is back.
+# Not every provider enforces the `json_schema` response format: check `translate_segments` before adding one.
+FALLBACK_PROVIDERS = ("deepinfra", "featherless-ai")
 # Inference usage is billed to this organization (`X-HF-Bill-To` header), not to the token's owner:
 # https://huggingface.co/docs/inference-providers/pricing#billing-for-team-and-enterprise-organizations
 BILL_TO = "huggingface"
@@ -208,6 +212,8 @@ class Translator:
 RETRY_STATUSES = (429, 500, 502, 503, 504)
 # With the backoff below, about 15 minutes of retries before a request fails the run.
 MAX_ATTEMPTS = 12
+# Server errors in a row (rate limits aside) after which a request moves the run to the next provider.
+FALLBACK_AFTER = 3
 
 
 def _retry_after(response):
@@ -222,10 +228,13 @@ def _inference_completion(token, bill_to=BILL_TO):
     from huggingface_hub import InferenceClient
     from huggingface_hub.errors import HfHubHTTPError
 
-    client = InferenceClient(provider=PROVIDER, token=token, bill_to=bill_to or None)
+    providers = (PROVIDER, *FALLBACK_PROVIDERS)
+    clients = [InferenceClient(provider=p, token=token, bill_to=bill_to or None) for p in providers]
     # When one request is rate-limited, every thread of the job waits, instead of each one
     # hammering the provider until it runs out of retries.
     pause = {"until": 0.0}
+    # Index in `providers` of the one every request uses: a run never goes back to a failing provider.
+    current = {"provider": 0}
     lock = threading.Lock()
 
     def wait_for_pause():
@@ -234,11 +243,22 @@ def _inference_completion(token, bill_to=BILL_TO):
         if delay > 0:
             time.sleep(delay)
 
+    def fall_back(provider):
+        """Moves every request past a failing `provider`; False when there is none left."""
+        with lock:
+            if current["provider"] == provider and provider + 1 < len(providers):
+                current["provider"] += 1
+                print(f"  {providers[provider]} keeps failing, using {providers[provider + 1]} from now on")
+            return current["provider"] != provider
+
     def complete(messages, temperature=0, response_format=None):
+        provider, failures = current["provider"], 0
         for attempt in range(MAX_ATTEMPTS):
             wait_for_pause()
+            if current["provider"] != provider:
+                provider, failures = current["provider"], 0
             try:
-                response = client.chat_completion(
+                response = clients[provider].chat_completion(
                     model=MODEL,
                     messages=messages,
                     temperature=temperature,
@@ -252,6 +272,10 @@ def _inference_completion(token, bill_to=BILL_TO):
                 status = getattr(exc.response, "status_code", None)
                 if status not in RETRY_STATUSES or attempt == MAX_ATTEMPTS - 1:
                     raise
+                if status != 429:
+                    failures += 1
+                    if failures >= FALLBACK_AFTER and fall_back(provider):
+                        continue
                 delay = _retry_after(exc.response) or min(120, 2**attempt) * random.uniform(0.5, 1.5)
                 if status == 429:
                     with lock:
