@@ -191,9 +191,13 @@ class AutodocTester(unittest.TestCase):
         )
 
     def test_format_signature(self):
-        self.assertEqual(
+        # transformers main annotates `config` (huggingface/transformers#50067), releases before it don't
+        self.assertIn(
             format_signature(BertModel),
-            [{"name": "config", "val": ""}, {"name": "add_pooling_layer", "val": " = True"}],
+            [
+                [{"name": "config", "val": ""}, {"name": "add_pooling_layer", "val": " = True"}],
+                [{"name": "config", "val": ": BertConfig"}, {"name": "add_pooling_layer", "val": " = True"}],
+            ],
         )
 
         def func_with_annot(a: int = 1, b: float = 0):
