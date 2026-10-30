@@ -276,7 +276,7 @@ doc-builder notebook-to-mdx {path to notebook file or folder containing notebook
 
 `doc-builder` provides templates for GitHub Actions, so you can build your documentation with every pull request, push to some branch etc. To use them in your project, simply create the following three files in the `.github/workflows/` directory:
 
-* `build_main_documentation.yml`: responsible for building the docs for the `main` branch, releases etc.
+* `build_main_documentation.yml`: responsible for building the docs for the `main` branch, releases etc. A push to the default branch always updates `main`, also when the package declares a release version there (that release is built too).
 * `build_pr_documentation.yml`: responsible for building the docs on each PR.
 * `upload_pr_documentation.yml`: responsible for uploading the PR artifacts to the Hugging Face Hub.
 * `delete_doc_comment_trigger.yml`: responsible for removing the comments from the `HuggingFaceDocBuilder` bot that provides a URL to the PR docs.

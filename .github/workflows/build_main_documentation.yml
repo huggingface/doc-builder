@@ -242,6 +242,7 @@ jobs:
           PACKAGE: ${{ inputs.package }}
           VERSION_TAG_SUFFIX: ${{ inputs.version_tag_suffix }}
           NOTEBOOK_FOLDER: ${{ inputs.notebook_folder }}
+          ON_DEFAULT_BRANCH: ${{ github.ref == format('refs/heads/{0}', github.event.repository.default_branch) }}
         run: |
           source .venv/bin/activate
           echo "doc_folder has been set to $DOC_FOLDER"
@@ -254,6 +255,13 @@ jobs:
           fi
 
           doc-builder build "$PACKAGE_NAME" "../$DOC_FOLDER" $args
+
+          # The version comes from the package, so a default branch that declares a release
+          # (e.g. bumped at release time) only built that release: build main from it too.
+          if [ "$ON_DEFAULT_BRANCH" = true ] && [[ ! "$ADDITIONAL_ARGS" =~ --version[=\ ] ]] \
+            && ! ls "../build_dir/$PACKAGE_NAME" | grep -qvE '^(v[0-9].*|_versions\.yml)$'; then
+            doc-builder build "$PACKAGE_NAME" "../$DOC_FOLDER" $args --version main
+          fi
 
           cd ..
 
