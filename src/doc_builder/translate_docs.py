@@ -58,6 +58,7 @@ from .translate_model import BILL_TO, TranslationFailed, Translator
 DOC_BUCKET = "hf://buckets/hf-doc-build/doc"
 # Libraries and languages translated by the scheduled job.
 TRANSLATED_DOCS = {
+    "accelerate": ["zh", "ja", "ko", "pt", "es", "fr", "vi", "id", "tr", "ru", "ar"],
     "chat-ui": ["zh", "ja", "ko", "pt", "es", "fr", "vi", "id", "tr", "ru", "ar"],
     "datasets": ["zh", "ja", "ko", "pt", "es", "fr", "vi", "id", "tr", "ru", "ar"],
     "hub": ["zh", "ja", "ko", "pt", "es", "fr", "vi", "id", "tr", "ru", "ar"],
