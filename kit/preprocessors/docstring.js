@@ -3,15 +3,28 @@ import htmlparser2 from "htmlparser2";
 import { replaceAsync, renderSvelteChars, generateTagRegex } from "./utils.js";
 import { mdsvexPreprocess } from "./mdsvex/index.js";
 
+const REGEX_CODEBLOCK =
+	/<CodeBlock\s+code=\{`[^`]*`\}\s+highlighted=\{`((?:[^`\\]|\\.)*)`\}\s+lang="([\w-]*)"\s+wrap=\{(true|false)\}\s*\/>/g;
+
 /**
- * mdsvex prepends a page-level `<script context="module">` metadata block to everything it
- * compiles. Inside a docstring fragment it would end up as a stray inline script in the page.
+ * Renders a docstring fragment (e.g. a parameter description) with the page's mdsvex pipeline.
+ * - mdsvex prepends a page-level `<script context="module">` metadata block to everything it
+ *   compiles. Inside a docstring fragment it would end up as a stray inline script in the page.
+ * - Code blocks are rendered as `<CodeBlock>` components, which can't run inside the `{@html}`
+ *   props of `Docstring`: they are replaced by the HTML of the component, without its copy button.
  */
 async function markupFragment(content, filename) {
 	const result = await mdsvexPreprocess.markup({ content, filename });
 	return {
 		...result,
-		code: result.code.replace(/<script context="module">[\s\S]*?<\/script>/, ""),
+		code: result.code
+			.replace(/<script context="module">[\s\S]*?<\/script>/, "")
+			.replace(REGEX_CODEBLOCK, (_, highlighted, lang, wrap) => {
+				const classes = [lang && `language-${lang}`, wrap === "true" && "whitespace-pre-wrap"];
+				// undo the template literal escaping of the mdsvex highlighter
+				highlighted = highlighted.replace(/\\([\\`}$])/g, "$1");
+				return `<div class="code-block relative"><pre class="${classes.filter(Boolean).join(" ")}">${highlighted}</pre></div>`;
+			}),
 	};
 }
 
@@ -156,33 +169,52 @@ export const docstringPreprocess = {
  * and must be rendered as one list to keep exact markdown semantics (tight/loose lists);
  * this parses the rendered `<ul>` back into per-parameter structured data for the
  * `Docstring` component (tooltips, per-parameter anchors).
+ *
+ * The list can still come out split (e.g. two blank lines end a list, so does content that is
+ * less indented than the descriptions): every top-level list of parameters is read, and any other
+ * top-level element is part of the description of the parameter before it.
  * @param {string} code rendered html
  * @param {string} anchor the object's anchor, used as prefix for parameter anchors
  */
 function parseRenderedParamsList(code, anchor) {
 	const dom = htmlparser2.parseDocument(code);
-	const lists = domUtils.getElementsByTagName("ul", dom);
-	if (!lists.length) {
-		return undefined;
-	}
 	const result = [];
-	for (const childEl of lists[0].childNodes.filter(({ type }) => type === "tag")) {
-		const nameEl = domUtils.getElementsByTagName("strong", childEl)[0];
-		const name = domUtils.innerText(nameEl);
-		const paramAnchor = `${anchor}.${name}`;
-		let description = domUtils.getInnerHTML(childEl).trim();
-
-		// unwrap the first paragraph so it renders inline next to the parameter name; later
-		// paragraphs keep their <p> tags (stripping only the outer tags would leave a stray
-		// `</p><p>` inside the rendering <span>, which breaks hydration)
-		if (description.startsWith("<p>")) {
-			const end = description.indexOf("</p>");
-			if (end !== -1) {
-				description = description.slice("<p>".length, end) + description.slice(end + "</p>".length);
-			}
+	for (const node of dom.children) {
+		if (node.type !== "tag") {
+			continue;
 		}
-
-		result.push({ anchor: paramAnchor, description, name });
+		const items = node.name === "ul" ? node.children.filter(({ type }) => type === "tag") : [];
+		const isParamsList =
+			items.length > 0 &&
+			items.every((item) => domUtils.getElementsByTagName("strong", item).length > 0);
+		if (isParamsList) {
+			result.push(...items.map((item) => parseRenderedParam(item, anchor)));
+		} else if (result.length) {
+			result[result.length - 1].description += domUtils.getOuterHTML(node);
+		}
 	}
-	return result;
+	return result.length ? result : undefined;
+}
+
+/**
+ * @param {import("domhandler").Element} childEl a `<li>` of the rendered list of parameters
+ * @param {string} anchor the object's anchor
+ */
+function parseRenderedParam(childEl, anchor) {
+	const nameEl = domUtils.getElementsByTagName("strong", childEl)[0];
+	const name = domUtils.innerText(nameEl);
+	const paramAnchor = `${anchor}.${name}`;
+	let description = domUtils.getInnerHTML(childEl).trim();
+
+	// unwrap the first paragraph so it renders inline next to the parameter name; later
+	// paragraphs keep their <p> tags (stripping only the outer tags would leave a stray
+	// `</p><p>` inside the rendering <span>, which breaks hydration)
+	if (description.startsWith("<p>")) {
+		const end = description.indexOf("</p>");
+		if (end !== -1) {
+			description = description.slice("<p>".length, end) + description.slice(end + "</p>".length);
+		}
+	}
+
+	return { anchor: paramAnchor, description, name };
 }

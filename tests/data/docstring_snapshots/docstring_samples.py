@@ -141,6 +141,17 @@ def sample_function(inputs, *args, threshold: float = 0.5, callback=None, **kwar
             The texts to process.
 
             A second paragraph makes this a loose list item, where each paragraph is wrapped in its own `<p>`.
+        threshold (`float`, *optional*, defaults to 0.5):
+            Scores below this value are dropped. The score of a text is computed as:
+
+            ```python
+            score = sum(weights) / len(weights)
+            ```
+
+            The code block and this paragraph belong to the description of `threshold`, and the two blank lines
+            after them don't end the list of parameters.
+
+
         callback (`Callable`, *optional*):
             Called with each [`SampleOutput`].
 
@@ -157,14 +168,6 @@ def sample_function(inputs, *args, threshold: float = 0.5, callback=None, **kwar
             Use `callback` instead.
 
             </Deprecated>
-        threshold (`float`, *optional*, defaults to 0.5):
-            Scores below this value are dropped. The score of a text is computed as:
-
-            ```python
-            score = sum(weights) / len(weights)
-            ```
-
-            Last in the list: the code block above ends the list, which drops the parameters after it.
 
     Returns:
         [`SampleOutput`] or `tuple(float)`: A [`SampleOutput`] when `return_dict=True`, otherwise a tuple of
