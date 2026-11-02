@@ -17,6 +17,7 @@ import inspect
 import json
 import re
 import sys
+import types
 from functools import lru_cache
 
 from .convert_md_to_mdx import convert_md_docstring_to_mdx
@@ -101,6 +102,10 @@ def get_type_name(typ):
     """
     Returns the name of the type passed, properly dealing with type annotations.
     """
+    # Parametrized builtins (e.g. `dict[str, int]`) forward the attributes of their class, like
+    # `__qualname__`, and are instances of `type` on Python 3.10: their repr is the readable form.
+    if isinstance(typ, types.GenericAlias):
+        return str(typ)
     if isinstance(typ, type):
         # If it's a class, use its name.
         return getattr(typ, "__qualname__", None) or getattr(typ, "__name__", None) or str(typ)

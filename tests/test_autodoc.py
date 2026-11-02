@@ -179,16 +179,12 @@ class AutodocTester(unittest.TestCase):
         # Test modern union syntax
         self.assertEqual(get_type_name(str | None), "str | None")
         self.assertEqual(get_type_name(bool | int), "bool | int")
-        # Test modern syntax (behavior may vary by Python version)
-        # Python 3.10 returns "list" while 3.11+ returns "list[str]"
-        modern_list_result = get_type_name(list[str])
-        self.assertIn(modern_list_result, ["list[str]", "list"])  # Python 3.10 vs 3.11+
-        modern_list_optional_result = get_type_name(list[str | None])
-        self.assertIn(modern_list_optional_result, ["list[str | None]", "list[typing.Optional[str]]", "list"])
-        modern_list_union_result = get_type_name(list[str | int | None | None])
-        self.assertIn(
-            modern_list_union_result, ["list[str | int | None]", "list[typing.Union[str, int, NoneType]]", "list"]
-        )
+        # Parametrized builtins keep their arguments
+        self.assertEqual(get_type_name(list[str]), "list[str]")
+        self.assertEqual(get_type_name(list[str | None]), "list[str | None]")
+        self.assertEqual(get_type_name(list[str | int | None | None]), "list[str | int | None]")
+        self.assertEqual(get_type_name(dict[str, int]), "dict[str, int]")
+        self.assertEqual(get_type_name(tuple[int, ...]), "tuple[int, ...]")
 
     def test_format_signature(self):
         # transformers main annotates `config` (huggingface/transformers#50067), releases before it don't
