@@ -638,11 +638,6 @@ def autodoc_svelte(
     if return_anchors:
         anchors = [get_shortest_path(obj, package)]
     if isinstance(obj, type):
-        documentation, check = document_object(
-            object_name=object_name, package=package, page_info=page_info, version_tag_suffix=version_tag_suffix
-        )
-        if check is not None:
-            errors.append(check)
         if methods is None:
             methods = find_documented_methods(obj)
         elif "all" in methods:
@@ -721,17 +716,6 @@ def autodoc_markdown(
     if return_anchors:
         anchors = [get_shortest_path(obj, package)]
     if isinstance(obj, type):
-        documentation, anchor_name, check = document_object(
-            object_name=object_name,
-            package=package,
-            page_info=page_info,
-            version_tag_suffix=version_tag_suffix,
-            is_svelte=False,
-        )
-        object_docs.pop()
-        object_docs.append({"doc": documentation, "anchor_name": anchor_name})
-        if check is not None:
-            errors.append(check)
         if methods is None:
             methods = find_documented_methods(obj)
         elif "all" in methods:
