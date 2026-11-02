@@ -169,6 +169,12 @@ const validTags = [...htmlTags, ...svelteTags];
 let hfDocBodyStart = false;
 let hfDocBodyEnd = false;
 
+/**
+ * Starts the markdown of a docstring fragment (a parameter description, a return type, etc., see
+ * docstring.js), which is doc body as a whole: pages delimit theirs with the HF_DOC_BODY markers.
+ */
+export const DOCSTRING_FRAGMENT_MARKER = "<!--HF DOCSTRING FRAGMENT-->";
+
 function addToTree(tree, node) {
 	if (tree.length === 0 || tree[tree.length - 1].depth >= node.depth) {
 		tree.push(node);
@@ -196,10 +202,17 @@ function treeVisitor() {
 	// depending on visitor traversal order (see onLink).
 	let bodyStartOffset = -1;
 	let bodyEndOffset = Infinity;
+	// Whether the document is a docstring fragment (see DOCSTRING_FRAGMENT_MARKER)
+	let isFragment = false;
 
 	return transform;
 
 	function transform(tree) {
+		isFragment =
+			tree.children[0]?.type === "html" && tree.children[0].value === DOCSTRING_FRAGMENT_MARKER;
+		if (isFragment) {
+			tree.children.shift();
+		}
 		let headings = [];
 		visit(tree, "heading", (node, index, parent) => {
 			const depth = node.depth;
@@ -250,6 +263,10 @@ function treeVisitor() {
 		visit(tree, "image", onLink);
 		visit(tree, "blockquote", onBlockquote);
 
+		// the page-level metadata would be a stray inline script inside a fragment
+		if (isFragment) {
+			return;
+		}
 		let jsonString = JSON.stringify(headings[0]);
 		if (jsonString) {
 			jsonString = jsonString.replaceAll("'", "\\'");
@@ -262,6 +279,9 @@ function treeVisitor() {
 	}
 
 	function isWithinDocBody(node) {
+		if (isFragment) {
+			return true;
+		}
 		if (["<!--HF DOCBUILD BODY START-->", "HF_DOC_BODY_START"].includes(node.value)) {
 			hfDocBodyStart = true;
 			hfDocBodyEnd = false;
@@ -300,7 +320,10 @@ function treeVisitor() {
 	 */
 	function onLink(node) {
 		const offset = node.position?.start?.offset ?? -1;
-		if (bodyStartOffset === -1 || offset < bodyStartOffset || offset > bodyEndOffset) {
+		if (
+			!isFragment &&
+			(bodyStartOffset === -1 || offset < bodyStartOffset || offset > bodyEndOffset)
+		) {
 			return;
 		}
 		if (typeof node.url === "string") {
