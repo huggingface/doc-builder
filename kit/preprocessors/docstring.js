@@ -1,30 +1,31 @@
 import domUtils from "domutils";
 import htmlparser2 from "htmlparser2";
 import { replaceAsync, renderSvelteChars, generateTagRegex } from "./utils.js";
-import { mdsvexPreprocess } from "./mdsvex/index.js";
+import { DOCSTRING_FRAGMENT_MARKER, mdsvexPreprocess } from "./mdsvex/index.js";
 
 const REGEX_CODEBLOCK =
 	/<CodeBlock\s+code=\{`[^`]*`\}\s+highlighted=\{`((?:[^`\\]|\\.)*)`\}\s+lang="([\w-]*)"\s+wrap=\{(true|false)\}\s*\/>/g;
 
 /**
  * Renders a docstring fragment (e.g. a parameter description) with the page's mdsvex pipeline.
- * - mdsvex prepends a page-level `<script context="module">` metadata block to everything it
- *   compiles. Inside a docstring fragment it would end up as a stray inline script in the page.
+ * - The fragment is marked as such, so that it's escaped like the doc body of a page (e.g. `<unk>`
+ *   renders as text instead of an unknown element).
  * - Code blocks are rendered as `<CodeBlock>` components, which can't run inside the `{@html}`
  *   props of `Docstring`: they are replaced by the HTML of the component, without its copy button.
  */
 async function markupFragment(content, filename) {
-	const result = await mdsvexPreprocess.markup({ content, filename });
+	const result = await mdsvexPreprocess.markup({
+		content: `${DOCSTRING_FRAGMENT_MARKER}\n\n${content}`,
+		filename,
+	});
 	return {
 		...result,
-		code: result.code
-			.replace(/<script context="module">[\s\S]*?<\/script>/, "")
-			.replace(REGEX_CODEBLOCK, (_, highlighted, lang, wrap) => {
-				const classes = [lang && `language-${lang}`, wrap === "true" && "whitespace-pre-wrap"];
-				// undo the template literal escaping of the mdsvex highlighter
-				highlighted = highlighted.replace(/\\([\\`}$])/g, "$1");
-				return `<div class="code-block relative"><pre class="${classes.filter(Boolean).join(" ")}">${highlighted}</pre></div>`;
-			}),
+		code: result.code.replace(REGEX_CODEBLOCK, (_, highlighted, lang, wrap) => {
+			const classes = [lang && `language-${lang}`, wrap === "true" && "whitespace-pre-wrap"];
+			// undo the template literal escaping of the mdsvex highlighter
+			highlighted = highlighted.replace(/\\([\\`}$])/g, "$1");
+			return `<div class="code-block relative"><pre class="${classes.filter(Boolean).join(" ")}">${highlighted}</pre></div>`;
+		}),
 	};
 }
 
