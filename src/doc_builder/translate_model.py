@@ -214,6 +214,8 @@ RETRY_STATUSES = (429, 500, 502, 503, 504)
 MAX_ATTEMPTS = 12
 # Server errors in a row (rate limits aside) after which a request moves the run to the next provider.
 FALLBACK_AFTER = 3
+# Requests refused (400) since the last answer, after which the provider is taken to refuse every request.
+MAX_REFUSED = 20
 
 
 def _retry_after(response):
@@ -235,6 +237,7 @@ def _inference_completion(token, bill_to=BILL_TO):
     pause = {"until": 0.0}
     # Index in `providers` of the one every request uses: a run never goes back to a failing provider.
     current = {"provider": 0}
+    refused = {"requests": 0}
     lock = threading.Lock()
 
     def wait_for_pause():
@@ -267,9 +270,19 @@ def _inference_completion(token, bill_to=BILL_TO):
                     # the model reasons by default, which only adds latency for translation
                     extra_body={"reasoning_effort": "none"},
                 )
+                refused["requests"] = 0
                 return response.choices[0].message.content or ""
             except HfHubHTTPError as exc:
                 status = getattr(exc.response, "status_code", None)
+                if status == 400:
+                    with lock:
+                        refused["requests"] += 1
+                        many = refused["requests"] > MAX_REFUSED
+                    # e.g. "Prompt has unexpected image tokens." for Qwen's `<|image_pad|>` in a code comment:
+                    # that block stays in English instead of stopping the run
+                    if not many:
+                        reason = getattr(exc.response, "text", "")[:200]
+                        raise TranslationFailed(f"{providers[provider]} refused the request: {reason}") from exc
                 if status not in RETRY_STATUSES or attempt == MAX_ATTEMPTS - 1:
                     raise
                 if status != 429:
