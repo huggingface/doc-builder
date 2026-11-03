@@ -228,3 +228,29 @@ class TranslateHtmlTester(unittest.TestCase):
             self.assertEqual(complete([]), "ok")  # the run stays on the fallback
         fallback = translate_model.FALLBACK_PROVIDERS[0]
         self.assertEqual(used, [translate_model.PROVIDER] * translate_model.FALLBACK_AFTER + [fallback] * 2)
+
+    def test_refused_request_keeps_block_in_english(self):
+        import httpx
+        from huggingface_hub import InferenceClient
+        from huggingface_hub.errors import HfHubHTTPError
+
+        from doc_builder import translate_model
+
+        refused = httpx.Response(
+            400,
+            json={"message": "Prompt has unexpected image tokens."},
+            request=httpx.Request("POST", "https://x"),
+        )
+        answer = mock.Mock(choices=[mock.Mock(message=mock.Mock(content="ok"))])
+        error = HfHubHTTPError("bad request", response=refused)
+        with mock.patch.object(InferenceClient, "chat_completion", side_effect=[error, answer] + [error] * 30):
+            complete = translate_model._inference_completion("hf_test")
+            with self.assertRaisesRegex(translate_model.TranslationFailed, "unexpected image tokens"):
+                complete([])
+            self.assertEqual(complete([]), "ok")
+            for _ in range(translate_model.MAX_REFUSED):
+                with self.assertRaises(translate_model.TranslationFailed):
+                    complete([])
+            # a provider that refuses every request stops the run instead of leaving every page in English
+            with self.assertRaises(HfHubHTTPError):
+                complete([])
