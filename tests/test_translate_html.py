@@ -229,6 +229,41 @@ class TranslateHtmlTester(unittest.TestCase):
         fallback = translate_model.FALLBACK_PROVIDERS[0]
         self.assertEqual(used, [translate_model.PROVIDER] * translate_model.FALLBACK_AFTER + [fallback] * 2)
 
+    def test_run_goes_back_to_first_provider_after_last_fails(self):
+        import httpx
+        from huggingface_hub import InferenceClient
+        from huggingface_hub.errors import HfHubHTTPError
+
+        from doc_builder import translate_model
+
+        try:
+            from httpx2 import RemoteProtocolError
+        except ImportError:
+            from httpx import RemoteProtocolError
+
+        paused = httpx.Response(503, headers={"Retry-After": "5"}, request=httpx.Request("POST", "https://x"))
+        answer = mock.Mock(choices=[mock.Mock(message=mock.Mock(content="ok"))])
+        used = []
+
+        def chat_completion(client, **kwargs):
+            used.append(client.provider)
+            if client.provider != translate_model.PROVIDER:
+                # what the job got when a provider closed the connection in the middle of an answer
+                raise RemoteProtocolError("peer closed connection without sending complete message body")
+            if used.count(translate_model.PROVIDER) <= translate_model.FALLBACK_AFTER:
+                raise HfHubHTTPError("paused", response=paused)
+            return answer
+
+        with (
+            mock.patch.object(InferenceClient, "chat_completion", autospec=True, side_effect=chat_completion),
+            mock.patch.object(translate_model.time, "sleep"),
+        ):
+            self.assertEqual(translate_model._inference_completion("hf_test")([]), "ok")
+        fallbacks = [p for p in translate_model.FALLBACK_PROVIDERS for _ in range(translate_model.FALLBACK_AFTER)]
+        self.assertEqual(
+            used, [translate_model.PROVIDER] * translate_model.FALLBACK_AFTER + fallbacks + [translate_model.PROVIDER]
+        )
+
     def test_refused_request_keeps_block_in_english(self):
         import httpx
         from huggingface_hub import InferenceClient

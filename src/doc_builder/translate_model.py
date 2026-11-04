@@ -30,10 +30,11 @@ from .translate_html import check_markup, drop_invented_tags
 
 MODEL = "Qwen/Qwen3.8-27B"
 PROVIDER = "cerebras"
-# Used in order once the provider before keeps failing (e.g. paused by the router's circuit breaker).
+# Used in order once the provider before keeps failing (e.g. paused by the router's circuit breaker), then PROVIDER again.
 # They serve the same model, so their answers are cached like PROVIDER's and not retranslated once it is back.
 # Not every provider enforces the `json_schema` response format: check `translate_segments` before adding one.
-FALLBACK_PROVIDERS = ("deepinfra", "featherless-ai")
+# featherless-ai rate-limits a job's concurrent requests until they run out of retries.
+FALLBACK_PROVIDERS = ("deepinfra",)
 # Inference usage is billed to this organization (`X-HF-Bill-To` header), not to the token's owner:
 # https://huggingface.co/docs/inference-providers/pricing#billing-for-team-and-enterprise-organizations
 BILL_TO = "huggingface"
@@ -230,12 +231,18 @@ def _inference_completion(token, bill_to=BILL_TO):
     from huggingface_hub import InferenceClient
     from huggingface_hub.errors import HfHubHTTPError
 
+    try:
+        from httpx2 import TransportError  # what huggingface_hub>=2 sends requests with
+    except ImportError:
+        from httpx import TransportError
+
     providers = (PROVIDER, *FALLBACK_PROVIDERS)
     clients = [InferenceClient(provider=p, token=token, bill_to=bill_to or None) for p in providers]
     # When one request is rate-limited, every thread of the job waits, instead of each one
     # hammering the provider until it runs out of retries.
     pause = {"until": 0.0}
-    # Index in `providers` of the one every request uses: a run never goes back to a failing provider.
+    # Index in `providers` of the one every request uses: a run only goes back to a failing provider
+    # once all the others failed too.
     current = {"provider": 0}
     refused = {"requests": 0}
     lock = threading.Lock()
@@ -247,11 +254,11 @@ def _inference_completion(token, bill_to=BILL_TO):
             time.sleep(delay)
 
     def fall_back(provider):
-        """Moves every request past a failing `provider`; False when there is none left."""
+        """Moves every request from a failing `provider` to the next one, after the last to the first."""
         with lock:
-            if current["provider"] == provider and provider + 1 < len(providers):
-                current["provider"] += 1
-                print(f"  {providers[provider]} keeps failing, using {providers[provider + 1]} from now on")
+            if current["provider"] == provider and len(providers) > 1:
+                current["provider"] = (provider + 1) % len(providers)
+                print(f"  {providers[provider]} keeps failing, using {providers[current['provider']]} from now on")
             return current["provider"] != provider
 
     def complete(messages, temperature=0, response_format=None):
@@ -272,8 +279,10 @@ def _inference_completion(token, bill_to=BILL_TO):
                 )
                 refused["requests"] = 0
                 return response.choices[0].message.content or ""
-            except HfHubHTTPError as exc:
-                status = getattr(exc.response, "status_code", None)
+            except (HfHubHTTPError, TransportError) as exc:
+                # no response when the connection broke (e.g. closed before the answer was complete): retried
+                response = getattr(exc, "response", None)
+                status = getattr(response, "status_code", None)
                 if status == 400:
                     with lock:
                         refused["requests"] += 1
@@ -283,13 +292,13 @@ def _inference_completion(token, bill_to=BILL_TO):
                     if not many:
                         reason = getattr(exc.response, "text", "")[:200]
                         raise TranslationFailed(f"{providers[provider]} refused the request: {reason}") from exc
-                if status not in RETRY_STATUSES or attempt == MAX_ATTEMPTS - 1:
+                if (status is not None and status not in RETRY_STATUSES) or attempt == MAX_ATTEMPTS - 1:
                     raise
                 if status != 429:
                     failures += 1
                     if failures >= FALLBACK_AFTER and fall_back(provider):
                         continue
-                delay = _retry_after(exc.response) or min(120, 2**attempt) * random.uniform(0.5, 1.5)
+                delay = _retry_after(response) or min(120, 2**attempt) * random.uniform(0.5, 1.5)
                 if status == 429:
                     with lock:
                         pause["until"] = max(pause["until"], time.monotonic() + delay)
