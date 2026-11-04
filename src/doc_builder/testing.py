@@ -19,6 +19,8 @@ from collections.abc import Callable, Iterable
 from dataclasses import dataclass, field
 from pathlib import Path
 
+from .runnable_params import parse_fence_attributes
+
 _CONTINUATION_LABEL_PATTERN = re.compile(r"^(?P<base>.+):(?P<suffix>[1-9]\d*)$")
 _PYTEST_DECORATOR_PATTERN = re.compile(r"^#\s*pytest-decorator:\s*(.+)$", re.MULTILINE)
 
@@ -38,6 +40,8 @@ class RunnableBlock:
     name: str
     idx: int
     decorators: list[str] = field(default_factory=list)
+    # ``key=value`` fence attributes, e.g. ``checkpoints="model_id"`` (see ``runnable_params``).
+    attributes: dict[str, str] = field(default_factory=dict)
 
 
 class DocIntegrationTest(unittest.TestCase):
@@ -107,7 +111,7 @@ class DocIntegrationTest(unittest.TestCase):
     def _collect_runnable_blocks_from_text(cls, text: str) -> list[RunnableBlock]:
         blocks = []
         block_indices_by_name = {}
-        for idx, (code, name, decorators) in enumerate(cls._iter_runnable_code_blocks(text)):
+        for idx, (code, name, decorators, attributes) in enumerate(cls._iter_runnable_code_blocks(text)):
             safe_name = name or f"doc_block_{idx}"
             continuation_match = _CONTINUATION_LABEL_PATTERN.match(safe_name)
             if continuation_match:
@@ -118,14 +122,16 @@ class DocIntegrationTest(unittest.TestCase):
                     continue
 
             block_indices_by_name[safe_name] = len(blocks)
-            blocks.append(RunnableBlock(code=code, name=safe_name, idx=idx, decorators=decorators))
+            blocks.append(
+                RunnableBlock(code=code, name=safe_name, idx=idx, decorators=decorators, attributes=attributes)
+            )
 
         return blocks
 
     @classmethod
-    def _iter_runnable_code_blocks(cls, text: str) -> Iterable[tuple[str, str | None, list[str]]]:
+    def _iter_runnable_code_blocks(cls, text: str) -> Iterable[tuple[str, str | None, list[str], dict[str, str]]]:
         """
-        Yield (code, name, decorators) tuples for blocks marked with the runnable flag.
+        Yield (code, name, decorators, attributes) tuples for blocks marked with the runnable flag.
         Supports optional naming via a suffix: ```py runnable:test_name
         A later block named ```py runnable:test_name:2``` continues the earlier test.
 
@@ -135,7 +141,8 @@ class DocIntegrationTest(unittest.TestCase):
         """
         pattern = re.compile(r"```(?P<lang>python|py)(?P<flags>[^\n]*)\n(?P<code>.+?)\n```", re.DOTALL)
         for match in pattern.finditer(text):
-            flags = [flag.strip() for flag in match.group("flags").split() if flag.strip()]
+            attributes = parse_fence_attributes(match.group("flags"))
+            flags = [flag.strip() for flag in match.group("flags").split() if flag.strip() and "=" not in flag]
             runnable_flags = [
                 flag for flag in flags if flag == cls.runnable_flag or flag.startswith(f"{cls.runnable_flag}:")
             ]
@@ -155,7 +162,7 @@ class DocIntegrationTest(unittest.TestCase):
                         decorators.append(path)
             code = _PYTEST_DECORATOR_PATTERN.sub("", code).strip()
 
-            yield code, name, decorators
+            yield code, name, decorators, attributes
 
     def _run_cleanup(self):
         if callable(self.cleanup_func):
