@@ -808,6 +808,27 @@ def test_math_headings_use_the_renderer_placeholder_anchor(tmp_path):
     assert broken_links == [("source-only slug", "target.md#loss-l-function", 2)]
 
 
+def test_parenthesized_math_keeps_the_whitespace_before_it(tmp_path):
+    target = tmp_path / "target.md"
+    target.write_text("## Loss \\\\(L\\\\) function\n## Next\n\\\\(x\\\\) is not in the heading\n", encoding="utf-8")
+    source = tmp_path / "source.md"
+    source.write_text(
+        "[spaced](target.md#loss-katexparse0marker-function)\n"
+        "[next](target.md#next)\n"
+        "[joined](target.md#losskatexparse0marker-function)\n"
+        "[merged](target.md#nextkatexparse1marker-is-not-in-the-heading)\n",
+        encoding="utf-8",
+    )
+
+    broken_links, total_links = check_file_links(source, tmp_path)
+
+    assert total_links == 4
+    assert broken_links == [
+        ("joined", "target.md#losskatexparse0marker-function", 3),
+        ("merged", "target.md#nextkatexparse1marker-is-not-in-the-heading", 4),
+    ]
+
+
 def test_autodoc_makes_all_math_counters_uncertain(tmp_path):
     target = tmp_path / "target.md"
     target.write_text(
