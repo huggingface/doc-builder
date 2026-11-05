@@ -248,8 +248,10 @@ class TranslateHtmlTester(unittest.TestCase):
         def chat_completion(client, **kwargs):
             used.append(client.provider)
             if client.provider != translate_model.PROVIDER:
-                # what the job got when a provider closed the connection in the middle of an answer
-                raise RemoteProtocolError("peer closed connection without sending complete message body")
+                # what jobs got when a provider closed the connection in the middle of an answer, or sent a broken one
+                if used.count(client.provider) % 2:
+                    raise RemoteProtocolError("peer closed connection without sending complete message body")
+                raise json.JSONDecodeError("Extra data", '{"choices": []} {', 16)
             if used.count(translate_model.PROVIDER) <= translate_model.FALLBACK_AFTER:
                 raise HfHubHTTPError("paused", response=paused)
             return answer

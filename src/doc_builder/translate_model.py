@@ -279,8 +279,9 @@ def _inference_completion(token, bill_to=BILL_TO):
                 )
                 refused["requests"] = 0
                 return response.choices[0].message.content or ""
-            except (HfHubHTTPError, TransportError) as exc:
-                # no response when the connection broke (e.g. closed before the answer was complete): retried
+            except (HfHubHTTPError, TransportError, json.JSONDecodeError) as exc:
+                # no response when the connection broke (e.g. closed before the answer was complete) or the answer
+                # isn't JSON: retried
                 response = getattr(exc, "response", None)
                 status = getattr(response, "status_code", None)
                 if status == 400:
