@@ -15,3 +15,5 @@
 [[autodoc]] sample_function
 
 [[autodoc]] legacy_function
+
+[[autodoc]] mix_embeddings

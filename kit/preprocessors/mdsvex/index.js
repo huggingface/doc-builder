@@ -75,12 +75,13 @@ export const mdsvexPreprocess = {
 			// if (filename.includes("course/")) {
 			// 	content = addCourseImports(content);
 			// }
+			const isFragment = content.startsWith(DOCSTRING_FRAGMENT_MARKER);
 			wrapCodeBlocks = content.includes(WRAP_CODE_BLOCKS_FLAG);
 			stretchTables = content.includes(STRETCH_TABLES_FLAG);
 			content = markKatex(content, markedKatex);
 			content = escapeSvelteConditionals(content);
 			const processed = await _mdsvexPreprocess.markup({ content, filename });
-			processed.code = renderKatex(processed.code, markedKatex);
+			processed.code = renderKatex(processed.code, markedKatex, isFragment);
 			processed.code = renderCode(processed.code, filename);
 			processed.code = wrapTableRowsInTbody(processed.code);
 			if (stretchTables) {
@@ -127,11 +128,18 @@ function markKatex(content, markedKatex) {
 		);
 }
 
-function renderKatex(code, markedKatex) {
+/**
+ * @param {string} code
+ * @param {Record<any, any>} markedKatex
+ * @param {boolean} isFragment whether `code` is a docstring fragment (see DOCSTRING_FRAGMENT_MARKER)
+ */
+function renderKatex(code, markedKatex, isFragment) {
 	return code.replace(/KATEXPARSE[0-9]+MARKER/g, (marker) => {
 		let { tex, displayMode } = markedKatex[marker];
 		tex = tex.replaceAll("&#123;", "{");
 		tex = tex.replaceAll("&#60;", "<");
+		// docstring.js escapes the `}}` of docstring fragments, e.g. in `\frac{1}{\sqrt{x}}`
+		tex = tex.replaceAll("}&zwnj;}", "}}");
 		const html = katex.renderToString(renderSvelteChars(tex), {
 			displayMode,
 			throwOnError: false,
@@ -139,7 +147,10 @@ function renderKatex(code, markedKatex) {
 		if (html.includes(`katex-error`)) {
 			throw new Error(`[KaTeX] Error while parsing markdown\n ${html}`);
 		}
-		return `{@html ${JSON.stringify(html)}}`;
+		// A docstring fragment is HTML, which the Docstring component renders with `{@html}`: a
+		// nested `{@html}` tag would be shown as text. In the Svelte markup of a page, the braces of
+		// the KaTeX HTML (e.g. of `\frac{1}{2}` in its annotation) would be expressions.
+		return isFragment ? html : `{@html ${JSON.stringify(html)}}`;
 	});
 }
 
