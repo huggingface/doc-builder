@@ -16,8 +16,10 @@
 Machine-translate built English docs into other languages, incrementally.
 
 Reads the built English pages (`<library>/<version>/en/`) from the doc bucket served by
-huggingface.co and writes translated pages to `<library>/<version>/<language>/` in a translation
-bucket, in the same layout, so moon-landing serves them like any other language.
+huggingface.co and writes translated pages next to them, to `<library>/<version>/<language>/`, so
+moon-landing serves them like any other language. A language folder with its own `_app/` comes from the
+library's own docs build (a human translation, the workflows' former `languages` input). Those of `main` are deleted
+before its first machine translation; any other is never touched.
 
 Like `populate-search-engine --incremental`, every run diffs against a tracker:
 
@@ -27,8 +29,10 @@ Like `populate-search-engine --incremental`, every run diffs against a tracker:
   language was first translated are never backfilled.
 - Translations are cached per block, so a page whose HTML changed (e.g. after a doc-builder
   update that changes every page's asset hashes) only sends its edited paragraphs to the model.
+- A page with blocks kept in English (answers that failed validation) is retried on the next
+  runs, up to `MAX_TRIES` translations of the same English; after that only an English change retries it.
 
-State lives in the translation bucket under `.translation/<library>/<language>/`.
+State lives in the doc bucket under `.translation/<library>/<language>/`.
 """
 
 import gzip
@@ -36,6 +40,7 @@ import hashlib
 import json
 import os
 import re
+import shutil
 import tempfile
 import warnings
 from concurrent.futures import ThreadPoolExecutor
@@ -49,11 +54,24 @@ from . import translate_html as th
 from .translate_md import translate_md
 from .translate_model import BILL_TO, TranslationFailed, Translator
 
-SOURCE_BUCKET = "hf://buckets/hf-doc-build/doc"
-# Where translations are published, in the same <library>/<version>/<language>/ layout.
-TRANSLATION_BUCKET = "hf://buckets/hf-doc-build/doc-translate"
+# Served by huggingface.co: English builds are read from it, translations are written to it.
+DOC_BUCKET = "hf://buckets/hf-doc-build/doc"
 # Libraries and languages translated by the scheduled job.
-TRANSLATED_DOCS = {"hub": ["zh", "ja", "ko", "pt", "es", "fr", "vi", "id", "tr", "ru", "ar"]}
+TRANSLATED_DOCS = {
+    "accelerate": ["zh", "ja", "ko", "pt", "es", "fr", "vi", "id", "tr", "ru", "ar"],
+    "chat-ui": ["zh", "ja", "ko", "pt", "es", "fr", "vi", "id", "tr", "ru", "ar"],
+    "datasets": ["zh", "ja", "ko", "pt", "es", "fr", "vi", "id", "tr", "ru", "ar"],
+    "diffusers": ["zh", "ja", "ko", "pt", "es", "fr", "vi", "id", "tr", "ru", "ar"],
+    "hub": ["zh", "ja", "ko", "pt", "es", "fr", "vi", "id", "tr", "ru", "ar"],
+    "huggingface.js": ["zh", "ja", "ko", "pt", "es", "fr", "vi", "id", "tr", "ru", "ar"],
+    "huggingface_hub": ["zh", "ja", "ko", "pt", "es", "fr", "vi", "id", "tr", "ru", "ar"],
+    "lerobot": ["zh", "ja", "ko", "pt", "es", "fr", "vi", "id", "tr", "ru", "ar"],
+    "peft": ["zh", "ja", "ko", "pt", "es", "fr", "vi", "id", "tr", "ru", "ar"],
+    "text-embeddings-inference": ["zh", "ja", "ko", "pt", "es", "fr", "vi", "id", "tr", "ru", "ar"],
+    "timm": ["zh", "ja", "ko", "pt", "es", "fr", "vi", "id", "tr", "ru", "ar"],
+    "trackio": ["zh", "ja", "ko", "pt", "es", "fr", "vi", "id", "tr", "ru", "ar"],
+    "transformers": ["zh", "ja", "ko", "pt", "es", "fr", "vi", "id", "tr", "ru", "ar"],
+}
 # Copied unchanged from the English build. Pages (`.html`) and their Markdown (`.md`, served for
 # "Copy page" and `Accept: text/plain`) are translated; llms.txt and llms-full.txt are rebuilt from
 # the translated Markdown.
@@ -62,6 +80,11 @@ COPIED_NAMES = {"_redirects.yml"}
 LLMS_FEEDS = ("llms.txt", "llms-full.txt")
 STATE_DIR = ".translation"
 FLUSH_EVERY = 20  # pages; bounds the work lost if a run is interrupted
+# Translations of the same English page while some of its blocks fail: past that, the model keeps getting them wrong.
+MAX_TRIES = 3
+# Bump when `translate_html.find_blocks` finds prose it used to skip (2: raw HTML outside paragraphs and lists),
+# so translated pages are processed again; their other blocks come from the cache.
+BLOCKS_VERSION = 2
 # Above this share of blocks kept in English, a run fails: something is systematically wrong (model, prompt, provider).
 MAX_ENGLISH_BLOCKS = 0.1
 
@@ -119,6 +142,23 @@ class Store:
 
     def _remote(self, rel):
         return f"{self.prefix}/{rel}" if self.prefix else rel
+
+    def folders(self, directory):
+        """Names of the folders directly in `directory`."""
+        if not self.is_bucket:
+            root = self.root / directory
+            return sorted(p.name for p in root.iterdir() if p.is_dir()) if root.is_dir() else []
+        from huggingface_hub import BucketFolder
+
+        base = self._remote(directory).rstrip("/") + "/"
+        return sorted(
+            PurePosixPath(entry.path).name
+            for entry in self.api.list_bucket_tree(self.bucket_id, prefix=base, recursive=False)
+            if isinstance(entry, BucketFolder)
+        )
+
+    def has_folder(self, directory, name):
+        return name in self.folders(directory)
 
     def walk(self, directory):
         """`{path relative to directory: content hash}`, skipping `_app` (SvelteKit assets)."""
@@ -190,9 +230,27 @@ class Store:
         for i in range(0, len(paths), 500):
             self.api.batch_bucket_files(self.bucket_id, delete=[self._remote(p) for p in paths[i : i + 500]])
 
+    def delete_folder(self, directory):
+        """Delete `directory` and everything in it, `_app` included. Returns the number of files deleted."""
+        if not self.is_bucket:
+            root = self.root / directory
+            count = sum(p.is_file() for p in root.rglob("*"))
+            shutil.rmtree(root, ignore_errors=True)
+            return count
+        from huggingface_hub import BucketFolder
+
+        base = self._remote(directory).rstrip("/") + "/"
+        paths = [
+            f"{directory}/{entry.path[len(base) :]}"
+            for entry in self.api.list_bucket_tree(self.bucket_id, prefix=base, recursive=True)
+            if not isinstance(entry, BucketFolder)
+        ]
+        self.delete(paths)
+        return len(paths)
+
 
 class LanguageState:
-    """Tracker and block cache of one library/language, stored in the translation bucket."""
+    """Tracker and block cache of one library/language, stored in the doc bucket."""
 
     def __init__(self, store, library, language):
         self.store = store
@@ -236,7 +294,8 @@ def translate_page(page, translator, library, version, language, workers=8):
                 markup, elements = th.to_markup(body[region[0] : region[1]], freeze_leading_strong=frozen)
                 return [(*region, th.from_markup(translator.translate_markup(markup), elements))]
             return th.replace_text_nodes(block, translator.translate_segments(th.segments(body, block)))
-        except TranslationFailed as exc:
+        # ValueError: HTML `to_markup` cannot convert
+        except (TranslationFailed, ValueError) as exc:
             print(f"  kept in English ({exc}): {th.visible_text(body[block.start : block.end])[:80]!r}")
             return None
 
@@ -364,21 +423,52 @@ def translate_llms_feeds(source, target, src_dir, dst_dir, library, english):
         }
 
 
+def clear_docs_build_translations(target, library, language):
+    """
+    Before the first machine translation of `<library>/main` into `language`, delete the translations of `main` built
+    by the library's docs build: `main` builds no longer update them (huggingface/doc-builder#870), and they would
+    clash with the machine translation, in its folder or next to it (e.g. `cn` or `zh-CN` next to `zh`).
+    """
+    main = f"{library}/main"
+    # the other configured languages run in parallel jobs, each clearing its own folder
+    others = {"en", *TRANSLATED_DOCS.get(library, ())} - {language}
+    for name in target.folders(main):
+        # nothing in this language's folder is ours yet; elsewhere, only folders of a docs build (never a translation)
+        if name == language or (name not in others and target.has_folder(f"{main}/{name}", "_app")):
+            count = target.delete_folder(f"{main}/{name}")
+            print(f"{main}/{name}: deleted the translation built by the docs build ({count} files)")
+
+
 def translate_version(source, target, state, translator, library, version, language, stats, max_pages=None, workers=8):
     """Bring `<library>/<version>/<language>` in the target up to date with the English build."""
     src_dir, dst_dir = f"{library}/{version}/en", f"{library}/{version}/{language}"
-    record = state.version(version)
-    tracked = record["files"]
     english = source.walk(src_dir)
     if not english:
         print(f"{src_dir}: no English build, skipping")
         return
     # pages left over from earlier builds are treated as removed: not translated, and their translation is deleted
     english = latest_build(source, src_dir, english)
+    if version == "main" and version not in state.tracker["versions"]:
+        clear_docs_build_translations(target, library, language)
+    record = state.version(version)
+    tracked = record["files"]
+    # docs builds ship their own JS in `_app/`; translations reuse the English one
+    if target.has_folder(dst_dir, "_app"):
+        print(f"{dst_dir}: built by the library's docs build, skipping")
+        return
 
     def outdated(path):
         entry = tracked.get(path)
-        return entry is None or entry["source"] != english[path] or not entry.get("complete", True)
+        if entry is None or entry["source"] != english[path]:
+            return True
+        if path.endswith(".html") and entry.get("blocks", 1) < BLOCKS_VERSION:
+            return True
+        return not entry.get("complete", True) and entry.get("tries", 0) < MAX_TRIES
+
+    def tries(path):
+        """Translations of the current English of `path` with blocks kept in English, this one included."""
+        previous = tracked.get(path)
+        return (previous.get("tries", 0) if previous and previous["source"] == english[path] else 0) + 1
 
     pages = sorted(p for p in english if p.endswith(".html") and outdated(p))
     markdown = sorted(p for p in english if p.endswith(".md") and outdated(p))
@@ -388,8 +478,10 @@ def translate_version(source, target, state, translator, library, version, langu
     if max_pages is not None:
         pages = pages[:max_pages]
         markdown = [p for p in markdown if p[: -len(".md")] + ".html" in pages]
+    given_up = sum(not outdated(p) and not tracked[p].get("complete", True) for p in english if p in tracked)
     print(
         f"{dst_dir}: {len(pages)} pages and {len(markdown)} Markdown files to translate, {len(copies)} files to copy"
+        + (f"; {given_up} keep English blocks after {MAX_TRIES} tries" if given_up else "")
     )
 
     copied = {path[len(src_dir) + 1 :]: data for path, data in source.read(f"{src_dir}/{p}" for p in copies).items()}
@@ -436,9 +528,9 @@ def translate_version(source, target, state, translator, library, version, langu
                 stats.waiting.append(f"{dst_dir}/{path}")
                 continue
             html, (blocks, failed), title = translate_page(text, translator, library, version, language, workers)
-            entry = {"source": english[path], "complete": failed == 0, "title": list(title)}
+            entry = {"source": english[path], "complete": failed == 0, "title": list(title), "blocks": BLOCKS_VERSION}
             if failed:
-                entry["english_blocks"] = failed
+                entry.update(english_blocks=failed, tries=tries(path))
                 stats.incomplete.append((f"{dst_dir}/{path}", failed, blocks))
             pending[path] = (html.encode(), entry)
             stats.pages += 1
@@ -459,7 +551,7 @@ def translate_version(source, target, state, translator, library, version, langu
             )
             entry = {"source": english[path], "complete": failed == 0}
             if failed:
-                entry["english_blocks"] = failed
+                entry.update(english_blocks=failed, tries=tries(path))
                 stats.incomplete.append((f"{dst_dir}/{path}", failed, blocks))
             pending[path] = (md.encode(), entry)
             stats.pages += 1
@@ -482,17 +574,16 @@ def translate_version(source, target, state, translator, library, version, langu
             record["llms"] = digest
         record["llms_source"] = english["llms.txt"]
 
-    # Pages removed from the English build disappear from the translation too.
+    # Pages removed from the English build disappear from the translation too (only files this job wrote).
     existing = target.walk(dst_dir)
-    stale = sorted(p for p in existing if p not in english and p != "_toctree.yml")
+    stale = sorted(p for p in existing if p not in english and p in tracked)
     if stale:
         print(f"{dst_dir}: deleting {len(stale)} pages removed from the English build")
         target.delete(f"{dst_dir}/{p}" for p in stale)
     record["files"] = {p: e for p, e in tracked.items() if p in english}
 
-    done = all(e.get("complete", True) for e in record["files"].values()) and set(record["files"]) >= {
-        p for p in english if p.endswith(".html")
-    }
+    settled = all(e.get("complete", True) or e.get("tries", 0) >= MAX_TRIES for e in record["files"].values())
+    done = settled and set(record["files"]) >= {p for p in english if p.endswith(".html")}
     if version != "main" and done:
         record["frozen"] = True
         print(f"{dst_dir}: complete, frozen")
@@ -538,7 +629,7 @@ def translate_library(
     return stats
 
 
-def translate_docs(target_url, inference_token, source_url=SOURCE_BUCKET, translations=None, token=None, **kwargs):
+def translate_docs(target_url, inference_token, source_url=DOC_BUCKET, translations=None, token=None, **kwargs):
     """
     Translate every configured library/language; returns the `RunStats` of the whole run.
     `token` reads and writes the buckets; `inference_token` calls the model on HF Inference Providers.

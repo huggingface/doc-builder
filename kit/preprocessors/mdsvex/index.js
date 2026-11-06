@@ -169,6 +169,12 @@ const validTags = [...htmlTags, ...svelteTags];
 let hfDocBodyStart = false;
 let hfDocBodyEnd = false;
 
+/**
+ * Starts the markdown of a docstring fragment (a parameter description, a return type, etc., see
+ * docstring.js), which is doc body as a whole: pages delimit theirs with the HF_DOC_BODY markers.
+ */
+export const DOCSTRING_FRAGMENT_MARKER = "<!--HF DOCSTRING FRAGMENT-->";
+
 function addToTree(tree, node) {
 	if (tree.length === 0 || tree[tree.length - 1].depth >= node.depth) {
 		tree.push(node);
@@ -196,10 +202,17 @@ function treeVisitor() {
 	// depending on visitor traversal order (see onLink).
 	let bodyStartOffset = -1;
 	let bodyEndOffset = Infinity;
+	// Whether the document is a docstring fragment (see DOCSTRING_FRAGMENT_MARKER)
+	let isFragment = false;
 
 	return transform;
 
 	function transform(tree) {
+		isFragment =
+			tree.children[0]?.type === "html" && tree.children[0].value === DOCSTRING_FRAGMENT_MARKER;
+		if (isFragment) {
+			tree.children.shift();
+		}
 		let headings = [];
 		visit(tree, "heading", (node, index, parent) => {
 			const depth = node.depth;
@@ -250,6 +263,10 @@ function treeVisitor() {
 		visit(tree, "image", onLink);
 		visit(tree, "blockquote", onBlockquote);
 
+		// the page-level metadata would be a stray inline script inside a fragment
+		if (isFragment) {
+			return;
+		}
 		let jsonString = JSON.stringify(headings[0]);
 		if (jsonString) {
 			jsonString = jsonString.replaceAll("'", "\\'");
@@ -262,6 +279,9 @@ function treeVisitor() {
 	}
 
 	function isWithinDocBody(node) {
+		if (isFragment) {
+			return true;
+		}
 		if (["<!--HF DOCBUILD BODY START-->", "HF_DOC_BODY_START"].includes(node.value)) {
 			hfDocBodyStart = true;
 			hfDocBodyEnd = false;
@@ -300,7 +320,10 @@ function treeVisitor() {
 	 */
 	function onLink(node) {
 		const offset = node.position?.start?.offset ?? -1;
-		if (bodyStartOffset === -1 || offset < bodyStartOffset || offset > bodyEndOffset) {
+		if (
+			!isFragment &&
+			(bodyStartOffset === -1 || offset < bodyStartOffset || offset > bodyEndOffset)
+		) {
 			return;
 		}
 		if (typeof node.url === "string") {
@@ -363,6 +386,10 @@ function treeVisitor() {
 		}
 
 		childrenLevel1[0].children = childrenLevel1[0].children.slice(1);
+		// a hard line break right after the marker (`> [!NOTE]  `)
+		if (childrenLevel1[0].children[0]?.type === "break") {
+			childrenLevel1[0].children.shift();
+		}
 		const [firstChild] = childrenLevel1[0].children;
 		if (firstChild && firstChild.type === "text") {
 			firstChild.value = firstChild.value.replace(/^\s+/u, "");
@@ -390,8 +417,35 @@ function treeVisitor() {
 	}
 }
 
+/**
+ * The remark-parse bundled with mdsvex follows the original Markdown syntax,
+ * which allows whitespace (including a line break) between the `[text]` and
+ * `[label]` of a full reference link. CommonMark forbids it. So
+ * `[!NOTE]\n[Managed accounts](./sso)` was parsed as one `linkReference` with
+ * identifier "managed accounts" followed by the text `(./sso)`: the callout
+ * marker was lost and the link broken. The same happened in prose, e.g.
+ * `[optional] [link](./x)`. Run the `reference` tokenizer in commonmark mode
+ * (in that tokenizer, the option only controls this whitespace), so `[text]`
+ * stays a shortcut reference and `[link](./x)` is parsed as a link.
+ */
+function strictReferenceLinks() {
+	const tokenizers = this.Parser.prototype.inlineTokenizers;
+	const reference = tokenizers.reference;
+	function strictReference(eat, value, silent) {
+		const options = this.options;
+		this.options = { ...options, commonmark: true };
+		try {
+			return reference.call(this, eat, value, silent);
+		} finally {
+			this.options = options;
+		}
+	}
+	strictReference.locator = reference.locator;
+	tokenizers.reference = strictReference;
+}
+
 const _mdsvexPreprocess = mdsvex({
-	remarkPlugins: [treeVisitor],
+	remarkPlugins: [strictReferenceLinks, treeVisitor],
 	extensions: ["svelte"],
 	highlight: {
 		highlighter: function (code, lang) {

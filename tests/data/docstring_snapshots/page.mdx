@@ -1,0 +1,293 @@
+<script lang="ts">
+import {onMount} from "svelte";
+import Tip from "$lib/Tip.svelte";
+import CopyLLMTxtMenu from "$lib/CopyLLMTxtMenu.svelte";
+import Youtube from "$lib/Youtube.svelte";
+import Docstring from "$lib/Docstring.svelte";
+import CodeBlock from "$lib/CodeBlock.svelte";
+import CodeBlockFw from "$lib/CodeBlockFw.svelte";
+import DocNotebookDropdown from "$lib/DocNotebookDropdown.svelte";
+import CourseFloatingBanner from "$lib/CourseFloatingBanner.svelte";
+import IconCopyLink from "$lib/IconCopyLink.svelte";
+import FrameworkContent from "$lib/FrameworkContent.svelte";
+import Markdown from "$lib/Markdown.svelte";
+import Question from "$lib/Question.svelte";
+import FrameworkSwitchCourse from "$lib/FrameworkSwitchCourse.svelte";
+import InferenceApi from "$lib/InferenceApi.svelte";
+import TokenizersLanguageContent from "$lib/TokenizersLanguageContent.svelte";
+import ExampleCodeBlock from "$lib/ExampleCodeBlock.svelte";
+import Added from "$lib/Added.svelte";
+import Changed from "$lib/Changed.svelte";
+import Deprecated from "$lib/Deprecated.svelte";
+import PipelineIcon from "$lib/PipelineIcon.svelte";
+import PipelineTag from "$lib/PipelineTag.svelte";
+import Heading from "$lib/Heading.svelte";
+import HfOptions from "$lib/HfOptions.svelte";
+import HfOption from "$lib/HfOption.svelte";
+import EditOnGithub from "$lib/EditOnGithub.svelte";
+import InferenceSnippet from "$lib/InferenceSnippet/InferenceSnippet.svelte";
+import MermaidChart from "$lib/MermaidChart.svelte";
+let fw: "pt" | "tf" = "pt";
+onMount(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    fw = urlParams.get("fw") || "pt";
+});
+</script>
+<svelte:head>
+  <meta name="hf:doc:metadata" content={metadata} >
+</svelte:head>
+
+<!--HF DOCBUILD BODY START-->
+
+HF_DOC_BODY_START
+
+<CopyLLMTxtMenu containerStyle="float: inline-end; margin-inline-start: 10px; display: inline-flex; position: relative; z-index: 10;"></CopyLLMTxtMenu>
+
+# Docstring snapshots
+
+## Classes[[docstring_samples.SampleTokenizer]]
+
+<div class="docstring border-l-2 border-t-2 pl-4 pt-3.5 border-gray-100 rounded-tl-xl mb-6 mt-8">
+
+
+<Docstring name={"class docstring_samples.SampleTokenizer"} anchor={"docstring_samples.SampleTokenizer"} source={"https://github.com/huggingface/docstring_samples/blob/main/src/docstring_samples.py#L12"} parameters={[{"name": "vocab_file", "val": ""}, {"name": "do_lower_case", "val": " = True"}, {"name": "unk_token", "val": " = '<unk>'"}, {"name": "pad_token", "val": " = '<pad>'"}, {"name": "**kwargs", "val": ""}]}>
+<paramsdesc>- **vocab_file** (`str`) --
+  Path to the vocabulary file.
+- **do_lower_case** (`bool`, *optional*, defaults to `True`) --
+  Whether or not to lowercase the input when tokenizing.
+</paramsdesc><paramsgroup><paramsgrouptitle>Special tokens</paramsgrouptitle><paramsgroupdesc>
+- **unk_token** (`str`, *optional*, defaults to `"<unk>"`) --
+  The unknown token. A token that is not in the vocabulary cannot be converted to an ID and is set to be
+  this token instead.
+- **pad_token** (`str`, *optional*, defaults to `"<pad>"`) --
+  The token used for padding, for example when batching sequences of different lengths.</paramsgroupdesc></paramsgroup></Docstring>
+
+Construct a sample tokenizer, based on a vocabulary file. Its outputs are described in [SampleOutput](/docs/docstring_samples/main/en/page#docstring_samples.SampleOutput).
+
+<Tip>
+
+Pass `do_lower_case=False` when the vocabulary is cased.
+
+</Tip>
+
+
+
+<ExampleCodeBlock anchor="docstring_samples.SampleTokenizer.example">
+
+Example:
+
+```python
+>>> from docstring_samples import SampleTokenizer
+
+>>> tokenizer = SampleTokenizer("vocab.txt")
+>>> tokenizer.encode("Hello world")
+[7592, 2088]
+```
+
+</ExampleCodeBlock>
+
+
+
+<div class="docstring border-l-2 border-t-2 pl-4 pt-3.5 border-gray-100 rounded-tl-xl mb-6 mt-8">
+
+
+<Docstring name={"encode"} anchor={"docstring_samples.SampleTokenizer.encode"} source={"https://github.com/huggingface/docstring_samples/blob/main/src/docstring_samples.py#L48"} parameters={[{"name": "text", "val": ": str"}, {"name": "max_length", "val": ": int | None = None"}, {"name": "special_tokens", "val": ": dict[str, int] = {'<s>': 0, '</s>': 1}"}]}>
+<paramsdesc>- **text** (`str`) --
+  The text to encode. Curly braces like `{"a": 1}` and angle brackets like `<mask>` render as text,
+  in code and outside of it: {"a": 1}, a <mask> token, issue #12.
+- **max_length** (`int`, *optional*) --
+  Maximum length of the returned sequence. When the text is longer:
+
+  - with `truncation=True`, the sequence is cut at `max_length`;
+  - otherwise, a warning is logged.
+
+  See [decode()](/docs/docstring_samples/main/en/page#docstring_samples.SampleTokenizer.decode) for the reverse operation.
+- **special_tokens** (`dict[str, int]`, *optional*) --
+  Special tokens to add, mapped to their ids.</paramsdesc><rettype>`list[int]`</rettype><retdesc>The token ids, starting with the id of `<s>`.</retdesc><raises>- ``ValueError`` -- If `text` is empty.
+- ``TypeError`` -- If `text` is not a string, for example when a list of strings is passed instead of a
+  single string.</raises><raisederrors>``ValueError`` or ``TypeError``</raisederrors></Docstring>
+
+Converts a string to a sequence of ids, using the vocabulary.
+
+
+
+
+
+
+
+
+
+
+
+
+</div>
+<div class="docstring border-l-2 border-t-2 pl-4 pt-3.5 border-gray-100 rounded-tl-xl mb-6 mt-8">
+
+
+<Docstring name={"decode"} anchor={"docstring_samples.SampleTokenizer.decode"} source={"https://github.com/huggingface/docstring_samples/blob/main/src/docstring_samples.py#L75"} parameters={[{"name": "ids", "val": ""}, {"name": "skip_special_tokens", "val": " = False"}]}>
+<paramsdesc>- **ids** (`list[int]`) --
+  The ids to decode, as returned by [SampleTokenizer.encode()](/docs/docstring_samples/main/en/page#docstring_samples.SampleTokenizer.encode).
+- **skip_special_tokens** (`bool`, *optional*, defaults to `False`) --
+  Whether or not to remove the special tokens from the output.</paramsdesc><rettype>`str`</rettype><retdesc>The decoded text, without special tokens when
+`skip_special_tokens=True`.</retdesc></Docstring>
+
+Converts a sequence of ids back to a string.
+
+
+
+
+
+
+
+
+</div>
+<div class="docstring border-l-2 border-t-2 pl-4 pt-3.5 border-gray-100 rounded-tl-xl mb-6 mt-8">
+
+
+<Docstring name={"iter_batches"} anchor={"docstring_samples.SampleTokenizer.iter_batches"} source={"https://github.com/huggingface/docstring_samples/blob/main/src/docstring_samples.py#L90"} parameters={[{"name": "texts", "val": ""}, {"name": "batch_size", "val": " = 8"}]}>
+<paramsdesc>- **texts** (`list[str]`) --
+  The texts to encode.
+- **batch_size** (`int`, *optional*, defaults to 8) --
+  The number of texts per batch.</paramsdesc><yieldtype>`list[list[int]]`</yieldtype><yielddesc>The encoded texts, `batch_size` at a time.</yielddesc></Docstring>
+
+Encodes texts in batches.
+
+
+
+
+
+
+
+
+</div>
+<div class="docstring border-l-2 border-t-2 pl-4 pt-3.5 border-gray-100 rounded-tl-xl mb-6 mt-8">
+
+
+<Docstring name={"vocab_size"} anchor={"docstring_samples.SampleTokenizer.vocab_size"} source={"https://github.com/huggingface/docstring_samples/blob/main/src/docstring_samples.py#L104"} parameters={[]}>
+</Docstring>
+
+`int`: Size of the vocabulary, special tokens included.
+
+
+</div></div>
+
+<div class="docstring border-l-2 border-t-2 pl-4 pt-3.5 border-gray-100 rounded-tl-xl mb-6 mt-8">
+
+
+<Docstring name={"class docstring_samples.SampleOutput"} anchor={"docstring_samples.SampleOutput"} source={"https://github.com/huggingface/docstring_samples/blob/main/src/docstring_samples.py#L113"} parameters={[{"name": "score", "val": ": float"}, {"name": "hidden_states", "val": ": tuple | None = None"}]}>
+<paramsdesc>- **score** (`float`) --
+  The score of the input.
+- **hidden_states** (`tuple(list[float])`, *optional*, returned when `output_hidden_states=True`) --
+  Hidden states of each layer.
+
+  <Tip warning={true}>
+
+  The first element holds the embeddings, not a layer output.
+
+  </Tip></paramsdesc></Docstring>
+
+Output of [sample_function()](/docs/docstring_samples/main/en/page#docstring_samples.sample_function).
+
+
+
+
+</div>
+
+## Functions[[docstring_samples.sample_function]]
+
+<div class="docstring border-l-2 border-t-2 pl-4 pt-3.5 border-gray-100 rounded-tl-xl mb-6 mt-8">
+
+
+<Docstring name={"docstring_samples.sample_function"} anchor={"docstring_samples.sample_function"} source={"https://github.com/huggingface/docstring_samples/blob/main/src/docstring_samples.py#L134"} parameters={[{"name": "inputs", "val": ""}, {"name": "*args", "val": ""}, {"name": "threshold", "val": ": float = 0.5"}, {"name": "callback", "val": " = None"}, {"name": "**kwargs", "val": ""}]}>
+<paramsdesc>- **inputs** (`str` or `list[str]`) --
+  The texts to process.
+
+  A second paragraph makes this a loose list item, where each paragraph is wrapped in its own `<p>`.
+- **threshold** (`float`, *optional*, defaults to 0.5) --
+  Scores below this value are dropped. The score of a text is computed as:
+
+  ```python
+  score = sum(weights) / len(weights)
+  ```
+
+  The code block and this paragraph belong to the description of `threshold`, and the two blank lines
+  after them don't end the list of parameters.
+
+
+- **callback** (`Callable`, *optional*) --
+  Called with each [SampleOutput](/docs/docstring_samples/main/en/page#docstring_samples.SampleOutput).
+
+  <Added version="1.2.0">
+
+  The `callback` argument.
+
+  </Added>
+- **kwargs** (`dict[str, Any]`, *optional*) --
+  Passed to [SampleTokenizer.encode()](/docs/docstring_samples/main/en/page#docstring_samples.SampleTokenizer.encode).
+
+  <Deprecated version="2.0.0">
+
+  Use `callback` instead.
+
+  </Deprecated></paramsdesc><rettype>[SampleOutput](/docs/docstring_samples/main/en/page#docstring_samples.SampleOutput) or `tuple(float)`</rettype><retdesc>A [SampleOutput](/docs/docstring_samples/main/en/page#docstring_samples.SampleOutput) when `return_dict=True`, otherwise a tuple of
+scores.</retdesc></Docstring>
+
+Runs the sample pipeline on `inputs`, with the tokenizer [SampleTokenizer](/docs/docstring_samples/main/en/page#docstring_samples.SampleTokenizer) and the threshold
+[threshold](/docs/docstring_samples/main/en/page#docstring_samples.sample_function.threshold).
+
+
+
+
+
+
+
+<ExampleCodeBlock anchor="docstring_samples.sample_function.example">
+
+Example:
+
+```python
+>>> output = sample_function("Hello")
+>>> output.score
+0.9
+```
+
+</ExampleCodeBlock>
+
+
+</div>
+
+<div class="docstring border-l-2 border-t-2 pl-4 pt-3.5 border-gray-100 rounded-tl-xl mb-6 mt-8">
+
+
+<Docstring name={"docstring_samples.legacy_function"} anchor={"docstring_samples.legacy_function"} source={"https://github.com/huggingface/docstring_samples/blob/main/src/docstring_samples.py#L186"} parameters={[{"name": "x", "val": ""}, {"name": "y", "val": " = 2"}]}>
+<paramsdesc>- **x** (`int`) --
+  The first number.
+- **y** (`int`, *optional*, defaults to 2) --
+  The second number.</paramsdesc><rettype>`int`</rettype><retdesc>The sum.</retdesc></Docstring>
+
+Adds `x` and `y`, see [SampleTokenizer](/docs/docstring_samples/main/en/page#docstring_samples.SampleTokenizer) and \\(x + y\\).
+
+
+
+
+
+
+
+<ExampleCodeBlock anchor="docstring_samples.legacy_function.example">
+
+Example:
+
+```python
+>>> legacy_function(1)
+3
+```
+
+</ExampleCodeBlock>
+
+
+</div>
+
+<!--HF DOCBUILD BODY END-->
+
+HF_DOC_BODY_END
+

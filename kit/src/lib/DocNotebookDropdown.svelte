@@ -26,7 +26,7 @@
 	}
 </script>
 
-<div class="flex space-x-1 {classNames}" style={containerStyle}>
+<div class="flex space-x-1 {classNames}" style={containerStyle} dir="ltr">
 	{@render alwaysVisible?.()}
 	{#if googleColabOptions.length === 1}
 		<a href={googleColabOptions[0].value} target="_blank">

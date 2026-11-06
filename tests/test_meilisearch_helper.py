@@ -12,9 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import json
 from types import SimpleNamespace
 
 import pytest
+import requests
+from meilisearch.errors import MeilisearchApiError
 
 from doc_builder.build_embeddings import Chunk, chunks_to_documents
 from doc_builder.meilisearch_helper import (
@@ -23,6 +26,7 @@ from doc_builder.meilisearch_helper import (
     delete_documents_from_db,
     generate_doc_id,
     update_all_documents,
+    update_db_settings,
 )
 
 
@@ -46,8 +50,8 @@ class FakeIndex:
 
 
 class FakeClient:
-    def __init__(self, task_status="succeeded"):
-        self.index_instance = FakeIndex(task_status)
+    def __init__(self, task_status="succeeded", index_instance=None):
+        self.index_instance = index_instance or FakeIndex(task_status)
 
     def index(self, index_name):
         assert index_name == "test-index"
@@ -176,3 +180,68 @@ def test_delete_documents_from_db_waits_for_the_deletion():
 def test_delete_documents_from_db_raises_when_the_deletion_fails():
     with pytest.raises(Exception, match="boom"):
         delete_documents_from_db(FakeClient(task_status="failed"), "test-index", ["doc-1"])
+
+
+class DeletedTaskIndex(FakeIndex):
+    """An index whose task is deleted before its status is read, as the hub's search crons do with finished tasks."""
+
+    def __init__(self, stored_ids):
+        super().__init__()
+        self.stored_ids = sorted(stored_ids)
+        self.scanned = False
+
+    def get_task(self, task_uid):
+        response = requests.Response()
+        response.status_code = 404
+        response._content = json.dumps(
+            {"message": f"Task `{task_uid}` not found.", "code": "task_not_found", "type": "invalid_request"}
+        ).encode()
+        raise MeilisearchApiError("Not Found", response)
+
+    def get_documents(self, params):
+        assert params["fields"] == ["id"]
+        self.scanned = True
+        page = self.stored_ids[params["offset"] : params["offset"] + params["limit"]]
+        return SimpleNamespace(results=[SimpleNamespace(id=doc_id) for doc_id in page])
+
+    def update_settings(self, settings):
+        return SimpleNamespace(task_uid=7)
+
+
+@pytest.fixture
+def no_sleep(monkeypatch):
+    monkeypatch.setattr(
+        "doc_builder.meilisearch_helper.sleep", lambda seconds: pytest.fail("a deleted task never comes back")
+    )
+
+
+def test_delete_documents_from_db_reads_the_index_when_the_task_was_deleted(no_sleep):
+    index = DeletedTaskIndex(stored_ids={"other-doc"})
+
+    delete_documents_from_db(FakeClient(index_instance=index), "test-index", ["doc-1", "doc-2"])
+
+    assert index.scanned
+
+
+def test_delete_documents_from_db_raises_when_a_deleted_task_left_documents(no_sleep):
+    index = DeletedTaskIndex(stored_ids={"doc-2"})
+
+    with pytest.raises(Exception, match="Task 7 was deleted once finished, and its changes are not in the index"):
+        delete_documents_from_db(FakeClient(index_instance=index), "test-index", ["doc-1", "doc-2"])
+
+
+@pytest.mark.parametrize(("stored_texts", "applied"), [(["a", "b"], True), (["a"], False)])
+def test_add_embeddings_to_db_reads_the_index_when_the_task_was_deleted(no_sleep, stored_texts, applied):
+    index = DeletedTaskIndex(stored_ids={generate_doc_id("test", text, text) for text in stored_texts})
+    documents = chunks_to_documents([make_chunk("a"), make_chunk("b")])
+
+    if applied:
+        add_embeddings_to_db(FakeClient(index_instance=index), "test-index", documents)
+    else:
+        with pytest.raises(Exception, match="its changes are not in the index"):
+            add_embeddings_to_db(FakeClient(index_instance=index), "test-index", documents)
+
+
+def test_task_without_index_check_fails_once_deleted(no_sleep):
+    with pytest.raises(Exception, match="Task 7 was deleted once finished, before its status was read"):
+        update_db_settings(FakeClient(index_instance=DeletedTaskIndex(stored_ids=[])), "test-index")

@@ -24,7 +24,7 @@ import yaml
 
 from doc_builder import translate_docs as translate_docs_module
 from doc_builder import translate_html as th
-from doc_builder.translate_docs import RunStats, Store, translate_library, translate_page
+from doc_builder.translate_docs import BLOCKS_VERSION, MAX_TRIES, RunStats, Store, translate_library, translate_page
 from doc_builder.translate_model import Translator
 from doc_builder.utils import write_llms_feeds
 
@@ -155,6 +155,18 @@ class TranslateDocsTester(unittest.TestCase):
         self.assertTrue(full.startswith(llms.rstrip("\n")))
         self.assertIn("訳Text of the second option.", full)
 
+    def test_pages_from_an_older_block_detection_are_processed_again(self):
+        self.run_job()
+        tracker_path = self.target_dir / ".translation" / LIB / "ja" / "tracker.json"
+        tracker = self.tracker()
+        for entry in tracker["versions"]["main"]["files"].values():
+            entry.pop("blocks", None)
+        tracker_path.write_text(json.dumps(tracker))
+        model = self.run_job()
+        self.assertEqual(self.stats.pages, 2)  # the two HTML pages, not their Markdown
+        self.assertEqual(model.calls, 0)  # every block comes from the cache
+        self.assertEqual(self.tracker()["versions"]["main"]["files"]["index.html"]["blocks"], BLOCKS_VERSION)
+
     def test_edited_paragraph_only_translates_that_paragraph(self):
         self.run_job()
         en = self.source_dir / LIB / "main" / "en" / "index.html"
@@ -189,6 +201,63 @@ class TranslateDocsTester(unittest.TestCase):
         self.assertNotIn("guides/old.html", self.tracker()["versions"]["main"]["files"])
         self.assertEqual(self.stats.waiting, [])
 
+    def human_translation(self, version, language):
+        """A translation built into the same bucket by the library's own docs build (with its own JS)."""
+        folder = self.target_dir / LIB / version / language
+        (folder / "_app").mkdir(parents=True)
+        (folder / "_app" / "chunk.js").write_text("// asset")
+        (folder / "index.html").write_text("human translation", encoding="utf-8")
+        (folder / "only-human.html").write_text("human translation", encoding="utf-8")
+        return folder
+
+    @mock.patch.dict(translate_docs_module.TRANSLATED_DOCS, {LIB: ["ja", "ko"]})
+    def test_first_translation_of_main_deletes_the_docs_build_translations(self):
+        en, ja, ko, cn = (self.human_translation("main", lang) for lang in ("en", "ja", "ko", "cn"))
+        release = self.human_translation("v1.0.0", "cn")
+        # a machine translation of a language that isn't configured (a manual run)
+        (self.target_dir / LIB / "main" / "de").mkdir()
+        (self.target_dir / LIB / "main" / "de" / "index.html").write_text("translation", encoding="utf-8")
+        self.run_job()
+        self.assertIn("訳Text of the second option.", (ja / "index.html").read_text(encoding="utf-8"))
+        self.assertFalse((ja / "only-human.html").exists())
+        self.assertFalse((ja / "_app").exists())
+        self.assertFalse(cn.exists())
+        # left alone: English, the job of another configured language, other versions, and translations
+        for kept in (en, ko, release):
+            self.assertEqual((kept / "index.html").read_text(encoding="utf-8"), "human translation")
+        self.assertTrue((self.target_dir / LIB / "main" / "de" / "index.html").exists())
+        # only the first translation
+        cn = self.human_translation("main", "cn")
+        self.run_job()
+        self.assertTrue((cn / "index.html").exists())
+
+    def test_release_built_by_the_docs_build_is_left_alone(self):
+        self.run_job()
+        self.add_version("v1.1.0")
+        self.write_versions(["main", "v1.1.0", "v1.0.0"])
+        human = self.human_translation("v1.1.0", "ja")
+        self.assertEqual(self.run_job().calls, 0)
+        self.assertEqual((human / "index.html").read_text(encoding="utf-8"), "human translation")
+        self.assertFalse(self.ja("v1.1.0", "guides/old.html").exists())
+
+    def test_language_taken_over_by_the_docs_build_is_left_alone(self):
+        self.run_job()
+        # the library starts building this language itself
+        (self.target_dir / LIB / "main" / "ja" / "_app").mkdir()
+        (self.target_dir / LIB / "main" / "ja" / "_app" / "chunk.js").write_text("// asset")
+        self.ja("main", "index.html").write_text("human translation", encoding="utf-8")
+        en = self.source_dir / LIB / "main" / "en" / "index.html"
+        en.write_text(en.read_text(encoding="utf-8").replace("Text of the first option.", "Edited."), encoding="utf-8")
+        self.assertEqual(self.run_job().calls, 0)
+        self.assertEqual(self.ja("main", "index.html").read_text(encoding="utf-8"), "human translation")
+
+    def test_only_files_the_job_wrote_are_deleted(self):
+        self.run_job()
+        other = self.ja("main", "notes.html")
+        other.write_text("written by someone else", encoding="utf-8")
+        self.run_job()
+        self.assertTrue(other.exists())
+
     def test_new_release_is_translated_once(self):
         self.run_job()
         self.add_version("v1.1.0")
@@ -215,6 +284,31 @@ class TranslateDocsTester(unittest.TestCase):
         self.assertEqual(model.calls, 1)  # only the failed block; the rest comes from the cache
         self.assertIn("訳Text of the second option.", self.ja("main", "index.html").read_text(encoding="utf-8"))
         self.assertTrue(self.tracker()["versions"]["main"]["files"]["index.html"]["complete"])
+
+    def test_block_that_keeps_failing_waits_for_an_english_change(self):
+        fail = "Text of the second option."
+        calls = [self.run_job(FakeModel(fail_on=fail)).calls for _ in range(MAX_TRIES + 1)]
+        self.assertTrue(all(calls[:MAX_TRIES]))
+        self.assertEqual(calls[MAX_TRIES], 0)  # given up: the block stays English
+        self.assertEqual(self.tracker()["versions"]["main"]["files"]["index.html"]["tries"], MAX_TRIES)
+        en = self.source_dir / LIB / "main" / "en" / "index.html"
+        en.write_text(
+            en.read_text(encoding="utf-8").replace("Text of the first option.", "Edited first option."),
+            encoding="utf-8",
+        )
+        self.run_job()
+        self.assertIn("訳Text of the second option.", self.ja("main", "index.html").read_text(encoding="utf-8"))
+
+    def test_release_is_frozen_once_its_failing_blocks_are_given_up(self):
+        fail = "Text of the second option."
+        self.run_job(FakeModel(fail_on=fail))
+        self.add_version("v1.1.0")
+        self.write_versions(["main", "v1.1.0", "v1.0.0"])
+        for _ in range(MAX_TRIES - 1):
+            self.run_job(FakeModel(fail_on=fail))
+        self.assertFalse(self.tracker()["versions"]["v1.1.0"]["frozen"])
+        self.run_job(FakeModel(fail_on=fail))
+        self.assertTrue(self.tracker()["versions"]["v1.1.0"]["frozen"])
 
     def test_finished_pages_are_kept_when_the_run_fails(self):
         real = translate_docs_module.translate_page
@@ -272,6 +366,17 @@ class TranslateDocsTester(unittest.TestCase):
         self.assertEqual(self.tracker()["versions"]["main"]["files"]["index.html"]["english_blocks"], 1)
         self.assertFalse(self.stats.failed())  # a few English blocks: published, retried, warned
         self.assertTrue(RunStats(blocks=10, english_blocks=2).failed())  # systematic failure: the run fails
+
+    def test_block_with_unreadable_html_stays_in_english(self):
+        metadata = th.split_page((DATA / "page.html").read_text(encoding="utf-8"))[0]
+        # KaTeX left in a diffusers docstring: the escaped quotes hide the <span>, not its </span>
+        broken = '<p>Current sample<span class="\\&quot;mord" mathnormal\\" style="x">z</span>.</p>'
+        body = "<p>install the library</p>\n" + broken
+        html, (blocks, failed), _ = translate_page(
+            metadata + "\n" + body, Translator("ja", {}, complete=FakeModel()), LIB, "main", "ja", workers=1
+        )
+        self.assertEqual((blocks, failed), (2, 1))
+        self.assertEqual(th.split_page(html)[1], "<p>訳install the library</p>\n" + broken)
 
     def test_nested_blocks_are_translated_once(self):
         metadata = th.split_page((DATA / "page.html").read_text(encoding="utf-8"))[0]

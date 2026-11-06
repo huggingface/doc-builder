@@ -3,6 +3,8 @@ on:
   pull_request:
     paths:
       - "kit/**"
+      # the docstring snapshots, rendered by the kit tests
+      - "tests/data/docstring_snapshots/**"
       - ".github/workflows/lint-svelte-kit.yml"
   push:
     branches:
@@ -36,4 +38,8 @@ jobs:
 
       - name: Checking type errors
         run: npm run check
+        working-directory: kit
+
+      - name: Running tests
+        run: npm test
         working-directory: kit

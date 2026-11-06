@@ -48,6 +48,23 @@ class TranslateHtmlTester(unittest.TestCase):
         # the docstring signature is code
         self.assertFalse(any(t.startswith("( text") for t in texts))
 
+    def test_raw_html_prose_outside_blocks(self):
+        # raw HTML in the docs (e.g. the Hub index's cards): no <p> or <li>, prose straight in divs and links
+        body = (
+            '<div class="grid"><div class="card"><div class="title"><svg><path d="M0"></path></svg> Subscriptions'
+            ' &amp; Plans</div> <a href="./pro">PRO subscription</a> <a href="./sso">Single Sign-On</a></div></div>'
+        )
+        blocks = th.find_blocks(body)
+        self.assertEqual(
+            [[n.raw.strip() for n in b.nodes] for b in blocks],
+            [["PRO subscription", "Single Sign-On"], ["Subscriptions &amp; Plans"]],
+        )
+        card, title = blocks
+        self.assertTrue(card.has_children)  # the title is translated on its own
+        self.assertTrue(th.is_static(body, title))
+        # component output, which hydration walks into, is not raw HTML
+        self.assertEqual(th.find_blocks('<div class="menu"><button><!---->Copy page<!----></button></div>'), [])
+
     def test_docstring_parameter_segments(self):
         _, body = th.split_page(read("page.html"))
         block = next(b for b in th.find_blocks(body) if "Whether to pad" in body[b.start : b.end])
@@ -183,3 +200,94 @@ class TranslateHtmlTester(unittest.TestCase):
         ):
             self.assertEqual(translate_model._inference_completion("hf_test")([]), "ok")
         self.assertIn(mock.call(7.0), sleep.call_args_list)  # the provider's Retry-After
+
+    def test_failing_provider_falls_back(self):
+        import httpx
+        from huggingface_hub import InferenceClient
+        from huggingface_hub.errors import HfHubHTTPError
+
+        from doc_builder import translate_model
+
+        # what the router answers for a provider its circuit breaker paused
+        paused = httpx.Response(503, headers={"Retry-After": "5"}, request=httpx.Request("POST", "https://x"))
+        answer = mock.Mock(choices=[mock.Mock(message=mock.Mock(content="ok"))])
+        used = []
+
+        def chat_completion(client, **kwargs):
+            used.append(client.provider)
+            if client.provider == translate_model.PROVIDER:
+                raise HfHubHTTPError("paused", response=paused)
+            return answer
+
+        with (
+            mock.patch.object(InferenceClient, "chat_completion", autospec=True, side_effect=chat_completion),
+            mock.patch.object(translate_model.time, "sleep"),
+        ):
+            complete = translate_model._inference_completion("hf_test")
+            self.assertEqual(complete([]), "ok")
+            self.assertEqual(complete([]), "ok")  # the run stays on the fallback
+        fallback = translate_model.FALLBACK_PROVIDERS[0]
+        self.assertEqual(used, [translate_model.PROVIDER] * translate_model.FALLBACK_AFTER + [fallback] * 2)
+
+    def test_run_goes_back_to_first_provider_after_last_fails(self):
+        import httpx
+        from huggingface_hub import InferenceClient
+        from huggingface_hub.errors import HfHubHTTPError
+
+        from doc_builder import translate_model
+
+        try:
+            from httpx2 import RemoteProtocolError
+        except ImportError:
+            from httpx import RemoteProtocolError
+
+        paused = httpx.Response(503, headers={"Retry-After": "5"}, request=httpx.Request("POST", "https://x"))
+        answer = mock.Mock(choices=[mock.Mock(message=mock.Mock(content="ok"))])
+        used = []
+
+        def chat_completion(client, **kwargs):
+            used.append(client.provider)
+            if client.provider != translate_model.PROVIDER:
+                # what jobs got when a provider closed the connection in the middle of an answer, or sent a broken one
+                if used.count(client.provider) % 2:
+                    raise RemoteProtocolError("peer closed connection without sending complete message body")
+                raise json.JSONDecodeError("Extra data", '{"choices": []} {', 16)
+            if used.count(translate_model.PROVIDER) <= translate_model.FALLBACK_AFTER:
+                raise HfHubHTTPError("paused", response=paused)
+            return answer
+
+        with (
+            mock.patch.object(InferenceClient, "chat_completion", autospec=True, side_effect=chat_completion),
+            mock.patch.object(translate_model.time, "sleep"),
+        ):
+            self.assertEqual(translate_model._inference_completion("hf_test")([]), "ok")
+        fallbacks = [p for p in translate_model.FALLBACK_PROVIDERS for _ in range(translate_model.FALLBACK_AFTER)]
+        self.assertEqual(
+            used, [translate_model.PROVIDER] * translate_model.FALLBACK_AFTER + fallbacks + [translate_model.PROVIDER]
+        )
+
+    def test_refused_request_keeps_block_in_english(self):
+        import httpx
+        from huggingface_hub import InferenceClient
+        from huggingface_hub.errors import HfHubHTTPError
+
+        from doc_builder import translate_model
+
+        refused = httpx.Response(
+            400,
+            json={"message": "Prompt has unexpected image tokens."},
+            request=httpx.Request("POST", "https://x"),
+        )
+        answer = mock.Mock(choices=[mock.Mock(message=mock.Mock(content="ok"))])
+        error = HfHubHTTPError("bad request", response=refused)
+        with mock.patch.object(InferenceClient, "chat_completion", side_effect=[error, answer] + [error] * 30):
+            complete = translate_model._inference_completion("hf_test")
+            with self.assertRaisesRegex(translate_model.TranslationFailed, "unexpected image tokens"):
+                complete([])
+            self.assertEqual(complete([]), "ok")
+            for _ in range(translate_model.MAX_REFUSED):
+                with self.assertRaises(translate_model.TranslationFailed):
+                    complete([])
+            # a provider that refuses every request stops the run instead of leaving every page in English
+            with self.assertRaises(HfHubHTTPError):
+                complete([])

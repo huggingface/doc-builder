@@ -276,7 +276,7 @@ doc-builder notebook-to-mdx {path to notebook file or folder containing notebook
 
 `doc-builder` provides templates for GitHub Actions, so you can build your documentation with every pull request, push to some branch etc. To use them in your project, simply create the following three files in the `.github/workflows/` directory:
 
-* `build_main_documentation.yml`: responsible for building the docs for the `main` branch, releases etc.
+* `build_main_documentation.yml`: responsible for building the docs for the `main` branch, releases etc. A push to the default branch always updates `main`, also when the package declares a release version there (that release is built too).
 * `build_pr_documentation.yml`: responsible for building the docs on each PR.
 * `upload_pr_documentation.yml`: responsible for uploading the PR artifacts to the Hugging Face Hub.
 * `delete_doc_comment_trigger.yml`: responsible for removing the comments from the `HuggingFaceDocBuilder` bot that provides a URL to the PR docs.
@@ -326,11 +326,11 @@ Note that each language directory has its own table of contents file `_toctree.y
 doc-builder build {package_name} {path_to_docs} --build_dir {build_dir} --language {lang_id}
 ```
 
-To automatically build the documentation for all languages via the GitHub Actions templates, simply provide the `languages` argument to your workflow, with a space-separated list of the languages you wish to build, e.g. `languages: en es`.
+The GitHub Actions templates (`build_main_documentation.yml`, `build_pr_documentation.yml`) only build English: other languages are machine-translated from the English build (see below). Passing their former `languages` input fails the build; point `path_to_docs` at the English docs (e.g. `docs/source/en`) instead.
 
 ### Machine-translated documentation
 
-`doc-builder translate-docs` translates the *built* English pages (`<library>/<version>/en/` in `hf://buckets/hf-doc-build/doc`) with an LLM on HF Inference Providers and writes them to `<library>/<version>/<language>/` in `hf://buckets/hf-doc-build/doc-translate`. Only the prose changes: links, code and the page structure are kept, so the translated page hydrates against the same JS as the English one. Each page's Markdown (`<page>.md`, served for "Copy page" and `text/plain` requests) is translated the same way, next to the page, and `llms.txt` / `llms-full.txt` are rebuilt from the translated Markdown, with URLs pointing to it.
+`doc-builder translate-docs` translates the *built* English pages (`<library>/<version>/en/` in `hf://buckets/hf-doc-build/doc`) with an LLM on HF Inference Providers and writes them next to it, to `<library>/<version>/<language>/`, where huggingface.co serves them like any other language. Language folders built by a library's own docs build (the workflows' `languages` input, recognizable by their own `_app/`) are never touched. Only the prose changes: links, code and the page structure are kept, so the translated page hydrates against the same JS as the English one. Each page's Markdown (`<page>.md`, served for "Copy page" and `text/plain` requests) is translated the same way, next to the page, and `llms.txt` / `llms-full.txt` are rebuilt from the translated Markdown, with URLs pointing to it.
 
 The [`translate_docs.yml`](.github/workflows/translate_docs.yml) workflow runs it daily, incrementally:
 
@@ -338,7 +338,7 @@ The [`translate_docs.yml`](.github/workflows/translate_docs.yml) workflow runs i
 - A release is translated once, then frozen. Releases published before a language was enabled are not backfilled.
 - Translations are cached per paragraph, so an edited page only sends its edited paragraphs to the model.
 
-Libraries and languages are configured in `TRANSLATED_DOCS` (`src/doc_builder/translate_docs.py`). The workflow reads and writes the buckets with `HF_EMBED_DATASETS_TOKEN` (the search engine population's token) and calls the model with `TRANSLATION_INFERENCE_TOKEN`. Inference is billed to the `huggingface` organization ([`X-HF-Bill-To`](https://huggingface.co/docs/inference-providers/pricing#billing-for-team-and-enterprise-organizations); `--bill_to` to change it), so the token's owner must be a member of it. To try it locally, write to a directory instead of a bucket:
+Libraries and languages are configured in `TRANSLATED_DOCS` (`src/doc_builder/translate_docs.py`). The workflow reads and writes the bucket with `HF_EMBED_DATASETS_TOKEN` (the search engine population's token) and calls the model with `TRANSLATION_INFERENCE_TOKEN`. Inference is billed to the `huggingface` organization ([`X-HF-Bill-To`](https://huggingface.co/docs/inference-providers/pricing#billing-for-team-and-enterprise-organizations); `--bill_to` to change it), so the token's owner must be a member of it. To try it locally, write to a directory instead of a bucket:
 
 ```bash
 TRANSLATION_INFERENCE_TOKEN=hf_... doc-builder translate-docs --libraries transformers --languages ja --bucket ./translations --max_pages 3

@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import sys
+from datetime import datetime, timezone
 from types import SimpleNamespace
 
 import pytest
@@ -26,9 +27,12 @@ from doc_builder.build_embeddings import (
     split_markdown_by_headings,
 )
 from doc_builder.commands import embeddings as embeddings_command
+from doc_builder.meilisearch_helper import generate_doc_id
 from doc_builder.process_hf_docs import (
     HF_BLOG_API_URL,
+    HF_COMMUNITY_BLOG_API_URL,
     fetch_blog_chunks,
+    fetch_blog_listing,
     markdown_file_to_url,
     process_all_libraries,
     process_api_html_file,
@@ -130,7 +134,9 @@ def test_process_all_libraries_keeps_courses_and_adds_blog(monkeypatch, tmp_path
         return []
 
     monkeypatch.setattr("doc_builder.process_hf_docs.process_library", fake_process_library)
-    monkeypatch.setattr("doc_builder.process_hf_docs.fetch_blog_chunks", lambda: [make_chunk("blog", "/blog/post")])
+    monkeypatch.setattr(
+        "doc_builder.process_hf_docs.fetch_blog_chunks", lambda published_after: [make_chunk("blog", "/blog/post")]
+    )
 
     results = process_all_libraries(output_dir=tmp_path)
 
@@ -143,7 +149,9 @@ def test_process_all_libraries_can_target_blog_without_fetching_dataset(monkeypa
         pytest.fail("The doc-build dataset should not be fetched for a blog-only run")
 
     monkeypatch.setattr("doc_builder.process_hf_docs.fetch_library_directories", fail_dataset_fetch)
-    monkeypatch.setattr("doc_builder.process_hf_docs.fetch_blog_chunks", lambda: [make_chunk("blog", "/blog/post")])
+    monkeypatch.setattr(
+        "doc_builder.process_hf_docs.fetch_blog_chunks", lambda published_after: [make_chunk("blog", "/blog/post")]
+    )
 
     results = process_all_libraries(output_dir=tmp_path, libraries=["blog"])
 
@@ -180,9 +188,9 @@ class FakeResponse:
         return self.payload
 
 
-def test_fetch_blog_chunks_paginates_and_uses_only_all_blogs(monkeypatch):
+def test_fetch_blog_chunks_paginates_official_and_community_listings(monkeypatch):
     pages = {
-        0: {
+        (HF_BLOG_API_URL, 0): {
             "numTotalItems": 3,
             "numItemsPerPage": 2,
             "allBlogs": [
@@ -198,18 +206,26 @@ def test_fetch_blog_chunks_paginates_and_uses_only_all_blogs(monkeypatch):
                     "canonical": False,
                 },
             ],
-            "communityBlogPosts": [{"title": "Ignored community post", "url": "/blog/user/ignored"}],
+            "communityBlogPosts": [{"title": "Sidebar community post", "url": "/blog/user/sidebar"}],
         },
-        1: {
+        (HF_BLOG_API_URL, 1): {
             "allBlogs": [{"title": "Last post", "url": "/blog/last-post"}],
-            "communityBlogPosts": [{"title": "Also ignored", "url": "/blog/user/also-ignored"}],
+            "communityBlogPosts": [{"title": "Sidebar community post", "url": "/blog/user/sidebar"}],
+        },
+        (HF_COMMUNITY_BLOG_API_URL, 0): {
+            "numTotalItems": 2,
+            "numItemsPerPage": 1,
+            "posts": [{"title": "Community post", "url": "/blog/user/community-post", "canonical": False}],
+        },
+        (HF_COMMUNITY_BLOG_API_URL, 1): {
+            "posts": [{"title": "Older community post", "url": "/blog/other-user/older"}],
         },
     }
     calls = []
 
     def fake_get(url, *, params, timeout, follow_redirects):
         calls.append((url, params, timeout, follow_redirects))
-        return FakeResponse(pages[params["p"]])
+        return FakeResponse(pages[url, params["p"]])
 
     monkeypatch.setattr("doc_builder.process_hf_docs.httpx.get", fake_get)
 
@@ -218,18 +234,50 @@ def test_fetch_blog_chunks_paginates_and_uses_only_all_blogs(monkeypatch):
     assert calls == [
         (HF_BLOG_API_URL, {"p": 0}, 60, True),
         (HF_BLOG_API_URL, {"p": 1}, 60, True),
+        (HF_COMMUNITY_BLOG_API_URL, {"p": 0}, 60, True),
+        (HF_COMMUNITY_BLOG_API_URL, {"p": 1}, 60, True),
     ]
-    assert [chunk.text for chunk in chunks] == ["First post", "Namespaced post", "Last post"]
+    assert [chunk.text for chunk in chunks] == [
+        "First post",
+        "Namespaced post",
+        "Last post",
+        "Community post",
+        "Older community post",
+    ]
     assert [chunk.source_page_url for chunk in chunks] == [
         "https://huggingface.co/blog/first-post",
         "https://huggingface.co/blog/acme/namespaced-post",
         "https://huggingface.co/blog/last-post",
+        "https://huggingface.co/blog/user/community-post",
+        "https://huggingface.co/blog/other-user/older",
     ]
     assert all(chunk.package_name == "blog" for chunk in chunks)
     assert all(chunk.text == chunk.source_page_title for chunk in chunks)
     assert all(chunk.headings == [f"# {chunk.text}"] for chunk in chunks)
-    assert "Ignored community post" not in {chunk.text for chunk in chunks}
+    # The listing's sidebar only previews community posts, which come from the community listing
+    assert "Sidebar community post" not in {chunk.text for chunk in chunks}
     assert "This body must not be indexed." not in {chunk.text for chunk in chunks}
+
+
+def test_fetch_blog_listing_crawls_again_when_pages_shift(monkeypatch):
+    newest = {"title": "Newest", "url": "/blog/user/newest"}
+    oldest = {"title": "Oldest", "url": "/blog/user/oldest"}
+    # The post between them is removed after the first page is fetched, so "Oldest" moves up past the crawl
+    responses = iter(
+        [
+            {"numTotalItems": 3, "numItemsPerPage": 1, "posts": [newest]},
+            {"posts": [oldest]},
+            {"posts": []},
+            {"numTotalItems": 2, "numItemsPerPage": 1, "posts": [newest]},
+            {"posts": [oldest]},
+        ]
+    )
+    monkeypatch.setattr("doc_builder.process_hf_docs.httpx.get", lambda *args, **kwargs: FakeResponse(next(responses)))
+
+    assert fetch_blog_listing(HF_COMMUNITY_BLOG_API_URL, "posts") == {
+        "/blog/user/newest": "Newest",
+        "/blog/user/oldest": "Oldest",
+    }
 
 
 def test_fetch_blog_chunks_rejects_incomplete_results(monkeypatch):
@@ -245,6 +293,60 @@ def test_fetch_blog_chunks_rejects_incomplete_results(monkeypatch):
 
     with pytest.raises(ValueError, match="returned 1 unique allBlogs items, expected 2"):
         fetch_blog_chunks()
+
+
+def test_fetch_blog_chunks_stops_at_posts_published_before_the_date(monkeypatch):
+    def post(slug, published_at, **fields):
+        return {"title": slug, "url": f"/blog/{slug}", "publishedAt": published_at, **fields}
+
+    pages = {
+        (HF_BLOG_API_URL, 0): {
+            "numTotalItems": 6,
+            "numItemsPerPage": 2,
+            # A pinned post is moved to the top of the first page, ahead of newer posts
+            "allBlogs": [
+                post("pinned", "2026-10-25T00:00:00.000Z", pinned=True),
+                post("newest", "2026-10-29T08:00:00.000Z"),
+            ],
+        },
+        (HF_BLOG_API_URL, 1): {
+            "allBlogs": [post("newer", "2026-10-28T08:00:00.000Z"), post("older", "2026-10-26T08:00:00.000Z")],
+        },
+        (HF_COMMUNITY_BLOG_API_URL, 0): {
+            "numTotalItems": 2,
+            "numItemsPerPage": 1,
+            "posts": [post("user/community-newest", "2026-10-29T09:00:00.000Z")],
+        },
+        (HF_COMMUNITY_BLOG_API_URL, 1): {"posts": [post("user/community-newer", "2026-10-28T09:00:00.000Z")]},
+    }
+    calls = []
+
+    def fake_get(url, *, params, timeout, follow_redirects):
+        calls.append((url, params["p"]))
+        return FakeResponse(pages[url, params["p"]])
+
+    monkeypatch.setattr("doc_builder.process_hf_docs.httpx.get", fake_get)
+
+    chunks = fetch_blog_chunks(published_after=datetime(2026, 10, 27, 7, 5, tzinfo=timezone.utc))
+
+    # The official listing's last page only has older posts, and the community listing has no more pages
+    assert calls == [
+        (HF_BLOG_API_URL, 0),
+        (HF_BLOG_API_URL, 1),
+        (HF_COMMUNITY_BLOG_API_URL, 0),
+        (HF_COMMUNITY_BLOG_API_URL, 1),
+    ]
+    assert [chunk.page for chunk in chunks] == [
+        "/blog/newest",
+        "/blog/newer",
+        "/blog/user/community-newest",
+        "/blog/user/community-newer",
+    ]
+
+
+def test_recent_blog_days_requires_incremental():
+    with pytest.raises(ValueError, match="--recent-blog-days requires --incremental"):
+        embeddings_command.process_hf_docs_command(SimpleNamespace(recent_blog_days=2, incremental=False))
 
 
 def test_chunks_to_documents_uses_none_for_vectorless_chunks():
@@ -318,7 +420,7 @@ def test_incremental_course_scope_uses_public_product_prefix(monkeypatch):
     monkeypatch.setattr("meilisearch.Client", lambda *args: object())
 
     embeddings_command._run_incremental(
-        SimpleNamespace(libraries=["course"], hf_token=None),
+        SimpleNamespace(libraries=["course"], hf_token=None, recent_blog_days=None),
         [],
         None,
         None,
@@ -456,7 +558,13 @@ def test_incremental_deletes_stale_documents_in_one_task(monkeypatch):
     monkeypatch.setattr("meilisearch.Client", lambda *args: object())
 
     embeddings_command._run_incremental(
-        SimpleNamespace(libraries=None, hf_token=None), [], None, None, "meili-key", "https://meili.test", 2
+        SimpleNamespace(libraries=None, hf_token=None, recent_blog_days=None),
+        [],
+        None,
+        None,
+        "meili-key",
+        "https://meili.test",
+        2,
     )
 
     assert deleted_batches == [sorted(existing_ids)]
@@ -477,11 +585,56 @@ def test_incremental_keeps_ids_whose_deletion_failed_in_the_tracker(monkeypatch)
 
     with pytest.raises(Exception, match="Meilisearch operation failed"):
         embeddings_command._run_incremental(
-            SimpleNamespace(libraries=None, hf_token=None), [], None, None, "meili-key", "https://meili.test", 2
+            SimpleNamespace(libraries=None, hf_token=None, recent_blog_days=None),
+            [],
+            None,
+            None,
+            "meili-key",
+            "https://meili.test",
+            2,
         )
 
     # The stale IDs stay tracked so the next run retries their deletion
     assert saved_trackers == [existing_ids]
+
+
+def test_incremental_with_recent_blog_posts_keeps_the_older_ones(monkeypatch):
+    tracked_post = make_chunk("blog", "/blog/tracked", text="Tracked post")
+    new_post = make_chunk("blog", "/blog/new", text="New post")
+    older_post_id = generate_doc_id("blog", "/blog/older", "Older post")
+    stale_page_id = "datasets-stale-page-a1b2c3d4"
+    existing_ids = {generate_doc_id("blog", tracked_post.page, tracked_post.text), older_post_id, stale_page_id}
+    uploaded_documents = []
+    deleted_batches = []
+    saved_trackers = []
+
+    monkeypatch.setattr("doc_builder.embeddings_tracker.load_tracker", lambda token: existing_ids)
+    monkeypatch.setattr("doc_builder.embeddings_tracker.save_tracker", lambda ids, token: saved_trackers.append(ids))
+    monkeypatch.setattr(
+        "doc_builder.meilisearch_helper.delete_documents_from_db",
+        lambda client, index, ids: deleted_batches.append(ids),
+    )
+    monkeypatch.setattr(
+        embeddings_command,
+        "add_embeddings_to_db",
+        lambda client, index, documents: uploaded_documents.extend(documents),
+    )
+    monkeypatch.setattr("meilisearch.Client", lambda *args: object())
+
+    embeddings_command._run_incremental(
+        SimpleNamespace(libraries=None, hf_token=None, recent_blog_days=2),
+        [tracked_post, new_post],
+        None,
+        None,
+        "meili-key",
+        "https://meili.test",
+        2,
+    )
+
+    # Only the post that isn't indexed yet is uploaded, and only stale documents outside the blog are deleted
+    assert [document.text for document in uploaded_documents] == ["New post"]
+    assert deleted_batches == [[stale_page_id]]
+    assert saved_trackers == [existing_ids - {stale_page_id} | {generate_doc_id("blog", new_post.page, new_post.text)}]
 
 
 # `doc_builder.build_embeddings` is also the name of a function re-exported by `doc_builder`

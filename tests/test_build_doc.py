@@ -31,7 +31,7 @@ class BuildDocTester(unittest.TestCase):
         # Test with heading - should place component before the heading
         input_with_heading = "[[open-in-colab]]\n\n# Quick tour\n\nSome content here."
         expected_with_heading = """<DocNotebookDropdown
-  containerStyle="float: right; margin-left: 10px; display: inline-flex; position: relative; z-index: 10;"
+  containerStyle="float: inline-end; margin-inline-start: 10px; display: inline-flex; position: relative; z-index: 10;"
   options={[
     {label: "Mixed", value: "https://colab.research.google.com/github/huggingface/notebooks/blob/main/transformers_doc/en/quicktour.ipynb"},
     {label: "PyTorch", value: "https://colab.research.google.com/github/huggingface/notebooks/blob/main/transformers_doc/en/pytorch/quicktour.ipynb"},
@@ -55,7 +55,7 @@ Some content here."""
         expected_with_copy_menu = """<CopyLLMTxtMenu containerStyle="float: right;"></CopyLLMTxtMenu>
 
 <DocNotebookDropdown
-  containerStyle="float: right; margin-left: 10px; display: inline-flex; position: relative; z-index: 10;"
+  containerStyle="float: inline-end; margin-inline-start: 10px; display: inline-flex; position: relative; z-index: 10;"
   options={[
     {label: "Mixed", value: "https://colab.research.google.com/github/huggingface/notebooks/blob/main/transformers_doc/en/quicktour.ipynb"},
     {label: "PyTorch", value: "https://colab.research.google.com/github/huggingface/notebooks/blob/main/transformers_doc/en/pytorch/quicktour.ipynb"},

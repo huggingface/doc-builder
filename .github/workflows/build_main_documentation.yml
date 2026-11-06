@@ -23,8 +23,9 @@ on:
       # supply --not_python_module for HF Course
       additional_args:
         type: string
+      # Not supported: passing it fails the build. Only English is built; other languages are
+      # machine-translated by translate_docs.yml. Kept only to fail with an explicit error.
       languages:
-      # supply space-separated language codes
         type: string
       package_path:
         type: string
@@ -73,6 +74,14 @@ jobs:
       UV_HTTP_TIMEOUT: 900 # max 15min to install deps (shouldn't take more than 5min)
 
     steps:
+      - name: Reject the languages input
+        if: inputs.languages != ''
+        env:
+          LANGUAGES: ${{ inputs.languages }}
+        run: |
+          echo "::error::The languages input is no longer supported (got: $LANGUAGES). Only English is built; other languages are machine-translated by doc-builder's translate_docs.yml. Remove it and point path_to_docs at the English docs (e.g. docs/source/en)."
+          exit 1
+
       # Check out this reusable workflow's own revision, so that the doc-builder
       # code installed below is exactly the revision the caller pinned in `uses:`.
       # Without an explicit `ref`, actions/checkout falls back to the default
@@ -233,7 +242,7 @@ jobs:
           PACKAGE: ${{ inputs.package }}
           VERSION_TAG_SUFFIX: ${{ inputs.version_tag_suffix }}
           NOTEBOOK_FOLDER: ${{ inputs.notebook_folder }}
-          LANGUAGES: ${{ inputs.languages }}
+          ON_DEFAULT_BRANCH: ${{ github.ref == format('refs/heads/{0}', github.event.repository.default_branch) }}
         run: |
           source .venv/bin/activate
           echo "doc_folder has been set to $DOC_FOLDER"
@@ -245,17 +254,13 @@ jobs:
             args="$args --notebook_dir ../notebook_dir"
           fi
 
-          if [ -z "$LANGUAGES" ];
-          then
-            echo "languages not provided, defaulting to English"
-            doc-builder build "$PACKAGE_NAME" "../$DOC_FOLDER" $args
-          else
-            IFS=', ' read -r -a langs <<< "$LANGUAGES"
-            for lang in "${langs[@]}"
-            do
-                echo "Generating docs for language $lang"
-                doc-builder build "$PACKAGE_NAME" "../$DOC_FOLDER/$lang" $args --language "$lang"
-            done
+          doc-builder build "$PACKAGE_NAME" "../$DOC_FOLDER" $args
+
+          # The version comes from the package, so a default branch that declares a release
+          # (e.g. bumped at release time) only built that release: build main from it too.
+          if [ "$ON_DEFAULT_BRANCH" = true ] && [[ ! "$ADDITIONAL_ARGS" =~ --version[=\ ] ]] \
+            && ! ls "../build_dir/$PACKAGE_NAME" | grep -qvE '^(v[0-9].*|_versions\.yml)$'; then
+            doc-builder build "$PACKAGE_NAME" "../$DOC_FOLDER" $args --version main
           fi
 
           cd ..
