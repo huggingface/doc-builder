@@ -83,7 +83,7 @@
 				type="button"
 				onclick={() => (expanded = !expanded)}
 				aria-expanded={expanded}
-				class="flex h-7 items-center rounded-lg border border-gray-100 px-2.5 text-sm font-medium text-gray-800 hover:bg-gray-100 hover:text-gray-900 dark:hover:bg-gray-800 dark:hover:text-gray-200"
+				class="flex h-7 items-center rounded-lg px-2.5 text-sm font-medium text-gray-800 hover:bg-gray-100 hover:text-gray-900 dark:hover:bg-gray-800 dark:hover:text-gray-200"
 			>
 				<IconCaret
 					classNames="mr-1.5 text-xs text-gray-400 transition-transform {expanded
