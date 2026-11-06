@@ -367,6 +367,17 @@ class TranslateDocsTester(unittest.TestCase):
         self.assertFalse(self.stats.failed())  # a few English blocks: published, retried, warned
         self.assertTrue(RunStats(blocks=10, english_blocks=2).failed())  # systematic failure: the run fails
 
+    def test_block_with_unreadable_html_stays_in_english(self):
+        metadata = th.split_page((DATA / "page.html").read_text(encoding="utf-8"))[0]
+        # KaTeX left in a diffusers docstring: the escaped quotes hide the <span>, not its </span>
+        broken = '<p>Current sample<span class="\\&quot;mord" mathnormal\\" style="x">z</span>.</p>'
+        body = "<p>install the library</p>\n" + broken
+        html, (blocks, failed), _ = translate_page(
+            metadata + "\n" + body, Translator("ja", {}, complete=FakeModel()), LIB, "main", "ja", workers=1
+        )
+        self.assertEqual((blocks, failed), (2, 1))
+        self.assertEqual(th.split_page(html)[1], "<p>訳install the library</p>\n" + broken)
+
     def test_nested_blocks_are_translated_once(self):
         metadata = th.split_page((DATA / "page.html").read_text(encoding="utf-8"))[0]
         body = "<ul><li>install the library\n<ul><li>run the <code>pip</code> installation</li></ul></li></ul>"
