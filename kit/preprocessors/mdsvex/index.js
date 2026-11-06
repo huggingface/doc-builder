@@ -204,10 +204,13 @@ function treeVisitor() {
 	let bodyEndOffset = Infinity;
 	// Whether the document is a docstring fragment (see DOCSTRING_FRAGMENT_MARKER)
 	let isFragment = false;
+	// The markdown being transformed, which node positions index into
+	let markdown = "";
 
 	return transform;
 
-	function transform(tree) {
+	function transform(tree, file) {
+		markdown = String(file);
 		isFragment =
 			tree.children[0]?.type === "html" && tree.children[0].value === DOCSTRING_FRAGMENT_MARKER;
 		if (isFragment) {
@@ -381,7 +384,7 @@ function treeVisitor() {
 		}
 		const markerWithBang = identifier.startsWith("!") ? identifier.slice(1) : identifier;
 		const marker = markerWithBang.toLowerCase();
-		if (!TIP_MARKERS.includes(marker)) {
+		if (!TIP_MARKERS.includes(marker) && marker !== "agentprompt") {
 			return;
 		}
 
@@ -402,6 +405,16 @@ function treeVisitor() {
 		}
 
 		node.data = node.data || {};
+		if (marker === "agentprompt") {
+			node.data.hName = "AgentPrompt";
+			// copied as markdown rather than rendered text, so link urls, code fences, etc. survive
+			// (an empty attribute would reach the component as `true`)
+			const source = agentPromptSource(node);
+			if (source) {
+				node.data.hProperties = { source: btoa(encodeURIComponent(source)) };
+			}
+			return;
+		}
 		node.data.hProperties = node.data.hProperties || {};
 		const existingClasses = node.data.hProperties.className || [];
 		const normalizedClasses = Array.isArray(existingClasses)
@@ -410,6 +423,23 @@ function treeVisitor() {
 				? existingClasses.split(/\s+/u).filter(Boolean)
 				: [];
 		node.data.hProperties.className = Array.from(new Set([...normalizedClasses, marker]));
+	}
+
+	/**
+	 * The markdown of an `> [!AgentPrompt]` blockquote without its `>` markers and
+	 * the marker itself: what readers paste into their coding agent.
+	 */
+	function agentPromptSource(node) {
+		const start = node.position?.start?.offset;
+		const end = node.position?.end?.offset;
+		if (start === undefined || end === undefined) {
+			return "";
+		}
+		return markdown
+			.slice(start, end)
+			.replace(/^[ \t]*> ?/gm, "")
+			.replace(/^\[!agentprompt\][ \t]*\n?/i, "")
+			.trim();
 	}
 }
 
