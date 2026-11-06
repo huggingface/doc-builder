@@ -71,6 +71,7 @@ TRANSLATED_DOCS = {
     "timm": ["zh", "ja", "ko", "pt", "es", "fr", "vi", "id", "tr", "ru", "ar"],
     "trackio": ["zh", "ja", "ko", "pt", "es", "fr", "vi", "id", "tr", "ru", "ar"],
     "transformers": ["zh", "ja", "ko", "pt", "es", "fr", "vi", "id", "tr", "ru", "ar"],
+    "trl": ["zh", "ja", "ko", "pt", "es", "fr", "vi", "id", "tr", "ru", "ar"],
 }
 # Copied unchanged from the English build. Pages (`.html`) and their Markdown (`.md`, served for
 # "Copy page" and `Accept: text/plain`) are translated; llms.txt and llms-full.txt are rebuilt from
