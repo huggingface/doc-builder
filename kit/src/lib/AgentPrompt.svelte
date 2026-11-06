@@ -6,13 +6,15 @@
 	import { copyToClipboard } from "./copyToClipboard";
 
 	interface Props {
+		// the prompt's markdown, base64-encoded by the mdsvex preprocessor
+		source?: string;
 		children?: import("svelte").Snippet;
 	}
 
 	// matches `max-h-32` below
 	const COLLAPSED_HEIGHT = 128;
 
-	let { children }: Props = $props();
+	let { source = "", children }: Props = $props();
 	let content: HTMLDivElement;
 	let expanded = $state(false);
 	let overflowing = $state(false);
@@ -33,7 +35,8 @@
 	});
 
 	function copy() {
-		copyToClipboard(content.innerText.trim());
+		// a hand-written <AgentPrompt> tag has no source: copy its rendered text
+		copyToClipboard(source ? decodeURIComponent(atob(source)) : content.innerText.trim());
 		copied = true;
 		clearTimeout(timeout);
 		timeout = setTimeout(() => (copied = false), 1500);

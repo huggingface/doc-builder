@@ -17,6 +17,13 @@ function codeBlockSources(code) {
 	);
 }
 
+/** @param {string} code */
+function agentPromptSources(code) {
+	return [...code.matchAll(/<AgentPrompt\s+source="([^"]*)"/g)].map(([, base64]) =>
+		decodeURIComponent(atob(base64))
+	);
+}
+
 test("callout with plain text", async () => {
 	const html = await render("> [!NOTE]\n> Some text.");
 	assert.match(html, /<blockquote class="note">\s*<p>Some text\.<\/p>/);
@@ -83,4 +90,39 @@ test("callout examples in code blocks stay as written", async () => {
 		"> ```py\n> x = 1\n> ```",
 		"> [!NOTE]\n> [link](./a) text",
 	]);
+});
+
+test("agent prompt keeps its markdown for the copy button", async () => {
+	const prompt = [
+		'Fine-tune `bert` on the [IMDb dataset](https://huggingface.co/datasets/imdb) and return {"label": x}.',
+		"",
+		"- Use the `Trainer` API.",
+		"",
+		"```py",
+		"print(1)",
+		"    indented",
+		"```",
+	];
+	const html = await render(
+		`> [!AgentPrompt]\n${prompt.map((line) => `> ${line}`.trimEnd()).join("\n")}`
+	);
+	assert.deepEqual(agentPromptSources(html), [prompt.join("\n")]);
+	assert.match(html, /<AgentPrompt[^>]*>\s*<p>Fine-tune <code>bert<\/code> on the <a\s/);
+});
+
+test("agent prompt marker and text on the same line", async () => {
+	const html = await render("> [!agentprompt] Do X with `foo`.");
+	assert.deepEqual(agentPromptSources(html), ["Do X with `foo`."]);
+});
+
+test("agent prompt nested in a list item", async () => {
+	const html = await render(
+		"1. Step one:\n\n   > [!AgentPrompt]\n   > Nested prompt.\n   > Second line."
+	);
+	assert.deepEqual(agentPromptSources(html), ["Nested prompt.\nSecond line."]);
+});
+
+test("empty agent prompt has no source", async () => {
+	const html = await render("> [!AgentPrompt]");
+	assert.match(html, /<AgentPrompt>\s*<\/AgentPrompt>/);
 });
