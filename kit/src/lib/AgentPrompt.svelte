@@ -1,11 +1,16 @@
 <script lang="ts">
 	import { onMount } from "svelte";
-	import IconCaretDown from "./IconCaretDown.svelte";
+	import IconAgent from "./IconAgent.svelte";
+	import IconCaret from "./IconCaret.svelte";
+	import IconCopy from "./IconCopy.svelte";
 	import { copyToClipboard } from "./copyToClipboard";
 
 	interface Props {
 		children?: import("svelte").Snippet;
 	}
+
+	// matches `max-h-32` below
+	const COLLAPSED_HEIGHT = 128;
 
 	let { children }: Props = $props();
 	let content: HTMLDivElement;
@@ -14,9 +19,11 @@
 	let copied = $state(false);
 	let timeout: ReturnType<typeof setTimeout>;
 
+	let collapsed = $derived(!expanded && overflowing);
+
 	onMount(() => {
 		const observer = new ResizeObserver(() => {
-			overflowing = content.scrollHeight > 96;
+			overflowing = content.scrollHeight > COLLAPSED_HEIGHT;
 		});
 		observer.observe(content);
 		return () => {
@@ -33,102 +40,55 @@
 	}
 </script>
 
-<div class="agent-prompt">
-	<div class="agent-prompt-header">
-		<span>Agent prompt</span>
-		<div class="agent-prompt-actions">
-			<button type="button" onclick={copy} aria-label="Copy agent prompt" title="Copy agent prompt">
-				<svg
-					width="16"
-					height="16"
-					viewBox="0 0 24 24"
-					fill="none"
-					stroke="currentColor"
-					stroke-width="2"
-					stroke-linecap="round"
-					stroke-linejoin="round"
-					aria-hidden="true"
-				>
-					<rect width="14" height="14" x="8" y="8" rx="2" ry="2" />
-					<path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" />
-				</svg>
-			</button>
-		</div>
+<!-- tailwind classes only: kit's CSS is emptied in production builds and the hub's CSS styles the docs, so
+	every class used here must exist in moon-landing's build (see its DocPage/TailwindWhitelist.svelte) -->
+<div class="my-6 overflow-hidden rounded-xl border border-gray-200 dark:border-gray-850">
+	<div
+		class="flex items-center justify-between gap-2 border-b border-gray-200 bg-linear-to-t from-gray-100-to-white px-3 py-1.5 dark:border-gray-850"
+	>
+		<span class="flex items-center gap-1.5 text-sm font-semibold text-gray-800 dark:text-gray-200">
+			<IconAgent classNames="text-blue-500" />
+			Agent prompt
+		</span>
+		<button
+			type="button"
+			onclick={copy}
+			title="Copy agent prompt"
+			aria-live="polite"
+			class="inline-flex items-center gap-1 h-7 px-2 text-sm font-medium text-gray-800 border rounded-md border-gray-200 bg-white hover:shadow-inner dark:border-gray-850 dark:bg-gray-950 dark:text-gray-200 dark:hover:bg-gray-800"
+		>
+			<IconCopy classNames="size-3.5" />
+			{copied ? "Copied" : "Copy"}
+		</button>
 	</div>
-	<div class:collapsed={!expanded && overflowing} class="agent-prompt-body" bind:this={content}>
-		{@render children?.()}
+	<div class="relative">
+		<div
+			class="prose max-w-none px-4 py-3 {collapsed ? 'max-h-32 overflow-hidden' : ''}"
+			bind:this={content}
+		>
+			{@render children?.()}
+		</div>
+		{#if collapsed}
+			<div
+				class="pointer-events-none absolute inset-x-0 bottom-0 h-12 bg-linear-to-t from-white dark:from-gray-950"
+			></div>
+		{/if}
 	</div>
 	{#if overflowing}
-		<button
-			class="agent-prompt-more"
-			type="button"
-			onclick={() => (expanded = !expanded)}
-			aria-expanded={expanded}
-		>
-			{expanded ? "Show less" : "Show more"}
-			<IconCaretDown classNames={expanded ? "rotate-180" : ""} />
-		</button>
+		<div class="flex justify-center pb-3">
+			<button
+				type="button"
+				onclick={() => (expanded = !expanded)}
+				aria-expanded={expanded}
+				class="flex h-7 items-center rounded-lg border border-gray-100 px-2.5 text-sm font-medium text-gray-800 hover:bg-gray-100 hover:text-gray-900 dark:hover:bg-gray-800 dark:hover:text-gray-200"
+			>
+				<IconCaret
+					classNames="mr-1.5 text-xs text-gray-400 transition-transform {expanded
+						? 'rotate-180'
+						: 'rotate-0'}"
+				/>
+				{expanded ? "Show less" : "Show more"}
+			</button>
+		</div>
 	{/if}
-	<span class="sr-only" aria-live="polite">{copied ? "Prompt copied" : ""}</span>
 </div>
-
-<style>
-	.agent-prompt {
-		position: relative;
-		margin: 1.5rem 0 2rem;
-		border: 1px solid #d1d5db;
-		border-radius: 0.75rem;
-	}
-	.agent-prompt-header {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		padding: 0.75rem 1rem;
-		border-bottom: 1px solid #d1d5db;
-		font-weight: 600;
-		background: #f9fafb;
-		border-radius: 0.75rem 0.75rem 0 0;
-	}
-	.agent-prompt-actions {
-		display: flex;
-		gap: 0.75rem;
-	}
-	.agent-prompt-actions button {
-		display: flex;
-		padding: 0.25rem;
-		cursor: pointer;
-	}
-	.agent-prompt-body {
-		padding: 1rem;
-		overflow: hidden;
-	}
-	.agent-prompt-body.collapsed {
-		max-height: 96px;
-		mask-image: linear-gradient(black 55%, transparent);
-	}
-	.agent-prompt-body :global(p:first-child) {
-		margin-top: 0;
-	}
-	.agent-prompt-body :global(p:last-child) {
-		margin-bottom: 0;
-	}
-	.agent-prompt-more {
-		display: flex;
-		align-items: center;
-		gap: 0.25rem;
-		margin: 0.25rem auto 0.75rem;
-		padding: 0.25rem;
-		font-size: 0.875rem;
-		font-weight: 600;
-		cursor: pointer;
-		white-space: nowrap;
-	}
-	:global(.dark) .agent-prompt,
-	:global(.dark) .agent-prompt-header,
-	:global(.dark) .agent-prompt-more {
-		border-color: #4b5563;
-	}
-	:global(.dark) .agent-prompt-header {
-		background: #1f2937;
-	}
-</style>
