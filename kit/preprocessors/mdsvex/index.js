@@ -99,7 +99,7 @@ export const mdsvexPreprocess = {
  */
 function markKatex(content, markedKatex) {
 	const REGEX_LATEX_DISPLAY = /\n\$\$([\s\S]+?)\$\$/g;
-	const REGEX_LATEX_INLINE = /\s\\\\\(([\s\S]+?)\\\\\)/g;
+	const REGEX_LATEX_INLINE = /(\s)\\\\\(([\s\S]+?)\\\\\)/g;
 	// Match $...$ with whitespace boundaries to avoid matching in HTML/code
 	const REGEX_LATEX_INLINE_DOLLAR = /(\s)(\$)([^$\n`<>]+?)(\$)(\s)/g;
 	let counter = 0;
@@ -110,11 +110,12 @@ function markKatex(content, markedKatex) {
 			markedKatex[marker] = { tex, displayMode };
 			return marker;
 		})
-		.replace(REGEX_LATEX_INLINE, (_, tex) => {
+		.replace(REGEX_LATEX_INLINE, (_, spaceBefore, tex) => {
 			const displayMode = false;
 			const marker = `KATEXPARSE${counter++}MARKER`;
 			markedKatex[marker] = { tex, displayMode };
-			return marker;
+			// keep the whitespace before the math, like the `$...$` replacement below
+			return spaceBefore + marker;
 		})
 		.replace(
 			REGEX_LATEX_INLINE_DOLLAR,

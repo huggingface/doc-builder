@@ -126,3 +126,9 @@ test("empty agent prompt has no source", async () => {
 	const html = await render("> [!AgentPrompt]");
 	assert.match(html, /<AgentPrompt>\s*<\/AgentPrompt>/);
 });
+
+test("inline math keeps the whitespace before it", async () => {
+	const html = await render("the \\\\(g\\\\) parameter and\n\\\\(x + y\\\\)");
+	assert.match(html, /the \{@html "<span class=\\"katex\\">/);
+	assert.match(html, /and\n\{@html "<span class=\\"katex\\">/);
+});
