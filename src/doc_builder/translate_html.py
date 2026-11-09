@@ -196,6 +196,7 @@ def to_markup(inner, freeze_leading_strong=False):
     Links and formatting become `<tN>…</tN>`, line breaks and images `<tN/>`, code `<cN>…</cN>`
     (content shown for context, restored verbatim). Text is HTML-escaped. With
     `freeze_leading_strong`, a leading `<strong>` (a docstring parameter name) is kept as code.
+    Raises ValueError on HTML it cannot convert back.
     """
     elements, out, stack = {}, [], []
     tokens = [m[0] for m in TOKEN_RE.finditer(inner)]
@@ -206,6 +207,10 @@ def to_markup(inner, freeze_leading_strong=False):
         if token.startswith("<!--"):
             raise ValueError("Block has hydration markers")
         if token.startswith("</"):
+            if not stack:
+                # its opening tag wasn't read as one, e.g. KaTeX's `<span class="\&quot;mord" mathnormal\">` left
+                # in a docstring as `{@html "…"}` text
+                raise ValueError(f"{token} closes no tag")
             n = stack.pop()
             elements[n]["close"] = token
             out.append(f"</t{n}>")

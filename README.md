@@ -529,6 +529,15 @@ Syntax:
 
 Example: [here](https://github.com/huggingface/transformers/blob/0f0e1a2c2bff68541a5b9770d78e0fb6feb7de72/docs/source/en/accelerate.md?plain=1#L29) linking object from `accelerate` inside `transformers`.
 
+### Agent prompt
+
+Use an agent prompt block to give readers text they can copy into a coding agent:
+
+```md
+> [!AgentPrompt]
+> Create a text classification pipeline and run it on an example sentence.
+```
+
 ### Tip
 
 To write a block that you'd like to see highlighted as a note or warning, use the blockquote syntax. This is the

@@ -62,7 +62,7 @@ _re_list_item = re.compile(r"^(?:[-+*]|\d+[.)])\s+")
 _re_interrupting_list_item = re.compile(r"^(?:[-+*]|1[.)])\s+")
 _re_katex_marker = re.compile(r"katexparse[0-9]+marker")
 _re_katex_display = re.compile(r"\n\$\$([\s\S]+?)\$\$")
-_re_katex_inline = re.compile(r"\s\\\\\(([\s\S]+?)\\\\\)")
+_re_katex_inline = re.compile(r"(\s)\\\\\(([\s\S]+?)\\\\\)")
 _re_katex_inline_dollar = re.compile(r"(\s)(\$)([^$\n`<>]+?)(\$)(\s)")
 _re_blank_line = re.compile(r"\r?\n[ \t]*\r?\n")
 _re_thematic_break = re.compile(r"^ {0,3}(?:(?:\*[ \t]*){3,}|(?:_[ \t]*){3,}|(?:-[ \t]*){3,})$")
@@ -1356,13 +1356,21 @@ def _mark_katex_placeholders(content: str) -> str:
         nonlocal counter
         replacement = f"KATEXPARSE{counter}MARKER"
         counter += 1
-        # mdsvex removes newlines captured by display and ``\\(...)`` math.
-        # Keeping them after the marker preserves source-line correspondence;
-        # the added blank lines cannot affect heading text.
+        # mdsvex removes newlines captured by display math. Keeping them after
+        # the marker preserves source-line correspondence; the added blank
+        # lines cannot affect heading text.
         return replacement + "\n" * match.group(0).count("\n")
 
+    def inline_marker(match: re.Match) -> str:
+        nonlocal counter
+        # mdsvex keeps the whitespace before ``\\(...)`` math and removes
+        # newlines inside it, which are kept after the marker as above.
+        replacement = f"{match.group(1)}KATEXPARSE{counter}MARKER"
+        counter += 1
+        return replacement + "\n" * match.group(2).count("\n")
+
     content = _re_katex_display.sub(marker, content)
-    content = _re_katex_inline.sub(marker, content)
+    content = _re_katex_inline.sub(inline_marker, content)
 
     def dollar_marker(match: re.Match) -> str:
         nonlocal counter
