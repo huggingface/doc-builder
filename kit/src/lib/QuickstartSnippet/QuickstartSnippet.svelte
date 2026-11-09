@@ -6,12 +6,12 @@
 	import { copyToClipboard } from "$lib/copyToClipboard";
 	import IconCode from "$lib/IconCode.svelte";
 	import IconCopy from "$lib/IconCopy.svelte";
-	import { routerModels, type RouterModel } from "$lib/routerModels";
 	import IconClaudeCode from "./IconClaudeCode.svelte";
 	import IconCodex from "./IconCodex.svelte";
 	import IconHermesAgent from "./IconHermesAgent.svelte";
 	import IconOpenCode from "./IconOpenCode.svelte";
 	import IconPi from "./IconPi.svelte";
+	import { routerModels, type RouterModel } from "./routerModels";
 	import {
 		AGENT_STEPS,
 		API_CODE,

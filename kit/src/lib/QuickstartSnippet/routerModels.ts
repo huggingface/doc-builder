@@ -1,4 +1,4 @@
-/** Live catalog of the Inference Providers router, shared by `QuickstartSnippet` and `RoutingSnippet` */
+/** Live catalog of the Inference Providers router */
 
 export interface RouterProvider {
 	provider: string;
@@ -6,7 +6,6 @@ export interface RouterProvider {
 	context_length?: number;
 	pricing?: { input: number; output: number };
 	supports_tools?: boolean;
-	throughput?: number;
 }
 
 export interface RouterModel {
@@ -25,22 +24,3 @@ export function routerModels(): Promise<Map<string, RouterModel>> {
 		.catch(() => new Map());
 	return models;
 }
-
-const PROVIDER_NAMES: Record<string, string> = {
-	baseten: "Baseten",
-	cerebras: "Cerebras",
-	cohere: "Cohere",
-	deepinfra: "DeepInfra",
-	"featherless-ai": "Featherless AI",
-	"fireworks-ai": "Fireworks",
-	groq: "Groq",
-	novita: "Novita",
-	nscale: "Nscale",
-	ovhcloud: "OVHcloud",
-	publicai: "Public AI",
-	scaleway: "Scaleway",
-	together: "Together AI",
-	"zai-org": "Z.ai",
-};
-
-export const providerName = (slug: string) => PROVIDER_NAMES[slug] ?? slug;
