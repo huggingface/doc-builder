@@ -25,10 +25,14 @@
 		type Surface,
 	} from "./snippets";
 
+	interface Props {
+		/** Models to pick from, the first one is selected by default */
+		models: { id: string; avatar: string }[];
+	}
+
+	let { models }: Props = $props();
+
 	const STORAGE_KEY = "inference-providers-quickstart";
-	/** Shown until the live catalog loads, or if the router can't be reached */
-	const FALLBACK_MODEL = "deepseek-ai/DeepSeek-V4.1-Flash";
-	const MODEL_CHIPS = 5;
 	const DOCS_URL = "https://huggingface.co/docs/inference-providers";
 
 	const ICONS: Record<Surface, Component<{ classNames?: string }>> = {
@@ -50,27 +54,14 @@
 	let surface = $state<Surface>("api");
 	let format = $state<Format>("chat");
 	let lang = $state<Lang>("python");
-	let model = $state(FALLBACK_MODEL);
+	/** Set when the reader picks a model, or restored from their last visit */
+	let selected = $state<string>();
+	let model = $derived(models.some((m) => m.id === selected) ? selected! : models[0].id);
 	let catalog = $state<Map<string, RouterModel>>();
 	/** Key of the block that was just copied, to show "Copied" on its button */
 	let copied = $state<string>();
 	let copiedTimeout: ReturnType<typeof setTimeout>;
 
-	/** The top trending models with tool calling, one per org: the catalog is sorted by trending score */
-	let models = $derived.by(() => {
-		const top: string[] = [];
-		for (const m of catalog?.values() ?? []) {
-			const org = m.id.split("/")[0];
-			if (
-				top.length < MODEL_CHIPS &&
-				m.providers.some((p) => p.supports_tools) &&
-				!top.some((id) => id.startsWith(`${org}/`))
-			) {
-				top.push(m.id);
-			}
-		}
-		return top;
-	});
 	let live = $derived(catalog?.get(model));
 	let modelLabel = $derived(model.split("/")[1]);
 	/** The HF SDKs have no cURL snippet: show Python instead */
@@ -99,10 +90,8 @@
 		surface = SURFACES.some((s) => s.id === saved.surface) ? saved.surface : surface;
 		format = FORMATS.some((f) => f.id === saved.format) ? saved.format : format;
 		lang = LANGS.some((l) => l.id === saved.lang) ? saved.lang : lang;
-		routerModels().then((loaded) => {
-			catalog = loaded;
-			model = models.includes(saved.model) ? saved.model : (models[0] ?? model);
-		});
+		selected = saved.model;
+		routerModels().then((loaded) => (catalog = loaded));
 		return () => clearTimeout(copiedTimeout);
 	});
 
@@ -358,23 +347,19 @@
 		</div>
 	</div>
 
-	<div class="flex min-h-11 flex-wrap gap-2 px-1 pb-1 pt-3">
-		{#each models as m}
+	<div class="flex flex-wrap gap-2 px-1 pb-1 pt-3">
+		{#each models as m (m.id)}
 			<button
 				type="button"
-				title={m}
+				title={m.id}
 				class="inline-flex items-center gap-1.5 rounded-full border bg-white py-0.5 pl-0.5 pr-3 text-sm dark:bg-gray-950 {model ===
-				m
+				m.id
 					? `border-gray-900 font-semibold ring-4 ring-yellow-100 dark:border-gray-100 dark:ring-amber-700/50 ${TEXT_STRONG}`
 					: `hover:border-gray-300 dark:hover:border-gray-700 ${BORDER} ${TEXT_STRONG}`}"
-				onclick={() => select(() => (model = m))}
+				onclick={() => select(() => (selected = m.id))}
 			>
-				<img
-					src="https://huggingface.co/api/avatars/{m.split('/')[0]}"
-					alt=""
-					class="size-5 rounded-full bg-white"
-				/>
-				{m.split("/")[1]}
+				<img src={m.avatar} alt="" class="size-5 rounded-full bg-white" />
+				{m.id.split("/")[1]}
 			</button>
 		{/each}
 		<a
