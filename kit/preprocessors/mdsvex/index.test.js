@@ -1,11 +1,21 @@
 // Run from kit/ (index.js lists ./src/lib at import time): npm test
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { mdsvexPreprocess } from "./index.js";
+import { DOCSTRING_FRAGMENT_MARKER, mdsvexPreprocess } from "./index.js";
 
 /** @param {string} markdown */
 async function render(markdown) {
 	const content = `HF_DOC_BODY_START\n\n${markdown}\n\nHF_DOC_BODY_END\n`;
+	const { code } = await mdsvexPreprocess.markup({ content, filename: "docs/+page.svelte" });
+	return code;
+}
+
+/**
+ * Renders markdown as a docstring fragment, like docstring.js does
+ * @param {string} markdown
+ */
+async function renderFragment(markdown) {
+	const content = `${DOCSTRING_FRAGMENT_MARKER}\n\n${markdown}`;
 	const { code } = await mdsvexPreprocess.markup({ content, filename: "docs/+page.svelte" });
 	return code;
 }
@@ -90,6 +100,28 @@ test("callout examples in code blocks stay as written", async () => {
 		"> ```py\n> x = 1\n> ```",
 		"> [!NOTE]\n> [link](./a) text",
 	]);
+});
+
+test("math in the page body is a Svelte {@html} tag", async () => {
+	const html = await render("Mixing gate $g$ and \\\\(z_t\\\\) of $\\frac{1}{2}$ here.");
+	const tags = [...html.matchAll(/\{@html ("(?:[^"\\]|\\.)*")\}/g)].map(([, json]) =>
+		JSON.parse(json)
+	);
+	assert.equal(tags.length, 3);
+	assert.ok(tags.every((tag) => tag.startsWith('<span class="katex">')));
+});
+
+test("math in a docstring fragment is KaTeX HTML", async () => {
+	// the `}}` of docstring fragments are escaped by docstring.js
+	const html = await renderFragment(
+		"Mixing gate $g$ and \\\\(z_t\\\\) of $\\frac{1}{\\sqrt{2}&zwnj;}$ here."
+	);
+	assert.doesNotMatch(html, /@html/);
+	assert.equal(html.match(/<span class="katex">/g)?.length, 3);
+	assert.match(
+		html,
+		/<annotation encoding="application\/x-tex">\\frac\{1\}\{\\sqrt\{2\}\}<\/annotation>/
+	);
 });
 
 test("agent prompt keeps its markdown for the copy button", async () => {

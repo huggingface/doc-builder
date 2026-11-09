@@ -202,3 +202,22 @@ def legacy_function(x, y=2):
         3
     """
     return x + y
+
+
+def mix_embeddings(source, delta, gate_value=0.25, delta_type="r"):
+    r"""
+    Mixes two embeddings as $g \cdot s + (1 - g) \cdot d$ and returns the result.
+
+    Args:
+        source (`torch.Tensor`):
+            Embedding $s$ of the source timestep :math:`t`.
+        delta (`torch.Tensor`):
+            Embedding $d$ of the delta timestep, scaled by $\frac{1}{\sqrt{r}}$ first.
+        gate_value (`float`, defaults to `0.25`):
+            Mixing gate $g$ between the two embeddings, with $g \in [0, 1]$ (the paper's :math:`g` parameter).
+        delta_type (`str`, defaults to `'r'`):
+            Either ``"r"`` (the delta timestep is :math:`r`) or ``"t-r"`` (it is :math:`t - r`).
+
+    Returns:
+        `torch.Tensor`: The mixed embedding :math:`z_t`.
+    """
