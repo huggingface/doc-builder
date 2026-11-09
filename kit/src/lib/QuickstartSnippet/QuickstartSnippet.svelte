@@ -225,9 +225,9 @@
 		<div class="min-w-0 flex-1 overflow-hidden rounded-xl border {BORDER}">
 			{#if surface === "api"}
 				<div
-					class="flex items-center justify-between gap-2 overflow-x-auto border-b p-1.5 {BORDER} {CODE_BG}"
+					class="flex flex-wrap items-center justify-between gap-2 border-b p-1.5 {BORDER} {CODE_BG}"
 				>
-					<div class="flex gap-0.5">
+					<div class="flex flex-wrap gap-0.5">
 						{#each FORMATS as f}
 							<button
 								type="button"
@@ -321,16 +321,16 @@
 					{/each}
 				</ol>
 			{/if}
-			<div class="flex items-center justify-between gap-2.5 border-t p-2 {BORDER}">
+			<div class="flex flex-wrap items-center justify-between gap-2.5 border-t p-2 {BORDER}">
 				<button
 					type="button"
-					class="inline-flex items-center gap-1.5 rounded-lg border bg-white px-3 py-1.5 text-sm font-semibold hover:bg-gray-50 dark:bg-gray-950 dark:hover:bg-gray-900 {BORDER} {TEXT_STRONG}"
+					class="inline-flex items-center gap-1.5 whitespace-nowrap rounded-lg border bg-white px-3 py-1.5 text-sm font-semibold hover:bg-gray-50 dark:bg-gray-950 dark:hover:bg-gray-900 {BORDER} {TEXT_STRONG}"
 					onclick={async () => copy("agent", await agentPrompt())}
 				>
 					<IconCopy classNames="size-3.5" />
 					{copied === "agent" ? "Copied" : "Copy for agent"}
 				</button>
-				<div class="flex gap-4 text-sm">
+				<div class="flex gap-4 whitespace-nowrap text-sm">
 					<a
 						href="https://huggingface.co/{model}"
 						target="_blank"
