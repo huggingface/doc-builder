@@ -431,8 +431,15 @@ uv run doc-builder check-links /path/to/docs
 
 #### Check for broken links in the docs (more compact view)
 ```bash
-uv run doc-builder check-links /path/to/docs --format link
+uv run doc-builder check-links /path/to/docs --format list
 ```
+
+#### Also check external http(s) links over the network
+```bash
+GITHUB_TOKEN=... uv run doc-builder check-links /path/to/docs --check-external
+```
+
+Only 404/410 answers (and missing or private Hub repos) count as broken. Links that can't be verified (sign-in walls, rate limits, timeouts) are listed as warnings. The token is optional and speeds up github.com links. See `--help` for the `--external-*` tuning options.
 
 ### Testing
 
