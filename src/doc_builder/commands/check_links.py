@@ -14,6 +14,7 @@
 
 
 import argparse
+import re
 import sys
 
 from doc_builder.check_links import check_links
@@ -27,6 +28,13 @@ def check_links_command(args):
         max_workers=args.max_workers,
         show_progress=not args.no_progress,
         package_name=args.package_name,
+        check_external=not args.skip_external,
+        external_options={
+            "max_concurrency": args.external_concurrency,
+            "per_host_concurrency": args.external_per_host,
+            "timeout": args.external_timeout,
+            "ignore_patterns": args.external_ignore,
+        },
     )
 
     # Choose output format
@@ -39,12 +47,18 @@ def check_links_command(args):
         sys.exit(1)
 
 
+def _regex(value: str) -> str:
+    try:
+        re.compile(value)
+    except re.error as e:
+        raise argparse.ArgumentTypeError(f"invalid regex {value!r}: {e}") from e
+    return value
+
+
 def check_links_command_parser(subparsers=None):
     """Create the argument parser for the check-links command."""
     if subparsers is not None:
-        parser = subparsers.add_parser(
-            "check-links", help="Check internal links in documentation files for broken references"
-        )
+        parser = subparsers.add_parser("check-links", help="Check links in documentation files for broken references")
     else:
         parser = argparse.ArgumentParser("Doc Builder check-links command")
 
@@ -69,6 +83,37 @@ def check_links_command_parser(subparsers=None):
         choices=["detailed", "list"],
         default="detailed",
         help="Output format: 'detailed' (default, shows link text and URL) or 'list' (compact, file:line - URL)",
+    )
+    parser.add_argument(
+        "--skip-external",
+        action="store_true",
+        help="Only check internal links, without requesting external http(s) URLs over the network",
+    )
+    parser.add_argument(
+        "--external-concurrency",
+        type=int,
+        default=128,
+        help="Maximum number of external requests in flight at once (default: 128)",
+    )
+    parser.add_argument(
+        "--external-per-host",
+        type=int,
+        default=None,
+        help="Maximum number of concurrent requests to each host (default: 8, or 32 for huggingface.co and hf.co)",
+    )
+    parser.add_argument(
+        "--external-timeout",
+        type=float,
+        default=15.0,
+        help="Timeout in seconds for each external request (default: 15)",
+    )
+    parser.add_argument(
+        "--external-ignore",
+        action="append",
+        default=[],
+        type=_regex,
+        metavar="REGEX",
+        help="Skip external URLs matching this regex (repeatable). localhost and example.com are always skipped",
     )
     parser.add_argument(
         "--no-progress",

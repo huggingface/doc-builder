@@ -15,9 +15,11 @@
 """
 Fast link checker for documentation files.
 
-This module checks internal links in markdown/mdx files to ensure they point
-to valid files and anchors. It handles links without extensions (e.g., `./fp16`
+This module checks links in markdown/mdx files. Internal links must point to
+valid files and anchors. It handles links without extensions (e.g., `./fp16`
 instead of `./fp16.md`) and checks fragment anchors against headings and IDs.
+It also requests external http(s) links over the network (see
+`doc_builder.external_links`).
 """
 
 import importlib
@@ -185,6 +187,8 @@ class LinkCheckResult:
         self.broken_links: list[tuple[Path, str, str, int]] = []  # (file, link_text, link_url, line_number)
         self.files_checked: int = 0
         self.links_checked: int = 0
+        self.unreachable_links: list[tuple[Path, str, str, int, str]] = []
+        self.external_urls_checked: int = 0
 
     def add_broken_link(self, file_path: Path, link_text: str, link_url: str, line_number: int):
         """Add a broken link to the results."""
@@ -194,27 +198,47 @@ class LinkCheckResult:
         """Check if any broken links were found."""
         return len(self.broken_links) > 0
 
+    def add_unreachable_link(self, file_path: Path, link_text: str, link_url: str, line_number: int, detail: str):
+        """Add an external link whose check was inconclusive."""
+        self.unreachable_links.append((file_path, link_text, link_url, line_number, detail))
+
+    def _unreachable_output(self) -> str:
+        if not self.unreachable_links:
+            return ""
+        output = f"\n⚠ Could not verify {len(self.unreachable_links)} external link(s):\n\n"
+        for file_path, _, link_url, line_number, detail in sorted(
+            self.unreachable_links, key=lambda x: (str(x[0]), x[3])
+        ):
+            output += f"{file_path}:{line_number} - {link_url} ({detail})\n"
+        return output
+
+    def _checked_message(self) -> str:
+        message = f"Checked {self.links_checked} links in {self.files_checked} files"
+        if self.external_urls_checked:
+            message += f" ({self.external_urls_checked} unique external URLs)"
+        return message + "."
+
     def get_summary(self) -> str:
         """Get a summary of the check results."""
         if not self.has_broken_links():
-            return f"✓ All links valid! Checked {self.links_checked} links in {self.files_checked} files."
+            return f"✓ All links valid! {self._checked_message()}" + self._unreachable_output()
 
         summary = f"✗ Found {len(self.broken_links)} broken link(s) in {self.files_checked} files:\n\n"
         for file_path, link_text, link_url, line_number in self.broken_links:
             summary += f"  {file_path}:{line_number}\n"
             summary += f"    Link text: [{link_text}]\n"
             summary += f"    Link URL: {link_url}\n\n"
-        return summary
+        return summary + self._unreachable_output()
 
     def get_list_output(self) -> str:
         """Get a compact list of broken links (file:line - URL format)."""
         if not self.has_broken_links():
-            return f"✓ All links valid! Checked {self.links_checked} links in {self.files_checked} files."
+            return f"✓ All links valid! {self._checked_message()}" + self._unreachable_output()
 
         output = f"✗ Found {len(self.broken_links)} broken link(s) in {self.files_checked} files:\n\n"
         for file_path, _, link_url, line_number in self.broken_links:
             output += f"{file_path}:{line_number} - {link_url}\n"
-        return output
+        return output + self._unreachable_output()
 
 
 def _parse_link_destination(link_url: str) -> str | None:
@@ -1766,8 +1790,20 @@ def check_file_links(file_path: Path, doc_folder: Path) -> tuple[list[tuple[str,
         of (link_text, link_url, line_number) tuples and total_links_checked is the
         count of all internal links found
     """
+    broken_links, total_links, _ = _check_file_links(file_path, doc_folder)
+    return broken_links, total_links
+
+
+def _check_file_links(
+    file_path: Path, doc_folder: Path, collect_external: bool = False
+) -> tuple[list[tuple[str, str, int]], int, list[tuple[str, str, int, str]]]:
+    """
+    Like `check_file_links`, and also return the file's external links as
+    (link_text, link_url, line_number, destination) tuples when `collect_external` is set.
+    """
     broken_links = []
     total_links = 0
+    external_links: list[tuple[str, str, int, str]] = []
     anchor_cache: dict[Path, _AnchorIndex | None] = {}
 
     try:
@@ -1829,12 +1865,14 @@ def check_file_links(file_path: Path, doc_folder: Path) -> tuple[list[tuple[str,
 
             # Skip external links. Anchor-only links are checked against the
             # headings and explicit IDs in the current file.
+            line_num = bisect_right(line_starts, link.start)
             if is_external_link(parsed_link_url):
+                if collect_external:
+                    external_links.append((link_text, link_url, line_num, _link_destination(parsed_link_url)))
                 continue
 
             # Count this as an internal link
             total_links += 1
-            line_num = bisect_right(line_starts, link.start)
 
             # Resolve the link path
             link_path = resolve_link_path(file_path, parsed_link_url)
@@ -1860,7 +1898,7 @@ def check_file_links(file_path: Path, doc_folder: Path) -> tuple[list[tuple[str,
         # If we can't read the file, report it as a warning but don't fail
         print(f"Warning: Could not read {file_path}: {e}")
 
-    return broken_links, total_links
+    return broken_links, total_links, external_links
 
 
 def check_links(
@@ -1868,15 +1906,19 @@ def check_links(
     max_workers: int | None = None,
     show_progress: bool = True,
     package_name: str | None = None,
+    check_external: bool = True,
+    external_options: dict | None = None,
 ) -> LinkCheckResult:
     """
-    Check all internal links in documentation files.
+    Check internal and external links in documentation files.
 
     Args:
         doc_folder: Path to the documentation folder
         max_workers: Maximum number of parallel workers (default: auto-detect CPU count)
         show_progress: Show progress bar during checking (default: True, requires tqdm)
         package_name: Documented Python import name (auto-detected when omitted)
+        check_external: Also request every unique http(s) URL over the network (default: True)
+        external_options: Keyword arguments for `doc_builder.external_links.check_external_urls`
 
     Returns:
         LinkCheckResult with details about broken links
@@ -1897,6 +1939,8 @@ def check_links(
     package_name = package_name or os.environ.get("DOCS_LIBRARY") or _detect_package_name(doc_folder)
     resolved_autodoc_anchors = _resolve_autodoc_anchors(all_files, package_name)
 
+    external_links: list[tuple[Path, str, str, int, str]] = []
+
     # Check files in parallel using ProcessPoolExecutor to bypass GIL
     with ProcessPoolExecutor(
         max_workers=max_workers,
@@ -1905,7 +1949,8 @@ def check_links(
     ) as executor:
         # Submit all tasks
         future_to_file = {
-            executor.submit(check_file_links, file_path, doc_folder): file_path for file_path in all_files
+            executor.submit(_check_file_links, file_path, doc_folder, check_external): file_path
+            for file_path in all_files
         }
 
         # Create progress bar iterator
@@ -1917,8 +1962,10 @@ def check_links(
         for future in futures:
             file_path = future_to_file[future]
             try:
-                broken_links, links_count = future.result()
+                broken_links, links_count, file_external_links = future.result()
                 result.links_checked += links_count
+                for link_text, link_url, line_num, destination in file_external_links:
+                    external_links.append((file_path, link_text, link_url, line_num, destination))
                 for link_text, link_url, line_num in broken_links:
                     result.add_broken_link(file_path, link_text, link_url, line_num)
             except Exception as e:
@@ -1928,7 +1975,45 @@ def check_links(
                 else:
                     print(f"Error checking {file_path}: {e}")
 
+    if check_external and external_links:
+        _check_external_links(result, external_links, show_progress, external_options or {})
+
     return result
+
+
+def _check_external_links(
+    result: LinkCheckResult,
+    external_links: list[tuple[Path, str, str, int, str]],
+    show_progress: bool,
+    options: dict,
+) -> None:
+    """Check each unique external URL once, then report it at every place it is linked."""
+    from doc_builder.external_links import check_external_urls, normalize_external_url
+
+    progress = None
+    on_done = None
+    if show_progress and HAS_TQDM:
+        progress = tqdm(desc="Checking external URLs", unit="url")
+
+        def on_done(_status):
+            progress.update()
+
+    try:
+        statuses = check_external_urls((destination for *_, destination in external_links), on_done=on_done, **options)
+    finally:
+        if progress is not None:
+            progress.close()
+
+    result.external_urls_checked = len(statuses)
+    for file_path, link_text, link_url, line_num, destination in external_links:
+        status = statuses.get(normalize_external_url(destination))
+        if status is None:  # not http(s), or ignored
+            continue
+        result.links_checked += 1
+        if status.outcome == "broken":
+            result.add_broken_link(file_path, link_text, f"{link_url} ({status.detail})", line_num)
+        elif status.outcome == "unreachable":
+            result.add_unreachable_link(file_path, link_text, link_url, line_num, status.detail)
 
 
 def check_links_cli(doc_folder: str | Path) -> int:
