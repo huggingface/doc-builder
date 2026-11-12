@@ -28,7 +28,7 @@ def check_links_command(args):
         max_workers=args.max_workers,
         show_progress=not args.no_progress,
         package_name=args.package_name,
-        check_external=not args.skip_external,
+        check_external=args.check_external,
         external_options={
             "max_concurrency": args.external_concurrency,
             "per_host_concurrency": args.external_per_host,
@@ -85,9 +85,13 @@ def check_links_command_parser(subparsers=None):
         help="Output format: 'detailed' (default, shows link text and URL) or 'list' (compact, file:line - URL)",
     )
     parser.add_argument(
-        "--skip-external",
+        "--check-external",
         action="store_true",
-        help="Only check internal links, without requesting external http(s) URLs over the network",
+        help=(
+            "Also request every external http(s) URL over the network. Off by default, so a link that breaks on"
+            " a third-party site does not fail unrelated PRs. Set GITHUB_TOKEN or GH_TOKEN to check github.com"
+            " links faster"
+        ),
     )
     parser.add_argument(
         "--external-concurrency",

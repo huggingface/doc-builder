@@ -217,11 +217,11 @@ def test_check_links_reports_external_links(tmp_path, server):
         encoding="utf-8",
     )
 
-    without_external = check_links(tmp_path, max_workers=1, show_progress=False, check_external=False)
+    without_external = check_links(tmp_path, max_workers=1, show_progress=False)
     assert not without_external.has_broken_links()
     assert _Handler.requests == Counter()
 
-    result = check_links(tmp_path, max_workers=1, show_progress=False)
+    result = check_links(tmp_path, max_workers=1, show_progress=False, check_external=True)
     assert [(link_url, line) for _, _, link_url, line in result.broken_links] == [
         (f"{server}/missing (HTTP 404)", 4),
         (f"{server}/missing#part (HTTP 404)", 5),

@@ -333,6 +333,13 @@ def test_check_links_parser_accepts_package_name_aliases():
     assert parser.parse_args(["docs", "--package_name", "fake_pkg"]).package_name == "fake_pkg"
 
 
+def test_check_links_parser_checks_external_links_only_when_asked():
+    parser = check_links_command_parser()
+
+    assert parser.parse_args(["docs"]).check_external is False
+    assert parser.parse_args(["docs", "--check-external"]).check_external is True
+
+
 def test_fence_length_keeps_links_anchors_and_autodoc_inside_code(tmp_path):
     target = tmp_path / "target.md"
     target.write_text("## Real\n", encoding="utf-8")

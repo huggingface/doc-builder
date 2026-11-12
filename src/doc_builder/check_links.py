@@ -18,7 +18,7 @@ Fast link checker for documentation files.
 This module checks links in markdown/mdx files. Internal links must point to
 valid files and anchors. It handles links without extensions (e.g., `./fp16`
 instead of `./fp16.md`) and checks fragment anchors against headings and IDs.
-It also requests external http(s) links over the network (see
+When asked, it also requests external http(s) links over the network (see
 `doc_builder.external_links`).
 """
 
@@ -1906,18 +1906,18 @@ def check_links(
     max_workers: int | None = None,
     show_progress: bool = True,
     package_name: str | None = None,
-    check_external: bool = True,
+    check_external: bool = False,
     external_options: dict | None = None,
 ) -> LinkCheckResult:
     """
-    Check internal and external links in documentation files.
+    Check internal links, and optionally external links, in documentation files.
 
     Args:
         doc_folder: Path to the documentation folder
         max_workers: Maximum number of parallel workers (default: auto-detect CPU count)
         show_progress: Show progress bar during checking (default: True, requires tqdm)
         package_name: Documented Python import name (auto-detected when omitted)
-        check_external: Also request every unique http(s) URL over the network (default: True)
+        check_external: Also request every unique http(s) URL over the network (default: False)
         external_options: Keyword arguments for `doc_builder.external_links.check_external_urls`
 
     Returns:
