@@ -164,15 +164,59 @@ def create_embedding_db(client: Client, index_name: str):
     return client, task_info
 
 
+# Meilisearch doesn't stem words, and only matches the last word of a query as a prefix
+SYNONYM_GROUPS = [
+    ["fine tune", "finetune", "fine tuning", "finetuning"],
+    ["upload", "uploading"],
+    ["download", "downloading"],
+    ["stream", "streaming"],
+    ["train", "training"],
+    ["install", "installation", "installing"],
+    ["quantize", "quantization", "quantisation"],
+    ["deploy", "deployment", "deploying"],
+    ["auth", "authentication", "authenticate"],
+    ["config", "configuration"],
+    ["tokenizer", "tokeniser"],
+    ["repo", "repository"],
+    ["repos", "repositories"],
+    ["org", "organization"],
+    ["orgs", "organizations"],
+    ["pr", "pull request"],
+    ["env var", "environment variable"],
+    ["cli", "command line interface"],
+    ["sso", "single sign on"],
+    ["2fa", "two factor authentication", "mfa"],
+    ["api key", "access token"],
+]
+
+SEARCH_SETTINGS = {
+    # A match in an earlier attribute ranks higher
+    "searchableAttributes": ["name", "section", "page_title", "hierarchy", "text_plain"],
+    "filterableAttributes": ["product", "id", "page_url", "source_page_url"],
+    # The default rules, plus: pages before their sections (`level`), short headings before long ones that happen
+    # to contain the query, and the start of a section before the rest of it
+    "rankingRules": [
+        "words",
+        "typo",
+        "proximity",
+        "attributeRank",
+        "sort",
+        "level:asc",
+        "wordPosition",
+        "section_word_count:asc",
+        "exactness",
+        "excerpt_index:asc",
+    ],
+    "synonyms": {
+        term: [synonym for synonym in group if synonym != term] for group in SYNONYM_GROUPS for term in group
+    },
+}
+
+
 @wait_for_task_completion
 def update_db_settings(client: Client, index_name: str):
     index = client.index(index_name)
-    task_info = index.update_settings(
-        {
-            "searchableAttributes": ["heading1", "heading2", "heading3", "heading4", "heading5", "text"],
-            "filterableAttributes": ["product", "id"],
-        }
-    )
+    task_info = index.update_settings(SEARCH_SETTINGS)
     return client, task_info
 
 
@@ -322,6 +366,14 @@ def add_embeddings_to_db(client: Client, index_name: str, embeddings):
             "heading3": embedding.heading3,
             "heading4": embedding.heading4,
             "heading5": embedding.heading5,
+            "page_url": embedding.page_url,
+            "page_title": embedding.page_title,
+            "section": embedding.section,
+            "hierarchy": embedding.hierarchy,
+            "name": embedding.name,
+            "level": embedding.level,
+            "section_word_count": embedding.section_word_count,
+            "excerpt_index": embedding.excerpt_index,
             "_vectors": {VECTOR_NAME: embedding.embedding},
         }
         payload_data.append(document)

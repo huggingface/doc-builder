@@ -41,10 +41,17 @@ from .meilisearch_helper import (
 )
 from .utils import chunk_list, read_doc_config
 
-Chunk = namedtuple("Chunk", "text source_page_url source_page_title package_name headings page")
+# `excerpt_index` is the position of the chunk in its section, `page_title` the title of its page when
+# `source_page_title` isn't (API records are titled after their symbol)
+Chunk = namedtuple(
+    "Chunk",
+    "text source_page_url source_page_title package_name headings page excerpt_index page_title",
+    defaults=(0, None),
+)
 Embedding = namedtuple(
     "Embedding",
-    "text text_plain source_page_url source_page_title library embedding heading1 heading2 heading3 heading4 heading5 page",
+    "text text_plain source_page_url source_page_title library embedding heading1 heading2 heading3 heading4 heading5 "
+    "page page_url page_title section hierarchy name level section_word_count excerpt_index",
 )
 
 MEILI_INDEX = "docs-semantic-search"
@@ -74,6 +81,9 @@ _re_cut_link_start = re.compile(r"^[^\[\n]*?\]\([^)\s]*\)")
 _re_cut_link_end = re.compile(r"\[([^\]\n]*)\]\([^)\s]*$")
 _re_table_row = re.compile(r"^\s*\||\|\s*$")
 _re_inline_fence = re.compile(r"(?:`{3,}|~{3,})[\w-]*")
+# URL fragment of an API object, e.g. `transformers.Trainer.train`
+_re_api_symbol = re.compile(r"^[A-Za-z_]\w*(?:\.[A-Za-z_]\w*)+$")
+_re_slug_separators = re.compile(r"[-_.]+")
 _plain_text_md = MarkdownIt("commonmark", {"html": True}).enable("table")
 
 
@@ -547,7 +557,10 @@ def clean_md(text):
 
 def split_into_excerpts(text: str, max_length: int) -> list[str]:
     """
-    Split text into excerpts of approximately max_length characters.
+    Split text into excerpts of at most max_length characters.
+
+    An excerpt ends at the last paragraph break of its second half, else at a line break, the end of a sentence
+    or a space, so that excerpts read as text of their own in search results.
 
     Args:
         text: The text to split
@@ -556,44 +569,20 @@ def split_into_excerpts(text: str, max_length: int) -> list[str]:
     Returns:
         List of text excerpts
     """
-    if not text:
-        return []
-
     excerpts = []
-    current_index = 0
-
-    while current_index < len(text):
-        end_index = current_index + max_length
-
-        # If we're at the end of the text, just take the rest
-        if end_index >= len(text):
-            excerpts.append(text[current_index:].strip())
-            break
-
-        # Look for the next word boundary after "max_length" characters
-        remaining_text = text[end_index:]
-        word_boundary_match = re.search(r"\b", remaining_text)
-
-        margin = 50
-
-        if word_boundary_match and word_boundary_match.start() <= margin:
-            # Found a word boundary within 50 characters, use it
-            end_index = end_index + word_boundary_match.start()
-        else:
-            # No word boundary within 50 chars, fall back to finding good breaking points
-            break_point = end_index
-            for i in range(end_index, max(current_index + max_length - margin, current_index), -1):
-                if i < len(text):
-                    char = text[i]
-                    if char in [" ", "\n", ".", ",", ";", "!", "?"]:
-                        break_point = i + 1
-                        break
-            end_index = break_point
-
-        excerpts.append(text[current_index:end_index].strip())
-        current_index = end_index
-
-    return [excerpt for excerpt in excerpts if len(excerpt) > 0]
+    text = text.strip()
+    while len(text) > max_length:
+        end_index = max_length
+        for separator in ("\n\n", "\n", ". ", " "):
+            separator_index = text.rfind(separator, max_length // 2, max_length)
+            if separator_index != -1:
+                end_index = separator_index + len(separator)
+                break
+        excerpts.append(text[:end_index].strip())
+        text = text[end_index:].strip()
+    if text:
+        excerpts.append(text)
+    return excerpts
 
 
 def build_headings_object(heading_stack: list[str]) -> dict:
@@ -872,10 +861,48 @@ def chunks_to_documents(chunks, embedding_vectors=None) -> list[Embedding]:
         if c.package_name != "blog" and "#" not in c.source_page_url and anchor:
             source_page_url += "#" + anchor
 
+        # Fields for full-text search. `name` is what a page or an API object is searched by, and is only set on
+        # the record that starts it: the search engine ranks a match there above matches in headings and text.
+        page_url, _, fragment = source_page_url.partition("#")
+        page_title = c.page_title or c.source_page_title
+        present_headings = [(level, heading) for level, heading in enumerate(headings, start=1) if heading]
+        name = None
+        if _re_api_symbol.match(fragment):
+            # `Trainer.train` rather than a `train` heading under `Trainer`
+            section = fragment.split(".", 1)[1]
+            level = 2
+            if c.excerpt_index == 0:
+                name = [fragment.rsplit(".", 1)[1]]
+        else:
+            section = present_headings[-1][1] if present_headings else page_title
+            level = present_headings[-1][0] if len(present_headings) > 1 else 1
+            if level == 1 and c.excerpt_index == 0:
+                name = [section]
+                if section == page_title:
+                    # Pages are also searched by their URL, e.g. "peft" for `transformers/peft`
+                    segments = page_url.rstrip("/").split("/")
+                    name.append(
+                        _re_slug_separators.sub(" ", segments[-2] if segments[-1] == "index" else segments[-1])
+                    )
+
+        text_plain = markdown_to_plain_text(c.text)
+        # Results show the heading as their title, so the snippet doesn't repeat it
+        heading_line, _, body = text_plain.partition("\n")
+        if c.excerpt_index == 0 and body and present_headings and heading_line == present_headings[-1][1]:
+            text_plain = body
+
         embeddings.append(
             Embedding(
                 text=c.text,
-                text_plain=markdown_to_plain_text(c.text),
+                text_plain=text_plain,
+                page_url=page_url,
+                page_title=page_title,
+                section=section,
+                hierarchy=[heading for _, heading in present_headings[1:-1]],
+                name=name,
+                level=level,
+                section_word_count=len(section.split()),
+                excerpt_index=c.excerpt_index,
                 source_page_url=source_page_url,
                 source_page_title=c.source_page_title,
                 library=c.package_name,

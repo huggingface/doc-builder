@@ -24,6 +24,7 @@ from doc_builder.build_embeddings import (
     clean_heading,
     clean_meilisearch,
     markdown_to_plain_text,
+    split_into_excerpts,
     split_markdown_by_headings,
 )
 from doc_builder.commands import embeddings as embeddings_command
@@ -36,6 +37,7 @@ from doc_builder.process_hf_docs import (
     markdown_file_to_url,
     process_all_libraries,
     process_api_html_file,
+    process_library,
     process_markdown_file,
     should_embed_chunk,
 )
@@ -718,3 +720,101 @@ def test_markdown_to_plain_text_keeps_placeholders_and_removes_markup(markdown, 
 
 def test_clean_heading_keeps_placeholders():
     assert clean_heading("kernel.<name>[[kernel-name]]") == "kernel.<name>"
+
+
+def test_split_into_excerpts_cuts_at_paragraph_breaks_then_between_words():
+    paragraphs = ["a" * 30 + ".", "b" * 30 + ".", "c" * 30 + "."]
+    assert split_into_excerpts("\n\n".join(paragraphs), 70) == ["\n\n".join(paragraphs[:2]), paragraphs[2]]
+
+    excerpts = split_into_excerpts("word " * 40, 52)
+    assert all(len(excerpt) <= 52 and set(excerpt.split()) == {"word"} for excerpt in excerpts)
+    assert sum(len(excerpt.split()) for excerpt in excerpts) == 40
+
+
+def test_markdown_chunks_drop_inlined_images(tmp_path):
+    page = tmp_path / "notebook.md"
+    page.write_text(
+        f"# Notebook\n\n![diagram](data:image/png;base64,{'iVBORw0KGgo=' * 500})\n\nText.", encoding="utf-8"
+    )
+
+    chunks = process_markdown_file(page, "cookbook", tmp_path)
+
+    assert [chunk.text for chunk in chunks] == ["# Notebook\n\n![diagram]()\n\nText."]
+
+
+def test_chunks_to_documents_adds_full_text_search_fields():
+    training_url = "https://huggingface.co/docs/transformers/training"
+    headings = ["# Fine-tuning", "## Trainer", "### Callbacks"]
+    page, section, continuation, method = chunks_to_documents(
+        [
+            Chunk(
+                "# Fine-tuning\n\nTrain a model.",
+                training_url,
+                "Fine-tuning",
+                "transformers",
+                headings[:1],
+                "training",
+            ),
+            Chunk("### Callbacks\n\nHooks.", training_url, "Fine-tuning", "transformers", headings, "training"),
+            Chunk("More hooks.", training_url, "Fine-tuning", "transformers", headings, "training", excerpt_index=1),
+            Chunk(
+                "#### train[[transformers.Trainer.train]]\n\nRuns training.",
+                "https://huggingface.co/docs/transformers/main_classes/trainer",
+                "Trainer",
+                "transformers",
+                ["# Trainer", "#### train[[transformers.Trainer.train]]"],
+                "main_classes/trainer",
+            ),
+        ]
+    )
+
+    assert (page.name, page.section, page.level, page.hierarchy) == (["Fine-tuning", "training"], "Fine-tuning", 1, [])
+    assert (page.page_url, page.page_title, page.text_plain) == (training_url, "Fine-tuning", "Train a model.")
+    assert (section.name, section.section, section.level, section.hierarchy) == (None, "Callbacks", 3, ["Trainer"])
+    assert (section.page_url, section.text_plain, section.section_word_count) == (training_url, "Hooks.", 1)
+    assert (continuation.name, continuation.excerpt_index, continuation.text_plain) == (None, 1, "More hooks.")
+    assert (method.name, method.section, method.level) == (["train"], "Trainer.train", 2)
+    assert (method.page_title, method.text_plain) == ("Trainer", "Runs training.")
+
+
+@pytest.mark.parametrize(
+    ("page", "slug"),
+    [
+        ("hub/xet/index", "xet"),
+        ("huggingface_hub/quick-start", "quick start"),
+        ("transformers/model_doc/bert", "bert"),
+    ],
+)
+def test_page_records_are_named_after_their_title_and_url(page, slug):
+    chunk = Chunk("# Title\n\nText.", f"https://huggingface.co/docs/{page}", "Title", "docs", ["# Title"], page)
+
+    [document] = chunks_to_documents([chunk])
+
+    assert document.name == ["Title", slug]
+
+
+def test_api_page_also_gets_a_record_for_the_page(tmp_path):
+    page = tmp_path / "transformers" / "transformers" / "main" / "en" / "model_doc" / "bert.md"
+    page.parent.mkdir(parents=True)
+    page.write_text("# BERT\n\nBERT is an encoder.\n\n## BertModel\n\nRendered API docs.", encoding="utf-8")
+    page.with_suffix(".html").write_text(
+        """
+        <div class="docstring">
+          <div><span id="transformers.BertModel"><h3>transformers.BertModel</h3></span></div>
+          <p>The bare BERT model transformer.</p>
+        </div>
+        """,
+        encoding="utf-8",
+    )
+
+    chunks = process_library("transformers", tmp_path, skip_download=True)
+    page_document, api_document = chunks_to_documents(chunks)
+
+    assert [chunk.text for chunk in chunks] == [
+        "# BERT\n\nBERT is an encoder.",
+        "transformers.BertModel\n\nThe bare BERT model transformer.",
+    ]
+    assert not any(should_embed_chunk(chunk) for chunk in chunks)
+    assert (page_document.name, page_document.level) == (["BERT", "bert"], 1)
+    assert (api_document.name, api_document.section, api_document.page_title) == (["BertModel"], "BertModel", "BERT")
+    assert api_document.source_page_title == "transformers.BertModel"

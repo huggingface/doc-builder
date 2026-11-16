@@ -93,6 +93,7 @@ def test_add_embeddings_to_db_ids_only_depend_on_text():
     [document] = client.index_instance.payload
     assert document["id"] == generate_doc_id("test", "**bold**", "**bold**")
     assert (document["text_plain"], document["heading1"]) == ("bold", "Heading")
+    assert (document["section"], document["name"], document["level"]) == ("Heading", ["Heading"], 1)
 
 
 class FakeMigrationIndex:
