@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Migration: recompute the fields derived from the docs (URL, page title, headings, `text_plain`) of the documents
+Migration: recompute the fields derived from the docs (URL, titles, headings, `text_plain`...) of the documents
 already in the Meilisearch index, after a change to how they are computed.
 
 Incremental updates only re-index chunks whose text changed, since document IDs hash the text: a chunk with the
@@ -35,6 +35,14 @@ FIELDS = [
     "heading4",
     "heading5",
     "text_plain",
+    "page_url",
+    "page_title",
+    "section",
+    "hierarchy",
+    "name",
+    "level",
+    "section_word_count",
+    "excerpt_index",
 ]
 
 

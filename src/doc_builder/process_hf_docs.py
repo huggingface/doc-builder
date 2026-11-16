@@ -21,6 +21,7 @@ Downloads and processes pre-built documentation markdown files.
 import io
 import json
 import os
+import re
 import tempfile
 import zipfile
 from datetime import datetime
@@ -42,6 +43,8 @@ HF_BLOG_API_URL = "https://huggingface.co/api/blog"
 HF_COMMUNITY_BLOG_API_URL = f"{HF_BLOG_API_URL}/community"
 BLOG_LISTING_ATTEMPTS = 3
 HF_BASE_URL = "https://huggingface.co"
+
+_re_data_uri = re.compile(r"data:[\w/.+-]+;base64,[A-Za-z0-9+/=]+")
 
 
 def get_public_library_name(library_name: str) -> str:
@@ -287,6 +290,8 @@ def process_markdown_file(
     try:
         with open(file_path, encoding="utf-8") as f:
             content = f.read()
+        # Notebooks inline their images, which would be indexed as megabytes of base64
+        content = _re_data_uri.sub("", content)
 
         # Split markdown by headings
         sections = split_markdown_by_headings(content, excerpts_max_length)
@@ -332,7 +337,7 @@ def process_markdown_file(
             # Create a chunk for each excerpt
             # Get the page path (relative path without extension)
             page_path = str(file_path.relative_to(base_dir).with_suffix("")).replace(os.sep, "/")
-            for excerpt in section["excerpts"]:
+            for excerpt_index, excerpt in enumerate(section["excerpts"]):
                 chunk = Chunk(
                     text=excerpt,
                     source_page_url=url,
@@ -340,6 +345,7 @@ def process_markdown_file(
                     package_name=public_library_name,
                     headings=heading_list,
                     page=page_path,
+                    excerpt_index=excerpt_index,
                 )
                 chunks.append(chunk)
 
@@ -350,7 +356,9 @@ def process_markdown_file(
         return []
 
 
-def process_api_html_file(file_path: Path, library_name: str, base_dir: Path) -> list[Chunk]:
+def process_api_html_file(
+    file_path: Path, library_name: str, base_dir: Path, page_title: str | None = None
+) -> list[Chunk]:
     html_file = file_path.with_suffix(".html")
     if not html_file.exists():
         raise FileNotFoundError(f"Missing rendered HTML for API page: {html_file}")
@@ -377,6 +385,7 @@ def process_api_html_file(file_path: Path, library_name: str, base_dir: Path) ->
                 package_name=get_public_library_name(library_name),
                 headings=[f"# {name}"],
                 page=f"{page_path}#{name}",
+                page_title=page_title,
             )
         )
     return chunks
@@ -536,10 +545,12 @@ def process_library(
     print("  Processing markdown files...")
     for md_file in tqdm(markdown_files, desc=f"  {library_name}", unit="file"):
         page_path = str(md_file.relative_to(base_dir)).replace(os.sep, "/")
+        chunks = process_markdown_file(md_file, library_name, base_dir, excerpts_max_length)
         if is_compact_api_page(library_name, page_path):
-            chunks = process_api_html_file(md_file, library_name, base_dir)
-        else:
-            chunks = process_markdown_file(md_file, library_name, base_dir, excerpts_max_length)
+            # A record for the start of the page, so that the page is found by its title, and one per API object
+            page_chunks = chunks[:1]
+            page_title = page_chunks[0].source_page_title if page_chunks else None
+            chunks = page_chunks + process_api_html_file(md_file, library_name, base_dir, page_title)
         all_chunks.extend(chunks)
 
     print(f"  ✅ Generated {len(all_chunks)} chunks from {len(markdown_files)} files")
