@@ -193,13 +193,14 @@ SEARCH_SETTINGS = {
     # A match in an earlier attribute ranks higher
     "searchableAttributes": ["name", "section", "page_title", "hierarchy", "text_plain"],
     "filterableAttributes": ["product", "id", "page_url", "source_page_url"],
-    # The default rules, plus: pages before their sections (`level`), short headings before long ones that happen
-    # to contain the query, and the start of a section before the rest of it
+    # The default rules, with `attributeRank` before `proximity`: a query that matches a heading ranks above one whose
+    # words only sit close together in the text ("create a job"). Plus: pages before their sections (`level`), short
+    # headings before long ones that happen to contain the query, and the start of a section before the rest of it
     "rankingRules": [
         "words",
         "typo",
-        "proximity",
         "attributeRank",
+        "proximity",
         "sort",
         "level:asc",
         "wordPosition",
