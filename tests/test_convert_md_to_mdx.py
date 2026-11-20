@@ -15,6 +15,7 @@
 
 import contextlib
 import io
+import json
 import unittest
 from pathlib import Path
 
@@ -304,6 +305,36 @@ import pandas as pd
 import fs
 ```"""
         self.assertEqual(convert_literalinclude(text, page_info), expected_conversion)
+
+    def test_convert_md_to_mdx_with_single_include_boundary(self):
+        page_info = {"path": Path(__file__).resolve(), "package_name": "dummy"}
+        cases = [
+            ("start-after", "START node_import", 'import fs\n# END node_import"""'),
+            ("end-before", "END python_import_answer", "# START python_import_answer\nimport scipy as sp"),
+        ]
+        for tag in ("include", "literalinclude"):
+            for boundary, marker, expected in cases:
+                with self.subTest(tag=tag, boundary=boundary):
+                    options = {
+                        "path": "./data/convert_literalinclude_dummy.txt",
+                        "language": "python",
+                        boundary: marker,
+                    }
+                    text = f"# Included excerpt\n\n<{tag}>\n{json.dumps(options)}\n</{tag}>"
+                    if tag == "literalinclude":
+                        expected = f"```python\n{expected}\n```"
+                    result = convert_md_to_mdx(text, page_info)
+                    self.assertIn(f"# Included excerpt\n\n{expected}\n\n<!--HF DOCBUILD BODY END-->", result)
+
+    def test_convert_md_to_mdx_with_missing_include_boundary(self):
+        page_info = {"path": Path(__file__).resolve(), "package_name": "dummy"}
+        for tag in ("include", "literalinclude"):
+            for boundary in ("start-after", "end-before"):
+                with self.subTest(tag=tag, boundary=boundary):
+                    options = {"path": "./data/convert_literalinclude_dummy.txt", boundary: "MISSING"}
+                    text = f"<{tag}>\n{json.dumps(options)}\n</{tag}>"
+                    with self.assertRaisesRegex(ValueError, f"The following '{tag}' does NOT exist"):
+                        convert_md_to_mdx(text, page_info)
 
     def test_strip_md_extension_from_internal_links(self):
         # Test relative links with .md extension
