@@ -154,6 +154,21 @@ class TranslateDocsTester(unittest.TestCase):
         full = self.ja("main", "llms-full.txt").read_text(encoding="utf-8")
         self.assertTrue(full.startswith(llms.rstrip("\n")))
         self.assertIn("訳Text of the second option.", full)
+        # the full text of each section of the translated sidebar, and of the pages outside it
+        self.assertIn("\n## 訳Get started\n", llms)
+        sections = sorted(p.name for p in self.ja("main", "llms-full").iterdir())
+        self.assertEqual(sections, ["get-started.txt", "optional.txt"])
+        self.assertIn("訳Text of the second option.", self.ja("main", "llms-full/get-started.txt").read_text())
+
+    def test_llms_sections_gone_from_the_sidebar_are_deleted(self):
+        self.run_job()
+        self.assertTrue(self.ja("main", "llms-full/optional.txt").exists())
+        # guides/old.md leaves the build, and with it the only page outside the sidebar
+        self.write_llms("main", ["index.md"])
+        self.run_job()
+        self.assertFalse(self.ja("main", "guides/old.md").exists())
+        self.assertFalse(self.ja("main", "llms-full/optional.txt").exists())
+        self.assertTrue(self.ja("main", "llms-full/get-started.txt").exists())
 
     def test_pages_from_an_older_block_detection_are_processed_again(self):
         self.run_job()

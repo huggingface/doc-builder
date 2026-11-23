@@ -219,6 +219,16 @@ This executes trusted documentation code with `exec`, so keep it limited to repo
 
 For continuation blocks, `# pytest-decorator`, bare-assert warnings, and GitHub Actions wiring, see [docs/runnable-code-blocks.md](docs/runnable-code-blocks.md).
 
+### Markdown versions and llms.txt
+
+With `--html`, every page also gets a Markdown version (`<page>.md`), served by huggingface.co for "Copy page", for `Accept: text/plain` / `text/markdown` requests, and to agents. It is the page's Markdown with its HTML rendered as Markdown: raw HTML blocks keep their links, images, lists and tables, each `<hfoption>` tab is introduced by a `**Option: <label>**` line, and a `<Tip>` becomes a `> [!TIP]` (or `> [!WARNING]`) callout.
+
+Next to the pages, the build writes [llms.txt](https://llmstxt.org) feeds:
+
+- `llms.txt`: the pages, section by section of `_toctree.yml`, each with its sidebar title and the first sentence of the page. Pages that aren't in the table of contents come last, under `## Optional`.
+- `llms-full.txt`: the same list followed by the text of every page.
+- `llms-full/<section>.txt`: the text of one top-level section of the table of contents, for when `llms-full.txt` is too big.
+
 ## Doc styling
 
 `doc-builder style` reformats the docstrings of Python files and the code examples of mdx files in place:
@@ -330,7 +340,7 @@ The GitHub Actions templates (`build_main_documentation.yml`, `build_pr_document
 
 ### Machine-translated documentation
 
-`doc-builder translate-docs` translates the *built* English pages (`<library>/<version>/en/` in `hf://buckets/hf-doc-build/doc`) with an LLM on HF Inference Providers and writes them next to it, to `<library>/<version>/<language>/`, where huggingface.co serves them like any other language. Language folders built by a library's own docs build (the workflows' `languages` input, recognizable by their own `_app/`) are never touched. Only the prose changes: links, code and the page structure are kept, so the translated page hydrates against the same JS as the English one. Each page's Markdown (`<page>.md`, served for "Copy page" and `text/plain` requests) is translated the same way, next to the page, and `llms.txt` / `llms-full.txt` are rebuilt from the translated Markdown, with URLs pointing to it.
+`doc-builder translate-docs` translates the *built* English pages (`<library>/<version>/en/` in `hf://buckets/hf-doc-build/doc`) with an LLM on HF Inference Providers and writes them next to it, to `<library>/<version>/<language>/`, where huggingface.co serves them like any other language. Language folders built by a library's own docs build (the workflows' `languages` input, recognizable by their own `_app/`) are never touched. Only the prose changes: links, code and the page structure are kept, so the translated page hydrates against the same JS as the English one. Each page's Markdown (`<page>.md`, served for "Copy page" and `text/plain` requests) is translated the same way, next to the page, and the llms.txt feeds (`llms.txt`, `llms-full.txt`, `llms-full/<section>.txt`) are rebuilt from the translated Markdown and sidebar, with URLs pointing to it.
 
 The [`translate_docs.yml`](.github/workflows/translate_docs.yml) workflow runs it daily, incrementally:
 

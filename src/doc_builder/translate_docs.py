@@ -76,11 +76,10 @@ TRANSLATED_DOCS = {
     "trl": ["zh", "ja", "ko", "pt", "es", "fr", "vi", "id", "tr", "ru", "ar"],
 }
 # Copied unchanged from the English build. Pages (`.html`) and their Markdown (`.md`, served for
-# "Copy page" and `Accept: text/plain`) are translated; llms.txt and llms-full.txt are rebuilt from
-# the translated Markdown.
+# "Copy page" and `Accept: text/plain`) are translated; the llms.txt feeds (llms.txt, llms-full.txt
+# and `llms-full/<section>.txt`) are rebuilt from the translated Markdown.
 COPIED_SUFFIXES = set()
 COPIED_NAMES = {"_redirects.yml"}
-LLMS_FEEDS = ("llms.txt", "llms-full.txt")
 STATE_DIR = ".translation"
 FLUSH_EVERY = 20  # pages; bounds the work lost if a run is interrupted
 # Translations of the same English page while some of its blocks fail: past that, the model keeps getting them wrong.
@@ -365,7 +364,8 @@ def llms_pages(llms, pages):
     """The `pages` (Markdown paths) an English llms.txt links to, in its order, and the base URL of its links."""
     order, base = [], None
     # a feed written on Windows has CRLF line endings
-    for url in re.findall(r"^- \[.*\]\((\S+)\)$", llms.replace("\r\n", "\n"), re.M):
+    # `- [title](url)`, optionally followed by `: description`; brackets in titles are escaped
+    for url in re.findall(r"^- \[(?:\\.|[^\]\\])*\]\((\S+?)\)(?:: .*)?$", llms.replace("\r\n", "\n"), re.M):
         # the longest match: ".../xet/index.md" also ends with "/index.md"
         page = max((p for p in pages if url.endswith("/" + quote(p, safe="/"))), key=len, default=None)
         if page and page not in order:
@@ -395,14 +395,19 @@ def latest_build(source, src_dir, english):
 
 def translate_llms_feeds(source, target, src_dir, dst_dir, library, english):
     """
-    Rebuild llms.txt and llms-full.txt of a translated folder from its translated Markdown, with
-    doc-builder's own generator: the English pages in the English order, translated titles and
-    content, and URLs pointing to the translated Markdown (`<english base>/<language>/<page>.md`).
+    Rebuild the llms.txt feeds of a translated folder (llms.txt, llms-full.txt and the per-section
+    files) from its translated Markdown, with doc-builder's own generator: the English pages, in the
+    sections of the translated sidebar, translated content, and URLs pointing to the translated
+    Markdown (`<english base>/<language>/<page>.md`).
     """
     from .utils import write_llms_feeds
 
     language = PurePosixPath(dst_dir).name
     llms = source.read([f"{src_dir}/llms.txt"])[f"{src_dir}/llms.txt"].decode("utf-8")
+    # the translated sidebar (written with the pages), or the English one
+    toctree = target.read([f"{dst_dir}/_toctree.yml"]).get(f"{dst_dir}/_toctree.yml")
+    if toctree is None and "_toctree.yml" in english:
+        toctree = source.read([f"{src_dir}/_toctree.yml"]).get(f"{src_dir}/_toctree.yml")
     pages = [p for p in english if p.endswith(".md")]
     order, base = llms_pages(llms, pages)
     order = order or sorted(pages)
@@ -413,17 +418,16 @@ def translate_llms_feeds(source, target, src_dir, dst_dir, library, english):
         (p, (translated.get(f"{dst_dir}/{p}") or fallback.get(f"{src_dir}/{p}") or b"").decode("utf-8")) for p in order
     ]
     with tempfile.TemporaryDirectory() as directory:
-        write_llms_feeds(
+        written = write_llms_feeds(
             Path(directory),
             items,
             base_url=f"{base}/{language}" if base else None,
             package_name=library,
             language=language,
             is_python_module=False,
+            toctree=yaml.safe_load(toctree) if toctree else None,
         )
-        return {
-            name: (Path(directory) / name).read_bytes() for name in LLMS_FEEDS if (Path(directory) / name).exists()
-        }
+        return {name: (Path(directory) / name).read_bytes() for name in written}
 
 
 def clear_docs_build_translations(target, library, language):
@@ -569,6 +573,7 @@ def translate_version(source, target, state, translator, library, version, langu
         # pages finished before an error (e.g. rate limiting that outlasts the retries) are kept
         flush()
 
+    feeds = None
     if "llms.txt" in english and (markdown or record.get("llms_source") != english["llms.txt"]):
         feeds = translate_llms_feeds(source, target, src_dir, dst_dir, library, english)
         digest = hashlib.sha256(b"".join(feeds.values())).hexdigest()
@@ -583,6 +588,9 @@ def translate_version(source, target, state, translator, library, version, langu
     if stale:
         print(f"{dst_dir}: deleting {len(stale)} pages removed from the English build")
         target.delete(f"{dst_dir}/{p}" for p in stale)
+    if feeds is not None:
+        # the full text of sections that are gone from the sidebar
+        target.delete(f"{dst_dir}/{p}" for p in existing if p.startswith("llms-full/") and p not in feeds)
     record["files"] = {p: e for p, e in tracked.items() if p in english}
 
     settled = all(e.get("complete", True) or e.get("tries", 0) >= MAX_TRIES for e in record["files"].values())
