@@ -200,13 +200,14 @@ def convert_file_include_helper(match, page_info, is_code=True):
         lines = reader.readlines()
     include = lines  # defaults to entire file
     if "start-after" in include_info or "end-before" in include_info:
-        start_after, end_before = -1, -1
+        start_after = -1 if "start-after" in include_info else 0
+        end_before = -1 if "end-before" in include_info else len(lines)
         for idx, line in enumerate(lines):
             line = line.strip()
             line = re.sub(r"\W+$", "", line)
-            if line.endswith(include_info["start-after"]):
+            if "start-after" in include_info and line.endswith(include_info["start-after"]):
                 start_after = idx + 1
-            if line.endswith(include_info["end-before"]):
+            if "end-before" in include_info and line.endswith(include_info["end-before"]):
                 end_before = idx
         if start_after == -1 or end_before == -1:
             raise ValueError(f"The following '{include_name}' does NOT exist:\n{match[0]}")
