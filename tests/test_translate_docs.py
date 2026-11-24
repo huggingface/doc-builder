@@ -158,7 +158,8 @@ class TranslateDocsTester(unittest.TestCase):
         self.assertIn("\n## 訳Get started\n", llms)
         sections = sorted(p.name for p in self.ja("main", "llms-full").iterdir())
         self.assertEqual(sections, ["get-started.txt", "optional.txt"])
-        self.assertIn("訳Text of the second option.", self.ja("main", "llms-full/get-started.txt").read_text())
+        section = self.ja("main", "llms-full/get-started.txt").read_text(encoding="utf-8")
+        self.assertIn("訳Text of the second option.", section)
 
     def test_llms_sections_gone_from_the_sidebar_are_deleted(self):
         self.run_job()
