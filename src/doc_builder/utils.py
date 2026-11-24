@@ -19,6 +19,7 @@ import os
 import re
 import shutil
 import subprocess
+import unicodedata
 from collections.abc import Sequence
 from html.parser import HTMLParser
 from pathlib import Path
@@ -26,6 +27,8 @@ from urllib.parse import quote
 
 import yaml
 from packaging import version as package_version
+
+from .html_to_markdown import html_to_markdown
 
 hf_cache_home = os.path.expanduser(
     os.getenv("HF_HOME", os.path.join(os.getenv("XDG_CACHE_HOME", "~/.cache"), "huggingface"))
@@ -246,6 +249,159 @@ def write_markdown_route_file(source_file, destination_file):
     return content
 
 
+# Per-section full text, next to llms-full.txt: `llms-full/<section>.txt`.
+LLMS_SECTIONS_DIR = "llms-full"
+# A page's description in llms.txt: its first sentence, up to this many characters.
+LLMS_DESCRIPTION_MAX = 200
+# The end of a sentence: not the period of an abbreviation such as "e.g.".
+_SENTENCE_END_RE = re.compile(
+    r"(?<!\be\.g\.)(?<!\bi\.e\.)(?<!\betc\.)(?<!\bvs\.)(?<!\bcf\.)(?<=[.!?])\s+(?=[A-Z0-9\"“(\[`])|(?<=[。！？])"
+)
+
+
+def _strip_fenced_code(markdown_text: str) -> list[str]:
+    """The lines of `markdown_text` outside fenced code blocks (each fence is replaced by an empty line)."""
+    lines, fence = [], None
+    for line in markdown_text.splitlines():
+        match = re.match(r"\s*(?:>\s*)*(`{3,}|~{3,})", line)
+        if fence is None and match:
+            fence = match.group(1)
+            lines.append("")
+        elif fence is not None:
+            if match and match.group(1)[0] == fence[0] and len(match.group(1)) >= len(fence):
+                fence = None
+        else:
+            lines.append(line)
+    return lines
+
+
+def _plain_inline(text: str) -> str:
+    """Markdown inline text without its markup: images go, links keep their text, emphasis markers go."""
+    text = re.sub(r"!\[[^\]]*\]\([^)]*\)", "", text)
+    text = re.sub(r"\[([^\]]*)\]\([^)]*\)", r"\1", text)
+    text = re.sub(r"\[\[[^\]]*\]\]", "", text)
+    text = re.sub(r"(\*\*|__)(.+?)\1", r"\2", text)
+    text = re.sub(r"(?<![\w*])\*(?=\S)(.+?)(?<=\S)\*(?![\w*])", r"\1", text)
+    return re.sub(r"\s+", " ", text).strip()
+
+
+def markdown_page_title(markdown_text: str) -> str | None:
+    """The H1 of a page (not a heading inside code), without its `[[anchor]]`."""
+    for line in _strip_fenced_code(markdown_text):
+        match = re.match(r"# (.+?)\s*#*\s*$", line)
+        if match:
+            title = _plain_inline(re.sub(r"\[\[[^\]]*\]\]\s*$", "", match.group(1)))
+            if title:
+                return title
+    return None
+
+
+def markdown_page_description(markdown_text: str) -> str:
+    """
+    The first sentence of a page's first paragraph of prose after its H1: no heading, list, table,
+    quote, code, image or tab label. Empty if the page has none.
+    """
+    lines = _strip_fenced_code(markdown_text)
+    h1 = next((i for i, line in enumerate(lines) if line.startswith("# ")), None)
+    paragraphs, current = [], []
+    for line in lines[h1 + 1 if h1 is not None else 0 :] + [""]:
+        if line.strip():
+            current.append(line.strip())
+        elif current:
+            paragraphs.append(current)
+            current = []
+    for paragraph in paragraphs:
+        first = paragraph[0]
+        if re.match(r"(#|>|\||<|!\[|\[!\[|\[\[|[-*+] |\d+[.)] |---|\*\*\*|___|\*\*Option: )", first):
+            continue
+        text = " ".join(paragraph)
+        # links only (`Paper · Code`) or a bare URL: not a description
+        if not re.search(r"\w", re.sub(r"!?\[[^\]]*\]\([^)]*\)|<?https?://\S+>?", "", text)):
+            continue
+        text = _plain_inline(text)
+        sentence = _SENTENCE_END_RE.split(text, maxsplit=1)[0].strip()
+        if len(sentence) > LLMS_DESCRIPTION_MAX:
+            sentence = sentence[:LLMS_DESCRIPTION_MAX].rsplit(" ", 1)[0].rstrip(",;:") + "…"
+        return sentence
+    return ""
+
+
+def _toctree_sections(toctree, pages: set[str]) -> list[tuple[list[str], list[tuple[str, str]]]]:
+    """
+    The pages of the table of contents, as `(group titles, [(page, title), ...])` sections in sidebar
+    order: a group's own page and pages come first, then its subgroups. Pages listed at the top level
+    (not in a group) share a "Docs" section; a page listed twice is kept where it comes first.
+    """
+
+    def local_page(entry):
+        local = entry.get("local")
+        if not isinstance(local, str):
+            return None
+        local = local.split("#", 1)[0].strip().strip("/")
+        return local if local in pages else None
+
+    # the entry where each page comes first, in sidebar order
+    first_entry: dict[str, int] = {}
+
+    def find_first(items):
+        for item in items or []:
+            if isinstance(item, dict):
+                page = local_page(item)
+                if page:
+                    first_entry.setdefault(page, id(item))
+                if isinstance(item.get("sections"), list):
+                    find_first(item["sections"])
+
+    find_first(toctree if isinstance(toctree, list) else [])
+
+    def entry_page(entry):
+        page = local_page(entry)
+        return page if page and first_entry.get(page) == id(entry) else None
+
+    def title_of(entry, page):
+        return str(entry.get("title") or "").strip() or page
+
+    def walk(items, trail):
+        entries, subgroups = [], []
+        for item in items or []:
+            if not isinstance(item, dict):
+                continue
+            page = entry_page(item)
+            if isinstance(item.get("sections"), list):
+                subgroups.append((item, page))
+            elif page:
+                entries.append((page, title_of(item, page)))
+        sections = [(trail, entries)] if entries else []
+        for item, page in subgroups:
+            title = str(item.get("title") or "").strip()
+            own = [(page, title or page)] if page else []
+            group = walk(item["sections"], trail + [title])
+            if group and group[0][0] == trail + [title]:
+                group[0] = (group[0][0], own + group[0][1])
+            elif own:
+                group.insert(0, (trail + [title], own))
+            sections.extend(group)
+        return sections
+
+    sections = walk(toctree if isinstance(toctree, list) else [], [])
+    return [(trail or ["Docs"], entries) for trail, entries in sections]
+
+
+def _slug(title: str) -> str:
+    ascii_title = unicodedata.normalize("NFKD", title).encode("ascii", "ignore").decode()
+    return re.sub(r"[^a-z0-9]+", "-", ascii_title.lower()).strip("-")
+
+
+def _size(num_bytes: int) -> str:
+    if num_bytes >= 1024 * 1024:
+        return f"{num_bytes / (1024 * 1024):.1f} MB"
+    return f"{max(1, round(num_bytes / 1024))} KB"
+
+
+def _link_text(text: str) -> str:
+    return text.replace("\\", "\\\\").replace("[", "\\[").replace("]", "\\]")
+
+
 def _collect_markdown_from_output(output_dir: Path) -> list[tuple[str, str]]:
     markdown_items: list[tuple[str, str]] = []
     for mdx_file in sorted(output_dir.glob("**/*.mdx")):
@@ -264,8 +420,20 @@ def write_llms_feeds(
     version: str | None = None,
     language: str | None = None,
     is_python_module: bool = True,
-):
-    """Generate llms.txt and llms-full.txt files alongside the documentation output."""
+    toctree: list | None = None,
+) -> list[str]:
+    """
+    Generate llms.txt and llms-full.txt files alongside the documentation output.
+
+    - llms.txt (https://llmstxt.org) lists the pages section by section of the table of contents
+      (`toctree`, read from `output_dir/_toctree.yml` when not given), with their sidebar title and
+      the first sentence of the page. Pages that aren't in the table of contents come last, under
+      "Optional".
+    - llms-full.txt is llms.txt followed by the text of every page, in the same order.
+    - `llms-full/<section>.txt` has the text of the pages of one section, for a size in between.
+
+    Returns the files written, relative to `output_dir`.
+    """
 
     output_dir = Path(output_dir)
     if markdown_items is None:
@@ -275,7 +443,7 @@ def write_llms_feeds(
 
     markdown_items = [item for item in markdown_items if item[0]]
     if not markdown_items:
-        return
+        return []
 
     parts = list(output_dir.parts)
     if len(parts) >= 1 and language is None:
@@ -311,37 +479,125 @@ def write_llms_feeds(
         ):
             base_url = normalized_base.replace("/docs/", "/learn/", 1)
 
-    header_title = normalized_package.title() if normalized_package else "Documentation"
-
     def build_url(relative_path: str) -> str:
         relative_path = relative_path.lstrip("/")
         if base_url:
             return f"{base_url.rstrip('/')}/{quote(relative_path, safe='/')}"
         return f"/{relative_path}"
 
-    def extract_title(markdown_text: str, fallback: str) -> str:
-        for line in markdown_text.splitlines():
-            if line.startswith("#"):
-                return line.lstrip("#").strip() or fallback
-        return fallback
+    if toctree is None and (output_dir / "_toctree.yml").is_file():
+        try:
+            toctree = yaml.safe_load((output_dir / "_toctree.yml").read_text(encoding="utf-8"))
+        except yaml.YAMLError:
+            toctree = None
 
-    bullet_lines: list[str] = []
-    sections: list[str] = []
-
+    # page (path without `.md`) -> (path, Markdown)
+    pages: dict[str, tuple[str, str]] = {}
     for relative_path, markdown_text in markdown_items:
-        url = build_url(relative_path)
-        fallback_title = Path(relative_path).name.replace(".md", "").replace("-", " ").replace("_", " ").title()
-        title = extract_title(markdown_text, fallback_title)
-        bullet_lines.append(f"- [{title}]({url})")
-        markdown_body = markdown_text.strip()
-        sections.extend([f"### {title}", url, "", markdown_body, ""] if markdown_body else [f"### {title}", url, ""])
+        pages.setdefault(relative_path.removesuffix(".md"), (relative_path, markdown_text.strip()))
 
-    header_lines = [f"# {header_title}", "", "## Docs", ""]
-    llms_lines = header_lines + bullet_lines + [""]
-    llms_full_lines = header_lines + bullet_lines + [""] + sections
+    if toctree:
+        sections = _toctree_sections(toctree, set(pages))
+    else:
+        sections = [(["Docs"], [(page, markdown_page_title(text) or page) for page, (_, text) in pages.items()])]
+    listed = {page for _, entries in sections for page, _ in entries}
+    titles = {title for _, entries in sections for _, title in entries}
+    optional = []
+    for page in sorted(set(pages) - listed):
+        title = markdown_page_title(pages[page][1])
+        if not title:
+            name = Path(page).name.replace("-", " ").replace("_", " ")
+            title = name[:1].upper() + name[1:]
+        if title in titles:
+            title = f"{title} ({page})"
+        titles.add(title)
+        optional.append((page, title))
+    if optional:
+        sections.append((["Optional"], optional))
 
-    output_dir.joinpath("llms.txt").write_text("\n".join(llms_lines).rstrip() + "\n", encoding="utf-8")
-    output_dir.joinpath("llms-full.txt").write_text("\n".join(llms_full_lines).rstrip() + "\n", encoding="utf-8")
+    # sections grouped under their top-level heading: [(heading, [(subheadings, entries), ...]), ...]
+    groups: list[tuple[str, list]] = []
+    for trail, entries in sections:
+        if not groups or groups[-1][0] != trail[0]:
+            groups.append((trail[0], []))
+        groups[-1][1].append((trail[1:], entries))
+
+    def entry_line(page: str, title: str) -> str:
+        relative_path, markdown_text = pages[page]
+        line = f"- [{_link_text(title)}]({build_url(relative_path)})"
+        description = markdown_page_description(markdown_text)
+        return f"{line}: {description}" if description else line
+
+    def index_lines(heading: str, subsections: list) -> list[str]:
+        lines = [f"## {heading}", ""]
+        for subheadings, entries in subsections:
+            if subheadings:
+                lines += [f"### {' / '.join(subheadings)}", ""]
+            lines += [entry_line(page, title) for page, title in entries] + [""]
+        return lines
+
+    def full_text(subsections: list) -> list[str]:
+        lines = []
+        for _, entries in subsections:
+            for page, title in entries:
+                relative_path, markdown_text = pages[page]
+                lines += [f"### {title}", build_url(relative_path), ""]
+                lines += [markdown_text, ""] if markdown_text else []
+        return lines
+
+    def text_of(lines: list[str]) -> str:
+        return "\n".join(lines).rstrip() + "\n"
+
+    # the docs' own name ("LeRobot") rather than the package's ("Lerobot")
+    header_title = markdown_page_title(pages["index"][1]) if "index" in pages else None
+    header_title = header_title or (normalized_package.title() if normalized_package else "Documentation")
+    header = [f"# {header_title}", ""]
+    summary = markdown_page_description(pages["index"][1]) if "index" in pages else ""
+    if summary:
+        header += [f"> {summary}", ""]
+
+    index = [line for heading, subsections in groups for line in index_lines(heading, subsections)]
+    full = full_text([subsection for _, subsections in groups for subsection in subsections])
+
+    # one file per section, for when llms-full.txt is too big
+    sections_dir = output_dir / LLMS_SECTIONS_DIR
+    if sections_dir.is_dir():
+        shutil.rmtree(sections_dir)
+    section_files, slugs = [], set()
+    for i, (heading, subsections) in enumerate(groups, 1):
+        base = _slug(heading) or f"section-{i}"
+        slug, n = base, 2
+        while slug in slugs:
+            slug, n = f"{base}-{n}", n + 1
+        slugs.add(slug)
+        relative_path = f"{LLMS_SECTIONS_DIR}/{slug}.txt"
+        text = text_of(
+            [f"# {header_title}: {heading}", ""] + index_lines(heading, subsections) + full_text(subsections)
+        )
+        page_count = sum(len(entries) for _, entries in subsections)
+        section_files.append((heading, relative_path, text, page_count))
+
+    full_size = _size(len(text_of(header + index + full).encode("utf-8")))
+    header += [
+        "Each page below links to its Markdown. The text of every page is in "
+        f"[llms-full.txt]({build_url('llms-full.txt')}) ({full_size}), and the text of each section in:",
+        "",
+    ]
+    for heading, path, text, count in section_files:
+        pages_count = f"{count} page{'s' if count > 1 else ''}"
+        header.append(
+            f"- [{_link_text(heading)}]({build_url(path)}): {pages_count}, {_size(len(text.encode('utf-8')))}"
+        )
+    header.append("")
+
+    written = ["llms.txt", "llms-full.txt"]
+    output_dir.joinpath("llms.txt").write_text(text_of(header + index), encoding="utf-8")
+    output_dir.joinpath("llms-full.txt").write_text(text_of(header + index + full), encoding="utf-8")
+    sections_dir.mkdir(parents=True, exist_ok=True)
+    for _, relative_path, text, _ in section_files:
+        output_dir.joinpath(relative_path).write_text(text, encoding="utf-8")
+        written.append(relative_path)
+    return written
 
 
 def chunk_list(lst, n):
@@ -610,65 +866,14 @@ def process_docstring_block(docstring_block: str) -> str:
 
 def strip_remaining_html(content: str) -> str:
     """
-    Strip remaining HTML tags while preserving markdown structure.
-    Handles tags like <Tip>, <ExampleCodeBlock>, etc.
+    Convert the HTML left in a page to Markdown: raw HTML blocks (cards, tables, ...) keep their
+    links, images and structure, tabs keep their labels, and component tags (`<Tip>`, ...) go.
 
     Fenced code blocks and inline code are preserved verbatim so literal
     angle-bracketed content (e.g. ``<YOUR_TOKEN>`` placeholders, or code
     such as ``if idx < n:``) survives the cleanup.
     """
-    # Stash code blocks before any HTML stripping so brackets inside code are untouched.
-    code_segments: list[str] = []
-
-    def stash(match: re.Match) -> str:
-        code_segments.append(match.group(0))
-        return f"\x00DOCBUILDER_CODE_{len(code_segments) - 1}\x00"
-
-    # Fenced code blocks (```...```) — match across newlines.
-    content = re.sub(r"```.*?```", stash, content, flags=re.DOTALL)
-    # Inline code (`...`) — single line only.
-    content = re.sub(r"`[^`\n]+`", stash, content)
-
-    # Remove HTML comments, but preserve special flags like <!-- WRAP CODE BLOCKS --> and <!-- STRETCH TABLES -->
-    content = re.sub(r"<!--(?!\s*(WRAP CODE BLOCKS|STRETCH TABLES)\s*-->).*?-->", "", content, flags=re.DOTALL)
-
-    # Remove common component tags while preserving their content
-    # (Tip, TipEnd, ExampleCodeBlock, hfoptions, hfoption, etc.)
-    tags_to_remove = [
-        "Tip",
-        "TipEnd",
-        "ExampleCodeBlock",
-        "hfoptions",
-        "hfoption",
-        "EditOnGithub",
-        "div",
-        "span",
-        "anchor",
-    ]
-
-    for tag in tags_to_remove:
-        # Remove opening tags with any attributes
-        content = re.sub(rf"<{tag}[^>]*>", "", content, flags=re.IGNORECASE)
-        # Remove closing tags
-        content = re.sub(rf"</{tag}>", "", content, flags=re.IGNORECASE)
-
-    # Generic HTML-tag cleanup. Require the character after `<` to look like the start
-    # of a tag (letter, `/`, or `!`) and forbid newlines inside the match so a stray
-    # `<` in prose can't swallow content up to the next `>` further down the page.
-    content = re.sub(r"<[a-zA-Z/!][^>\n]*>", "", content)
-
-    # Restore protected code segments.
-    if code_segments:
-        content = re.sub(
-            r"\x00DOCBUILDER_CODE_(\d+)\x00",
-            lambda m: code_segments[int(m.group(1))],
-            content,
-        )
-
-    # Clean up multiple consecutive blank lines
-    content = re.sub(r"\n{3,}", "\n\n", content)
-
-    return content
+    return html_to_markdown(content)
 
 
 def strip_html_from_markdown(content: str) -> str:
