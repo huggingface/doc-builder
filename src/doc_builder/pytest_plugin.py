@@ -21,6 +21,7 @@ from pathlib import Path
 
 import pytest
 
+from doc_builder.runnable_params import bind_runnable_code, parameter_cases, parse_runnable_frontmatter
 from doc_builder.testing import DocIntegrationTest
 
 # Matches lines like: # pytest-decorator: transformers.testing_utils.slow
@@ -63,9 +64,18 @@ class MarkdownFile(pytest.File):
     def collect(self):
         text = self.path.read_text(encoding="utf-8")
         blocks = DocIntegrationTest._collect_runnable_blocks_from_text(text)
+        frontmatter = parse_runnable_frontmatter(text)
         for block in blocks:
             code, decorators = _parse_decorators(block.code)
-            yield MarkdownCodeItem.from_parent(self, name=block.name, code=code, decorators=decorators)
+            cases = parameter_cases(block.attributes, frontmatter)
+            if not cases:
+                yield MarkdownCodeItem.from_parent(self, name=block.name, code=code, decorators=decorators)
+            # One item per checkpoint and load option, e.g. generate[SmolLM-135M-eager].
+            for case, checkpoint, load_kwargs in cases:
+                bound = bind_runnable_code(code, block.attributes, checkpoint=checkpoint, load_kwargs=load_kwargs)
+                yield MarkdownCodeItem.from_parent(
+                    self, name=f"{block.name}[{case}]", code=bound, decorators=decorators
+                )
 
 
 class MarkdownCodeItem(pytest.Item):

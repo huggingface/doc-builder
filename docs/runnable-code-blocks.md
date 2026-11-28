@@ -77,6 +77,38 @@ inputs = processor("Amazing! I can speak English too.")
 
 `runnable:test_basic:2` and later continuations are grouped with `runnable:test_basic`, so later snippets can build on earlier setup.
 
+## Parameterized blocks
+
+A block can run on several checkpoints and load options without hidden reload lines. List the values in the page's frontmatter under `runnable`, and name where they go with fence attributes:
+
+````md
+---
+runnable:
+  checkpoints:
+    - HuggingFaceTB/SmolLM-135M
+    - HuggingFaceTB/SmolLM-360M
+  load_kwargs:
+    default: {}
+    eager: {attn_implementation: eager}
+    bfloat16: {dtype: bfloat16}
+---
+
+```py runnable:generate checkpoints="model_id" load_kwargs="model"
+from transformers import AutoModelForCausalLM, AutoTokenizer
+
+model_id = "HuggingFaceTB/SmolLM-135M"
+tokenizer = AutoTokenizer.from_pretrained(model_id)
+model = AutoModelForCausalLM.from_pretrained(model_id)
+```
+````
+
+- `checkpoints="model_id"`: each checkpoint replaces the string assigned to `model_id`.
+- `load_kwargs="model"`: each option set is added as keyword arguments to the `from_pretrained(...)` call assigned to `model`, overriding any the snippet already passes. Other loads (here the tokenizer) are left alone.
+- The pytest plugin runs one item per combination, e.g. `generate[SmolLM-360M-eager]`. A block without these attributes runs once, as written.
+- Rendering drops the attributes and the `runnable` frontmatter key, so the page looks the same as the plain snippet.
+- Binding fails if an attribute names a variable the block never assigns, so a rename cannot silently test only the default.
+- `doc_builder.runnable_params.bind_runnable_code` does the substitution for other runners, e.g. one that passes a local path as the checkpoint.
+
 ## Test decorators
 
 Runnable code blocks can declare test decorators with `# pytest-decorator:` comments. The decorator is imported and applied to the generated execution function at runtime.
